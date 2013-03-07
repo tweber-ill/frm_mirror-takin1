@@ -28,6 +28,15 @@ inline std::string get_dir(const std::string& str)
 	return str.substr(0, uiPos);
 }
 
+inline std::string get_file(const std::string& str)
+{
+	unsigned int uiPos = str.find_last_of("\\/");
+
+	if(uiPos == std::string::npos)
+		return std::string("");
+	return str.substr(uiPos+1);
+}
+
 inline bool is_equal(const std::string& str0, const std::string& str1, bool bCase=false)
 {
 	if(bCase) return str0==str1;
