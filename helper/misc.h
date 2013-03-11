@@ -72,4 +72,17 @@ inline double tic_trafo_inv(unsigned int iDim, double dMin, double dMax, bool bL
         return dpix;
 }
 
+template<typename T>
+T lerp(T a, T b, double val)
+{
+	return T(a) + T(double(b-a)*val);
+}
+
+template<typename T1, typename T2>
+void convert(T1* pDst, const T2* pSrc, unsigned int iSize)
+{
+	for(unsigned int i=0; i<iSize; ++i)
+		pDst[i] = T1(pSrc[i]);
+}
+
 #endif
