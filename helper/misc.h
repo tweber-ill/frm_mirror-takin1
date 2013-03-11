@@ -7,6 +7,8 @@
 #ifndef __MIEZE_MISC_HELPER__
 #define __MIEZE_MISC_HELPER__
 
+#include "../data/data.h"
+
 // deletes an object when going out of scope
 template<class T> class autodeleter
 {
@@ -83,6 +85,36 @@ void convert(T1* pDst, const T2* pSrc, unsigned int iSize)
 {
 	for(unsigned int i=0; i<iSize; ++i)
 		pDst[i] = T1(pSrc[i]);
+}
+
+inline uint lerprgb(uchar r1, uchar g1, uchar b1,
+							uchar r2, uchar g2, uchar b2,
+							double dval)
+{
+	uchar r = lerp(r1, r2, dval);
+	uchar g = lerp(g1, g2, dval);
+	uchar b = lerp(b1, b2, dval);
+
+	return (0xff<<24) | (r<<16) | (g<<8) | (b);
+}
+
+inline uint lerprgb(uint col1, uint col2, double dval)
+{
+	uchar r1 = uchar((col1&0x00ff0000) >> 16);
+	uchar r2 = uchar((col2&0x00ff0000) >> 16);
+
+	uchar g1 = uchar((col1&0x0000ff00) >> 8);
+	uchar g2 = uchar((col2&0x0000ff00) >> 8);
+
+	uchar b1 = uchar(col1&0x000000ff);
+	uchar b2 = uchar(col2&0x000000ff);
+
+
+	uchar r = lerp(r1, r2, dval);
+	uchar g = lerp(g1, g2, dval);
+	uchar b = lerp(b1, b2, dval);
+
+	return (0xff<<24) | (r<<16) | (g<<8) | (b);
 }
 
 #endif
