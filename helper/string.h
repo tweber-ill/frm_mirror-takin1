@@ -9,6 +9,8 @@
 
 #include <string>
 #include <boost/tokenizer.hpp>
+#include <iostream>
+#include <sstream>
 
 inline std::string get_fileext(const std::string& str)
 {
@@ -96,6 +98,25 @@ template<class T>
 
                 vecRet.push_back(t);
         }
+}
+
+template<typename T>
+std::string group_numbers(T tNum)
+{
+	struct Sep : std::numpunct<char>
+	{
+		Sep() : std::numpunct<char>(1) {}
+		char do_thousands_sep() const { return ' ';}
+		std::string do_grouping() const { return "\03"; }
+	};
+	Sep sep;
+
+	std::ostringstream ostr;
+	std::locale loc(ostr.getloc(), &sep);
+	ostr.imbue(loc);
+
+	ostr << tNum;
+	return ostr.str();
 }
 
 #endif
