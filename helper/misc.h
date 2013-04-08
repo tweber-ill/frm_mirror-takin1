@@ -7,6 +7,7 @@
 #ifndef __MIEZE_MISC_HELPER__
 #define __MIEZE_MISC_HELPER__
 
+#include <vector>
 #include "../data/data.h"
 
 // deletes an object when going out of scope
@@ -115,6 +116,30 @@ inline uint lerprgb(uint col1, uint col2, double dval)
 	uchar b = lerp(b1, b2, dval);
 
 	return (0xff<<24) | (r<<16) | (g<<8) | (b);
+}
+
+template<typename T> bool has_nan_or_inf(T d)
+{
+        // NaN?
+        if(d!=d)
+                return true;
+
+        // inf?
+        if(d==std::numeric_limits<T>::infinity())
+                return true;
+
+        return false;
+}
+
+template<typename T> T* vec_to_array(const std::vector<T>& vec)
+{
+	T* t_arr = new T[vec.size()];
+
+	unsigned int i=0;
+	for(const T& t : vec)
+		t_arr[i++] = t;
+
+	return t_arr;
 }
 
 #endif
