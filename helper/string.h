@@ -58,15 +58,16 @@ inline void trim(std::string& str)
 {
         std::size_t posFirst = str.find_first_not_of(" \t");
         if(posFirst==std::string::npos)
-                return;
+        	posFirst = str.length();
 
         str.erase(str.begin(), str.begin()+posFirst);
 
 
         std::size_t posLast = str.find_last_not_of(" \t");
         if(posLast==std::string::npos)
-                return;
-        ++posLast;
+                posLast = str.length();
+        else
+        	++posLast;
 
         str.erase(str.begin()+posLast, str.end());
 }
