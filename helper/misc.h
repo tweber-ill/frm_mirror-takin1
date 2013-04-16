@@ -88,6 +88,13 @@ void convert(T1* pDst, const T2* pSrc, unsigned int iSize)
 		pDst[i] = T1(pSrc[i]);
 }
 
+template<typename T>
+void apply_fkt(const T* pIn, T* pOut, T(*fkt)(T), unsigned int iSize)
+{
+	for(unsigned int i=0; i<iSize; ++i)
+		pOut[i] = (*fkt)(pIn[i]);
+}
+
 inline uint lerprgb(uchar r1, uchar g1, uchar b1,
 							uchar r2, uchar g2, uchar b2,
 							double dval)
