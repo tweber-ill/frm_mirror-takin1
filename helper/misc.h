@@ -88,11 +88,11 @@ void convert(T1* pDst, const T2* pSrc, unsigned int iSize)
 		pDst[i] = T1(pSrc[i]);
 }
 
-template<typename value_type>
-value_type sum_vec(const std::vector<value_type>& vec)
+template<class vec_type>
+typename vec_type::value_type sum_vec(const vec_type& vec)
 {
-	value_type val = 0;
-	for(const value_type& v : vec)
+	typename vec_type::value_type val = 0;
+	for(const typename vec_type::value_type& v : vec)
 		val += v;
 	return val;
 }
