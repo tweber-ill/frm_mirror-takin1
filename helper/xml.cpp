@@ -39,6 +39,8 @@ bool Xml::Load(const char* pcFile)
 
 std::string Xml::QueryString(const char* pcAdr, const char* pcDef, bool *pbOk)
 {
+	m_bufXml.seek(0);
+
 	std::ostringstream ostrQuery;
 	ostrQuery << "doc($xml)" << pcAdr << "/string()";
 
