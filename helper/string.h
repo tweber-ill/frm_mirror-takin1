@@ -101,6 +101,10 @@ template<class T>
         }
 }
 
+template<>
+void get_tokens<std::string>(const std::string& str, const std::string& strDelim,
+                                        std::vector<std::string>& vecRet);
+
 template<typename T>
 std::string group_numbers(T tNum)
 {
