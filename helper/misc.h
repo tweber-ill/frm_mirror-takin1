@@ -8,6 +8,7 @@
 #define __MIEZE_MISC_HELPER__
 
 #include <vector>
+#include <algorithm>
 #include "../data/data.h"
 
 // deletes an object when going out of scope
@@ -156,6 +157,41 @@ template<typename T> T* vec_to_array(const std::vector<T>& vec)
 		t_arr[i++] = t;
 
 	return t_arr;
+}
+
+
+
+template<class T>
+struct sort_obj
+{
+	T x, y, z;
+};
+
+template<class T>
+bool comp_fkt(sort_obj<T> t0, sort_obj<T> t1)
+{ return t0.x < t1.x; }
+
+// simultaneously sort three arrays
+template<class T> void sort_3(T *begin1, T* end1, T *begin2, T *begin3=0)
+{
+	const unsigned int N = end1-begin1;
+	sort_obj<T> *pObj = new sort_obj<T>[N];
+	for(unsigned int i=0; i<N; ++i)
+	{
+		pObj[i].x = begin1[i];
+		if(begin2) pObj[i].y = begin2[i];
+		if(begin3) pObj[i].z = begin3[i];
+	}
+
+	std::sort(pObj, pObj+N, comp_fkt<T>);
+	for(unsigned int i=0; i<N; ++i)
+	{
+		begin1[i] = pObj[i].x;
+		if(begin2) begin2[i] = pObj[i].y;
+		if(begin3) begin3[i] = pObj[i].z;
+	}
+
+	delete[] pObj;
 }
 
 #endif
