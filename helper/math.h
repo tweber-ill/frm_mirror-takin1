@@ -9,22 +9,61 @@
 #define __MIEZE_MATH__
 
 #include <cmath>
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-//namespace ublas = boost::numeric::ublas;
+#include <vector>
+#include <limits>
+
+#include "linalg.h"
+
 
 template<typename T=double>
-boost::numeric::ublas::matrix<T> rotation_matrix_2d(T angle)
+void diff(unsigned int N, const T* pXIn, const T* pYIn, T* pYOut)
 {
-	boost::numeric::ublas::matrix<T> mat(2,2);
+	for(unsigned int i=0; i<N-1; ++i)
+		pYOut[i] = (pYIn[i+1]-pYIn[i]) / (pXIn[i+1]-pXIn[i]);
 
-	T s = std::sin(angle);
-	T c = std::cos(angle);
+	// copy last value
+	pYOut[N-1] = pYOut[N-2];
+}
 
-	mat(0,0) = c; mat(0,1) = -s;
-	mat(1,0) = s; mat(1,1) = c;
+template<typename T=double>
+std::vector<unsigned int> find_zeroes(unsigned int N, const T* pIn)
+{
+	/*
+	double dMin = 0.;
+	double dMax = 0.;
+	std::pair<const double*, const double*> minmax = boost::minmax_element(pIn, pIn+N);
+	if(minmax.first != pIn+N) dMin = *minmax.first;
+	if(minmax.second != pIn+N) dMax = *minmax.second;
+	*/
 
-	return mat;
+	//const double dThres = std::numeric_limits<double>::epsilon();
+
+	std::vector<unsigned int> vecIndices;
+
+	for(unsigned int i; i<N-1; ++i)
+	{
+		ublas::vector<T> zero(2);
+		zero[0] = zero[1] = 0.;
+		ublas::vector<T> xdir(2);
+		xdir[0] = 1.; xdir[1] = 0.;
+		Line<T> xaxis(zero, xdir);
+
+		ublas::vector<T> pos0(2);
+		pos0[0] = 0.; pos0[1] = pIn[i];
+		ublas::vector<T> pos1(2);
+		pos1[0] = 1.; pos1[1] = pIn[i+1];
+		Line<T> line(pos0, pos1-pos0);
+
+		T param;
+		if(!line.intersect(xaxis, param))
+			continue;
+
+		ublas::vector<T> posInters = line(param);
+		if(posInters[0]>=0. && posInters[0]<=1.)
+			vecIndices.push_back(i);
+	}
+
+	return vecIndices;
 }
 
 #endif
