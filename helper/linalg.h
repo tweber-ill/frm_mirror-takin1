@@ -14,6 +14,62 @@
 #include <boost/numeric/ublas/lu.hpp>
 namespace ublas = boost::numeric::ublas;
 
+/*
+ * remove an element from a vector
+ */
+template<class vector_type>
+vector_type remove_elem(const vector_type& vec, unsigned int iIdx)
+{
+        vector_type vecret(vec.size()-1);
+
+        for(unsigned int i=0, j=0; i<vec.size() && j<vecret.size();)
+        {
+                vecret[j] = vec[i];
+
+                if(i!=iIdx) ++j;
+                ++i;
+        }
+
+        return vecret;
+}
+
+/*
+ * remove a column/row from a matrix
+ */
+template<class matrix_type>
+matrix_type remove_elems(const matrix_type& mat, unsigned int iIdx)
+{
+        matrix_type matret(mat.size1()-1, mat.size2()-1);
+
+        for(unsigned int i=0, i0=0; i<mat.size1() && i0<matret.size1();)
+        {
+                for(unsigned int j=0, j0=0; j<mat.size2() && j0<matret.size2();)
+                {
+                        matret(i0,j0) = mat(i,j);
+
+                        if(j!=iIdx) ++j0;
+                        ++j;
+                }
+
+                if(i!=iIdx) ++i0;
+                ++i;
+        }
+
+        return matret;
+}
+
+template<class vector_type, class matrix_type>
+vector_type get_column(const matrix_type& mat, unsigned int iCol)
+{
+        vector_type vecret(mat.size1());
+
+        for(unsigned int i=0; i<mat.size1(); ++i)
+        	vecret[i] = mat(i, iCol);
+
+        return vecret;
+}
+
+
 template<typename T=double>
 ublas::matrix<T> rotation_matrix_2d(T angle)
 {
