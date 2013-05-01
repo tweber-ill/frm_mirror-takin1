@@ -22,10 +22,12 @@
 #include <boost/units/systems/si/codata/electromagnetic_constants.hpp>
 #include <boost/units/systems/si/codata/physico-chemical_constants.hpp>
 #include <boost/units/base_units/metric/angstrom.hpp>
+#include <boost/units/base_units/angle/arcminute.hpp>
 #include <boost/units/cmath.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/io.hpp>
 
 namespace ublas = boost::numeric::ublas;
 namespace units = boost::units;

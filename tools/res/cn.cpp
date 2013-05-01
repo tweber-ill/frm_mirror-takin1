@@ -74,12 +74,17 @@ CNResults calc_cn(CNParams& cn)
 		return res;
 	}
 
+	std::cout << "twotheta: " << twotheta << std::endl;
+
 
 	// ------------------------------------------------------------------------------------------------
 	// transformation matrix
 
 	angle angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
 	angle angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
+
+	std::cout << "ki_Q: " << angle_ki_Q << std::endl;
+	std::cout << "kf_Q: " << angle_kf_Q << std::endl;
 
 	double dSi = cn.dsample_sense*units::sin(angle_ki_Q);
 	double dCi = units::cos(angle_ki_Q);
@@ -116,6 +121,9 @@ CNResults calc_cn(CNParams& cn)
 		res.bOk = false;
 		res.strErr = "Transformation matrix cannot be inverted.";
 	}
+
+	std::cout << "U=" << U << std::endl;
+	std::cout << "V=" << V << std::endl;
 
 	// ------------------------------------------------------------------------------------------------
 

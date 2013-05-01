@@ -46,7 +46,7 @@ bool get_twotheta(const units::quantity<units::si::wavenumber>& ki,
 							units::quantity<units::si::plane_angle>& twotheta)
 {
 	units::quantity<units::si::dimensionless> dCos = (ki*ki + kf*kf - Q*Q) / (2.*ki*kf);
-	if(dCos > 1)
+	if(units::abs(dCos) > 1)
 		return false;
 
 	twotheta = units::acos(dCos);
