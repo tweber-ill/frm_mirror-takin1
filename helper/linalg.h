@@ -33,11 +33,8 @@ vector_type remove_elem(const vector_type& vec, unsigned int iIdx)
         return vecret;
 }
 
-/*
- * remove a column/row from a matrix
- */
 template<class matrix_type>
-matrix_type remove_elems(const matrix_type& mat, unsigned int iIdx)
+matrix_type submatrix(const matrix_type& mat, unsigned int iRow, unsigned int iCol)
 {
         matrix_type matret(mat.size1()-1, mat.size2()-1);
 
@@ -47,16 +44,23 @@ matrix_type remove_elems(const matrix_type& mat, unsigned int iIdx)
                 {
                         matret(i0,j0) = mat(i,j);
 
-                        if(j!=iIdx) ++j0;
+                        if(j!=iCol) ++j0;
                         ++j;
                 }
 
-                if(i!=iIdx) ++i0;
+                if(i!=iRow) ++i0;
                 ++i;
         }
 
         return matret;
 }
+
+template<class matrix_type>
+matrix_type remove_elems(const matrix_type& mat, unsigned int iIdx)
+{
+	return submatrix(mat, iIdx, iIdx);
+}
+
 
 template<class vector_type, class matrix_type>
 vector_type get_column(const matrix_type& mat, unsigned int iCol)
@@ -103,6 +107,38 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 	ublas::lu_substitute(lu, perm, inv);
 
 	return true;
+}
+
+template<typename T=double>
+double determinant(const ublas::matrix<T>& mat)
+{
+	if(mat.size1() != mat.size2())
+		return T(0);
+
+	if(mat.size1()==1)
+	{
+		return mat(0,0);
+	}
+	else if(mat.size1()==2)
+	{
+		return mat(0,0)*mat(1,1) - mat(1,0)*mat(0,1);
+	}
+	else if(mat.size1()==3)
+	{
+		double a[] = {mat(0,0), mat(1,0), mat(2,0)};
+		double b[] = {mat(0,1), mat(1,1), mat(2,1)};
+		double c[] = {mat(0,2), mat(1,2), mat(2,2)};
+
+		return a[0]*b[1]*c[2] + a[1]*b[2]*c[0] + a[2]*b[0]*c[1]
+		           -c[0]*b[1]*a[2] - c[1]*b[2]*a[0] - c[2]*b[0]*a[1];
+	}
+
+	const unsigned int i = 0;
+	T val = T(0);
+	for(unsigned int j=0; j<mat.size2(); ++j)
+		val += pow(T(-1), i+j) * mat(i,j) * determinant(submatrix(mat, i, j));
+
+	return val;
 }
 
 
