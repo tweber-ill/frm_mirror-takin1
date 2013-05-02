@@ -4,7 +4,8 @@
  * @date 01-may-2013
  *
  * @desc This is a reimplementation in C++ of the file rc_cnmat.m of the
- *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes.
+ *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
+ *    			http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
  */
 
 #include "cn.h"
@@ -66,40 +67,34 @@ CNResults calc_cn(CNParams& cn)
 	else
 		cn.ki = units::sqrt(cn.kf*cn.kf + E2k(cn.E)*E2k(cn.E));
 
-	angle twotheta;
-	if(!::get_twotheta(cn.ki, cn.kf, cn.Q, twotheta))
+	if(!::get_twotheta(cn.ki, cn.kf, cn.Q, res.twotheta))
 	{
 		res.bOk = false;
 		res.strErr = "Scattering triangle not closed.";
 		return res;
 	}
 
-	std::cout << "twotheta: " << twotheta << std::endl;
-
-
 	// ------------------------------------------------------------------------------------------------
 	// transformation matrix
 
-	angle angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
-	angle angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
+	res.angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
+	res.angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
 
-	std::cout << "ki_Q: " << angle_ki_Q << std::endl;
-	std::cout << "kf_Q: " << angle_kf_Q << std::endl;
 
-	double dSi = cn.dsample_sense*units::sin(angle_ki_Q);
-	double dCi = units::cos(angle_ki_Q);
+	double dSi = cn.dsample_sense*units::sin(res.angle_ki_Q);
+	double dCi = units::cos(res.angle_ki_Q);
 
 	ublas::matrix<double> Ti(2,2);
 	Ti(0,0)=dCi; Ti(0,1)=-dSi;
 	Ti(1,0)=dSi; Ti(1,1)=dCi;
 
 
-	double dSf = cn.dsample_sense*units::sin(angle_kf_Q);
-	double dCf = units::cos(angle_kf_Q);
+	double dSf = cn.dsample_sense*units::sin(res.angle_kf_Q);
+	double dCf = units::cos(res.angle_kf_Q);
 
 	ublas::matrix<double> Tf(2,2);
-	Ti(0,0)=dCf; Ti(0,1)=-dSf;
-	Ti(1,0)=dSf; Ti(1,1)=dCf;
+	Tf(0,0)=dCf; Tf(0,1)=-dSf;
+	Tf(1,0)=dSf; Tf(1,1)=dCf;
 
 
 	ublas::matrix<double> U = ublas::zero_matrix<double>(6,6);
@@ -122,8 +117,8 @@ CNResults calc_cn(CNParams& cn)
 		res.strErr = "Transformation matrix cannot be inverted.";
 	}
 
-	std::cout << "U=" << U << std::endl;
-	std::cout << "V=" << V << std::endl;
+	//std::cout << "U=" << U << std::endl;
+	//std::cout << "V=" << V << std::endl;
 
 	// ------------------------------------------------------------------------------------------------
 
@@ -192,7 +187,6 @@ CNResults calc_cn(CNParams& cn)
 	// ------------------------------------------------------------------------------------------------
 
 
-
 	ublas::matrix<double> M1 = ublas::prod(M, V);
 	ublas::matrix<double> N = ublas::prod(ublas::trans(V), M1);
 
@@ -209,6 +203,62 @@ CNResults calc_cn(CNParams& cn)
 	NP *= SIGMA2FWHM*SIGMA2FWHM;
 
 	res.reso = NP;
+
+
+
+	// ------------------------------------------------------------------------------------------------
+	// resolution volume
+
+	const double dFactor = 15.75;
+
+	if(cn.bConstMon)
+	{
+		res.dR0_vi = 1.;
+	}
+	else
+	{
+		res.dR0_vi = cn.dmono_refl * cn.ki*cn.ki*cn.ki * angstrom*angstrom*angstrom;
+		res.dR0_vi *= units::cos(thetam)/units::sin(thetam);
+		res.dR0_vi *= cn.coll_v_pre_mono * cn.coll_v_pre_sample * cn.coll_h_pre_mono * cn.coll_h_pre_sample / units::si::radians/units::si::radians/units::si::radians/units::si::radians;
+		res.dR0_vi *= dFactor * cn.mono_mosaic / units::si::radians;
+
+		res.dR0_vi /= units::sqrt(
+						(2.*units::sin(thetam) * cn.mono_mosaic/units::si::radians)*
+						(2.*units::sin(thetam) * cn.mono_mosaic/units::si::radians)
+						+ cn.coll_v_pre_mono*cn.coll_v_pre_mono / units::si::radians/units::si::radians
+						+ cn.coll_v_pre_sample*cn.coll_v_pre_sample / units::si::radians/units::si::radians
+						);
+		res.dR0_vi /= units::sqrt(
+						cn.coll_h_pre_mono*cn.coll_h_pre_mono / units::si::radians/units::si::radians
+						+ cn.coll_h_pre_sample*cn.coll_h_pre_sample / units::si::radians/units::si::radians
+						+ 4.*cn.mono_mosaic*cn.mono_mosaic / units::si::radians/units::si::radians
+						);
+	}
+
+	res.dR0_vf = cn.dana_effic * cn.kf*cn.kf*cn.kf * angstrom*angstrom*angstrom;
+	res.dR0_vf *= units::cos(thetaa)/units::sin(thetaa);
+	res.dR0_vf *= cn.coll_v_post_sample * cn.coll_v_post_ana * cn.coll_h_post_sample * cn.coll_h_post_ana / units::si::radians/units::si::radians/units::si::radians/units::si::radians;
+	res.dR0_vf *= dFactor * cn.ana_mosaic / units::si::radians;
+
+	res.dR0_vf /= units::sqrt(
+					(2.*units::sin(thetaa) * cn.ana_mosaic/units::si::radians)*
+					(2.*units::sin(thetaa) * cn.ana_mosaic/units::si::radians)
+					+ cn.coll_v_post_sample*cn.coll_v_post_sample / units::si::radians/units::si::radians
+					+ cn.coll_v_post_ana*cn.coll_v_post_ana / units::si::radians/units::si::radians
+					);
+	res.dR0_vf /= units::sqrt(
+					cn.coll_h_post_sample*cn.coll_h_post_sample / units::si::radians/units::si::radians
+					+ cn.coll_h_post_ana*cn.coll_h_post_ana / units::si::radians/units::si::radians
+					+ 4.*cn.ana_mosaic*cn.ana_mosaic / units::si::radians/units::si::radians
+					);
+
+	const double dResDet = /*fabs*/(determinant(res.reso));
+	res.dR0 = res.dR0_vi*res.dR0_vf*::sqrt(dResDet) / (2.*M_PI * 2.*M_PI);
+	res.dR0 /= cn.sample_mosaic/units::si::radians *
+					units::sqrt(
+							1./(cn.sample_mosaic/units::si::radians * cn.sample_mosaic/units::si::radians)
+							+ cn.Q*cn.Q * angstrom*angstrom * N(1,1));
+
 	res.bOk = true;
 	return res;
 }

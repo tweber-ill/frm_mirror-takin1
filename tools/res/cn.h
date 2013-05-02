@@ -4,7 +4,8 @@
  * @date 01-may-2013
  *
  * @desc This is a reimplementation in C++ of the file rc_cnmat.m of the
- *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes.
+ *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
+ *    			http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
  */
 
 #ifndef __CN_H__
@@ -64,6 +65,11 @@ struct CNParams
 	bool bki_fix;		// ki or kf fixed?
 	units::quantity<units::si::wavenumber> ki, kf, Q;
 	units::quantity<units::si::energy> E;		// Ei - Ef
+
+	// resolution volume stuff
+	bool bConstMon;		// constant monitor or time?
+	double dmono_refl;
+	double dana_effic;
 };
 
 struct CNResults
@@ -71,7 +77,13 @@ struct CNResults
 	bool bOk;
 	std::string strErr;
 
+	units::quantity<units::si::plane_angle> twotheta;
+	units::quantity<units::si::plane_angle> angle_ki_Q;
+	units::quantity<units::si::plane_angle> angle_kf_Q;
+
 	ublas::matrix<double> reso;
+	double dR0;				// resolution volume in 1/A^3 * meV
+	double dR0_vi, dR0_vf;
 };
 
 
