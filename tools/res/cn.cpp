@@ -190,14 +190,19 @@ CNResults calc_cn(CNParams& cn)
 	ublas::matrix<double> M1 = ublas::prod(M, V);
 	ublas::matrix<double> N = ublas::prod(ublas::trans(V), M1);
 
+	//std::cout << N << std::endl;
+
 	N = ::gauss_int(N, 5);
 	N = ::gauss_int(N, 4);
 
+	//std::cout << N << std::endl;
+
 	ublas::vector<double> vec1 = ::get_column<ublas::vector<double> >(N, 1);
 
-	ublas::matrix<double> NP = N - ublas::outer_prod(vec1,vec1);
-	NP /= 1/((cn.sample_mosaic/units::si::radians * cn.Q*angstrom)*(cn.sample_mosaic/units::si::radians * cn.Q*angstrom))
-			+ N(1,1);
+	ublas::matrix<double> NP = N - ublas::outer_prod(vec1,vec1)
+													/(1./((cn.sample_mosaic/units::si::radians * cn.Q*angstrom)
+													*(cn.sample_mosaic/units::si::radians * cn.Q*angstrom))
+														+ N(1,1));
 	NP(2,2) = N(2,2);
 
 	NP *= SIGMA2FWHM*SIGMA2FWHM;
@@ -209,6 +214,7 @@ CNResults calc_cn(CNParams& cn)
 	// ------------------------------------------------------------------------------------------------
 	// resolution volume
 
+	// TODO: Look in Shirane for factor
 	const double dFactor = 15.75;
 
 	if(cn.bConstMon)
@@ -262,15 +268,3 @@ CNResults calc_cn(CNParams& cn)
 	res.bOk = true;
 	return res;
 }
-
-
-
-/*
-int main()
-{
-	CNParams cn;
-	CNResults res = calc_cn(cn);
-
-	return 0;
-}
-*/
