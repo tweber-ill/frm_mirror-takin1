@@ -26,21 +26,21 @@ namespace units = boost::units;
 namespace codata = boost::units::si::constants::codata;
 
 
-units::quantity<units::si::energy> k2E(const units::quantity<units::si::wavenumber>& k)
+inline units::quantity<units::si::energy> k2E(const units::quantity<units::si::wavenumber>& k)
 {
 	units::quantity<units::si::momentum> p = codata::hbar*k;
 	units::quantity<units::si::energy> E = p*p / (2.*codata::m_n);
 	return E;
 }
 
-units::quantity<units::si::wavenumber> E2k(const units::quantity<units::si::energy>& E)
+inline units::quantity<units::si::wavenumber> E2k(const units::quantity<units::si::energy>& E)
 {
 	units::quantity<units::si::momentum> p = units::sqrt(2.*codata::m_n*E);
 	units::quantity<units::si::wavenumber> k = p / codata::hbar;
 	return k;
 }
 
-bool get_twotheta(const units::quantity<units::si::wavenumber>& ki,
+inline bool get_twotheta(const units::quantity<units::si::wavenumber>& ki,
 							const units::quantity<units::si::wavenumber>& kf,
 							const units::quantity<units::si::wavenumber>& Q,
 							units::quantity<units::si::plane_angle>& twotheta)
@@ -53,7 +53,7 @@ bool get_twotheta(const units::quantity<units::si::wavenumber>& ki,
 	return true;
 }
 
-units::quantity<units::si::plane_angle>
+inline units::quantity<units::si::plane_angle>
 get_angle_ki_Q(const units::quantity<units::si::wavenumber>& ki,
 		const units::quantity<units::si::wavenumber>& kf,
 		const units::quantity<units::si::wavenumber>& Q)
@@ -61,7 +61,7 @@ get_angle_ki_Q(const units::quantity<units::si::wavenumber>& ki,
 	return units::acos((ki*ki - kf*kf + Q*Q)/(2.*ki*Q));
 }
 
-units::quantity<units::si::plane_angle>
+inline units::quantity<units::si::plane_angle>
 get_angle_kf_Q(const units::quantity<units::si::wavenumber>& ki,
 		const units::quantity<units::si::wavenumber>& kf,
 		const units::quantity<units::si::wavenumber>& Q)

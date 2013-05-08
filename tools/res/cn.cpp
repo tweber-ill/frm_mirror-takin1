@@ -74,6 +74,7 @@ CNResults calc_cn(CNParams& cn)
 		return res;
 	}
 
+
 	// ------------------------------------------------------------------------------------------------
 	// transformation matrix
 
@@ -115,10 +116,8 @@ CNResults calc_cn(CNParams& cn)
 	{
 		res.bOk = false;
 		res.strErr = "Transformation matrix cannot be inverted.";
+		return res;
 	}
-
-	//std::cout << "U=" << U << std::endl;
-	//std::cout << "V=" << V << std::endl;
 
 	// ------------------------------------------------------------------------------------------------
 
@@ -204,7 +203,6 @@ CNResults calc_cn(CNParams& cn)
 													*(cn.sample_mosaic/units::si::radians * cn.Q*angstrom))
 														+ N(1,1));
 	NP(2,2) = N(2,2);
-
 	NP *= SIGMA2FWHM*SIGMA2FWHM;
 
 	res.reso = NP;
