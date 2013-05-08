@@ -56,6 +56,14 @@ matrix_type submatrix(const matrix_type& mat, unsigned int iRow, unsigned int iC
 }
 
 template<class matrix_type>
+void submatrix_copy(matrix_type& mat, const matrix_type& sub, unsigned int iRowBegin, unsigned int iColBegin)
+{
+	for(unsigned int i=0; i<sub.size1(); ++i)
+		for(unsigned int j=0; j<sub.size2(); ++j)
+			mat(iRowBegin+i, iColBegin+j) = sub(i,j);
+}
+
+template<class matrix_type>
 matrix_type remove_elems(const matrix_type& mat, unsigned int iIdx)
 {
 	return submatrix(mat, iIdx, iIdx);
