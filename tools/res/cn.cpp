@@ -231,7 +231,7 @@ void calc_cn_vol(CNParams& cn, CNResults& res)
 		res.dR0_vi /= std::sqrt(
 						std::pow(cn.coll_h_pre_mono/units::si::radians, 2.)
 						+ std::pow(cn.coll_h_pre_sample/units::si::radians, 2.)
-						+ 4.*std::pow(cn.mono_mosaic/units::si::radians, 2.)
+						+ std::pow(2.*cn.mono_mosaic/units::si::radians, 2.)
 						);
 		res.dR0_vi = fabs(res.dR0_vi);
 	}
@@ -243,23 +243,25 @@ void calc_cn_vol(CNParams& cn, CNResults& res)
 	res.dR0_vf *= dFactor * cn.ana_mosaic / units::si::radians;
 
 	res.dR0_vf /= std::sqrt(
-					std::pow(2.*units::sin(res.thetaa) * cn.ana_mosaic/units::si::radians, 2.)*
+					std::pow(2.*units::sin(res.thetaa) * cn.ana_mosaic/units::si::radians, 2.)
 					+ std::pow(cn.coll_v_post_sample/units::si::radians, 2.)
 					+ std::pow(cn.coll_v_post_ana/units::si::radians, 2.)
 					);
+
 	res.dR0_vf /= std::sqrt(
 					std::pow(cn.coll_h_post_sample/units::si::radians, 2.)
 					+ std::pow(cn.coll_h_post_ana/units::si::radians, 2.)
-					+ 4.*std::pow(cn.ana_mosaic/units::si::radians, 2.)
+					+ std::pow(2.*cn.ana_mosaic/units::si::radians, 2.)
 					);
 	res.dR0_vf = fabs(res.dR0_vf);
 
 	const double dResDet = determinant(res.reso);
 	res.dR0 = res.dR0_vi*res.dR0_vf*std::sqrt(dResDet) / (2.*M_PI * 2.*M_PI);
 	res.dR0 /= cn.sample_mosaic/units::si::radians *
-					units::sqrt(
-							1./(cn.sample_mosaic/units::si::radians * cn.sample_mosaic/units::si::radians)
-							+ cn.Q*cn.Q * angstrom*angstrom * res.reso(1,1)/(SIGMA2FWHM*SIGMA2FWHM)
+					std::sqrt(
+							1./std::pow(cn.sample_mosaic/units::si::radians, 2.)
+							+ std::pow(cn.Q*angstrom, 2.)
+								* res.reso(1,1)/(SIGMA2FWHM*SIGMA2FWHM)
 							);
 	res.dR0 = fabs(res.dR0);
 }
