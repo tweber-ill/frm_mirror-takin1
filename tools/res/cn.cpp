@@ -179,6 +179,12 @@ CNResults calc_cn(CNParams& cn)
 	res.reso = NP;
 
 	calc_cn_vol(cn, res);
+	if(::isnan(res.dR0) || isnan(res.reso))
+	{
+		res.strErr = "Invalid result.";
+		res.bOk = false;
+		return res;
+	}
 
 	res.bOk = true;
 	return res;
@@ -217,7 +223,6 @@ void calc_cn_vol(CNParams& cn, CNResults& res)
 
 	const angle& thetaa = res.thetaa;
 	const angle& thetam = res.thetam;
-	const ublas::matrix<double>& N = res.reso;
 
 	if(cn.bConstMon)
 	{
@@ -262,11 +267,11 @@ void calc_cn_vol(CNParams& cn, CNResults& res)
 					);
 	res.dR0_vf = fabs(res.dR0_vf);
 
-	const double dResDet = /*fabs*/(determinant(res.reso));
+	const double dResDet = determinant(res.reso);
 	res.dR0 = res.dR0_vi*res.dR0_vf*::sqrt(dResDet) / (2.*M_PI * 2.*M_PI);
 	res.dR0 /= cn.sample_mosaic/units::si::radians *
 					units::sqrt(
 							1./(cn.sample_mosaic/units::si::radians * cn.sample_mosaic/units::si::radians)
-							+ cn.Q*cn.Q * angstrom*angstrom * N(1,1));
+							+ cn.Q*cn.Q * angstrom*angstrom * res.reso(1,1)/(SIGMA2FWHM*SIGMA2FWHM));
 	res.dR0 = fabs(res.dR0);
 }

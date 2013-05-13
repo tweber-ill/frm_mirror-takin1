@@ -262,6 +262,12 @@ CNResults calc_pop(PopParams& pop)
 	res.reso = M*SIGMA2FWHM*SIGMA2FWHM;
 
 	calc_cn_vol(pop, res);
+	if(::isnan(res.dR0) || isnan(res.reso))
+	{
+		res.strErr = "Invalid result.";
+		res.bOk = false;
+		return res;
+	}
 
 	res.bOk = 1;
 	return res;
