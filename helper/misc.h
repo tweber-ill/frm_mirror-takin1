@@ -8,6 +8,7 @@
 #define __MIEZE_MISC_HELPER__
 
 #include <vector>
+#include <list>
 #include <algorithm>
 #include "../data/data.h"
 
@@ -192,6 +193,16 @@ template<class Iter=double*, typename T=double> void sort_3(Iter begin1, Iter en
 	}
 
 	delete[] pObj;
+}
+
+
+template<typename T>
+std::list<T> vector_to_list(const std::vector<T>& vec)
+{
+	std::list<T> lst;
+	for(const T& t : vec)
+		lst.push_back(t);
+	return lst;
 }
 
 #endif

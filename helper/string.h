@@ -92,12 +92,12 @@ template<class T>
         boost::tokenizer<boost::char_separator<char> >::iterator iter;
         for(iter=tok.begin(); iter!=tok.end(); ++iter)
         {
-                std::istringstream istr(*iter);
+			std::istringstream istr(*iter);
 
-                T t;
-                istr >> t;              // WARNING: if T==string this terminates after first whitespace!
+			T t;
+			istr >> t;              // WARNING: if T==string this terminates after first whitespace!
 
-                vecRet.push_back(t);
+			vecRet.push_back(t);
         }
 }
 

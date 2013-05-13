@@ -9,6 +9,7 @@
 
 #include <string>
 #include <sstream>
+#include <map>
 
 #include <QtCore/QBuffer>
 
@@ -47,6 +48,9 @@ public:
 		else
 			return tDef;
 	}
+
+
+	static bool SaveMap(const char* pcFile, const std::map<std::string, std::string>& mapXml);
 };
 
 #endif
