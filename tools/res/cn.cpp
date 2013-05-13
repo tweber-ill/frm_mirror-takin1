@@ -203,14 +203,17 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 
 	res.thetaa = cn.dana_sense*units::asin(M_PI/(cn.ana_d*cn.kf));
 	res.thetam = cn.dmono_sense*units::asin(M_PI/(cn.mono_d*cn.ki));
-	res.thetas = cn.dsample_sense*0.5*units::acos((cn.ki*cn.ki + cn.kf*cn.kf - cn.Q*cn.Q)/(2.*cn.ki*cn.kf));
 
-	if(!::get_twotheta(cn.ki, cn.kf, cn.Q, res.twotheta))
+	units::quantity<units::si::dimensionless> dttCos = (cn.ki*cn.ki + cn.kf*cn.kf - cn.Q*cn.Q)/(2.*cn.ki*cn.kf);
+	if(units::abs(dttCos) > 1)
 	{
 		res.bOk = false;
 		res.strErr = "Scattering triangle not closed.";
 		return false;
 	}
+	res.twotheta = cn.dsample_sense*units::acos(dttCos);
+	res.thetas = res.twotheta/2.;
+	//get_twotheta(cn.ki, cn.kf, cn.Q, res.twotheta);
 
 	return true;
 }
