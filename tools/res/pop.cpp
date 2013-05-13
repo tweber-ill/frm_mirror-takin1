@@ -31,19 +31,12 @@ CNResults calc_pop(PopParams& pop)
 	const units::quantity<units::si::plane_angle> ana_mosaic_spread = pop.ana_mosaic;
 	const units::quantity<units::si::plane_angle> sample_mosaic_spread = pop.sample_mosaic;
 
-
 	CNResults res;
-
 	if(!calc_cn_angles(pop, res))
 		return res;
 
 	length lam = 2.*M_PI / pop.ki;
-
-	angle& thetaa = res.thetaa;
-	angle& thetam = res.thetam;
-	angle& thetas = res.thetas;
-
-	angle phi = units::atan2(-pop.kf * units::sin(2.*thetas), pop.ki-pop.kf*units::cos(2.*thetas));
+	angle phi = units::atan2(-pop.kf * units::sin(2.*res.thetas), pop.ki-pop.kf*units::cos(2.*res.thetas));
 
 	if(pop.bGuide)
 	{
@@ -70,30 +63,28 @@ CNResults calc_pop(PopParams& pop)
 
 	ublas::matrix<double> C = ublas::zero_matrix<double>(4,8);
 	C(2,5) = C(2,4) = C(0,1) = C(0,0) = 0.5;
-	C(1,2) = 1./(2.*units::sin(thetam));
-	C(1,3) = -1./(2.*units::sin(thetam));
-	C(3,6) = 1./(2.*units::sin(thetaa));
-	C(3,7) = -1./(2.*units::sin(thetaa));
+	C(1,2) = 0.5/units::sin(res.thetam);
+	C(1,3) = -0.5/units::sin(res.thetam);
+	C(3,6) = 0.5/units::sin(res.thetaa);
+	C(3,7) = -0.5/units::sin(res.thetaa);
 
 	ublas::matrix<double> A = ublas::zero_matrix<double>(6,8);
-	A(0,0) = 0.5 * pop.ki*angstrom * units::cos(thetam)/units::sin(thetam);
-	A(0,1) = -0.5 * pop.ki*angstrom * units::cos(thetam)/units::sin(thetam);
-	A(1,1) = pop.ki * angstrom;
-	A(2,3) = pop.ki * angstrom;
-	A(3,4) = 0.5 * pop.kf*angstrom * units::cos(thetaa)/units::sin(thetaa);
-	A(3,5) = -0.5 * pop.kf*angstrom * units::cos(thetaa)/units::sin(thetaa);
-	A(4,4) = pop.kf * angstrom;
-	A(5,6) = pop.kf * angstrom;
+	A(0,0) = 0.5 * pop.ki*angstrom * units::cos(res.thetam)/units::sin(res.thetam);
+	A(0,1) = -0.5 * pop.ki*angstrom * units::cos(res.thetam)/units::sin(res.thetam);
+	A(2,3) = A(1,1) = pop.ki * angstrom;
+	A(3,4) = 0.5 * pop.kf*angstrom * units::cos(res.thetaa)/units::sin(res.thetaa);
+	A(3,5) = -0.5 * pop.kf*angstrom * units::cos(res.thetaa)/units::sin(res.thetaa);
+	A(5,6) = A(4,4) = pop.kf * angstrom;
 
 	ublas::matrix<double> B = ublas::zero_matrix<double>(4,6);
 	B(0,0) = units::cos(phi);
 	B(0,1) = units::sin(phi);
-	B(0,3) = -units::cos(phi - 2.*thetas);
-	B(0,4) = -units::sin(phi - 2.*thetas);
+	B(0,3) = -units::cos(phi - 2.*res.thetas);
+	B(0,4) = -units::sin(phi - 2.*res.thetas);
 	B(1,0) = -units::sin(phi);
 	B(1,1) = units::cos(phi);
-	B(1,3) = units::sin(phi - 2.*thetas);
-	B(1,4) = -units::cos(phi - 2.*thetas);
+	B(1,3) = units::sin(phi - 2.*res.thetas);
+	B(1,4) = -units::cos(phi - 2.*res.thetas);
 	B(2,2) = 1.;
 	B(2,5) = -1.;
 	B(3,0) = 2.*pop.ki*angstrom * KSQ2E;
@@ -150,63 +141,63 @@ CNResults calc_pop(PopParams& pop)
 
 
 	double dCurvMonoH=0., dCurvMonoV=0., dCurvAnaH=0., dCurvAnaV=0.;
-	if(pop.bMonoIsCurvedH) dCurvMonoH = 1./(pop.mono_curvh/cm);
-	if(pop.bMonoIsCurvedV) dCurvMonoV = 1./(pop.mono_curvv/cm);
-	if(pop.bAnaIsCurvedH) dCurvAnaH = 1./(pop.ana_curvh/cm);
-	if(pop.bAnaIsCurvedV) dCurvAnaV = 1./(pop.ana_curvv/cm);
+	if(pop.bMonoIsCurvedH) dCurvMonoH = 1./(pop.mono_curvh/cm) * pop.dmono_sense;
+	if(pop.bMonoIsCurvedV) dCurvMonoV = 1./(pop.mono_curvv/cm) * pop.dmono_sense;
+	if(pop.bAnaIsCurvedH) dCurvAnaH = 1./(pop.ana_curvh/cm) * pop.dana_sense;
+	if(pop.bAnaIsCurvedV) dCurvAnaV = 1./(pop.ana_curvv/cm) * pop.dana_sense;
 
 	ublas::matrix<double> T = ublas::zero_matrix<double>(4,13);
 	T(0,0) = -0.5 / (pop.dist_src_mono / cm);
-	T(0,2) = 0.5 * units::cos(thetam) *
+	T(0,2) = 0.5 * units::cos(res.thetam) *
 				(1./(pop.dist_mono_sample/cm) -
 				 1./(pop.dist_src_mono/cm));
-	T(0,3) = 0.5 * units::sin(thetam) *
+	T(0,3) = 0.5 * units::sin(res.thetam) *
 				(1./(pop.dist_src_mono/cm) +
 				 1./(pop.dist_mono_sample/cm) -
-				 2.*dCurvMonoH/(units::sin(thetam)));
-	T(0,5) = 0.5 * units::sin(thetas) / (pop.dist_mono_sample/cm);
-	T(0,6) = 0.5 * units::cos(thetas)/(pop.dist_mono_sample/cm);
-	T(1,1) = -0.5/(pop.dist_src_mono/cm * units::sin(thetam));
+				 2.*dCurvMonoH/(units::sin(res.thetam)));
+	T(0,5) = 0.5 * units::sin(res.thetas) / (pop.dist_mono_sample/cm);
+	T(0,6) = 0.5 * units::cos(res.thetas)/(pop.dist_mono_sample/cm);
+	T(1,1) = -0.5/(pop.dist_src_mono/cm * units::sin(res.thetam));
 	T(1,4) = 0.5 * (1./(pop.dist_src_mono/cm) +
 						1./(pop.dist_mono_sample/cm) -
-						2.*units::sin(thetam)*dCurvMonoV)
-					/ (units::sin(thetam));
-	T(1,7) = -0.5/(pop.dist_mono_sample/cm * units::sin(thetam));
-	T(2,5) = 0.5*units::sin(thetas) / (pop.dist_sample_ana/cm);
-	T(2,6) = -0.5*units::cos(thetas) / (pop.dist_sample_ana/cm);
-	T(2,8) = 0.5*units::cos(thetaa) * (1./(pop.dist_ana_det/cm) -
+						2.*units::sin(res.thetam)*dCurvMonoV)
+					/ (units::sin(res.thetam));
+	T(1,7) = -0.5/(pop.dist_mono_sample/cm * units::sin(res.thetam));
+	T(2,5) = 0.5*units::sin(res.thetas) / (pop.dist_sample_ana/cm);
+	T(2,6) = -0.5*units::cos(res.thetas) / (pop.dist_sample_ana/cm);
+	T(2,8) = 0.5*units::cos(res.thetaa) * (1./(pop.dist_ana_det/cm) -
 													1/(pop.dist_sample_ana/cm));
-	T(2,9) = 0.5*units::sin(thetaa) * (
+	T(2,9) = 0.5*units::sin(res.thetaa) * (
 					1./(pop.dist_sample_ana/cm) +
 					1./(pop.dist_ana_det/cm) -
-					2.*dCurvAnaH / (units::sin(thetaa)));
+					2.*dCurvAnaH / (units::sin(res.thetaa)));
 	T(2,11) = 0.5/(pop.dist_ana_det/cm);
-	T(3,7) = -0.5/(pop.dist_sample_ana/cm*units::sin(thetaa));
+	T(3,7) = -0.5/(pop.dist_sample_ana/cm*units::sin(res.thetaa));
 	T(3,10) = 0.5*(1./(pop.dist_sample_ana/cm) +
 					1./(pop.dist_ana_det/cm) -
-					2.*units::sin(thetaa)*dCurvAnaV)
-					/ (units::sin(thetaa));
-	T(3,12) = -0.5/(pop.dist_ana_det/cm*units::sin(thetaa));
+					2.*units::sin(res.thetaa)*dCurvAnaV)
+					/ (units::sin(res.thetaa));
+	T(3,12) = -0.5/(pop.dist_ana_det/cm*units::sin(res.thetaa));
 
 
 	ublas::matrix<double> D = ublas::zero_matrix<double>(8,13);
 	D(0,0) = -1. / (pop.dist_src_mono/cm);
-	D(0,2) = -cos(thetam) / (pop.dist_src_mono/cm);
-	D(0,3) = sin(thetam) / (pop.dist_src_mono/cm);
-	D(1,2) = cos(thetam) / (pop.dist_mono_sample/cm);
-	D(1,3) = sin(thetam) / (pop.dist_mono_sample/cm);
-	D(1,5) = sin(thetas) / (pop.dist_mono_sample/cm);
-	D(1,6) = cos(thetas) / (pop.dist_mono_sample/cm);
+	D(0,2) = -cos(res.thetam) / (pop.dist_src_mono/cm);
+	D(0,3) = sin(res.thetam) / (pop.dist_src_mono/cm);
+	D(1,2) = cos(res.thetam) / (pop.dist_mono_sample/cm);
+	D(1,3) = sin(res.thetam) / (pop.dist_mono_sample/cm);
+	D(1,5) = sin(res.thetas) / (pop.dist_mono_sample/cm);
+	D(1,6) = cos(res.thetas) / (pop.dist_mono_sample/cm);
 	D(2,1) = -1. / (pop.dist_src_mono/cm);
 	D(2,4) = 1. / (pop.dist_src_mono/cm);
 	D(3,4) = -1. / (pop.dist_mono_sample/cm);
 	D(3,7) = 1. / (pop.dist_mono_sample/cm);
-	D(4,5) = sin(thetas) / (pop.dist_sample_ana/cm);
-	D(4,6) = -cos(thetas) / (pop.dist_sample_ana/cm);
-	D(4,8) = -cos(thetaa) / (pop.dist_sample_ana/cm);
-	D(4,9) = sin(thetaa) / (pop.dist_sample_ana/cm);
-	D(5,8) = cos(thetaa) / (pop.dist_ana_det/cm);
-	D(5,9) = sin(thetaa) / (pop.dist_ana_det/cm);
+	D(4,5) = sin(res.thetas) / (pop.dist_sample_ana/cm);
+	D(4,6) = -cos(res.thetas) / (pop.dist_sample_ana/cm);
+	D(4,8) = -cos(res.thetaa) / (pop.dist_sample_ana/cm);
+	D(4,9) = sin(res.thetaa) / (pop.dist_sample_ana/cm);
+	D(5,8) = cos(res.thetaa) / (pop.dist_ana_det/cm);
+	D(5,9) = sin(res.thetaa) / (pop.dist_ana_det/cm);
 	D(5,11) = 1. / (pop.dist_ana_det/cm);
 	D(6,7) = -1. / (pop.dist_sample_ana/cm);
 	D(6,10) = 1. / (pop.dist_sample_ana/cm);
@@ -258,7 +249,6 @@ CNResults calc_pop(PopParams& pop)
 		res.strErr = "Covariance matrix cannot be inverted.";
 		return res;
 	}
-
 	res.reso = M*SIGMA2FWHM*SIGMA2FWHM;
 
 	calc_cn_vol(pop, res);

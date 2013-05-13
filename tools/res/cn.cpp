@@ -98,23 +98,18 @@ CNResults calc_cn(CNParams& cn)
 	// ------------------------------------------------------------------------------------------------
 	// resolution matrix
 
-	angle& thetaa = res.thetaa;
-	angle& thetam = res.thetam;
-	angle& thetas = res.thetas;
-
-
 	ublas::vector<double> pm(2);
-	pm[0] = units::tan(thetam);
+	pm[0] = units::tan(res.thetam);
 	pm[1] = 1.;
 	pm /= cn.ki*angstrom * cn.mono_mosaic/units::si::radians;
 
 	ublas::vector<double> pa(2);
-	pa[0] = -units::tan(thetaa);
+	pa[0] = -units::tan(res.thetaa);
 	pa[1] = 1.;
 	pa /= cn.kf*angstrom * cn.ana_mosaic/units::si::radians;
 
 	ublas::vector<double> palf0(2);
-	palf0[0] = 2.*units::tan(thetam);
+	palf0[0] = 2.*units::tan(res.thetam);
 	palf0[1] = 1.;
 	palf0 /= (cn.ki*angstrom * cn.coll_h_pre_mono/units::si::radians);
 
@@ -124,7 +119,7 @@ CNResults calc_cn(CNParams& cn)
 	palf1 /= (cn.ki*angstrom * cn.coll_h_pre_sample/units::si::radians);
 
 	ublas::vector<double> palf2(2);
-	palf2[0] = -2.*units::tan(thetaa);
+	palf2[0] = -2.*units::tan(res.thetaa);
 	palf2[1] = 1.;
 	palf2 /= (cn.kf*angstrom * cn.coll_h_post_ana/units::si::radians);
 
@@ -133,12 +128,10 @@ CNResults calc_cn(CNParams& cn)
 	palf3[1] = 1.;
 	palf3 /= (cn.kf*angstrom * cn.coll_h_post_sample/units::si::radians);
 
-
 	ublas::matrix<double> m01(2,2);
 	m01 = ublas::outer_prod(pm,pm) + ublas::outer_prod(palf0,palf0) + ublas::outer_prod(palf1,palf1);
 	ublas::matrix<double> m34(2,2);
 	m34 = ublas::outer_prod(pa,pa) + ublas::outer_prod(palf2,palf2) + ublas::outer_prod(palf3,palf3);
-
 
 	ublas::matrix<double> M = ublas::zero_matrix<double>(6,6);
 	submatrix_copy(M, m01, 0, 0);
@@ -147,28 +140,22 @@ CNResults calc_cn(CNParams& cn)
 	M(2,2) = 1./(cn.ki*cn.ki * angstrom*angstrom) *
 					(
 							1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/units::si::radians/units::si::radians) +
-							1./((2.*units::sin(thetam)*cn.mono_mosaic/units::si::radians)*(2.*units::sin(thetam)*cn.mono_mosaic/units::si::radians) + cn.coll_v_pre_mono*cn.coll_v_pre_mono/units::si::radians/units::si::radians)
+							1./((2.*units::sin(res.thetam)*cn.mono_mosaic/units::si::radians)*(2.*units::sin(res.thetam)*cn.mono_mosaic/units::si::radians) + cn.coll_v_pre_mono*cn.coll_v_pre_mono/units::si::radians/units::si::radians)
 					);
 	M(5,5) = 1./(cn.kf*cn.kf * angstrom*angstrom) *
 					(
 							1./(cn.coll_v_post_sample*cn.coll_v_post_sample/units::si::radians/units::si::radians) +
-							1./((2.*units::sin(thetaa)*cn.ana_mosaic/units::si::radians)*(2.*units::sin(thetaa)*cn.ana_mosaic/units::si::radians) + cn.coll_v_post_ana*cn.coll_v_post_ana/units::si::radians/units::si::radians)
+							1./((2.*units::sin(res.thetaa)*cn.ana_mosaic/units::si::radians)*(2.*units::sin(res.thetaa)*cn.ana_mosaic/units::si::radians) + cn.coll_v_post_ana*cn.coll_v_post_ana/units::si::radians/units::si::radians)
 					);
 	// ------------------------------------------------------------------------------------------------
-
 
 	ublas::matrix<double> M1 = ublas::prod(M, V);
 	ublas::matrix<double> N = ublas::prod(ublas::trans(V), M1);
 
-	//std::cout << N << std::endl;
-
 	N = ::gauss_int(N, 5);
 	N = ::gauss_int(N, 4);
 
-	//std::cout << N << std::endl;
-
 	ublas::vector<double> vec1 = ::get_column<ublas::vector<double> >(N, 1);
-
 	ublas::matrix<double> NP = N - ublas::outer_prod(vec1,vec1)
 													/(1./((cn.sample_mosaic/units::si::radians * cn.Q*angstrom)
 													*(cn.sample_mosaic/units::si::radians * cn.Q*angstrom))
@@ -224,57 +211,55 @@ void calc_cn_vol(CNParams& cn, CNResults& res)
 	// TODO: Look in Shirane for factor
 	const double dFactor = 15.75;
 
-	const angle& thetaa = res.thetaa;
-	const angle& thetam = res.thetam;
-
 	if(cn.bConstMon)
 	{
 		res.dR0_vi = 1.;
 	}
 	else
 	{
-		res.dR0_vi = cn.dmono_refl * cn.ki*cn.ki*cn.ki * angstrom*angstrom*angstrom;
-		res.dR0_vi *= units::cos(thetam)/units::sin(thetam);
-		res.dR0_vi *= cn.coll_v_pre_mono * cn.coll_v_pre_sample * cn.coll_h_pre_mono * cn.coll_h_pre_sample / units::si::radians/units::si::radians/units::si::radians/units::si::radians;
+		res.dR0_vi = cn.dmono_refl * std::pow(cn.ki*angstrom, 3.);
+		res.dR0_vi *= units::cos(res.thetam)/units::sin(res.thetam);
+		res.dR0_vi *= cn.coll_v_pre_mono * cn.coll_v_pre_sample * cn.coll_h_pre_mono * cn.coll_h_pre_sample
+								/ units::si::radians/units::si::radians/units::si::radians/units::si::radians;
 		res.dR0_vi *= dFactor * cn.mono_mosaic / units::si::radians;
 
-		res.dR0_vi /= units::sqrt(
-						(2.*units::sin(thetam) * cn.mono_mosaic/units::si::radians)*
-						(2.*units::sin(thetam) * cn.mono_mosaic/units::si::radians)
-						+ cn.coll_v_pre_mono*cn.coll_v_pre_mono / units::si::radians/units::si::radians
-						+ cn.coll_v_pre_sample*cn.coll_v_pre_sample / units::si::radians/units::si::radians
+		res.dR0_vi /= std::sqrt(
+						std::pow(2.*units::sin(res.thetam) * cn.mono_mosaic/units::si::radians, 2.)
+						+ std::pow(cn.coll_v_pre_mono/units::si::radians, 2.)
+						+ std::pow(cn.coll_v_pre_sample/units::si::radians, 2.)
 						);
-		res.dR0_vi /= units::sqrt(
-						cn.coll_h_pre_mono*cn.coll_h_pre_mono / units::si::radians/units::si::radians
-						+ cn.coll_h_pre_sample*cn.coll_h_pre_sample / units::si::radians/units::si::radians
-						+ 4.*cn.mono_mosaic*cn.mono_mosaic / units::si::radians/units::si::radians
+		res.dR0_vi /= std::sqrt(
+						std::pow(cn.coll_h_pre_mono/units::si::radians, 2.)
+						+ std::pow(cn.coll_h_pre_sample/units::si::radians, 2.)
+						+ 4.*std::pow(cn.mono_mosaic/units::si::radians, 2.)
 						);
 		res.dR0_vi = fabs(res.dR0_vi);
 	}
 
-	res.dR0_vf = cn.dana_effic * cn.kf*cn.kf*cn.kf * angstrom*angstrom*angstrom;
-	res.dR0_vf *= units::cos(thetaa)/units::sin(thetaa);
-	res.dR0_vf *= cn.coll_v_post_sample * cn.coll_v_post_ana * cn.coll_h_post_sample * cn.coll_h_post_ana / units::si::radians/units::si::radians/units::si::radians/units::si::radians;
+	res.dR0_vf = cn.dana_effic * std::pow(cn.kf*angstrom, 3.);
+	res.dR0_vf *= units::cos(res.thetaa)/units::sin(res.thetaa);
+	res.dR0_vf *= cn.coll_v_post_sample * cn.coll_v_post_ana * cn.coll_h_post_sample * cn.coll_h_post_ana
+							/ units::si::radians/units::si::radians/units::si::radians/units::si::radians;
 	res.dR0_vf *= dFactor * cn.ana_mosaic / units::si::radians;
 
-	res.dR0_vf /= units::sqrt(
-					(2.*units::sin(thetaa) * cn.ana_mosaic/units::si::radians)*
-					(2.*units::sin(thetaa) * cn.ana_mosaic/units::si::radians)
-					+ cn.coll_v_post_sample*cn.coll_v_post_sample / units::si::radians/units::si::radians
-					+ cn.coll_v_post_ana*cn.coll_v_post_ana / units::si::radians/units::si::radians
+	res.dR0_vf /= std::sqrt(
+					std::pow(2.*units::sin(res.thetaa) * cn.ana_mosaic/units::si::radians, 2.)*
+					+ std::pow(cn.coll_v_post_sample/units::si::radians, 2.)
+					+ std::pow(cn.coll_v_post_ana/units::si::radians, 2.)
 					);
-	res.dR0_vf /= units::sqrt(
-					cn.coll_h_post_sample*cn.coll_h_post_sample / units::si::radians/units::si::radians
-					+ cn.coll_h_post_ana*cn.coll_h_post_ana / units::si::radians/units::si::radians
-					+ 4.*cn.ana_mosaic*cn.ana_mosaic / units::si::radians/units::si::radians
+	res.dR0_vf /= std::sqrt(
+					std::pow(cn.coll_h_post_sample/units::si::radians, 2.)
+					+ std::pow(cn.coll_h_post_ana/units::si::radians, 2.)
+					+ 4.*std::pow(cn.ana_mosaic/units::si::radians, 2.)
 					);
 	res.dR0_vf = fabs(res.dR0_vf);
 
 	const double dResDet = determinant(res.reso);
-	res.dR0 = res.dR0_vi*res.dR0_vf*::sqrt(dResDet) / (2.*M_PI * 2.*M_PI);
+	res.dR0 = res.dR0_vi*res.dR0_vf*std::sqrt(dResDet) / (2.*M_PI * 2.*M_PI);
 	res.dR0 /= cn.sample_mosaic/units::si::radians *
 					units::sqrt(
 							1./(cn.sample_mosaic/units::si::radians * cn.sample_mosaic/units::si::radians)
-							+ cn.Q*cn.Q * angstrom*angstrom * res.reso(1,1)/(SIGMA2FWHM*SIGMA2FWHM));
+							+ cn.Q*cn.Q * angstrom*angstrom * res.reso(1,1)/(SIGMA2FWHM*SIGMA2FWHM)
+							);
 	res.dR0 = fabs(res.dR0);
 }
