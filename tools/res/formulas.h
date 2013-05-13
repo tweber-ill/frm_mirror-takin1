@@ -58,6 +58,9 @@ get_angle_ki_Q(const units::quantity<units::si::wavenumber>& ki,
 		const units::quantity<units::si::wavenumber>& kf,
 		const units::quantity<units::si::wavenumber>& Q)
 {
+	if(Q*(1e-10 * units::si::meter) == 0.)
+		return M_PI/2. * units::si::radians;
+
 	return units::acos((ki*ki - kf*kf + Q*Q)/(2.*ki*Q));
 }
 
@@ -66,6 +69,9 @@ get_angle_kf_Q(const units::quantity<units::si::wavenumber>& ki,
 		const units::quantity<units::si::wavenumber>& kf,
 		const units::quantity<units::si::wavenumber>& Q)
 {
+	if(Q*(1e-10 * units::si::meter) == 0.)
+		return M_PI/2. * units::si::radians;
+
 	return M_PI*units::si::radians
 			- units::acos((kf*kf - ki*ki + Q*Q)/(2.*kf*Q));
 }

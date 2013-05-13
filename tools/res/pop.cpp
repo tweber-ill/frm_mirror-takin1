@@ -17,25 +17,16 @@
 #include <boost/units/io.hpp>
 #include "formulas.h"
 
-#define one_meV (1e-3 * codata::e * units::si::volts)
-#define ang (1e-10 * units::si::meter)
-static const double KSQ2E = (codata::hbar*codata::hbar / (2.*codata::m_n)) / one_meV / (ang*ang);
-static const double E2KSQ = 1./KSQ2E;
+typedef units::quantity<units::si::plane_angle> angle;
+typedef units::quantity<units::si::wavenumber> wavenumber;
+typedef units::quantity<units::si::energy> energy;
+typedef units::quantity<units::si::length> length;
 
-static const double SIGMA2FWHM = 2.*sqrt(2.*log(2.));
+static const units::quantity<units::si::length> cm = 0.01 * units::si::meter;
 
 
 CNResults calc_pop(PopParams& pop)
 {
-	typedef units::quantity<units::si::plane_angle> angle;
-	typedef units::quantity<units::si::wavenumber> wavenumber;
-	typedef units::quantity<units::si::energy> energy;
-	typedef units::quantity<units::si::length> length;
-
-	const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
-	const units::quantity<units::si::length> cm = 0.01 * units::si::meter;
-
-
 	const units::quantity<units::si::plane_angle> mono_mosaic_spread = pop.mono_mosaic;
 	const units::quantity<units::si::plane_angle> ana_mosaic_spread = pop.ana_mosaic;
 	const units::quantity<units::si::plane_angle> sample_mosaic_spread = pop.sample_mosaic;
@@ -43,23 +34,15 @@ CNResults calc_pop(PopParams& pop)
 
 	CNResults res;
 
-	if(pop.bki_fix)
-		pop.kf = units::sqrt(pop.ki*pop.ki - E2k(pop.E)*E2k(pop.E));
-	else
-		pop.ki = units::sqrt(pop.kf*pop.kf + E2k(pop.E)*E2k(pop.E));
-
-	if(!::get_twotheta(pop.ki, pop.kf, pop.Q, res.twotheta))
-	{
-		res.bOk = false;
-		res.strErr = "Scattering triangle not closed.";
+	if(!calc_cn_angles(pop, res))
 		return res;
-	}
 
 	length lam = 2.*M_PI / pop.ki;
 
-	angle thetaa = pop.dana_sense*units::asin(M_PI/(pop.ana_d*pop.kf));
-	angle thetam = pop.dmono_sense*units::asin(M_PI/(pop.mono_d*pop.ki));
-	angle thetas = pop.dsample_sense*0.5*units::acos((pop.ki*pop.ki + pop.kf*pop.kf - pop.Q*pop.Q)/(2.*pop.ki*pop.kf));
+	angle& thetaa = res.thetaa;
+	angle& thetam = res.thetam;
+	angle& thetas = res.thetas;
+
 	angle phi = units::atan2(-pop.kf * units::sin(2.*thetas), pop.ki-pop.kf*units::cos(2.*thetas));
 
 	if(pop.bGuide)
@@ -277,6 +260,8 @@ CNResults calc_pop(PopParams& pop)
 	}
 
 	res.reso = M*SIGMA2FWHM*SIGMA2FWHM;
+
+	calc_cn_vol(pop, res);
 
 	res.bOk = 1;
 	return res;

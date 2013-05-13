@@ -35,6 +35,16 @@ namespace units = boost::units;
 namespace codata = boost::units::si::constants::codata;
 
 
+#define one_meV (1e-3 * codata::e * units::si::volts)
+
+static const double SIGMA2FWHM = 2.*sqrt(2.*log(2.));
+static const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
+
+static const double KSQ2E = (codata::hbar*codata::hbar / (2.*codata::m_n)) / one_meV / (angstrom*angstrom);
+static const double E2KSQ = 1./KSQ2E;
+
+
+
 struct CNParams
 {
 	// monochromator
@@ -77,6 +87,8 @@ struct CNResults
 	bool bOk;
 	std::string strErr;
 
+	units::quantity<units::si::plane_angle> thetaa, thetam, thetas;
+
 	units::quantity<units::si::plane_angle> twotheta;
 	units::quantity<units::si::plane_angle> angle_ki_Q;
 	units::quantity<units::si::plane_angle> angle_kf_Q;
@@ -88,5 +100,7 @@ struct CNResults
 
 
 extern CNResults calc_cn(CNParams& cn);
+extern bool calc_cn_angles(CNParams& cn, CNResults& res);
+extern void calc_cn_vol(CNParams& cn, CNResults& res);
 
 #endif
