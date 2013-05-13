@@ -13,6 +13,7 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 #include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/exception.hpp>
 namespace ublas = boost::numeric::ublas;
 
 /*
@@ -98,26 +99,6 @@ ublas::matrix<T> rotation_matrix_2d(T angle)
 }
 
 
-// code for inverse based on /boost/libs/numeric/ublas/test/test_lu.cpp
-template<typename T=double>
-bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
-{
-	//if(mat.size1() != mat.size2())
-	//	return false;
-	const unsigned int N = mat.size2();
-
-	ublas::matrix<T> lu = mat;
-	ublas::permutation_matrix<> perm(N);
-
-	if(ublas::lu_factorize(lu, perm) != 0)
-		return false;
-
-	inv = ublas::identity_matrix<T>(N);
-	ublas::lu_substitute(lu, perm, inv);
-
-	return true;
-}
-
 template<typename T=double>
 double determinant(const ublas::matrix<T>& mat)
 {
@@ -148,6 +129,60 @@ double determinant(const ublas::matrix<T>& mat)
 		val += pow(T(-1), i+j) * mat(i,j) * determinant(submatrix(mat, i, j));
 
 	return val;
+}
+
+
+template<typename T=double>
+bool isnan(const ublas::matrix<T>& mat)
+{
+	for(unsigned int i=0; i<mat.size1(); ++i)
+		for(unsigned int j=0; j<mat.size2(); ++j)
+			if(std::isnan(mat(i,j)))
+				return true;
+	return false;
+}
+
+template<typename T=double>
+bool isinf(const ublas::matrix<T>& mat)
+{
+	for(unsigned int i=0; i<mat.size1(); ++i)
+		for(unsigned int j=0; j<mat.size2(); ++j)
+			if(std::isinf(mat(i,j)))
+				return true;
+	return false;
+}
+
+// code for inverse based on /boost/libs/numeric/ublas/test/test_lu.cpp
+template<typename T=double>
+bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
+{
+	if(mat.size1() != mat.size2())
+		return false;
+	//if(isnan(mat) || isinf(mat))
+	//	return false;
+
+	try
+	{
+		const unsigned int N = mat.size2();
+
+		ublas::matrix<T> lu = mat;
+		ublas::permutation_matrix<> perm(N);
+
+		if(ublas::lu_factorize(lu, perm) != 0)
+			return false;
+
+		inv = ublas::identity_matrix<T>(N);
+		ublas::lu_substitute(lu, perm, inv);
+	}
+	catch(ublas::internal_logic& ex)
+	{
+		std::cerr << "Error: Matrix inversion failed with exception: " << ex.what() << "." << "\n";
+		std::cerr << "Matrix to be inverted was: " << mat << "." << std::endl;
+		//std::cerr << "with determinant " << determinant(mat) << "." << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 
