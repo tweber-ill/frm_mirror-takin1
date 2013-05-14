@@ -38,6 +38,8 @@ namespace codata = boost::units::si::constants::codata;
 #define one_meV (1e-3 * codata::e * units::si::volts)
 
 static const double SIGMA2FWHM = 2.*sqrt(2.*log(2.));
+static const double SIGMA2HWHM = SIGMA2FWHM/2.;
+
 static const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
 
 static const double KSQ2E = (codata::hbar*codata::hbar / (2.*codata::m_n)) / one_meV / (angstrom*angstrom);
@@ -99,6 +101,7 @@ struct CNResults
 };
 
 
+extern ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx);
 extern CNResults calc_cn(CNParams& cn);
 extern bool calc_cn_angles(CNParams& cn, CNResults& res);
 extern void calc_cn_vol(CNParams& cn, CNResults& res);
