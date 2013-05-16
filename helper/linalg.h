@@ -17,6 +17,11 @@
 #include <boost/numeric/ublas/exception.hpp>
 namespace ublas = boost::numeric::ublas;
 
+extern "C"
+{
+        #include <lapacke.h>
+}
+
 //#include "math.h"
 template<typename T=double>
 bool float_equal(T t1, T t2);
@@ -214,57 +219,105 @@ bool eigenvec(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs
 	if(mat.size1()==0 || mat.size1()==1)
 		return false;
 
+	const unsigned int iOrder = mat.size1();
+	evecs.resize(iOrder);
+	evals.resize(iOrder);
+    for(unsigned int i=0; i<iOrder; ++i)
+    		evecs[i].resize(iOrder);
+
+
 	// is matrix already diagonal?
 	if(is_diag_matrix(mat))
 	{
-		evecs.resize(mat.size1());
-		evals.resize(mat.size1());
-
-		for(unsigned int i=0; i<mat.size1(); ++i)
+		for(unsigned int i=0; i<iOrder; ++i)
 		{
 			evals[i] = mat(i,i);
 
-			evecs[i] = ublas::zero_vector<T>(mat.size1());
+			evecs[i] = ublas::zero_vector<T>(iOrder);
 			evecs[i][i] = 1.;
 		}
 
 		return true;
 	}
 
-	if(mat.size1()==2)
-	{
-			evecs.resize(2);
-			evals.resize(2);
 
-			evecs[0].resize(2);
-			evecs[1].resize(2);
+    bool bOk = true;
 
-			const T& a=mat(0,0);
-			const T& b=mat(0,1);
-			const T& c=mat(1,0);
-			const T& d=mat(1,1);
+    double *pMem = new double[iOrder*iOrder + iOrder*iOrder + iOrder*iOrder + iOrder + iOrder];
 
-			const T wurz = std::sqrt(a*a - 2.*a*d + 4.*b*c + d*d);
+    double *pMatrix = pMem;
+    for(unsigned int i=0; i<iOrder; ++i)
+            for(unsigned int j=0; j<iOrder; ++j)
+                    pMatrix[i*iOrder + j] = mat(i,j);
 
-			evecs[0][0] = (a - d - wurz)/(2.*c);
-			evecs[1][0] = (a - d + wurz)/(2.*c);
-			evecs[0][1] = 1.;
-			evecs[1][1] = 1.;
+    double *p_eigenvecs = pMatrix + iOrder*iOrder;
+    double *p_eigenvecs_l = pMem + iOrder*iOrder;
+    double *peigenvals_real = p_eigenvecs_l + iOrder;
+    double *peigenvals_imag = peigenvals_real + iOrder;
 
-			evecs[0] /= ublas::norm_2(evecs[0]);
-			evecs[1] /= ublas::norm_2(evecs[1]);
+    int iInfo = LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'V', iOrder, pMatrix, iOrder,
+                                                    peigenvals_real, peigenvals_imag,
+                                                    p_eigenvecs_l, iOrder, p_eigenvecs, iOrder);
+    if(iInfo!=0)
+    {
+            std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
+            			<< std::endl;
+            bOk = false;
+    }
 
-			evals[0] = 0.5*(a + d - wurz);
-			evals[1] = 0.5*(a + d + wurz);
+    for(unsigned int i=0; i<iOrder; ++i)
+    {
+            for(unsigned int j=0; j<iOrder; ++j)
+                    evecs[i][j] = p_eigenvecs[j*iOrder + i];
+            evals[i] = peigenvals_real[i];
+    }
 
-			return true;
-	}
-	else
-	{
-		std::cerr << "Error: Eigenvalue calculation for not yet implemented for matrix of size "
-					 << mat.size1() << "." << std::endl;
+    delete[] pMem;
+    return bOk;
+}
+
+template<typename T=double>
+bool eigenvec_sym(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs, std::vector<T>& evals)
+{
+	if(mat.size1() != mat.size2())
 		return false;
-	}
+	if(mat.size1()==0 || mat.size1()==1)
+		return false;
+
+	const unsigned int iOrder = mat.size1();
+	evecs.resize(iOrder);
+	evals.resize(iOrder);
+    for(unsigned int i=0; i<iOrder; ++i)
+    		evecs[i].resize(iOrder);
+
+
+    bool bOk = true;
+    double *pMem = new double[iOrder*iOrder + iOrder];
+    double *pMatrix = pMem;
+
+    for(unsigned int i=0; i<iOrder; ++i)
+            for(unsigned int j=0; j<iOrder; ++j)
+                    pMatrix[i*iOrder + j] = mat(i,j);
+
+    double *peigenvals_real = pMatrix + iOrder*iOrder;
+    int iInfo = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U',
+    											iOrder, pMatrix, iOrder, peigenvals_real);
+    if(iInfo!=0)
+    {
+            std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
+            			<< std::endl;
+            bOk = false;
+    }
+
+    for(unsigned int i=0; i<iOrder; ++i)
+    {
+            for(unsigned int j=0; j<iOrder; ++j)
+                    evecs[i][j] = pMatrix[j*iOrder + i];
+            evals[i] = peigenvals_real[i];
+    }
+
+    delete[] pMem;
+    return bOk;
 }
 
 
