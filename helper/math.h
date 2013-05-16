@@ -66,4 +66,11 @@ std::vector<unsigned int> find_zeroes(unsigned int N, const T* pIn)
 	return vecIndices;
 }
 
+
+template<typename T=double>
+bool float_equal(T t1, T t2)
+{
+	return std::fabs(t1-t2) < std::numeric_limits<double>::epsilon();
+}
+
 #endif

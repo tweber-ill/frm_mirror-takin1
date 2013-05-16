@@ -8,6 +8,7 @@
 #ifndef __MIEZE_LINALG__
 #define __MIEZE_LINALG__
 
+#include <cmath>
 #include <boost/algorithm/minmax_element.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -15,6 +16,11 @@
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/exception.hpp>
 namespace ublas = boost::numeric::ublas;
+
+//#include "math.h"
+template<typename T=double>
+bool float_equal(T t1, T t2);
+
 
 /*
  * remove an element from a vector
@@ -183,6 +189,82 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 	}
 
 	return true;
+}
+
+template<typename T=double>
+bool is_diag_matrix(const ublas::matrix<T>& mat)
+{
+	for(unsigned int i=0; i<mat.size1(); ++i)
+		for(unsigned int j=0; j<mat.size2(); ++j)
+		{
+			if(i==j) continue;
+
+			if(!float_equal(mat(i,j), T(0.)))
+				return false;
+		}
+
+	return true;
+}
+
+template<typename T=double>
+bool eigenvec(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs, std::vector<T>& evals)
+{
+	if(mat.size1() != mat.size2())
+		return false;
+	if(mat.size1()==0 || mat.size1()==1)
+		return false;
+
+	// is matrix already diagonal?
+	if(is_diag_matrix(mat))
+	{
+		evecs.resize(mat.size1());
+		evals.resize(mat.size1());
+
+		for(unsigned int i=0; i<mat.size1(); ++i)
+		{
+			evals[i] = mat(i,i);
+
+			evecs[i] = ublas::zero_vector<T>(mat.size1());
+			evecs[i][i] = 1.;
+		}
+
+		return true;
+	}
+
+	if(mat.size1()==2)
+	{
+			evecs.resize(2);
+			evals.resize(2);
+
+			evecs[0].resize(2);
+			evecs[1].resize(2);
+
+			const T& a=mat(0,0);
+			const T& b=mat(0,1);
+			const T& c=mat(1,0);
+			const T& d=mat(1,1);
+
+			const T wurz = std::sqrt(a*a - 2.*a*d + 4.*b*c + d*d);
+
+			evecs[0][0] = (a - d - wurz)/(2.*c);
+			evecs[1][0] = (a - d + wurz)/(2.*c);
+			evecs[0][1] = 1.;
+			evecs[1][1] = 1.;
+
+			evecs[0] /= ublas::norm_2(evecs[0]);
+			evecs[1] /= ublas::norm_2(evecs[1]);
+
+			evals[0] = 0.5*(a + d - wurz);
+			evals[1] = 0.5*(a + d + wurz);
+
+			return true;
+	}
+	else
+	{
+		std::cerr << "Error: Eigenvalue calculation for not yet implemented for matrix of size "
+					 << mat.size1() << "." << std::endl;
+		return false;
+	}
 }
 
 
