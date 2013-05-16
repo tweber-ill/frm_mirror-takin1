@@ -70,17 +70,14 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, int iX, int iY, int 
 
         std::vector<ublas::vector<double> > evecs;
         std::vector<double> evals;
-        ::eigenvec(m, evecs, evals);
+        ::eigenvec_sym(m, evecs, evals);
 
         // formula A4.61 from Shirane
         //ell.phi = 0.5*atan(2.*m(0,1) / (m(0,0)-m(1,1)));
         ell.phi = atan2(evecs[1][1], evecs[1][0]);
 
-        ublas::matrix<double> rot(2,2);
-        rot(0,0)=cos(ell.phi); rot(0,1)=-sin(ell.phi);
-        rot(1,0)=sin(ell.phi); rot(1,1)=cos(ell.phi);
-
-        ublas::matrix<double> res_rot(2,2);
+        ublas::matrix<double> rot = rotation_matrix_2d(ell.phi);
+        ublas::matrix<double> res_rot;
         res_rot = prod(m, rot);
         res_rot = prod(trans(rot), res_rot);
 
