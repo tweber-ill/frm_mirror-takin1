@@ -29,22 +29,22 @@ typedef units::quantity<units::si::length> length;
  */
 ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx)
 {
-        unsigned int iSize = mat.size1();
-        ublas::vector<double> b(iSize);
+	unsigned int iSize = mat.size1();
+	ublas::vector<double> b(iSize);
 
-        for(unsigned int i=0; i<iSize; ++i)
-                b[i] = mat(i,iIdx) + mat(iIdx,i);
+	for(unsigned int i=0; i<iSize; ++i)
+		b[i] = mat(i,iIdx) + mat(iIdx,i);
 
-        b = remove_elem(b, iIdx);
-        ublas::matrix<double> m = remove_elems(mat, iIdx);
+	b = remove_elem(b, iIdx);
+	ublas::matrix<double> m = remove_elems(mat, iIdx);
 
-        double d = mat(iIdx, iIdx);
+	double d = mat(iIdx, iIdx);
 
-        ublas::matrix<double> bb(iSize-1, iSize-1);
-        bb = outer_prod(b,b);
+	ublas::matrix<double> bb(iSize-1, iSize-1);
+	bb = outer_prod(b,b);
 
-        m = m - 1./(4.*d)*bb;
-        return m;
+	m = m - 1./(4.*d)*bb;
+	return m;
 }
 
 

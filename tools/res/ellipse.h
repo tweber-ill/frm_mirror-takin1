@@ -23,24 +23,28 @@ namespace ublas = boost::numeric::ublas;
 
 struct Ellipse : public FunctionModel_param
 {
-        double phi;
-        double x_hwhm, y_hwhm;
-        double x_offs, y_offs;
+	double phi;
+	double x_hwhm, y_hwhm;
+	double x_offs, y_offs;
 
-        std::string x_lab, y_lab;
+	std::string x_lab, y_lab;
 
-        virtual ublas::vector<double> operator()(double t) const
-        {
-        	ublas::vector<double> vec(2);
+	virtual ublas::vector<double> operator()(double t) const;
+};
 
-            vec[0] = x_hwhm*std::cos(2.*M_PI*t)*std::cos(phi) - y_hwhm*std::sin(2.*M_PI*t)*std::sin(phi) + x_offs;
-            vec[1] = x_hwhm*std::cos(2.*M_PI*t)*std::sin(phi) + y_hwhm*std::sin(2.*M_PI*t)*std::cos(phi) + y_offs;
+struct Ellipsoid
+{
+	//double alpha, beta, gamma;
+	ublas::matrix<double> rot;
 
-            return vec;
-        }
+	double x_hwhm, y_hwhm, z_hwhm;
+	double x_offs, y_offs, z_offs;
+
+	std::string x_lab, y_lab, z_lab;
 };
 
 extern std::ostream& operator<<(std::ostream& ostr, const Ellipse& ell);
 extern Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, int iX, int iY, int iInt, int iRem1=-1, int iRem2=-1);
+extern Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, int iX, int iY, int iZ, int iInt, int iRem=-1);
 
 #endif

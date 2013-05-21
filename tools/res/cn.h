@@ -46,7 +46,6 @@ static const double KSQ2E = (codata::hbar*codata::hbar / (2.*codata::m_n)) / one
 static const double E2KSQ = 1./KSQ2E;
 
 
-
 struct CNParams
 {
 	// monochromator
