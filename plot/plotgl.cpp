@@ -10,13 +10,28 @@
 #include <cmath>
 #include <time.h>
 #include <iostream>
+#include <sstream>
+
+static QString to_string(double d)
+{
+	std::ostringstream ostr;
+	ostr.precision(2);
+	ostr << d;
+
+	return QString(ostr.str().c_str());
+}
 
 QMutex PlotGl::m_mutex(QMutex::Recursive);
 
 PlotGl::PlotGl(QWidget* pParent) : QGLWidget(pParent),
 								m_bMouseRotateActive(0), m_bMouseScaleActive(0),
 								m_bRenderThreadActive(1), m_bGLInited(0), m_bDoResize(1),
-								m_iW(640), m_iH(480)
+								m_iW(640), m_iH(480),
+								m_pfont(0),
+								m_pfontsmall(0),
+								m_dXMin(-10.), m_dXMax(10.),
+								m_dYMin(-10.), m_dYMax(10.),
+								m_dZMin(-10.), m_dZMax(10.)
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
 	m_dMouseScale = 25.;
@@ -29,7 +44,13 @@ PlotGl::PlotGl(QWidget* pParent) : QGLWidget(pParent),
 PlotGl::~PlotGl()
 {
 	m_bRenderThreadActive = 0;
+	terminate();
+	wait();
+
+	if(m_pfont) delete m_pfont;
+	if(m_pfontsmall) delete m_pfontsmall;
 }
+
 
 void PlotGl::SetColor(unsigned int iIdx)
 {
@@ -46,7 +67,8 @@ void PlotGl::SetColor(unsigned int iIdx)
 
 void PlotGl::initializeGLThread()
 {
-	//makeCurrent();
+	m_pfont = new QFont("Nimbus Sans L", 12);
+	m_pfontsmall = new QFont("Nimbus Sans L", 8);
 
 	glClearColor(1.,1.,1.,0.);
 	glShadeModel(GL_SMOOTH);
@@ -80,34 +102,26 @@ void PlotGl::initializeGLThread()
 
 		gluSphere(pQuad, 1., 32, 32);
 	glEndList();
-
-	//doneCurrent();
 }
 
 void PlotGl::resizeGLThread(int w, int h)
 {
-	//makeCurrent();
-
 	if(w<0) w=1;
 	if(h<0) h=1;
 	glViewport(0,0,w,h);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(90., double(w)/double(h), 0.1, 100.);
+	gluPerspective(45., double(w)/double(h), 0.1, 100.);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	//updateGL();
-
-	//doneCurrent();
 }
 
 void PlotGl::paintGLThread()
 {
-	//makeCurrent();
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 
@@ -122,23 +136,26 @@ void PlotGl::paintGLThread()
 		glDisable(GL_LIGHTING);
 		glLineWidth(2.);
 		glColor3d(0., 0., 0.);
+
+		const double dAxisScale = 1.8;
 		glBegin(GL_LINES);
-		glVertex3d(-10., 0., 0.);
-		glVertex3d(10, 0., 0.);
-		glVertex3d(0., -10., 0.);
-		glVertex3d(0, 10., 0.);
-		glVertex3d(0., 0., -10.);
-		glVertex3d(0, 0., 10.);
+			glVertex3d(m_dXMin*dAxisScale, 0., 0.);
+			glVertex3d(m_dXMax*dAxisScale, 0., 0.);
+			glVertex3d(0., m_dYMin*dAxisScale, 0.);
+			glVertex3d(0., m_dYMax*dAxisScale, 0.);
+			glVertex3d(0., 0., m_dZMin*dAxisScale);
+			glVertex3d(0., 0., m_dZMax*dAxisScale);
 		glEnd();
 	glPopMatrix();
 
+	m_mutex.lock();
 	unsigned int iPltIdx=0;
 	for(const PlotObjGl& obj : m_vecObjs)
 	{
 		if(obj.plttype == PLOT_ELLIPSOID)
 		{
 			glPushMatrix();
-			glTranslated(-obj.vecParams[3], -obj.vecParams[4], -obj.vecParams[5]);
+			glTranslated(obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]);
 
 			GLdouble dMatRot[] = {obj.vecParams[6], obj.vecParams[7], obj.vecParams[8], 0.,
 								obj.vecParams[9], obj.vecParams[10], obj.vecParams[11], 0.,
@@ -155,15 +172,36 @@ void PlotGl::paintGLThread()
 			glCallList(m_iLstSphere);
 			glPopMatrix();
 		}
-
 		++iPltIdx;
 	}
+	m_mutex.unlock();
+
+	glPushMatrix();
+		glDisable(GL_LIGHTING);
+		glColor3d(0., 0., 0.);
+
+		m_mutex.lock();
+		if(m_pfont)
+		{
+			renderText(m_dXMax*dAxisScale, 0., 0., m_strLabels[0], *m_pfont);
+			renderText(0., m_dYMax*dAxisScale , 0., m_strLabels[1], *m_pfont);
+			renderText(0., 0., m_dZMax*dAxisScale , m_strLabels[2], *m_pfont);
+		}
+		if(m_pfontsmall)
+		{
+			renderText(m_dXMin, 0., 0., to_string(m_dXMin), *m_pfontsmall);
+			renderText(m_dXMax, 0., 0., to_string(m_dXMax), *m_pfontsmall);
+			renderText(0., m_dYMin, 0., to_string(m_dYMin), *m_pfontsmall);
+			renderText(0., m_dYMax, 0., to_string(m_dYMax), *m_pfontsmall);
+			renderText(0., 0., m_dZMin, to_string(m_dZMin), *m_pfontsmall);
+			renderText(0., 0., m_dZMax, to_string(m_dZMax), *m_pfontsmall);
+		}
+		m_mutex.unlock();
+	glPopMatrix();
 
 	glPopMatrix();
 	swapBuffers();
 	//glFlush();
-
-	//doneCurrent();
 }
 
 void PlotGl::run()
@@ -178,7 +216,9 @@ void PlotGl::run()
 			resizeGLThread(m_iW, m_iH);
 			m_bDoResize = 0;
 		}
-		paintGLThread();
+
+		if(isVisible())
+			paintGLThread();
 
 		timespec ts;
 		ts.tv_nsec = 50000;
@@ -202,11 +242,20 @@ void PlotGl::clear()
 	m_vecObjs.clear();
 }
 
+void PlotGl::SetMinMax(const ublas::vector<double>& vec)
+{
+	m_dXMin = -vec[0]; m_dXMax = vec[0];
+	m_dYMin = -vec[1]; m_dYMax = vec[1];
+	m_dZMin = -vec[2]; m_dZMax = vec[2];
+}
+
 void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
 							const ublas::vector<double>& offsets,
 							const ublas::matrix<double>& rot,
 							int iObjIdx)
 {
+	m_mutex.lock();
+
 	if(iObjIdx < 0)
 	{
 		clear();
@@ -232,7 +281,7 @@ void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
 		for(unsigned int j=0; j<3; ++j)
 			obj.vecParams[iNum++] = rot(j,i);
 	
-	//updateGL();
+	m_mutex.unlock();
 }
 
 void PlotGl::mousePressEvent(QMouseEvent *event)
@@ -263,8 +312,6 @@ void PlotGl::mouseReleaseEvent(QMouseEvent *event)
 
 void PlotGl::mouseMoveEvent(QMouseEvent *event)
 {
-	bool bUpdate = 0;
-
 	if(m_bMouseRotateActive)
 	{
 		double dNewX = event->posF().x();
@@ -275,8 +322,6 @@ void PlotGl::mouseMoveEvent(QMouseEvent *event)
 
 		m_dMouseBegin[0] = dNewX;
 		m_dMouseBegin[1] = dNewY;
-
-		bUpdate = 1;
 	}
 
 	if(m_bMouseScaleActive)
@@ -285,12 +330,16 @@ void PlotGl::mouseMoveEvent(QMouseEvent *event)
 
 		m_dMouseScale *= 1.-(dNewY - m_dMouseScaleBegin)/double(height()) * 2.;
 		m_dMouseScaleBegin = dNewY;
-
-		bUpdate = 1;
 	}
+}
 
-	//if(bUpdate)
-	//	updateGL();
+void PlotGl::SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ)
+{
+	m_mutex.lock();
+	m_strLabels[0] = pcLabX;
+	m_strLabels[1] = pcLabY;
+	m_strLabels[2] = pcLabZ;
+	m_mutex.unlock();
 }
 
 
