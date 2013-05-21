@@ -15,6 +15,13 @@
 #include "linalg.h"
 
 
+template<typename T>
+T sign(T t)
+{
+	if(t<0.) return -T(1);
+	return T(1);
+}
+
 template<typename T=double>
 void diff(unsigned int N, const T* pXIn, const T* pYIn, T* pYOut)
 {

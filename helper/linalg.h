@@ -8,6 +8,8 @@
 #ifndef __MIEZE_LINALG__
 #define __MIEZE_LINALG__
 
+//#define NO_LAPACK
+
 #include <cmath>
 #include <boost/algorithm/minmax_element.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -19,14 +21,17 @@
 namespace ublas = boost::numeric::ublas;
 namespace math = boost::math;
 
+#ifndef NO_LAPACK
 extern "C"
 {
         #include <lapacke.h>
+        //#include <mkl_lapacke.h>
 }
+#endif
 
 //#include "math.h"
-template<typename T=double>
-bool float_equal(T t1, T t2);
+template<typename T=double> bool float_equal(T t1, T t2);
+template<typename T> T sign(T t);
 
 
 /*
@@ -111,9 +116,55 @@ ublas::matrix<T> rotation_matrix_2d(T angle)
 	return mat;
 }
 
+template<typename T=double>
+ublas::matrix<T> rotation_matrix_3d_x(T angle)
+{
+	ublas::matrix<T> mat(3,3);
+
+	T s = std::sin(angle);
+	T c = std::cos(angle);
+
+	mat(0,0)=1; mat(0,1)=0; mat(0,2)=0;
+	mat(1,0)=0; mat(1,1)=c; mat(1,2)=-s;
+	mat(2,0)=0; mat(2,1)=s; mat(2,2)=c;
+
+	return mat;
+}
 
 template<typename T=double>
-double trace(const ublas::matrix<T>& mat)
+ublas::matrix<T> rotation_matrix_3d_y(T angle)
+{
+	ublas::matrix<T> mat(3,3);
+
+	T s = std::sin(angle);
+	T c = std::cos(angle);
+
+	mat(0,0)=c; mat(0,1)=0; mat(0,2)=s;
+	mat(1,0)=0; mat(1,1)=1; mat(1,2)=0;
+	mat(2,0)=-s; mat(2,1)=0; mat(2,2)=c;
+
+	return mat;
+}
+
+template<typename T=double>
+ublas::matrix<T> rotation_matrix_3d_z(T angle)
+{
+	ublas::matrix<T> mat(3,3);
+
+	T s = std::sin(angle);
+	T c = std::cos(angle);
+
+	mat(0,0)=c; mat(0,1)=-s; mat(0,2)=0;
+	mat(1,0)=s; mat(1,1)=c; mat(1,2)=0;
+	mat(2,0)=0; mat(2,1)=0; mat(2,2)=1;
+
+	return mat;
+}
+
+
+
+template<typename T=double>
+T trace(const ublas::matrix<T>& mat)
 {
 	if(mat.size1() != mat.size2())
 		return T(0);
@@ -126,7 +177,7 @@ double trace(const ublas::matrix<T>& mat)
 
 
 template<typename T=double>
-double determinant(const ublas::matrix<T>& mat)
+T determinant(const ublas::matrix<T>& mat)
 {
 	if(mat.size1() != mat.size2())
 		return T(0);
@@ -141,9 +192,9 @@ double determinant(const ublas::matrix<T>& mat)
 	}
 	else if(mat.size1()==3)
 	{
-		double a[] = {mat(0,0), mat(1,0), mat(2,0)};
-		double b[] = {mat(0,1), mat(1,1), mat(2,1)};
-		double c[] = {mat(0,2), mat(1,2), mat(2,2)};
+		T a[] = {mat(0,0), mat(1,0), mat(2,0)};
+		T b[] = {mat(0,1), mat(1,1), mat(2,1)};
+		T c[] = {mat(0,2), mat(1,2), mat(2,2)};
 
 		return a[0]*b[1]*c[2] + a[1]*b[2]*c[0] + a[2]*b[0]*c[1]
 		           -c[0]*b[1]*a[2] - c[1]*b[2]*a[0] - c[2]*b[0]*a[1];
@@ -226,6 +277,22 @@ bool is_diag_matrix(const ublas::matrix<T>& mat)
 	return true;
 }
 
+
+// vectors form columns of matrix
+template<typename T=double>
+ublas::matrix<T> column_matrix(const std::vector<ublas::vector<T> >& vecs)
+{
+	if(vecs.size() == 0)
+		return ublas::zero_matrix<T>(0);
+
+	ublas::matrix<T> mat(vecs.size(), vecs[0].size());
+	for(unsigned int i=0; i<vecs[0].size(); ++i)
+		for(unsigned int j=0; j<vecs.size(); ++j)
+			mat(i,j) = vecs[j][i];
+
+	return mat;
+}
+
 template<typename T=double>
 bool eigenvec(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs, std::vector<T>& evals)
 {
@@ -237,7 +304,7 @@ bool eigenvec(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs
 	const unsigned int iOrder = mat.size1();
 	evecs.resize(iOrder);
 	evals.resize(iOrder);
-    for(unsigned int i=0; i<iOrder; ++i)
+    	for(unsigned int i=0; i<iOrder; ++i)
     		evecs[i].resize(iOrder);
 
 
@@ -258,33 +325,46 @@ bool eigenvec(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs
 
     bool bOk = true;
 
-    double *pMem = new double[iOrder*iOrder + iOrder*iOrder + iOrder*iOrder + iOrder + iOrder];
+    T *pMem = new T[iOrder*iOrder + iOrder*iOrder + iOrder*iOrder + iOrder + iOrder];
 
-    double *pMatrix = pMem;
+    T *pMatrix = pMem;
     for(unsigned int i=0; i<iOrder; ++i)
             for(unsigned int j=0; j<iOrder; ++j)
                     pMatrix[i*iOrder + j] = mat(i,j);
 
-    double *p_eigenvecs = pMatrix + iOrder*iOrder;
-    double *p_eigenvecs_l = pMem + iOrder*iOrder;
-    double *peigenvals_real = p_eigenvecs_l + iOrder;
-    double *peigenvals_imag = peigenvals_real + iOrder;
+    T *p_eigenvecs = pMatrix + iOrder*iOrder;
+    T *p_eigenvecs_l = pMem + iOrder*iOrder;
+    T *peigenvals_real = p_eigenvecs_l + iOrder;
+    T *peigenvals_imag = peigenvals_real + iOrder;
 
-    int iInfo = LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'V', iOrder, pMatrix, iOrder,
-                                                    peigenvals_real, peigenvals_imag,
-                                                    p_eigenvecs_l, iOrder, p_eigenvecs, iOrder);
+    int iInfo = -1;
+
+#ifndef NO_LAPACK
+    if(sizeof(T) == sizeof(double))
+    	iInfo = LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'V', iOrder, (double*)pMatrix, iOrder,
+    										(double*)peigenvals_real, (double*)peigenvals_imag,
+    										(double*)p_eigenvecs_l, iOrder, (double*)p_eigenvecs, iOrder);
+    else if(sizeof(T) == sizeof(float))
+    	iInfo = LAPACKE_sgeev(LAPACK_ROW_MAJOR, 'N', 'V', iOrder, (float*)pMatrix, iOrder,
+    										(float*)peigenvals_real, (float*)peigenvals_imag,
+    										(float*)p_eigenvecs_l, iOrder, (float*)p_eigenvecs, iOrder);
+    else
+    	std::cerr << "Error: Data type not supported." << std::endl;
+#endif
+
     if(iInfo!=0)
     {
-            std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
-            			<< std::endl;
-            bOk = false;
+		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
+					<< std::endl;
+		bOk = false;
     }
 
     for(unsigned int i=0; i<iOrder; ++i)
     {
-            for(unsigned int j=0; j<iOrder; ++j)
-                    evecs[i][j] = p_eigenvecs[j*iOrder + i];
-            evals[i] = peigenvals_real[i];
+		for(unsigned int j=0; j<iOrder; ++j)
+				evecs[i][j] = p_eigenvecs[j*iOrder + i];
+		evecs[i] /= ublas::norm_2(evecs[i]);
+		evals[i] = peigenvals_real[i];
     }
 
     delete[] pMem;
@@ -307,48 +387,49 @@ bool eigenvec_sym(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& e
 
 
     bool bOk = true;
-    double *pMem = new double[iOrder*iOrder + iOrder];
-    double *pMatrix = pMem;
+    T *pMem = new T[iOrder*iOrder + iOrder];
+    T *pMatrix = pMem;
 
     for(unsigned int i=0; i<iOrder; ++i)
             for(unsigned int j=0; j<iOrder; ++j)
                     pMatrix[i*iOrder + j] = mat(i,j);
 
-    double *peigenvals_real = pMatrix + iOrder*iOrder;
-    int iInfo = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U',
-    											iOrder, pMatrix, iOrder, peigenvals_real);
+    T *peigenvals_real = pMatrix + iOrder*iOrder;
+    int iInfo = -1;
+
+#ifndef NO_LAPACK
+    if(sizeof(T) == sizeof(double))
+    	iInfo = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U',
+    						iOrder, (double*)pMatrix, iOrder, (double*)peigenvals_real);
+    else if(sizeof(T) == sizeof(float))
+    	iInfo = LAPACKE_ssyev(LAPACK_ROW_MAJOR, 'V', 'U',
+    						iOrder, (float*)pMatrix, iOrder, (float*)peigenvals_real);
+    else
+    	std::cerr << "Error: Data type not supported." << std::endl;
+#endif
+
     if(iInfo!=0)
     {
-            std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
-            			<< std::endl;
-            bOk = false;
+		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
+					<< std::endl;
+		bOk = false;
     }
 
-    for(unsigned int i=0; i<iOrder; ++i)
-    {
-            for(unsigned int j=0; j<iOrder; ++j)
-                    evecs[i][j] = pMatrix[j*iOrder + i];
-            evals[i] = peigenvals_real[i];
-    }
+	for(unsigned int i=0; i<iOrder; ++i)
+	{
+		for(unsigned int j=0; j<iOrder; ++j)
+				evecs[i][j] = pMatrix[j*iOrder + i];
+		evecs[i] /= ublas::norm_2(evecs[i]);
+		evals[i] = peigenvals_real[i];
+	}
+
+	if(determinant(column_matrix(evecs)) < 0.)
+		evecs[0] = -evecs[0];
 
     delete[] pMem;
     return bOk;
 }
 
-// vectors form columns of matrix
-template<typename T=double>
-ublas::matrix<T> column_matrix(const std::vector<ublas::vector<T> >& vecs)
-{
-	if(vecs.size() == 0)
-		return ublas::zero_matrix<T>(0);
-
-	ublas::matrix<T> mat(vecs.size(), vecs[0].size());
-	for(unsigned int i=0; i<vecs[0].size(); ++i)
-		for(unsigned int j=0; j<vecs.size(); ++j)
-			mat(i,j) = vecs[j][i];
-
-	return mat;
-}
 
 // algo from:
 // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q55
@@ -394,8 +475,37 @@ math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
 		}
 	}
 
-	return math::quaternion<T>(w,x,y,z);
+	T n = std::sqrt(w*w + x*x + y*y + z*z);
+	return math::quaternion<T>(w,x,y,z)/n;
 }
+
+// algo from:
+// http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
+// http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche52.html
+template<typename T=double>
+ublas::matrix<T> quat_to_rot3(const math::quaternion<T>& quat)
+{
+	ublas::matrix<T> mat(3,3);
+	T w = quat.R_component_1();
+	T x = quat.R_component_2();
+	T y = quat.R_component_3();
+	T z = quat.R_component_4();
+
+	mat(0,0) = 1. - 2.*(y*y + z*z);
+	mat(1,1) = 1. - 2.*(x*x + z*z);
+	mat(2,2) = 1. - 2.*(x*x + y*y);
+
+	mat(0,1) = 2.*(x*y - z*w);
+	mat(1,0) = 2.*(x*y + z*w);
+	mat(0,2) = 2.*(x*z + y*w);
+	mat(2,0) = 2.*(x*z - y*w);
+	mat(1,2) = 2.*(y*z - x*w);
+	mat(2,1) = 2.*(y*z + x*w);
+	//mat = ublas::trans(mat);
+
+	return mat;
+}
+
 
 template<typename T=double>
 std::vector<T> quat_to_euler(const math::quaternion<T>& quat)
@@ -408,13 +518,7 @@ std::vector<T> quat_to_euler(const math::quaternion<T>& quat)
 	T theta = std::asin(2.*(q[0]*q[2] - q[3]*q[1]));
 	T psi = std::atan2(2.*(q[0]*q[3] + q[1]*q[2]), 1.-2.*(q[2]*q[2] + q[3]*q[3]));
 
-	std::vector<T> vec;
-	vec.resize(3);
-
-	vec[0] = phi;
-	vec[1] = theta;
-	vec[2] = psi;
-
+	std::vector<T> vec = { phi, theta, psi };
 	return vec;
 }
 
