@@ -8,18 +8,28 @@
 #include "plotgl.h"
 #include <GL/glu.h>
 #include <cmath>
+#include <time.h>
 #include <iostream>
 
+QMutex PlotGl::m_mutex(QMutex::Recursive);
 
 PlotGl::PlotGl(QWidget* pParent) : QGLWidget(pParent),
-								m_bMouseRotateActive(0), m_bMouseScaleActive(0)
+								m_bMouseRotateActive(0), m_bMouseScaleActive(0),
+								m_bRenderThreadActive(1), m_bGLInited(0), m_bDoResize(1),
+								m_iW(640), m_iH(480)
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
 	m_dMouseScale = 25.;
+
+	setAutoBufferSwap(false);
+	doneCurrent();
+	start(); 		// render thread
 }
 
 PlotGl::~PlotGl()
-{}
+{
+	m_bRenderThreadActive = 0;
+}
 
 void PlotGl::SetColor(unsigned int iIdx)
 {
@@ -34,8 +44,10 @@ void PlotGl::SetColor(unsigned int iIdx)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, cols[iIdx % 4]);
 }
 
-void PlotGl::initializeGL()
+void PlotGl::initializeGLThread()
 {
+	//makeCurrent();
+
 	glClearColor(1.,1.,1.,0.);
 	glShadeModel(GL_SMOOTH);
 
@@ -68,10 +80,16 @@ void PlotGl::initializeGL()
 
 		gluSphere(pQuad, 1., 32, 32);
 	glEndList();
+
+	//doneCurrent();
 }
 
-void PlotGl::resizeGL(int w, int h)
+void PlotGl::resizeGLThread(int w, int h)
 {
+	//makeCurrent();
+
+	if(w<0) w=1;
+	if(h<0) h=1;
 	glViewport(0,0,w,h);
 
 	glMatrixMode(GL_PROJECTION);
@@ -80,10 +98,16 @@ void PlotGl::resizeGL(int w, int h)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	//updateGL();
+
+	//doneCurrent();
 }
 
-void PlotGl::paintGL()
+void PlotGl::paintGLThread()
 {
+	//makeCurrent();
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 
@@ -108,14 +132,12 @@ void PlotGl::paintGL()
 		glEnd();
 	glPopMatrix();
 
-
 	unsigned int iPltIdx=0;
 	for(const PlotObjGl& obj : m_vecObjs)
 	{
 		if(obj.plttype == PLOT_ELLIPSOID)
 		{
 			glPushMatrix();
-
 			glTranslated(-obj.vecParams[3], -obj.vecParams[4], -obj.vecParams[5]);
 
 			GLdouble dMatRot[] = {obj.vecParams[6], obj.vecParams[7], obj.vecParams[8], 0.,
@@ -138,7 +160,41 @@ void PlotGl::paintGL()
 	}
 
 	glPopMatrix();
-	glFlush();
+	swapBuffers();
+	//glFlush();
+
+	//doneCurrent();
+}
+
+void PlotGl::run()
+{
+	makeCurrent();
+	initializeGLThread();
+
+	while(m_bRenderThreadActive)
+	{
+		if(m_bDoResize)
+		{
+			resizeGLThread(m_iW, m_iH);
+			m_bDoResize = 0;
+		}
+		paintGLThread();
+
+		timespec ts;
+		ts.tv_nsec = 50000;
+		ts.tv_sec = 0;
+		nanosleep(&ts, 0);
+	}
+}
+
+void PlotGl::paintEvent(QPaintEvent *evt)
+{}
+
+void PlotGl::resizeEvent(QResizeEvent *evt)
+{
+	m_iW = size().width();
+	m_iH = size().height();
+	m_bDoResize = 1;
 }
 
 void PlotGl::clear()
@@ -151,26 +207,32 @@ void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
 							const ublas::matrix<double>& rot,
 							int iObjIdx)
 {
-	PlotObjGl obj;
+	if(iObjIdx < 0)
+	{
+		clear();
+		iObjIdx = 0;
+	}
+
+	if(iObjIdx >= int(m_vecObjs.size()))
+		m_vecObjs.resize(iObjIdx+1);
+	PlotObjGl& obj = m_vecObjs[iObjIdx];
+
 	obj.plttype = PLOT_ELLIPSOID;
-	obj.vecParams.push_back(widths[0]);
-	obj.vecParams.push_back(widths[1]);
-	obj.vecParams.push_back(widths[2]);
-	obj.vecParams.push_back(offsets[0]);
-	obj.vecParams.push_back(offsets[1]);
-	obj.vecParams.push_back(offsets[2]);
+	if(obj.vecParams.size() != 15)
+		obj.vecParams.resize(15);
+
+	obj.vecParams[0] = widths[0];
+	obj.vecParams[1] = widths[1];
+	obj.vecParams[2] = widths[2];
+	obj.vecParams[3] = offsets[0];
+	obj.vecParams[4] = offsets[1];
+	obj.vecParams[5] = offsets[2];
+	unsigned int iNum = 6;
 	for(unsigned int i=0; i<3; ++i)
 		for(unsigned int j=0; j<3; ++j)
-			obj.vecParams.push_back(rot(j,i));
-
-	if(iObjIdx < 0)
-		clear();
-
-	if(iObjIdx >= m_vecObjs.size())
-		m_vecObjs.resize(iObjIdx+1);
-	m_vecObjs[iObjIdx] = obj;
+			obj.vecParams[iNum++] = rot(j,i);
 	
-	glDraw();
+	//updateGL();
 }
 
 void PlotGl::mousePressEvent(QMouseEvent *event)
@@ -227,8 +289,8 @@ void PlotGl::mouseMoveEvent(QMouseEvent *event)
 		bUpdate = 1;
 	}
 
-	if(bUpdate)
-		glDraw();
+	//if(bUpdate)
+	//	updateGL();
 }
 
 
@@ -254,4 +316,3 @@ int main(int argc, char **argv)
 	return 0;
 }
 */
-

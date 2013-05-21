@@ -10,6 +10,8 @@
 
 #include <QtOpenGL/QGLWidget>
 #include <QtGui/QMouseEvent>
+#include <QtCore/QThread>
+#include <QtCore/QMutex>
 #include <vector>
 
 #include <boost/numeric/ublas/vector.hpp>
@@ -28,16 +30,16 @@ struct PlotObjGl
 	std::vector<double> vecParams;
 };
 
-class PlotGl : public QGLWidget
+class PlotGl : public QGLWidget, QThread
 {
 protected:
 	std::vector<PlotObjGl> m_vecObjs;
 	GLuint m_iLstSphere;
+	static QMutex m_mutex;
 
-
-	void initializeGL();
-	void resizeGL(int w, int h);
-	void paintGL();
+	//void initializeGL();
+	void resizeEvent(QResizeEvent *evt);
+	void paintEvent(QPaintEvent *evt);
 
 	void SetColor(unsigned int iIdx);
 
@@ -53,6 +55,20 @@ protected:
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
+
+	// ------------------------------------------------------------------------
+	// render thread
+	bool m_bGLInited;
+	bool m_bDoResize;
+	bool m_bRenderThreadActive;
+
+	void initializeGLThread();
+	void resizeGLThread(int w, int h);
+	void paintGLThread();
+	void run();
+
+	int m_iW, m_iH;
+	// ------------------------------------------------------------------------
 
 public:
 	PlotGl(QWidget* pParent);
