@@ -8,8 +8,6 @@
 #ifndef __MIEZE_LINALG__
 #define __MIEZE_LINALG__
 
-//#define NO_LAPACK
-
 #include <cmath>
 #include <boost/algorithm/minmax_element.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -21,13 +19,6 @@
 namespace ublas = boost::numeric::ublas;
 namespace math = boost::math;
 
-#ifndef NO_LAPACK
-extern "C"
-{
-        #include <lapacke.h>
-        //#include <mkl_lapacke.h>
-}
-#endif
 
 //#include "math.h"
 template<typename T=double> bool float_equal(T t1, T t2);
@@ -161,6 +152,42 @@ ublas::matrix<T> rotation_matrix_3d_z(T angle)
 	return mat;
 }
 
+template<typename T=double>
+ublas::matrix<T> skew(const ublas::vector<double>& vec)
+{
+	ublas::matrix<T> mat = ublas::zero_matrix<T>(vec.size(), vec.size());
+
+	if(vec.size() == 3)
+	{
+		mat(0,1) = -vec[2];
+		mat(0,2) = vec[1];
+		mat(1,2) = -vec[0];
+
+		mat(1,0) = -mat(0,1);
+		mat(2,0) = -mat(0,2);
+		mat(2,1) = -mat(1,2);
+	}
+	return mat;
+}
+
+template<typename T=double>
+ublas::matrix<T> unit_matrix(unsigned int N)
+{
+	ublas::matrix<T> mat = ublas::zero_matrix<T>(N,N);
+	for(unsigned int i=0; i<N; ++i)
+		mat(i,i) = 1;
+	return mat;
+}
+
+
+// Euler-Rodrigues formula
+template<typename T=double>
+ublas::matrix<T> rotation_matrix(const ublas::vector<double>& vec, T angle)
+{
+	return (1 - std::cos(angle)) * ublas::outer_prod(vec,vec) +
+				std::cos(angle) * unit_matrix(vec.size()) +
+				std::sin(angle) * skew(vec);
+}
 
 
 template<typename T=double>
@@ -296,139 +323,25 @@ ublas::matrix<T> column_matrix(const std::vector<ublas::vector<T> >& vecs)
 template<typename T=double>
 bool eigenvec(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs, std::vector<T>& evals)
 {
-	if(mat.size1() != mat.size2())
-		return false;
-	if(mat.size1()==0 || mat.size1()==1)
-		return false;
-
-	const unsigned int iOrder = mat.size1();
-	evecs.resize(iOrder);
-	evals.resize(iOrder);
-    	for(unsigned int i=0; i<iOrder; ++i)
-    		evecs[i].resize(iOrder);
-
-
-	// is matrix already diagonal?
-	if(is_diag_matrix(mat))
-	{
-		for(unsigned int i=0; i<iOrder; ++i)
-		{
-			evals[i] = mat(i,i);
-
-			evecs[i] = ublas::zero_vector<T>(iOrder);
-			evecs[i][i] = 1.;
-		}
-
-		return true;
-	}
-
-
-    bool bOk = true;
-
-    T *pMem = new T[iOrder*iOrder + iOrder*iOrder + iOrder*iOrder + iOrder + iOrder];
-
-    T *pMatrix = pMem;
-    for(unsigned int i=0; i<iOrder; ++i)
-            for(unsigned int j=0; j<iOrder; ++j)
-                    pMatrix[i*iOrder + j] = mat(i,j);
-
-    T *p_eigenvecs = pMatrix + iOrder*iOrder;
-    T *p_eigenvecs_l = pMem + iOrder*iOrder;
-    T *peigenvals_real = p_eigenvecs_l + iOrder;
-    T *peigenvals_imag = peigenvals_real + iOrder;
-
-    int iInfo = -1;
-
-#ifndef NO_LAPACK
-    if(sizeof(T) == sizeof(double))
-    	iInfo = LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'V', iOrder, (double*)pMatrix, iOrder,
-    										(double*)peigenvals_real, (double*)peigenvals_imag,
-    										(double*)p_eigenvecs_l, iOrder, (double*)p_eigenvecs, iOrder);
-    else if(sizeof(T) == sizeof(float))
-    	iInfo = LAPACKE_sgeev(LAPACK_ROW_MAJOR, 'N', 'V', iOrder, (float*)pMatrix, iOrder,
-    										(float*)peigenvals_real, (float*)peigenvals_imag,
-    										(float*)p_eigenvecs_l, iOrder, (float*)p_eigenvecs, iOrder);
-    else
-    	std::cerr << "Error: Data type not supported." << std::endl;
-#endif
-
-    if(iInfo!=0)
-    {
-		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
-					<< std::endl;
-		bOk = false;
-    }
-
-    for(unsigned int i=0; i<iOrder; ++i)
-    {
-		for(unsigned int j=0; j<iOrder; ++j)
-				evecs[i][j] = p_eigenvecs[j*iOrder + i];
-		evecs[i] /= ublas::norm_2(evecs[i]);
-		evals[i] = peigenvals_real[i];
-    }
-
-    delete[] pMem;
-    return bOk;
+	std::cerr << "Error: No specialisation of \"eigenvec\" available for this type." << std::endl;
+	return false;
 }
 
 template<typename T=double>
 bool eigenvec_sym(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs, std::vector<T>& evals)
 {
-	if(mat.size1() != mat.size2())
-		return false;
-	if(mat.size1()==0 || mat.size1()==1)
-		return false;
-
-	const unsigned int iOrder = mat.size1();
-	evecs.resize(iOrder);
-	evals.resize(iOrder);
-    for(unsigned int i=0; i<iOrder; ++i)
-    		evecs[i].resize(iOrder);
-
-
-    bool bOk = true;
-    T *pMem = new T[iOrder*iOrder + iOrder];
-    T *pMatrix = pMem;
-
-    for(unsigned int i=0; i<iOrder; ++i)
-            for(unsigned int j=0; j<iOrder; ++j)
-                    pMatrix[i*iOrder + j] = mat(i,j);
-
-    T *peigenvals_real = pMatrix + iOrder*iOrder;
-    int iInfo = -1;
-
-#ifndef NO_LAPACK
-    if(sizeof(T) == sizeof(double))
-    	iInfo = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U',
-    						iOrder, (double*)pMatrix, iOrder, (double*)peigenvals_real);
-    else if(sizeof(T) == sizeof(float))
-    	iInfo = LAPACKE_ssyev(LAPACK_ROW_MAJOR, 'V', 'U',
-    						iOrder, (float*)pMatrix, iOrder, (float*)peigenvals_real);
-    else
-    	std::cerr << "Error: Data type not supported." << std::endl;
-#endif
-
-    if(iInfo!=0)
-    {
-		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
-					<< std::endl;
-		bOk = false;
-    }
-
-	for(unsigned int i=0; i<iOrder; ++i)
-	{
-		for(unsigned int j=0; j<iOrder; ++j)
-				evecs[i][j] = pMatrix[j*iOrder + i];
-		evecs[i] /= ublas::norm_2(evecs[i]);
-		evals[i] = peigenvals_real[i];
-	}
-
-	if(determinant(column_matrix(evecs)) < 0.)
-		evecs[0] = -evecs[0];
-
-    delete[] pMem;
-    return bOk;
+	std::cerr << "Error: No specialisation of \"eigenvec_sym\" available for this type." << std::endl;
+    return false;
 }
+
+template<>
+bool eigenvec<double>(const ublas::matrix<double>& mat,
+									std::vector<ublas::vector<double> >& evecs,
+									std::vector<double>& evals);
+template<>
+bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
+											std::vector<ublas::vector<double> >& evecs,
+											std::vector<double>& evals);
 
 
 // algo from:

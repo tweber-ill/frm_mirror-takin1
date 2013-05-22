@@ -15,7 +15,7 @@
 static QString to_string(double d)
 {
 	std::ostringstream ostr;
-	ostr.precision(2);
+	ostr.precision(3);
 	ostr << d;
 
 	return QString(ostr.str().c_str());
@@ -59,10 +59,10 @@ void PlotGl::SetColor(unsigned int iIdx)
 {
 	static const GLfloat cols[4][4] =
 	{
-		{ 0., 0., 1., 0.8 },
-		{ 0., 0.5, 0., 0.8 },
-		{ 1., 0., 0., 0.8 },
-		{ 0., 0., 0., 0.8 }
+		{ 0., 0., 1., 0.7 },
+		{ 0., 0.5, 0., 0.7 },
+		{ 1., 0., 0., 0.7 },
+		{ 0., 0., 0., 0.7 }
 	};
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, cols[iIdx % 4]);
@@ -77,8 +77,8 @@ void PlotGl::initializeGLThread()
 	glShadeModel(GL_SMOOTH);
 
 	glDisable(GL_DEPTH_TEST);
-	//glClearDepth(1.0f);
-	//glDepthFunc(GL_LEQUAL);
+	glClearDepth(1.);
+	glDepthFunc(GL_LEQUAL);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -86,6 +86,8 @@ void PlotGl::initializeGLThread()
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CCW);
+	glCullFace(GL_BACK);
 
 	GLfloat vecLightCol[] = { 1., 1., 1., 1. };
 	glLightfv(GL_LIGHT0, GL_AMBIENT_AND_DIFFUSE, vecLightCol);
@@ -97,9 +99,6 @@ void PlotGl::initializeGLThread()
 	gluQuadricDrawStyle(pQuad, GLU_FILL);
 	gluQuadricNormals(pQuad, GLU_SMOOTH);
 	glNewList(m_iLstSphere, GL_COMPILE);
-		glFrontFace(GL_CCW);
-		glCullFace(GL_BACK);
-
 		GLfloat vecLight0[] = { 1., 1., 1., 0. };
 		glLightfv(GL_LIGHT0, GL_POSITION, vecLight0);
 
