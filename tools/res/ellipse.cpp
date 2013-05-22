@@ -131,6 +131,8 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 		if(iX>=iRem) --iX;
 		if(iY>=iRem) --iY;
 		if(iZ>=iRem) --iZ;
+
+		//std::cout << "rem: " << res_mat << std::endl;
 	}
 
 	if(iInt>-1)
@@ -141,6 +143,8 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
 		if(iZ>=iInt) --iZ;
+
+		//std::cout << "int: " << res_mat << std::endl;
 	}
 
 	std::vector<ublas::vector<double> > evecs;

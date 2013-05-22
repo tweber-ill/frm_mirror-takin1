@@ -37,13 +37,10 @@ ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int i
 
 	b = remove_elem(b, iIdx);
 	ublas::matrix<double> m = remove_elems(mat, iIdx);
+	ublas::matrix<double> bb = outer_prod(b,b);
 
 	double d = mat(iIdx, iIdx);
-
-	ublas::matrix<double> bb(iSize-1, iSize-1);
-	bb = outer_prod(b,b);
-
-	m = m - 1./(4.*d)*bb;
+	m = m - 0.25/d * bb;
 	return m;
 }
 
