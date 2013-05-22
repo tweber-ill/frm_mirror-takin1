@@ -202,6 +202,20 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 	res.thetas = res.twotheta/2.;
 	//get_twotheta(cn.ki, cn.kf, cn.Q, res.twotheta);
 
+
+	ublas::vector<double> vecKi(2);
+	vecKi[0] = 1.; vecKi[1] = 0.;
+	ublas::matrix<double> rot_kikf = rotation_matrix_2d(res.twotheta/units::si::radians);
+	ublas::vector<double> vecKf = ublas::prod(rot_kikf, vecKi) * (cn.kf/cn.ki);
+
+	ublas::vector<double> vecQ = vecKf - vecKi;
+
+	res.Q_avg.resize(4);
+	res.Q_avg[0] = vecQ[0];
+	res.Q_avg[1] = vecQ[1];
+	res.Q_avg[2] = 0.;
+	res.Q_avg[3] = cn.E / one_meV;
+
 	return true;
 }
 

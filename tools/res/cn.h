@@ -95,6 +95,7 @@ struct CNResults
 	units::quantity<units::si::plane_angle> angle_kf_Q;
 
 	ublas::matrix<double> reso;
+	ublas::vector<double> Q_avg;
 	double dR0;				// resolution volume in 1/A^3 * meV
 	double dR0_vi, dR0_vf;
 };

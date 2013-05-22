@@ -30,7 +30,9 @@ ublas::vector<double> Ellipse::operator()(double t) const
  * iInt: dimension to integrate
  * iRem1, iRem2: dimensions to remove
  */
-Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, int iX, int iY, int iInt, int iRem1, int iRem2)
+Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
+									const ublas::vector<double>& Q_avg,
+									int iX, int iY, int iInt, int iRem1, int iRem2)
 {
 	static const std::string strLabels[] = {"Q_para (1/A)", "Q_ortho (1/A)", "Q_z (1/A)", "E (meV)"};
 
@@ -42,12 +44,12 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, int iX, int iY, int 
 
 
 	ublas::matrix<double> res_mat = reso;
-	//vector<double> Q_offs = reso.Q_avg;
+	ublas::vector<double> Q_offs = Q_avg;
 
 	if(iRem1>-1)
 	{
 		res_mat = remove_elems(res_mat, iRem1);
-		//Q_offs = remove_elem(Q_offs, iRem1);
+		Q_offs = remove_elem(Q_offs, iRem1);
 
 		if(iInt>=iRem1) --iInt;
 		if(iRem2>=iRem1) --iRem2;
@@ -58,7 +60,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, int iX, int iY, int 
 	if(iRem2>-1)
 	{
 		res_mat = remove_elems(res_mat, iRem2);
-		//Q_offs = remove_elem(Q_offs, iRem2);
+		Q_offs = remove_elem(Q_offs, iRem2);
 
 		if(iInt>=iRem2) --iInt;
 		if(iX>=iRem2) --iX;
@@ -69,7 +71,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, int iX, int iY, int 
 	if(iInt>-1)
 	{
 		m_int = gauss_int(res_mat, iInt);
-		//Q_offs = remove_elem(Q_offs, iInt);
+		Q_offs = remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
@@ -97,13 +99,15 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, int iX, int iY, int 
 	ell.x_hwhm = SIGMA2HWHM/sqrt(res_rot(0,0));
 	ell.y_hwhm = SIGMA2HWHM/sqrt(res_rot(1,1));
 
-	//ell.x_offs = Q_offs[iX];
-	//ell.y_offs = Q_offs[iY];
+	ell.x_offs = Q_offs[iX];
+	ell.y_offs = Q_offs[iY];
 
 	return ell;
 }
 
-Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, int iX, int iY, int iZ, int iInt, int iRem)
+Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
+										const ublas::vector<double>& Q_avg,
+										int iX, int iY, int iZ, int iInt, int iRem)
 {
 	static const std::string strLabels[] = {"Q_para (1/A)", "Q_ortho (1/A)", "Q_z (1/A)", "E (meV)"};
 
@@ -116,12 +120,12 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, int iX, int iY, 
 
 
 	ublas::matrix<double> res_mat = reso;
-	//vector<double> Q_offs = reso.Q_avg;
+	ublas::vector<double> Q_offs = Q_avg;
 
 	if(iRem>-1)
 	{
 		res_mat = remove_elems(res_mat, iRem);
-		//Q_offs = remove_elem(Q_offs, iRem);
+		Q_offs = remove_elem(Q_offs, iRem);
 
 		if(iInt>=iRem) --iInt;
 		if(iX>=iRem) --iX;
@@ -132,7 +136,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, int iX, int iY, 
 	if(iInt>-1)
 	{
 		res_mat = gauss_int(res_mat, iInt);
-		//Q_offs = remove_elem(Q_offs, iInt);
+		Q_offs = remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
@@ -157,9 +161,9 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, int iX, int iY, 
 	ell.y_hwhm = SIGMA2HWHM/sqrt(res_rot(1,1));
 	ell.z_hwhm = SIGMA2HWHM/sqrt(res_rot(2,2));
 
-	//ell.x_offs = Q_offs[iX];
-	//ell.y_offs = Q_offs[iY];
-	//ell.z_offs = Q_offs[iZ];
+	ell.x_offs = Q_offs[iX];
+	ell.y_offs = Q_offs[iY];
+	ell.z_offs = Q_offs[iZ];
 
 	//std::cout << ell.rot << std::endl;
 	//std::cout << quat_to_rot3(rot3_to_quat(ell.rot)) << std::endl;
