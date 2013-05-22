@@ -205,4 +205,13 @@ std::list<T> vector_to_list(const std::vector<T>& vec)
 	return lst;
 }
 
+template<typename T=double>
+T max3(T t1, T t2, T t3)
+{
+	T tmax = t1;
+	tmax = std::max(tmax, t2);
+	tmax = std::max(tmax, t3);
+	return tmax;
+}
+
 #endif

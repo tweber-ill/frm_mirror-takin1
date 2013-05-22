@@ -21,9 +21,11 @@ static QString to_string(double d)
 	return QString(ostr.str().c_str());
 }
 
-QMutex PlotGl::m_mutex(QMutex::Recursive);
+QMutex PlotGl::s_mutexShared(QMutex::Recursive);
+
 
 PlotGl::PlotGl(QWidget* pParent) : QGLWidget(pParent),
+								m_mutex(QMutex::Recursive),
 								m_bMouseRotateActive(0), m_bMouseScaleActive(0),
 								m_bRenderThreadActive(1), m_bGLInited(0), m_bDoResize(1),
 								m_iW(640), m_iH(480),
@@ -37,6 +39,7 @@ PlotGl::PlotGl(QWidget* pParent) : QGLWidget(pParent),
 	m_dMouseScale = 25.;
 
 	setAutoBufferSwap(false);
+	//setUpdatesEnabled(0);
 	doneCurrent();
 	start(); 		// render thread
 }
@@ -116,8 +119,6 @@ void PlotGl::resizeGLThread(int w, int h)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	//updateGL();
 }
 
 void PlotGl::paintGLThread()
@@ -155,7 +156,7 @@ void PlotGl::paintGLThread()
 		if(obj.plttype == PLOT_ELLIPSOID)
 		{
 			glPushMatrix();
-			glTranslated(obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]);
+			//glTranslated(obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]);
 
 			GLdouble dMatRot[] = {obj.vecParams[6], obj.vecParams[7], obj.vecParams[8], 0.,
 								obj.vecParams[9], obj.vecParams[10], obj.vecParams[11], 0.,
@@ -180,7 +181,9 @@ void PlotGl::paintGLThread()
 		glDisable(GL_LIGHTING);
 		glColor3d(0., 0., 0.);
 
+		s_mutexShared.lock();
 		m_mutex.lock();
+
 		if(m_pfont)
 		{
 			renderText(m_dXMax*dAxisScale, 0., 0., m_strLabels[0], *m_pfont);
@@ -189,14 +192,15 @@ void PlotGl::paintGLThread()
 		}
 		if(m_pfontsmall)
 		{
-			renderText(m_dXMin, 0., 0., to_string(m_dXMin), *m_pfontsmall);
-			renderText(m_dXMax, 0., 0., to_string(m_dXMax), *m_pfontsmall);
-			renderText(0., m_dYMin, 0., to_string(m_dYMin), *m_pfontsmall);
-			renderText(0., m_dYMax, 0., to_string(m_dYMax), *m_pfontsmall);
-			renderText(0., 0., m_dZMin, to_string(m_dZMin), *m_pfontsmall);
-			renderText(0., 0., m_dZMax, to_string(m_dZMax), *m_pfontsmall);
+			renderText(m_dXMin, 0., 0., to_string(m_dXMin+m_dXMinMaxOffs), *m_pfontsmall);
+			renderText(m_dXMax, 0., 0., to_string(m_dXMax+m_dXMinMaxOffs), *m_pfontsmall);
+			renderText(0., m_dYMin, 0., to_string(m_dYMin+m_dYMinMaxOffs), *m_pfontsmall);
+			renderText(0., m_dYMax, 0., to_string(m_dYMax+m_dYMinMaxOffs), *m_pfontsmall);
+			renderText(0., 0., m_dZMin, to_string(m_dZMin+m_dZMinMaxOffs), *m_pfontsmall);
+			renderText(0., 0., m_dZMax, to_string(m_dZMax+m_dZMinMaxOffs), *m_pfontsmall);
 		}
 		m_mutex.unlock();
+		s_mutexShared.unlock();
 	glPopMatrix();
 
 	glPopMatrix();
@@ -213,8 +217,10 @@ void PlotGl::run()
 	{
 		if(m_bDoResize)
 		{
+			m_mutex.lock();
 			resizeGLThread(m_iW, m_iH);
 			m_bDoResize = 0;
+			m_mutex.unlock();
 		}
 
 		if(isVisible())
@@ -232,9 +238,11 @@ void PlotGl::paintEvent(QPaintEvent *evt)
 
 void PlotGl::resizeEvent(QResizeEvent *evt)
 {
+	m_mutex.lock();
 	m_iW = size().width();
 	m_iH = size().height();
 	m_bDoResize = 1;
+	m_mutex.unlock();
 }
 
 void PlotGl::clear()
@@ -242,11 +250,15 @@ void PlotGl::clear()
 	m_vecObjs.clear();
 }
 
-void PlotGl::SetMinMax(const ublas::vector<double>& vec)
+void PlotGl::SetMinMax(const ublas::vector<double>& vec, const ublas::vector<double>* pOffs)
 {
 	m_dXMin = -vec[0]; m_dXMax = vec[0];
 	m_dYMin = -vec[1]; m_dYMax = vec[1];
 	m_dZMin = -vec[2]; m_dZMax = vec[2];
+
+	m_dXMinMaxOffs =  pOffs ? (*pOffs)[0] : 0.;
+	m_dYMinMaxOffs =  pOffs ? (*pOffs)[1] : 0.;
+	m_dZMinMaxOffs =  pOffs ? (*pOffs)[2] : 0.;
 }
 
 void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,

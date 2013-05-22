@@ -33,7 +33,8 @@ struct PlotObjGl
 class PlotGl : public QGLWidget, QThread
 {
 protected:
-	static QMutex m_mutex;
+	QMutex m_mutex;
+	static QMutex s_mutexShared;
 
 	std::vector<PlotObjGl> m_vecObjs;
 	GLuint m_iLstSphere;
@@ -43,13 +44,16 @@ protected:
 	double m_dXMin, m_dXMax;
 	double m_dYMin, m_dYMax;
 	double m_dZMin, m_dZMax;
+	double m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
 
 	//void initializeGL();
 	void resizeEvent(QResizeEvent *evt);
 	void paintEvent(QPaintEvent *evt);
+
 	void SetColor(unsigned int iIdx);
 
-
+	// ------------------------------------------------------------------------
+	// mouse stuff
 	bool m_bMouseRotateActive;
 	double m_dMouseRot[2];
 	double m_dMouseBegin[2];
@@ -61,6 +65,7 @@ protected:
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
+
 
 	// ------------------------------------------------------------------------
 	// render thread
@@ -87,7 +92,7 @@ public:
 	void clear();
 
 	void SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ);
-	void SetMinMax(const ublas::vector<double>& vec);
+	void SetMinMax(const ublas::vector<double>& vec, const ublas::vector<double>* pOffs=0);
 };
 
 
