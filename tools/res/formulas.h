@@ -34,9 +34,14 @@ inline units::quantity<units::si::energy> k2E(const units::quantity<units::si::w
 	return E;
 }
 
-inline units::quantity<units::si::wavenumber> E2k(const units::quantity<units::si::energy>& E)
+inline units::quantity<units::si::wavenumber> E2k(const units::quantity<units::si::energy>& E, bool &bImag)
 {
-	units::quantity<units::si::momentum> p = units::sqrt(2.*codata::m_n*E);
+	if(E < 0.*one_meV)
+		bImag = 1;
+	else
+		bImag = 0;
+
+	units::quantity<units::si::momentum> p = units::sqrt(2.*codata::m_n*units::abs(E));
 	units::quantity<units::si::wavenumber> k = p / codata::hbar;
 	return k;
 }

@@ -180,10 +180,17 @@ CNResults calc_cn(CNParams& cn)
 
 bool calc_cn_angles(CNParams& cn, CNResults& res)
 {
+	bool bImag=0;
+	wavenumber E_as_k = E2k(cn.E, bImag);
+	double dSign = 1.;
+	if(bImag) dSign = -1.;
+
 	if(cn.bki_fix)
-		cn.kf = units::sqrt(cn.ki*cn.ki - E2k(cn.E)*E2k(cn.E));
+		cn.kf = units::sqrt(cn.ki*cn.ki - dSign*E_as_k*E_as_k);
 	else
-		cn.ki = units::sqrt(cn.kf*cn.kf + E2k(cn.E)*E2k(cn.E));
+		cn.ki = units::sqrt(cn.kf*cn.kf + dSign*E_as_k*E_as_k);
+
+	//std::cout << cn.ki << ", " << cn.kf << std::endl;
 
 	res.angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
 	res.angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
