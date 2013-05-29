@@ -128,7 +128,6 @@ inline uint lerprgb(uint col1, uint col2, double dval)
 	uchar b1 = uchar(col1&0x000000ff);
 	uchar b2 = uchar(col2&0x000000ff);
 
-
 	uchar r = lerp(r1, r2, dval);
 	uchar g = lerp(g1, g2, dval);
 	uchar b = lerp(b1, b2, dval);
