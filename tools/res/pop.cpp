@@ -251,7 +251,9 @@ CNResults calc_pop(PopParams& pop)
 	}
 	res.reso = M*SIGMA2FWHM*SIGMA2FWHM;
 
+	calc_bragg_widths(pop, res);
 	calc_cn_vol(pop, res);
+
 	if(::isnan(res.dR0) || isnan(res.reso))
 	{
 		res.strErr = "Invalid result.";

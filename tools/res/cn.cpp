@@ -162,7 +162,9 @@ CNResults calc_cn(CNParams& cn)
 
 	res.reso = NP;
 
+	calc_bragg_widths(cn, res);
 	calc_cn_vol(cn, res);
+
 	if(::isnan(res.dR0) || isnan(res.reso))
 	{
 		res.strErr = "Invalid result.";
@@ -172,6 +174,13 @@ CNResults calc_cn(CNParams& cn)
 
 	res.bOk = true;
 	return res;
+}
+
+
+void calc_bragg_widths(CNParams& cn, CNResults& res)
+{
+	for(unsigned int i=0; i<4; ++i)
+		res.dBraggFWHMs[i] = SIGMA2FWHM/sqrt(res.reso(i,i));
 }
 
 

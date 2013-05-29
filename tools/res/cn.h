@@ -98,12 +98,15 @@ struct CNResults
 	ublas::vector<double> Q_avg;
 	double dR0;				// resolution volume in 1/A^3 * meV
 	double dR0_vi, dR0_vf;
+
+	double dBraggFWHMs[4];
 };
 
 
 extern ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx);
 extern CNResults calc_cn(CNParams& cn);
 extern bool calc_cn_angles(CNParams& cn, CNResults& res);
+extern void calc_bragg_widths(CNParams& cn, CNResults& res);
 extern void calc_cn_vol(CNParams& cn, CNResults& res);
 
 #endif
