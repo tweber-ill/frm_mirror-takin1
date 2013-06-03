@@ -164,12 +164,34 @@ template<typename T> T* vec_to_array(const std::vector<T>& vec)
 template<class T>
 struct sort_obj
 {
-	T x, y, z;
+	std::vector<T> vec;
 };
 
 template<class T>
 bool comp_fkt(sort_obj<T> t0, sort_obj<T> t1)
-{ return t0.x < t1.x; }
+{ return t0.vec[0] < t1.vec[0]; }
+
+
+// simultaneously sort two arrays
+template<class Iter=double*, typename T=double> void sort_2(Iter begin1, Iter end1, Iter begin2)
+{
+	const unsigned int N = end1-begin1;
+	sort_obj<T> *pObj = new sort_obj<T>[N];
+	for(unsigned int i=0; i<N; ++i)
+	{
+		pObj[i].vec.push_back(*(begin1+i));
+		pObj[i].vec.push_back(*(begin2+i));
+	}
+
+	std::sort(pObj, pObj+N, comp_fkt<T>);
+	for(unsigned int i=0; i<N; ++i)
+	{
+		*(begin1+i) = pObj[i].vec[0];
+		*(begin2+i) = pObj[i].vec[1];
+	}
+
+	delete[] pObj;
+}
 
 // simultaneously sort three arrays
 template<class Iter=double*, typename T=double> void sort_3(Iter begin1, Iter end1, Iter begin2, Iter begin3)
@@ -178,17 +200,17 @@ template<class Iter=double*, typename T=double> void sort_3(Iter begin1, Iter en
 	sort_obj<T> *pObj = new sort_obj<T>[N];
 	for(unsigned int i=0; i<N; ++i)
 	{
-		pObj[i].x = *(begin1+i);
-		pObj[i].y = *(begin2+i);
-		pObj[i].z = *(begin3+i);
+		pObj[i].vec.push_back(*(begin1+i));
+		pObj[i].vec.push_back(*(begin2+i));
+		pObj[i].vec.push_back(*(begin3+i));
 	}
 
 	std::sort(pObj, pObj+N, comp_fkt<T>);
 	for(unsigned int i=0; i<N; ++i)
 	{
-		*(begin1+i) = pObj[i].x;
-		*(begin2+i) = pObj[i].y;
-		*(begin3+i) = pObj[i].z;
+		*(begin1+i) = pObj[i].vec[0];
+		*(begin2+i) = pObj[i].vec[1];
+		*(begin3+i) = pObj[i].vec[2];
 	}
 
 	delete[] pObj;
