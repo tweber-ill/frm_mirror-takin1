@@ -7,6 +7,7 @@
 
 #include "linalg.h"
 #include "math.h"
+#include "../settings.h"
 
 extern "C"
 {
@@ -68,9 +69,10 @@ bool eigenvec<double>(const ublas::matrix<double>& mat,
 
     if(iInfo!=0)
     {
-		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
-					<< std::endl;
-		bOk = false;
+    	if(Settings::Get<int>("general/debug_level") >= 1)
+    		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
+    					<< std::endl;
+    	bOk = false;
     }
 
     for(unsigned int i=0; i<iOrder; ++i)
@@ -119,8 +121,9 @@ bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
 
     if(iInfo!=0)
     {
-		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
-					<< std::endl;
+    	if(Settings::Get<int>("general/debug_level") >= 1)
+    		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
+    					<< std::endl;
 		bOk = false;
     }
 
