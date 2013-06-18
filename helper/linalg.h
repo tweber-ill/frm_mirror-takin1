@@ -153,7 +153,7 @@ ublas::matrix<T> rotation_matrix_3d_z(T angle)
 }
 
 template<typename T=double>
-ublas::matrix<T> skew(const ublas::vector<double>& vec)
+ublas::matrix<T> skew(const ublas::vector<T>& vec)
 {
 	ublas::matrix<T> mat = ublas::zero_matrix<T>(vec.size(), vec.size());
 
@@ -182,9 +182,9 @@ ublas::matrix<T> unit_matrix(unsigned int N)
 
 // Euler-Rodrigues formula
 template<typename T=double>
-ublas::matrix<T> rotation_matrix(const ublas::vector<double>& vec, T angle)
+ublas::matrix<T> rotation_matrix(const ublas::vector<T>& vec, T angle)
 {
-	return (1 - std::cos(angle)) * ublas::outer_prod(vec,vec) +
+	return (T(1) - std::cos(angle)) * ublas::outer_prod(vec,vec) +
 				std::cos(angle) * unit_matrix(vec.size()) +
 				std::sin(angle) * skew(vec);
 }
