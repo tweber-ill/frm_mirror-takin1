@@ -24,10 +24,10 @@ public:
 
 	bool Load(const char* pcFile);
 
-	std::string QueryString(const char* pcAdr, const char* pcDef, bool *pbOk);
+	std::string QueryString(const char* pcAdr, const char* pcDef, bool *pbOk=0);
 
 	template<typename T>
-	T Query(const char* pcAdr, T tDef, bool *pbOk)
+	T Query(const char* pcAdr, T tDef, bool *pbOk=0)
 	{
 		std::ostringstream ostrDef;
 		ostrDef << tDef;
