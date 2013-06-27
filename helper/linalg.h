@@ -96,6 +96,9 @@ vector_type get_column(const matrix_type& mat, unsigned int iCol)
 template<typename T=double>
 ublas::matrix<T> rotation_matrix_2d(T angle)
 {
+	if(angle==0.)
+		return ublas::identity_matrix<T>(2);
+
 	ublas::matrix<T> mat(2,2);
 
 	T s = std::sin(angle);
