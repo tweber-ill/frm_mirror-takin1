@@ -94,6 +94,9 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 		evecs_rot = ublas::prod(evecs_rot, rot_m90);
 		ell.phi = rotation_angle(evecs_rot)[0];
 	}
+	if(ell.phi == -M_PI)
+		ell.phi = 0.;
+
 	//std::cout << ell.phi/M_PI*180. << std::endl;
 
 	// formula A4.61 from Shirane
