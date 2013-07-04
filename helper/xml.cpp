@@ -19,17 +19,20 @@
 #include <vector>
 
 
-Xml::Xml()
+Xml::Xml() : m_bOK(0)
 {}
 
 Xml::~Xml()
-{ }
+{}
 
 bool Xml::Load(const char* pcFile)
 {
 	QFile file(pcFile);
 	if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		m_bOK = 0;
 		return false;
+	}
 
 	QTextStream istr(&file);
 	QString strXml = istr.readAll();
@@ -39,11 +42,15 @@ bool Xml::Load(const char* pcFile)
 	m_bufXml.open(QIODevice::ReadOnly);
 
 	file.close();
+
+	m_bOK = 1;
 	return true;
 }
 
 std::string Xml::QueryString(const char* pcAdr, const char* pcDef, bool *pbOk)
 {
+	if(!m_bOK) return pcDef;
+
 	m_bufXml.seek(0);
 
 	std::string strAdr(pcAdr);

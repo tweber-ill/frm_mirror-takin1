@@ -17,6 +17,7 @@ class Xml
 {
 protected:
 	QBuffer m_bufXml;
+	bool m_bOK;
 
 public:
 	Xml();
@@ -29,6 +30,8 @@ public:
 	template<typename T>
 	T Query(const char* pcAdr, T tDef, bool *pbOk=0)
 	{
+		if(!m_bOK) return tDef;
+
 		std::ostringstream ostrDef;
 		ostrDef << tDef;
 
