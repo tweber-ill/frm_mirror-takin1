@@ -80,4 +80,23 @@ bool float_equal(T t1, T t2)
 	return std::fabs(t1-t2) < std::numeric_limits<double>::epsilon();
 }
 
+
+// x=0..1
+template<typename T=double>
+T linear_interp(T x0, T x1, T x)
+{
+	return x0 + (x1 - x0)*x;
+}
+
+
+// x=0..1, y=0..1
+template<typename T=double>
+T bilinear_interp(T x0y0, T x1y0, T x0y1, T x1y1, T x, T y)
+{
+	T top = linear_interp<T>(x0y1, x1y1, x);
+	T bottom = linear_interp<T>(x0y0, x1y0, x);
+
+	return linear_interp<T>(bottom, top, y);
+}
+
 #endif
