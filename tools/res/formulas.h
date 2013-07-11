@@ -4,47 +4,10 @@
  * @date 01-may-2013
  */
 
-#ifndef __NEUTRON_FORMULAS_H__
-#define __NEUTRON_FORMULAS_H__
+#ifndef __TAS_FORMULAS_H__
+#define __TAS_FORMULAS_H__
 
-#include <boost/units/unit.hpp>
-#include <boost/units/quantity.hpp>
-#include <boost/units/dimensionless_quantity.hpp>
-#include <boost/units/physical_dimensions.hpp>
-#include <boost/units/systems/si.hpp>
-#include <boost/units/systems/angle/degrees.hpp>
-
-#include <boost/units/systems/si/codata/universal_constants.hpp>
-#include <boost/units/systems/si/codata/neutron_constants.hpp>
-#include <boost/units/systems/si/codata/electromagnetic_constants.hpp>
-#include <boost/units/systems/si/codata/physico-chemical_constants.hpp>
-#include <boost/units/base_units/metric/angstrom.hpp>
-#include <boost/units/cmath.hpp>
-
-
-namespace ublas = boost::numeric::ublas;
-namespace units = boost::units;
-namespace codata = boost::units::si::constants::codata;
-
-
-inline units::quantity<units::si::energy> k2E(const units::quantity<units::si::wavenumber>& k)
-{
-	units::quantity<units::si::momentum> p = codata::hbar*k;
-	units::quantity<units::si::energy> E = p*p / (2.*codata::m_n);
-	return E;
-}
-
-inline units::quantity<units::si::wavenumber> E2k(const units::quantity<units::si::energy>& E, bool &bImag)
-{
-	if(E < 0.*one_meV)
-		bImag = 1;
-	else
-		bImag = 0;
-
-	units::quantity<units::si::momentum> p = units::sqrt(2.*codata::m_n*units::abs(E));
-	units::quantity<units::si::wavenumber> k = p / codata::hbar;
-	return k;
-}
+#include "../../helper/neutrons.hpp"
 
 inline bool get_twotheta(const units::quantity<units::si::wavenumber>& ki,
 							const units::quantity<units::si::wavenumber>& kf,

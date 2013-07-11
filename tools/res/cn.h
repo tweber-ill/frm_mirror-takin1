@@ -11,20 +11,7 @@
 #ifndef __CN_H__
 #define __CN_H__
 
-#include <boost/units/unit.hpp>
-#include <boost/units/quantity.hpp>
-#include <boost/units/dimensionless_quantity.hpp>
-#include <boost/units/physical_dimensions.hpp>
-#include <boost/units/systems/si.hpp>
-#include <boost/units/systems/angle/degrees.hpp>
-
-#include <boost/units/systems/si/codata/universal_constants.hpp>
-#include <boost/units/systems/si/codata/neutron_constants.hpp>
-#include <boost/units/systems/si/codata/electromagnetic_constants.hpp>
-#include <boost/units/systems/si/codata/physico-chemical_constants.hpp>
-#include <boost/units/base_units/metric/angstrom.hpp>
-#include <boost/units/base_units/angle/arcminute.hpp>
-#include <boost/units/cmath.hpp>
+#include "formulas.h"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -34,16 +21,6 @@ namespace ublas = boost::numeric::ublas;
 namespace units = boost::units;
 namespace codata = boost::units::si::constants::codata;
 
-
-#define one_meV (1e-3 * codata::e * units::si::volts)
-
-static const double SIGMA2FWHM = 2.*sqrt(2.*log(2.));
-static const double SIGMA2HWHM = SIGMA2FWHM/2.;
-
-static const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
-
-static const double KSQ2E = (codata::hbar*codata::hbar / (2.*codata::m_n)) / one_meV / (angstrom*angstrom);
-static const double E2KSQ = 1./KSQ2E;
 
 
 struct CNParams

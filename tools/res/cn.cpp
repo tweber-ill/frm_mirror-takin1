@@ -204,6 +204,11 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 	res.thetaa = cn.dana_sense*units::asin(M_PI/(cn.ana_d*cn.kf));
 	res.thetam = cn.dmono_sense*units::asin(M_PI/(cn.mono_d*cn.ki));
 
+	/*std::cout << "theta_a = " << res.thetaa << ", "
+			  << "theta_m = " << res.thetam << ", "
+			  << "lam_i = " << k2lam(cn.ki)
+			  << std::endl;*/
+
 	units::quantity<units::si::dimensionless> dttCos = (cn.ki*cn.ki + cn.kf*cn.kf - cn.Q*cn.Q)/(2.*cn.ki*cn.kf);
 	if(units::abs(dttCos) > 1)
 	{
