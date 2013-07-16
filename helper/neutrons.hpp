@@ -16,6 +16,7 @@
 #include <boost/units/physical_dimensions.hpp>
 #include <boost/units/systems/si.hpp>
 #include <boost/units/systems/angle/degrees.hpp>
+//#include <boost/units/systems/temperature/celsius.hpp>
 #include <boost/units/systems/si/codata/universal_constants.hpp>
 #include <boost/units/systems/si/codata/neutron_constants.hpp>
 #include <boost/units/systems/si/codata/electromagnetic_constants.hpp>
@@ -26,9 +27,12 @@ namespace co = boost::units::si::constants::codata;
 #include <boost/units/base_units/metric/angstrom.hpp>
 #include <boost/units/cmath.hpp>
 
-
 #ifndef one_meV
 	#define one_meV (1e-3 * co::e * units::si::volts)
+#endif
+
+#ifndef one_eV
+	#define one_eV (co::e * units::si::volts)
 #endif
 
 static const double SIGMA2FWHM = 2.*sqrt(2.*log(2.));
@@ -130,5 +134,20 @@ E2k(const units::quantity<units::unit<units::energy_dimension, Sys>, Y>& E, bool
 		k = p / co::hbar;
 	return k;
 }
+
+
+// --------------------------------------------------------------------
+/* formulas.cpp */
+extern void init_formulas();
+extern bool get_val(const std::string& str, double& dVal, std::string& strUnit);
+extern units::quantity<units::si::frequency> get_freq(const std::string& strVar);
+extern units::quantity<units::si::energy> get_energy(const std::string& strVar);
+extern units::quantity<units::si::length> get_length(const std::string& strUnit);
+extern units::quantity<units::si::wavenumber> get_wavenumber(const std::string& strVar);
+extern units::quantity<units::si::time> get_time(const std::string& strVar);
+extern units::quantity<units::si::plane_angle> get_angle(const std::string& strVar);
+extern units::quantity<units::si::temperature> get_temperature(const std::string& strVar);
+extern double get_scalar(const std::string& strVar);
+// --------------------------------------------------------------------
 
 #endif
