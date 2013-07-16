@@ -12,31 +12,36 @@
 #include <iostream>
 #include <sstream>
 
+extern std::string
+insert_before(const std::string& str,
+				const std::string& strChar,
+				const std::string& strInsert);
+
 inline std::string get_fileext(const std::string& str)
 {
-	unsigned int uiPos = str.find_last_of('.');
+	std::size_t iPos = str.find_last_of('.');
 
-	if(uiPos == std::string::npos)
+	if(iPos == std::string::npos)
 		return std::string("");
-	return str.substr(uiPos+1);
+	return str.substr(iPos+1);
 }
 
 inline std::string get_dir(const std::string& str)
 {
-	unsigned int uiPos = str.find_last_of("\\/");
+	std::size_t iPos = str.find_last_of("\\/");
 
-	if(uiPos == std::string::npos)
+	if(iPos == std::string::npos)
 		return std::string("");
-	return str.substr(0, uiPos);
+	return str.substr(0, iPos);
 }
 
 inline std::string get_file(const std::string& str)
 {
-	unsigned int uiPos = str.find_last_of("\\/");
+	std::size_t iPos = str.find_last_of("\\/");
 
-	if(uiPos == std::string::npos)
+	if(iPos == std::string::npos)
 		return std::string("");
-	return str.substr(uiPos+1);
+	return str.substr(iPos+1);
 }
 
 inline bool is_equal(const std::string& str0, const std::string& str1, bool bCase=false)
