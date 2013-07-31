@@ -498,22 +498,26 @@ public:
 		// pos0 + t0*dir0 = pos1 + t1*dir1
 		// pos0 - pos1 = t1*dir1 - t0*dir0
 
-		const ublas::vector<T>& pos = pos0-pos1;
-		ublas::matrix<T> mat(N,2);
+		const ublas::vector<T> pos = pos0-pos1;
+		ublas::matrix<T> mat = ublas::identity_matrix<T>(N);
 
 		for(unsigned int i=0; i<N; ++i)
 		{
-			mat(i, 0) = dir0[i];
+			mat(i, 0) = -dir0[i];
 			mat(i, 1) = dir1[i];
 		}
 
 		ublas::matrix<T> inv;
 		if(!::inverse(mat, inv))
+        {
+            std::cerr << "Could not invert matrix " << mat << std::endl;
 			return false;
+        }
 
 		ublas::vector<T> params = ublas::prod(inv, pos);
-		t = -params[0];
+		t = params[0];
 
+        //std::cout << "t=" << t << ", ";
 		return true;
 	}
 };

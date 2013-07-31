@@ -63,7 +63,11 @@ std::vector<unsigned int> find_zeroes(unsigned int N, const T* pIn)
 
 		T param;
 		if(!line.intersect(xaxis, param))
+        {
+            //std::cerr << "No intersection." << std::endl;
 			continue;
+        }
+        //std::cout << "Intersection param: " << param << std::endl;
 
 		ublas::vector<T> posInters = line(param);
 		if(posInters[0]>=0. && posInters[0]<=1.)
