@@ -34,7 +34,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 									const ublas::vector<double>& Q_avg,
 									int iX, int iY, int iInt, int iRem1, int iRem2)
 {
-	static const std::string strLabels[] = {"Q_para (1/A)", "Q_ortho (1/A)", "Q_z (1/A)", "E (meV)"};
+	static const std::string strLabels[] = {"Q_{para} (1/A)", "Q_{ortho} (1/A)", "Q_z (1/A)", "E (meV)"};
 
 	Ellipse ell;
 	ell.x_offs = ell.y_offs = 0.;
