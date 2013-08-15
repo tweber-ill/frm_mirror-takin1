@@ -27,6 +27,17 @@ std::string get_fileext(const std::string& str)
 	return str.substr(iPos+1);
 }
 
+// e.g. returns "tof" for "123.tof.bz2"
+std::string get_fileext2(const std::string& str)
+{
+	std::size_t iPos = str.find_last_of('.');
+	if(iPos == std::string::npos || iPos == 0)
+		return std::string("");
+
+	std::string strFile = str.substr(0, iPos);
+	return get_fileext(strFile);
+}
+
 std::string get_dir(const std::string& str)
 {
 	std::size_t iPos = str.find_last_of("\\/");

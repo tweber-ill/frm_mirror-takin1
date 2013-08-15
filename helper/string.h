@@ -17,6 +17,7 @@ insert_before(const std::string& str,
 				const std::string& strChar,
 				const std::string& strInsert);
 extern std::string get_fileext(const std::string& str);
+extern std::string get_fileext2(const std::string& str);
 extern std::string get_dir(const std::string& str);
 extern std::string get_file(const std::string& str);
 extern bool is_equal(const std::string& str0, const std::string& str1, bool bCase=false);
