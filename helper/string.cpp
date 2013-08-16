@@ -73,30 +73,31 @@ bool is_equal(const std::string& str0, const std::string& str1, bool bCase)
 
 void trim(std::string& str)
 {
-        std::size_t posFirst = str.find_first_not_of(" \t");
-        if(posFirst==std::string::npos)
-        	posFirst = str.length();
+	std::size_t posFirst = str.find_first_not_of(" \t");
+	if(posFirst==std::string::npos)
+		posFirst = str.length();
 
-        str.erase(str.begin(), str.begin()+posFirst);
+	str.erase(str.begin(), str.begin()+posFirst);
 
 
-        std::size_t posLast = str.find_last_not_of(" \t");
-        if(posLast==std::string::npos)
-                posLast = str.length();
-        else
-        	++posLast;
+	std::size_t posLast = str.find_last_not_of(" \t");
+	if(posLast==std::string::npos)
+			posLast = str.length();
+	else
+		++posLast;
 
-        str.erase(str.begin()+posLast, str.end());
+	str.erase(str.begin()+posLast, str.end());
 }
 
-void find_and_replace(std::string& str1, const std::string& str_old,
+bool find_and_replace(std::string& str1, const std::string& str_old,
                                                 const std::string& str_new)
 {
-        std::size_t pos = str1.find(str_old);
-        if(pos==std::string::npos)
-                return;
+	std::size_t pos = str1.find(str_old);
+	if(pos==std::string::npos)
+			return false;
 
-        str1.replace(pos, str_old.length(), str_new);
+	str1.replace(pos, str_old.length(), str_new);
+	return true;
 }
 
 

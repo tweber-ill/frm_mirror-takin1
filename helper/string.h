@@ -22,7 +22,7 @@ extern std::string get_dir(const std::string& str);
 extern std::string get_file(const std::string& str);
 extern bool is_equal(const std::string& str0, const std::string& str1, bool bCase=false);
 extern void trim(std::string& str);
-extern void find_and_replace(std::string& str1, const std::string& str_old,
+extern bool find_and_replace(std::string& str1, const std::string& str_old,
                                                 const std::string& str_new);
 
 

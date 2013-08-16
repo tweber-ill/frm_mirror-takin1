@@ -7,7 +7,7 @@
 #ifndef __NEUTRON_FORMULAS__
 #define __NEUTRON_FORMULAS__
 
-#include <cmath>
+#include "math.h"
 
 #include <boost/units/unit.hpp>
 #include <boost/units/quantity.hpp>
