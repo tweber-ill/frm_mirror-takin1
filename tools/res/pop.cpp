@@ -10,6 +10,7 @@
 
 #include "pop.h"
 #include "../../helper/linalg.h"
+#include "../../helper/math.h"
 
 #include <string>
 #include <iostream>
@@ -254,7 +255,7 @@ CNResults calc_pop(PopParams& pop)
 	calc_bragg_widths(pop, res);
 	calc_cn_vol(pop, res);
 
-	if(::isnan(res.dR0) || isnan(res.reso))
+	if(std::isnan(res.dR0) || isnan(res.reso))
 	{
 		res.strErr = "Invalid result.";
 		res.bOk = false;

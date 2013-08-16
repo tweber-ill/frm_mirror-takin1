@@ -10,6 +10,7 @@
 
 #include "cn.h"
 #include "../../helper/linalg.h"
+#include "../../helper/math.h"
 
 #include <string>
 #include <iostream>
@@ -165,7 +166,7 @@ CNResults calc_cn(CNParams& cn)
 	calc_bragg_widths(cn, res);
 	calc_cn_vol(cn, res);
 
-	if(::isnan(res.dR0) || isnan(res.reso))
+	if(std::isnan(res.dR0) || isnan(res.reso))
 	{
 		res.strErr = "Invalid result.";
 		res.bOk = false;
