@@ -11,6 +11,7 @@
 #include <boost/tokenizer.hpp>
 #include <iostream>
 #include <sstream>
+#include <map>
 
 extern std::string
 insert_before(const std::string& str,
@@ -24,6 +25,8 @@ extern bool is_equal(const std::string& str0, const std::string& str1, bool bCas
 extern void trim(std::string& str);
 extern bool find_and_replace(std::string& str1, const std::string& str_old,
                                                 const std::string& str_new);
+extern std::pair<std::string, std::string>
+		split_first(const std::string& str, const std::string& strSep);
 
 
 template<class T>
@@ -67,5 +70,24 @@ std::string group_numbers(T tNum)
 	ostr << tNum;
 	return ostr.str();
 }
+
+
+class StringMap
+{
+	public:
+		typedef std::map<std::string, std::string> t_map;
+
+	protected:
+		t_map m_map;
+		std::string m_strKeyValSeparator;
+		std::string m_strComment;
+
+	public:
+		StringMap(const char* pcKeyValSep=":", const char* pcComment="#");
+		virtual ~StringMap();
+
+		void ParseString(const std::string& strConf);
+};
+
 
 #endif

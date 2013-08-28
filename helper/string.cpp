@@ -102,6 +102,7 @@ bool find_and_replace(std::string& str1, const std::string& str_old,
 
 
 
+
 template<>
 void get_tokens<std::string>(const std::string& str, const std::string& strDelim,
                                         std::vector<std::string>& vecRet)
@@ -111,4 +112,75 @@ void get_tokens<std::string>(const std::string& str, const std::string& strDelim
 
 	for(const std::string& strTok : tok)
 		vecRet.push_back(strTok);
+}
+
+
+
+
+std::pair<std::string, std::string>
+	split_first(const std::string& str, const std::string& strSep, bool bTrim=0)
+{
+	std::string str1, str2;
+
+	std::size_t pos = str.find(strSep);
+	if(pos != std::string::npos)
+	{
+		str1 = str.substr(0, pos);
+		if(pos+1 < str.length())
+			str2 = str.substr(pos+1, std::string::npos);
+	}
+
+	if(bTrim)
+	{
+		::trim(str1);
+		::trim(str2);
+	}
+
+	return std::pair<std::string, std::string>(str1, str2);
+}
+
+
+
+
+StringMap::StringMap(const char* pcKeyValSep, const char* pcComment)
+{
+	if(pcComment)
+		m_strComment = pcComment;
+	if(pcKeyValSep)
+		m_strKeyValSeparator = pcKeyValSep;
+}
+
+StringMap::~StringMap()
+{
+}
+
+void StringMap::ParseString(const std::string& strConf)
+{
+	std::istringstream istr(strConf);
+	while(!istr.eof())
+	{
+		std::string strLine;
+		std::getline(istr, strLine);
+
+		trim(strLine);
+		if(strLine.length()==0)
+			continue;
+
+		if(m_strComment.length()>0 && strLine.substr(0,m_strComment.length())==m_strComment)
+			continue;
+
+		std::pair<std::string, std::string> pairStr = split_first(strLine, m_strKeyValSeparator, 1);
+		if(pairStr.first.length()==0 && pairStr.second.length()==0)
+			continue;
+
+		bool bInserted = m_map.insert(pairStr).second;
+		if(!bInserted)
+		{
+			std::cerr << "Warning: Key \""
+					<<  pairStr.first
+					<< "\" already exists in map." << std::endl;
+		}
+
+		//std::cout << "key: \"" << pairStr.first <<"\" value:\"" << pairStr.second << "\"" << std::endl;
+	}
 }
