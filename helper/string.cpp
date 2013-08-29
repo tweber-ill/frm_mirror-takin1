@@ -100,6 +100,18 @@ bool find_and_replace(std::string& str1, const std::string& str_old,
 	return true;
 }
 
+bool begins_with(const std::string& str, const std::string& strBeg)
+{
+	if(str.length() < strBeg.length())
+		return false;
+
+	for(unsigned int i=0; i<strBeg.length(); ++i)
+		if(str[i] != strBeg[i])
+			return false;
+
+	return true;
+}
+
 
 
 

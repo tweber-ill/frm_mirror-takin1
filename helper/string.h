@@ -28,6 +28,7 @@ extern bool find_and_replace(std::string& str1, const std::string& str_old,
 extern std::pair<std::string, std::string>
 		split_first(const std::string& str, const std::string& strSep);
 
+extern bool begins_with(const std::string& str, const std::string& strBeg);
 
 template<class T>
         void get_tokens(const std::string& str, const std::string& strDelim,
@@ -87,7 +88,30 @@ class StringMap
 		virtual ~StringMap();
 
 		void ParseString(const std::string& strConf);
+
+		void SetMap(const t_map& map) { m_map = map; }
+		const t_map& GetMap() const { return m_map; }
 };
 
+
+template<typename T>
+std::map<T, T> vecmap_to_map(const std::map<T, std::vector<T> >& themap)
+{
+	std::map<T,T> singleMap;
+
+	for(const auto& pair : themap)
+	{
+		const T& key = pair.first;
+		const std::vector<T>& vect = pair.second;
+
+		T tval;
+		if(vect.size() > 0)
+			tval = vect[0];
+
+		singleMap.insert(std::pair<T, T>(pair.first, tval));
+	}
+
+	return singleMap;
+}
 
 #endif
