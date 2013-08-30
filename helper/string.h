@@ -27,6 +27,8 @@ extern bool find_and_replace(std::string& str1, const std::string& str_old,
                                                 const std::string& str_new);
 extern std::pair<std::string, std::string>
 		split_first(const std::string& str, const std::string& strSep);
+//extern std::vector<std::string>
+//		split(const std::string& str, const std::string& strSep);
 
 extern bool begins_with(const std::string& str, const std::string& strBeg);
 
@@ -91,6 +93,9 @@ class StringMap
 
 		void SetMap(const t_map& map) { m_map = map; }
 		const t_map& GetMap() const { return m_map; }
+
+		bool Serialize(std::ostream& ostrSer) const;
+		bool Deserialize(const void* pvMem, unsigned int iLen);
 };
 
 

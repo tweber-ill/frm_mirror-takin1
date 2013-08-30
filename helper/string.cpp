@@ -4,6 +4,9 @@
  * @date 25-apr-2013
  */
 #include "string.h"
+#include "comp.h"
+
+#include <cstring>
 
 std::string insert_before(const std::string& str,
 						const std::string& strChar, const std::string& strInsert)
@@ -154,6 +157,7 @@ std::pair<std::string, std::string>
 
 
 
+
 StringMap::StringMap(const char* pcKeyValSep, const char* pcComment)
 {
 	if(pcComment)
@@ -195,4 +199,84 @@ void StringMap::ParseString(const std::string& strConf)
 
 		//std::cout << "key: \"" << pairStr.first <<"\" value:\"" << pairStr.second << "\"" << std::endl;
 	}
+}
+
+bool StringMap::Serialize(std::ostream& ostrSer) const
+{
+	unsigned int iLen = 0;
+	for(const auto& pair : m_map)
+	{
+		const std::string& strKey = pair.first;
+		const std::string& strVal = pair.second;
+
+		iLen += strKey.length()+1;
+		iLen += strVal.length()+1;
+	}
+
+	char *pcMem = new char[iLen];
+	memset(pcMem, 0, iLen);
+	unsigned int iCurIdx=0;
+
+	for(const auto& pair : m_map)
+	{
+		const std::string& strKey = pair.first;
+		const std::string& strVal = pair.second;
+
+		memcpy(pcMem+iCurIdx, strKey.c_str(), strKey.length());
+		iCurIdx += strKey.length()+1;
+		memcpy(pcMem+iCurIdx, strVal.c_str(), strVal.length());
+		iCurIdx += strVal.length()+1;
+	}
+
+	bool bOk = comp_mem_to_stream(pcMem, iLen, ostrSer, COMP_BZ2);
+	delete[] pcMem;
+
+	return bOk;
+}
+
+
+static inline std::vector<std::string> split0(const char* pcMem, unsigned int iLen)
+{
+	std::vector<std::string> vecStr;
+	if(iLen==0) return vecStr;
+
+	vecStr.push_back(std::string(pcMem));
+	for(unsigned int iIdx=0; iIdx<iLen-1; ++iIdx)
+	{
+		if(pcMem[iIdx] == 0)
+		{
+			std::string str = pcMem+iIdx+1;
+			vecStr.push_back(str);
+		}
+	}
+
+	return vecStr;
+}
+
+bool StringMap::Deserialize(const void* pvMem, unsigned int iLen)
+{
+	char *pcUncomp = 0;
+	unsigned int iLenUncomp = 0;
+	if(!::decomp_mem_to_mem(pvMem, iLen, (void*&)pcUncomp, iLenUncomp))
+		return false;
+
+	std::vector<std::string> vecStrings = split0(pcUncomp, iLenUncomp);
+	if(pcUncomp) delete[] pcUncomp;
+
+	if(vecStrings.size()%2 != 0)
+	{
+		std::cerr << "Error: Uneven number of strings in key/value map."
+				  << std::endl;
+		return false;
+	}
+
+	for(unsigned int iIdx=0; iIdx<vecStrings.size(); iIdx+=2)
+	{
+		const std::string& strKey = vecStrings[iIdx];
+		const std::string& strVal = vecStrings[iIdx+1];
+
+		m_map.insert(std::pair<std::string,std::string>(strKey, strVal));
+	}
+
+	return true;
 }
