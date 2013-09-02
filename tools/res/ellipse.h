@@ -30,6 +30,7 @@ struct Ellipse : public FunctionModel_param
 	std::string x_lab, y_lab;
 
 	virtual ublas::vector<double> operator()(double t) const;
+	virtual const char* GetModelName() const { return "ellipse"; };
 };
 
 struct Ellipsoid
