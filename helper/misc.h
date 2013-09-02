@@ -235,4 +235,11 @@ T max3(T t1, T t2, T t3)
 	return tmax;
 }
 
+template<typename T1, typename T2>
+void merge_map(std::map<T1, T2>& mapThis, const std::map<T1, T2>& mapOther)
+{
+	for(const std::pair<T1, T2>& thepair : mapOther)
+		mapThis.insert(thepair);
+}
+
 #endif

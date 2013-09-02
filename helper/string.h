@@ -75,6 +75,7 @@ std::string group_numbers(T tNum)
 }
 
 
+class StringMap;
 class StringMap
 {
 	public:
@@ -93,10 +94,19 @@ class StringMap
 
 		void SetMap(const t_map& map) { m_map = map; }
 		const t_map& GetMap() const { return m_map; }
+		t_map& GetMap() { return m_map; }
 
 		bool Serialize(std::ostream& ostrSer) const;
 		bool Deserialize(const void* pvMem, unsigned int iLen);
+
+		std::string& operator[](const std::string& str);
+		const std::string& operator[](const std::string& str) const;
+
+		void Trim();
+		void MergeFrom(const std::vector<const StringMap*>& vecMaps);
 };
+
+extern std::ostream& operator<<(std::ostream& ostr, const StringMap& mapStr);
 
 
 template<typename T>

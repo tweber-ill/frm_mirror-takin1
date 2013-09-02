@@ -5,6 +5,7 @@
  */
 #include "string.h"
 #include "comp.h"
+#include "misc.h"
 
 #include <cstring>
 
@@ -170,6 +171,46 @@ StringMap::~StringMap()
 {
 }
 
+std::string& StringMap::operator[](const std::string& str)
+{
+	t_map::iterator iter = m_map.find(str);
+	if(iter == m_map.end())
+		return m_map.insert(t_map::value_type(str, "")).first->second;
+
+	return iter->second;
+}
+
+const std::string& StringMap::operator[](const std::string& str) const
+{
+	static std::string strDummy;
+
+	t_map::const_iterator iter = m_map.find(str);
+	if(iter != m_map.end())
+		return iter->second;
+
+	//std::cerr << "Warning: Returning dummy object." << std::endl;
+	return strDummy;
+}
+
+void StringMap::Trim()
+{
+	for(t_map::value_type& pair : m_map)
+	{
+		trim(pair.second);
+
+		if(pair.first == "" || pair.second == "")
+			m_map.erase(pair.first);
+	}
+}
+
+void StringMap::MergeFrom(const std::vector<const StringMap*>& vecMaps)
+{
+	m_map.clear();
+
+	for(const StringMap* pMap : vecMaps)
+		merge_map<std::string, std::string>(m_map, pMap->GetMap());
+}
+
 void StringMap::ParseString(const std::string& strConf)
 {
 	std::istringstream istr(strConf);
@@ -241,12 +282,17 @@ static inline std::vector<std::string> split0(const char* pcMem, unsigned int iL
 	if(iLen==0) return vecStr;
 
 	vecStr.push_back(std::string(pcMem));
+	//std::cout << pcMem << std::endl;
+
 	for(unsigned int iIdx=0; iIdx<iLen-1; ++iIdx)
 	{
 		if(pcMem[iIdx] == 0)
 		{
 			std::string str = pcMem+iIdx+1;
+			trim(str);
 			vecStr.push_back(str);
+
+			//std::cout << str << std::endl;
 		}
 	}
 
@@ -278,5 +324,14 @@ bool StringMap::Deserialize(const void* pvMem, unsigned int iLen)
 		m_map.insert(std::pair<std::string,std::string>(strKey, strVal));
 	}
 
+	Trim();
 	return true;
+}
+
+std::ostream& operator<<(std::ostream& ostr, const StringMap& mapStr)
+{
+	const StringMap::t_map& map = mapStr.GetMap();
+	for(const StringMap::t_map::value_type& pair : map)
+		ostr <<  pair.first << " = " << pair.second << std::endl;
+	return ostr;
 }
