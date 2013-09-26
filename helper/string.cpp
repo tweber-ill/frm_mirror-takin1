@@ -171,6 +171,17 @@ StringMap::~StringMap()
 {
 }
 
+const std::vector<std::string> StringMap::GetKeys() const
+{
+	std::vector<std::string> vecKeys;
+	vecKeys.reserve(m_map.size());
+
+	for(const t_map::value_type& val : m_map)
+		vecKeys.push_back(val.first);
+
+	return vecKeys;
+}
+
 std::string& StringMap::operator[](const std::string& str)
 {
 	t_map::iterator iter = m_map.find(str);

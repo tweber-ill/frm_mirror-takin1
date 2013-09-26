@@ -51,6 +51,20 @@ template<class T>
         }
 }
 
+// e.g. str = "123.4 +- 0.5"
+template<typename T=double>
+void get_val_and_err(const std::string& str, T& val, T& err)
+{
+	std::vector<T> vec;
+	get_tokens(str, "+-", vec);
+
+	if(vec.size() >= 1)
+		val = vec[0];
+	if(vec.size() >= 2)
+		err = vec[1];
+}
+
+
 template<>
 void get_tokens<std::string>(const std::string& str, const std::string& strDelim,
                                         std::vector<std::string>& vecRet);
@@ -101,6 +115,8 @@ class StringMap
 
 		std::string& operator[](const std::string& str);
 		const std::string& operator[](const std::string& str) const;
+
+		const std::vector<std::string> GetKeys() const;
 
 		void Trim();
 		void MergeFrom(const std::vector<const StringMap*>& vecMaps);
