@@ -113,6 +113,7 @@ class StringMap
 		bool Serialize(std::ostream& ostrSer) const;
 		bool Deserialize(const void* pvMem, unsigned int iLen);
 
+		bool HasKey(const std::string& str) const;
 		std::string& operator[](const std::string& str);
 		const std::string& operator[](const std::string& str) const;
 

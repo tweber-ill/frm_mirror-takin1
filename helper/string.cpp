@@ -182,6 +182,11 @@ const std::vector<std::string> StringMap::GetKeys() const
 	return vecKeys;
 }
 
+bool StringMap::HasKey(const std::string& str) const
+{
+	return (m_map.find(str) != m_map.end());
+}
+
 std::string& StringMap::operator[](const std::string& str)
 {
 	t_map::iterator iter = m_map.find(str);
