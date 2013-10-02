@@ -51,8 +51,6 @@ std::string Xml::QueryString(const char* pcAdr, const char* pcDef, bool *pbOk)
 {
 	if(!m_bOK) return pcDef;
 
-	m_bufXml.seek(0);
-
 	std::string strAdr(pcAdr);
 	::trim(strAdr);
 	if(strAdr.length()==0)
@@ -66,12 +64,16 @@ std::string Xml::QueryString(const char* pcAdr, const char* pcDef, bool *pbOk)
 	std::ostringstream ostrQuery;
 	ostrQuery << "doc($xml)" << strAdr << "/string()";
 
-	QXmlQuery query;
-	query.bindVariable("xml", &m_bufXml);
-	query.setQuery(QString(ostrQuery.str().c_str()));
+	m_mutex.lock();
+		m_bufXml.seek(0);
+		QXmlQuery query;
+		query.bindVariable("xml", &m_bufXml);
+		query.setQuery(QString(ostrQuery.str().c_str()));
 
-	QStringList strlstOut;
-	bool bOk = query.evaluateTo(&strlstOut);
+		QStringList strlstOut;
+		bool bOk = query.evaluateTo(&strlstOut);
+	m_mutex.unlock();
+
 	if(!bOk || strlstOut.size()==0)
 	{
 		if(pbOk) *pbOk = false;

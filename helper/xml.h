@@ -10,6 +10,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <mutex>
 
 #include <QtCore/QBuffer>
 
@@ -18,6 +19,7 @@ class Xml
 protected:
 	QBuffer m_bufXml;
 	bool m_bOK;
+	std::mutex m_mutex;
 
 public:
 	Xml();
