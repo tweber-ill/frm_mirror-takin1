@@ -81,7 +81,7 @@ matrix_type remove_elems(const matrix_type& mat, unsigned int iIdx)
 }
 
 
-template<class vector_type, class matrix_type>
+template<class vector_type=ublas::vector<double>, class matrix_type=ublas::matrix<double>>
 vector_type get_column(const matrix_type& mat, unsigned int iCol)
 {
         vector_type vecret(mat.size1());
@@ -259,7 +259,7 @@ bool isinf(const ublas::matrix<T>& mat)
 	return false;
 }
 
-// code for inverse based on /boost/libs/numeric/ublas/test/test_lu.cpp
+// code for inverse based on boost/libs/numeric/ublas/test/test_lu.cpp
 template<typename T=double>
 bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 {
@@ -461,6 +461,37 @@ std::vector<T> rotation_angle(const ublas::matrix<T>& rot)
 
 	return vecResult;
 }
+
+
+template<typename vector_type = ublas::vector<double> >
+vector_type cross_3(const vector_type& vec0, const vector_type& vec1)
+{
+	vector_type vec;
+	vec.resize(3);
+
+	vec[0] = vec0[1]*vec1[2] - vec1[1]*vec0[2];
+	vec[1] = vec0[2]*vec1[0] - vec1[2]*vec0[0];
+	vec[2] = vec0[0]*vec1[1] - vec1[0]*vec0[1];
+
+	return vec;
+}
+
+
+template<typename T=double>
+T get_volume_3(const ublas::matrix<T>& mat)
+{
+	if(mat.size1()!=3 || mat.size2()!=3)
+		return 0.;
+
+	ublas::vector<T> vec0 = get_column(mat, 0);
+	ublas::vector<T> vec1 = get_column(mat, 1);
+	ublas::vector<T> vec2 = get_column(mat, 2);
+
+	ublas::vector<T> vecCross = cross_3<ublas::vector<T> >(vec1, vec2);
+	return ublas::inner_prod(vec0, vecCross);
+}
+
+
 
 
 template<typename T>
