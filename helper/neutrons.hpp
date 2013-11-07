@@ -135,6 +135,54 @@ E2k(const units::quantity<units::unit<units::energy_dimension, Sys>, Y>& E, bool
 	return k;
 }
 
+template<class Sys, class Y>
+units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
+kinematic_plane(bool bFixedKi,
+				const units::quantity<units::unit<units::energy_dimension, Sys>, Y>& EiEf,
+				const units::quantity<units::unit<units::energy_dimension, Sys>, Y>& DeltaE,
+				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
+{
+	const units::quantity<units::unit<units::energy_dimension, Sys>, Y> dE = DeltaE;
+	if(bFixedKi)
+		dE = -dE;
+
+	units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y> Q =
+			units::sqrt(2.*co::m_n / co::hbar) *
+			(2*EiEf + dE - 2.*units::cos(twotheta)*units::sqrt(EiEf*(EiEf + dE)));
+
+	return Q;
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::energy_dimension, Sys>, Y>
+kinematic_plane(bool bFixedKi, bool bBranch,
+				const units::quantity<units::unit<units::energy_dimension, Sys>, Y>& EiEf,
+				const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
+				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
+{
+	auto c = 2.*co::m_n / (co::hbar*co::hbar);
+	double ctt = units::cos(twotheta);
+	double c2tt = units::cos(2.*twotheta);
+
+	double dSign = -1.;
+	if(bBranch)
+		dSign = 1.;
+
+	double dSignFixedKf = 1.;
+	if(bFixedKi)
+		dSignFixedKf = -1.;
+
+	auto rt = c*c*c*c * (-EiEf*EiEf)*ctt*ctt
+			+ c*c*c*c*EiEf*EiEf*ctt*ctt*c2tt + 2.*c*c*c*EiEf*Q*Q*ctt*ctt;
+
+	units::quantity<units::unit<units::energy_dimension, Sys>, Y> E =
+			1./(c*c)*(dSignFixedKf*2.*c*c*EiEf*ctt*ctt
+			- dSignFixedKf*2.*c*c*EiEf
+			+ dSign*std::sqrt(2.) * units::sqrt(rt)
+			+ dSignFixedKf*c*Q*Q);
+
+	return E;
+}
 
 // --------------------------------------------------------------------
 /* formulas.cpp */
