@@ -173,7 +173,8 @@ bool comp_fkt(sort_obj<T> t0, sort_obj<T> t1)
 
 
 // simultaneously sort two arrays
-template<class Iter=double*, typename T=double> void sort_2(Iter begin1, Iter end1, Iter begin2)
+template<class Iter=double*, typename T=double>
+void sort_2(Iter begin1, Iter end1, Iter begin2)
 {
 	const unsigned int N = end1-begin1;
 	sort_obj<T> *pObj = new sort_obj<T>[N];
@@ -194,7 +195,8 @@ template<class Iter=double*, typename T=double> void sort_2(Iter begin1, Iter en
 }
 
 // simultaneously sort three arrays
-template<class Iter=double*, typename T=double> void sort_3(Iter begin1, Iter end1, Iter begin2, Iter begin3)
+template<class Iter=double*, typename T=double>
+void sort_3(Iter begin1, Iter end1, Iter begin2, Iter begin3)
 {
 	const unsigned int N = end1-begin1;
 	sort_obj<T> *pObj = new sort_obj<T>[N];
