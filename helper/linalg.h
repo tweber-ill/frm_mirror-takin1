@@ -206,37 +206,6 @@ T trace(const ublas::matrix<T>& mat)
 }
 
 
-template<typename T=double>
-T determinant(const ublas::matrix<T>& mat)
-{
-	if(mat.size1() != mat.size2())
-		return T(0);
-
-	if(mat.size1()==1)
-	{
-		return mat(0,0);
-	}
-	else if(mat.size1()==2)
-	{
-		return mat(0,0)*mat(1,1) - mat(1,0)*mat(0,1);
-	}
-	else if(mat.size1()==3)
-	{
-		T a[] = {mat(0,0), mat(1,0), mat(2,0)};
-		T b[] = {mat(0,1), mat(1,1), mat(2,1)};
-		T c[] = {mat(0,2), mat(1,2), mat(2,2)};
-
-		return a[0]*b[1]*c[2] + a[1]*b[2]*c[0] + a[2]*b[0]*c[1]
-		           -c[0]*b[1]*a[2] - c[1]*b[2]*a[0] - c[2]*b[0]*a[1];
-	}
-
-	const unsigned int i = 0;
-	T val = T(0);
-	for(unsigned int j=0; j<mat.size2(); ++j)
-		val += pow(T(-1), i+j) * mat(i,j) * determinant(submatrix(mat, i, j));
-
-	return val;
-}
 
 
 template<typename T=double>
@@ -476,20 +445,44 @@ vector_type cross_3(const vector_type& vec0, const vector_type& vec1)
 	return vec;
 }
 
+template<typename T=double>
+T determinant(const ublas::matrix<T>& mat)
+{
+	if(mat.size1() != mat.size2())
+		return T(0);
+
+	if(mat.size1()==1)
+	{
+		return mat(0,0);
+	}
+	else if(mat.size1()==2)
+	{
+		return mat(0,0)*mat(1,1) - mat(1,0)*mat(0,1);
+	}
+	else if(mat.size1()==3)
+	{
+		ublas::vector<T> vec0 = get_column(mat, 0);
+		ublas::vector<T> vec1 = get_column(mat, 1);
+		ublas::vector<T> vec2 = get_column(mat, 2);
+
+		ublas::vector<T> vecCross = cross_3<ublas::vector<T> >(vec1, vec2);
+		return ublas::inner_prod(vec0, vecCross);
+	}
+
+	const unsigned int i = 0;
+	T val = T(0);
+	for(unsigned int j=0; j<mat.size2(); ++j)
+		val += pow(T(-1), i+j) * mat(i,j) * determinant(submatrix(mat, i, j));
+
+	return val;
+}
 
 template<typename T=double>
-T get_volume_3(const ublas::matrix<T>& mat)
+T get_volume(const ublas::matrix<T>& mat)
 {
-	if(mat.size1()!=3 || mat.size2()!=3)
-		return 0.;
-
-	ublas::vector<T> vec0 = get_column(mat, 0);
-	ublas::vector<T> vec1 = get_column(mat, 1);
-	ublas::vector<T> vec2 = get_column(mat, 2);
-
-	ublas::vector<T> vecCross = cross_3<ublas::vector<T> >(vec1, vec2);
-	return ublas::inner_prod(vec0, vecCross);
+	return determinant<T>(mat);
 }
+
 
 
 
