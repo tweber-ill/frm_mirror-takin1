@@ -9,6 +9,9 @@
 
 #include "../../helper/neutrons.hpp"
 
+// Q_vec = ki_vec - kf_vec
+// Q^2 = ki^2 + kf^2 - 2ki kf cos 2th
+// cos 2th = (-Q^2 + ki^2 + kf^2) / (2ki kf)
 inline bool get_twotheta(const units::quantity<units::si::wavenumber>& ki,
 							const units::quantity<units::si::wavenumber>& kf,
 							const units::quantity<units::si::wavenumber>& Q,
