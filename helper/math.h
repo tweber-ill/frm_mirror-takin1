@@ -110,4 +110,16 @@ T bilinear_interp(T x0y0, T x1y0, T x0y1, T x1y1, T x, T y)
 	return linear_interp<T>(bottom, top, y);
 }
 
+template<typename T=double, typename REAL=double>
+std::vector<T> linspace(const T& tmin, const T& tmax, unsigned int iNum)
+{
+	std::vector<T> vec;
+	vec.reserve(iNum);
+
+	for(unsigned int i=0; i<iNum; ++i)
+		vec.push_back(REAL(i)*(tmax-tmin)/REAL(iNum-1) + tmin);
+
+	return vec;
+}
+
 #endif

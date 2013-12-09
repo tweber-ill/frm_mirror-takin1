@@ -46,6 +46,7 @@ static const double E2KSQ = 1./KSQ2E;
 //static const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
 
 
+// --------------------------------------------------------------------------------
 // de Broglie stuff
 // lam = h/p
 template<class Sys, class Y>
@@ -91,7 +92,9 @@ p2k(const units::quantity<units::unit<units::momentum_dimension, Sys>, Y>& p)
 {
 	return p/co::hbar;
 }
+// --------------------------------------------------------------------------------
 
+// --------------------------------------------------------------------------------
 // E = hbar*omega
 template<class Sys, class Y>
 units::quantity<units::unit<units::energy_dimension, Sys>, Y>
@@ -134,7 +137,68 @@ E2k(const units::quantity<units::unit<units::energy_dimension, Sys>, Y>& E, bool
 		k = p / co::hbar;
 	return k;
 }
+// --------------------------------------------------------------------------------
 
+
+
+// --------------------------------------------------------------------------------
+// Bragg
+// real: n * lam = 2d * sin(twotheta/2)
+template<class Sys, class Y>
+units::quantity<units::unit<units::length_dimension, Sys>, Y>
+bragg_real_lam(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& d,
+				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta,
+				double n)
+{
+	return 2.*d/n * sin(twotheta/2.);
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::length_dimension, Sys>, Y>
+bragg_real_d(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
+			const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta,
+			double n)
+{
+	return n * lam / (2.* sin(twotheta/2.));
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
+bragg_real_twotheta(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& d,
+					const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
+					double n)
+{
+	return asin(n*lam/(2.*d)) * 2.;
+}
+
+// reciprocal: Q * lam = 4pi * sin(twotheta/2)
+template<class Sys, class Y>
+units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
+bragg_recip_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
+					const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam)
+{
+	return asin(Q*lam/(4.*M_PI)) * 2.;
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
+bragg_recip_Q(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
+			const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
+{
+	return 4.*M_PI / lam * sin(twotheta/2.);
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::length_dimension, Sys>, Y>
+bragg_recip_lam(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
+				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
+{
+	return 4.*M_PI / Q * sin(twotheta/2.);
+}
+// --------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------
 template<class Sys, class Y>
 units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
 kinematic_plane(bool bFixedKi,
@@ -183,6 +247,8 @@ kinematic_plane(bool bFixedKi, bool bBranch,
 
 	return E;
 }
+// --------------------------------------------------------------------------------
+
 
 // --------------------------------------------------------------------
 /* formulas.cpp */
