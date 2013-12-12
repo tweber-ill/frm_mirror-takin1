@@ -51,6 +51,27 @@ template<class T>
         }
 }
 
+
+template<typename T>
+T str_to_var(const std::string& str)
+{
+	std::istringstream istr(str);
+	T t;
+
+	istr >> t;
+	return t;
+}
+
+template<typename T>
+std::string var_to_str(const T& t)
+{
+	std::ostringstream ostr;
+	ostr << t;
+
+	return ostr.str();
+}
+
+
 // e.g. str = "123.4 +- 0.5"
 template<typename T=double>
 void get_val_and_err(const std::string& str, T& val, T& err)

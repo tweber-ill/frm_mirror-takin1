@@ -175,25 +175,28 @@ bragg_real_twotheta(const units::quantity<units::unit<units::length_dimension, S
 template<class Sys, class Y>
 units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
 bragg_recip_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
-					const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam)
+					const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
+					double n)
 {
-	return asin(Q*lam/(4.*M_PI)) * 2.;
+	return asin(Q*n*lam/(4.*M_PI)) * 2.;
 }
 
 template<class Sys, class Y>
 units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
 bragg_recip_Q(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
-			const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
+			const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta,
+			double n)
 {
-	return 4.*M_PI / lam * sin(twotheta/2.);
+	return 4.*M_PI / (n*lam) * sin(twotheta/2.);
 }
 
 template<class Sys, class Y>
 units::quantity<units::unit<units::length_dimension, Sys>, Y>
 bragg_recip_lam(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
-				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
+				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta,
+				double n)
 {
-	return 4.*M_PI / Q * sin(twotheta/2.);
+	return 4.*M_PI / Q * sin(twotheta/2.) / n;
 }
 // --------------------------------------------------------------------------------
 
