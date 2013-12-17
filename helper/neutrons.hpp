@@ -148,7 +148,7 @@ template<class Sys, class Y>
 units::quantity<units::unit<units::length_dimension, Sys>, Y>
 bragg_real_lam(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& d,
 				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta,
-				double n)
+				Y n)
 {
 	return 2.*d/n * sin(twotheta/2.);
 }
@@ -157,7 +157,7 @@ template<class Sys, class Y>
 units::quantity<units::unit<units::length_dimension, Sys>, Y>
 bragg_real_d(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
 			const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta,
-			double n)
+			Y n)
 {
 	return n * lam / (2.* sin(twotheta/2.));
 }
@@ -166,7 +166,7 @@ template<class Sys, class Y>
 units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
 bragg_real_twotheta(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& d,
 					const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
-					double n)
+					Y n)
 {
 	return asin(n*lam/(2.*d)) * 2.;
 }
@@ -176,7 +176,7 @@ template<class Sys, class Y>
 units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
 bragg_recip_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
 					const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
-					double n)
+					Y n)
 {
 	return asin(Q*n*lam/(4.*M_PI)) * 2.;
 }
@@ -185,7 +185,7 @@ template<class Sys, class Y>
 units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
 bragg_recip_Q(const units::quantity<units::unit<units::length_dimension, Sys>, Y>& lam,
 			const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta,
-			double n)
+			Y n)
 {
 	return 4.*M_PI / (n*lam) * sin(twotheta/2.);
 }
@@ -194,7 +194,7 @@ template<class Sys, class Y>
 units::quantity<units::unit<units::length_dimension, Sys>, Y>
 bragg_recip_lam(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
 				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta,
-				double n)
+				Y n)
 {
 	return 4.*M_PI / Q * sin(twotheta/2.) / n;
 }
@@ -228,14 +228,14 @@ kinematic_plane(bool bFixedKi, bool bBranch,
 				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
 {
 	auto c = 2.*co::m_n / (co::hbar*co::hbar);
-	double ctt = units::cos(twotheta);
-	double c2tt = units::cos(2.*twotheta);
+	Y ctt = units::cos(twotheta);
+	Y c2tt = units::cos(2.*twotheta);
 
-	double dSign = -1.;
+	Y dSign = -1.;
 	if(bBranch)
 		dSign = 1.;
 
-	double dSignFixedKf = 1.;
+	Y dSignFixedKf = 1.;
 	if(bFixedKi)
 		dSignFixedKf = -1.;
 
