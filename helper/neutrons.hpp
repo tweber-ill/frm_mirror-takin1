@@ -253,6 +253,45 @@ kinematic_plane(bool bFixedKi, bool bBranch,
 // --------------------------------------------------------------------------------
 
 
+
+// --------------------------------------------------------------------------------
+// Debye-Waller factor
+
+template<class Sys, class Y>
+Y debye_waller_high_T(const units::quantity<units::unit<units::temperature_dimension, Sys>, Y>& T_D,
+					const units::quantity<units::unit<units::temperature_dimension, Sys>, Y>& T,
+					const units::quantity<units::unit<units::mass_dimension, Sys>, Y>& M,
+					const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
+					units::quantity<units::unit<units::derived_dimension<units::length_base_dimension, 2>::type, Sys>, Y>* pZeta_sq=0)
+{
+	units::quantity<units::unit<units::derived_dimension<units::length_base_dimension, 2>::type, Sys>, Y> zeta_sq;
+	zeta_sq = 9.*co::hbar*co::hbar / (co::k_B * T_D * M) * T/T_D;
+	Y dwf = units::exp(-1./3. * Q*Q * zeta_sq);
+
+	if(pZeta_sq) *pZeta_sq = zeta_sq;
+	return dwf;
+}
+
+
+template<class Sys, class Y>
+Y debye_waller_low_T(const units::quantity<units::unit<units::temperature_dimension, Sys>, Y>& T_D,
+					const units::quantity<units::unit<units::temperature_dimension, Sys>, Y>& T,
+					const units::quantity<units::unit<units::mass_dimension, Sys>, Y>& M,
+					const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
+					units::quantity<units::unit<units::derived_dimension<units::length_base_dimension, 2>::type, Sys>, Y>* pZeta_sq=0)
+{
+	units::quantity<units::unit<units::derived_dimension<units::length_base_dimension, 2>::type, Sys>, Y> zeta_sq;
+	zeta_sq = 9.*co::hbar*co::hbar / (4.*co::k_B*T_D*M) * (1. + 2./3. * M_PI*M_PI * (T/T_D)*(T/T_D));
+	Y dwf = units::exp(-1./3. * Q*Q * zeta_sq);
+
+	if(pZeta_sq) *pZeta_sq = zeta_sq;
+	return dwf;
+}
+
+// --------------------------------------------------------------------------------
+
+
+
 // --------------------------------------------------------------------
 /* formulas.cpp */
 extern void init_formulas();
