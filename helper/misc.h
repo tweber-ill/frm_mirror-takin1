@@ -9,72 +9,74 @@
 
 #include <vector>
 #include <list>
+#include <map>
 #include <algorithm>
-#include "../data/data.h"
+//#include "../data/data.h"
 
 // deletes an object when going out of scope
 template<class T> class autodeleter
 {
 protected:
-        T *m_t;
-        bool m_bIsArray;
+	T *m_t;
+	bool m_bIsArray;
 
 public:
-        autodeleter(T* t, bool bIsArray=false) : m_t(t), m_bIsArray(bIsArray)
-        {}
+	autodeleter(T* t, bool bIsArray=false) : m_t(t), m_bIsArray(bIsArray)
+	{}
 
-        ~autodeleter()
-        {
-                if(m_t)
-                {
-                        if(m_bIsArray)
-                                delete[] m_t;
-                        else
-                                delete m_t;
-                        m_t = 0;
-                }
-        }
+	~autodeleter()
+	{
+		if(m_t)
+		{
+			if(m_bIsArray)
+				delete[] m_t;
+			else
+				delete m_t;
+			m_t = 0;
+		}
+	}
 };
 
 template<typename T> T safe_log10(T t)
 {
-        const T t_invalid = T(-10);
+	const T t_invalid = T(-10);
 
-        if(t > T(0))
-                return log10(t);
+	if(t > T(0))
+		return log10(t);
 
-        return t_invalid;
+	return t_invalid;
 }
 
 // pixel -> val
-inline double tic_trafo(unsigned int iDim, double dMin, double dMax, bool bLog, double dPix)
+template<typename T=double>
+T tic_trafo(unsigned int iDim, T dMin, T dMax, bool bLog, T dPix)
 {
-        if(bLog)
-        {
-                dMin = safe_log10(dMin);
-                dMax = safe_log10(dMax);
-        }
+	if(bLog)
+	{
+		dMin = safe_log10<T>(dMin);
+		dMax = safe_log10<T>(dMax);
+	}
 
-        double dval = dMin + dPix/double(iDim) * (dMax-dMin);
-        if(bLog)
-                dval = pow(10., dval);
+	T dval = dMin + dPix/T(iDim) * (dMax-dMin);
+	if(bLog)
+		dval = pow(10., dval);
 
-        return dval;
+	return dval;
 }
-
 // val -> pixel
-inline double tic_trafo_inv(unsigned int iDim, double dMin, double dMax, bool bLog, double dVal)
+template<typename T=double>
+T tic_trafo_inv(unsigned int iDim, T dMin, T dMax, bool bLog, T dVal)
 {
-        if(bLog)
-        {
-                dMin = safe_log10(dMin);
-                dMax = safe_log10(dMax);
+	if(bLog)
+	{
+		dMin = safe_log10<T>(dMin);
+		dMax = safe_log10<T>(dMax);
 
-                dVal = safe_log10(dVal);
-        }
+		dVal = safe_log10<T>(dVal);
+	}
 
-        double dpix = (dVal-dMin)/(dMax-dMin) * double(iDim);
-        return dpix;
+	T dpix = (dVal-dMin)/(dMax-dMin) * double(iDim);
+	return dpix;
 }
 
 template<typename T>
@@ -106,31 +108,31 @@ void apply_fkt(const T* pIn, T* pOut, T(*fkt)(T), unsigned int iSize)
 		pOut[i] = (*fkt)(pIn[i]);
 }
 
-inline uint lerprgb(uchar r1, uchar g1, uchar b1,
-							uchar r2, uchar g2, uchar b2,
+inline unsigned int lerprgb(unsigned char r1, unsigned char g1, unsigned char b1,
+							unsigned char r2, unsigned char g2, unsigned char b2,
 							double dval)
 {
-	uchar r = lerp(r1, r2, dval);
-	uchar g = lerp(g1, g2, dval);
-	uchar b = lerp(b1, b2, dval);
+	unsigned char r = lerp(r1, r2, dval);
+	unsigned char g = lerp(g1, g2, dval);
+	unsigned char b = lerp(b1, b2, dval);
 
 	return (0xff<<24) | (r<<16) | (g<<8) | (b);
 }
 
-inline uint lerprgb(uint col1, uint col2, double dval)
+inline unsigned int lerprgb(unsigned int col1, unsigned int col2, double dval)
 {
-	uchar r1 = uchar((col1&0x00ff0000) >> 16);
-	uchar r2 = uchar((col2&0x00ff0000) >> 16);
+	unsigned char r1 = (unsigned char)((col1&0x00ff0000) >> 16);
+	unsigned char r2 = (unsigned char)((col2&0x00ff0000) >> 16);
 
-	uchar g1 = uchar((col1&0x0000ff00) >> 8);
-	uchar g2 = uchar((col2&0x0000ff00) >> 8);
+	unsigned char g1 = (unsigned char)((col1&0x0000ff00) >> 8);
+	unsigned char g2 = (unsigned char)((col2&0x0000ff00) >> 8);
 
-	uchar b1 = uchar(col1&0x000000ff);
-	uchar b2 = uchar(col2&0x000000ff);
+	unsigned char b1 = (unsigned char)(col1&0x000000ff);
+	unsigned char b2 = (unsigned char)(col2&0x000000ff);
 
-	uchar r = lerp(r1, r2, dval);
-	uchar g = lerp(g1, g2, dval);
-	uchar b = lerp(b1, b2, dval);
+	unsigned char r = lerp(r1, r2, dval);
+	unsigned char g = lerp(g1, g2, dval);
+	unsigned char b = lerp(b1, b2, dval);
 
 	return (0xff<<24) | (r<<16) | (g<<8) | (b);
 }

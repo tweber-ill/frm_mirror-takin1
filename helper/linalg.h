@@ -485,6 +485,30 @@ T get_volume(const ublas::matrix<T>& mat)
 
 
 
+template<typename T>
+class Plane
+{
+protected:
+	ublas::vector<T> m_vecX0;
+	ublas::vector<T> m_vecDir0, m_vecDir1;
+	ublas::vector<T> m_vecNorm;
+
+public:
+	Plane(const ublas::vector<T>& vec0, const ublas::vector<T>& dir0, const ublas::vector<T>& dir1)
+		: m_vecX0(vec0), m_vecDir0(dir0), m_vecDir1(dir1)
+	{
+		m_vecNorm = cross_3(dir0, dir1);
+		m_vecNorm /= ublas::norm_2(m_vecNorm);
+	}
+
+	virtual ~Plane()
+	{}
+
+	const ublas::vector<T>& GetX0() const { return m_vecX0; }
+	const ublas::vector<T>& GetDir0() const { return m_vecDir0; }
+	const ublas::vector<T>& GetDir1() const { return m_vecDir1; }
+	const ublas::vector<T>& GetNorm() const { return m_vecNorm; }
+};
 
 
 template<typename T>
@@ -509,7 +533,47 @@ public:
 	const ublas::vector<T>& GetX0() const { return m_vecX0; }
 	const ublas::vector<T>& GetDir() const { return m_vecDir; }
 
-	bool intersect(const Line& line, T& t)
+	// http://mathworld.wolfram.com/Line-PlaneIntersection.html
+	bool intersect(const Plane<T>& plane, T& t)
+	{
+		const unsigned int N = m_vecDir.size();
+		if(N != 3)
+		{
+			std::cerr << "Error: Line-plane intersection only implemented for 3d vectors."
+					<< std::endl;
+			return false;
+		}
+
+		const ublas::vector<T>& posl = this->GetX0();
+		const ublas::vector<T>& dirl = this->GetDir();
+
+		const ublas::vector<T>& xp0 = plane.GetX0();
+		const ublas::vector<T> xp1 = plane.GetX0() + plane.GetDir0();
+		const ublas::vector<T> xp2 = plane.GetX0() + plane.GetDir1();
+
+		ublas::matrix<T> matDenom(N+1,N+1);
+		matDenom(0,0) = 1;		matDenom(0,1) = 1;		matDenom(0,2) = 1;		matDenom(0,3) = 0;
+		matDenom(1,0) = xp0[0];	matDenom(1,1) = xp1[0];	matDenom(1,2) = xp2[0];	matDenom(1,3) = dirl[0];
+		matDenom(2,0) = xp0[1];	matDenom(2,1) = xp1[1];	matDenom(2,2) = xp2[1];	matDenom(2,3) = dirl[1];
+		matDenom(3,0) = xp0[2];	matDenom(3,1) = xp1[2];	matDenom(3,2) = xp2[2];	matDenom(3,3) = dirl[2];
+
+		T denom = determinant(matDenom);
+		if(::float_equal(denom, 0.))
+			return false;
+
+		ublas::matrix<T> matNum(N+1,N+1);
+		matNum(0,0) = 1;		matNum(0,1) = 1;		matNum(0,2) = 1;		matNum(0,3) = 1;
+		matNum(1,0) = xp0[0];	matNum(1,1) = xp1[0];	matNum(1,2) = xp2[0];	matNum(1,3) = posl[0];
+		matNum(2,0) = xp0[1];	matNum(2,1) = xp1[1];	matNum(2,2) = xp2[1];	matNum(2,3) = posl[1];
+		matNum(3,0) = xp0[2];	matNum(3,1) = xp1[2];	matNum(3,2) = xp2[2];	matNum(3,3) = posl[2];
+
+		T num = determinant(matNum);
+
+		t = -num / denom;
+		return true;
+	}
+
+	bool intersect(const Line<T>& line, T& t)
 	{
 		const ublas::vector<T>& pos0 =  this->GetX0();
 		const ublas::vector<T>& pos1 =  line.GetX0();

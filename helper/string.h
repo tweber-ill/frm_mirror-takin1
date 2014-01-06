@@ -25,6 +25,9 @@ extern bool is_equal(const std::string& str0, const std::string& str1, bool bCas
 extern void trim(std::string& str);
 extern bool find_and_replace(std::string& str1, const std::string& str_old,
                                                 const std::string& str_new);
+extern void find_all_and_replace(std::string& str1, const std::string& str_old,
+                                                const std::string& str_new);
+
 extern std::pair<std::string, std::string>
 		split_first(const std::string& str, const std::string& strSep);
 //extern std::vector<std::string>
@@ -51,6 +54,9 @@ template<class T>
         }
 }
 
+template<>
+void get_tokens<std::string>(const std::string& str, const std::string& strDelim,
+                                        std::vector<std::string>& vecRet);
 
 template<typename T>
 T str_to_var(const std::string& str)
@@ -85,10 +91,6 @@ void get_val_and_err(const std::string& str, T& val, T& err)
 		err = vec[1];
 }
 
-
-template<>
-void get_tokens<std::string>(const std::string& str, const std::string& strDelim,
-                                        std::vector<std::string>& vecRet);
 
 template<typename T>
 std::string group_numbers(T tNum)

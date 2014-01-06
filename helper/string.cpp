@@ -4,8 +4,11 @@
  * @date 25-apr-2013
  */
 #include "string.h"
-#include "comp.h"
 #include "misc.h"
+
+#ifndef NO_COMP
+#include "comp.h"
+#endif
 
 #include <cstring>
 
@@ -103,6 +106,19 @@ bool find_and_replace(std::string& str1, const std::string& str_old,
 	str1.replace(pos, str_old.length(), str_new);
 	return true;
 }
+
+void find_all_and_replace(std::string& str1, const std::string& str_old,
+						const std::string& str_new)
+{
+        while(1)
+        {
+                std::size_t pos = str1.find(str_old);
+                if(pos==std::string::npos)
+                                break;
+                str1.replace(pos, str_old.length(), str_new);
+        }
+}
+
 
 bool begins_with(const std::string& str, const std::string& strBeg)
 {
@@ -258,6 +274,7 @@ void StringMap::ParseString(const std::string& strConf)
 	}
 }
 
+#ifndef NO_COMP
 bool StringMap::Serialize(std::ostream& ostrSer) const
 {
 	unsigned int iLen = 0;
@@ -343,6 +360,19 @@ bool StringMap::Deserialize(const void* pvMem, unsigned int iLen)
 	Trim();
 	return true;
 }
+#else
+bool StringMap::Serialize(std::ostream& ostrSer) const
+{
+	std::cerr << "Error: Serialize not linked." << std::endl;
+	return false;
+}
+
+bool StringMap::Deserialize(const void* pvMem, unsigned int iLen)
+{
+	std::cerr << "Error: Deserialize not linked." << std::endl;
+	return false;
+}
+#endif
 
 std::ostream& operator<<(std::ostream& ostr, const StringMap& mapStr)
 {
