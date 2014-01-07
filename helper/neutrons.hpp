@@ -94,6 +94,7 @@ p2k(const units::quantity<units::unit<units::momentum_dimension, Sys>, Y>& p)
 }
 // --------------------------------------------------------------------------------
 
+
 // --------------------------------------------------------------------------------
 // E = hbar*omega
 template<class Sys, class Y>
@@ -288,6 +289,53 @@ Y debye_waller_low_T(const units::quantity<units::unit<units::temperature_dimens
 	return dwf;
 }
 
+// --------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------
+// scattering triangle
+
+// Q_vec = ki_vec - kf_vec
+// Q^2 = ki^2 + kf^2 - 2ki kf cos 2th
+// cos 2th = (-Q^2 + ki^2 + kf^2) / (2ki kf)
+template<class Sys, class Y>
+bool get_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
+				const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& kf,
+				const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
+				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
+{
+	units::quantity<units::si::dimensionless> dCos = (ki*ki + kf*kf - Q*Q) / (2.*ki*kf);
+	if(units::abs(dCos) > 1.)
+		return false;
+
+	twotheta = units::acos(dCos);
+	return true;
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
+get_angle_ki_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
+		const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& kf,
+		const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q)
+{
+	if(Q*(1e-10 * units::si::meter) == 0.)
+		return M_PI/2. * units::si::radians;
+
+	return units::acos((ki*ki - kf*kf + Q*Q)/(2.*ki*Q));
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
+get_angle_kf_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
+		const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& kf,
+		const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q)
+{
+	if(Q*(1e-10 * units::si::meter) == 0.)
+		return M_PI/2. * units::si::radians;
+
+	return M_PI*units::si::radians
+			- units::acos((kf*kf - ki*ki + Q*Q)/(2.*kf*Q));
+}
 // --------------------------------------------------------------------------------
 
 
