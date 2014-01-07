@@ -11,12 +11,12 @@
 #include "cn.h"
 #include "../../helper/linalg.h"
 #include "../../helper/math.h"
+#include "../../helper/neutrons.hpp"
 
 #include <string>
 #include <iostream>
 
 #include <boost/units/io.hpp>
-#include "formulas.h"
 
 
 typedef units::quantity<units::si::plane_angle> angle;
