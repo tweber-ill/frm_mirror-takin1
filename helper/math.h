@@ -54,7 +54,7 @@ std::vector<unsigned int> find_zeroes(unsigned int N, const T* pIn)
 
 	std::vector<unsigned int> vecIndices;
 
-	for(unsigned int i; i<N-1; ++i)
+	for(unsigned int i=0; i<N-1; ++i)
 	{
 		ublas::vector<T> zero(2);
 		zero[0] = zero[1] = 0.;
