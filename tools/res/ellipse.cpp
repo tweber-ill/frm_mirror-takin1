@@ -9,8 +9,8 @@
  */
 
 #include "ellipse.h"
-#include "../../helper/linalg.h"
-#include "../../helper/math.h"
+#include "helper/linalg.h"
+#include "helper/math.h"
 #include "cn.h"
 
 

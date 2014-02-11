@@ -11,7 +11,7 @@
 #ifndef __CN_H__
 #define __CN_H__
 
-#include "../../helper/neutrons.hpp"
+#include "helper/neutrons.hpp"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
