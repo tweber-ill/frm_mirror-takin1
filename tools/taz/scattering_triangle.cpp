@@ -4,8 +4,11 @@
  * @date feb-2014
  */
 
+#include "helper/flags.h"
 #include "scattering_triangle.h"
 #include <iostream>
+#include <cmath>
+#include <sstream>
 
 
 QRectF ScatteringTriangleNode::boundingRect() const
@@ -81,6 +84,9 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	QPointF ptKiMid = ptKiQ + (ptKiKf - ptKiQ)/2.;
 	QPointF ptKfMid = ptKfQ + (ptKiKf - ptKfQ)/2.;
 
+	QPointF ptMid = ptKiQ + (ptKfQ - ptKiQ)/2.;
+	ptMid = ptMid + (ptKiKf - ptMid)/2.;
+
 	QLineF lineQ(ptKiQ, ptKfQ);
 	QLineF lineKi(ptKiQ, ptKiKf);
 	QLineF lineKf(ptKiKf, ptKfQ);
@@ -92,6 +98,35 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	painter->drawText(ptQMid, "Q");
 	painter->drawText(ptKiMid, "ki");
 	painter->drawText(ptKfMid, "kf");
+
+
+	QLineF lineKi2(ptKiKf, ptKiQ);
+	QLineF lineQ2(ptKfQ, ptKiQ);
+
+	const QLineF* pLines1[] = {&lineKi2, &lineKi, &lineKf};
+	const QLineF* pLines2[] = {&lineQ, &lineKf, &lineQ2};
+	const QPointF* pPoints[] = {&ptKiQ, &ptKiKf, &ptKfQ};
+
+	for(unsigned int i=0; i<3; ++i)
+	{
+		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 6.;
+		double dBeginArcAngle = pLines1[i]->angle() + 180.;
+		double dArcAngle = pLines1[i]->angleTo(*pLines2[i]) - 180.;
+
+		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
+						dBeginArcAngle*16., dArcAngle*16.);
+
+		std::ostringstream ostrAngle;
+		ostrAngle.precision(4);
+		ostrAngle << std::fabs(dArcAngle) << "\xb0";
+
+		QPointF ptDirOut = *pPoints[i] - ptMid;
+		ptDirOut /= std::sqrt(ptDirOut.x()*ptDirOut.x() + ptDirOut.y()*ptDirOut.y());
+		ptDirOut *= 15.;
+
+		QPointF ptText = *pPoints[i] + ptDirOut;
+		painter->drawText(ptText, ostrAngle.str().c_str());
+	}
 }
 
 
