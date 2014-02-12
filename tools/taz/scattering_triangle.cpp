@@ -41,10 +41,8 @@ QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVa
 
 ScatteringTriangleNode::ScatteringTriangleNode(QGraphicsItem* pSupItem) : m_pParentItem(pSupItem)
 {
-	setFlag(QGraphicsItem::ItemIsMovable);
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-
 	setCursor(Qt::CrossCursor);
 }
 
@@ -58,9 +56,12 @@ ScatteringTriangle::ScatteringTriangle(QGraphicsScene& scene) : m_dPixelsPerInvA
 	m_pNodeKiKf = new ScatteringTriangleNode(this);
 	m_pNodeKfQ = new ScatteringTriangleNode(this);
 
-	m_pNodeKiQ->setPos(-200., 0.);
-	m_pNodeKiKf->setPos(0., -200.);
-	m_pNodeKfQ->setPos(200., 200.);
+	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIsMovable);
+	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable);
+
+	m_pNodeKiQ->setPos(0., 0.);
+	m_pNodeKiKf->setPos(50., -100.);
+	m_pNodeKfQ->setPos(100., 0.);
 
 	scene.addItem(m_pNodeKiQ);
 	scene.addItem(m_pNodeKiKf);
