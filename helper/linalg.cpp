@@ -7,7 +7,7 @@
 
 #include "linalg.h"
 #include "math.h"
-#include "../settings.h"
+#include "../main/settings.h"
 
 extern "C"
 {
