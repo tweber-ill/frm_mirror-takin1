@@ -8,7 +8,7 @@
 #include <iostream>
 #include <map>
 
-#include "../../settings.h"
+#include "../../main/settings.h"
 #include "helper/string.h"
 #include "helper/misc.h"
 #include "helper/xml.h"

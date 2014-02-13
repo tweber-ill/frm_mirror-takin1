@@ -5,7 +5,7 @@
  */
 
 #include "ResoDlg.h"
-#include "../../settings.h"
+#include "../../main/settings.h"
 #include <QtGui/QApplication>
 
 #ifdef Q_WS_X11
@@ -40,4 +40,4 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-#include "../../subwnd.moc"
+#include "../../main/subwnd.moc"
