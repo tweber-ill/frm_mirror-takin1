@@ -21,6 +21,9 @@ class TazDlg : public QDialog, Ui::TazDlg
 		TazDlg(QWidget *pParent);
 		TazDlg() { TazDlg(0); }
 		virtual ~TazDlg();
+
+	protected slots:
+		void CalcPeaks();
 };
 
 #endif
