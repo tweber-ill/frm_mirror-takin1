@@ -60,20 +60,8 @@ void TazDlg::CalcPeaks()
 						editScatY2->text().toDouble()};
 
 	Lattice lattice(a,b,c, alpha,beta,gamma);
-	lattice.GetRecip();
+	//lattice.GetRecip();
 }
-
-
-
-#ifdef STANDALONE_TAZ
-int main(int argc, char** argv)
-{
-	QApplication app(argc, argv);
-
-	TazDlg dlg(0);
-	return dlg.exec();
-}
-#endif
 
 
 #include "taz.moc"
