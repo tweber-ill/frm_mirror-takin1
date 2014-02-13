@@ -102,18 +102,42 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 
 	QLineF lineKi2(ptKiKf, ptKiQ);
+	QLineF lineKf2(ptKfQ, ptKiKf);
 	QLineF lineQ2(ptKfQ, ptKiQ);
 
 	const QLineF* pLines1[] = {&lineKi2, &lineKi, &lineKf};
 	const QLineF* pLines2[] = {&lineQ, &lineKf, &lineQ2};
 	const QPointF* pPoints[] = {&ptKiQ, &ptKiKf, &ptKfQ};
 
+	const QLineF* pLines_arrow[] = {&lineKi, &lineKf2, &lineQ};
+	const QPointF* pPoints_arrow[] = {&ptKiQ, &ptKfQ, &ptKiQ};
+
 	for(unsigned int i=0; i<3; ++i)
 	{
-		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 6.;
+		// arrow heads
+		double dAng = (pLines_arrow[i]->angle() + 90.) / 180. * M_PI;
+		double dC = std::cos(dAng);
+		double dS = std::sin(dAng);
+
+		double dTriagX = 5., dTriagY = 10.;
+		QPointF ptTriag1 = *pPoints_arrow[i] + QPointF(dTriagX*dC + dTriagY*dS, -dTriagX*dS + dTriagY*dC);
+		QPointF ptTriag2 = *pPoints_arrow[i] + QPointF(-dTriagX*dC + dTriagY*dS, dTriagX*dS + dTriagY*dC);
+
+		QPainterPath triag;
+		triag.moveTo(*pPoints_arrow[i]);
+		triag.lineTo(ptTriag1);
+		triag.lineTo(ptTriag2);
+
+		painter->setPen(Qt::black);
+		painter->fillPath(triag, Qt::black);
+
+
+		// angle arcs
+		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 4.;
 		double dBeginArcAngle = pLines1[i]->angle() + 180.;
 		double dArcAngle = pLines1[i]->angleTo(*pLines2[i]) - 180.;
 
+		painter->setPen(Qt::blue);
 		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
 						dBeginArcAngle*16., dArcAngle*16.);
 
