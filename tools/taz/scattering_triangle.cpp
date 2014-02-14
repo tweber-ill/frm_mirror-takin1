@@ -11,6 +11,13 @@
 #include <sstream>
 
 
+ScatteringTriangleNode::ScatteringTriangleNode(QGraphicsItem* pSupItem) : m_pParentItem(pSupItem)
+{
+	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+	setCursor(Qt::CrossCursor);
+}
+
 QRectF ScatteringTriangleNode::boundingRect() const
 {
 	return QRectF(-5., -5., 10., 10.);
@@ -39,18 +46,11 @@ QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVa
 	return QGraphicsItem::itemChange(change, value);
 }
 
-ScatteringTriangleNode::ScatteringTriangleNode(QGraphicsItem* pSupItem) : m_pParentItem(pSupItem)
-{
-	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-	setCursor(Qt::CrossCursor);
-}
-
 
 // --------------------------------------------------------------------------------
 
 
-ScatteringTriangle::ScatteringTriangle(QGraphicsScene& scene) : m_dPixelsPerInvA(100.)
+ScatteringTriangle::ScatteringTriangle(QGraphicsScene& scene)
 {
 	m_pNodeKiQ = new ScatteringTriangleNode(this);
 	m_pNodeKiKf = new ScatteringTriangleNode(this);
@@ -68,6 +68,13 @@ ScatteringTriangle::ScatteringTriangle(QGraphicsScene& scene) : m_dPixelsPerInvA
 	scene.addItem(m_pNodeKfQ);
 
 	setAcceptedMouseButtons(0);
+}
+
+ScatteringTriangle::~ScatteringTriangle()
+{
+	delete m_pNodeKiQ;
+	delete m_pNodeKiKf;
+	delete m_pNodeKfQ;
 }
 
 QRectF ScatteringTriangle::boundingRect() const
@@ -159,7 +166,6 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 
 ScatteringTriangleScene::ScatteringTriangleScene()
-	: m_bMouseScale(0)
 {
 	m_pTri = new ScatteringTriangle(*this);
 	this->addItem(m_pTri);
@@ -170,46 +176,29 @@ ScatteringTriangleScene::~ScatteringTriangleScene()
 	delete m_pTri;
 }
 
-void ScatteringTriangleScene::wheelEvent(QWheelEvent *pEvt)
+void ScatteringTriangleScene::wheelEvent(QGraphicsSceneWheelEvent *pEvt)
 {
-	pEvt->ignore();
+	//pEvt->ignore();
+	QGraphicsScene::wheelEvent(pEvt);
 }
 
 void ScatteringTriangleScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
 {
-	if(pEvt->buttons() & Qt::RightButton)
-	{
-		m_dMouseScaleBegin = pEvt->pos().y();
-
-		m_bMouseScale = 0;
-	}
+	//if(pEvt->buttons() & Qt::RightButton)
+	//{}
 
 	QGraphicsScene::mousePressEvent(pEvt);
 }
 
 void ScatteringTriangleScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
 {
-	if((pEvt->buttons() & Qt::RightButton) == 0)
-	{
-		m_bMouseScale = 0;
-	}
+	//if((pEvt->buttons() & Qt::RightButton) == 0)
+	//{}
 
 	QGraphicsScene::mouseReleaseEvent(pEvt);
 }
 
 void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 {
-	if(m_bMouseScale)
-	{
-		double dNewY = pEvt->pos().y();
-
-		double dy = dNewY - m_dMouseScaleBegin;
-
-		if(dy != 0.)
-		{
-			m_dMouseScaleBegin = dNewY;
-		}
-	}
-
 	QGraphicsScene::mouseMoveEvent(pEvt);
 }

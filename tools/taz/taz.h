@@ -11,11 +11,13 @@
 
 #include "ui/ui_taz.h"
 #include "scattering_triangle.h"
+#include "tas_layout.h"
 
 class TazDlg : public QDialog, Ui::TazDlg
 { Q_OBJECT
 	protected:
 		ScatteringTriangleScene m_sceneRecip;
+		TasLayoutScene m_sceneReal;
 
 	public:
 		TazDlg(QWidget *pParent);

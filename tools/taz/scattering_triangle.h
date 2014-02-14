@@ -38,13 +38,13 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode *m_pNodeKiQ;
 		ScatteringTriangleNode *m_pNodeKiKf;
 		ScatteringTriangleNode *m_pNodeKfQ;
-		double m_dPixelsPerInvA;
 
 	protected:
 		QRectF boundingRect() const;
 
 	public:
 		ScatteringTriangle(QGraphicsScene& scene);
+		virtual ~ScatteringTriangle();
 
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 };
@@ -54,14 +54,12 @@ class ScatteringTriangleScene : public QGraphicsScene
 {
 	protected:
 		ScatteringTriangle *m_pTri;
-		bool m_bMouseScale;
-		double m_dMouseScaleBegin = 0.;
 
 	public:
 		ScatteringTriangleScene();
 		virtual ~ScatteringTriangleScene();
 
-		void wheelEvent(QWheelEvent *pEvt);
+		void wheelEvent(QGraphicsSceneWheelEvent *pEvt);
 		void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);
