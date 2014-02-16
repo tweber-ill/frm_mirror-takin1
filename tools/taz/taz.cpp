@@ -29,6 +29,9 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 	gfxReal->setDragMode(QGraphicsView::ScrollHandDrag);
 	gfxReal->setScene(&m_sceneReal);
 
+	QObject::connect(&m_sceneRecip, SIGNAL(triangleChanged(const TriangleOptions&)),
+					&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));
+
 
 	std::vector<QLineEdit*> vecEdits{editA, editB, editC, editAlpha, editBeta, editGamma,
 									editScatX0, editScatX1, editScatX2,

@@ -5,6 +5,7 @@
  */
 
 #include "tas_layout.h"
+#include <iostream>
 
 TasLayoutNode::TasLayoutNode(QGraphicsItem* pSupItem) : m_pParentItem(pSupItem)
 {
@@ -103,3 +104,11 @@ TasLayoutScene::~TasLayoutScene()
 {
 	delete m_pTas;
 }
+
+void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
+{
+	//std::cout << "twotheta = " << opts.dTwoTheta / M_PI * 180. << std::endl;
+}
+
+
+#include "tas_layout.moc"

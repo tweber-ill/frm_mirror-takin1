@@ -11,7 +11,7 @@
 #include <sstream>
 
 
-ScatteringTriangleNode::ScatteringTriangleNode(QGraphicsItem* pSupItem) : m_pParentItem(pSupItem)
+ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem) : m_pParentItem(pSupItem)
 {
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
@@ -50,7 +50,8 @@ QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVa
 // --------------------------------------------------------------------------------
 
 
-ScatteringTriangle::ScatteringTriangle(QGraphicsScene& scene)
+ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
+				: m_bReady(0), m_scene(scene)
 {
 	m_pNodeKiQ = new ScatteringTriangleNode(this);
 	m_pNodeKiKf = new ScatteringTriangleNode(this);
@@ -68,6 +69,8 @@ ScatteringTriangle::ScatteringTriangle(QGraphicsScene& scene)
 	scene.addItem(m_pNodeKfQ);
 
 	setAcceptedMouseButtons(0);
+
+	m_bReady = 1;
 }
 
 ScatteringTriangle::~ScatteringTriangle()
@@ -75,6 +78,12 @@ ScatteringTriangle::~ScatteringTriangle()
 	delete m_pNodeKiQ;
 	delete m_pNodeKiKf;
 	delete m_pNodeKfQ;
+}
+
+void ScatteringTriangle::update(const QRectF& rect)
+{
+	QGraphicsItem::update();
+	m_scene.updatedTriangle();
 }
 
 QRectF ScatteringTriangle::boundingRect() const
@@ -161,11 +170,26 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	}
 }
 
+double ScatteringTriangle::GetTwoTheta() const
+{
+	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0);
+	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0);
+	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0);
+
+	QLineF lineKi(ptKiKf, ptKiQ);
+	QLineF lineKf(ptKiKf, ptKfQ);
+
+	double dTT = lineKi.angleTo(lineKf) / 180. * M_PI;
+	if(dTT > M_PI)
+		dTT = -(2.*M_PI - dTT);
+
+	return dTT;
+}
 
 // --------------------------------------------------------------------------------
 
 
-ScatteringTriangleScene::ScatteringTriangleScene()
+ScatteringTriangleScene::ScatteringTriangleScene() : m_pTri(0)
 {
 	m_pTri = new ScatteringTriangle(*this);
 	this->addItem(m_pTri);
@@ -174,6 +198,17 @@ ScatteringTriangleScene::ScatteringTriangleScene()
 ScatteringTriangleScene::~ScatteringTriangleScene()
 {
 	delete m_pTri;
+}
+
+void ScatteringTriangleScene::updatedTriangle()
+{
+	if(!m_pTri || !m_pTri->IsReady())
+		return;
+
+	TriangleOptions opts;
+	opts.dTwoTheta = m_pTri->GetTwoTheta();
+
+	emit triangleChanged(opts);
 }
 
 void ScatteringTriangleScene::wheelEvent(QGraphicsSceneWheelEvent *pEvt)
@@ -202,3 +237,6 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	QGraphicsScene::mouseMoveEvent(pEvt);
 }
+
+
+#include "scattering_triangle.moc"

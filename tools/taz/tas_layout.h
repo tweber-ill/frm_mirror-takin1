@@ -17,6 +17,8 @@
 #include <QtGui/QGraphicsTextItem>
 #include <QtGui/QWheelEvent>
 
+#include "tasoptions.h"
+
 class TasLayoutNode : public QGraphicsItem
 {
 	protected:
@@ -57,7 +59,7 @@ class TasLayout : public QGraphicsItem
 };
 
 class TasLayoutScene : public QGraphicsScene
-{
+{	Q_OBJECT
 	protected:
 		TasLayout *m_pTas;
 
@@ -68,6 +70,9 @@ class TasLayoutScene : public QGraphicsScene
 		/*void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);*/
+
+	public slots:
+		void triangleChanged(const TriangleOptions& opts);
 };
 
 #endif

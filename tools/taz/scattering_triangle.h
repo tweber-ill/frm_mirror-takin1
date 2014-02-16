@@ -14,11 +14,13 @@
 #include <QtGui/QGraphicsTextItem>
 #include <QtGui/QWheelEvent>
 
+#include "tasoptions.h"
 
+class ScatteringTriangle;
 class ScatteringTriangleNode : public QGraphicsItem
 {
 	protected:
-		QGraphicsItem *m_pParentItem;
+		ScatteringTriangle *m_pParentItem;
 
 	protected:
 		QRectF boundingRect() const;
@@ -29,12 +31,18 @@ class ScatteringTriangleNode : public QGraphicsItem
 		QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
 	public:
-		ScatteringTriangleNode(QGraphicsItem* pSupItem);
+		ScatteringTriangleNode(ScatteringTriangle* pSupItem);
 };
 
+class ScatteringTriangleScene;
 class ScatteringTriangle : public QGraphicsItem
 {
+	private:
+		bool m_bReady;
+
 	protected:
+		ScatteringTriangleScene &m_scene;
+
 		ScatteringTriangleNode *m_pNodeKiQ;
 		ScatteringTriangleNode *m_pNodeKiKf;
 		ScatteringTriangleNode *m_pNodeKfQ;
@@ -43,15 +51,19 @@ class ScatteringTriangle : public QGraphicsItem
 		QRectF boundingRect() const;
 
 	public:
-		ScatteringTriangle(QGraphicsScene& scene);
+		ScatteringTriangle(ScatteringTriangleScene& scene);
 		virtual ~ScatteringTriangle();
 
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+		void update(const QRectF& rect = QRectF());
+
+		bool IsReady() const { return m_bReady; }
+		double GetTwoTheta() const;
 };
 
 
 class ScatteringTriangleScene : public QGraphicsScene
-{
+{	Q_OBJECT
 	protected:
 		ScatteringTriangle *m_pTri;
 
@@ -63,6 +75,11 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);
+
+		void updatedTriangle();
+
+	signals:
+		void triangleChanged(const TriangleOptions& opts);
 };
 
 
