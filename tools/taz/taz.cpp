@@ -27,7 +27,7 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 	gfxReal->setRenderHints(QPainter::Antialiasing);
 	gfxReal->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	gfxReal->setDragMode(QGraphicsView::ScrollHandDrag);
-	gfxReal->setScene(&m_sceneReal);
+	//gfxReal->setScene(&m_sceneReal); // unfinished
 
 	QObject::connect(&m_sceneRecip, SIGNAL(triangleChanged(const TriangleOptions&)),
 					&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));

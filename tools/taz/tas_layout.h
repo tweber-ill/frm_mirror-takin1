@@ -8,7 +8,6 @@
 #define __TAS_LAYOUT_H__
 
 #include "helper/flags.h"
-#include <cmath>
 
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsView>
@@ -44,10 +43,6 @@ class TasLayout : public QGraphicsItem
 		TasLayoutNode *m_pAna;
 		TasLayoutNode *m_pDet;
 
-		double m_dAngleMonoTT = M_PI/2.;
-		double m_dAngleSampleTT = M_PI/2.;
-		double m_dAngleAnaTT = M_PI/2.;
-
 	protected:
 		QRectF boundingRect() const;
 
@@ -56,6 +51,9 @@ class TasLayout : public QGraphicsItem
 		virtual ~TasLayout();
 
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+		double GetSampleTwoTheta() const;
+		void SetSampleTwoTheta(double dTT);
 };
 
 class TasLayoutScene : public QGraphicsScene

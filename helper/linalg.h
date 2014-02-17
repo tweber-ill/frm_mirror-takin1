@@ -25,6 +25,18 @@ template<typename T=double> bool float_equal(T t1, T t2);
 template<typename T> T sign(T t);
 
 
+template<class vec_type>
+typename vec_type::value_type vec_len(const vec_type& vec)
+{
+	typename vec_type::value_type t = typename vec_type::value_type();
+
+	for(unsigned int i=0; i<vec.size(); ++i)
+		t += vec[i]*vec[i];
+
+	t = std::sqrt(t);
+	return t;
+}
+
 /*
  * remove an element from a vector
  */

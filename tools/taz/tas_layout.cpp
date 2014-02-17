@@ -7,6 +7,7 @@
 #include "tas_layout.h"
 #include <iostream>
 
+
 TasLayoutNode::TasLayoutNode(QGraphicsItem* pSupItem) : m_pParentItem(pSupItem)
 {
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
@@ -90,6 +91,30 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	painter->drawLine(lineAnaDet);
 }
 
+double TasLayout::GetSampleTwoTheta() const
+{
+	return 0.;
+}
+
+void TasLayout::SetSampleTwoTheta(double dAngle)
+{
+	ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
+	ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
+	ublas::vector<double> vecAna = qpoint_to_vec(mapFromItem(m_pAna, 0, 0));
+
+	ublas::vector<double> vecKi = vecSample - vecMono;
+	vecKi /= ublas::norm_2(vecKi);
+	double dLenKf = ublas::norm_2(vecAna-vecSample);
+
+	//std::cout << dAngle/M_PI*180. << std::endl;
+	ublas::vector<double> vecKf = ublas::prod(rotation_matrix_2d(dAngle), vecKi);
+	vecKf /= ublas::norm_2(vecKf);
+	vecKf *= dLenKf;
+
+	QPointF ptAna = mapToItem(m_pSample, vec_to_qpoint(vecKf));
+	m_pAna->setPos(ptAna);
+}
+
 
 // --------------------------------------------------------------------------------
 
@@ -107,7 +132,9 @@ TasLayoutScene::~TasLayoutScene()
 
 void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 {
-	//std::cout << "twotheta = " << opts.dTwoTheta / M_PI * 180. << std::endl;
+	m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
+
+	update();
 }
 
 
