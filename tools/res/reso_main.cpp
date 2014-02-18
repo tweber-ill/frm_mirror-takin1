@@ -25,6 +25,9 @@ int main(int argc, char **argv)
 		QSettings *pGlobals = Settings::GetGlobals();
 		QApplication a(argc, argv);
 
+		::setlocale(LC_ALL, "C");
+		QLocale::setDefault(QLocale::English);
+
 		ResoDlg wnd(0);
 		wnd.exec();
 	}
