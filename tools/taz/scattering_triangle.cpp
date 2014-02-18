@@ -186,6 +186,23 @@ double ScatteringTriangle::GetTwoTheta() const
 	return dTT;
 }
 
+double ScatteringTriangle::GetMonoTwoTheta(double dMonoD) const
+{
+	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0)) - qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+	double dKi = ublas::norm_2(vecKi) / m_dScaleFactor;
+	//std::cout << "ki = " << dKi << std::endl;
+
+	return 2. * std::asin(M_PI/(dMonoD*dKi));
+}
+
+double ScatteringTriangle::GetAnaTwoTheta(double dAnaD) const
+{
+	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0)) - qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+	double dKf = ublas::norm_2(vecKf) / m_dScaleFactor;
+
+	return 2. * std::asin(M_PI/(dAnaD*dKf));
+}
+
 // --------------------------------------------------------------------------------
 
 
@@ -200,6 +217,14 @@ ScatteringTriangleScene::~ScatteringTriangleScene()
 	delete m_pTri;
 }
 
+void ScatteringTriangleScene::SetDs(double dMonoD, double dAnaD)
+{
+	m_dMonoD = dMonoD;
+	m_dAnaD = dAnaD;
+
+	emitUpdate();
+}
+
 void ScatteringTriangleScene::emitUpdate()
 {
 	if(!m_pTri || !m_pTri->IsReady())
@@ -207,6 +232,8 @@ void ScatteringTriangleScene::emitUpdate()
 
 	TriangleOptions opts;
 	opts.dTwoTheta = m_pTri->GetTwoTheta();
+	opts.dAnaTwoTheta = m_pTri->GetAnaTwoTheta(m_dAnaD);
+	opts.dMonoTwoTheta = m_pTri->GetMonoTwoTheta(m_dMonoD);
 
 	emit triangleChanged(opts);
 }
@@ -216,32 +243,6 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 	// TODO
 }
 
-void ScatteringTriangleScene::wheelEvent(QGraphicsSceneWheelEvent *pEvt)
-{
-	//pEvt->ignore();
-	QGraphicsScene::wheelEvent(pEvt);
-}
-
-void ScatteringTriangleScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
-{
-	//if(pEvt->buttons() & Qt::RightButton)
-	//{}
-
-	QGraphicsScene::mousePressEvent(pEvt);
-}
-
-void ScatteringTriangleScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
-{
-	//if((pEvt->buttons() & Qt::RightButton) == 0)
-	//{}
-
-	QGraphicsScene::mouseReleaseEvent(pEvt);
-}
-
-void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
-{
-	QGraphicsScene::mouseMoveEvent(pEvt);
-}
 
 
 #include "scattering_triangle.moc"

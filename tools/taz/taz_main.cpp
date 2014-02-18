@@ -9,6 +9,9 @@ int main(int argc, char** argv)
 {
 	QApplication app(argc, argv);
 
+	::setlocale(LC_ALL, "C");
+	QLocale::setDefault(QLocale::English);
+
 	TazDlg dlg(0);
 	return dlg.exec();
 }

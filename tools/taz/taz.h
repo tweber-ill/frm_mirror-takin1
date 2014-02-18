@@ -26,6 +26,7 @@ class TazDlg : public QDialog, Ui::TazDlg
 
 	protected slots:
 		void CalcPeaks();
+		void UpdateDs();
 };
 
 #endif

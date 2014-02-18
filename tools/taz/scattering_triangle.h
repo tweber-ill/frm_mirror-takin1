@@ -47,6 +47,8 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode *m_pNodeKiKf;
 		ScatteringTriangleNode *m_pNodeKfQ;
 
+		double m_dScaleFactor = 75.;	// pixels per A^-1
+
 	protected:
 		QRectF boundingRect() const;
 
@@ -59,6 +61,8 @@ class ScatteringTriangle : public QGraphicsItem
 
 		bool IsReady() const { return m_bReady; }
 		double GetTwoTheta() const;
+		double GetMonoTwoTheta(double dMonoD) const;
+		double GetAnaTwoTheta(double dAnaD) const;
 };
 
 
@@ -66,17 +70,15 @@ class ScatteringTriangleScene : public QGraphicsScene
 {	Q_OBJECT
 	protected:
 		ScatteringTriangle *m_pTri;
+		double m_dMonoD = 3.355;
+		double m_dAnaD = 3.355;
 
 	public:
 		ScatteringTriangleScene();
 		virtual ~ScatteringTriangleScene();
 
-		void wheelEvent(QGraphicsSceneWheelEvent *pEvt);
-		void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
-		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
-		void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);
-
 		void emitUpdate();
+		void SetDs(double dMonoD, double dAnaD);
 
 	public slots:
 		void tasChanged(const TriangleOptions& opts);

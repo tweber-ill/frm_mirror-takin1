@@ -50,8 +50,12 @@ class TasLayout : public QGraphicsItem
 		TasLayoutNode *m_pAna;
 		TasLayoutNode *m_pDet;
 
+		double m_dMonoTwoTheta = 3.1415/2.;
 		double m_dAnaTwoTheta = 3.1415/2.;
 		double m_dTwoTheta = 3.1415/2.;
+
+		double m_dLenMonoSample = 150.;
+		double m_dLenSampleAna = 100.;
 		double m_dLenAnaDet = 50.;
 
 	protected:
@@ -63,8 +67,9 @@ class TasLayout : public QGraphicsItem
 
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-		double GetSampleTwoTheta() const;
 		void SetSampleTwoTheta(double dTT);
+		void SetMonoTwoTheta(double dTT);
+		void SetAnaTwoTheta(double dTT);
 
 		void nodeMoved(const TasLayoutNode* pNode=0);
 };
@@ -79,9 +84,6 @@ class TasLayoutScene : public QGraphicsScene
 		TasLayoutScene();
 		virtual ~TasLayoutScene();
 
-		/*void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
-		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
-		void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);*/
 		void emitUpdate(const TriangleOptions& opts);
 
 	public slots:

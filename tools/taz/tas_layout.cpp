@@ -47,9 +47,9 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 	m_pDet = new TasLayoutNode(this);
 
 	m_pSrc->setPos(150., 150.);
-	m_pMono->setPos(0., 150.);
+	m_pMono->setPos(0., m_dLenMonoSample);
 	m_pSample->setPos(0., 0.);
-	m_pAna->setPos(-100., 0.);
+	m_pAna->setPos(-m_dLenSampleAna, 0.);
 	m_pDet->setPos(-100., -m_dLenAnaDet);
 
 	m_pAna->setFlag(QGraphicsItem::ItemIsMovable);
@@ -74,15 +74,36 @@ TasLayout::~TasLayout()
 
 void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 {
-	if(m_bNoUpdate)
-		return;
+	if(m_bNoUpdate) return;
+	bool bNoUpdate = m_bNoUpdate;
 
+	ublas::vector<double> vecSrc = qpoint_to_vec(mapFromItem(m_pSrc, 0, 0));
 	ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
 	ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
 	ublas::vector<double> vecAna = qpoint_to_vec(mapFromItem(m_pAna, 0, 0));
 	ublas::vector<double> vecDet = qpoint_to_vec(mapFromItem(m_pDet, 0, 0));
 
-	if(pNode == m_pAna)
+	if(pNode==m_pMono)
+	{
+		ublas::vector<double> vecSrcMono = vecMono-vecSrc;
+		vecSrcMono /= ublas::norm_2(vecSrcMono);
+
+		ublas::vector<double> vecMonoSample = ublas::prod(rotation_matrix_2d(m_dMonoTwoTheta), vecSrcMono);
+		vecMonoSample /= ublas::norm_2(vecMonoSample);
+		vecMonoSample *= m_dLenMonoSample;
+
+		m_pSample->setPos(vec_to_qpoint(vecMono+vecMonoSample));
+
+
+		ublas::vector<double> vecSampleAna = vecAna - vecSample;
+		vecSampleAna /= ublas::norm_2(vecSampleAna);
+		vecSampleAna *= m_dLenSampleAna;
+
+		m_bNoUpdate = 1;
+		m_pAna->setPos(vec_to_qpoint(vecSample + vecSampleAna));
+		m_bNoUpdate = bNoUpdate;
+	}
+	if(pNode==m_pMono || pNode==m_pAna)
 	{
 		ublas::vector<double> vecSampleAna = vecAna-vecSample;
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
@@ -91,7 +112,9 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 		vecAnaDet *= m_dLenAnaDet;
 
+		m_bNoUpdate = 1;
 		m_pDet->setPos(vec_to_qpoint(vecAna+vecAnaDet));
+		m_bNoUpdate = bNoUpdate;
 
 
 		ublas::vector<double> vecMonoSample = vecSample - vecMono;
@@ -158,11 +181,6 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	}
 }
 
-double TasLayout::GetSampleTwoTheta() const
-{
-	return m_dTwoTheta;
-}
-
 void TasLayout::SetSampleTwoTheta(double dAngle)
 {
 	m_dTwoTheta = dAngle;
@@ -187,6 +205,17 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 	nodeMoved(m_pAna);
 }
 
+void TasLayout::SetMonoTwoTheta(double dAngle)
+{
+	m_dMonoTwoTheta = dAngle;
+	nodeMoved(m_pMono);
+}
+
+void TasLayout::SetAnaTwoTheta(double dAngle)
+{
+	m_dAnaTwoTheta = dAngle;
+	nodeMoved(m_pAna);
+}
 
 // --------------------------------------------------------------------------------
 
@@ -205,6 +234,8 @@ TasLayoutScene::~TasLayoutScene()
 void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 {
 	m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
+	m_pTas->SetMonoTwoTheta(opts.dMonoTwoTheta);
+	m_pTas->SetAnaTwoTheta(opts.dAnaTwoTheta);
 
 	update();
 }

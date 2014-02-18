@@ -35,18 +35,31 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 					&m_sceneRecip, SLOT(tasChanged(const TriangleOptions&)));
 
 
+	std::vector<QLineEdit*> vecEditDs{editMonoD, editAnaD};
+	for(QLineEdit* pEdit : vecEditDs)
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(UpdateDs()));
+
 	std::vector<QLineEdit*> vecEdits{editA, editB, editC, editAlpha, editBeta, editGamma,
 									editScatX0, editScatX1, editScatX2,
 									editScatY0, editScatY1, editScatY2};
 	for(QLineEdit* pEdit : vecEdits)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
 
+	UpdateDs();
 	CalcPeaks();
 }
 
 TazDlg::~TazDlg()
 {}
 
+
+void TazDlg::UpdateDs()
+{
+	double dMonoD = editMonoD->text().toDouble();
+	double dAnaD = editAnaD->text().toDouble();
+
+	m_sceneRecip.SetDs(dMonoD, dAnaD);
+}
 
 void TazDlg::CalcPeaks()
 {
