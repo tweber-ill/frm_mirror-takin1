@@ -42,8 +42,12 @@ void ScatteringTriangleNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
 
 QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-	m_pParentItem->update();
-	return QGraphicsItem::itemChange(change, value);
+	QVariant var = QGraphicsItem::itemChange(change, value);
+
+	if(change == QGraphicsItem::ItemPositionHasChanged)
+		m_pParentItem->nodeMoved(this);
+
+	return var;
 }
 
 
@@ -51,7 +55,7 @@ QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVa
 
 
 ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
-				: m_bReady(0), m_scene(scene)
+				: m_scene(scene)
 {
 	m_pNodeKiQ = new ScatteringTriangleNode(this);
 	m_pNodeKiKf = new ScatteringTriangleNode(this);
@@ -80,10 +84,10 @@ ScatteringTriangle::~ScatteringTriangle()
 	delete m_pNodeKfQ;
 }
 
-void ScatteringTriangle::update(const QRectF& rect)
+void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 {
-	QGraphicsItem::update();
 	m_scene.emitUpdate();
+	this->update();
 }
 
 QRectF ScatteringTriangle::boundingRect() const
@@ -172,23 +176,21 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 double ScatteringTriangle::GetTwoTheta() const
 {
-	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0);
-	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0);
-	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0);
+	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 
-	QLineF lineKi(ptKiKf, ptKiQ);
-	QLineF lineKf(ptKiKf, ptKfQ);
+	vecKi /= ublas::norm_2(vecKi);
+	vecKf /= ublas::norm_2(vecKf);
 
-	double dTT = lineKi.angleTo(lineKf) / 180. * M_PI;
-	if(dTT > M_PI)
-		dTT = -(2.*M_PI - dTT);
-
-	return dTT;
+	return vec_angle_2(vecKi) - vec_angle_2(vecKf);
 }
 
 double ScatteringTriangle::GetMonoTwoTheta(double dMonoD) const
 {
-	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0)) - qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
+									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKi = ublas::norm_2(vecKi) / m_dScaleFactor;
 	//std::cout << "ki = " << dKi << std::endl;
 
@@ -197,7 +199,8 @@ double ScatteringTriangle::GetMonoTwoTheta(double dMonoD) const
 
 double ScatteringTriangle::GetAnaTwoTheta(double dAnaD) const
 {
-	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0)) - qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0))
+									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKf = ublas::norm_2(vecKf) / m_dScaleFactor;
 
 	return 2. * std::asin(M_PI/(dAnaD*dKf));

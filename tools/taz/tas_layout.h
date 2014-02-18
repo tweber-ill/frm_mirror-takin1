@@ -39,6 +39,9 @@ class TasLayoutNode : public QGraphicsItem
 class TasLayoutScene;
 class TasLayout : public QGraphicsItem
 {
+	private:
+		bool m_bReady = 0;
+
 	protected:
 		TasLayoutScene& m_scene;
 
@@ -64,6 +67,8 @@ class TasLayout : public QGraphicsItem
 	public:
 		TasLayout(TasLayoutScene& scene);
 		virtual ~TasLayout();
+
+		bool IsReady() const { return m_bReady; }
 
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 

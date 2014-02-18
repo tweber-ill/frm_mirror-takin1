@@ -47,6 +47,8 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 
 	UpdateDs();
 	CalcPeaks();
+
+	m_sceneRecip.emitUpdate();
 }
 
 TazDlg::~TazDlg()

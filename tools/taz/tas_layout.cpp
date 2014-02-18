@@ -67,6 +67,7 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 	scene.addItem(m_pDet);
 
 	setAcceptedMouseButtons(0);
+	m_bReady = 1;
 }
 
 TasLayout::~TasLayout()
@@ -126,7 +127,6 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		ublas::vector<double> vecMonoSample = vecSample - vecMono;
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 
-		//m_dTwoTheta = std::acos(ublas::inner_prod(vecMonoSample, vecSampleAna));
 		m_dTwoTheta = vec_angle_2(vecSampleAna) - vec_angle_2(vecMonoSample);
 		if(m_dTwoTheta < -M_PI) m_dTwoTheta += 2.*M_PI;
 		if(m_dTwoTheta > M_PI) m_dTwoTheta -= 2.*M_PI;
@@ -290,8 +290,8 @@ TasLayoutScene::~TasLayoutScene()
 
 void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 {
-	m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
 	m_pTas->SetMonoTwoTheta(opts.dMonoTwoTheta);
+	m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
 	m_pTas->SetAnaTwoTheta(opts.dAnaTwoTheta);
 
 	update();
@@ -299,6 +299,9 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 
 void TasLayoutScene::emitUpdate(const TriangleOptions& opts)
 {
+	if(!m_pTas || !m_pTas->IsReady())
+		return;
+
 	emit tasChanged(opts);
 }
 

@@ -38,7 +38,7 @@ class ScatteringTriangleScene;
 class ScatteringTriangle : public QGraphicsItem
 {
 	private:
-		bool m_bReady;
+		bool m_bReady = 0;
 
 	protected:
 		ScatteringTriangleScene &m_scene;
@@ -57,7 +57,7 @@ class ScatteringTriangle : public QGraphicsItem
 		virtual ~ScatteringTriangle();
 
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-		void update(const QRectF& rect = QRectF());
+		void nodeMoved(const ScatteringTriangleNode* pNode=0);
 
 		bool IsReady() const { return m_bReady; }
 		double GetTwoTheta() const;
