@@ -46,6 +46,12 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 	m_pAna = new TasLayoutNode(this);
 	m_pDet = new TasLayoutNode(this);
 
+	m_pSrc->setToolTip("Source");
+	m_pMono->setToolTip("Monochromator");
+	m_pSample->setToolTip("Sample");
+	m_pAna->setToolTip("Analyser");
+	m_pDet->setToolTip("Detector");
+
 	m_pSrc->setPos(150., 150.);
 	m_pMono->setPos(0., m_dLenMonoSample);
 	m_pSample->setPos(0., 0.);
@@ -157,6 +163,57 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	painter->drawLine(lineKi);
 	painter->drawLine(lineKf);
 	painter->drawLine(lineAnaDet);
+
+
+
+	// dashed extended lines
+	QLineF lineSrcMono_ext(ptMono, ptMono + (ptMono-ptSrc)/2.);
+	QLineF lineki_ext(ptSample, ptSample + (ptSample-ptMono)/2.);
+	QLineF linekf_ext(ptAna, ptAna + (ptAna-ptSample)/2.);
+
+	QPen penOrig = painter->pen();
+	painter->setPen(Qt::DashLine);
+
+	painter->drawLine(lineSrcMono_ext);
+	painter->drawLine(lineki_ext);
+	painter->drawLine(linekf_ext);
+
+	painter->setPen(penOrig);
+
+
+
+	// angle arcs
+	const QLineF* pLines1[] = {&lineSrcMono, &lineKi, &lineKf};
+	const QLineF* pLines2[] = {&lineKi, &lineKf, &lineAnaDet};
+	const QPointF* pPoints[] = {&ptMono, &ptSample, &ptAna};
+	const QPointF* pPoints_ext[] = {&ptSrc, &ptMono, &ptSample};
+	const double dAngles[] = {m_dMonoTwoTheta, m_dTwoTheta, m_dAnaTwoTheta};
+
+	for(unsigned int i=0; i<3; ++i)
+	{
+		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 4.;
+		double dBeginArcAngle = pLines1[i]->angle();
+		double dArcAngle = -dAngles[i]/M_PI*180.;
+
+		painter->setPen(Qt::blue);
+		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
+						dBeginArcAngle*16., dArcAngle*16.);
+
+
+		std::ostringstream ostrAngle;
+		ostrAngle.precision(4);
+		ostrAngle << std::fabs(dArcAngle) << "\xb0";
+
+		QPointF ptDirOut = *pPoints[i] - *pPoints_ext[i];
+		ptDirOut /= std::sqrt(ptDirOut.x()*ptDirOut.x() + ptDirOut.y()*ptDirOut.y());
+		ptDirOut *= pLines1[i]->length()/4.;
+
+		QPointF ptText = *pPoints[i] + ptDirOut;
+		painter->drawText(ptText, ostrAngle.str().c_str());
+	}
+
+	painter->setPen(penOrig);
+
 
 	// arrow heads
 	const QLineF* pLines_arrow[] = {&lineKi, &lineKf};
