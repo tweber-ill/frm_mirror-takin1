@@ -8,6 +8,7 @@
 #define __TAS_LAYOUT_H__
 
 #include "helper/flags.h"
+#include <cmath>
 
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsView>
@@ -18,10 +19,11 @@
 
 #include "tasoptions.h"
 
+class TasLayout;
 class TasLayoutNode : public QGraphicsItem
 {
 	protected:
-		QGraphicsItem *m_pParentItem;
+		TasLayout *m_pParentItem;
 
 	protected:
 		QRectF boundingRect() const;
@@ -30,31 +32,43 @@ class TasLayoutNode : public QGraphicsItem
 		QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
 	public:
-		TasLayoutNode(QGraphicsItem* pSupItem);
+		TasLayoutNode(TasLayout* pSupItem);
 };
 
 
+class TasLayoutScene;
 class TasLayout : public QGraphicsItem
 {
 	protected:
+		TasLayoutScene& m_scene;
+
+		bool m_bNoUpdate = 0;
+
 		TasLayoutNode *m_pSrc;
 		TasLayoutNode *m_pMono;
 		TasLayoutNode *m_pSample;
 		TasLayoutNode *m_pAna;
 		TasLayoutNode *m_pDet;
 
+		double m_dAnaTwoTheta = 3.1415/2.;
+		double m_dTwoTheta = 3.1415/2.;
+		double m_dLenAnaDet = 50.;
+
 	protected:
 		QRectF boundingRect() const;
 
 	public:
-		TasLayout(QGraphicsScene& scene);
+		TasLayout(TasLayoutScene& scene);
 		virtual ~TasLayout();
 
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 		double GetSampleTwoTheta() const;
 		void SetSampleTwoTheta(double dTT);
+
+		void nodeMoved(const TasLayoutNode* pNode=0);
 };
+
 
 class TasLayoutScene : public QGraphicsScene
 {	Q_OBJECT
@@ -68,9 +82,12 @@ class TasLayoutScene : public QGraphicsScene
 		/*void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);*/
+		void emitUpdate(const TriangleOptions& opts);
 
 	public slots:
 		void triangleChanged(const TriangleOptions& opts);
+	signals:
+		void tasChanged(const TriangleOptions& opts);
 };
 
 #endif

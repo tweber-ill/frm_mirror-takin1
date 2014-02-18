@@ -37,6 +37,12 @@ typename vec_type::value_type vec_len(const vec_type& vec)
 	return t;
 }
 
+template<typename vec_type>
+typename vec_type::value_type vec_angle_2(const vec_type& vec)
+{
+	return std::atan2(vec[1], vec[0]);
+}
+
 /*
  * remove an element from a vector
  */

@@ -76,8 +76,10 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);
 
-		void updatedTriangle();
+		void emitUpdate();
 
+	public slots:
+		void tasChanged(const TriangleOptions& opts);
 	signals:
 		void triangleChanged(const TriangleOptions& opts);
 };

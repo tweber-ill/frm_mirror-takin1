@@ -83,7 +83,7 @@ ScatteringTriangle::~ScatteringTriangle()
 void ScatteringTriangle::update(const QRectF& rect)
 {
 	QGraphicsItem::update();
-	m_scene.updatedTriangle();
+	m_scene.emitUpdate();
 }
 
 QRectF ScatteringTriangle::boundingRect() const
@@ -200,7 +200,7 @@ ScatteringTriangleScene::~ScatteringTriangleScene()
 	delete m_pTri;
 }
 
-void ScatteringTriangleScene::updatedTriangle()
+void ScatteringTriangleScene::emitUpdate()
 {
 	if(!m_pTri || !m_pTri->IsReady())
 		return;
@@ -209,6 +209,11 @@ void ScatteringTriangleScene::updatedTriangle()
 	opts.dTwoTheta = m_pTri->GetTwoTheta();
 
 	emit triangleChanged(opts);
+}
+
+void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
+{
+	// TODO
 }
 
 void ScatteringTriangleScene::wheelEvent(QGraphicsSceneWheelEvent *pEvt)

@@ -8,7 +8,7 @@
 #include <iostream>
 
 
-TasLayoutNode::TasLayoutNode(QGraphicsItem* pSupItem) : m_pParentItem(pSupItem)
+TasLayoutNode::TasLayoutNode(TasLayout* pSupItem) : m_pParentItem(pSupItem)
 {
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
@@ -27,13 +27,18 @@ void TasLayoutNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
 
 QVariant TasLayoutNode::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-	m_pParentItem->update();
-	return QGraphicsItem::itemChange(change, value);
+	//std::cout << change << std::endl;
+	QVariant var = QGraphicsItem::itemChange(change, value);
+
+	if(change == QGraphicsItem::ItemPositionHasChanged)
+		m_pParentItem->nodeMoved(this);
+
+	return var;
 }
 
 // --------------------------------------------------------------------------------
 
-TasLayout::TasLayout(QGraphicsScene& scene)
+TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 {
 	m_pSrc = new TasLayoutNode(this);
 	m_pMono = new TasLayoutNode(this);
@@ -45,7 +50,7 @@ TasLayout::TasLayout(QGraphicsScene& scene)
 	m_pMono->setPos(0., 150.);
 	m_pSample->setPos(0., 0.);
 	m_pAna->setPos(-100., 0.);
-	m_pDet->setPos(-100., -50.);
+	m_pDet->setPos(-100., -m_dLenAnaDet);
 
 	m_pAna->setFlag(QGraphicsItem::ItemIsMovable);
 
@@ -65,6 +70,46 @@ TasLayout::~TasLayout()
 	delete m_pSample;
 	delete m_pAna;
 	delete m_pDet;
+}
+
+void TasLayout::nodeMoved(const TasLayoutNode *pNode)
+{
+	if(m_bNoUpdate)
+		return;
+
+	ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
+	ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
+	ublas::vector<double> vecAna = qpoint_to_vec(mapFromItem(m_pAna, 0, 0));
+	ublas::vector<double> vecDet = qpoint_to_vec(mapFromItem(m_pDet, 0, 0));
+
+	if(pNode == m_pAna)
+	{
+		ublas::vector<double> vecSampleAna = vecAna-vecSample;
+		vecSampleAna /= ublas::norm_2(vecSampleAna);
+
+		ublas::vector<double> vecAnaDet = ublas::prod(rotation_matrix_2d(m_dAnaTwoTheta), vecSampleAna);
+		vecAnaDet /= ublas::norm_2(vecAnaDet);
+		vecAnaDet *= m_dLenAnaDet;
+
+		m_pDet->setPos(vec_to_qpoint(vecAna+vecAnaDet));
+
+
+		ublas::vector<double> vecMonoSample = vecSample - vecMono;
+		vecMonoSample /= ublas::norm_2(vecMonoSample);
+
+		//m_dTwoTheta = std::acos(ublas::inner_prod(vecMonoSample, vecSampleAna));
+		m_dTwoTheta = vec_angle_2(vecSampleAna) - vec_angle_2(vecMonoSample);
+		if(m_dTwoTheta < -M_PI) m_dTwoTheta += 2.*M_PI;
+		if(m_dTwoTheta > M_PI) m_dTwoTheta -= 2.*M_PI;
+
+		//std::cout << m_dTwoTheta/M_PI*180. << std::endl;
+
+		TriangleOptions opts;
+		opts.dTwoTheta = m_dTwoTheta;
+		m_scene.emitUpdate(opts);
+	}
+
+	this->update();
 }
 
 QRectF TasLayout::boundingRect() const
@@ -89,15 +134,40 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	painter->drawLine(lineKi);
 	painter->drawLine(lineKf);
 	painter->drawLine(lineAnaDet);
+
+	// arrow heads
+	const QLineF* pLines_arrow[] = {&lineKi, &lineKf};
+	const QPointF* pPoints_arrow[] = {&ptSample, &ptAna};
+	for(unsigned int i=0; i<2; ++i)
+	{
+		double dAng = (pLines_arrow[i]->angle() - 90.) / 180. * M_PI;
+		double dC = std::cos(dAng);
+		double dS = std::sin(dAng);
+
+		double dTriagX = 5., dTriagY = 10.;
+		QPointF ptTriag1 = *pPoints_arrow[i] + QPointF(dTriagX*dC + dTriagY*dS, -dTriagX*dS + dTriagY*dC);
+		QPointF ptTriag2 = *pPoints_arrow[i] + QPointF(-dTriagX*dC + dTriagY*dS, dTriagX*dS + dTriagY*dC);
+
+		QPainterPath triag;
+		triag.moveTo(*pPoints_arrow[i]);
+		triag.lineTo(ptTriag1);
+		triag.lineTo(ptTriag2);
+
+		painter->setPen(Qt::black);
+		painter->fillPath(triag, Qt::black);
+	}
 }
 
 double TasLayout::GetSampleTwoTheta() const
 {
-	return 0.;
+	return m_dTwoTheta;
 }
 
 void TasLayout::SetSampleTwoTheta(double dAngle)
 {
+	m_dTwoTheta = dAngle;
+	//std::cout << m_dTwoTheta/M_PI*180. << std::endl;
+
 	ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
 	ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
 	ublas::vector<double> vecAna = qpoint_to_vec(mapFromItem(m_pAna, 0, 0));
@@ -111,8 +181,10 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 	vecKf /= ublas::norm_2(vecKf);
 	vecKf *= dLenKf;
 
-	QPointF ptAna = mapToItem(m_pSample, vec_to_qpoint(vecKf));
-	m_pAna->setPos(ptAna);
+	m_bNoUpdate = 1;
+	m_pAna->setPos(vec_to_qpoint(vecSample + vecKf));
+	m_bNoUpdate = 0;
+	nodeMoved(m_pAna);
 }
 
 
@@ -137,5 +209,9 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 	update();
 }
 
+void TasLayoutScene::emitUpdate(const TriangleOptions& opts)
+{
+	emit tasChanged(opts);
+}
 
 #include "tas_layout.moc"
