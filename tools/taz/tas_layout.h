@@ -45,8 +45,6 @@ class TasLayout : public QGraphicsItem
 	protected:
 		TasLayoutScene& m_scene;
 
-		bool m_bNoUpdate = 0;
-
 		TasLayoutNode *m_pSrc;
 		TasLayoutNode *m_pMono;
 		TasLayoutNode *m_pSample;
@@ -84,6 +82,8 @@ class TasLayoutScene : public QGraphicsScene
 {	Q_OBJECT
 	protected:
 		TasLayout *m_pTas;
+
+		bool m_bDontEmitChange = 1;
 
 	public:
 		TasLayoutScene();

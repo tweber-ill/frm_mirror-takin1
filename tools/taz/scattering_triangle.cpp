@@ -206,6 +206,25 @@ double ScatteringTriangle::GetAnaTwoTheta(double dAnaD) const
 	return 2. * std::asin(M_PI/(dAnaD*dKf));
 }
 
+void ScatteringTriangle::SetTwoTheta(double dTT)
+{
+	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+
+	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
+								- vecNodeKiKf;
+
+	ublas::vector<double> vecKf_new = ublas::prod(rotation_matrix_2d(-dTT), vecKi);
+
+	vecKf_new /= ublas::norm_2(vecKf_new);
+	vecKf_new *= ublas::norm_2(vecKf);
+
+	m_pNodeKfQ->setPos(vec_to_qpoint(vecNodeKiKf + vecKf_new));
+
+	nodeMoved(m_pNodeKiKf);
+}
+
 // --------------------------------------------------------------------------------
 
 
@@ -230,7 +249,7 @@ void ScatteringTriangleScene::SetDs(double dMonoD, double dAnaD)
 
 void ScatteringTriangleScene::emitUpdate()
 {
-	if(!m_pTri || !m_pTri->IsReady())
+	if(!m_pTri || !m_pTri->IsReady() || m_bDontEmitChange)
 		return;
 
 	TriangleOptions opts;
@@ -243,7 +262,14 @@ void ScatteringTriangleScene::emitUpdate()
 
 void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 {
-	// TODO
+	if(!m_pTri || !m_pTri->IsReady())
+		return;
+
+	m_bDontEmitChange = 1;
+
+	m_pTri->SetTwoTheta(opts.dTwoTheta);
+
+	m_bDontEmitChange = 0;
 }
 
 

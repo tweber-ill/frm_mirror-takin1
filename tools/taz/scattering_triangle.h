@@ -63,6 +63,8 @@ class ScatteringTriangle : public QGraphicsItem
 		double GetTwoTheta() const;
 		double GetMonoTwoTheta(double dMonoD) const;
 		double GetAnaTwoTheta(double dAnaD) const;
+
+		void SetTwoTheta(double dTT);
 };
 
 
@@ -72,6 +74,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 		ScatteringTriangle *m_pTri;
 		double m_dMonoD = 3.355;
 		double m_dAnaD = 3.355;
+
+		bool m_bDontEmitChange = 0;
 
 	public:
 		ScatteringTriangleScene();
