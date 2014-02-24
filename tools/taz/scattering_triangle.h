@@ -7,6 +7,9 @@
 #ifndef __TAZ_SCATT_TRIAG_H__
 #define __TAZ_SCATT_TRIAG_H__
 
+#include "helper/linalg.h"
+#include "helper/lattice.h"
+
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGraphicsItem>
@@ -34,6 +37,16 @@ class ScatteringTriangleNode : public QGraphicsItem
 		ScatteringTriangleNode(ScatteringTriangle* pSupItem);
 };
 
+class RecipPeak : public QGraphicsItem
+{
+	protected:
+		QRectF boundingRect() const;
+		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+	public:
+		RecipPeak();
+};
+
 class ScatteringTriangleScene;
 class ScatteringTriangle : public QGraphicsItem
 {
@@ -48,6 +61,9 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode *m_pNodeKfQ;
 
 		double m_dScaleFactor = 75.;	// pixels per A^-1
+
+		std::vector<RecipPeak*> m_vecPeaks;
+		void ClearPeaks();
 
 	protected:
 		QRectF boundingRect() const;
@@ -65,6 +81,9 @@ class ScatteringTriangle : public QGraphicsItem
 		double GetAnaTwoTheta(double dAnaD) const;
 
 		void SetTwoTheta(double dTT);
+
+	public:
+		void CalcPeaks(const Lattice& lattice, const Plane<double>& plane);
 };
 
 
@@ -83,6 +102,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 
 		void emitUpdate();
 		void SetDs(double dMonoD, double dAnaD);
+
+		void CalcPeaks(const Lattice& lattice, const Plane<double>& plane);
 
 	public slots:
 		void tasChanged(const TriangleOptions& opts);

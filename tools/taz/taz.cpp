@@ -85,9 +85,7 @@ void TazDlg::CalcPeaks()
 	double gamma = editGamma->text().toDouble()/180.*M_PI;
 
 	Lattice lattice(a,b,c, alpha,beta,gamma);
-	Lattice recip = lattice.GetRecip();
 
-	//std::cout << "Lattice: " << lattice << "\nReciprocal: " << recip << "\n" << std::endl;
 
 
 	ublas::vector<double> vecPlaneX(3);
@@ -103,23 +101,11 @@ void TazDlg::CalcPeaks()
 	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
 	Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
 
-	const double dMaxPeaks = 5.;
 
-	for(double h=-dMaxPeaks; h<dMaxPeaks; h+=1.)
-		for(double k=-dMaxPeaks; k<dMaxPeaks; k+=1.)
-			for(double l=-dMaxPeaks; l<dMaxPeaks; l+=1.)
-			{
-				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
-				double dDist = 0.;
-				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
+	//Lattice recip = lattice.GetRecip();
+	//std::cout << "Lattice: " << lattice << "\nReciprocal: " << recip << "\n" << std::endl;
 
-				/*
-				if(::float_equal(dDist, 0., 0.01))
-				{
-					std::cout << h << k << l << ": ";
-					std::cout << "Lotfusspunkt: " << vecDropped << ", Distanz: " << dDist << std::endl;
-				}*/
-			}
+	m_sceneRecip.CalcPeaks(lattice, plane);
 }
 
 

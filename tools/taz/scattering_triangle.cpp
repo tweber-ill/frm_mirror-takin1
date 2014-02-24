@@ -53,6 +53,25 @@ QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVa
 
 // --------------------------------------------------------------------------------
 
+RecipPeak::RecipPeak()
+{
+	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+	setCursor(Qt::ArrowCursor);
+	setFlag(QGraphicsItem::ItemIsMovable, false);
+}
+
+QRectF RecipPeak::boundingRect() const
+{
+	return QRectF(-5., -5., 10., 10.);
+}
+
+void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+	painter->drawEllipse(QRectF(-2., -2., 4., 4.));
+}
+
+// --------------------------------------------------------------------------------
+
 
 ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 				: m_scene(scene)
@@ -68,9 +87,9 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_pNodeKiKf->setPos(50., -100.);
 	m_pNodeKfQ->setPos(100., 0.);
 
-	scene.addItem(m_pNodeKiQ);
-	scene.addItem(m_pNodeKiKf);
-	scene.addItem(m_pNodeKfQ);
+	m_scene.addItem(m_pNodeKiQ);
+	m_scene.addItem(m_pNodeKiKf);
+	m_scene.addItem(m_pNodeKfQ);
 
 	setAcceptedMouseButtons(0);
 
@@ -82,6 +101,8 @@ ScatteringTriangle::~ScatteringTriangle()
 	delete m_pNodeKiQ;
 	delete m_pNodeKiKf;
 	delete m_pNodeKfQ;
+
+	ClearPeaks();
 }
 
 void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
@@ -225,6 +246,65 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 	nodeMoved(m_pNodeKiKf);
 }
 
+
+void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Plane<double>& plane)
+{
+	ClearPeaks();
+	Lattice recip = lattice.GetRecip();
+
+	const double dMaxPeaks = 5.;
+
+	for(double h=-dMaxPeaks; h<dMaxPeaks; h+=1.)
+		for(double k=-dMaxPeaks; k<dMaxPeaks; k+=1.)
+			for(double l=-dMaxPeaks; l<dMaxPeaks; l+=1.)
+			{
+				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
+				double dDist = 0.;
+				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
+
+				if(::float_equal(dDist, 0., 0.01))
+				{
+					//std::cout << h << k << l << ": ";
+					//std::cout << "Lotfusspunkt: " << vecDropped << ", Distanz: " << dDist << std::endl;
+
+					ublas::vector<double> dir0 = plane.GetDir0() / ublas::norm_2(plane.GetDir0());
+					ublas::vector<double> dir1 = plane.GetDir1() / ublas::norm_2(plane.GetDir1());
+
+					// TODO: correct this
+					double dX = ublas::inner_prod(vecDropped, dir0);
+					double dY = ublas::inner_prod(vecDropped, dir1);
+
+					RecipPeak *pPeak = new RecipPeak();
+					pPeak->setPos(dX * m_dScaleFactor, -dY * m_dScaleFactor);
+
+					std::ostringstream ostrTip;
+					ostrTip << "(" << int(h) << " " << int(k) << " " << int(l) << ")";
+					pPeak->setToolTip(ostrTip.str().c_str());
+
+					std::cout << ostrTip.str() << ": " << dX << ", " << dY << std::endl;
+
+					m_vecPeaks.push_back(pPeak);
+					m_scene.addItem(pPeak);
+				}
+			}
+
+	this->update();
+}
+
+void ScatteringTriangle::ClearPeaks()
+{
+	for(RecipPeak*& pPeak : m_vecPeaks)
+	{
+		if(pPeak)
+		{
+			m_scene.removeItem(pPeak);
+			delete pPeak;
+			pPeak = 0;
+		}
+	}
+	m_vecPeaks.clear();
+}
+
 // --------------------------------------------------------------------------------
 
 
@@ -272,6 +352,13 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 	m_bDontEmitChange = 0;
 }
 
+void ScatteringTriangleScene::CalcPeaks(const Lattice& lattice, const Plane<double>& plane)
+{
+	if(!m_pTri)
+		return;
+
+	m_pTri->CalcPeaks(lattice, plane);
+}
 
 
 #include "scattering_triangle.moc"
