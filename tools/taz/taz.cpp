@@ -63,25 +63,63 @@ void TazDlg::UpdateDs()
 	m_sceneRecip.SetDs(dMonoD, dAnaD);
 }
 
+std::ostream& operator<<(std::ostream& ostr, const Lattice& lat)
+{
+	ostr << "a = " << lat.GetA();
+	ostr << ", b = " << lat.GetB();
+	ostr << ", c = " << lat.GetC();
+	ostr << ", alpha = " << lat.GetAlpha();
+	ostr << ", beta = " << lat.GetBeta();
+	ostr << ", gamma = " << lat.GetGamma();
+	return ostr;
+}
+
 void TazDlg::CalcPeaks()
 {
 	double a = editA->text().toDouble();
 	double b = editB->text().toDouble();
 	double c = editC->text().toDouble();
 
-	double alpha = editAlpha->text().toDouble();
-	double beta = editBeta->text().toDouble();
-	double gamma = editGamma->text().toDouble();
-
-	double plane_x[] = {editScatX0->text().toDouble(),
-						editScatX1->text().toDouble(),
-						editScatX2->text().toDouble()};
-	double plane_y[] = {editScatY0->text().toDouble(),
-						editScatY1->text().toDouble(),
-						editScatY2->text().toDouble()};
+	double alpha = editAlpha->text().toDouble()/180.*M_PI;
+	double beta = editBeta->text().toDouble()/180.*M_PI;
+	double gamma = editGamma->text().toDouble()/180.*M_PI;
 
 	Lattice lattice(a,b,c, alpha,beta,gamma);
 	Lattice recip = lattice.GetRecip();
+
+	//std::cout << "Lattice: " << lattice << "\nReciprocal: " << recip << "\n" << std::endl;
+
+
+	ublas::vector<double> vecPlaneX(3);
+	vecPlaneX[0] = editScatX0->text().toDouble();
+	vecPlaneX[1] = editScatX1->text().toDouble();
+	vecPlaneX[2] = editScatX2->text().toDouble();
+
+	ublas::vector<double> vecPlaneY(3);
+	vecPlaneY[0] = editScatY0->text().toDouble();
+	vecPlaneY[1] = editScatY1->text().toDouble();
+	vecPlaneY[2] = editScatY2->text().toDouble();
+
+	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
+	Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
+
+	const double dMaxPeaks = 5.;
+
+	for(double h=-dMaxPeaks; h<dMaxPeaks; h+=1.)
+		for(double k=-dMaxPeaks; k<dMaxPeaks; k+=1.)
+			for(double l=-dMaxPeaks; l<dMaxPeaks; l+=1.)
+			{
+				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
+				double dDist = 0.;
+				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
+
+				/*
+				if(::float_equal(dDist, 0., 0.01))
+				{
+					std::cout << h << k << l << ": ";
+					std::cout << "Lotfusspunkt: " << vecDropped << ", Distanz: " << dDist << std::endl;
+				}*/
+			}
 }
 
 

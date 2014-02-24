@@ -553,7 +553,8 @@ protected:
 	ublas::vector<T> m_vecNorm;
 
 public:
-	Plane(const ublas::vector<T>& vec0, const ublas::vector<T>& dir0, const ublas::vector<T>& dir1)
+	Plane(const ublas::vector<T>& vec0,
+		const ublas::vector<T>& dir0, const ublas::vector<T>& dir1)
 		: m_vecX0(vec0), m_vecDir0(dir0), m_vecDir1(dir1)
 	{
 		m_vecNorm = cross_3(dir0, dir1);
@@ -567,6 +568,21 @@ public:
 	const ublas::vector<T>& GetDir0() const { return m_vecDir0; }
 	const ublas::vector<T>& GetDir1() const { return m_vecDir1; }
 	const ublas::vector<T>& GetNorm() const { return m_vecNorm; }
+
+	ublas::vector<T> GetDroppedPerp(const ublas::vector<T>& vecP, double *pdDist=0) const
+	{
+		T d = ublas::inner_prod(m_vecNorm, m_vecX0);
+		T t = d - ublas::inner_prod(m_vecNorm, vecP);
+		ublas::vector<T> vecdropped = vecP + t*m_vecNorm;
+
+		if(pdDist)
+		{
+			ublas::vector<T> vecD = vecP - vecdropped;
+			*pdDist = std::sqrt(ublas::inner_prod(vecD, vecD));
+		}
+
+		return vecdropped;
+	}
 };
 
 

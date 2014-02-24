@@ -84,11 +84,17 @@ std::vector<unsigned int> find_zeroes(unsigned int N, const T* pIn)
 	return vecIndices;
 }
 
+template<typename T> T t_abs(const T& t)
+{
+	if(t < T(0))
+		return -t;
+	return t;
+}
 
 template<typename T=double>
-bool float_equal(T t1, T t2)
+bool float_equal(T t1, T t2, T eps = std::numeric_limits<T>::epsilon())
 {
-	return std::fabs(t1-t2) < std::numeric_limits<double>::epsilon();
+	return t_abs<T>(t1-t2) < eps;
 }
 
 
