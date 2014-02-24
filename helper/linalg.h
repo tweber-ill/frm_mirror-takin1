@@ -188,6 +188,9 @@ ublas::matrix<T> skew(const ublas::vector<T>& vec)
 		mat(2,0) = -mat(0,2);
 		mat(2,1) = -mat(1,2);
 	}
+	else
+		throw "Skew only defined for three dimensions.";
+
 	return mat;
 }
 
@@ -501,6 +504,44 @@ T get_volume(const ublas::matrix<T>& mat)
 	return determinant<T>(mat);
 }
 
+
+
+// calculate skew coordinate basis vectors from angles
+// see: http://www.ccl.net/cca/documents/molecular-modeling/node4.html
+template<class t_vec, class T>
+bool skew_basis_from_angles(T a, T b, T c,
+							T alpha, T beta, T gamma,
+							t_vec& veca, t_vec& vecb, t_vec& vecc)
+{
+	const T dSG = std::sin(gamma);
+	const T dCG = std::cos(gamma);
+	const T dCA = std::cos(alpha);
+	const T dCB = std::cos(beta);
+
+	const T dCA2 = dCA*dCA;
+	const T dCB2 = dCB*dCB;
+	const T dCG2 = dCG*dCG;
+
+	const T dVol =a*b*c*std::sqrt(1.- dCA2 - dCB2 - dCG2 + 2.*dCA*dCB*dCG);
+	//std::cout << "vol = " <<  dVol << std::endl;
+
+	if(::isinf(dVol) || ::isnan(dVol))
+		return false;
+
+	veca[0] = a;
+	veca[1] = 0.;
+	veca[2] = 0.;
+
+	vecb[0] = b*dCG;
+	vecb[1] = b*dSG;
+	vecb[2] = 0.;
+
+	vecc[0] = c*dCB;
+	vecc[1] = c*(dCA - dCB*dCG) / dSG;
+	vecc[2] = dVol / (a*b*dSG);
+
+	return true;
+}
 
 
 template<typename T>

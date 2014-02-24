@@ -81,7 +81,7 @@ void TazDlg::CalcPeaks()
 						editScatY2->text().toDouble()};
 
 	Lattice lattice(a,b,c, alpha,beta,gamma);
-	//lattice.GetRecip();
+	Lattice recip = lattice.GetRecip();
 }
 
 

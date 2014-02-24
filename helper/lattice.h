@@ -24,6 +24,18 @@ class Lattice
 		virtual ~Lattice();
 
 		Lattice GetRecip() const;
+
+		ublas::vector<double> GetPos(double h, double k, double l) const;
+
+		double GetAlpha() const;
+		double GetBeta() const;
+		double GetGamma() const;
+
+		double GetA() const;
+		double GetB() const;
+		double GetC() const;
+
+		double GetVol() const;
 };
 
 #endif
