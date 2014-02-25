@@ -43,8 +43,13 @@ class RecipPeak : public QGraphicsItem
 		QRectF boundingRect() const;
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
+	protected:
+		QString m_strLabel;
+
 	public:
 		RecipPeak();
+
+		void SetLabel(const QString& str) { m_strLabel = str; }
 };
 
 class ScatteringTriangleScene;

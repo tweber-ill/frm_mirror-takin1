@@ -56,19 +56,21 @@ QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVa
 RecipPeak::RecipPeak()
 {
 	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-	setCursor(Qt::ArrowCursor);
+	//setCursor(Qt::ArrowCursor);
 	setFlag(QGraphicsItem::ItemIsMovable, false);
 }
 
 QRectF RecipPeak::boundingRect() const
 {
-	return QRectF(-3., -3., 6., 6.);
+	return QRectF(-3., -3., 64., 25.);
 }
 
 void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
 	painter->setBrush(Qt::red);
 	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
+	painter->setPen(Qt::red);
+	painter->drawText(0., 14., m_strLabel);
 }
 
 // --------------------------------------------------------------------------------
@@ -138,9 +140,25 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	painter->drawLine(lineKi);
 	painter->drawLine(lineKf);
 
-	painter->drawText(ptQMid, "Q");
-	painter->drawText(ptKiMid, "ki");
-	painter->drawText(ptKfMid, "kf");
+	std::wostringstream ostrQ, ostrKi, ostrKf;
+	ostrQ.precision(3); ostrKi.precision(3); ostrKf.precision(3);
+	ostrQ << L"Q = " << lineQ.length()/m_dScaleFactor << L" \x212B^(-1)";
+	ostrKi << L"ki = " << lineKi.length()/m_dScaleFactor << L" \x212B^(-1)";
+	ostrKf << L"kf = " << lineKf.length()/m_dScaleFactor << L" \x212B^(-1)";
+
+	painter->save();
+	painter->rotate(-lineQ.angle());
+	painter->drawText(QPointF(lineQ.length()/5.,12.), QString::fromWCharArray(ostrQ.str().c_str()));
+	painter->rotate(lineQ.angle());
+
+	painter->rotate(-lineKi.angle());
+	painter->drawText(QPointF(lineKi.length()/5.,-4.), QString::fromWCharArray(ostrKi.str().c_str()));
+	painter->rotate(lineKi.angle());
+
+	painter->translate(ptKiKf);
+	painter->rotate(-lineKf.angle());
+	painter->drawText(QPointF(lineKf.length()/5.,-4.), QString::fromWCharArray(ostrKf.str().c_str()));
+	painter->restore();
 
 
 	QLineF lineKi2(ptKiKf, ptKiQ);
@@ -252,8 +270,12 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Plane<double>& 
 {
 	ClearPeaks();
 
-	ublas::vector<double> dir0 = plane.GetDir0() / ublas::norm_2(plane.GetDir0());
-	ublas::vector<double> dir1 = plane.GetDir1() / ublas::norm_2(plane.GetDir1());
+	ublas::vector<double> dir0 = plane.GetDir0();
+	//ublas::vector<double> dir1 = plane.GetDir1();
+	ublas::vector<double> dir1 = cross_3(plane.GetNorm(), dir0);
+
+	dir0 /= ublas::norm_2(dir0);
+	dir1 /= ublas::norm_2(dir1);
 
 	ublas::matrix<double> matPlane = column_matrix(
 			std::vector<ublas::vector<double> >{dir0, dir1, plane.GetNorm()});
@@ -293,6 +315,9 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Plane<double>& 
 					std::ostringstream ostrTip;
 					ostrTip << "(" << int(h) << " " << int(k) << " " << int(l) << ")";
 					pPeak->setToolTip(ostrTip.str().c_str());
+
+					if(h!=0. || k!=0. || l!=0.)
+						pPeak->SetLabel(ostrTip.str().c_str());
 
 					//std::cout << ostrTip.str() << ": " << dX << ", " << dY << std::endl;
 
