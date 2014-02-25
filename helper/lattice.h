@@ -36,6 +36,8 @@ class Lattice
 		double GetC() const;
 
 		double GetVol() const;
+
+		ublas::matrix<double> GetMetric() const;
 };
 
 #endif

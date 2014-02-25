@@ -62,12 +62,13 @@ RecipPeak::RecipPeak()
 
 QRectF RecipPeak::boundingRect() const
 {
-	return QRectF(-5., -5., 10., 10.);
+	return QRectF(-3., -3., 6., 6.);
 }
 
 void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-	painter->drawEllipse(QRectF(-2., -2., 4., 4.));
+	painter->setBrush(Qt::red);
+	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
 }
 
 // --------------------------------------------------------------------------------
@@ -250,13 +251,28 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Plane<double>& plane)
 {
 	ClearPeaks();
+
+	ublas::vector<double> dir0 = plane.GetDir0() / ublas::norm_2(plane.GetDir0());
+	ublas::vector<double> dir1 = plane.GetDir1() / ublas::norm_2(plane.GetDir1());
+
+	ublas::matrix<double> matPlane = column_matrix(
+			std::vector<ublas::vector<double> >{dir0, dir1, plane.GetNorm()});
+	ublas::matrix<double> matPlaneinv;
+	bool bInv = ::inverse(matPlane, matPlaneinv);
+	if(!bInv)
+	{
+		std::cerr << "Error: Cannot invert scattering plane metric." << std::endl;
+		return;
+	}
+
+
 	Lattice recip = lattice.GetRecip();
 
 	const double dMaxPeaks = 5.;
 
-	for(double h=-dMaxPeaks; h<dMaxPeaks; h+=1.)
-		for(double k=-dMaxPeaks; k<dMaxPeaks; k+=1.)
-			for(double l=-dMaxPeaks; l<dMaxPeaks; l+=1.)
+	for(double h=-dMaxPeaks; h<=dMaxPeaks; h+=1.)
+		for(double k=-dMaxPeaks; k<=dMaxPeaks; k+=1.)
+			for(double l=-dMaxPeaks; l<=dMaxPeaks; l+=1.)
 			{
 				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
 				double dDist = 0.;
@@ -267,12 +283,9 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Plane<double>& 
 					//std::cout << h << k << l << ": ";
 					//std::cout << "Lotfusspunkt: " << vecDropped << ", Distanz: " << dDist << std::endl;
 
-					ublas::vector<double> dir0 = plane.GetDir0() / ublas::norm_2(plane.GetDir0());
-					ublas::vector<double> dir1 = plane.GetDir1() / ublas::norm_2(plane.GetDir1());
-
-					// TODO: correct this
-					double dX = ublas::inner_prod(vecDropped, dir0);
-					double dY = ublas::inner_prod(vecDropped, dir1);
+					ublas::vector<double> vecCoord = ublas::prod(matPlaneinv, vecDropped);
+					double dX = vecCoord[0];
+					double dY = vecCoord[1];
 
 					RecipPeak *pPeak = new RecipPeak();
 					pPeak->setPos(dX * m_dScaleFactor, -dY * m_dScaleFactor);
@@ -281,7 +294,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Plane<double>& 
 					ostrTip << "(" << int(h) << " " << int(k) << " " << int(l) << ")";
 					pPeak->setToolTip(ostrTip.str().c_str());
 
-					std::cout << ostrTip.str() << ": " << dX << ", " << dY << std::endl;
+					//std::cout << ostrTip.str() << ": " << dX << ", " << dY << std::endl;
 
 					m_vecPeaks.push_back(pPeak);
 					m_scene.addItem(pPeak);

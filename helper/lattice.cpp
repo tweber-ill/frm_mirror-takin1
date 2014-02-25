@@ -83,6 +83,13 @@ Lattice Lattice::GetRecip() const
 }
 
 
+ublas::matrix<double> Lattice::GetMetric() const
+{
+	std::vector<ublas::vector<double> > vecs = {m_vecs[0], m_vecs[1], m_vecs[2]};
+	return column_matrix(vecs);
+}
+
+
 // gcc -o 0 helper/lattice.cpp -std=c++11 -lstdc++ -lm
 /*
 int main()

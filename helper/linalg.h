@@ -8,6 +8,7 @@
 #ifndef __MIEZE_LINALG__
 #define __MIEZE_LINALG__
 
+#include "flags.h"
 #include <cmath>
 #include <boost/algorithm/minmax_element.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -525,7 +526,7 @@ bool skew_basis_from_angles(T a, T b, T c,
 	const T dVol =a*b*c*std::sqrt(1.- dCA2 - dCB2 - dCG2 + 2.*dCA*dCB*dCG);
 	//std::cout << "vol = " <<  dVol << std::endl;
 
-	if(::isinf(dVol) || ::isnan(dVol))
+	if(std::isinf(dVol) || std::isnan(dVol))
 		return false;
 
 	veca[0] = a;
