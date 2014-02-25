@@ -140,7 +140,7 @@
           <item row="0" column="1">
            <widget class="QLineEdit" name="editA">
             <property name="text">
-             <string>1</string>
+             <string>5</string>
             </property>
            </widget>
           </item>
@@ -175,7 +175,7 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="editB">
             <property name="text">
-             <string>1</string>
+             <string>5</string>
             </property>
            </widget>
           </item>
@@ -189,7 +189,7 @@
           <item row="2" column="1">
            <widget class="QLineEdit" name="editC">
             <property name="text">
-             <string>1</string>
+             <string>5</string>
             </property>
            </widget>
           </item>
@@ -351,6 +351,25 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>editA</tabstop>
+  <tabstop>editB</tabstop>
+  <tabstop>editC</tabstop>
+  <tabstop>editAlpha</tabstop>
+  <tabstop>editBeta</tabstop>
+  <tabstop>editGamma</tabstop>
+  <tabstop>editScatX0</tabstop>
+  <tabstop>editScatX1</tabstop>
+  <tabstop>editScatX2</tabstop>
+  <tabstop>editScatY0</tabstop>
+  <tabstop>editScatY1</tabstop>
+  <tabstop>editScatY2</tabstop>
+  <tabstop>editMonoD</tabstop>
+  <tabstop>editAnaD</tabstop>
+  <tabstop>buttonBox</tabstop>
+  <tabstop>gfxReal</tabstop>
+  <tabstop>gfxRecip</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
