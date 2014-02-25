@@ -86,6 +86,8 @@ class ScatteringTriangle : public QGraphicsItem
 		double GetAnaTwoTheta(double dAnaD) const;
 
 		void SetTwoTheta(double dTT);
+		void SetAnaTwoTheta(double dTT, double dAnaD);
+		void SetMonoTwoTheta(double dTT, double dMonoD);
 
 	public:
 		void CalcPeaks(const Lattice& lattice, const Plane<double>& plane);

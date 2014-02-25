@@ -246,6 +246,43 @@ double ScatteringTriangle::GetAnaTwoTheta(double dAnaD) const
 	return 2. * std::asin(M_PI/(dAnaD*dKf));
 }
 
+void ScatteringTriangle::SetAnaTwoTheta(double dTT, double dAnaD)
+{
+	dTT = std::fabs(dTT);
+	double dKf  = M_PI / std::sin(dTT/2.) / dAnaD;
+	dKf *= m_dScaleFactor;
+
+	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	ublas::vector<double> vecNodeKfQ = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
+								- vecNodeKiKf;
+
+	vecKf /= ublas::norm_2(vecKf);
+	ublas::vector<double> vecKf_new = vecKf * dKf;
+
+	m_pNodeKfQ->setPos(vec_to_qpoint(vecNodeKiKf + vecKf_new));
+
+	nodeMoved(m_pNodeKfQ);
+}
+
+void ScatteringTriangle::SetMonoTwoTheta(double dTT, double dMonoD)
+{
+	dTT = std::fabs(dTT);
+	double dKi  = M_PI / std::sin(dTT/2.) / dMonoD;
+	dKi *= m_dScaleFactor;
+
+	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	ublas::vector<double> vecNodeKiQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0));
+	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
+									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+
+	vecKi /= ublas::norm_2(vecKi);
+	ublas::vector<double> vecKi_new = vecKi * dKi;
+
+	m_pNodeKiKf->setPos(vec_to_qpoint(vecNodeKiQ - vecKi_new));
+	nodeMoved(m_pNodeKiKf);
+}
+
 void ScatteringTriangle::SetTwoTheta(double dTT)
 {
 	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
@@ -261,8 +298,7 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 	vecKf_new *= ublas::norm_2(vecKf);
 
 	m_pNodeKfQ->setPos(vec_to_qpoint(vecNodeKiKf + vecKf_new));
-
-	nodeMoved(m_pNodeKiKf);
+	nodeMoved(m_pNodeKfQ);
 }
 
 
@@ -385,7 +421,12 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 
 	m_bDontEmitChange = 1;
 
-	m_pTri->SetTwoTheta(opts.dTwoTheta);
+	if(opts.bChangedMonoTwoTheta)
+		m_pTri->SetMonoTwoTheta(opts.dMonoTwoTheta, m_dMonoD);
+	if(opts.bChangedAnaTwoTheta)
+		m_pTri->SetAnaTwoTheta(opts.dAnaTwoTheta, m_dAnaD);
+	if(opts.bChangedTwoTheta)
+		m_pTri->SetTwoTheta(opts.dTwoTheta);
 
 	m_bDontEmitChange = 0;
 }

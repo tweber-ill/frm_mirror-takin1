@@ -29,6 +29,10 @@ static inline QPointF vec_to_qpoint(const ublas::vector<double>& vec)
 
 struct TriangleOptions
 {
+	bool bChangedTwoTheta=0;
+	bool bChangedAnaTwoTheta=0;
+	bool bChangedMonoTwoTheta=0;
+
 	double dTwoTheta;
 	double dAnaTwoTheta;
 	double dMonoTwoTheta;
