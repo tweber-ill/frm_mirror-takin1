@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>822</width>
-    <height>624</height>
+    <width>881</width>
+    <height>651</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -119,9 +119,9 @@
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0" rowspan="2">
-        <widget class="QGroupBox" name="groupBox_3">
+        <widget class="QGroupBox" name="groupSample">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -130,6 +130,13 @@
           <string>Sample</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
+          <item row="0" column="7">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>α* (deg):</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_3">
             <property name="text">
@@ -155,6 +162,13 @@
            <widget class="QLabel" name="label_6">
             <property name="text">
              <string>α (deg):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4" rowspan="3">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
            </widget>
           </item>
@@ -213,6 +227,59 @@
              <string>90</string>
             </property>
            </widget>
+          </item>
+          <item row="0" column="6">
+           <widget class="QLineEdit" name="editARecip"/>
+          </item>
+          <item row="1" column="5">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>b* (1/Å):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>c* (1/Å):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="6">
+           <widget class="QLineEdit" name="editCRecip"/>
+          </item>
+          <item row="1" column="6">
+           <widget class="QLineEdit" name="editBRecip"/>
+          </item>
+          <item row="0" column="5">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>a* (1/Å):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="7">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>β* (deg):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="7">
+           <widget class="QLabel" name="label_16">
+            <property name="text">
+             <string>γ* (deg):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="8">
+           <widget class="QLineEdit" name="editAlphaRecip"/>
+          </item>
+          <item row="1" column="8">
+           <widget class="QLineEdit" name="editBetaRecip"/>
+          </item>
+          <item row="2" column="8">
+           <widget class="QLineEdit" name="editGammaRecip"/>
           </item>
          </layout>
         </widget>
@@ -311,31 +378,68 @@
        <item row="0" column="2" rowspan="2">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="title">
-          <string>Monochromator / Analyser</string>
+          <string>TAS</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="label_9">
             <property name="text">
-             <string>Mono d (Å):</string>
+             <string>Monochromator d (Å):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Analyser d (Å):</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
+           <widget class="QCheckBox" name="checkSenseM">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QCheckBox" name="checkSenseS">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>Scattering Senses:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QCheckBox" name="checkSenseA">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="3">
            <widget class="QLineEdit" name="editMonoD">
             <property name="text">
              <string>3.355</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Ana d (Å):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
+          <item row="2" column="1" colspan="3">
            <widget class="QLineEdit" name="editAnaD">
             <property name="text">
              <string>3.355</string>
@@ -358,12 +462,21 @@
   <tabstop>editAlpha</tabstop>
   <tabstop>editBeta</tabstop>
   <tabstop>editGamma</tabstop>
+  <tabstop>editARecip</tabstop>
+  <tabstop>editBRecip</tabstop>
+  <tabstop>editCRecip</tabstop>
+  <tabstop>editAlphaRecip</tabstop>
+  <tabstop>editBetaRecip</tabstop>
+  <tabstop>editGammaRecip</tabstop>
   <tabstop>editScatX0</tabstop>
   <tabstop>editScatX1</tabstop>
   <tabstop>editScatX2</tabstop>
   <tabstop>editScatY0</tabstop>
   <tabstop>editScatY1</tabstop>
   <tabstop>editScatY2</tabstop>
+  <tabstop>checkSenseM</tabstop>
+  <tabstop>checkSenseS</tabstop>
+  <tabstop>checkSenseA</tabstop>
   <tabstop>editMonoD</tabstop>
   <tabstop>editAnaD</tabstop>
   <tabstop>buttonBox</tabstop>

@@ -214,7 +214,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	}
 }
 
-double ScatteringTriangle::GetTwoTheta() const
+double ScatteringTriangle::GetTwoTheta(bool bPosSense) const
 {
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
 								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
@@ -224,26 +224,36 @@ double ScatteringTriangle::GetTwoTheta() const
 	vecKi /= ublas::norm_2(vecKi);
 	vecKf /= ublas::norm_2(vecKf);
 
-	return vec_angle_2(vecKi) - vec_angle_2(vecKf);
+	double dTT = vec_angle_2(vecKi) - vec_angle_2(vecKf);
+	if(!bPosSense)
+		dTT = -dTT;
+
+	return dTT;
 }
 
-double ScatteringTriangle::GetMonoTwoTheta(double dMonoD) const
+double ScatteringTriangle::GetMonoTwoTheta(double dMonoD, bool bPosSense) const
 {
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKi = ublas::norm_2(vecKi) / m_dScaleFactor;
 	//std::cout << "ki = " << dKi << std::endl;
 
-	return 2. * std::asin(M_PI/(dMonoD*dKi));
+	double dTT = 2. * std::asin(M_PI/(dMonoD*dKi));
+	if(!bPosSense)
+		dTT = -dTT;
+	return dTT;
 }
 
-double ScatteringTriangle::GetAnaTwoTheta(double dAnaD) const
+double ScatteringTriangle::GetAnaTwoTheta(double dAnaD, bool bPosSense) const
 {
 	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0))
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKf = ublas::norm_2(vecKf) / m_dScaleFactor;
 
-	return 2. * std::asin(M_PI/(dAnaD*dKf));
+	double dTT =  2. * std::asin(M_PI/(dAnaD*dKf));
+	if(!bPosSense)
+		dTT = -dTT;
+	return dTT;
 }
 
 void ScatteringTriangle::SetAnaTwoTheta(double dTT, double dAnaD)
@@ -302,7 +312,7 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 }
 
 
-void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Plane<double>& plane)
+void ScatteringTriangle::CalcPeaks(const Lattice& recip, const Plane<double>& plane)
 {
 	ClearPeaks();
 
@@ -323,8 +333,6 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Plane<double>& 
 		return;
 	}
 
-
-	Lattice recip = lattice.GetRecip();
 
 	const double dMaxPeaks = 5.;
 
@@ -407,9 +415,13 @@ void ScatteringTriangleScene::emitUpdate()
 		return;
 
 	TriangleOptions opts;
-	opts.dTwoTheta = m_pTri->GetTwoTheta();
-	opts.dAnaTwoTheta = m_pTri->GetAnaTwoTheta(m_dAnaD);
-	opts.dMonoTwoTheta = m_pTri->GetMonoTwoTheta(m_dMonoD);
+
+	opts.bChangedMonoTwoTheta = 1;
+	opts.bChangedAnaTwoTheta = 1;
+	opts.bChangedTwoTheta = 1;
+	opts.dTwoTheta = m_pTri->GetTwoTheta(m_bSamplePosSense);
+	opts.dAnaTwoTheta = m_pTri->GetAnaTwoTheta(m_dAnaD, m_bAnaPosSense);
+	opts.dMonoTwoTheta = m_pTri->GetMonoTwoTheta(m_dMonoD, m_bMonoPosSense);
 
 	emit triangleChanged(opts);
 }
@@ -426,18 +438,35 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 	if(opts.bChangedAnaTwoTheta)
 		m_pTri->SetAnaTwoTheta(opts.dAnaTwoTheta, m_dAnaD);
 	if(opts.bChangedTwoTheta)
-		m_pTri->SetTwoTheta(opts.dTwoTheta);
+		m_pTri->SetTwoTheta(m_bSamplePosSense?opts.dTwoTheta:-opts.dTwoTheta);
 
 	m_bDontEmitChange = 0;
 }
 
-void ScatteringTriangleScene::CalcPeaks(const Lattice& lattice, const Plane<double>& plane)
+void ScatteringTriangleScene::CalcPeaks(const Lattice& recip, const Plane<double>& plane)
 {
 	if(!m_pTri)
 		return;
 
-	m_pTri->CalcPeaks(lattice, plane);
+	m_pTri->CalcPeaks(recip, plane);
 }
 
+void ScatteringTriangleScene::SetSampleSense(bool bPos)
+{
+	m_bSamplePosSense = bPos;
+	emitUpdate();
+}
+
+void ScatteringTriangleScene::SetMonoSense(bool bPos)
+{
+	m_bMonoPosSense = bPos;
+	emitUpdate();
+}
+
+void ScatteringTriangleScene::SetAnaSense(bool bPos)
+{
+	m_bAnaPosSense = bPos;
+	emitUpdate();
+}
 
 #include "scattering_triangle.moc"

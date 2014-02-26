@@ -15,6 +15,14 @@
 #include "helper/lattice.h"
 
 
+static QString dtoqstr(double dVal, unsigned int iPrec=3)
+{
+	std::ostringstream ostr;
+	ostr.precision(iPrec);
+	ostr << dVal;
+	return QString(ostr.str().c_str());
+}
+
 TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 {
 	this->setupUi(this);
@@ -45,6 +53,18 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 	for(QLineEdit* pEdit : vecEdits)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
 
+
+	std::vector<QLineEdit*> vecEditsRecip{editARecip, editBRecip, editCRecip,
+										editAlphaRecip, editBetaRecip, editGammaRecip};
+	for(QLineEdit* pEdit : vecEditsRecip)
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaksRecip()));
+
+
+	QObject::connect(checkSenseM, SIGNAL(stateChanged(int)), this, SLOT(UpdateMonoSense()));
+	QObject::connect(checkSenseS, SIGNAL(stateChanged(int)), this, SLOT(UpdateSampleSense()));
+	QObject::connect(checkSenseA, SIGNAL(stateChanged(int)), this, SLOT(UpdateAnaSense()));
+
+
 	UpdateDs();
 	CalcPeaks();
 
@@ -72,6 +92,31 @@ std::ostream& operator<<(std::ostream& ostr, const Lattice& lat)
 	ostr << ", beta = " << lat.GetBeta();
 	ostr << ", gamma = " << lat.GetGamma();
 	return ostr;
+}
+
+void TazDlg::CalcPeaksRecip()
+{
+	double a = editARecip->text().toDouble();
+	double b = editBRecip->text().toDouble();
+	double c = editCRecip->text().toDouble();
+
+	double alpha = editAlphaRecip->text().toDouble()/180.*M_PI;
+	double beta = editBetaRecip->text().toDouble()/180.*M_PI;
+	double gamma = editGammaRecip->text().toDouble()/180.*M_PI;
+
+	Lattice lattice(a,b,c, alpha,beta,gamma);
+	Lattice recip = lattice.GetRecip();
+
+	editA->setText(dtoqstr(recip.GetA()));
+	editB->setText(dtoqstr(recip.GetB()));
+	editC->setText(dtoqstr(recip.GetC()));
+	editAlpha->setText(dtoqstr(recip.GetAlpha()/M_PI*180.));
+	editBeta->setText(dtoqstr(recip.GetBeta()/M_PI*180.));
+	editGamma->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
+
+	m_bUpdateRecipEdits = 0;
+	CalcPeaks();
+	m_bUpdateRecipEdits = 1;
 }
 
 void TazDlg::CalcPeaks()
@@ -102,10 +147,42 @@ void TazDlg::CalcPeaks()
 	Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
 
 
-	//Lattice recip = lattice.GetRecip();
-	//std::cout << "Lattice: " << lattice << "\nReciprocal: " << recip << "\n" << std::endl;
+	Lattice recip = lattice.GetRecip();
 
-	m_sceneRecip.CalcPeaks(lattice, plane);
+	if(m_bUpdateRecipEdits)
+	{
+		editARecip->setText(dtoqstr(recip.GetA()));
+		editBRecip->setText(dtoqstr(recip.GetB()));
+		editCRecip->setText(dtoqstr(recip.GetC()));
+		editAlphaRecip->setText(dtoqstr(recip.GetAlpha()/M_PI*180.));
+		editBetaRecip->setText(dtoqstr(recip.GetBeta()/M_PI*180.));
+		editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
+	}
+
+	std::wostringstream ostrSample;
+	ostrSample.precision(4);
+	ostrSample << "Sample - ";
+	ostrSample << "Unit Cell Volume: ";
+	ostrSample << "Real: " << lattice.GetVol() << L" \x212b^3";
+	ostrSample << ", Reciprocal: " << recip.GetVol() << L" (1/\x212b)^3";
+	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
+
+	m_sceneRecip.CalcPeaks(recip, plane);
+}
+
+void TazDlg::UpdateSampleSense()
+{
+	m_sceneRecip.SetSampleSense(checkSenseS->isChecked());
+}
+
+void TazDlg::UpdateMonoSense()
+{
+	m_sceneRecip.SetMonoSense(checkSenseM->isChecked());
+}
+
+void TazDlg::UpdateAnaSense()
+{
+	m_sceneRecip.SetAnaSense(checkSenseA->isChecked());
 }
 
 

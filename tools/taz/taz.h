@@ -15,6 +15,9 @@
 
 class TazDlg : public QDialog, Ui::TazDlg
 { Q_OBJECT
+	private:
+		bool m_bUpdateRecipEdits = 1;
+
 	protected:
 		ScatteringTriangleScene m_sceneRecip;
 		TasLayoutScene m_sceneReal;
@@ -26,7 +29,12 @@ class TazDlg : public QDialog, Ui::TazDlg
 
 	protected slots:
 		void CalcPeaks();
+		void CalcPeaksRecip();
 		void UpdateDs();
+
+		void UpdateSampleSense();
+		void UpdateMonoSense();
+		void UpdateAnaSense();
 };
 
 #endif
