@@ -36,6 +36,18 @@ Lattice::Lattice(const Lattice& lattice)
 Lattice::~Lattice()
 {}
 
+void Lattice::RotateEuler(double dPhi, double dTheta, double dPsi)
+{
+	ublas::matrix<double> mat1 = ::rotation_matrix_3d_z(dPhi);
+	ublas::matrix<double> mat2 = ::rotation_matrix_3d_x(dTheta);
+	ublas::matrix<double> mat3 = ::rotation_matrix_3d_z(dPsi);
+
+	ublas::matrix<double> mat21 = ublas::prod(mat2,mat1);
+	ublas::matrix<double> mat = ublas::prod(mat3, mat21);
+
+	for(unsigned int i=0; i<3; ++i)
+		m_vecs[i] = ublas::prod(mat, m_vecs[i]);
+}
 
 double Lattice::GetAlpha() const
 { return std::acos(ublas::inner_prod(m_vecs[1]/GetB(), m_vecs[2]/GetC())); }

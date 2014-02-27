@@ -23,6 +23,9 @@ class Lattice
 		Lattice(const Lattice& lattice);
 		virtual ~Lattice();
 
+		// Euler ZXZ rotation
+		void RotateEuler(double dPhi, double dTheta, double dPsi);
+
 		Lattice GetRecip() const;
 
 		ublas::vector<double> GetPos(double h, double k, double l) const;

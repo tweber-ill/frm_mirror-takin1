@@ -47,12 +47,17 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 	for(QLineEdit* pEdit : vecEditDs)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(UpdateDs()));
 
+
 	std::vector<QLineEdit*> vecEdits{editA, editB, editC, editAlpha, editBeta, editGamma,
 									editScatX0, editScatX1, editScatX2,
 									editScatY0, editScatY1, editScatY2};
 	for(QLineEdit* pEdit : vecEdits)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
 
+
+	std::vector<QDoubleSpinBox*> vecSpins{spinRotPhi, spinRotTheta, spinRotPsi};
+	for(QDoubleSpinBox* pSpin : vecSpins)
+		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
 
 	std::vector<QLineEdit*> vecEditsRecip{editARecip, editBRecip, editCRecip,
 										editAlphaRecip, editBetaRecip, editGammaRecip};
@@ -130,6 +135,11 @@ void TazDlg::CalcPeaks()
 	double gamma = editGamma->text().toDouble()/180.*M_PI;
 
 	Lattice lattice(a,b,c, alpha,beta,gamma);
+
+	double dPhi = spinRotPhi->value() / 180. * M_PI;
+	double dTheta = spinRotTheta->value() / 180. * M_PI;
+	double dPsi = spinRotPsi->value() / 180. * M_PI;
+	lattice.RotateEuler(dPhi, dTheta, dPsi);
 
 
 

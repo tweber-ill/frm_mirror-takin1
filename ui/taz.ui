@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>881</width>
-    <height>651</height>
+    <width>891</width>
+    <height>643</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -284,7 +284,7 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="1" rowspan="2">
+       <item row="0" column="2" rowspan="2">
         <widget class="QGroupBox" name="groupBox_4">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -355,7 +355,7 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="3" rowspan="2" colspan="2">
+       <item row="0" column="4" rowspan="2" colspan="2">
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -368,14 +368,14 @@
          </property>
         </spacer>
        </item>
-       <item row="1" column="4">
+       <item row="1" column="5">
         <widget class="QDialogButtonBox" name="buttonBox">
          <property name="standardButtons">
           <set>QDialogButtonBox::Ok</set>
          </property>
         </widget>
        </item>
-       <item row="0" column="2" rowspan="2">
+       <item row="0" column="3" rowspan="2">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="title">
           <string>TAS</string>
@@ -449,6 +449,84 @@
          </layout>
         </widget>
        </item>
+       <item row="0" column="1" rowspan="2">
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Sample Rotation</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_18">
+            <property name="text">
+             <string>Δφ (deg):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinRotPhi">
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>-180.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>180.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_20">
+            <property name="text">
+             <string>Δψ (deg):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="spinRotPsi">
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>-180.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>180.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="spinRotTheta">
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>180.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_19">
+            <property name="text">
+             <string>Δθ (deg):</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -468,6 +546,9 @@
   <tabstop>editAlphaRecip</tabstop>
   <tabstop>editBetaRecip</tabstop>
   <tabstop>editGammaRecip</tabstop>
+  <tabstop>spinRotPhi</tabstop>
+  <tabstop>spinRotTheta</tabstop>
+  <tabstop>spinRotPsi</tabstop>
   <tabstop>editScatX0</tabstop>
   <tabstop>editScatX1</tabstop>
   <tabstop>editScatX2</tabstop>
