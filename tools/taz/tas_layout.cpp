@@ -74,6 +74,8 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 
 TasLayout::~TasLayout()
 {
+	m_bReady = 0;
+
 	delete m_pSrc;
 	delete m_pMono;
 	delete m_pSample;
@@ -83,6 +85,8 @@ TasLayout::~TasLayout()
 
 void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 {
+	if(!m_bReady) return;
+
 	static bool bAllowUpdate = 1;
 	if(!bAllowUpdate) return;
 

@@ -61,9 +61,9 @@ class ScatteringTriangle : public QGraphicsItem
 	protected:
 		ScatteringTriangleScene &m_scene;
 
-		ScatteringTriangleNode *m_pNodeKiQ;
-		ScatteringTriangleNode *m_pNodeKiKf;
-		ScatteringTriangleNode *m_pNodeKfQ;
+		ScatteringTriangleNode *m_pNodeKiQ = 0;
+		ScatteringTriangleNode *m_pNodeKiKf = 0;
+		ScatteringTriangleNode *m_pNodeKfQ = 0;
 
 		double m_dScaleFactor = 75.;	// pixels per A^-1
 

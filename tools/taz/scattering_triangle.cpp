@@ -11,7 +11,8 @@
 #include <sstream>
 
 
-ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem) : m_pParentItem(pSupItem)
+ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem)
+	: m_pParentItem(pSupItem)
 {
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
@@ -101,6 +102,8 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 
 ScatteringTriangle::~ScatteringTriangle()
 {
+	m_bReady = 0;
+
 	delete m_pNodeKiQ;
 	delete m_pNodeKiKf;
 	delete m_pNodeKfQ;
@@ -110,6 +113,8 @@ ScatteringTriangle::~ScatteringTriangle()
 
 void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 {
+	if(!m_bReady) return;
+
 	m_scene.emitUpdate();
 	this->update();
 }
@@ -142,9 +147,9 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 	std::wostringstream ostrQ, ostrKi, ostrKf;
 	ostrQ.precision(3); ostrKi.precision(3); ostrKf.precision(3);
-	ostrQ << L"Q = " << lineQ.length()/m_dScaleFactor << L" \x212B^(-1)";
-	ostrKi << L"ki = " << lineKi.length()/m_dScaleFactor << L" \x212B^(-1)";
-	ostrKf << L"kf = " << lineKf.length()/m_dScaleFactor << L" \x212B^(-1)";
+	ostrQ << L"Q = " << lineQ.length()/m_dScaleFactor << L" 1/\x212B";
+	ostrKi << L"ki = " << lineKi.length()/m_dScaleFactor << L" 1/\x212B";
+	ostrKf << L"kf = " << lineKf.length()/m_dScaleFactor << L" 1/\x212B";
 
 	painter->save();
 	painter->rotate(-lineQ.angle());

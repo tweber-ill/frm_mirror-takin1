@@ -45,11 +45,11 @@ class TasLayout : public QGraphicsItem
 	protected:
 		TasLayoutScene& m_scene;
 
-		TasLayoutNode *m_pSrc;
-		TasLayoutNode *m_pMono;
-		TasLayoutNode *m_pSample;
-		TasLayoutNode *m_pAna;
-		TasLayoutNode *m_pDet;
+		TasLayoutNode *m_pSrc = 0;
+		TasLayoutNode *m_pMono = 0;
+		TasLayoutNode *m_pSample = 0;
+		TasLayoutNode *m_pAna = 0;
+		TasLayoutNode *m_pDet = 0;
 
 		double m_dMonoTwoTheta = 3.1415/2.;
 		double m_dAnaTwoTheta = 3.1415/2.;
