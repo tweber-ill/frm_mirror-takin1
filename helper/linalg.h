@@ -22,7 +22,7 @@ namespace math = boost::math;
 
 
 //#include "math.h"
-template<typename T=double> bool float_equal(T t1, T t2);
+template<typename T=double> bool float_equal(T t1, T t2, T eps=std::numeric_limits<T>::epsilon());
 template<typename T> T sign(T t);
 
 
