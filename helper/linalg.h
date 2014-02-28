@@ -686,4 +686,48 @@ public:
 	}
 };
 
+
+template<class T, typename REAL>
+REAL vec_angle(const T& q1, const T& q2)
+{
+	if(q1.size() != q2.size())
+		return REAL(0);
+
+	REAL dot = REAL(0);
+	for(unsigned int i=0; i<q1.size(); ++i)
+		dot += q1[i]*q2[i];
+
+	dot /= ublas::norm_2(q1);
+	dot /= ublas::norm_2(q2);
+
+	return std::acos(dot);
+}
+
+template<>
+double vec_angle(const math::quaternion<double>& q1,
+				const math::quaternion<double>& q2)
+{
+        double dot = q1.R_component_1()*q2.R_component_1() +
+                	q1.R_component_2()*q2.R_component_2() +
+                	q1.R_component_3()*q2.R_component_3() +
+                	q1.R_component_4()*q2.R_component_4();
+
+        dot /= math::norm(q1);
+        dot /= math::norm(q2);
+
+        return std::acos(dot);
+}
+
+// see: http://run.usc.edu/cs520-s12/assign2/p245-shoemake.pdf
+template<class T, typename REAL=double>
+T slerp(const T& q1, const T& q2, REAL t)
+{
+	REAL angle = vec_angle<T, REAL>(q1, q2);
+
+	T q = std::sin((1-t)*angle)/std::sin(angle) * q1 +
+			std::sin(t*angle)/std::sin(angle) * q2;
+
+	return q;
+}
+
 #endif

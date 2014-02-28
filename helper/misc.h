@@ -11,6 +11,7 @@
 #include <list>
 #include <map>
 #include <algorithm>
+#include "math.h"
 //#include "../data/data.h"
 
 // deletes an object when going out of scope
@@ -77,12 +78,6 @@ T tic_trafo_inv(unsigned int iDim, T dMin, T dMax, bool bLog, T dVal)
 
 	T dpix = (dVal-dMin)/(dMax-dMin) * double(iDim);
 	return dpix;
-}
-
-template<typename T>
-T lerp(T a, T b, double val)
-{
-	return T(a) + T(double(b-a)*val);
 }
 
 template<typename T1, typename T2>

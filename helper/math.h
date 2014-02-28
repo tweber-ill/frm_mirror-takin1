@@ -137,4 +137,10 @@ std::vector<T> logspace(const T& tmin, const T& tmax, unsigned int iNum, T tBase
 	return vec;
 }
 
+template<class T, typename REAL=double>
+T lerp(const T& a, const T& b, REAL val)
+{
+	return a + T((b-a)*val);
+}
+
 #endif
