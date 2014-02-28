@@ -135,11 +135,14 @@ void TazDlg::CalcPeaks()
 	double gamma = editGamma->text().toDouble()/180.*M_PI;
 
 	Lattice lattice(a,b,c, alpha,beta,gamma);
+	Lattice recip_unrot = lattice.GetRecip();
 
 	double dPhi = spinRotPhi->value() / 180. * M_PI;
 	double dTheta = spinRotTheta->value() / 180. * M_PI;
 	double dPsi = spinRotPsi->value() / 180. * M_PI;
 	lattice.RotateEuler(dPhi, dTheta, dPsi);
+
+	Lattice recip = lattice.GetRecip();
 
 
 
@@ -156,8 +159,6 @@ void TazDlg::CalcPeaks()
 	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
 	Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
 
-
-	Lattice recip = lattice.GetRecip();
 
 	if(m_bUpdateRecipEdits)
 	{
@@ -177,7 +178,8 @@ void TazDlg::CalcPeaks()
 	ostrSample << ", Reciprocal: " << recip.GetVol() << L" (1/\x212b)^3";
 	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
-	m_sceneRecip.CalcPeaks(lattice, recip, plane);
+	m_sceneRecip.CalcPeaks(lattice, recip, recip_unrot, plane);
+	m_sceneRecip.emitUpdate();
 }
 
 void TazDlg::UpdateSampleSense()

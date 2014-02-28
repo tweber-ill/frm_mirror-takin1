@@ -70,6 +70,8 @@ class ScatteringTriangle : public QGraphicsItem
 		std::vector<RecipPeak*> m_vecPeaks;
 		void ClearPeaks();
 
+		double m_dAngleRot = 0.;
+
 	protected:
 		QRectF boundingRect() const;
 
@@ -91,7 +93,8 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetMonoTwoTheta(double dTT, double dMonoD);
 
 	public:
-		void CalcPeaks(const Lattice& lattice, const Lattice& recip,
+		void CalcPeaks(const Lattice& lattice,
+						const Lattice& recip, const Lattice& recip_unrot,
 						const Plane<double>& plane);
 };
 
@@ -116,7 +119,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void emitUpdate();
 		void SetDs(double dMonoD, double dAnaD);
 
-		void CalcPeaks(const Lattice& lattice, const Lattice& recip,
+		void CalcPeaks(const Lattice& lattice,
+					const Lattice& recip, const Lattice& recip_unrot,
 					const Plane<double>& plane);
 
 		void SetSampleSense(bool bPos);

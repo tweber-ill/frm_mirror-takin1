@@ -229,6 +229,7 @@ double ScatteringTriangle::GetTheta(bool bPosSense) const
 	vecSampleDirX[1] = 0.;
 
 	double dTh = vec_angle_2(vecKi) - vec_angle_2(vecSampleDirX) - M_PI/2.;
+	dTh += m_dAngleRot;
 	if(!bPosSense)
 		dTh = -dTh;
 
@@ -333,7 +334,8 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 }
 
 
-void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Lattice& recip,
+void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
+								const Lattice& recip, const Lattice& recip_unrot,
 								const Plane<double>& plane)
 {
 	ClearPeaks();
@@ -355,6 +357,8 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Lattice& recip,
 		return;
 	}
 
+	m_dAngleRot = vec_angle_3(recip.GetVec(0), recip_unrot.GetVec(0));
+	//std::cout << dAngleRot/M_PI*180. << std::endl;
 
 	const double dMaxPeaks = 5.;
 
@@ -467,13 +471,14 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 	m_bDontEmitChange = 0;
 }
 
-void ScatteringTriangleScene::CalcPeaks(const Lattice& lattice, const Lattice& recip,
+void ScatteringTriangleScene::CalcPeaks(const Lattice& lattice,
+										const Lattice& recip, const Lattice& recip_unrot,
 										const Plane<double>& plane)
 {
 	if(!m_pTri)
 		return;
 
-	m_pTri->CalcPeaks(lattice, recip, plane);
+	m_pTri->CalcPeaks(lattice, recip, recip_unrot, plane);
 }
 
 void ScatteringTriangleScene::SetSampleSense(bool bPos)

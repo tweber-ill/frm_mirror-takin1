@@ -44,6 +44,7 @@ typename vec_type::value_type vec_angle_2(const vec_type& vec)
 	return std::atan2(vec[1], vec[0]);
 }
 
+
 /*
  * remove an element from a vector
  */
@@ -467,6 +468,22 @@ vector_type cross_3(const vector_type& vec0, const vector_type& vec1)
 	return vec;
 }
 
+template<typename vec_type, typename real_type=double>
+typename vec_type::value_type vec_angle_3(const vec_type& vec0, const vec_type& vec1)
+{
+	real_type dNorm0 = ublas::norm_2(vec0);
+	real_type dNorm1 = ublas::norm_2(vec1);
+
+	real_type dC = ublas::inner_prod(vec0, vec1);
+	real_type dS = ublas::norm_2(cross_3<vec_type>(vec0, vec1));
+
+	real_type dAngle = std::atan2(dS, dC);
+
+	// TODO: sign of angle!
+	return dAngle;
+}
+
+
 template<typename T=double>
 T determinant(const ublas::matrix<T>& mat)
 {
@@ -691,32 +708,31 @@ template<class T, typename REAL>
 REAL vec_angle(const T& q1, const T& q2)
 {
 	if(q1.size() != q2.size())
-		return REAL(0);
+		return REAL();
 
-	REAL dot = REAL(0);
+	REAL dot = REAL();
+	REAL len1 = REAL();
+	REAL len2 = REAL();
 	for(unsigned int i=0; i<q1.size(); ++i)
+	{
 		dot += q1[i]*q2[i];
 
-	dot /= ublas::norm_2(q1);
-	dot /= ublas::norm_2(q2);
+		len1 += q1[i]*q1[i];
+		len2 += q2[i]*q2[i];
+	}
+
+	len1 = std::sqrt(len1);
+	len2 = std::sqrt(len2);
+
+	dot /= len1;
+	dot /= len2;
 
 	return std::acos(dot);
 }
 
 template<>
 double vec_angle(const math::quaternion<double>& q1,
-				const math::quaternion<double>& q2)
-{
-        double dot = q1.R_component_1()*q2.R_component_1() +
-                	q1.R_component_2()*q2.R_component_2() +
-                	q1.R_component_3()*q2.R_component_3() +
-                	q1.R_component_4()*q2.R_component_4();
-
-        dot /= math::norm(q1);
-        dot /= math::norm(q2);
-
-        return std::acos(dot);
-}
+				const math::quaternion<double>& q2);
 
 // see: http://run.usc.edu/cs520-s12/assign2/p245-shoemake.pdf
 template<class T, typename REAL=double>
@@ -724,7 +740,7 @@ T slerp(const T& q1, const T& q2, REAL t)
 {
 	REAL angle = vec_angle<T, REAL>(q1, q2);
 
-	T q = std::sin((1-t)*angle)/std::sin(angle) * q1 +
+	T q = std::sin((1.-t)*angle)/std::sin(angle) * q1 +
 			std::sin(t*angle)/std::sin(angle) * q2;
 
 	return q;

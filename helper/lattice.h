@@ -40,6 +40,7 @@ class Lattice
 
 		double GetVol() const;
 
+		const ublas::vector<double>& GetVec(unsigned int i) const { return m_vecs[i]; }
 		ublas::matrix<double> GetMetric() const;
 };
 
