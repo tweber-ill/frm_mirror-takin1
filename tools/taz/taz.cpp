@@ -177,7 +177,7 @@ void TazDlg::CalcPeaks()
 	ostrSample << ", Reciprocal: " << recip.GetVol() << L" (1/\x212b)^3";
 	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
-	m_sceneRecip.CalcPeaks(recip, plane);
+	m_sceneRecip.CalcPeaks(lattice, recip, plane);
 }
 
 void TazDlg::UpdateSampleSense()

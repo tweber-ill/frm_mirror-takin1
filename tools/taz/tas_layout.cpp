@@ -52,7 +52,7 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 	m_pAna->setToolTip("Analyser");
 	m_pDet->setToolTip("Detector");
 
-	m_pSrc->setPos(150., 150.);
+	m_pSrc->setPos(200., m_dLenMonoSample);
 	m_pMono->setPos(0., m_dLenMonoSample);
 	m_pSample->setPos(0., 0.);
 	m_pAna->setPos(-m_dLenSampleAna, 0.);
@@ -90,11 +90,11 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	static bool bAllowUpdate = 1;
 	if(!bAllowUpdate) return;
 
-	ublas::vector<double> vecSrc = qpoint_to_vec(mapFromItem(m_pSrc, 0, 0));
-	ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
-	ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
-	ublas::vector<double> vecAna = qpoint_to_vec(mapFromItem(m_pAna, 0, 0));
-	ublas::vector<double> vecDet = qpoint_to_vec(mapFromItem(m_pDet, 0, 0));
+	const ublas::vector<double> vecSrc = qpoint_to_vec(mapFromItem(m_pSrc, 0, 0));
+	const ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
+	const ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
+	const ublas::vector<double> vecAna = qpoint_to_vec(mapFromItem(m_pAna, 0, 0));
+	const ublas::vector<double> vecDet = qpoint_to_vec(mapFromItem(m_pDet, 0, 0));
 
 	bAllowUpdate = 0;
 	if(pNode==m_pSample)
@@ -106,7 +106,9 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		vecSrcMono /= ublas::norm_2(vecSrcMono);
 
 		ublas::vector<double> vecMonoSample = vecSample-vecMono;
-		vecSrcMono /= ublas::norm_2(vecMonoSample);
+		if(m_bAllowLengthChanges)
+			m_dLenMonoSample = ublas::norm_2(vecMonoSample);
+		vecMonoSample /= ublas::norm_2(vecMonoSample);
 
 		m_dMonoTwoTheta = -(vec_angle_2(vecMonoSample) - vec_angle_2(vecSrcMono));
 		if(m_dMonoTwoTheta < -M_PI) m_dMonoTwoTheta += 2.*M_PI;
@@ -164,6 +166,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 
 		ublas::vector<double> vecAnaDet = vecDet-vecAna;
+		if(m_bAllowLengthChanges)
+			m_dLenAnaDet = ublas::norm_2(vecAnaDet);
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 
 		m_dAnaTwoTheta = -(vec_angle_2(vecAnaDet) - vec_angle_2(vecSampleAna));
@@ -181,6 +185,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	if(pNode==m_pMono || pNode==m_pAna)
 	{
 		ublas::vector<double> vecSampleAna = vecAna-vecSample;
+		if(pNode==m_pAna && m_bAllowLengthChanges)
+			m_dLenSampleAna = ublas::norm_2(vecSampleAna);
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 
 		ublas::vector<double> vecAnaDet = ublas::prod(rotation_matrix_2d(-m_dAnaTwoTheta), vecSampleAna);
@@ -226,19 +232,40 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	QLineF lineKf(ptSample, ptAna);
 	QLineF lineAnaDet(ptAna, ptDet);
 
+	QPen penOrig = painter->pen();
+
 	painter->drawLine(lineSrcMono);
 	painter->drawLine(lineKi);
 	painter->drawLine(lineKf);
 	painter->drawLine(lineAnaDet);
 
 
+	ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
+	ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
+	ublas::vector<double> vecMonoSample = vecSample-vecMono;
+
+
+	// sample theta rotation
+	ublas::vector<double> vecSampleRotDir = ublas::prod(rotation_matrix_2d(-m_dTheta), vecMonoSample);
+	vecSampleRotDir /= ublas::norm_2(vecSampleRotDir);
+	vecSampleRotDir *= m_dLenSample;
+
+	QPointF ptSampleThM =  vec_to_qpoint(vecSample-vecSampleRotDir);
+	QPointF ptSampleThP =  vec_to_qpoint(vecSample+vecSampleRotDir);
+	QLineF lineSampleRot(ptSampleThM, ptSampleThP);
+
+	QPen penSample(Qt::red);
+	penSample.setWidthF(1.5);
+	painter->setPen(penSample);
+	painter->drawLine(lineSampleRot);
+
 
 	// dashed extended lines
+	painter->setPen(penOrig);
 	QLineF lineSrcMono_ext(ptMono, ptMono + (ptMono-ptSrc)/2.);
 	QLineF lineki_ext(ptSample, ptSample + (ptSample-ptMono)/2.);
 	QLineF linekf_ext(ptAna, ptAna + (ptAna-ptSample)/2.);
 
-	QPen penOrig = painter->pen();
 	painter->setPen(Qt::DashLine);
 
 	painter->drawLine(lineSrcMono_ext);
@@ -250,19 +277,24 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 
 	// angle arcs
-	const QLineF* pLines1[] = {&lineSrcMono, &lineKi, &lineKf};
-	const QLineF* pLines2[] = {&lineKi, &lineKf, &lineAnaDet};
-	const QPointF* pPoints[] = {&ptMono, &ptSample, &ptAna};
-	const QPointF* pPoints_ext[] = {&ptSrc, &ptMono, &ptSample};
-	const double dAngles[] = {m_dMonoTwoTheta, m_dTwoTheta, m_dAnaTwoTheta};
+	const QLineF* pLines1[] = {&lineSrcMono, &lineKi, &lineKf, &lineSampleRot};
+	const QLineF* pLines2[] = {&lineKi, &lineKf, &lineAnaDet, &lineKi};
+	const QPointF* pPoints[] = {&ptMono, &ptSample, &ptAna, &ptSample};
+	const QPointF* pPoints_ext[] = {&ptSrc, &ptMono, &ptSample, &ptSampleThP};
+	const double dAngles[] = {m_dMonoTwoTheta, m_dTwoTheta, m_dAnaTwoTheta, -m_dTheta};
+	const double dAngleOffs[] = {0., 0., 0., 180.};
 
-	for(unsigned int i=0; i<3; ++i)
+	QPen pen1(Qt::blue);
+	QPen pen2(Qt::red);
+	QPen* arcPens[] = {&pen1, &pen1, &pen1, &pen2};
+
+	for(unsigned int i=0; i<4; ++i)
 	{
-		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 4.;
-		double dBeginArcAngle = pLines1[i]->angle();
+		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 3.;
+		double dBeginArcAngle = pLines1[i]->angle() + dAngleOffs[i];
 		double dArcAngle = dAngles[i]/M_PI*180.;
 
-		painter->setPen(Qt::blue);
+		painter->setPen(*arcPens[i]);
 		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2.,
 								dArcSize, dArcSize),
 								dBeginArcAngle*16., dArcAngle*16.);
@@ -328,6 +360,12 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 	nodeMoved(m_pAna);
 }
 
+void TasLayout::SetSampleTheta(double dAngle)
+{
+	m_dTheta = dAngle;
+	this->update();
+}
+
 void TasLayout::SetMonoTwoTheta(double dAngle)
 {
 	m_dMonoTwoTheta = dAngle;
@@ -360,13 +398,16 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 		return;
 
 	m_bDontEmitChange = 1;
+	m_pTas->AllowLengthChanges(0);
 
 	m_pTas->SetMonoTwoTheta(opts.dMonoTwoTheta);
 	m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
+	m_pTas->SetSampleTheta(opts.dTheta);
 	m_pTas->SetAnaTwoTheta(opts.dAnaTwoTheta);
 
 	update();
 
+	m_pTas->AllowLengthChanges(1);
 	m_bDontEmitChange = 0;
 }
 

@@ -198,7 +198,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 
 		// angle arcs
-		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 4.;
+		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 3.;
 		double dBeginArcAngle = pLines1[i]->angle() + 180.;
 		double dArcAngle = pLines1[i]->angleTo(*pLines2[i]) - 180.;
 
@@ -217,6 +217,22 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		QPointF ptText = *pPoints[i] + ptDirOut;
 		painter->drawText(ptText, ostrAngle.str().c_str());
 	}
+}
+
+double ScatteringTriangle::GetTheta(bool bPosSense) const
+{
+	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+
+	ublas::vector<double> vecSampleDirX(2);
+	vecSampleDirX[0] = 1.;
+	vecSampleDirX[1] = 0.;
+
+	double dTh = vec_angle_2(vecKi) - vec_angle_2(vecSampleDirX) - M_PI/2.;
+	if(!bPosSense)
+		dTh = -dTh;
+
+	return dTh;
 }
 
 double ScatteringTriangle::GetTwoTheta(bool bPosSense) const
@@ -317,7 +333,8 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 }
 
 
-void ScatteringTriangle::CalcPeaks(const Lattice& recip, const Plane<double>& plane)
+void ScatteringTriangle::CalcPeaks(const Lattice& lattice, const Lattice& recip,
+								const Plane<double>& plane)
 {
 	ClearPeaks();
 
@@ -424,7 +441,9 @@ void ScatteringTriangleScene::emitUpdate()
 	opts.bChangedMonoTwoTheta = 1;
 	opts.bChangedAnaTwoTheta = 1;
 	opts.bChangedTwoTheta = 1;
+	opts.bChangedTheta = 1;
 	opts.dTwoTheta = m_pTri->GetTwoTheta(m_bSamplePosSense);
+	opts.dTheta = m_pTri->GetTheta(m_bSamplePosSense);
 	opts.dAnaTwoTheta = m_pTri->GetAnaTwoTheta(m_dAnaD, m_bAnaPosSense);
 	opts.dMonoTwoTheta = m_pTri->GetMonoTwoTheta(m_dMonoD, m_bMonoPosSense);
 
@@ -448,12 +467,13 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 	m_bDontEmitChange = 0;
 }
 
-void ScatteringTriangleScene::CalcPeaks(const Lattice& recip, const Plane<double>& plane)
+void ScatteringTriangleScene::CalcPeaks(const Lattice& lattice, const Lattice& recip,
+										const Plane<double>& plane)
 {
 	if(!m_pTri)
 		return;
 
-	m_pTri->CalcPeaks(recip, plane);
+	m_pTri->CalcPeaks(lattice, recip, plane);
 }
 
 void ScatteringTriangleScene::SetSampleSense(bool bPos)

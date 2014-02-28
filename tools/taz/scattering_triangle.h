@@ -81,6 +81,7 @@ class ScatteringTriangle : public QGraphicsItem
 		void nodeMoved(const ScatteringTriangleNode* pNode=0);
 
 		bool IsReady() const { return m_bReady; }
+		double GetTheta(bool bPosSense) const;
 		double GetTwoTheta(bool bPosSense) const;
 		double GetMonoTwoTheta(double dMonoD, bool bPosSense) const;
 		double GetAnaTwoTheta(double dAnaD, bool bPosSense) const;
@@ -90,7 +91,8 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetMonoTwoTheta(double dTT, double dMonoD);
 
 	public:
-		void CalcPeaks(const Lattice& recip, const Plane<double>& plane);
+		void CalcPeaks(const Lattice& lattice, const Lattice& recip,
+						const Plane<double>& plane);
 };
 
 
@@ -114,7 +116,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void emitUpdate();
 		void SetDs(double dMonoD, double dAnaD);
 
-		void CalcPeaks(const Lattice& recip, const Plane<double>& plane);
+		void CalcPeaks(const Lattice& lattice, const Lattice& recip,
+					const Plane<double>& plane);
 
 		void SetSampleSense(bool bPos);
 		void SetMonoSense(bool bPos);

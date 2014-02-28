@@ -54,10 +54,14 @@ class TasLayout : public QGraphicsItem
 		double m_dMonoTwoTheta = 3.1415/2.;
 		double m_dAnaTwoTheta = 3.1415/2.;
 		double m_dTwoTheta = 3.1415/2.;
+		double m_dTheta = 3.1415/4.;
 
 		double m_dLenMonoSample = 150.;
 		double m_dLenSampleAna = 100.;
 		double m_dLenAnaDet = 50.;
+		double m_dLenSample = 25.;
+
+		bool m_bAllowLengthChanges = 1;
 
 	protected:
 		QRectF boundingRect() const;
@@ -71,10 +75,13 @@ class TasLayout : public QGraphicsItem
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 		void SetSampleTwoTheta(double dTT);
+		void SetSampleTheta(double dT);
 		void SetMonoTwoTheta(double dTT);
 		void SetAnaTwoTheta(double dTT);
 
 		void nodeMoved(const TasLayoutNode* pNode=0);
+
+		void AllowLengthChanges(bool bAllow) { m_bAllowLengthChanges = bAllow; };
 };
 
 
