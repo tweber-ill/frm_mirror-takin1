@@ -145,7 +145,7 @@ bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
 
 
 template<>
-double vec_angle(const math::quaternion<double>& q1,
+double vec_angle_unsigned(const math::quaternion<double>& q1,
 				const math::quaternion<double>& q2)
 {
 	double dot = q1.R_component_1()*q2.R_component_1() +

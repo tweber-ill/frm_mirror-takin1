@@ -24,7 +24,8 @@ namespace math = boost::math;
 //#include "math.h"
 template<typename T=double> bool float_equal(T t1, T t2, T eps=std::numeric_limits<T>::epsilon());
 template<typename T> T sign(T t);
-
+template<typename INT=int> bool is_even(INT i);
+template<typename INT=int> bool is_odd(INT i);
 
 template<class vec_type>
 typename vec_type::value_type vec_len(const vec_type& vec)
@@ -36,12 +37,6 @@ typename vec_type::value_type vec_len(const vec_type& vec)
 
 	t = std::sqrt(t);
 	return t;
-}
-
-template<typename vec_type>
-typename vec_type::value_type vec_angle_2(const vec_type& vec)
-{
-	return std::atan2(vec[1], vec[0]);
 }
 
 
@@ -101,7 +96,7 @@ matrix_type remove_elems(const matrix_type& mat, unsigned int iIdx)
 }
 
 
-template<class vector_type=ublas::vector<double>, class matrix_type=ublas::matrix<double>>
+template<class vector_type=ublas::vector<double>, class matrix_type=ublas::matrix<double> >
 vector_type get_column(const matrix_type& mat, unsigned int iCol)
 {
         vector_type vecret(mat.size1());
@@ -113,16 +108,23 @@ vector_type get_column(const matrix_type& mat, unsigned int iCol)
 }
 
 
-template<typename T=double>
-ublas::matrix<T> rotation_matrix_2d(T angle)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+matrix_type rotation_matrix_2d(T angle)
 {
+	T s, c;
+
 	if(angle==0.)
-		return ublas::identity_matrix<T>(2);
+	{
+		s = T(0);
+		c = T(1);
+	}
+	else
+	{
+		s = std::sin(angle);
+		c = std::cos(angle);
+	}
 
-	ublas::matrix<T> mat(2,2);
-
-	T s = std::sin(angle);
-	T c = std::cos(angle);
+	matrix_type mat(2,2);
 
 	mat(0,0) = c; mat(0,1) = -s;
 	mat(1,0) = s; mat(1,1) = c;
@@ -130,13 +132,22 @@ ublas::matrix<T> rotation_matrix_2d(T angle)
 	return mat;
 }
 
-template<typename T=double>
-ublas::matrix<T> rotation_matrix_3d_x(T angle)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+matrix_type rotation_matrix_3d_x(T angle)
 {
-	ublas::matrix<T> mat(3,3);
+	matrix_type mat(3,3);
 
-	T s = std::sin(angle);
-	T c = std::cos(angle);
+	T s, c;
+	if(angle==0.)
+	{
+		s = T(0);
+		c = T(1);
+	}
+	else
+	{
+		s = std::sin(angle);
+		c = std::cos(angle);
+	}
 
 	mat(0,0)=1; mat(0,1)=0; mat(0,2)=0;
 	mat(1,0)=0; mat(1,1)=c; mat(1,2)=-s;
@@ -145,13 +156,22 @@ ublas::matrix<T> rotation_matrix_3d_x(T angle)
 	return mat;
 }
 
-template<typename T=double>
-ublas::matrix<T> rotation_matrix_3d_y(T angle)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+matrix_type rotation_matrix_3d_y(T angle)
 {
-	ublas::matrix<T> mat(3,3);
+	matrix_type mat(3,3);
 
-	T s = std::sin(angle);
-	T c = std::cos(angle);
+	T s, c;
+	if(angle==0.)
+	{
+		s = T(0);
+		c = T(1);
+	}
+	else
+	{
+		s = std::sin(angle);
+		c = std::cos(angle);
+	}
 
 	mat(0,0)=c; mat(0,1)=0; mat(0,2)=s;
 	mat(1,0)=0; mat(1,1)=1; mat(1,2)=0;
@@ -160,13 +180,22 @@ ublas::matrix<T> rotation_matrix_3d_y(T angle)
 	return mat;
 }
 
-template<typename T=double>
-ublas::matrix<T> rotation_matrix_3d_z(T angle)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+matrix_type rotation_matrix_3d_z(T angle)
 {
-	ublas::matrix<T> mat(3,3);
+	matrix_type mat(3,3);
 
-	T s = std::sin(angle);
-	T c = std::cos(angle);
+	T s, c;
+	if(angle==0.)
+	{
+		s = T(0);
+		c = T(1);
+	}
+	else
+	{
+		s = std::sin(angle);
+		c = std::cos(angle);
+	}
 
 	mat(0,0)=c; mat(0,1)=-s; mat(0,2)=0;
 	mat(1,0)=s; mat(1,1)=c; mat(1,2)=0;
@@ -210,14 +239,26 @@ ublas::matrix<T> unit_matrix(unsigned int N)
 template<typename T=double>
 ublas::matrix<T> rotation_matrix(const ublas::vector<T>& vec, T angle)
 {
-	return (T(1) - std::cos(angle)) * ublas::outer_prod(vec,vec) +
-				std::cos(angle) * unit_matrix(vec.size()) +
-				std::sin(angle) * skew(vec);
+	T s, c;
+	if(angle==0.)
+	{
+		s = T(0);
+		c = T(1);
+	}
+	else
+	{
+		s = std::sin(angle);
+		c = std::cos(angle);
+	}
+
+	return (T(1) - c) * ublas::outer_prod(vec,vec) +
+				c * unit_matrix(vec.size()) +
+				s * skew(vec);
 }
 
 
-template<typename T=double>
-T trace(const ublas::matrix<T>& mat)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+T trace(const matrix_type& mat)
 {
 	if(mat.size1() != mat.size2())
 		return T(0);
@@ -231,8 +272,8 @@ T trace(const ublas::matrix<T>& mat)
 
 
 
-template<typename T=double>
-bool isnan(const ublas::matrix<T>& mat)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+bool isnan(const matrix_type& mat)
 {
 	for(unsigned int i=0; i<mat.size1(); ++i)
 		for(unsigned int j=0; j<mat.size2(); ++j)
@@ -241,8 +282,8 @@ bool isnan(const ublas::matrix<T>& mat)
 	return false;
 }
 
-template<typename T=double>
-bool isinf(const ublas::matrix<T>& mat)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+bool isinf(const matrix_type& mat)
 {
 	for(unsigned int i=0; i<mat.size1(); ++i)
 		for(unsigned int j=0; j<mat.size2(); ++j)
@@ -284,8 +325,8 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 	return true;
 }
 
-template<typename T=double>
-bool is_diag_matrix(const ublas::matrix<T>& mat)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+bool is_diag_matrix(const matrix_type& mat)
 {
 	for(unsigned int i=0; i<mat.size1(); ++i)
 		for(unsigned int j=0; j<mat.size2(); ++j)
@@ -301,13 +342,13 @@ bool is_diag_matrix(const ublas::matrix<T>& mat)
 
 
 // vectors form columns of matrix
-template<typename T=double>
-ublas::matrix<T> column_matrix(const std::vector<ublas::vector<T> >& vecs)
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, typename T=double>
+ublas::matrix<T> column_matrix(const std::vector<vec_type>& vecs)
 {
 	if(vecs.size() == 0)
-		return ublas::zero_matrix<T>(0);
+		return matrix_type(0,0);
 
-	ublas::matrix<T> mat(vecs.size(), vecs[0].size());
+	matrix_type mat(vecs.size(), vecs[0].size());
 	for(unsigned int i=0; i<vecs[0].size(); ++i)
 		for(unsigned int j=0; j<vecs.size(); ++j)
 			mat(i,j) = vecs[j][i];
@@ -331,12 +372,12 @@ bool eigenvec_sym(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& e
 
 template<>
 bool eigenvec<double>(const ublas::matrix<double>& mat,
-									std::vector<ublas::vector<double> >& evecs,
-									std::vector<double>& evals);
+						std::vector<ublas::vector<double> >& evecs,
+						std::vector<double>& evals);
 template<>
 bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
-											std::vector<ublas::vector<double> >& evecs,
-											std::vector<double>& evals);
+						std::vector<ublas::vector<double> >& evecs,
+						std::vector<double>& evals);
 
 
 // algo from:
@@ -468,24 +509,9 @@ vector_type cross_3(const vector_type& vec0, const vector_type& vec1)
 	return vec;
 }
 
-template<typename vec_type, typename real_type=double>
-typename vec_type::value_type vec_angle_3(const vec_type& vec0, const vec_type& vec1)
-{
-	real_type dNorm0 = ublas::norm_2(vec0);
-	real_type dNorm1 = ublas::norm_2(vec1);
 
-	real_type dC = ublas::inner_prod(vec0, vec1);
-	real_type dS = ublas::norm_2(cross_3<vec_type>(vec0, vec1));
-
-	real_type dAngle = std::atan2(dS, dC);
-
-	// TODO: sign of angle!
-	return dAngle;
-}
-
-
-template<typename T=double>
-T determinant(const ublas::matrix<T>& mat)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+T determinant(const matrix_type& mat)
 {
 	if(mat.size1() != mat.size2())
 		return T(0);
@@ -498,6 +524,7 @@ T determinant(const ublas::matrix<T>& mat)
 	{
 		return mat(0,0)*mat(1,1) - mat(1,0)*mat(0,1);
 	}
+	/*
 	else if(mat.size1()==3)
 	{
 		ublas::vector<T> vec0 = get_column(mat, 0);
@@ -506,20 +533,26 @@ T determinant(const ublas::matrix<T>& mat)
 
 		ublas::vector<T> vecCross = cross_3<ublas::vector<T> >(vec1, vec2);
 		return ublas::inner_prod(vec0, vecCross);
-	}
+	}*/
 
 	const unsigned int i = 0;
 	T val = T(0);
+
 	for(unsigned int j=0; j<mat.size2(); ++j)
-		val += pow(T(-1), i+j) * mat(i,j) * determinant(submatrix(mat, i, j));
+	{
+		T dSign = 1.;
+		if(is_odd<unsigned int>(i+j))
+			dSign = -1.;
+		val += dSign * mat(i,j) * determinant(submatrix(mat, i, j));
+	}
 
 	return val;
 }
 
-template<typename T=double>
-T get_volume(const ublas::matrix<T>& mat)
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+T get_volume(const matrix_type& mat)
 {
-	return determinant<T>(mat);
+	return determinant<matrix_type, T>(mat);
 }
 
 
@@ -703,9 +736,56 @@ public:
 	}
 };
 
+// signed angle wrt basis
+template<typename vec_type>
+typename vec_type::value_type vec_angle(const vec_type& vec)
+{
+	if(vec.size() == 2)
+		return std::atan2(vec[1], vec[0]);
 
+	throw "Error: vec_angle not yet implemented for size != 2.";
+}
+
+// signed angle between two vectors
+template<typename vec_type, typename real_type=double>
+typename vec_type::value_type vec_angle(const vec_type& vec0,
+										const vec_type& vec1,
+										const vec_type* pvec_norm=0)
+{
+	if(vec0.size() != vec1.size())
+		throw "Error in vec_angle: Vector sizes do not match.";
+
+	if(vec0.size() == 2)
+	{
+		return vec_angle<vec_type>(vec0) - vec_angle<vec_type>(vec1);
+	}
+	if(vec0.size() == 3)
+	{
+		real_type dNorm0 = ublas::norm_2(vec0);
+		real_type dNorm1 = ublas::norm_2(vec1);
+
+		real_type dC = ublas::inner_prod(vec0, vec1);
+		vec_type veccross = cross_3<vec_type>(vec0, vec1);
+		real_type dS = ublas::norm_2(veccross);
+
+		real_type dAngle = std::atan2(dS, dC);
+
+		// get signed angle
+		if(pvec_norm)
+		{
+			if(ublas::inner_prod(veccross, *pvec_norm) < real_type(0))
+				dAngle = -dAngle;
+		}
+
+		return dAngle;
+	}
+
+	throw "Error: vec_angle only implemented for size == 2 and size == 3.";
+}
+
+// unsigned angle between two vectors
 template<class T, typename REAL>
-REAL vec_angle(const T& q1, const T& q2)
+REAL vec_angle_unsigned(const T& q1, const T& q2)
 {
 	if(q1.size() != q2.size())
 		return REAL();
@@ -731,14 +811,14 @@ REAL vec_angle(const T& q1, const T& q2)
 }
 
 template<>
-double vec_angle(const math::quaternion<double>& q1,
+double vec_angle_unsigned(const math::quaternion<double>& q1,
 				const math::quaternion<double>& q2);
 
 // see: http://run.usc.edu/cs520-s12/assign2/p245-shoemake.pdf
 template<class T, typename REAL=double>
 T slerp(const T& q1, const T& q2, REAL t)
 {
-	REAL angle = vec_angle<T, REAL>(q1, q2);
+	REAL angle = vec_angle_unsigned<T, REAL>(q1, q2);
 
 	T q = std::sin((1.-t)*angle)/std::sin(angle) * q1 +
 			std::sin(t*angle)/std::sin(angle) * q2;

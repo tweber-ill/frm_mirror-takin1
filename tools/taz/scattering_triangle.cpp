@@ -228,7 +228,7 @@ double ScatteringTriangle::GetTheta(bool bPosSense) const
 	vecSampleDirX[0] = 1.;
 	vecSampleDirX[1] = 0.;
 
-	double dTh = vec_angle_2(vecKi) - vec_angle_2(vecSampleDirX) - M_PI/2.;
+	double dTh = vec_angle(vecKi) - vec_angle(vecSampleDirX) - M_PI/2.;
 	dTh += m_dAngleRot;
 	if(!bPosSense)
 		dTh = -dTh;
@@ -246,7 +246,7 @@ double ScatteringTriangle::GetTwoTheta(bool bPosSense) const
 	vecKi /= ublas::norm_2(vecKi);
 	vecKf /= ublas::norm_2(vecKf);
 
-	double dTT = vec_angle_2(vecKi) - vec_angle_2(vecKf);
+	double dTT = vec_angle(vecKi) - vec_angle(vecKf);
 	if(!bPosSense)
 		dTT = -dTT;
 
@@ -357,8 +357,9 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 		return;
 	}
 
-	m_dAngleRot = vec_angle_3(recip.GetVec(0), recip_unrot.GetVec(0));
-	//std::cout << dAngleRot/M_PI*180. << std::endl;
+	ublas::vector<double> vecNorm = cross_3(recip_unrot.GetVec(0), recip_unrot.GetVec(1));
+	m_dAngleRot = -vec_angle(recip.GetVec(0), recip_unrot.GetVec(0), &vecNorm);
+	//std::cout << m_dAngleRot/M_PI*180. << std::endl;
 
 	const double dMaxPeaks = 5.;
 

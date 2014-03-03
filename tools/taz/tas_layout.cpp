@@ -110,7 +110,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 			m_dLenMonoSample = ublas::norm_2(vecMonoSample);
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 
-		m_dMonoTwoTheta = -(vec_angle_2(vecMonoSample) - vec_angle_2(vecSrcMono));
+		m_dMonoTwoTheta = -(vec_angle(vecMonoSample) - vec_angle(vecSrcMono));
 		if(m_dMonoTwoTheta < -M_PI) m_dMonoTwoTheta += 2.*M_PI;
 		if(m_dMonoTwoTheta > M_PI) m_dMonoTwoTheta -= 2.*M_PI;
 
@@ -170,7 +170,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 			m_dLenAnaDet = ublas::norm_2(vecAnaDet);
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 
-		m_dAnaTwoTheta = -(vec_angle_2(vecAnaDet) - vec_angle_2(vecSampleAna));
+		m_dAnaTwoTheta = -(vec_angle(vecAnaDet) - vec_angle(vecSampleAna));
 		if(m_dAnaTwoTheta < -M_PI) m_dAnaTwoTheta += 2.*M_PI;
 		if(m_dAnaTwoTheta > M_PI) m_dAnaTwoTheta -= 2.*M_PI;
 
@@ -198,7 +198,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		ublas::vector<double> vecMonoSample = vecSample - vecMono;
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 
-		m_dTwoTheta = -(vec_angle_2(vecSampleAna) - vec_angle_2(vecMonoSample));
+		m_dTwoTheta = -(vec_angle(vecSampleAna) - vec_angle(vecMonoSample));
 		if(m_dTwoTheta < -M_PI) m_dTwoTheta += 2.*M_PI;
 		if(m_dTwoTheta > M_PI) m_dTwoTheta -= 2.*M_PI;
 
