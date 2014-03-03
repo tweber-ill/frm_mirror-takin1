@@ -106,13 +106,16 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		vecSrcMono /= ublas::norm_2(vecSrcMono);
 
 		ublas::vector<double> vecMonoSample = vecSample-vecMono;
-		if(m_bAllowLengthChanges)
+		if(m_bAllowChanges)
 			m_dLenMonoSample = ublas::norm_2(vecMonoSample);
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 
-		m_dMonoTwoTheta = -(vec_angle(vecMonoSample) - vec_angle(vecSrcMono));
-		if(m_dMonoTwoTheta < -M_PI) m_dMonoTwoTheta += 2.*M_PI;
-		if(m_dMonoTwoTheta > M_PI) m_dMonoTwoTheta -= 2.*M_PI;
+		if(m_bAllowChanges)
+		{
+			m_dMonoTwoTheta = -(vec_angle(vecMonoSample) - vec_angle(vecSrcMono));
+			if(m_dMonoTwoTheta < -M_PI) m_dMonoTwoTheta += 2.*M_PI;
+			if(m_dMonoTwoTheta > M_PI) m_dMonoTwoTheta -= 2.*M_PI;
+		}
 
 		//std::cout << m_dMonoTwoTheta/M_PI*180. << std::endl;
 
@@ -152,7 +155,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 		vecMonoSample *= m_dLenMonoSample;
 
-		m_pSample->setPos(vec_to_qpoint(vecMono+vecMonoSample));
+		m_pSample->setPos(vec_to_qpoint(vecMono + vecMonoSample));
 
 		ublas::vector<double> vecSampleAna = vecAna - vecSample;
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
@@ -166,13 +169,16 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 
 		ublas::vector<double> vecAnaDet = vecDet-vecAna;
-		if(m_bAllowLengthChanges)
+		if(m_bAllowChanges)
 			m_dLenAnaDet = ublas::norm_2(vecAnaDet);
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 
-		m_dAnaTwoTheta = -(vec_angle(vecAnaDet) - vec_angle(vecSampleAna));
-		if(m_dAnaTwoTheta < -M_PI) m_dAnaTwoTheta += 2.*M_PI;
-		if(m_dAnaTwoTheta > M_PI) m_dAnaTwoTheta -= 2.*M_PI;
+		if(m_bAllowChanges)
+		{
+			m_dAnaTwoTheta = -(vec_angle(vecAnaDet) - vec_angle(vecSampleAna));
+			if(m_dAnaTwoTheta < -M_PI) m_dAnaTwoTheta += 2.*M_PI;
+			if(m_dAnaTwoTheta > M_PI) m_dAnaTwoTheta -= 2.*M_PI;
+		}
 
 		//std::cout << m_dAnaTwoTheta/M_PI*180. << std::endl;
 
@@ -185,7 +191,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	if(pNode==m_pMono || pNode==m_pAna)
 	{
 		ublas::vector<double> vecSampleAna = vecAna-vecSample;
-		if(pNode==m_pAna && m_bAllowLengthChanges)
+		if(pNode==m_pAna && m_bAllowChanges)
 			m_dLenSampleAna = ublas::norm_2(vecSampleAna);
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 
@@ -198,9 +204,12 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		ublas::vector<double> vecMonoSample = vecSample - vecMono;
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 
-		m_dTwoTheta = -(vec_angle(vecSampleAna) - vec_angle(vecMonoSample));
-		if(m_dTwoTheta < -M_PI) m_dTwoTheta += 2.*M_PI;
-		if(m_dTwoTheta > M_PI) m_dTwoTheta -= 2.*M_PI;
+		if(m_bAllowChanges)
+		{
+			m_dTwoTheta = -(vec_angle(vecSampleAna) - vec_angle(vecMonoSample));
+			if(m_dTwoTheta < -M_PI) m_dTwoTheta += 2.*M_PI;
+			if(m_dTwoTheta > M_PI) m_dTwoTheta -= 2.*M_PI;
+		}
 
 		//std::cout << m_dTwoTheta/M_PI*180. << std::endl;
 
@@ -357,6 +366,7 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 	vecKf *= dLenKf;
 
 	m_pAna->setPos(vec_to_qpoint(vecSample + vecKf));
+	nodeMoved(m_pSample);
 	nodeMoved(m_pAna);
 }
 
@@ -398,7 +408,7 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 		return;
 
 	m_bDontEmitChange = 1;
-	m_pTas->AllowLengthChanges(0);
+	m_pTas->AllowChanges(0);
 
 	m_pTas->SetMonoTwoTheta(opts.dMonoTwoTheta);
 	m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
@@ -407,7 +417,7 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 
 	update();
 
-	m_pTas->AllowLengthChanges(1);
+	m_pTas->AllowChanges(1);
 	m_bDontEmitChange = 0;
 }
 

@@ -61,7 +61,7 @@ class TasLayout : public QGraphicsItem
 		double m_dLenAnaDet = 50.;
 		double m_dLenSample = 25.;
 
-		bool m_bAllowLengthChanges = 1;
+		bool m_bAllowChanges = 1;
 
 	protected:
 		QRectF boundingRect() const;
@@ -81,7 +81,7 @@ class TasLayout : public QGraphicsItem
 
 		void nodeMoved(const TasLayoutNode* pNode=0);
 
-		void AllowLengthChanges(bool bAllow) { m_bAllowLengthChanges = bAllow; };
+		void AllowChanges(bool bAllow) { m_bAllowChanges = bAllow; };
 };
 
 
