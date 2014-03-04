@@ -373,12 +373,16 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 
 				if(::float_equal(dDist, 0., 0.01))
 				{
-					//std::cout << h << k << l << ": ";
-					//std::cout << "Lotfusspunkt: " << vecDropped << ", Distanz: " << dDist << std::endl;
-
 					ublas::vector<double> vecCoord = ublas::prod(matPlaneinv, vecDropped);
 					double dX = vecCoord[0];
 					double dY = vecCoord[1];
+
+					/*if(h==1 && k==0 && l==0)
+					{
+						std::cout << h << k << l << ": ";
+						std::cout << "Lotfusspunkt: " << vecDropped << ", Distanz: " << dDist;
+						std::cout << ", Ebene (x,y) = " << dX << ", " << dY << std::endl;
+					}*/
 
 					RecipPeak *pPeak = new RecipPeak();
 					pPeak->setPos(dX * m_dScaleFactor, -dY * m_dScaleFactor);

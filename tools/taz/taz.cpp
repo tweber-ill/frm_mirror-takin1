@@ -145,16 +145,20 @@ void TazDlg::CalcPeaks()
 	Lattice recip = lattice.GetRecip();
 
 
+	double dX0 = editScatX0->text().toDouble();
+	double dX1 = editScatX1->text().toDouble();
+	double dX2 = editScatX2->text().toDouble();
+	ublas::vector<double> vecPlaneX = dX0*recip_unrot.GetVec(0) +
+									dX1*recip_unrot.GetVec(1) +
+									dX2*recip_unrot.GetVec(2);
 
-	ublas::vector<double> vecPlaneX(3);
-	vecPlaneX[0] = editScatX0->text().toDouble();
-	vecPlaneX[1] = editScatX1->text().toDouble();
-	vecPlaneX[2] = editScatX2->text().toDouble();
+	double dY0 = editScatY0->text().toDouble();
+	double dY1 = editScatY1->text().toDouble();
+	double dY2 = editScatY2->text().toDouble();
+	ublas::vector<double> vecPlaneY = dY0*recip_unrot.GetVec(0) +
+									dY1*recip_unrot.GetVec(1) +
+									dY2*recip_unrot.GetVec(2);
 
-	ublas::vector<double> vecPlaneY(3);
-	vecPlaneY[0] = editScatY0->text().toDouble();
-	vecPlaneY[1] = editScatY1->text().toDouble();
-	vecPlaneY[2] = editScatY2->text().toDouble();
 
 	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
 	Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
@@ -170,12 +174,13 @@ void TazDlg::CalcPeaks()
 		editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
 	}
 
+	double dVol = lattice.GetVol();
 	std::wostringstream ostrSample;
 	ostrSample.precision(4);
 	ostrSample << "Sample - ";
 	ostrSample << "Unit Cell Volume: ";
-	ostrSample << "Real: " << lattice.GetVol() << L" \x212b^3";
-	ostrSample << ", Reciprocal: " << recip.GetVol() << L" (1/\x212b)^3";
+	ostrSample << "Real: " << dVol << L" \x212b^3";
+	ostrSample << ", Reciprocal: " << (1./dVol) << L" (1/\x212b)^3";
 	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
 	m_sceneRecip.CalcPeaks(lattice, recip, recip_unrot, plane);
