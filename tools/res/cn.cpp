@@ -210,16 +210,17 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 			  << "lam_i = " << k2lam(cn.ki)
 			  << std::endl;*/
 
-	units::quantity<units::si::dimensionless> dttCos = (cn.ki*cn.ki + cn.kf*cn.kf - cn.Q*cn.Q)/(2.*cn.ki*cn.kf);
-	if(units::abs(dttCos) > 1)
+	try
+	{
+		res.twotheta = get_sample_twotheta(cn.ki, cn.kf, cn.Q, cn.dsample_sense>0.);
+		res.thetas = res.twotheta/2.;	// TODO: !! valid only for elastic ki == kf !!
+	}
+	catch(const std::exception& ex)
 	{
 		res.bOk = false;
-		res.strErr = "Scattering triangle not closed.";
+		res.strErr = ex.what();
 		return false;
 	}
-	res.twotheta = cn.dsample_sense*units::acos(dttCos);
-	res.thetas = res.twotheta/2.;
-	//get_twotheta(cn.ki, cn.kf, cn.Q, res.twotheta);
 
 
 	ublas::vector<double> vecKi(2);
