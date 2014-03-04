@@ -311,7 +311,10 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 		std::ostringstream ostrAngle;
 		ostrAngle.precision(4);
-		ostrAngle << std::fabs(dArcAngle) << "\xb0";
+		if(!std::isnan(dArcAngle))
+			ostrAngle << std::fabs(dArcAngle) << "\xb0";
+		else
+			ostrAngle << "invalid";
 
 		QPointF ptDirOut = *pPoints[i] - *pPoints_ext[i];
 		ptDirOut /= std::sqrt(ptDirOut.x()*ptDirOut.x() + ptDirOut.y()*ptDirOut.y());
