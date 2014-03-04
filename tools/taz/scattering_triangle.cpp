@@ -5,6 +5,7 @@
  */
 
 #include "helper/flags.h"
+#include "helper/neutrons.hpp"
 #include "scattering_triangle.h"
 #include <iostream>
 #include <cmath>
@@ -145,15 +146,22 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	painter->drawLine(lineKi);
 	painter->drawLine(lineKf);
 
-	std::wostringstream ostrQ, ostrKi, ostrKf;
-	ostrQ.precision(3); ostrKi.precision(3); ostrKf.precision(3);
-	ostrQ << L"Q = " << lineQ.length()/m_dScaleFactor << L" 1/\x212B";
-	ostrKi << L"ki = " << lineKi.length()/m_dScaleFactor << L" 1/\x212B";
-	ostrKf << L"kf = " << lineKf.length()/m_dScaleFactor << L" 1/\x212B";
+	const double dQ = lineQ.length()/m_dScaleFactor;
+	const double dKi = lineKi.length()/m_dScaleFactor;
+	const double dKf = lineKf.length()/m_dScaleFactor;
+	const double dE = get_energy_transfer(dKi/angstrom, dKf/angstrom) / one_eV * 1000.;
+
+	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE;
+	ostrQ.precision(3); ostrKi.precision(3); ostrKf.precision(3); ostrE.precision(3);
+	ostrQ << L"Q = " << dQ << L" 1/\x212B";
+	ostrKi << L"ki = " << dKi << L" 1/\x212B";
+	ostrKf << L"kf = " << dKf << L" 1/\x212B";
+	ostrE << L"\x0394" << "E = " << dE << L" meV";
 
 	painter->save();
 	painter->rotate(-lineQ.angle());
 	painter->drawText(QPointF(lineQ.length()/5.,12.), QString::fromWCharArray(ostrQ.str().c_str()));
+	painter->drawText(QPointF(lineQ.length()/5.,26.), QString::fromWCharArray(ostrE.str().c_str()));
 	painter->rotate(lineQ.angle());
 
 	painter->rotate(-lineKi.angle());
@@ -258,12 +266,7 @@ double ScatteringTriangle::GetMonoTwoTheta(double dMonoD, bool bPosSense) const
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKi = ublas::norm_2(vecKi) / m_dScaleFactor;
-	//std::cout << "ki = " << dKi << std::endl;
-
-	double dTT = 2. * std::asin(M_PI/(dMonoD*dKi));
-	if(!bPosSense)
-		dTT = -dTT;
-	return dTT;
+	return get_mono_twotheta(dKi/angstrom, dMonoD*angstrom, bPosSense) / units::si::radians;
 }
 
 double ScatteringTriangle::GetAnaTwoTheta(double dAnaD, bool bPosSense) const
@@ -271,11 +274,7 @@ double ScatteringTriangle::GetAnaTwoTheta(double dAnaD, bool bPosSense) const
 	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0))
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKf = ublas::norm_2(vecKf) / m_dScaleFactor;
-
-	double dTT =  2. * std::asin(M_PI/(dAnaD*dKf));
-	if(!bPosSense)
-		dTT = -dTT;
-	return dTT;
+	return get_mono_twotheta(dKf/angstrom, dAnaD*angstrom, bPosSense) / units::si::radians;
 }
 
 void ScatteringTriangle::SetAnaTwoTheta(double dTT, double dAnaD)

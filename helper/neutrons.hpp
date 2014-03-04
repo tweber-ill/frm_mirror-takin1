@@ -336,6 +336,28 @@ get_angle_kf_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sy
 	return M_PI*units::si::radians
 			- units::acos((kf*kf - ki*ki + Q*Q)/(2.*kf*Q));
 }
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
+get_mono_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& k,
+				const units::quantity<units::unit<units::length_dimension, Sys>, Y>& d,
+				bool bPosSense=1)
+{
+	units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y> tt
+											= 2. * units::asin(M_PI/(d*k));
+	if(!bPosSense)
+		tt = -tt;
+	return tt;
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::energy_dimension, Sys>, Y>
+get_energy_transfer(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
+					const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& kf)
+{
+	return co::hbar*co::hbar*ki*ki/(2.*co::m_n)
+			- co::hbar*co::hbar*kf*kf/(2.*co::m_n);
+}
 // --------------------------------------------------------------------------------
 
 
