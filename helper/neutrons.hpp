@@ -8,6 +8,7 @@
 #define __NEUTRON_FORMULAS__
 
 #include "math.h"
+#include "exception.h"
 
 #include <boost/units/unit.hpp>
 #include <boost/units/quantity.hpp>
@@ -293,24 +294,11 @@ Y debye_waller_low_T(const units::quantity<units::unit<units::temperature_dimens
 
 
 // --------------------------------------------------------------------------------
-// scattering triangle
+// scattering triangle / TAS stuff
 
 // Q_vec = ki_vec - kf_vec
 // Q^2 = ki^2 + kf^2 - 2ki kf cos 2th
 // cos 2th = (-Q^2 + ki^2 + kf^2) / (2ki kf)
-template<class Sys, class Y>
-bool get_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
-				const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& kf,
-				const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
-				const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& twotheta)
-{
-	units::quantity<units::si::dimensionless> dCos = (ki*ki + kf*kf - Q*Q) / (2.*ki*kf);
-	if(units::abs(dCos) > 1.)
-		return false;
-
-	twotheta = units::acos(dCos);
-	return true;
-}
 
 template<class Sys, class Y>
 units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
@@ -351,6 +339,26 @@ get_mono_twotheta(const units::quantity<units::unit<units::wavenumber_dimension,
 }
 
 template<class Sys, class Y>
+units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
+get_sample_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
+					const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& kf,
+					const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& Q,
+					bool bPosSense=1)
+{
+	units::quantity<units::si::dimensionless> ttCos
+							= (ki*ki + kf*kf - Q*Q)/(2.*ki*kf);
+	if(units::abs(ttCos) > 1.)
+		throw Err("Error: Scattering triangle not closed.");
+
+	units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y> tt;
+	tt = units::acos(ttCos);
+	if(!bPosSense)
+		tt = -tt;
+
+	return tt;
+}
+
+template<class Sys, class Y>
 units::quantity<units::unit<units::energy_dimension, Sys>, Y>
 get_energy_transfer(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
 					const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& kf)
@@ -358,6 +366,7 @@ get_energy_transfer(const units::quantity<units::unit<units::wavenumber_dimensio
 	return co::hbar*co::hbar*ki*ki/(2.*co::m_n)
 			- co::hbar*co::hbar*kf*kf/(2.*co::m_n);
 }
+
 // --------------------------------------------------------------------------------
 
 

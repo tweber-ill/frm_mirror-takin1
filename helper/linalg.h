@@ -9,6 +9,7 @@
 #define __MIEZE_LINALG__
 
 #include "flags.h"
+#include "exception.h"
 #include <cmath>
 #include <boost/algorithm/minmax_element.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -220,7 +221,7 @@ ublas::matrix<T> skew(const ublas::vector<T>& vec)
 		mat(2,1) = -mat(1,2);
 	}
 	else
-		throw "Skew only defined for three dimensions.";
+		throw Err("Skew only defined for three dimensions.");
 
 	return mat;
 }
@@ -743,7 +744,7 @@ typename vec_type::value_type vec_angle(const vec_type& vec)
 	if(vec.size() == 2)
 		return std::atan2(vec[1], vec[0]);
 
-	throw "Error: vec_angle not yet implemented for size != 2.";
+	throw Err("vec_angle not yet implemented for size != 2.");
 }
 
 // signed angle between two vectors
@@ -753,7 +754,7 @@ typename vec_type::value_type vec_angle(const vec_type& vec0,
 										const vec_type* pvec_norm=0)
 {
 	if(vec0.size() != vec1.size())
-		throw "Error in vec_angle: Vector sizes do not match.";
+		throw Err("In vec_angle: Vector sizes do not match.");
 
 	if(vec0.size() == 2)
 	{
@@ -780,7 +781,7 @@ typename vec_type::value_type vec_angle(const vec_type& vec0,
 		return dAngle;
 	}
 
-	throw "Error: vec_angle only implemented for size == 2 and size == 3.";
+	throw Err("vec_angle only implemented for size == 2 and size == 3.");
 }
 
 // unsigned angle between two vectors
