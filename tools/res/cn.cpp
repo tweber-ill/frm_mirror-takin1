@@ -200,8 +200,8 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 	res.angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
 	res.angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
 
-	res.thetaa = cn.dana_sense*units::asin(M_PI/(cn.ana_d*cn.kf));
-	res.thetam = cn.dmono_sense*units::asin(M_PI/(cn.mono_d*cn.ki));
+	res.thetaa = 0.5*get_mono_twotheta(cn.kf, cn.ana_d, cn.dana_sense > 0.);
+	res.thetam = 0.5*get_mono_twotheta(cn.ki, cn.mono_d, cn.dmono_sense > 0.);
 
 	/*std::cout << "k_i = " << cn.ki << ", "
 	  	  	  << "k_f = " << cn.kf << ", "
