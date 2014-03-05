@@ -52,11 +52,11 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 	m_pAna->setToolTip("Analyser");
 	m_pDet->setToolTip("Detector");
 
-	m_pSrc->setPos(200., m_dLenMonoSample);
-	m_pMono->setPos(0., m_dLenMonoSample);
+	m_pSrc->setPos(200., m_dLenMonoSample*m_dScaleFactor);
+	m_pMono->setPos(0., m_dLenMonoSample*m_dScaleFactor);
 	m_pSample->setPos(0., 0.);
-	m_pAna->setPos(-m_dLenSampleAna, 0.);
-	m_pDet->setPos(-100., -m_dLenAnaDet);
+	m_pAna->setPos(-m_dLenSampleAna*m_dScaleFactor, 0.);
+	m_pDet->setPos(-100., -m_dLenAnaDet*m_dScaleFactor);
 
 	m_pSample->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pAna->setFlag(QGraphicsItem::ItemIsMovable);
@@ -107,7 +107,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		ublas::vector<double> vecMonoSample = vecSample-vecMono;
 		if(m_bAllowChanges)
-			m_dLenMonoSample = ublas::norm_2(vecMonoSample);
+			m_dLenMonoSample = ublas::norm_2(vecMonoSample)/m_dScaleFactor;
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 
 		if(m_bAllowChanges)
@@ -122,7 +122,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		ublas::vector<double> vecSampleAna = ublas::prod(rotation_matrix_2d(-dTwoTheta), vecMonoSample);
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
-		vecSampleAna *= m_dLenSampleAna;
+		vecSampleAna *= m_dLenSampleAna*m_dScaleFactor;
 
 		m_pAna->setPos(vec_to_qpoint(vecSample + vecSampleAna));
 
@@ -132,7 +132,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		ublas::vector<double> vecAnaDet = ublas::prod(rotation_matrix_2d(-dAnaTwoTheta), vecSampleAna);
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
-		vecAnaDet *= m_dLenAnaDet;
+		vecAnaDet *= m_dLenAnaDet*m_dScaleFactor;
 
 		m_pDet->setPos(vec_to_qpoint(vecAna+vecAnaDet));
 
@@ -153,13 +153,13 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		ublas::vector<double> vecMonoSample = ublas::prod(rotation_matrix_2d(-m_dMonoTwoTheta), vecSrcMono);
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
-		vecMonoSample *= m_dLenMonoSample;
+		vecMonoSample *= m_dLenMonoSample*m_dScaleFactor;
 
 		m_pSample->setPos(vec_to_qpoint(vecMono + vecMonoSample));
 
 		ublas::vector<double> vecSampleAna = vecAna - vecSample;
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
-		vecSampleAna *= m_dLenSampleAna;
+		vecSampleAna *= m_dLenSampleAna*m_dScaleFactor;
 
 		m_pAna->setPos(vec_to_qpoint(vecSample + vecSampleAna));
 	}
@@ -170,7 +170,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		ublas::vector<double> vecAnaDet = vecDet-vecAna;
 		if(m_bAllowChanges)
-			m_dLenAnaDet = ublas::norm_2(vecAnaDet);
+			m_dLenAnaDet = ublas::norm_2(vecAnaDet)/m_dScaleFactor;
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 
 		if(m_bAllowChanges)
@@ -192,12 +192,12 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	{
 		ublas::vector<double> vecSampleAna = vecAna-vecSample;
 		if(pNode==m_pAna && m_bAllowChanges)
-			m_dLenSampleAna = ublas::norm_2(vecSampleAna);
+			m_dLenSampleAna = ublas::norm_2(vecSampleAna)/m_dScaleFactor;
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 
 		ublas::vector<double> vecAnaDet = ublas::prod(rotation_matrix_2d(-m_dAnaTwoTheta), vecSampleAna);
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
-		vecAnaDet *= m_dLenAnaDet;
+		vecAnaDet *= m_dLenAnaDet*m_dScaleFactor;
 
 		m_pDet->setPos(vec_to_qpoint(vecAna+vecAnaDet));
 
@@ -249,6 +249,24 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	painter->drawLine(lineAnaDet);
 
 
+	// write lengths
+	QPointF ptMidKi = ptMono + (ptSample-ptMono)/2.;
+	QPointF ptMidKf = ptSample + (ptAna-ptSample)/2.;
+	QPointF ptMidAnaDet = ptAna + (ptDet-ptAna)/2.;
+
+	std::ostringstream ostrLenKi, ostrLenKf, ostrLenAnaDet;
+	ostrLenKi.precision(4); ostrLenKf.precision(4); ostrLenAnaDet.precision(4);
+
+	ostrLenKi << m_dLenMonoSample << " cm";
+	ostrLenKf << m_dLenSampleAna << " cm";
+	ostrLenAnaDet << m_dLenAnaDet << " cm";
+
+	painter->drawText(ptMidKi, ostrLenKi.str().c_str());
+	painter->drawText(ptMidKf, ostrLenKf.str().c_str());
+	painter->drawText(ptMidAnaDet, ostrLenAnaDet.str().c_str());
+
+
+
 	ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
 	ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
 	ublas::vector<double> vecMonoSample = vecSample-vecMono;
@@ -257,7 +275,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	// sample theta rotation
 	ublas::vector<double> vecSampleRotDir = ublas::prod(rotation_matrix_2d(-m_dTheta), vecMonoSample);
 	vecSampleRotDir /= ublas::norm_2(vecSampleRotDir);
-	vecSampleRotDir *= m_dLenSample;
+	vecSampleRotDir *= m_dLenSample*m_dScaleFactor;
 
 	QPointF ptSampleThM =  vec_to_qpoint(vecSample-vecSampleRotDir);
 	QPointF ptSampleThP =  vec_to_qpoint(vecSample+vecSampleRotDir);
