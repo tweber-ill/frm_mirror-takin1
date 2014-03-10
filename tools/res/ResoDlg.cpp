@@ -127,7 +127,7 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 				if(*strEllis[iWhichEll] != "")
 				{
 					std::vector<int> vecIdx;
-					::get_tokens(*strEllis[iWhichEll], ",", vecIdx);
+					::get_tokens(*strEllis[iWhichEll], std::string(","), vecIdx);
 
 					if(vecIdx.size() == 5)
 					{
@@ -641,13 +641,13 @@ void ResoDlg::UpdateUI()
 {
 	if(radioFixedki->isChecked())
 	{
-		labelkfix->setText(QString::fromUtf8("k_i (1/Å):"));
-		labelkvar->setText(QString::fromUtf8("k_f (1/Å):"));
+		labelkfix->setText(QString::fromUtf8("k_i (1/���):"));
+		labelkvar->setText(QString::fromUtf8("k_f (1/���):"));
 	}
 	else
 	{
-		labelkfix->setText(QString::fromUtf8("k_f (1/Å):"));
-		labelkvar->setText(QString::fromUtf8("k_i (1/Å):"));
+		labelkfix->setText(QString::fromUtf8("k_f (1/���):"));
+		labelkvar->setText(QString::fromUtf8("k_i (1/���):"));
 	}
 }
 
