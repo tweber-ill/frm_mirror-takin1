@@ -10,6 +10,7 @@
 
 #include "../../main/settings.h"
 #include "helper/string.h"
+#include "helper/spec_char.h"
 #include "helper/misc.h"
 #include "helper/xml.h"
 #include "helper/math.h"
@@ -639,15 +640,22 @@ ResoDlg::~ResoDlg()
 
 void ResoDlg::UpdateUI()
 {
+	const std::string& strAA = get_spec_char_utf8("AA") +
+								get_spec_char_utf8("sup-")+
+								get_spec_char_utf8("sup1");
+
+	std::string strKi = std::string("k_i (") + strAA + "):";
+	std::string strKf = std::string("k_f (") + strAA + "):";
+
 	if(radioFixedki->isChecked())
 	{
-		labelkfix->setText(QString::fromUtf8("k_i (1/���):"));
-		labelkvar->setText(QString::fromUtf8("k_f (1/���):"));
+		labelkfix->setText(QString::fromUtf8(strKi.c_str()));
+		labelkvar->setText(QString::fromUtf8(strKf.c_str()));
 	}
 	else
 	{
-		labelkfix->setText(QString::fromUtf8("k_f (1/���):"));
-		labelkvar->setText(QString::fromUtf8("k_i (1/���):"));
+		labelkfix->setText(QString::fromUtf8(strKf.c_str()));
+		labelkvar->setText(QString::fromUtf8(strKi.c_str()));
 	}
 }
 
