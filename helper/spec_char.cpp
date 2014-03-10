@@ -121,12 +121,8 @@ void deinit_spec_chars()
 const std::string& get_spec_char_utf8(const std::string& strChar)
 {
 	static const std::string strNull;
-
 	if(!g_pmapSpecChars)
-	{
-		std::cerr << "Error: Special characters not initialized." << std::endl;
-		return strNull;
-	}
+		init_spec_chars();
 
 	t_mapSpecChars::const_iterator iter = g_pmapSpecChars->find(strChar);
 	if(iter == g_pmapSpecChars->end())
@@ -138,12 +134,8 @@ const std::string& get_spec_char_utf8(const std::string& strChar)
 const std::wstring& get_spec_char_utf16(const std::string& strChar)
 {
 	static const std::wstring strNull;
-
 	if(!g_pmapSpecChars)
-	{
-		std::cerr << "Error: Special characters not initialized." << std::endl;
-		return strNull;
-	}
+		init_spec_chars();
 
 	t_mapSpecChars::const_iterator iter = g_pmapSpecChars->find(strChar);
 	if(iter == g_pmapSpecChars->end())
@@ -154,13 +146,8 @@ const std::wstring& get_spec_char_utf16(const std::string& strChar)
 
 const t_mapSpecChars& get_spec_chars()
 {
-	static const t_mapSpecChars mapNull;
-
 	if(!g_pmapSpecChars)
-	{
-		std::cerr << "Error: Special characters not initialized." << std::endl;
-		return mapNull;
-	}
+		init_spec_chars();
 
 	return *g_pmapSpecChars;
 }
