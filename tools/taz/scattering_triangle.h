@@ -66,6 +66,8 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode *m_pNodeKfQ = 0;
 
 		double m_dScaleFactor = 75.;	// pixels per A^-1
+		double m_dPlaneDistTolerance = 0.01;
+		double m_dMaxPeaks = 5.;
 
 		std::vector<RecipPeak*> m_vecPeaks;
 		void ClearPeaks();
@@ -96,6 +98,9 @@ class ScatteringTriangle : public QGraphicsItem
 		void CalcPeaks(const Lattice& lattice,
 						const Lattice& recip, const Lattice& recip_unrot,
 						const Plane<double>& plane);
+
+		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
+		void SetMaxPeaks(double dMax) { m_dMaxPeaks = dMax; }
 };
 
 
@@ -119,13 +124,11 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void emitUpdate();
 		void SetDs(double dMonoD, double dAnaD);
 
-		void CalcPeaks(const Lattice& lattice,
-					const Lattice& recip, const Lattice& recip_unrot,
-					const Plane<double>& plane);
-
 		void SetSampleSense(bool bPos);
 		void SetMonoSense(bool bPos);
 		void SetAnaSense(bool bPos);
+
+		ScatteringTriangle* GetTriangle() { return m_pTri; }
 
 	public slots:
 		void tasChanged(const TriangleOptions& opts);

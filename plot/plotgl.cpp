@@ -47,13 +47,18 @@ PlotGl::PlotGl(QWidget* pParent) : QGLWidget(pParent),
 PlotGl::~PlotGl()
 {
 	m_bRenderThreadActive = 0;
+	wait(100);
 	terminate();
-	wait();
 
-	if(m_pfont) delete m_pfont;
-	if(m_pfontsmall) delete m_pfontsmall;
+	if(m_pfont) { delete m_pfont; m_pfont = 0; }
+	if(m_pfontsmall) { delete m_pfontsmall; m_pfontsmall = 0; }
 }
 
+void PlotGl::SetColor(double r, double g, double b, double a)
+{
+	GLfloat pfCol[] = {GLfloat(r), GLfloat(g), GLfloat(b), GLfloat(a)};
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, pfCol);
+}
 
 void PlotGl::SetColor(unsigned int iIdx)
 {
@@ -152,10 +157,26 @@ void PlotGl::paintGLThread()
 	unsigned int iPltIdx=0;
 	for(const PlotObjGl& obj : m_vecObjs)
 	{
-		if(obj.plttype == PLOT_ELLIPSOID)
+		if(obj.plttype == PLOT_SPHERE)
 		{
 			glPushMatrix();
-			//glTranslated(obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]);
+			glTranslated(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
+			glScaled(obj.vecParams[3], obj.vecParams[3], obj.vecParams[3]);
+
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT0);
+
+			if(obj.vecColor.size())
+				SetColor(obj.vecColor[0], obj.vecColor[1], obj.vecColor[2], obj.vecColor[3]);
+			else
+				SetColor(iPltIdx);
+			glCallList(m_iLstSphere);
+			glPopMatrix();
+		}
+		else if(obj.plttype == PLOT_ELLIPSOID)
+		{
+			glPushMatrix();
+			glTranslated(obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]);
 
 			GLdouble dMatRot[] = {obj.vecParams[6], obj.vecParams[7], obj.vecParams[8], 0.,
 								obj.vecParams[9], obj.vecParams[10], obj.vecParams[11], 0.,
@@ -168,7 +189,10 @@ void PlotGl::paintGLThread()
 			glEnable(GL_LIGHTING);
 			glEnable(GL_LIGHT0);
 
-			SetColor(iPltIdx);
+			if(obj.vecColor.size())
+				SetColor(obj.vecColor[0], obj.vecColor[1], obj.vecColor[2], obj.vecColor[3]);
+			else
+				SetColor(iPltIdx);
 			glCallList(m_iLstSphere);
 			glPopMatrix();
 		}
@@ -249,15 +273,39 @@ void PlotGl::clear()
 	m_vecObjs.clear();
 }
 
-void PlotGl::SetMinMax(const ublas::vector<double>& vec, const ublas::vector<double>* pOffs)
+void PlotGl::SetObjectColor(int iObjIdx, const std::vector<double>& vecCol)
 {
-	m_dXMin = -vec[0]; m_dXMax = vec[0];
-	m_dYMin = -vec[1]; m_dYMax = vec[1];
-	m_dZMin = -vec[2]; m_dZMax = vec[2];
+	if(m_vecObjs.size() <= iObjIdx || iObjIdx<0)
+		return;
 
-	m_dXMinMaxOffs =  pOffs ? (*pOffs)[0] : 0.;
-	m_dYMinMaxOffs =  pOffs ? (*pOffs)[1] : 0.;
-	m_dZMinMaxOffs =  pOffs ? (*pOffs)[2] : 0.;
+	m_vecObjs[iObjIdx].vecColor = vecCol;
+}
+
+void PlotGl::PlotSphere(const ublas::vector<double>& vecPos,
+						double dRadius, int iObjIdx)
+{
+	m_mutex.lock();
+
+	if(iObjIdx < 0)
+	{
+		clear();
+		iObjIdx = 0;
+	}
+
+	if(iObjIdx >= int(m_vecObjs.size()))
+		m_vecObjs.resize(iObjIdx+1);
+	PlotObjGl& obj = m_vecObjs[iObjIdx];
+
+	obj.plttype = PLOT_SPHERE;
+	if(obj.vecParams.size() != 4)
+		obj.vecParams.resize(4);
+
+	obj.vecParams[0] = vecPos[0];
+	obj.vecParams[1] = vecPos[1];
+	obj.vecParams[2] = vecPos[2];
+	obj.vecParams[3] = dRadius;
+
+	m_mutex.unlock();
 }
 
 void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,

@@ -12,6 +12,7 @@
 #include "ui/ui_taz.h"
 #include "scattering_triangle.h"
 #include "tas_layout.h"
+#include "recip3d.h"
 
 class TazDlg : public QDialog, Ui::TazDlg
 { Q_OBJECT
@@ -21,6 +22,7 @@ class TazDlg : public QDialog, Ui::TazDlg
 	protected:
 		ScatteringTriangleScene m_sceneRecip;
 		TasLayoutScene m_sceneReal;
+		Recip3DDlg *m_pRecip3d = 0;
 
 	public:
 		TazDlg(QWidget *pParent);
@@ -28,6 +30,7 @@ class TazDlg : public QDialog, Ui::TazDlg
 		virtual ~TazDlg();
 
 	protected slots:
+		void ChangedTolerance();
 		void CalcPeaks();
 		void CalcPeaksRecip();
 		void UpdateDs();
@@ -35,6 +38,8 @@ class TazDlg : public QDialog, Ui::TazDlg
 		void UpdateSampleSense();
 		void UpdateMonoSense();
 		void UpdateAnaSense();
+
+		void Show3D();
 };
 
 #endif

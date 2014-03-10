@@ -183,7 +183,7 @@ bool Xml::SaveMap(const char* pcFile, const std::map<std::string, std::string>& 
 		const std::string& strVal = pairXml.second;
 
 		std::vector<std::string> vecKey;
-		get_tokens<std::string>(strKey, "/", vecKey);
+		get_tokens<std::string>(strKey, std::string("/"), vecKey);
 
 		std::list<std::string> lstKey = vector_to_list(vecKey);
 		node.SortIntoTree(lstKey, strVal);

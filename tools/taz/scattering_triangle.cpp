@@ -6,6 +6,7 @@
 
 #include "helper/flags.h"
 #include "helper/neutrons.hpp"
+#include "helper/spec_char.h"
 #include "scattering_triangle.h"
 #include <iostream>
 #include <cmath>
@@ -151,12 +152,14 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	const double dKf = lineKf.length()/m_dScaleFactor;
 	const double dE = get_energy_transfer(dKi/angstrom, dKf/angstrom) / one_eV * 1000.;
 
+	const std::wstring& strAA = ::get_spec_char_utf16("AA");
+	const std::wstring& strDelta = ::get_spec_char_utf16("Delta");
 	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE;
 	ostrQ.precision(3); ostrKi.precision(3); ostrKf.precision(3); ostrE.precision(3);
-	ostrQ << L"Q = " << dQ << L" 1/\x212B";
-	ostrKi << L"ki = " << dKi << L" 1/\x212B";
-	ostrKf << L"kf = " << dKf << L" 1/\x212B";
-	ostrE << L"\x0394" << "E = " << dE << L" meV";
+	ostrQ << L"Q = " << dQ << " 1/" << strAA;
+	ostrKi << L"ki = " << dKi << " 1/" << strAA;
+	ostrKf << L"kf = " << dKf << " 1/" << strAA;
+	ostrE << strDelta << "E = " << dE << " meV";
 
 	painter->save();
 	painter->rotate(-lineQ.angle());
@@ -214,16 +217,17 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
 						dBeginArcAngle*16., dArcAngle*16.);
 
-		std::ostringstream ostrAngle;
+		const std::wstring& strDEG = ::get_spec_char_utf16("DEG");
+		std::wostringstream ostrAngle;
 		ostrAngle.precision(4);
-		ostrAngle << std::fabs(dArcAngle) << "\xb0";
+		ostrAngle << std::fabs(dArcAngle) << strDEG;
 
 		QPointF ptDirOut = *pPoints[i] - ptMid;
 		ptDirOut /= std::sqrt(ptDirOut.x()*ptDirOut.x() + ptDirOut.y()*ptDirOut.y());
 		ptDirOut *= 15.;
 
 		QPointF ptText = *pPoints[i] + ptDirOut;
-		painter->drawText(ptText, ostrAngle.str().c_str());
+		painter->drawText(ptText, QString::fromWCharArray(ostrAngle.str().c_str()));
 	}
 }
 
@@ -360,17 +364,15 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 	m_dAngleRot = -vec_angle(recip.GetVec(0), recip_unrot.GetVec(0), &vecNorm);
 	//std::cout << m_dAngleRot/M_PI*180. << std::endl;
 
-	const double dMaxPeaks = 5.;
-
-	for(double h=-dMaxPeaks; h<=dMaxPeaks; h+=1.)
-		for(double k=-dMaxPeaks; k<=dMaxPeaks; k+=1.)
-			for(double l=-dMaxPeaks; l<=dMaxPeaks; l+=1.)
+	for(double h=-m_dMaxPeaks; h<=m_dMaxPeaks; h+=1.)
+		for(double k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
+			for(double l=-m_dMaxPeaks; l<=m_dMaxPeaks; l+=1.)
 			{
 				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
 				double dDist = 0.;
 				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
-				if(::float_equal(dDist, 0., 0.01))
+				if(::float_equal(dDist, 0., m_dPlaneDistTolerance))
 				{
 					ublas::vector<double> vecCoord = ublas::prod(matPlaneinv, vecDropped);
 					double dX = vecCoord[0];
@@ -388,12 +390,12 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 
 					std::ostringstream ostrTip;
 					ostrTip << "(" << int(h) << " " << int(k) << " " << int(l) << ")";
-					pPeak->setToolTip(ostrTip.str().c_str());
 
 					if(h!=0. || k!=0. || l!=0.)
 						pPeak->SetLabel(ostrTip.str().c_str());
 
-					//std::cout << ostrTip.str() << ": " << dX << ", " << dY << std::endl;
+					ostrTip << "\ndistance to plane [1/A]: " << dDist;
+					pPeak->setToolTip(ostrTip.str().c_str());
 
 					m_vecPeaks.push_back(pPeak);
 					m_scene.addItem(pPeak);
@@ -473,16 +475,6 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 		m_pTri->SetTwoTheta(m_bSamplePosSense?opts.dTwoTheta:-opts.dTwoTheta);
 
 	m_bDontEmitChange = 0;
-}
-
-void ScatteringTriangleScene::CalcPeaks(const Lattice& lattice,
-										const Lattice& recip, const Lattice& recip_unrot,
-										const Plane<double>& plane)
-{
-	if(!m_pTri)
-		return;
-
-	m_pTri->CalcPeaks(lattice, recip, recip_unrot, plane);
 }
 
 void ScatteringTriangleScene::SetSampleSense(bool bPos)

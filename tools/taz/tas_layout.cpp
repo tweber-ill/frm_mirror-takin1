@@ -5,6 +5,7 @@
  */
 
 #include "tas_layout.h"
+#include "helper/spec_char.h"
 #include <iostream>
 
 
@@ -327,10 +328,11 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 								dBeginArcAngle*16., dArcAngle*16.);
 
 
-		std::ostringstream ostrAngle;
+		const std::wstring& strDEG = ::get_spec_char_utf16("DEG");
+		std::wostringstream ostrAngle;
 		ostrAngle.precision(4);
 		if(!std::isnan(dArcAngle))
-			ostrAngle << std::fabs(dArcAngle) << "\xb0";
+			ostrAngle << std::fabs(dArcAngle) << strDEG;
 		else
 			ostrAngle << "invalid";
 
@@ -339,7 +341,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 		ptDirOut *= pLines1[i]->length()/4.;
 
 		QPointF ptText = *pPoints[i] + ptDirOut;
-		painter->drawText(ptText, ostrAngle.str().c_str());
+		painter->drawText(ptText, QString::fromWCharArray(ostrAngle.str().c_str()));
 	}
 
 	painter->setPen(penOrig);

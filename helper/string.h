@@ -8,70 +8,231 @@
 #define __MIEZE_STRINGS__
 
 #include <string>
+#include <cstring>
 #include <boost/tokenizer.hpp>
 #include <iostream>
 #include <sstream>
 #include <map>
 
-extern std::string
-insert_before(const std::string& str,
-				const std::string& strChar,
-				const std::string& strInsert);
-extern std::string get_fileext(const std::string& str);
-extern std::string get_fileext2(const std::string& str);
-extern std::string get_dir(const std::string& str);
-extern std::string get_file(const std::string& str);
-extern bool is_equal(const std::string& str0, const std::string& str1, bool bCase=false);
-extern void trim(std::string& str);
-extern bool find_and_replace(std::string& str1, const std::string& str_old,
-                                                const std::string& str_new);
-extern void find_all_and_replace(std::string& str1, const std::string& str_old,
-                                                const std::string& str_new);
+template<class t_str=std::string>
+t_str insert_before(const t_str& str,
+					const t_str& strChar,
+					const t_str& strInsert)
+{
+	std::size_t pos = str.find(strChar);
+	if(pos==t_str::npos)
+			return str;
 
-extern std::pair<std::string, std::string>
-		split_first(const std::string& str, const std::string& strSep);
+	t_str strRet = str;
+	strRet.insert(pos, strInsert);
+
+	return strRet;
+}
+
+template<class t_str=std::string>
+t_str get_fileext(const t_str& str)
+{
+	std::size_t iPos = str.find_last_of('.');
+
+	if(iPos == t_str::npos)
+		return t_str();
+	return str.substr(iPos+1);
+}
+
+// e.g. returns "tof" for "123.tof.bz2"
+template<class t_str=std::string>
+t_str get_fileext2(const t_str& str)
+{
+	std::size_t iPos = str.find_last_of('.');
+	if(iPos == t_str::npos || iPos == 0)
+		return t_str();
+
+	t_str strFile = str.substr(0, iPos);
+	return get_fileext(strFile);
+}
+
+template<class t_str=std::string> const t_str& get_dir_seps();
+template<> const std::string& get_dir_seps();
+template<> const std::wstring& get_dir_seps();
+
+
+template<class t_str=std::string>
+t_str get_dir(const t_str& str)
+{
+	std::size_t iPos = str.find_last_of(get_dir_seps<t_str>());
+
+	if(iPos == t_str::npos)
+		return t_str();
+	return str.substr(0, iPos);
+}
+
+template<class t_str=std::string>
+t_str get_file(const t_str& str)
+{
+	std::size_t iPos = str.find_last_of(get_dir_seps<t_str>());
+
+	if(iPos == t_str::npos)
+		return t_str();
+	return str.substr(iPos+1);
+}
+
+
+template<class t_str=std::string>
+bool is_equal(const t_str& str0, const t_str& str1, bool bCase=0)
+{
+	if(str0.size() != str1.size())
+		return false;
+
+	if(bCase) return str0==str1;
+
+	for(unsigned int i=0; i<str0.size(); ++i)
+	{
+		if(std::tolower(str0[i]) != std::tolower(str1[i]))
+			return false;
+	}
+	return true;
+}
+
+
+template<class t_str=std::string> const t_str& get_trim_chars();
+template<> const std::string& get_trim_chars();
+template<> const std::wstring& get_trim_chars();
+
+
+template<class t_str=std::string>
+void trim(t_str& str)
+{
+	std::size_t posFirst = str.find_first_not_of(get_trim_chars<t_str>());
+	if(posFirst==t_str::npos)
+		posFirst = str.length();
+
+	str.erase(str.begin(), str.begin()+posFirst);
+
+
+	std::size_t posLast = str.find_last_not_of(get_trim_chars<t_str>());
+	if(posLast==std::string::npos)
+			posLast = str.length();
+	else
+		++posLast;
+
+	str.erase(str.begin()+posLast, str.end());
+}
+
+
+template<class t_str=std::string>
+bool find_and_replace(t_str& str1, const t_str& str_old,
+						const t_str& str_new)
+{
+	std::size_t pos = str1.find(str_old);
+	if(pos==t_str::npos)
+			return false;
+
+	str1.replace(pos, str_old.length(), str_new);
+	return true;
+}
+
+template<class t_str=std::string>
+void find_all_and_replace(t_str& str1, const t_str& str_old,
+						const t_str& str_new)
+{
+	while(1)
+	{
+		std::size_t pos = str1.find(str_old);
+		if(pos==t_str::npos)
+			break;
+		str1.replace(pos, str_old.length(), str_new);
+	}
+}
+
+
+template<class t_str=std::string>
+bool begins_with(const t_str& str, const t_str& strBeg)
+{
+	if(str.length() < strBeg.length())
+		return false;
+
+	for(unsigned int i=0; i<strBeg.length(); ++i)
+		if(str[i] != strBeg[i])
+			return false;
+
+	return true;
+}
+
+
+template<class t_str=std::string>
+std::pair<t_str, t_str>
+split_first(const t_str& str, const t_str& strSep, bool bTrim=0)
+{
+	t_str str1, str2;
+
+	std::size_t pos = str.find(strSep);
+	if(pos != t_str::npos)
+	{
+		str1 = str.substr(0, pos);
+		if(pos+1 < str.length())
+			str2 = str.substr(pos+1, t_str::npos);
+	}
+
+	if(bTrim)
+	{
+		::trim(str1);
+		::trim(str2);
+	}
+
+	return std::pair<t_str, t_str>(str1, str2);
+}
+
 //extern std::vector<std::string>
 //		split(const std::string& str, const std::string& strSep);
 
-extern bool begins_with(const std::string& str, const std::string& strBeg);
 
-template<class T>
-        void get_tokens(const std::string& str, const std::string& strDelim,
-                                        std::vector<T>& vecRet)
+template<class T, class t_str=std::string>
+void get_tokens(const t_str& str, const t_str& strDelim,
+				std::vector<T>& vecRet)
 {
-        boost::char_separator<char> delim(strDelim.c_str());
-        boost::tokenizer<boost::char_separator<char> > tok(str, delim);
+	typedef typename t_str::value_type t_char;
 
-        boost::tokenizer<boost::char_separator<char> >::iterator iter;
-        for(iter=tok.begin(); iter!=tok.end(); ++iter)
-        {
-			std::istringstream istr(*iter);
+	boost::char_separator<t_char> delim(strDelim.c_str());
+	boost::tokenizer<boost::char_separator<t_char> > tok(str, delim);
 
-			T t;
-			istr >> t;              // WARNING: if T==string this terminates after first whitespace!
+	typename boost::tokenizer<boost::char_separator<t_char> >::iterator iter;
+	for(iter=tok.begin(); iter!=tok.end(); ++iter)
+	{
+		std::basic_istringstream<t_char> istr(*iter);
 
-			vecRet.push_back(t);
-        }
+		T t;
+		istr >> t;              // WARNING: if T==string this terminates after first whitespace!
+
+		vecRet.push_back(t);
+	}
 }
 
 template<>
 void get_tokens<std::string>(const std::string& str, const std::string& strDelim,
                                         std::vector<std::string>& vecRet);
+template<>
+void get_tokens<std::wstring>(const std::wstring& str, const std::wstring& strDelim,
+                                        std::vector<std::wstring>& vecRet);
 
-template<typename T>
-T str_to_var(const std::string& str)
+
+template<typename T, class t_str=std::string>
+T str_to_var(const t_str& str)
 {
-	std::istringstream istr(str);
+	typedef typename t_str::value_type t_char;
+
+	std::basic_istringstream<t_char> istr(str);
 	T t;
 
 	istr >> t;
 	return t;
 }
 
-template<typename T>
-std::string var_to_str(const T& t)
+template<typename T, class t_str=std::string>
+t_str var_to_str(const T& t)
 {
-	std::ostringstream ostr;
+	typedef typename t_str::value_type t_char;
+
+	std::basic_ostringstream<t_char> ostr;
 	ostr << t;
 
 	return ostr.str();
@@ -79,11 +240,17 @@ std::string var_to_str(const T& t)
 
 
 // e.g. str = "123.4 +- 0.5"
-template<typename T=double>
-void get_val_and_err(const std::string& str, T& val, T& err)
+template<typename T=double, class t_str=std::string>
+void get_val_and_err(const t_str& str, T& val, T& err)
 {
+	// "+-", inelegant...
+	t_str strPlusMinus;
+	strPlusMinus.resize(2);
+	strPlusMinus[0] = '+';
+	strPlusMinus[1] = '-';
+
 	std::vector<T> vec;
-	get_tokens(str, "+-", vec);
+	get_tokens(str, strPlusMinus, vec);
 
 	if(vec.size() >= 1)
 		val = vec[0];
@@ -92,24 +259,29 @@ void get_val_and_err(const std::string& str, T& val, T& err)
 }
 
 
-template<typename T>
+template<typename T, typename t_char = char>
 std::string group_numbers(T tNum)
 {
-	struct Sep : std::numpunct<char>
+	struct Sep : std::numpunct<t_char>
 	{
-		Sep() : std::numpunct<char>(1) {}
-		char do_thousands_sep() const { return ' ';}
+		Sep() : std::numpunct<t_char>(1) {}
+		t_char do_thousands_sep() const { return ' ';}
 		std::string do_grouping() const { return "\03"; }
 	};
 	Sep sep;
 
-	std::ostringstream ostr;
+	std::basic_ostringstream<t_char> ostr;
 	std::locale loc(ostr.getloc(), &sep);
 	ostr.imbue(loc);
 
 	ostr << tNum;
 	return ostr.str();
 }
+
+extern std::wstring str_to_wstr(const std::string& str);
+extern std::string wstr_to_str(const std::wstring& str);
+
+
 
 
 class StringMap;

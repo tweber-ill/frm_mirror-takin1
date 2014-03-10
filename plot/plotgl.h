@@ -21,13 +21,17 @@ namespace ublas = boost::numeric::ublas;
 
 enum PlotTypeGl
 {
+	PLOT_INVALID,
+
+	PLOT_SPHERE,
 	PLOT_ELLIPSOID,
 };
 
 struct PlotObjGl
 {
-	PlotTypeGl plttype;
+	PlotTypeGl plttype = PLOT_INVALID;
 	std::vector<double> vecParams;
+	std::vector<double> vecColor;
 };
 
 class PlotGl : public QGLWidget, QThread
@@ -50,6 +54,7 @@ protected:
 	void resizeEvent(QResizeEvent *evt);
 	void paintEvent(QPaintEvent *evt);
 
+	void SetColor(double r, double g, double b, double a=1.);
 	void SetColor(unsigned int iIdx);
 
 	// ------------------------------------------------------------------------
@@ -85,14 +90,41 @@ public:
 	PlotGl(QWidget* pParent);
 	virtual ~PlotGl();
 
+	void PlotSphere(const ublas::vector<double>& vecPos, double dRadius, int iObjIdx=-1);
 	void PlotEllipsoid(const ublas::vector<double>& widths,
 						const ublas::vector<double>& offsets,
 						const ublas::matrix<double>& rot,
 						int iObjsIdx=-1);
+	void SetObjectCount(unsigned int iSize) { m_vecObjs.resize(iSize); }
+	void SetObjectColor(int iObjIdx, const std::vector<double>& vecCol);
 	void clear();
 
 	void SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ);
-	void SetMinMax(const ublas::vector<double>& vec, const ublas::vector<double>* pOffs=0);
+
+	template<class t_vec>
+	void SetMinMax(const t_vec& vecMin, const t_vec& vecMax, const t_vec* pOffs=0)
+	{
+		m_dXMin = vecMin[0]; m_dXMax = vecMax[0];
+		m_dYMin = vecMin[1]; m_dYMax = vecMax[1];
+		m_dZMin = vecMin[2]; m_dZMax = vecMax[2];
+
+		m_dXMinMaxOffs =  pOffs ? (*pOffs)[0] : 0.;
+		m_dYMinMaxOffs =  pOffs ? (*pOffs)[1] : 0.;
+		m_dZMinMaxOffs =  pOffs ? (*pOffs)[2] : 0.;
+	}
+
+	template<class t_vec=ublas::vector<double> >
+	void SetMinMax(const t_vec& vec, const t_vec* pOffs=0)
+	{
+		m_dXMin = -vec[0]; m_dXMax = vec[0];
+		m_dYMin = -vec[1]; m_dYMax = vec[1];
+		m_dZMin = -vec[2]; m_dZMax = vec[2];
+
+		m_dXMinMaxOffs =  pOffs ? (*pOffs)[0] : 0.;
+		m_dYMinMaxOffs =  pOffs ? (*pOffs)[1] : 0.;
+		m_dZMinMaxOffs =  pOffs ? (*pOffs)[2] : 0.;
+	}
+
 };
 
 

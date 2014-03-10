@@ -6,138 +6,43 @@
 #include "string.h"
 #include "misc.h"
 
+#include <locale>
+//#include <codecvt>
+
 #ifndef NO_COMP
 #include "comp.h"
 #endif
 
-#include <cstring>
 
-std::string insert_before(const std::string& str,
-						const std::string& strChar, const std::string& strInsert)
+template<> const std::string& get_dir_seps()
 {
-    std::size_t pos = str.find(strChar);
-    if(pos==std::string::npos)
-            return str;
-
-    std::string strRet = str;
-    strRet.insert(pos, strInsert);
-
-	return strRet;
+	static const std::string strSeps("\\/");
+	return strSeps;
 }
-
-std::string get_fileext(const std::string& str)
+template<> const std::wstring& get_dir_seps()
 {
-	std::size_t iPos = str.find_last_of('.');
-
-	if(iPos == std::string::npos)
-		return std::string("");
-	return str.substr(iPos+1);
-}
-
-// e.g. returns "tof" for "123.tof.bz2"
-std::string get_fileext2(const std::string& str)
-{
-	std::size_t iPos = str.find_last_of('.');
-	if(iPos == std::string::npos || iPos == 0)
-		return std::string("");
-
-	std::string strFile = str.substr(0, iPos);
-	return get_fileext(strFile);
-}
-
-std::string get_dir(const std::string& str)
-{
-	std::size_t iPos = str.find_last_of("\\/");
-
-	if(iPos == std::string::npos)
-		return std::string("");
-	return str.substr(0, iPos);
-}
-
-std::string get_file(const std::string& str)
-{
-	std::size_t iPos = str.find_last_of("\\/");
-
-	if(iPos == std::string::npos)
-		return std::string("");
-	return str.substr(iPos+1);
-}
-
-bool is_equal(const std::string& str0, const std::string& str1, bool bCase)
-{
-	if(bCase) return str0==str1;
-
-	if(str0.size() != str1.size())
-		return false;
-
-	for(unsigned int i=0; i<str0.size(); ++i)
-	{
-		if(tolower(str0[i]) != tolower(str1[i]))
-			return false;
-	}
-	return true;
-}
-
-void trim(std::string& str)
-{
-	std::size_t posFirst = str.find_first_not_of(" \t");
-	if(posFirst==std::string::npos)
-		posFirst = str.length();
-
-	str.erase(str.begin(), str.begin()+posFirst);
-
-
-	std::size_t posLast = str.find_last_not_of(" \t");
-	if(posLast==std::string::npos)
-			posLast = str.length();
-	else
-		++posLast;
-
-	str.erase(str.begin()+posLast, str.end());
-}
-
-bool find_and_replace(std::string& str1, const std::string& str_old,
-                                                const std::string& str_new)
-{
-	std::size_t pos = str1.find(str_old);
-	if(pos==std::string::npos)
-			return false;
-
-	str1.replace(pos, str_old.length(), str_new);
-	return true;
-}
-
-void find_all_and_replace(std::string& str1, const std::string& str_old,
-						const std::string& str_new)
-{
-        while(1)
-        {
-                std::size_t pos = str1.find(str_old);
-                if(pos==std::string::npos)
-                                break;
-                str1.replace(pos, str_old.length(), str_new);
-        }
+	static const std::wstring strSeps(L"\\/");
+	return strSeps;
 }
 
 
-bool begins_with(const std::string& str, const std::string& strBeg)
+template<> const std::string& get_trim_chars()
 {
-	if(str.length() < strBeg.length())
-		return false;
-
-	for(unsigned int i=0; i<strBeg.length(); ++i)
-		if(str[i] != strBeg[i])
-			return false;
-
-	return true;
+	static const std::string strC(" \t");
+	return strC;
 }
-
+template<> const std::wstring& get_trim_chars()
+{
+	static const std::wstring strC(L" \t");
+	return strC;
+}
 
 
 
 template<>
-void get_tokens<std::string>(const std::string& str, const std::string& strDelim,
-                                        std::vector<std::string>& vecRet)
+void get_tokens<std::string>(const std::string& str,
+							const std::string& strDelim,
+							std::vector<std::string>& vecRet)
 {
 	boost::char_separator<char> delim(strDelim.c_str());
 	boost::tokenizer<boost::char_separator<char> > tok(str, delim);
@@ -146,31 +51,38 @@ void get_tokens<std::string>(const std::string& str, const std::string& strDelim
 		vecRet.push_back(strTok);
 }
 
-
-
-
-std::pair<std::string, std::string>
-	split_first(const std::string& str, const std::string& strSep, bool bTrim=0)
+template<>
+void get_tokens<std::wstring>(const std::wstring& str,
+							const std::wstring& strDelim,
+							std::vector<std::wstring>& vecRet)
 {
-	std::string str1, str2;
+	boost::char_separator<wchar_t> delim(strDelim.c_str());
+	boost::tokenizer<boost::char_separator<wchar_t>,
+					std::wstring::const_iterator,
+					std::wstring>
+							tok(str, delim);
 
-	std::size_t pos = str.find(strSep);
-	if(pos != std::string::npos)
-	{
-		str1 = str.substr(0, pos);
-		if(pos+1 < str.length())
-			str2 = str.substr(pos+1, std::string::npos);
-	}
-
-	if(bTrim)
-	{
-		::trim(str1);
-		::trim(str2);
-	}
-
-	return std::pair<std::string, std::string>(str1, str2);
+	for(const std::wstring& strTok : tok)
+		vecRet.push_back(strTok);
 }
 
+
+// see: http://www.cplusplus.com/reference/locale/wstring_convert/
+std::wstring str_to_wstr(const std::string& str)
+{
+	//std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> conv;
+	//return conv.fromBytes(str);
+
+	return std::wstring(str.begin(), str.end());
+}
+
+std::string wstr_to_str(const std::wstring& str)
+{
+	//std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> conv;
+	//return conv.toBytes(str);
+
+	return std::string(str.begin(), str.end());
+}
 
 
 

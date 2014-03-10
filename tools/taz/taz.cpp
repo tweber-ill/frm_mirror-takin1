@@ -1,5 +1,5 @@
 /*
- * Scattering Triangle
+ * Scattering Triangle Tool
  * @author tweber
  * @date feb-2014
  */
@@ -13,6 +13,7 @@
 #include <QtGui/QApplication>
 
 #include "helper/lattice.h"
+#include "helper/spec_char.h"
 
 
 static QString dtoqstr(double dVal, unsigned int iPrec=3)
@@ -69,6 +70,8 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 	QObject::connect(checkSenseS, SIGNAL(stateChanged(int)), this, SLOT(UpdateSampleSense()));
 	QObject::connect(checkSenseA, SIGNAL(stateChanged(int)), this, SLOT(UpdateAnaSense()));
 
+	QObject::connect(editPlaneTolerance, SIGNAL(textEdited(const QString&)), this, SLOT(ChangedTolerance()));
+	QObject::connect(btn3D, SIGNAL(clicked()), this, SLOT(Show3D()));
 
 	UpdateDs();
 	CalcPeaks();
@@ -77,7 +80,13 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 }
 
 TazDlg::~TazDlg()
-{}
+{
+	if(m_pRecip3d)
+	{
+		delete m_pRecip3d;
+		m_pRecip3d = 0;
+	}
+}
 
 
 void TazDlg::UpdateDs()
@@ -97,6 +106,19 @@ std::ostream& operator<<(std::ostream& ostr, const Lattice& lat)
 	ostr << ", beta = " << lat.GetBeta();
 	ostr << ", gamma = " << lat.GetGamma();
 	return ostr;
+}
+
+void TazDlg::ChangedTolerance()
+{
+	if(!m_sceneRecip.GetTriangle())
+		return;
+
+	double dTol = editPlaneTolerance->text().toDouble();
+	m_sceneRecip.GetTriangle()->SetPlaneDistTolerance(dTol);
+	if(m_pRecip3d)
+		m_pRecip3d->SetPlaneDistTolerance(dTol);
+
+	CalcPeaks();
 }
 
 void TazDlg::CalcPeaksRecip()
@@ -126,6 +148,9 @@ void TazDlg::CalcPeaksRecip()
 
 void TazDlg::CalcPeaks()
 {
+	if(!m_sceneRecip.GetTriangle())
+		return;
+
 	double a = editA->text().toDouble();
 	double b = editB->text().toDouble();
 	double c = editC->text().toDouble();
@@ -174,17 +199,21 @@ void TazDlg::CalcPeaks()
 		editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
 	}
 
+	const std::wstring& strAA = ::get_spec_char_utf16("AA");
 	double dVol = lattice.GetVol();
 	std::wostringstream ostrSample;
 	ostrSample.precision(4);
 	ostrSample << "Sample - ";
 	ostrSample << "Unit Cell Volume: ";
-	ostrSample << "Real: " << dVol << L" \x212b^3";
-	ostrSample << ", Reciprocal: " << (1./dVol) << L" (1/\x212b)^3";
+	ostrSample << "Real: " << dVol << " " << strAA << "^3";
+	ostrSample << ", Reciprocal: " << (1./dVol) << " (1/" << strAA << ")^3";
 	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
-	m_sceneRecip.CalcPeaks(lattice, recip, recip_unrot, plane);
+	m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane);
 	m_sceneRecip.emitUpdate();
+
+	if(m_pRecip3d)
+		m_pRecip3d->CalcPeaks(lattice, recip, recip_unrot, plane);
 }
 
 void TazDlg::UpdateSampleSense()
@@ -202,5 +231,21 @@ void TazDlg::UpdateAnaSense()
 	m_sceneRecip.SetAnaSense(checkSenseA->isChecked());
 }
 
+void TazDlg::Show3D()
+{
+	if(!m_pRecip3d)
+	{
+		m_pRecip3d = new Recip3DDlg(this);
+
+		double dTol = editPlaneTolerance->text().toDouble();
+		m_pRecip3d->SetPlaneDistTolerance(dTol);
+	}
+
+	if(!m_pRecip3d->isVisible())
+		m_pRecip3d->show();
+	m_pRecip3d->activateWindow();
+
+	CalcPeaks();
+}
 
 #include "taz.moc"

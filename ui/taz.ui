@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>891</width>
+    <width>959</width>
     <height>643</height>
    </rect>
   </property>
@@ -118,7 +118,7 @@
        <enum>QFrame::Plain</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="0" rowspan="2">
+       <item row="0" column="0" rowspan="3">
         <widget class="QGroupBox" name="groupSample">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -284,7 +284,7 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="2" rowspan="2">
+       <item row="0" column="2" rowspan="3">
         <widget class="QGroupBox" name="groupBox_4">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -296,6 +296,13 @@
           <string>Scattering Plane</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="3">
+           <widget class="QLineEdit" name="editScatX2">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label">
             <property name="text">
@@ -312,13 +319,6 @@
           </item>
           <item row="0" column="2">
            <widget class="QLineEdit" name="editScatX1">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLineEdit" name="editScatX2">
             <property name="text">
              <string>0</string>
             </property>
@@ -352,30 +352,31 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="2" colspan="2">
+           <widget class="QLineEdit" name="editPlaneTolerance">
+            <property name="text">
+             <string>0.01</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QLabel" name="label_21">
+            <property name="text">
+             <string>Δ:</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
-       <item row="0" column="4" rowspan="2" colspan="2">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>400</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="5">
+       <item row="2" column="4">
         <widget class="QDialogButtonBox" name="buttonBox">
          <property name="standardButtons">
           <set>QDialogButtonBox::Ok</set>
          </property>
         </widget>
        </item>
-       <item row="0" column="3" rowspan="2">
+       <item row="0" column="3" rowspan="3">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="title">
           <string>TAS</string>
@@ -449,7 +450,7 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="1" rowspan="2">
+       <item row="0" column="1" rowspan="3">
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
           <string>Sample Rotation</string>
@@ -527,6 +528,13 @@
          </layout>
         </widget>
        </item>
+       <item row="1" column="4">
+        <widget class="QPushButton" name="btn3D">
+         <property name="text">
+          <string>3D View...</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -555,11 +563,13 @@
   <tabstop>editScatY0</tabstop>
   <tabstop>editScatY1</tabstop>
   <tabstop>editScatY2</tabstop>
+  <tabstop>editPlaneTolerance</tabstop>
   <tabstop>checkSenseM</tabstop>
   <tabstop>checkSenseS</tabstop>
   <tabstop>checkSenseA</tabstop>
   <tabstop>editMonoD</tabstop>
   <tabstop>editAnaD</tabstop>
+  <tabstop>btn3D</tabstop>
   <tabstop>buttonBox</tabstop>
   <tabstop>gfxReal</tabstop>
   <tabstop>gfxRecip</tabstop>
