@@ -337,7 +337,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 								dBeginArcAngle*16., dArcAngle*16.);
 
 
-		const std::wstring& strDEG = ::get_spec_char_utf16("DEG");
+		const std::wstring& strDEG = ::get_spec_char_utf16("deg");
 		std::wostringstream ostrAngle;
 		ostrAngle.precision(4);
 		if(!std::isnan(dArcAngle))

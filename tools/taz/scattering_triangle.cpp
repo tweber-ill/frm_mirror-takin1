@@ -233,7 +233,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
 						dBeginArcAngle*16., dArcAngle*16.);
 
-		const std::wstring& strDEG = ::get_spec_char_utf16("DEG");
+		const std::wstring& strDEG = ::get_spec_char_utf16("deg");
 		std::wostringstream ostrAngle;
 		ostrAngle.precision(4);
 		ostrAngle << std::fabs(dArcAngle) << strDEG;
