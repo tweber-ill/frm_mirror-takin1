@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>959</width>
-    <height>643</height>
+    <width>923</width>
+    <height>641</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="groupRecip">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -57,13 +57,8 @@
        <property name="title">
         <string>Reciprocal Space / Scattering Triangle</string>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QGraphicsView" name="gfxRecip"/>
-        </item>
-       </layout>
       </widget>
-      <widget class="QGroupBox" name="groupBox_2">
+      <widget class="QGroupBox" name="groupReal">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -79,11 +74,6 @@
        <property name="title">
         <string>Real Space / Instrument Layout</string>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QGraphicsView" name="gfxReal"/>
-        </item>
-       </layout>
       </widget>
      </widget>
      <widget class="QFrame" name="frame_2">
@@ -133,7 +123,7 @@
           <item row="0" column="7">
            <widget class="QLabel" name="label_14">
             <property name="text">
-             <string>α* (deg):</string>
+             <string>α* (°):</string>
             </property>
            </widget>
           </item>
@@ -161,7 +151,7 @@
           <item row="0" column="2">
            <widget class="QLabel" name="label_6">
             <property name="text">
-             <string>α (deg):</string>
+             <string>α (°):</string>
             </property>
            </widget>
           </item>
@@ -175,14 +165,14 @@
           <item row="1" column="2">
            <widget class="QLabel" name="label_7">
             <property name="text">
-             <string>β (deg):</string>
+             <string>β (°):</string>
             </property>
            </widget>
           </item>
           <item row="2" column="2">
            <widget class="QLabel" name="label_8">
             <property name="text">
-             <string>γ (deg):</string>
+             <string>γ (°):</string>
             </property>
            </widget>
           </item>
@@ -234,14 +224,14 @@
           <item row="1" column="5">
            <widget class="QLabel" name="label_12">
             <property name="text">
-             <string>b* (1/Å):</string>
+             <string>b* (Å⁻¹):</string>
             </property>
            </widget>
           </item>
           <item row="2" column="5">
            <widget class="QLabel" name="label_13">
             <property name="text">
-             <string>c* (1/Å):</string>
+             <string>c* (Å⁻¹):</string>
             </property>
            </widget>
           </item>
@@ -254,21 +244,21 @@
           <item row="0" column="5">
            <widget class="QLabel" name="label_11">
             <property name="text">
-             <string>a* (1/Å):</string>
+             <string>a* (Å⁻¹):</string>
             </property>
            </widget>
           </item>
           <item row="1" column="7">
            <widget class="QLabel" name="label_15">
             <property name="text">
-             <string>β* (deg):</string>
+             <string>β* (°):</string>
             </property>
            </widget>
           </item>
           <item row="2" column="7">
            <widget class="QLabel" name="label_16">
             <property name="text">
-             <string>γ* (deg):</string>
+             <string>γ* (°):</string>
             </property>
            </widget>
           </item>
@@ -362,7 +352,7 @@
           <item row="2" column="0" colspan="2">
            <widget class="QLabel" name="label_21">
             <property name="text">
-             <string>Δ:</string>
+             <string>Δ (Å⁻¹):</string>
             </property>
            </widget>
           </item>
@@ -459,7 +449,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_18">
             <property name="text">
-             <string>Δφ (deg):</string>
+             <string>Δφ (°):</string>
             </property>
            </widget>
           </item>
@@ -482,7 +472,7 @@
           <item row="4" column="0">
            <widget class="QLabel" name="label_20">
             <property name="text">
-             <string>Δψ (deg):</string>
+             <string>Δψ (°):</string>
             </property>
            </widget>
           </item>
@@ -521,7 +511,7 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_19">
             <property name="text">
-             <string>Δθ (deg):</string>
+             <string>Δθ (°):</string>
             </property>
            </widget>
           </item>
@@ -571,8 +561,6 @@
   <tabstop>editAnaD</tabstop>
   <tabstop>btn3D</tabstop>
   <tabstop>buttonBox</tabstop>
-  <tabstop>gfxReal</tabstop>
-  <tabstop>gfxRecip</tabstop>
  </tabstops>
  <resources/>
  <connections>

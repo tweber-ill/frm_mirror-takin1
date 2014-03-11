@@ -61,7 +61,8 @@ class TasLayout : public QGraphicsItem
 		double m_dLenAnaDet = 50.;
 		double m_dLenSample = 25.;
 
-		double m_dScaleFactor = 1.; // pixels per cm
+		double m_dScaleFactor = 1.; // pixels per cm for zoom == 1
+		double m_dZoom = 1.;
 
 		bool m_bAllowChanges = 1;
 
@@ -84,6 +85,8 @@ class TasLayout : public QGraphicsItem
 		void nodeMoved(const TasLayoutNode* pNode=0);
 
 		void AllowChanges(bool bAllow) { m_bAllowChanges = bAllow; };
+
+		void SetZoom(double dZoom);
 };
 
 
@@ -102,8 +105,26 @@ class TasLayoutScene : public QGraphicsScene
 
 	public slots:
 		void triangleChanged(const TriangleOptions& opts);
+		void scaleChanged(double dTotalScale);
 	signals:
 		void tasChanged(const TriangleOptions& opts);
 };
+
+
+class TasLayoutView : public QGraphicsView
+{
+	Q_OBJECT
+	protected:
+		double m_dTotalScale = 1.;
+		virtual void wheelEvent(QWheelEvent* pEvt);
+
+	public:
+		TasLayoutView(QWidget* pParent = 0);
+		virtual ~TasLayoutView();
+
+	signals:
+		void scaleChanged(double dTotalScale);
+};
+
 
 #endif

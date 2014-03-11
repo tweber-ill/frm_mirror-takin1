@@ -40,6 +40,7 @@ class ScatteringTriangleNode : public QGraphicsItem
 class RecipPeak : public QGraphicsItem
 {
 	protected:
+		QColor m_color = Qt::red;
 		QRectF boundingRect() const;
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
@@ -50,6 +51,7 @@ class RecipPeak : public QGraphicsItem
 		RecipPeak();
 
 		void SetLabel(const QString& str) { m_strLabel = str; }
+		void SetColor(const QColor& col) { m_color = col; }
 };
 
 class ScatteringTriangleScene;
@@ -65,7 +67,8 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode *m_pNodeKiKf = 0;
 		ScatteringTriangleNode *m_pNodeKfQ = 0;
 
-		double m_dScaleFactor = 75.;	// pixels per A^-1
+		double m_dScaleFactor = 75.;	// pixels per A^-1 for zoom == 1.
+		double m_dZoom = 1.;
 		double m_dPlaneDistTolerance = 0.01;
 		double m_dMaxPeaks = 5.;
 
@@ -101,6 +104,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(double dMax) { m_dMaxPeaks = dMax; }
+		void SetZoom(double dZoom);
 };
 
 
@@ -132,9 +136,25 @@ class ScatteringTriangleScene : public QGraphicsScene
 
 	public slots:
 		void tasChanged(const TriangleOptions& opts);
+		void scaleChanged(double dTotalScale);
 	signals:
 		void triangleChanged(const TriangleOptions& opts);
 };
 
+
+class ScatteringTriangleView : public QGraphicsView
+{
+	Q_OBJECT
+	protected:
+		double m_dTotalScale = 1.;
+		virtual void wheelEvent(QWheelEvent* pEvt);
+
+	public:
+		ScatteringTriangleView(QWidget* pParent = 0);
+		virtual ~ScatteringTriangleView();
+
+	signals:
+		void scaleChanged(double dTotalScale);
+};
 
 #endif

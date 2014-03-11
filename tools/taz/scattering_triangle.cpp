@@ -70,10 +70,14 @@ QRectF RecipPeak::boundingRect() const
 
 void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-	painter->setBrush(Qt::red);
+	painter->setBrush(m_color);
 	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
-	painter->setPen(Qt::red);
-	painter->drawText(0., 14., m_strLabel);
+
+	if(m_strLabel != "")
+	{
+		painter->setPen(m_color);
+		painter->drawText(0., 14., m_strLabel);
+	}
 }
 
 // --------------------------------------------------------------------------------
@@ -82,12 +86,18 @@ void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 				: m_scene(scene)
 {
+	this->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
 	m_pNodeKiQ = new ScatteringTriangleNode(this);
 	m_pNodeKiKf = new ScatteringTriangleNode(this);
 	m_pNodeKfQ = new ScatteringTriangleNode(this);
 
 	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable);
+
+	m_pNodeKiQ->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
 	m_pNodeKiQ->setPos(0., 0.);
 	m_pNodeKiKf->setPos(50., -100.);
@@ -123,14 +133,20 @@ void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 
 QRectF ScatteringTriangle::boundingRect() const
 {
-	return QRectF(-500., -500., 1000., 1000.);
+	return QRectF(-500.*m_dZoom, -500.*m_dZoom,
+					1000.*m_dZoom, 1000.*m_dZoom);
+}
+
+void ScatteringTriangle::SetZoom(double dZoom)
+{
+	m_dZoom = dZoom; m_scene.update();
 }
 
 void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0);
-	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0);
-	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0);
+	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0) * m_dZoom;
+	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0) * m_dZoom;
+	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0) * m_dZoom;
 
 	QPointF ptQMid = ptKiQ + (ptKfQ - ptKiQ)/2.;
 	QPointF ptKiMid = ptKiQ + (ptKiKf - ptKiQ)/2.;
@@ -147,9 +163,9 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	painter->drawLine(lineKi);
 	painter->drawLine(lineKf);
 
-	const double dQ = lineQ.length()/m_dScaleFactor;
-	const double dKi = lineKi.length()/m_dScaleFactor;
-	const double dKf = lineKf.length()/m_dScaleFactor;
+	const double dQ = lineQ.length()/m_dScaleFactor/m_dZoom;
+	const double dKi = lineKi.length()/m_dScaleFactor/m_dZoom;
+	const double dKf = lineKf.length()/m_dScaleFactor/m_dZoom;
 	const double dE = get_energy_transfer(dKi/angstrom, dKf/angstrom) / one_eV * 1000.;
 
 	const std::wstring& strAA = ::get_spec_char_utf16("AA");
@@ -386,6 +402,9 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 					}*/
 
 					RecipPeak *pPeak = new RecipPeak();
+					if(float_equal(h, 0.) && float_equal(k,0.) && float_equal(l,0.))
+						pPeak->SetColor(Qt::green);
+					pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 					pPeak->setPos(dX * m_dScaleFactor, -dY * m_dScaleFactor);
 
 					std::ostringstream ostrTip;
@@ -493,6 +512,47 @@ void ScatteringTriangleScene::SetAnaSense(bool bPos)
 {
 	m_bAnaPosSense = bPos;
 	emitUpdate();
+}
+
+void ScatteringTriangleScene::scaleChanged(double dTotalScale)
+{
+	if(!m_pTri)
+		return;
+
+	m_pTri->SetZoom(dTotalScale);
+}
+
+// --------------------------------------------------------------------------------
+
+
+ScatteringTriangleView::ScatteringTriangleView(QWidget* pParent)
+						: QGraphicsView(pParent)
+{
+	setRenderHints(QPainter::Antialiasing);
+	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+	setDragMode(QGraphicsView::ScrollHandDrag);
+}
+
+ScatteringTriangleView::~ScatteringTriangleView()
+{
+
+}
+
+void ScatteringTriangleView::wheelEvent(QWheelEvent *pEvt)
+{
+	//this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+
+	double dDelta = pEvt->delta()/100.;
+	double dScale = dDelta;
+	if(dDelta < 0.)
+		dScale = -1./dDelta;
+
+	this->scale(dScale, dScale);
+
+
+	m_dTotalScale *= dScale;
+	emit scaleChanged(m_dTotalScale);
 }
 
 #include "scattering_triangle.moc"

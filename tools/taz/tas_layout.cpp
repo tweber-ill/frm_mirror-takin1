@@ -41,11 +41,19 @@ QVariant TasLayoutNode::itemChange(GraphicsItemChange change, const QVariant &va
 
 TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 {
+	this->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
 	m_pSrc = new TasLayoutNode(this);
 	m_pMono = new TasLayoutNode(this);
 	m_pSample = new TasLayoutNode(this);
 	m_pAna = new TasLayoutNode(this);
 	m_pDet = new TasLayoutNode(this);
+
+	m_pSrc->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	m_pMono->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	m_pSample->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	m_pAna->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	m_pDet->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
 	m_pSrc->setToolTip("Source");
 	m_pMono->setToolTip("Monochromator");
@@ -226,16 +234,17 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 QRectF TasLayout::boundingRect() const
 {
-	return QRectF(-500., -500., 1000., 1000.);
+	return QRectF(-500.*m_dZoom, -500.*m_dZoom,
+				1000.*m_dZoom, 1000.*m_dZoom);
 }
 
 void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-	QPointF ptSrc = mapFromItem(m_pSrc, 0, 0);
-	QPointF ptMono = mapFromItem(m_pMono, 0, 0);
-	QPointF ptSample = mapFromItem(m_pSample, 0, 0);
-	QPointF ptAna = mapFromItem(m_pAna, 0, 0);
-	QPointF ptDet = mapFromItem(m_pDet, 0, 0);
+	QPointF ptSrc = mapFromItem(m_pSrc, 0, 0) * m_dZoom;
+	QPointF ptMono = mapFromItem(m_pMono, 0, 0) * m_dZoom;
+	QPointF ptSample = mapFromItem(m_pSample, 0, 0) * m_dZoom;
+	QPointF ptAna = mapFromItem(m_pAna, 0, 0) * m_dZoom;
+	QPointF ptDet = mapFromItem(m_pDet, 0, 0) * m_dZoom;
 
 	QLineF lineSrcMono(ptSrc, ptMono);
 	QLineF lineKi(ptMono, ptSample);
@@ -268,8 +277,8 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 
 
-	ublas::vector<double> vecMono = qpoint_to_vec(mapFromItem(m_pMono, 0, 0));
-	ublas::vector<double> vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
+	ublas::vector<double> vecMono = qpoint_to_vec(ptMono);
+	ublas::vector<double> vecSample = qpoint_to_vec(ptSample);
 	ublas::vector<double> vecMonoSample = vecSample-vecMono;
 
 
@@ -411,6 +420,13 @@ void TasLayout::SetAnaTwoTheta(double dAngle)
 	nodeMoved(m_pAna);
 }
 
+void TasLayout::SetZoom(double dZoom)
+{
+	m_dZoom = dZoom;
+	m_scene.update();
+}
+
+
 // --------------------------------------------------------------------------------
 
 
@@ -451,5 +467,49 @@ void TasLayoutScene::emitUpdate(const TriangleOptions& opts)
 
 	emit tasChanged(opts);
 }
+
+void TasLayoutScene::scaleChanged(double dTotalScale)
+{
+	if(!m_pTas)
+		return;
+
+	m_pTas->SetZoom(dTotalScale);
+}
+
+
+
+// --------------------------------------------------------------------------------
+
+
+TasLayoutView::TasLayoutView(QWidget* pParent)
+						: QGraphicsView(pParent)
+{
+	setRenderHints(QPainter::Antialiasing);
+	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+	setDragMode(QGraphicsView::ScrollHandDrag);
+}
+
+TasLayoutView::~TasLayoutView()
+{
+
+}
+
+void TasLayoutView::wheelEvent(QWheelEvent *pEvt)
+{
+	//this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+
+	double dDelta = pEvt->delta()/100.;
+	double dScale = dDelta;
+	if(dDelta < 0.)
+		dScale = -1./dDelta;
+
+	this->scale(dScale, dScale);
+
+
+	m_dTotalScale *= dScale;
+	emit scaleChanged(m_dTotalScale);
+}
+
 
 #include "tas_layout.moc"

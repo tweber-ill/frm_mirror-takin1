@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <QtGui/QApplication>
+#include <QtGui/QHBoxLayout>
 
 #include "helper/lattice.h"
 #include "helper/spec_char.h"
@@ -28,20 +29,28 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 {
 	this->setupUi(this);
 
-	gfxRecip->setRenderHints(QPainter::Antialiasing);
-	gfxRecip->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-	gfxRecip->setDragMode(QGraphicsView::ScrollHandDrag);
-	gfxRecip->setScene(&m_sceneRecip);
+	QHBoxLayout *pLayoutRecip = new QHBoxLayout(groupRecip);
+	m_pviewRecip = new ScatteringTriangleView(groupRecip);
+	pLayoutRecip->addWidget(m_pviewRecip);
 
-	gfxReal->setRenderHints(QPainter::Antialiasing);
-	gfxReal->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-	gfxReal->setDragMode(QGraphicsView::ScrollHandDrag);
-	gfxReal->setScene(&m_sceneReal);
+	QHBoxLayout *pLayoutReal = new QHBoxLayout(groupReal);
+	m_pviewReal = new TasLayoutView(groupReal);
+	pLayoutReal->addWidget(m_pviewReal);
+
+
+	m_pviewRecip->setScene(&m_sceneRecip);
+	m_pviewReal->setScene(&m_sceneReal);
+
 
 	QObject::connect(&m_sceneRecip, SIGNAL(triangleChanged(const TriangleOptions&)),
 					&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));
 	QObject::connect(&m_sceneReal, SIGNAL(tasChanged(const TriangleOptions&)),
 					&m_sceneRecip, SLOT(tasChanged(const TriangleOptions&)));
+
+	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(double)),
+					&m_sceneRecip, SLOT(scaleChanged(double)));
+	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(double)),
+					&m_sceneReal, SLOT(scaleChanged(double)));
 
 
 	std::vector<QLineEdit*> vecEditDs{editMonoD, editAnaD};
@@ -85,6 +94,12 @@ TazDlg::~TazDlg()
 	{
 		delete m_pRecip3d;
 		m_pRecip3d = 0;
+	}
+
+	if(m_pviewRecip)
+	{
+		delete m_pviewRecip;
+		m_pviewRecip = 0;
 	}
 }
 
@@ -200,13 +215,16 @@ void TazDlg::CalcPeaks()
 	}
 
 	const std::wstring& strAA = ::get_spec_char_utf16("AA");
+	const std::wstring& strMinus = ::get_spec_char_utf16("sup-");
+	const std::wstring& strThree = ::get_spec_char_utf16("sup3");
+
 	double dVol = lattice.GetVol();
 	std::wostringstream ostrSample;
 	ostrSample.precision(4);
 	ostrSample << "Sample - ";
 	ostrSample << "Unit Cell Volume: ";
-	ostrSample << "Real: " << dVol << " " << strAA << "^3";
-	ostrSample << ", Reciprocal: " << (1./dVol) << " (1/" << strAA << ")^3";
+	ostrSample << "Real: " << dVol << " " << strAA << strThree;
+	ostrSample << ", Reciprocal: " << (1./dVol) << " " << strAA << strMinus << strThree;
 	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
 	m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane);

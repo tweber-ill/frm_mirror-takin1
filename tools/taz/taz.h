@@ -20,8 +20,12 @@ class TazDlg : public QDialog, Ui::TazDlg
 		bool m_bUpdateRecipEdits = 1;
 
 	protected:
+		ScatteringTriangleView *m_pviewRecip = 0;
 		ScatteringTriangleScene m_sceneRecip;
+
+		TasLayoutView *m_pviewReal = 0;
 		TasLayoutScene m_sceneReal;
+
 		Recip3DDlg *m_pRecip3d = 0;
 
 	public:
