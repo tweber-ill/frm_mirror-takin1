@@ -37,7 +37,7 @@ void init_spec_chars()
 	(*g_pmapSpecChars)["sub9"] = SpecChar("\xe2\x82\x89", L"\x2089");
 
 	(*g_pmapSpecChars)["sup0"] = SpecChar("\xe2\x81\xb0", L"\x2070");
-	(*g_pmapSpecChars)["sup1"] = SpecChar("\xc2\xb9", L"\000b9");
+	(*g_pmapSpecChars)["sup1"] = SpecChar("\xc2\xb9", L"\x00b9");
 	(*g_pmapSpecChars)["sup2"] = SpecChar("\xc2\xb2", L"\x00b2");
 	(*g_pmapSpecChars)["sup3"] = SpecChar("\xc2\xb3", L"\x00b3");
 	(*g_pmapSpecChars)["sup4"] = SpecChar("\xe2\x81\xb4", L"\x2074");

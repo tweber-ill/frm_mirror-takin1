@@ -168,13 +168,13 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	const double dKf = lineKf.length()/m_dScaleFactor/m_dZoom;
 	const double dE = get_energy_transfer(dKi/angstrom, dKf/angstrom) / one_eV * 1000.;
 
-	const std::wstring& strAA = ::get_spec_char_utf16("AA");
+	const std::wstring& strAA = ::get_spec_char_utf16("AA") + ::get_spec_char_utf16("sup-") + ::get_spec_char_utf16("sup1");
 	const std::wstring& strDelta = ::get_spec_char_utf16("Delta");
 	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE;
 	ostrQ.precision(3); ostrKi.precision(3); ostrKf.precision(3); ostrE.precision(3);
-	ostrQ << L"Q = " << dQ << " 1/" << strAA;
-	ostrKi << L"ki = " << dKi << " 1/" << strAA;
-	ostrKf << L"kf = " << dKf << " 1/" << strAA;
+	ostrQ << L"Q = " << dQ << " " << strAA;
+	ostrKi << L"ki = " << dKi << " " << strAA;
+	ostrKf << L"kf = " << dKf << " " << strAA;
 	ostrE << strDelta << "E = " << dE << " meV";
 
 	painter->save();
@@ -413,8 +413,9 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 					if(h!=0. || k!=0. || l!=0.)
 						pPeak->SetLabel(ostrTip.str().c_str());
 
-					ostrTip << "\ndistance to plane [1/A]: " << dDist;
-					pPeak->setToolTip(ostrTip.str().c_str());
+					std::string strAA = ::get_spec_char_utf8("AA")+::get_spec_char_utf8("sup-")+::get_spec_char_utf8("sup1");
+					ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
+					pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 
 					m_vecPeaks.push_back(pPeak);
 					m_scene.addItem(pPeak);
