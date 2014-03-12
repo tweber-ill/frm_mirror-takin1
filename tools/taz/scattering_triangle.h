@@ -66,6 +66,7 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode *m_pNodeKiQ = 0;
 		ScatteringTriangleNode *m_pNodeKiKf = 0;
 		ScatteringTriangleNode *m_pNodeKfQ = 0;
+		ScatteringTriangleNode *m_pNodeGq = 0;
 
 		double m_dScaleFactor = 75.;	// pixels per A^-1 for zoom == 1.
 		double m_dZoom = 1.;
@@ -76,6 +77,8 @@ class ScatteringTriangle : public QGraphicsItem
 		void ClearPeaks();
 
 		double m_dAngleRot = 0.;
+
+		bool m_bqVisible = 0;
 
 	protected:
 		QRectF boundingRect() const;
@@ -105,6 +108,8 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(double dMax) { m_dMaxPeaks = dMax; }
 		void SetZoom(double dZoom);
+
+		void SetqVisible(bool bVisible);
 };
 
 

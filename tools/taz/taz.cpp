@@ -12,6 +12,8 @@
 
 #include <QtGui/QApplication>
 #include <QtGui/QHBoxLayout>
+#include <QtGui/QMenuBar>
+#include <QtGui/QMessageBox>
 
 #include "helper/lattice.h"
 #include "helper/spec_char.h"
@@ -27,6 +29,8 @@ static QString dtoqstr(double dVal, unsigned int iPrec=3)
 
 TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 {
+	const bool bSmallqVisible = 0;
+
 	this->setupUi(this);
 
 	QHBoxLayout *pLayoutRecip = new QHBoxLayout(groupRecip);
@@ -82,9 +86,62 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 	QObject::connect(editPlaneTolerance, SIGNAL(textEdited(const QString&)), this, SLOT(ChangedTolerance()));
 	QObject::connect(btn3D, SIGNAL(clicked()), this, SLOT(Show3D()));
 
+
+	// --------------------------------------------------------------------------------
+	// menu
+	QMenu *pMenuFile = new QMenu(this);
+	pMenuFile->setTitle("File");
+
+    QAction *pExit = new QAction(this);
+    pExit->setText("Exit");
+    pExit->setIcon(QIcon::fromTheme("application-exit"));
+    pMenuFile->addAction(pExit);
+
+
+	QMenu *pMenuView = new QMenu(this);
+	pMenuView->setTitle("View");
+
+    QAction *pSmallq = new QAction(this);
+    pSmallq->setText("Enable Reduced Scattering Vector q");
+    pSmallq->setCheckable(1);
+    pSmallq->setChecked(bSmallqVisible);
+    pMenuView->addAction(pSmallq);
+
+
+	QMenu *pMenuHelp = new QMenu(this);
+	pMenuHelp->setTitle("Help");
+
+	QAction *pAboutQt = new QAction(this);
+	pAboutQt->setText("About Qt...");
+	//pAboutQt->setIcon(QIcon::fromTheme("help-about"));
+	pMenuHelp->addAction(pAboutQt);
+
+	pMenuHelp->addSeparator();
+
+	QAction *pAbout = new QAction(this);
+	pAbout->setText("About...");
+	pAbout->setIcon(QIcon::fromTheme("help-about"));
+	pMenuHelp->addAction(pAbout);
+
+
+	QMenuBar *pMenuBar = new QMenuBar(this);
+	pMenuBar->addMenu(pMenuFile);
+	pMenuBar->addMenu(pMenuView);
+	pMenuBar->addMenu(pMenuHelp);
+	this->layout()->setMenuBar(pMenuBar);
+
+	QObject::connect(pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
+	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
+	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
+	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	// --------------------------------------------------------------------------------
+
+
+
 	UpdateDs();
 	CalcPeaks();
 
+	m_sceneRecip.GetTriangle()->SetqVisible(bSmallqVisible);
 	m_sceneRecip.emitUpdate();
 }
 
@@ -264,6 +321,41 @@ void TazDlg::Show3D()
 	m_pRecip3d->activateWindow();
 
 	CalcPeaks();
+}
+
+void TazDlg::EnableSmallq(bool bEnable)
+{
+	m_sceneRecip.GetTriangle()->SetqVisible(bEnable);
+}
+
+
+#include <boost/version.hpp>
+
+void TazDlg::ShowAbout()
+{
+	QString strAbout;
+	strAbout += "TAZ\n";
+	strAbout += "Written by Tobias Weber, 2014";
+	strAbout += "\n\n";
+
+	strAbout += "Built with CC version ";
+	strAbout += QString(__VERSION__);
+	strAbout += "\n";
+
+	strAbout += "Build date: ";
+	strAbout += QString(__DATE__);
+	strAbout += ", ";
+	strAbout += QString(__TIME__);
+	strAbout += "\n\n";
+
+	strAbout += "Uses Qt version ";
+	strAbout += QString(QT_VERSION_STR);
+	strAbout += "\thttp://qt-project.org\n";
+	strAbout += "Uses Boost version ";
+	strAbout += QString(BOOST_LIB_VERSION);
+	strAbout += "\thttp://www.boost.org\n";
+
+	QMessageBox::information(this, "About TAZ", strAbout);
 }
 
 #include "taz.moc"

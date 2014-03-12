@@ -42,8 +42,10 @@ class TazDlg : public QDialog, Ui::TazDlg
 		void UpdateSampleSense();
 		void UpdateMonoSense();
 		void UpdateAnaSense();
+		void EnableSmallq(bool bEnable);
 
 		void Show3D();
+		void ShowAbout();
 };
 
 #endif

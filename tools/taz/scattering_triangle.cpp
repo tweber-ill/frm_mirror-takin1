@@ -91,21 +91,26 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_pNodeKiQ = new ScatteringTriangleNode(this);
 	m_pNodeKiKf = new ScatteringTriangleNode(this);
 	m_pNodeKfQ = new ScatteringTriangleNode(this);
+	m_pNodeGq = new ScatteringTriangleNode(this);
 
 	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable);
+	m_pNodeGq->setFlag(QGraphicsItem::ItemIsMovable);
 
 	m_pNodeKiQ->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	m_pNodeGq->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
 	m_pNodeKiQ->setPos(0., 0.);
 	m_pNodeKiKf->setPos(50., -100.);
 	m_pNodeKfQ->setPos(100., 0.);
+	m_pNodeGq->setPos(100., 0.);
 
 	m_scene.addItem(m_pNodeKiQ);
 	m_scene.addItem(m_pNodeKiKf);
 	m_scene.addItem(m_pNodeKfQ);
+	m_scene.addItem(m_pNodeGq);
 
 	setAcceptedMouseButtons(0);
 
@@ -119,6 +124,7 @@ ScatteringTriangle::~ScatteringTriangle()
 	delete m_pNodeKiQ;
 	delete m_pNodeKiKf;
 	delete m_pNodeKfQ;
+	delete m_pNodeGq;
 
 	ClearPeaks();
 }
@@ -142,15 +148,25 @@ void ScatteringTriangle::SetZoom(double dZoom)
 	m_dZoom = dZoom; m_scene.update();
 }
 
+void ScatteringTriangle::SetqVisible(bool bVisible)
+{
+	m_bqVisible = bVisible;
+	this->m_pNodeGq->setVisible(bVisible);
+	this->update();
+}
+
 void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
 	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0) * m_dZoom;
 	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0) * m_dZoom;
 	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0) * m_dZoom;
+	QPointF ptGq = mapFromItem(m_pNodeGq, 0, 0) * m_dZoom;
 
 	QPointF ptQMid = ptKiQ + (ptKfQ - ptKiQ)/2.;
 	QPointF ptKiMid = ptKiQ + (ptKiKf - ptKiQ)/2.;
 	QPointF ptKfMid = ptKfQ + (ptKiKf - ptKfQ)/2.;
+	QPointF ptqMid = ptKfQ + (ptGq - ptKfQ)/2.;
+	QPointF ptGMid = ptKiQ + (ptGq - ptKiQ)/2.;
 
 	QPointF ptMid = ptKiQ + (ptKfQ - ptKiQ)/2.;
 	ptMid = ptMid + (ptKiKf - ptMid)/2.;
@@ -158,29 +174,48 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	QLineF lineQ(ptKiQ, ptKfQ);
 	QLineF lineKi(ptKiQ, ptKiKf);
 	QLineF lineKf(ptKiKf, ptKfQ);
+	QLineF lineG(ptKiQ, ptGq);
+	QLineF lineq(ptKfQ, ptGq);
 
 	painter->drawLine(lineQ);
 	painter->drawLine(lineKi);
 	painter->drawLine(lineKf);
 
+	if(m_bqVisible)
+	{
+		painter->drawLine(lineG);
+		painter->drawLine(lineq);
+	}
+
 	const double dQ = lineQ.length()/m_dScaleFactor/m_dZoom;
 	const double dKi = lineKi.length()/m_dScaleFactor/m_dZoom;
 	const double dKf = lineKf.length()/m_dScaleFactor/m_dZoom;
+	const double dq = lineq.length()/m_dScaleFactor/m_dZoom;
+	const double dG = lineG.length()/m_dScaleFactor/m_dZoom;
 	const double dE = get_energy_transfer(dKi/angstrom, dKf/angstrom) / one_eV * 1000.;
 
 	const std::wstring& strAA = ::get_spec_char_utf16("AA") + ::get_spec_char_utf16("sup-") + ::get_spec_char_utf16("sup1");
 	const std::wstring& strDelta = ::get_spec_char_utf16("Delta");
-	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE;
-	ostrQ.precision(3); ostrKi.precision(3); ostrKf.precision(3); ostrE.precision(3);
+
+	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE, ostrq, ostrG;
+	ostrQ.precision(3); ostrE.precision(3);
+	ostrKi.precision(3); ostrKf.precision(3);
+	ostrG.precision(3); ostrq.precision(3);
+
 	ostrQ << L"Q = " << dQ << " " << strAA;
 	ostrKi << L"ki = " << dKi << " " << strAA;
 	ostrKf << L"kf = " << dKf << " " << strAA;
 	ostrE << strDelta << "E = " << dE << " meV";
+	if(m_bqVisible)
+	{
+		ostrq << L"q = " << dq << " " << strAA;
+		ostrG << L"G = " << dG << " " << strAA;
+	}
 
 	painter->save();
+
 	painter->rotate(-lineQ.angle());
 	painter->drawText(QPointF(lineQ.length()/5.,12.), QString::fromWCharArray(ostrQ.str().c_str()));
-	painter->drawText(QPointF(lineQ.length()/5.,26.), QString::fromWCharArray(ostrE.str().c_str()));
 	painter->rotate(lineQ.angle());
 
 	painter->rotate(-lineKi.angle());
@@ -190,6 +225,23 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	painter->translate(ptKiKf);
 	painter->rotate(-lineKf.angle());
 	painter->drawText(QPointF(lineKf.length()/5.,-4.), QString::fromWCharArray(ostrKf.str().c_str()));
+	painter->drawText(QPointF(lineKf.length()/5.,12.), QString::fromWCharArray(ostrE.str().c_str()));
+	painter->rotate(lineKf.angle());
+	painter->translate(-ptKiKf);
+
+	if(m_bqVisible)
+	{
+		painter->translate(ptKfQ);
+		painter->rotate(-lineq.angle());
+		painter->drawText(QPointF(lineq.length()/5.,-4.), QString::fromWCharArray(ostrq.str().c_str()));
+		painter->rotate(lineq.angle());
+		painter->translate(-ptKfQ);
+
+		painter->rotate(-lineG.angle());
+		painter->drawText(QPointF(lineG.length()/5.,-4.), QString::fromWCharArray(ostrG.str().c_str()));
+		painter->rotate(lineG.angle());
+	}
+
 	painter->restore();
 
 
