@@ -523,6 +523,94 @@ void ScatteringTriangleScene::scaleChanged(double dTotalScale)
 	m_pTri->SetZoom(dTotalScale);
 }
 
+void ScatteringTriangleScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
+{
+	m_bMousePressed = 1;
+
+	QGraphicsScene::mousePressEvent(pEvt);
+}
+
+
+static inline const QGraphicsItem* get_nearest_node(const QPointF& pt,
+												const QGraphicsItem* pCurItem,
+												const QList<QGraphicsItem*>& nodes)
+{
+	if(nodes.size()==0)
+		return 0;
+
+	double dMinLen = std::numeric_limits<double>::max();
+	int iMinIdx = -1;
+
+	for(int iNode=0; iNode<nodes.size(); ++iNode)
+	{
+		const QGraphicsItem *pNode = nodes[iNode];
+		if(pNode == pCurItem)
+			continue;
+
+		QLineF line(pt, pNode->scenePos());
+
+		double dLen = line.length();
+		if(dLen < dMinLen)
+		{
+			dMinLen = dLen;
+			iMinIdx = iNode;
+		}
+	}
+
+	if(iMinIdx < 0)
+		return 0;
+	return nodes[iMinIdx];
+}
+
+void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
+{
+	bool bHandled = 0;
+
+	if(m_bMousePressed && m_bSnap)
+	{
+		QGraphicsItem* pCurItem = mouseGrabberItem();
+		if(pCurItem)
+		{
+			QList<QGraphicsItem*> nodes = items(/*pEvt->scenePos()*/);
+			const QGraphicsItem *pNearestNode =
+							get_nearest_node(pEvt->scenePos(), pCurItem, nodes);
+
+			if(pNearestNode)
+			{
+				pCurItem->setPos(pNearestNode->pos());
+				bHandled = 1;
+			}
+		}
+	}
+
+	if(!bHandled)
+		QGraphicsScene::mouseMoveEvent(pEvt);
+}
+
+void ScatteringTriangleScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
+{
+	m_bMousePressed = 0;
+
+	QGraphicsScene::mouseReleaseEvent(pEvt);
+}
+
+void ScatteringTriangleScene::keyPressEvent(QKeyEvent *pEvt)
+{
+	if(pEvt->key() == Qt::Key_Control)
+		m_bSnap = 1;
+
+	QGraphicsScene::keyPressEvent(pEvt);
+}
+
+void ScatteringTriangleScene::keyReleaseEvent(QKeyEvent *pEvt)
+{
+	if(pEvt->key() == Qt::Key_Control)
+		m_bSnap = 0;
+
+	QGraphicsScene::keyReleaseEvent(pEvt);
+}
+
+
 // --------------------------------------------------------------------------------
 
 

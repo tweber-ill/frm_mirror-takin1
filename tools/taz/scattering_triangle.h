@@ -120,6 +120,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 		bool m_bMonoPosSense = 0;
 
 		bool m_bDontEmitChange = 0;
+		bool m_bSnap = 0;
+		bool m_bMousePressed = 0;
 
 	public:
 		ScatteringTriangleScene();
@@ -139,6 +141,14 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void scaleChanged(double dTotalScale);
 	signals:
 		void triangleChanged(const TriangleOptions& opts);
+
+	protected:
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
+		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
+
+		virtual void keyPressEvent(QKeyEvent *pEvt);
+		virtual void keyReleaseEvent(QKeyEvent *pEvt);
 };
 
 
