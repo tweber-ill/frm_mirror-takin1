@@ -14,10 +14,13 @@
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QMenuBar>
 #include <QtGui/QMessageBox>
+#include <QtGui/QFileDialog>
 
 #include "helper/lattice.h"
 #include "helper/spec_char.h"
+#include "helper/string.h"
 
+const std::string TazDlg::s_strTitle = "TAZ - Triple-Axis Tool";
 
 static QString dtoqstr(double dVal, unsigned int iPrec=3)
 {
@@ -27,11 +30,14 @@ static QString dtoqstr(double dVal, unsigned int iPrec=3)
 	return QString(ostr.str().c_str());
 }
 
-TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
+TazDlg::TazDlg(QWidget* pParent)
+		: QDialog(pParent),
+		  m_settings("tobis_stuff", "taz")
 {
 	const bool bSmallqVisible = 0;
 
 	this->setupUi(this);
+	this->setWindowTitle(s_strTitle.c_str());
 
 	QHBoxLayout *pLayoutRecip = new QHBoxLayout(groupRecip);
 	m_pviewRecip = new ScatteringTriangleView(groupRecip);
@@ -92,6 +98,30 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 	QMenu *pMenuFile = new QMenu(this);
 	pMenuFile->setTitle("File");
 
+	/*QAction *pNew = new QAction(this);
+	pNew->setText("New");
+	pNew->setIcon(QIcon::fromTheme("document-new"));
+	pMenuFile->addAction(pNew);
+
+	pMenuFile->addSeparator();*/
+
+	QAction *pLoad = new QAction(this);
+	pLoad->setText("Load...");
+	pLoad->setIcon(QIcon::fromTheme("document-open"));
+	pMenuFile->addAction(pLoad);
+
+	QAction *pSave = new QAction(this);
+	pSave->setText("Save");
+	pSave->setIcon(QIcon::fromTheme("document-save"));
+	pMenuFile->addAction(pSave);
+
+	QAction *pSaveAs = new QAction(this);
+	pSaveAs->setText("Save as...");
+	pSaveAs->setIcon(QIcon::fromTheme("document-save-as"));
+	pMenuFile->addAction(pSaveAs);
+
+	pMenuFile->addSeparator();
+
     QAction *pExit = new QAction(this);
     pExit->setText("Exit");
     pExit->setIcon(QIcon::fromTheme("application-exit"));
@@ -130,6 +160,9 @@ TazDlg::TazDlg(QWidget* pParent) : QDialog(pParent)
 	pMenuBar->addMenu(pMenuHelp);
 	this->layout()->setMenuBar(pMenuBar);
 
+	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
+	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
+	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
 	QObject::connect(pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
@@ -328,13 +361,66 @@ void TazDlg::EnableSmallq(bool bEnable)
 	m_sceneRecip.GetTriangle()->SetqVisible(bEnable);
 }
 
+void TazDlg::Load()
+{
+	QString strDirLast = m_settings.value("main/last_dir", ".").toString();
+	QString strFile = QFileDialog::getOpenFileName(this,
+							"Open TAS configuration...",
+							strDirLast,
+							"TAZ files (*.taz *.TAZ)");
+	if(strFile != "")
+	{
+		std::string strFile1 = strFile.toStdString();
+		std::string strDir = get_dir(strFile1).c_str();
+		m_settings.setValue("main/last_dir", QString(strDir.c_str()));
+
+
+		// TODO
+
+		m_strCurFile = strFile1;
+		setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
+	}
+}
+
+void TazDlg::Save()
+{
+	if(m_strCurFile == "")
+	{
+		SaveAs();
+		return;
+	}
+
+	// TODO
+}
+
+void TazDlg::SaveAs()
+{
+	QString strDirLast = m_settings.value("main/last_dir", ".").toString();
+	QString strFile = QFileDialog::getSaveFileName(this,
+								"Save TAS configuration",
+								strDirLast,
+								"TAZ files (*.taz *.TAZ)");
+
+	if(strFile != "")
+	{
+		std::string strFile1 = strFile.toStdString();
+		std::string strDir = get_dir(strFile1).c_str();
+		m_settings.setValue("main/last_dir", QString(strDir.c_str()));
+
+		m_strCurFile = strFile1;
+		setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
+		Save();
+	}
+}
+
+
 
 #include <boost/version.hpp>
 
 void TazDlg::ShowAbout()
 {
 	QString strAbout;
-	strAbout += "TAZ\n";
+	strAbout += "TAZ version 0.5\n";
 	strAbout += "Written by Tobias Weber, 2014";
 	strAbout += "\n\n";
 

@@ -8,6 +8,10 @@
 #define __TAZ_H__
 
 #include <QtGui/QDialog>
+#include <QtCore/QSettings>
+#include <QtCore/QVariant>
+
+#include <string>
 
 #include "ui/ui_taz.h"
 #include "scattering_triangle.h"
@@ -20,6 +24,8 @@ class TazDlg : public QDialog, Ui::TazDlg
 		bool m_bUpdateRecipEdits = 1;
 
 	protected:
+		QSettings m_settings;
+
 		ScatteringTriangleView *m_pviewRecip = 0;
 		ScatteringTriangleScene m_sceneRecip;
 
@@ -27,6 +33,9 @@ class TazDlg : public QDialog, Ui::TazDlg
 		TasLayoutScene m_sceneReal;
 
 		Recip3DDlg *m_pRecip3d = 0;
+
+		std::string m_strCurFile;
+		static const std::string s_strTitle;
 
 	public:
 		TazDlg(QWidget *pParent);
@@ -46,6 +55,10 @@ class TazDlg : public QDialog, Ui::TazDlg
 
 		void Show3D();
 		void ShowAbout();
+
+		void Save();
+		void SaveAs();
+		void Load();
 };
 
 #endif
