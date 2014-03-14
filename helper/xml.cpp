@@ -158,6 +158,10 @@ struct XmlNode
 				ostr << "\n";
 			}
 		}
+
+		if(node.vecChildren.size()!=0)
+			for(unsigned int iLev=0; iLev<iLevel-1; ++iLev)
+				ostr << "\t";
 		ostr << "</" << node.strName << ">";
 	}
 };
@@ -181,6 +185,7 @@ bool Xml::SaveMap(const char* pcFile, const std::map<std::string, std::string>& 
 	{
 		const std::string& strKey = pairXml.first;
 		const std::string& strVal = pairXml.second;
+		//std::cout << "key: " << strKey << ", val: " << strVal << std::endl;
 
 		std::vector<std::string> vecKey;
 		get_tokens<std::string>(strKey, std::string("/"), vecKey);

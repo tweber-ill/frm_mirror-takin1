@@ -19,6 +19,7 @@
 #include "helper/lattice.h"
 #include "helper/spec_char.h"
 #include "helper/string.h"
+#include "helper/xml.h"
 
 const std::string TazDlg::s_strTitle = "TAZ - Triple-Axis Tool";
 
@@ -38,6 +39,57 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
+
+	m_vecEdits_real =
+	{
+		editA, editB, editC,
+		editAlpha, editBeta, editGamma
+	};
+	m_vecEdits_recip =
+	{
+		editARecip, editBRecip, editCRecip,
+		editAlphaRecip, editBetaRecip, editGammaRecip
+	};
+
+	m_vecEdits_plane =
+	{
+		editScatX0, editScatX1, editScatX2,
+		editScatY0, editScatY1, editScatY2,
+		editPlaneTolerance
+	};
+	m_vecEdits_monoana =
+	{
+		editMonoD, editAnaD
+	};
+
+
+	m_vecSpinBoxesSample = { spinRotPhi, spinRotTheta, spinRotPsi };
+	m_vecCheckBoxesSenses = { checkSenseM, checkSenseS, checkSenseA };
+
+	m_vecEditNames_real =
+	{
+		"sample/a", "sample/b", "sample/c",
+		"sample/alpha", "sample/beta", "sample/gamma"
+	};
+	m_vecEditNames_recip =
+	{
+		"sample/a_recip", "sample/b_recip", "sample/c_recip",
+		"sample/alpha_recip", "sample/beta_recip", "sample/gamma_recip"
+	};
+	m_vecEditNames_plane =
+	{
+		"plane/x0", "plane/x1", "plane/x2",
+		"plane/y0", "plane/y1", "plane/y2",
+		"plane/delta"
+	};
+	m_vecEditNames_monoana =
+	{
+		"tas/mono_d", "tas/ana_d"
+	};
+
+	 m_vecSpinBoxNamesSample = {"sample/phi", "sample/theta", "sample/psi"};
+	 m_vecCheckBoxNamesSenses = {"tas/sense_m", "tas/sense_s", "tas/sense_a"};
+
 
 	QHBoxLayout *pLayoutRecip = new QHBoxLayout(groupRecip);
 	m_pviewRecip = new ScatteringTriangleView(groupRecip);
@@ -63,33 +115,29 @@ TazDlg::TazDlg(QWidget* pParent)
 					&m_sceneReal, SLOT(scaleChanged(double)));
 
 
-	std::vector<QLineEdit*> vecEditDs{editMonoD, editAnaD};
-	for(QLineEdit* pEdit : vecEditDs)
+	for(QLineEdit* pEdit : m_vecEdits_monoana)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(UpdateDs()));
 
-
-	std::vector<QLineEdit*> vecEdits{editA, editB, editC, editAlpha, editBeta, editGamma,
-									editScatX0, editScatX1, editScatX2,
-									editScatY0, editScatY1, editScatY2};
-	for(QLineEdit* pEdit : vecEdits)
+	for(QLineEdit* pEdit : m_vecEdits_real)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
 
+	for(QLineEdit* pEdit : m_vecEdits_plane)
+	{
+		if(pEdit != editPlaneTolerance)
+			QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
+	}
+	QObject::connect(editPlaneTolerance, SIGNAL(textEdited(const QString&)), this, SLOT(ChangedTolerance()));
 
-	std::vector<QDoubleSpinBox*> vecSpins{spinRotPhi, spinRotTheta, spinRotPsi};
-	for(QDoubleSpinBox* pSpin : vecSpins)
+	for(QDoubleSpinBox* pSpin : m_vecSpinBoxesSample)
 		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
 
-	std::vector<QLineEdit*> vecEditsRecip{editARecip, editBRecip, editCRecip,
-										editAlphaRecip, editBetaRecip, editGammaRecip};
-	for(QLineEdit* pEdit : vecEditsRecip)
+	for(QLineEdit* pEdit : m_vecEdits_recip)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaksRecip()));
-
 
 	QObject::connect(checkSenseM, SIGNAL(stateChanged(int)), this, SLOT(UpdateMonoSense()));
 	QObject::connect(checkSenseS, SIGNAL(stateChanged(int)), this, SLOT(UpdateSampleSense()));
 	QObject::connect(checkSenseA, SIGNAL(stateChanged(int)), this, SLOT(UpdateAnaSense()));
 
-	QObject::connect(editPlaneTolerance, SIGNAL(textEdited(const QString&)), this, SLOT(ChangedTolerance()));
 	QObject::connect(btn3D, SIGNAL(clicked()), this, SLOT(Show3D()));
 
 
@@ -390,7 +438,50 @@ void TazDlg::Save()
 		return;
 	}
 
-	// TODO
+	const std::string strXmlRoot("taz/");
+	typedef std::map<std::string, std::string> tmap;
+	tmap mapConf;
+
+	std::vector<const std::vector<QLineEdit*>*> vecEdits
+			= {&m_vecEdits_real, &m_vecEdits_recip,
+				&m_vecEdits_plane, &m_vecEdits_monoana};
+	std::vector<const std::vector<std::string>*> vecEditNames
+			= {&m_vecEditNames_real, &m_vecEditNames_recip,
+				&m_vecEditNames_plane, &m_vecEditNames_monoana};
+	unsigned int iIdxEdit = 0;
+	for(const std::vector<QLineEdit*>* pVec : vecEdits)
+	{
+		const std::vector<std::string>* pvecName = vecEditNames[iIdxEdit];
+
+		for(unsigned int iEditBox=0; iEditBox<pVec->size(); ++iEditBox)
+			mapConf[strXmlRoot+(*pvecName)[iEditBox]]
+			        = (*pVec)[iEditBox]->text().toStdString();
+
+		++iIdxEdit;
+	}
+
+	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxesSample.size(); ++iSpinBox)
+	{
+		std::ostringstream ostrVal;
+		ostrVal << std::scientific;
+		ostrVal << m_vecSpinBoxesSample[iSpinBox]->value();
+
+		mapConf[strXmlRoot + m_vecSpinBoxNamesSample[iSpinBox]] = ostrVal.str();
+	}
+
+	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxesSenses.size(); ++iCheckBox)
+		mapConf[strXmlRoot+m_vecCheckBoxNamesSenses[iCheckBox]]
+		        		= (m_vecCheckBoxesSenses[iCheckBox]->isChecked() ? "1" : "0");
+
+
+	// TODO: triangle & tas layout saving
+
+
+	if(!Xml::SaveMap(m_strCurFile.c_str(), mapConf))
+	{
+		QMessageBox::critical(this, "Error", "Could not save configuration file.");
+		return;
+	}
 }
 
 void TazDlg::SaveAs()
