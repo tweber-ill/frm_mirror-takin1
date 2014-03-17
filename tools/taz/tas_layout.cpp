@@ -426,6 +426,17 @@ void TasLayout::SetZoom(double dZoom)
 	m_scene.update();
 }
 
+std::vector<TasLayoutNode*> TasLayout::GetNodes()
+{
+	return std::vector<TasLayoutNode*>
+			{ m_pSrc, m_pMono, m_pSample, m_pAna, m_pDet };
+}
+
+std::vector<std::string> TasLayout::GetNodeNames() const
+{
+	return std::vector<std::string>
+		{ "source", "monochromator", "sample", "analyser", "detector" };
+}
 
 // --------------------------------------------------------------------------------
 

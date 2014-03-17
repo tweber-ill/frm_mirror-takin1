@@ -62,9 +62,9 @@ TazDlg::TazDlg(QWidget* pParent)
 		editMonoD, editAnaD
 	};
 
-
 	m_vecSpinBoxesSample = { spinRotPhi, spinRotTheta, spinRotPsi };
 	m_vecCheckBoxesSenses = { checkSenseM, checkSenseS, checkSenseA };
+
 
 	m_vecEditNames_real =
 	{
@@ -179,11 +179,11 @@ TazDlg::TazDlg(QWidget* pParent)
 	QMenu *pMenuView = new QMenu(this);
 	pMenuView->setTitle("View");
 
-    QAction *pSmallq = new QAction(this);
-    pSmallq->setText("Enable Reduced Scattering Vector q");
-    pSmallq->setCheckable(1);
-    pSmallq->setChecked(bSmallqVisible);
-    pMenuView->addAction(pSmallq);
+    m_pSmallq = new QAction(this);
+    m_pSmallq->setText("Enable Reduced Scattering Vector q");
+    m_pSmallq->setCheckable(1);
+    m_pSmallq->setChecked(bSmallqVisible);
+    pMenuView->addAction(m_pSmallq);
 
 
 	QMenu *pMenuHelp = new QMenu(this);
@@ -211,7 +211,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
-	QObject::connect(pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
+	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -366,6 +366,7 @@ void TazDlg::CalcPeaks()
 	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
 	m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane);
+	m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 	m_sceneRecip.emitUpdate();
 
 	if(m_pRecip3d)
@@ -409,39 +410,144 @@ void TazDlg::EnableSmallq(bool bEnable)
 	m_sceneRecip.GetTriangle()->SetqVisible(bEnable);
 }
 
-void TazDlg::Load()
+bool TazDlg::Load(const char* pcFile)
+{
+	m_strCurFile = pcFile;
+
+	const std::string strXmlRoot("taz/");
+
+	std::string strFile1 = pcFile;
+	std::string strDir = get_dir(strFile1).c_str();
+
+
+	Xml xml;
+	if(!xml.Load(strFile1.c_str()))
+	{
+		QMessageBox::critical(this, "Error", "Could not load configuration file.");
+		return false;
+	}
+
+	m_settings.setValue("main/last_dir", QString(strDir.c_str()));
+
+
+	bool bOk = 0;
+
+	// edit boxes
+	std::vector<std::vector<QLineEdit*>*> vecEdits
+			= {&m_vecEdits_real, &m_vecEdits_recip,
+				&m_vecEdits_plane, &m_vecEdits_monoana};
+	std::vector<std::vector<std::string>*> vecEditNames
+			= {&m_vecEditNames_real, &m_vecEditNames_recip,
+				&m_vecEditNames_plane, &m_vecEditNames_monoana};
+	unsigned int iIdxEdit = 0;
+	for(const std::vector<QLineEdit*>* pVec : vecEdits)
+	{
+		const std::vector<std::string>* pvecName = vecEditNames[iIdxEdit];
+
+		for(unsigned int iEditBox=0; iEditBox<pVec->size(); ++iEditBox)
+		{
+			std::string str = xml.QueryString((strXmlRoot+(*pvecName)[iEditBox]).c_str(), "0", &bOk);
+			trim(str);
+			if(bOk)
+				(*pVec)[iEditBox]->setText(str.c_str());
+		}
+
+		++iIdxEdit;
+	}
+
+
+	// spin boxes
+	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxesSample.size(); ++iSpinBox)
+	{
+		double dVal = xml.Query<double>((strXmlRoot+m_vecSpinBoxNamesSample[iSpinBox]).c_str(), 0., &bOk);
+		if(bOk)
+			m_vecSpinBoxesSample[iSpinBox]->setValue(dVal);
+	}
+
+
+	// check boxes
+	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxesSenses.size(); ++iCheckBox)
+	{
+		int iVal = xml.Query<int>((strXmlRoot+m_vecCheckBoxNamesSenses[iCheckBox]).c_str(), 0, &bOk);
+		if(bOk)
+			m_vecCheckBoxesSenses[iCheckBox]->setChecked(iVal != 0);
+	}
+
+
+	// TAS Layout
+	double dRealScale = xml.Query<double>((strXmlRoot + "real/pixels_per_cm").c_str(), 0., &bOk);
+	if(bOk)
+		m_sceneReal.GetTasLayout()->SetScaleFactor(dRealScale);
+
+	unsigned int iNodeReal = 0;
+	for(TasLayoutNode *pNode : m_sceneReal.GetTasLayout()->GetNodes())
+	{
+		std::string strNode = m_sceneReal.GetTasLayout()->GetNodeNames()[iNodeReal];
+
+		bool bOkX=0, bOkY=0;
+		double dValX = xml.Query<double>((strXmlRoot + "real/" + strNode + "_x").c_str(), 0., &bOkX);
+		double dValY = xml.Query<double>((strXmlRoot + "real/" + strNode + "_y").c_str(), 0., &bOkY);
+
+		pNode->setPos(dValX, dValY);
+		++iNodeReal;
+	}
+
+
+	// scattering triangle
+	double dRecipScale = xml.Query<double>((strXmlRoot + "recip/pixels_per_A-1").c_str(), 0., &bOk);
+	if(bOk)
+		m_sceneRecip.GetTriangle()->SetScaleFactor(dRecipScale);
+
+	unsigned int iNodeRecip = 0;
+	for(ScatteringTriangleNode *pNode : m_sceneRecip.GetTriangle()->GetNodes())
+	{
+		std::string strNode = m_sceneRecip.GetTriangle()->GetNodeNames()[iNodeRecip];
+
+		bool bOkX=0, bOkY=0;
+		double dValX = xml.Query<double>((strXmlRoot + "recip/" + strNode + "_x").c_str(), 0., &bOkX);
+		double dValY = xml.Query<double>((strXmlRoot + "recip/" + strNode + "_y").c_str(), 0., &bOkY);
+
+		pNode->setPos(dValX, dValY);
+		++iNodeRecip;
+	}
+
+
+	int bSmallqEnabled = xml.Query<int>((strXmlRoot + "recip/enable_q").c_str(), 0, &bOk);
+	if(bOk)
+		m_pSmallq->setChecked(bSmallqEnabled!=0);
+
+
+	m_strCurFile = strFile1;
+	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
+
+	CalcPeaks();
+	return true;
+}
+
+bool TazDlg::Load()
 {
 	QString strDirLast = m_settings.value("main/last_dir", ".").toString();
 	QString strFile = QFileDialog::getOpenFileName(this,
 							"Open TAS configuration...",
 							strDirLast,
 							"TAZ files (*.taz *.TAZ)");
-	if(strFile != "")
-	{
-		std::string strFile1 = strFile.toStdString();
-		std::string strDir = get_dir(strFile1).c_str();
-		m_settings.setValue("main/last_dir", QString(strDir.c_str()));
+	if(strFile == "")
+		return false;
 
-
-		// TODO
-
-		m_strCurFile = strFile1;
-		setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
-	}
+	return Load(strFile.toStdString().c_str());
 }
 
-void TazDlg::Save()
+bool TazDlg::Save()
 {
 	if(m_strCurFile == "")
-	{
-		SaveAs();
-		return;
-	}
+		return SaveAs();
 
 	const std::string strXmlRoot("taz/");
 	typedef std::map<std::string, std::string> tmap;
 	tmap mapConf;
 
+
+	// edit boxes
 	std::vector<const std::vector<QLineEdit*>*> vecEdits
 			= {&m_vecEdits_real, &m_vecEdits_recip,
 				&m_vecEdits_plane, &m_vecEdits_monoana};
@@ -460,6 +566,8 @@ void TazDlg::Save()
 		++iIdxEdit;
 	}
 
+
+	// spin boxes
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxesSample.size(); ++iSpinBox)
 	{
 		std::ostringstream ostrVal;
@@ -469,22 +577,61 @@ void TazDlg::Save()
 		mapConf[strXmlRoot + m_vecSpinBoxNamesSample[iSpinBox]] = ostrVal.str();
 	}
 
+
+	// check boxes
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxesSenses.size(); ++iCheckBox)
 		mapConf[strXmlRoot+m_vecCheckBoxNamesSenses[iCheckBox]]
 		        		= (m_vecCheckBoxesSenses[iCheckBox]->isChecked() ? "1" : "0");
 
 
-	// TODO: triangle & tas layout saving
+	// TAS layout
+	unsigned int iNodeReal = 0;
+	for(const TasLayoutNode *pNode : m_sceneReal.GetTasLayout()->GetNodes())
+	{
+		std::string strNode = m_sceneReal.GetTasLayout()->GetNodeNames()[iNodeReal];
+		std::string strValX = var_to_str(pNode->pos().x());
+		std::string strValY = var_to_str(pNode->pos().y());
+
+		mapConf[strXmlRoot + "real/" + strNode + "_x"] = strValX;
+		mapConf[strXmlRoot + "real/" + strNode + "_y"] = strValY;
+
+		++iNodeReal;
+	}
+	double dRealScale = m_sceneReal.GetTasLayout()->GetScaleFactor();
+	mapConf[strXmlRoot + "real/pixels_per_cm"] = var_to_str(dRealScale);
+
+
+	// scattering triangle
+	unsigned int iNodeRecip = 0;
+	for(const ScatteringTriangleNode *pNode : m_sceneRecip.GetTriangle()->GetNodes())
+	{
+		std::string strNode = m_sceneRecip.GetTriangle()->GetNodeNames()[iNodeRecip];
+		std::string strValX = var_to_str(pNode->pos().x());
+		std::string strValY = var_to_str(pNode->pos().y());
+
+		mapConf[strXmlRoot + "recip/" + strNode + "_x"] = strValX;
+		mapConf[strXmlRoot + "recip/" + strNode + "_y"] = strValY;
+
+		++iNodeRecip;
+	}
+	double dRecipScale = m_sceneRecip.GetTriangle()->GetScaleFactor();
+	mapConf[strXmlRoot + "recip/pixels_per_A-1"] = var_to_str(dRecipScale);
+
+
+	bool bSmallqEnabled = m_pSmallq->isChecked();
+	mapConf[strXmlRoot + "recip/enable_q"] = (bSmallqEnabled ? "1" : "0");
 
 
 	if(!Xml::SaveMap(m_strCurFile.c_str(), mapConf))
 	{
 		QMessageBox::critical(this, "Error", "Could not save configuration file.");
-		return;
+		return false;
 	}
+
+	return true;
 }
 
-void TazDlg::SaveAs()
+bool TazDlg::SaveAs()
 {
 	QString strDirLast = m_settings.value("main/last_dir", ".").toString();
 	QString strFile = QFileDialog::getSaveFileName(this,
@@ -496,12 +643,18 @@ void TazDlg::SaveAs()
 	{
 		std::string strFile1 = strFile.toStdString();
 		std::string strDir = get_dir(strFile1).c_str();
-		m_settings.setValue("main/last_dir", QString(strDir.c_str()));
 
 		m_strCurFile = strFile1;
 		setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
-		Save();
+		bool bOk = Save();
+
+		if(bOk)
+			m_settings.setValue("main/last_dir", QString(strDir.c_str()));
+
+		return bOk;
 	}
+
+	return false;
 }
 
 
@@ -527,10 +680,14 @@ void TazDlg::ShowAbout()
 
 	strAbout += "Uses Qt version ";
 	strAbout += QString(QT_VERSION_STR);
-	strAbout += "\thttp://qt-project.org\n";
+	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
+						+ " http://qt-project.org\n";
 	strAbout += "Uses Boost version ";
-	strAbout += QString(BOOST_LIB_VERSION);
-	strAbout += "\thttp://www.boost.org\n";
+	std::string strBoost = BOOST_LIB_VERSION;
+	find_all_and_replace<std::string>(strBoost, "_", ".");
+	strAbout += strBoost.c_str();
+	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
+						+ " http://www.boost.org\n";
 
 	QMessageBox::information(this, "About TAZ", strAbout);
 }

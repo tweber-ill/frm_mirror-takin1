@@ -24,6 +24,8 @@ class TazDlg : public QDialog, Ui::TazDlg
 	private:
 		bool m_bUpdateRecipEdits = 1;
 
+		QAction *m_pSmallq = 0;
+
 		std::vector<QLineEdit*> m_vecEdits_real;
 		std::vector<QLineEdit*> m_vecEdits_recip;
 		std::vector<QLineEdit*> m_vecEdits_plane;
@@ -59,6 +61,8 @@ class TazDlg : public QDialog, Ui::TazDlg
 		TazDlg() { TazDlg(0); }
 		virtual ~TazDlg();
 
+		bool Load(const char* pcFile);
+
 	protected slots:
 		void ChangedTolerance();
 		void CalcPeaks();
@@ -73,9 +77,9 @@ class TazDlg : public QDialog, Ui::TazDlg
 		void Show3D();
 		void ShowAbout();
 
-		void Save();
-		void SaveAs();
-		void Load();
+		bool Save();
+		bool SaveAs();
+		bool Load();
 };
 
 #endif

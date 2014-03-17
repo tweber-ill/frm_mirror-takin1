@@ -87,6 +87,13 @@ class TasLayout : public QGraphicsItem
 		void AllowChanges(bool bAllow) { m_bAllowChanges = bAllow; };
 
 		void SetZoom(double dZoom);
+
+	public:
+		std::vector<TasLayoutNode*> GetNodes();
+		std::vector<std::string> GetNodeNames() const;
+
+		double GetScaleFactor() const { return m_dScaleFactor; }
+		void SetScaleFactor(double dScale) { m_dScaleFactor = dScale; }
 };
 
 
@@ -102,6 +109,8 @@ class TasLayoutScene : public QGraphicsScene
 		virtual ~TasLayoutScene();
 
 		void emitUpdate(const TriangleOptions& opts);
+
+		TasLayout* GetTasLayout() { return m_pTas; }
 
 	public slots:
 		void triangleChanged(const TriangleOptions& opts);

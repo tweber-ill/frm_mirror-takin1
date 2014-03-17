@@ -19,6 +19,8 @@ ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem)
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 	setCursor(Qt::CrossCursor);
+
+	setData(TRIANGLE_NODE_TYPE_KEY, NODE_OTHER);
 }
 
 QRectF ScatteringTriangleNode::boundingRect() const
@@ -92,6 +94,9 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_pNodeKiKf = new ScatteringTriangleNode(this);
 	m_pNodeKfQ = new ScatteringTriangleNode(this);
 	m_pNodeGq = new ScatteringTriangleNode(this);
+
+	m_pNodeKfQ->setData(TRIANGLE_NODE_TYPE_KEY, NODE_Q);
+	m_pNodeGq->setData(TRIANGLE_NODE_TYPE_KEY, NODE_q);
 
 	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable);
@@ -458,6 +463,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 						pPeak->SetColor(Qt::green);
 					pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 					pPeak->setPos(dX * m_dScaleFactor, -dY * m_dScaleFactor);
+					pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
 					std::ostringstream ostrTip;
 					ostrTip << "(" << int(h) << " " << int(k) << " " << int(l) << ")";
@@ -489,6 +495,19 @@ void ScatteringTriangle::ClearPeaks()
 		}
 	}
 	m_vecPeaks.clear();
+}
+
+
+std::vector<ScatteringTriangleNode*> ScatteringTriangle::GetNodes()
+{
+	return std::vector<ScatteringTriangleNode*>
+			{ m_pNodeKiQ, m_pNodeKiKf, m_pNodeKfQ, m_pNodeGq };
+}
+
+std::vector<std::string> ScatteringTriangle::GetNodeNames() const
+{
+	return std::vector<std::string>
+		{ "kiQ", "kikf", "kfQ", "Gq" };
 }
 
 // --------------------------------------------------------------------------------
@@ -596,7 +615,7 @@ static inline const QGraphicsItem* get_nearest_node(const QPointF& pt,
 	for(int iNode=0; iNode<nodes.size(); ++iNode)
 	{
 		const QGraphicsItem *pNode = nodes[iNode];
-		if(pNode == pCurItem)
+		if(pNode == pCurItem || pNode->data(TRIANGLE_NODE_TYPE_KEY)!=NODE_BRAGG)
 			continue;
 
 		QLineF line(pt, pNode->scenePos());
@@ -614,16 +633,32 @@ static inline const QGraphicsItem* get_nearest_node(const QPointF& pt,
 	return nodes[iMinIdx];
 }
 
+void ScatteringTriangleScene::SnapToNearestPeak(ScatteringTriangleNode* pNode)
+{
+	if(!pNode)
+		return;
+
+	const QGraphicsItem *pNearestNode =
+					get_nearest_node(pNode->pos(), pNode, items());
+
+	if(pNearestNode)
+		pNode->setPos(pNearestNode->pos());
+}
+
 void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	bool bHandled = 0;
 
-	if(m_bMousePressed && m_bSnap)
+	if(m_bMousePressed)
 	{
 		QGraphicsItem* pCurItem = mouseGrabberItem();
+		int iNodeType = NODE_OTHER;
 		if(pCurItem)
+			iNodeType = pCurItem->data(TRIANGLE_NODE_TYPE_KEY).toInt();
+
+		if(pCurItem && (m_bSnap || iNodeType == NODE_q))
 		{
-			QList<QGraphicsItem*> nodes = items(/*pEvt->scenePos()*/);
+			QList<QGraphicsItem*> nodes = items();
 			const QGraphicsItem *pNearestNode =
 							get_nearest_node(pEvt->scenePos(), pCurItem, nodes);
 
@@ -675,9 +710,7 @@ ScatteringTriangleView::ScatteringTriangleView(QWidget* pParent)
 }
 
 ScatteringTriangleView::~ScatteringTriangleView()
-{
-
-}
+{}
 
 void ScatteringTriangleView::wheelEvent(QWheelEvent *pEvt)
 {

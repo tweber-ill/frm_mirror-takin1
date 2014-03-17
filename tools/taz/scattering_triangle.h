@@ -19,6 +19,18 @@
 
 #include "tasoptions.h"
 
+#define TRIANGLE_NODE_TYPE_KEY	0
+
+enum ScatteringTriangleNodeType
+{
+	NODE_Q,
+	NODE_q,
+
+	NODE_BRAGG,
+
+	NODE_OTHER
+};
+
 class ScatteringTriangle;
 class ScatteringTriangleNode : public QGraphicsItem
 {
@@ -110,6 +122,15 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetZoom(double dZoom);
 
 		void SetqVisible(bool bVisible);
+
+	public:
+		std::vector<ScatteringTriangleNode*> GetNodes();
+		std::vector<std::string> GetNodeNames() const;
+
+		double GetScaleFactor() const { return m_dScaleFactor; }
+		void SetScaleFactor(double dScale) { m_dScaleFactor = dScale; }
+
+		ScatteringTriangleNode* GetNodeGq() { return m_pNodeGq; }
 };
 
 
@@ -140,6 +161,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void SetAnaSense(bool bPos);
 
 		ScatteringTriangle* GetTriangle() { return m_pTri; }
+		void SnapToNearestPeak(ScatteringTriangleNode* pNode);
 
 	public slots:
 		void tasChanged(const TriangleOptions& opts);

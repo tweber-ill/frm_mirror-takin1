@@ -26,6 +26,8 @@ int main(int argc, char** argv)
 	QLocale::setDefault(QLocale::English);
 
 	TazDlg dlg(0);
+	if(argc > 1)
+		dlg.Load(argv[1]);
 	int iRet = dlg.exec();
 
 	deinit_spec_chars();
