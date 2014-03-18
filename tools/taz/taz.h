@@ -7,7 +7,8 @@
 #ifndef __TAZ_H__
 #define __TAZ_H__
 
-#include <QtGui/QDialog>
+//#include <QtGui/QDialog>
+#include <QtGui/QMainWindow>
 #include <QtCore/QSettings>
 #include <QtCore/QVariant>
 
@@ -19,7 +20,7 @@
 #include "tas_layout.h"
 #include "recip3d.h"
 
-class TazDlg : public QDialog, Ui::TazDlg
+class TazDlg : public QMainWindow, Ui::TazDlg
 { Q_OBJECT
 	private:
 		bool m_bUpdateRecipEdits = 1;

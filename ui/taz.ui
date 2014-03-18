@@ -1,584 +1,528 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>TazDlg</class>
- <widget class="QDialog" name="TazDlg">
+ <widget class="QMainWindow" name="TazDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>923</width>
-    <height>641</height>
+    <width>876</width>
+    <height>624</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>TAZ</string>
   </property>
-  <property name="locale">
-   <locale language="English" country="UnitedStates"/>
+  <property name="animated">
+   <bool>false</bool>
   </property>
-  <property name="sizeGripEnabled">
-   <bool>true</bool>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QSplitter" name="splitter_2">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <widget class="QSplitter" name="splitter">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QGroupBox" name="groupRecip">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="sizeIncrement">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>Reciprocal Space / Scattering Triangle</string>
-       </property>
-      </widget>
-      <widget class="QGroupBox" name="groupReal">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="sizeIncrement">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>Real Space / Instrument Layout</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QFrame" name="frame_2">
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_6">
+    <item row="0" column="0">
+     <widget class="QSplitter" name="splitter_2">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="baseSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="0" rowspan="3">
-        <widget class="QGroupBox" name="groupSample">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Sample</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="0" column="7">
-           <widget class="QLabel" name="label_14">
-            <property name="text">
-             <string>α* (°):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>a (Å):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="editA">
-            <property name="text">
-             <string>5</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>b (Å):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>α (°):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4" rowspan="3">
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>β (°):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>γ (°):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="editB">
-            <property name="text">
-             <string>5</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>c (Å):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="editC">
-            <property name="text">
-             <string>5</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLineEdit" name="editAlpha">
-            <property name="text">
-             <string>90</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QLineEdit" name="editBeta">
-            <property name="text">
-             <string>90</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QLineEdit" name="editGamma">
-            <property name="text">
-             <string>90</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="6">
-           <widget class="QLineEdit" name="editARecip"/>
-          </item>
-          <item row="1" column="5">
-           <widget class="QLabel" name="label_12">
-            <property name="text">
-             <string>b* (Å⁻¹):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="5">
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>c* (Å⁻¹):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="6">
-           <widget class="QLineEdit" name="editCRecip"/>
-          </item>
-          <item row="1" column="6">
-           <widget class="QLineEdit" name="editBRecip"/>
-          </item>
-          <item row="0" column="5">
-           <widget class="QLabel" name="label_11">
-            <property name="text">
-             <string>a* (Å⁻¹):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="7">
-           <widget class="QLabel" name="label_15">
-            <property name="text">
-             <string>β* (°):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="7">
-           <widget class="QLabel" name="label_16">
-            <property name="text">
-             <string>γ* (°):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="8">
-           <widget class="QLineEdit" name="editAlphaRecip"/>
-          </item>
-          <item row="1" column="8">
-           <widget class="QLineEdit" name="editBetaRecip"/>
-          </item>
-          <item row="2" column="8">
-           <widget class="QLineEdit" name="editGammaRecip"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="2" rowspan="3">
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Scattering Plane</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="3">
-           <widget class="QLineEdit" name="editScatX2">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>x:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="editScatX0">
-            <property name="text">
-             <string>1</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLineEdit" name="editScatX1">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>y:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="editScatY0">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLineEdit" name="editScatY1">
-            <property name="text">
-             <string>1</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QLineEdit" name="editScatY2">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2" colspan="2">
-           <widget class="QLineEdit" name="editPlaneTolerance">
-            <property name="text">
-             <string>0.01</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QLabel" name="label_21">
-            <property name="text">
-             <string>Δ (Å⁻¹):</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="4">
-        <widget class="QDialogButtonBox" name="buttonBox">
-         <property name="standardButtons">
-          <set>QDialogButtonBox::Ok</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="3" rowspan="3">
-        <widget class="QGroupBox" name="groupBox_5">
-         <property name="title">
-          <string>TAS</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Monochromator d (Å):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Analyser d (Å):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QCheckBox" name="checkSenseM">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QCheckBox" name="checkSenseS">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_17">
-            <property name="text">
-             <string>Scattering Senses:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QCheckBox" name="checkSenseA">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="3">
-           <widget class="QLineEdit" name="editMonoD">
-            <property name="text">
-             <string>3.355</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" colspan="3">
-           <widget class="QLineEdit" name="editAnaD">
-            <property name="text">
-             <string>3.355</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="1" rowspan="3">
-        <widget class="QGroupBox" name="groupBox_3">
-         <property name="title">
-          <string>Sample Rotation</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_18">
-            <property name="text">
-             <string>Δφ (°):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="spinRotPhi">
-            <property name="decimals">
-             <number>1</number>
-            </property>
-            <property name="minimum">
-             <double>-180.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>180.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_20">
-            <property name="text">
-             <string>Δψ (°):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="spinRotPsi">
-            <property name="decimals">
-             <number>1</number>
-            </property>
-            <property name="minimum">
-             <double>-180.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>180.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="spinRotTheta">
-            <property name="decimals">
-             <number>1</number>
-            </property>
-            <property name="minimum">
-             <double>0.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>180.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_19">
-            <property name="text">
-             <string>Δθ (°):</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="4">
-        <widget class="QPushButton" name="btn3D">
-         <property name="text">
-          <string>3D View...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QSplitter" name="splitter">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QGroupBox" name="groupRecip">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="sizeIncrement">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Reciprocal Space / Scattering Triangle</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupReal">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="sizeIncrement">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Real Space / Instrument Layout</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QFrame" name="frame_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0" rowspan="3">
+         <widget class="QGroupBox" name="groupSample">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Sample</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="0" column="7">
+            <widget class="QLabel" name="label_14">
+             <property name="text">
+              <string>α* (°):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>a (Å):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="editA">
+             <property name="text">
+              <string>5</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>b (Å):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>α (°):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="4" rowspan="3">
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>β (°):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>γ (°):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="editB">
+             <property name="text">
+              <string>5</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>c (Å):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="editC">
+             <property name="text">
+              <string>5</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLineEdit" name="editAlpha">
+             <property name="text">
+              <string>90</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLineEdit" name="editBeta">
+             <property name="text">
+              <string>90</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QLineEdit" name="editGamma">
+             <property name="text">
+              <string>90</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="6">
+            <widget class="QLineEdit" name="editARecip"/>
+           </item>
+           <item row="1" column="5">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>b* (Å⁻¹):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="5">
+            <widget class="QLabel" name="label_13">
+             <property name="text">
+              <string>c* (Å⁻¹):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="6">
+            <widget class="QLineEdit" name="editCRecip"/>
+           </item>
+           <item row="1" column="6">
+            <widget class="QLineEdit" name="editBRecip"/>
+           </item>
+           <item row="0" column="5">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>a* (Å⁻¹):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="7">
+            <widget class="QLabel" name="label_15">
+             <property name="text">
+              <string>β* (°):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="7">
+            <widget class="QLabel" name="label_16">
+             <property name="text">
+              <string>γ* (°):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="8">
+            <widget class="QLineEdit" name="editAlphaRecip"/>
+           </item>
+           <item row="1" column="8">
+            <widget class="QLineEdit" name="editBetaRecip"/>
+           </item>
+           <item row="2" column="8">
+            <widget class="QLineEdit" name="editGammaRecip"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="2" rowspan="3">
+         <widget class="QGroupBox" name="groupBox_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Scattering Plane</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="3">
+            <widget class="QLineEdit" name="editScatX2">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>x:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="editScatX0">
+             <property name="text">
+              <string>1</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLineEdit" name="editScatX1">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>y:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="editScatY0">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLineEdit" name="editScatY1">
+             <property name="text">
+              <string>1</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLineEdit" name="editScatY2">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2" colspan="2">
+            <widget class="QLineEdit" name="editPlaneTolerance">
+             <property name="text">
+              <string>0.01</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QLabel" name="label_21">
+             <property name="text">
+              <string>Δ (Å⁻¹):</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="3" rowspan="3">
+         <widget class="QGroupBox" name="groupBox_5">
+          <property name="title">
+           <string>TAS</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Monochromator d (Å):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>Analyser d (Å):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="checkSenseM">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QCheckBox" name="checkSenseS">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_17">
+             <property name="text">
+              <string>Scattering Senses:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QCheckBox" name="checkSenseA">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1" colspan="3">
+            <widget class="QLineEdit" name="editMonoD">
+             <property name="text">
+              <string>3.355</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="3">
+            <widget class="QLineEdit" name="editAnaD">
+             <property name="text">
+              <string>3.355</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="1" rowspan="3">
+         <widget class="QGroupBox" name="groupBox_3">
+          <property name="title">
+           <string>Sample Rotation</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_18">
+             <property name="text">
+              <string>Δφ (°):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QDoubleSpinBox" name="spinRotPhi">
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="minimum">
+              <double>-180.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>180.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_20">
+             <property name="text">
+              <string>Δψ (°):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QDoubleSpinBox" name="spinRotPsi">
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="minimum">
+              <double>-180.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>180.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QDoubleSpinBox" name="spinRotTheta">
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="minimum">
+              <double>0.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>180.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_19">
+             <property name="text">
+              <string>Δθ (°):</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="2" column="4">
+         <widget class="QPushButton" name="btn3D">
+          <property name="text">
+           <string>3D View...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
-    </widget>
-   </item>
-  </layout>
+    </item>
+   </layout>
+  </widget>
  </widget>
- <tabstops>
-  <tabstop>editA</tabstop>
-  <tabstop>editB</tabstop>
-  <tabstop>editC</tabstop>
-  <tabstop>editAlpha</tabstop>
-  <tabstop>editBeta</tabstop>
-  <tabstop>editGamma</tabstop>
-  <tabstop>editARecip</tabstop>
-  <tabstop>editBRecip</tabstop>
-  <tabstop>editCRecip</tabstop>
-  <tabstop>editAlphaRecip</tabstop>
-  <tabstop>editBetaRecip</tabstop>
-  <tabstop>editGammaRecip</tabstop>
-  <tabstop>spinRotPhi</tabstop>
-  <tabstop>spinRotTheta</tabstop>
-  <tabstop>spinRotPsi</tabstop>
-  <tabstop>editScatX0</tabstop>
-  <tabstop>editScatX1</tabstop>
-  <tabstop>editScatX2</tabstop>
-  <tabstop>editScatY0</tabstop>
-  <tabstop>editScatY1</tabstop>
-  <tabstop>editScatY2</tabstop>
-  <tabstop>editPlaneTolerance</tabstop>
-  <tabstop>checkSenseM</tabstop>
-  <tabstop>checkSenseS</tabstop>
-  <tabstop>checkSenseA</tabstop>
-  <tabstop>editMonoD</tabstop>
-  <tabstop>editAnaD</tabstop>
-  <tabstop>btn3D</tabstop>
-  <tabstop>buttonBox</tabstop>
- </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>TazDlg</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>689</x>
-     <y>594</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>410</x>
-     <y>311</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

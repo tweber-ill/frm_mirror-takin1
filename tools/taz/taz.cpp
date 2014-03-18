@@ -32,9 +32,15 @@ static QString dtoqstr(double dVal, unsigned int iPrec=3)
 }
 
 TazDlg::TazDlg(QWidget* pParent)
-		: QDialog(pParent),
+		: QMainWindow(pParent),
 		  m_settings("tobis_stuff", "taz")
 {
+	if(m_settings.contains("main/geo"))
+	{
+		QByteArray geo = m_settings.value("main/geo").toByteArray();
+		restoreGeometry(geo);
+	}
+
 	const bool bSmallqVisible = 0;
 
 	this->setupUi(this);
@@ -170,20 +176,20 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	pMenuFile->addSeparator();
 
-    QAction *pExit = new QAction(this);
-    pExit->setText("Exit");
-    pExit->setIcon(QIcon::fromTheme("application-exit"));
-    pMenuFile->addAction(pExit);
+	QAction *pExit = new QAction(this);
+	pExit->setText("Exit");
+	pExit->setIcon(QIcon::fromTheme("application-exit"));
+	pMenuFile->addAction(pExit);
 
 
 	QMenu *pMenuView = new QMenu(this);
 	pMenuView->setTitle("View");
 
-    m_pSmallq = new QAction(this);
-    m_pSmallq->setText("Enable Reduced Scattering Vector q");
-    m_pSmallq->setCheckable(1);
-    m_pSmallq->setChecked(bSmallqVisible);
-    pMenuView->addAction(m_pSmallq);
+	m_pSmallq = new QAction(this);
+	m_pSmallq->setText("Enable Reduced Scattering Vector q");
+	m_pSmallq->setCheckable(1);
+	m_pSmallq->setChecked(bSmallqVisible);
+	pMenuView->addAction(m_pSmallq);
 
 
 	QMenu *pMenuHelp = new QMenu(this);
@@ -206,7 +212,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuBar->addMenu(pMenuFile);
 	pMenuBar->addMenu(pMenuView);
 	pMenuBar->addMenu(pMenuHelp);
-	this->layout()->setMenuBar(pMenuBar);
+
+	setMenuBar(pMenuBar);
+	//this->layout()->setMenuBar(pMenuBar);
 
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
@@ -228,6 +236,8 @@ TazDlg::TazDlg(QWidget* pParent)
 
 TazDlg::~TazDlg()
 {
+	m_settings.setValue("main/geo", saveGeometry());
+
 	if(m_pRecip3d)
 	{
 		delete m_pRecip3d;

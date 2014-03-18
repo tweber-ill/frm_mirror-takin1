@@ -28,7 +28,8 @@ int main(int argc, char** argv)
 	TazDlg dlg(0);
 	if(argc > 1)
 		dlg.Load(argv[1]);
-	int iRet = dlg.exec();
+	dlg.show();
+	int iRet = app.exec();
 
 	deinit_spec_chars();
 	return iRet;
