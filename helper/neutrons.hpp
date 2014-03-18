@@ -370,19 +370,4 @@ get_energy_transfer(const units::quantity<units::unit<units::wavenumber_dimensio
 // --------------------------------------------------------------------------------
 
 
-
-// --------------------------------------------------------------------
-/* formulas.cpp */
-extern void init_formulas();
-extern bool get_val(const std::string& str, double& dVal, std::string& strUnit);
-extern units::quantity<units::si::frequency> get_freq(const std::string& strVar);
-extern units::quantity<units::si::energy> get_energy(const std::string& strVar);
-extern units::quantity<units::si::length> get_length(const std::string& strUnit);
-extern units::quantity<units::si::wavenumber> get_wavenumber(const std::string& strVar);
-extern units::quantity<units::si::time> get_time(const std::string& strVar);
-extern units::quantity<units::si::plane_angle> get_angle(const std::string& strVar);
-extern units::quantity<units::si::temperature> get_temperature(const std::string& strVar);
-extern double get_scalar(const std::string& strVar);
-// --------------------------------------------------------------------
-
 #endif
