@@ -685,10 +685,10 @@ void init_space_groups()
 		pair.second.SetName(pair.first);
 }
 
-const t_mapSpaceGroups& get_space_groups()
+const t_mapSpaceGroups* get_space_groups()
 {
 	if(g_mapSpaceGroups.size() == 0)
 		init_space_groups();
 
-	return g_mapSpaceGroups;
+	return &g_mapSpaceGroups;
 }

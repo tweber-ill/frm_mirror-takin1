@@ -52,12 +52,13 @@ class SpaceGroup
 		bool HasReflection(int h, int k, int l) const;
 
 		void SetName(const std::string& str) { m_strName = str; }
+		const std::string& GetName() const { return m_strName; }
 };
 
 
 typedef std::map<std::string, SpaceGroup> t_mapSpaceGroups;
 
 extern void init_space_groups();
-extern const t_mapSpaceGroups& get_space_groups();
+extern const t_mapSpaceGroups* get_space_groups();
 
 #endif

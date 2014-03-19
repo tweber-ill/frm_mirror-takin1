@@ -32,7 +32,8 @@ Recip3DDlg::~Recip3DDlg()
 
 void Recip3DDlg::CalcPeaks(const Lattice& lattice,
 							const Lattice& recip, const Lattice& recip_unrot,
-							const Plane<double>& plane)
+							const Plane<double>& plane,
+							const SpaceGroup* pSpaceGroup)
 {
 	const unsigned int iObjCnt = (unsigned int)((m_dMaxPeaks*2 + 1)*
 												(m_dMaxPeaks*2 + 1)*
@@ -49,6 +50,14 @@ void Recip3DDlg::CalcPeaks(const Lattice& lattice,
 		for(double k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
 			for(double l=-m_dMaxPeaks; l<=m_dMaxPeaks; l+=1.)
 			{
+				if(pSpaceGroup)
+				{
+					int ih = int(h), ik = int(k), il = int(l);
+
+					if(!pSpaceGroup->HasReflection(ih, ik, il))
+						continue;
+				}
+
 				bool bInScatteringPlane = 0;
 				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
 				for(unsigned int i=0; i<3; ++i)

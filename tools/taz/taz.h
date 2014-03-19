@@ -20,6 +20,8 @@
 #include "tas_layout.h"
 #include "recip3d.h"
 
+#include "helper/spacegroup.h"
+
 class TazDlg : public QMainWindow, Ui::TazDlg
 { Q_OBJECT
 	private:
@@ -57,6 +59,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
 
+		const t_mapSpaceGroups* m_pmapSpaceGroups;
+
 	public:
 		TazDlg(QWidget *pParent);
 		TazDlg() { TazDlg(0); }
@@ -81,6 +85,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		bool Save();
 		bool SaveAs();
 		bool Load();
+
+		void RepopulateSpaceGroups();
 };
 
 #endif

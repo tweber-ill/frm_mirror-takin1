@@ -33,7 +33,8 @@ static QString dtoqstr(double dVal, unsigned int iPrec=3)
 
 TazDlg::TazDlg(QWidget* pParent)
 		: QMainWindow(pParent),
-		  m_settings("tobis_stuff", "taz")
+		  m_settings("tobis_stuff", "taz"),
+		  m_pmapSpaceGroups(get_space_groups())
 {
 	if(m_settings.contains("main/geo"))
 	{
@@ -144,7 +145,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(checkSenseS, SIGNAL(stateChanged(int)), this, SLOT(UpdateSampleSense()));
 	QObject::connect(checkSenseA, SIGNAL(stateChanged(int)), this, SLOT(UpdateAnaSense()));
 
-	QObject::connect(btn3D, SIGNAL(clicked()), this, SLOT(Show3D()));
+	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
+	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(CalcPeaks()));
 
 
 	// --------------------------------------------------------------------------------
@@ -182,15 +184,20 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuFile->addAction(pExit);
 
 
-	QMenu *pMenuView = new QMenu(this);
-	pMenuView->setTitle("View");
+	QMenu *pMenuViewRecip = new QMenu(this);
+	pMenuViewRecip->setTitle("Reciprocal Space");
 
 	m_pSmallq = new QAction(this);
 	m_pSmallq->setText("Enable Reduced Scattering Vector q");
 	m_pSmallq->setCheckable(1);
 	m_pSmallq->setChecked(bSmallqVisible);
-	pMenuView->addAction(m_pSmallq);
+	pMenuViewRecip->addAction(m_pSmallq);
 
+	pMenuViewRecip->addSeparator();
+
+	QAction *pView3D = new QAction(this);
+	pView3D->setText("3D View...");
+	pMenuViewRecip->addAction(pView3D);
 
 	QMenu *pMenuHelp = new QMenu(this);
 	pMenuHelp->setTitle("Help");
@@ -210,7 +217,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QMenuBar *pMenuBar = new QMenuBar(this);
 	pMenuBar->addMenu(pMenuFile);
-	pMenuBar->addMenu(pMenuView);
+	pMenuBar->addMenu(pMenuViewRecip);
 	pMenuBar->addMenu(pMenuHelp);
 
 	setMenuBar(pMenuBar);
@@ -223,9 +230,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	QObject::connect(pView3D, SIGNAL(triggered()), this, SLOT(Show3D()));
 	// --------------------------------------------------------------------------------
 
-
+	RepopulateSpaceGroups();
 
 	UpdateDs();
 	CalcPeaks();
@@ -375,12 +383,19 @@ void TazDlg::CalcPeaks()
 	ostrSample << ", Reciprocal: " << (1./dVol) << " " << strAA << strMinus << strThree;
 	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
-	m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane);
+	SpaceGroup *pSpaceGroup = 0;
+	int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
+	if(iSpaceGroupIdx == 0)
+		pSpaceGroup = 0;
+	else
+		pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
+
+	m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
 	m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 	m_sceneRecip.emitUpdate();
 
 	if(m_pRecip3d)
-		m_pRecip3d->CalcPeaks(lattice, recip, recip_unrot, plane);
+		m_pRecip3d->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
 }
 
 void TazDlg::UpdateSampleSense()
@@ -527,6 +542,17 @@ bool TazDlg::Load(const char* pcFile)
 		m_pSmallq->setChecked(bSmallqEnabled!=0);
 
 
+	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
+	trim(strSpaceGroup);
+	if(bOk)
+	{
+		editSpaceGroupsFilter->clear();
+		int iSGIdx = comboSpaceGroups->findText(strSpaceGroup.c_str());
+		if(iSGIdx >= 0)
+			comboSpaceGroups->setCurrentIndex(iSGIdx);
+	}
+
+
 	m_strCurFile = strFile1;
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
 
@@ -632,6 +658,10 @@ bool TazDlg::Save()
 	mapConf[strXmlRoot + "recip/enable_q"] = (bSmallqEnabled ? "1" : "0");
 
 
+	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
+
+
+
 	if(!Xml::SaveMap(m_strCurFile.c_str(), mapConf))
 	{
 		QMessageBox::critical(this, "Error", "Could not save configuration file.");
@@ -665,6 +695,28 @@ bool TazDlg::SaveAs()
 	}
 
 	return false;
+}
+
+void TazDlg::RepopulateSpaceGroups()
+{
+	if(!m_pmapSpaceGroups)
+		return;
+
+	for(int iCnt=comboSpaceGroups->count()-1; iCnt>0; --iCnt)
+		comboSpaceGroups->removeItem(iCnt);
+
+	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
+
+	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
+	{
+		const std::string& strName = pair.second.GetName();
+		if(strName.find(strFilter) == std::string::npos)
+			continue;
+
+		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
+									strName.c_str(),
+									QVariant::fromValue((void*)&pair.second));
+	}
 }
 
 
@@ -704,7 +756,6 @@ void TazDlg::ShowAbout()
 	strAbout += "Uses space group calculations ported from Nicos version 2";
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
 						+ " https://forge.frm2.tum.de/redmine/projects/nicos\n";
-
 	strAbout += "Uses space group data from PowderCell version 2.3";
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
 						+ " http://www.bam.de/de/service/publikationen/powder_cell_a.htm\n";

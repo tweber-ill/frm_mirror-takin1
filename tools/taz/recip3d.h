@@ -11,6 +11,7 @@
 #include "plot/plotgl.h"
 #include "helper/linalg.h"
 #include "helper/lattice.h"
+#include "helper/spacegroup.h"
 
 class Recip3DDlg : public QDialog
 {Q_OBJECT
@@ -25,7 +26,8 @@ public:
 
 	void CalcPeaks(const Lattice& lattice,
 					const Lattice& recip, const Lattice& recip_unrot,
-					const Plane<double>& plane);
+					const Plane<double>& plane,
+					const SpaceGroup* pSpaceGroup=0);
 
 	void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 	void SetMaxPeaks(double dMax) { m_dMaxPeaks = dMax; }

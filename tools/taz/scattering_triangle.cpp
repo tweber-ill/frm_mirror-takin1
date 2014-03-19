@@ -412,7 +412,8 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 
 void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 								const Lattice& recip, const Lattice& recip_unrot,
-								const Plane<double>& plane)
+								const Plane<double>& plane,
+								const SpaceGroup* pSpaceGroup)
 {
 	ClearPeaks();
 
@@ -441,6 +442,14 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 		for(double k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
 			for(double l=-m_dMaxPeaks; l<=m_dMaxPeaks; l+=1.)
 			{
+				if(pSpaceGroup)
+				{
+					int ih = int(h), ik = int(k), il = int(l);
+
+					if(!pSpaceGroup->HasReflection(ih, ik, il))
+						continue;
+				}
+
 				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
 				double dDist = 0.;
 				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);

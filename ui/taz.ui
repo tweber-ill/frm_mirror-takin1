@@ -272,7 +272,7 @@
           </layout>
          </widget>
         </item>
-        <item row="0" column="2" rowspan="3">
+        <item row="0" column="3" rowspan="3">
          <widget class="QGroupBox" name="groupBox_4">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -357,7 +357,7 @@
           </layout>
          </widget>
         </item>
-        <item row="0" column="3" rowspan="3">
+        <item row="0" column="4" rowspan="3">
          <widget class="QGroupBox" name="groupBox_5">
           <property name="title">
            <string>TAS</string>
@@ -366,14 +366,14 @@
            <item row="1" column="0">
             <widget class="QLabel" name="label_9">
              <property name="text">
-              <string>Monochromator d (Å):</string>
+              <string>Mono. d (Å):</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_10">
              <property name="text">
-              <string>Analyser d (Å):</string>
+              <string>Ana. d (Å):</string>
              </property>
             </widget>
            </item>
@@ -400,7 +400,7 @@
            <item row="0" column="0">
             <widget class="QLabel" name="label_17">
              <property name="text">
-              <string>Scattering Senses:</string>
+              <string>Sc. Senses:</string>
              </property>
             </widget>
            </item>
@@ -431,7 +431,7 @@
           </layout>
          </widget>
         </item>
-        <item row="0" column="1" rowspan="3">
+        <item row="0" column="2" rowspan="3">
          <widget class="QGroupBox" name="groupBox_3">
           <property name="title">
            <string>Sample Rotation</string>
@@ -509,11 +509,32 @@
           </layout>
          </widget>
         </item>
-        <item row="2" column="4">
-         <widget class="QPushButton" name="btn3D">
-          <property name="text">
-           <string>3D View...</string>
+        <item row="0" column="1" rowspan="3">
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Space Group</string>
           </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="0">
+            <widget class="QComboBox" name="comboSpaceGroups">
+             <item>
+              <property name="text">
+               <string>&lt;no set&gt;</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_22">
+             <property name="text">
+              <string>Filter:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLineEdit" name="editSpaceGroupsFilter"/>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -523,6 +544,37 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>editA</tabstop>
+  <tabstop>editB</tabstop>
+  <tabstop>editC</tabstop>
+  <tabstop>editAlpha</tabstop>
+  <tabstop>editBeta</tabstop>
+  <tabstop>editGamma</tabstop>
+  <tabstop>editARecip</tabstop>
+  <tabstop>editBRecip</tabstop>
+  <tabstop>editCRecip</tabstop>
+  <tabstop>editAlphaRecip</tabstop>
+  <tabstop>editBetaRecip</tabstop>
+  <tabstop>editGammaRecip</tabstop>
+  <tabstop>comboSpaceGroups</tabstop>
+  <tabstop>editSpaceGroupsFilter</tabstop>
+  <tabstop>spinRotPhi</tabstop>
+  <tabstop>spinRotTheta</tabstop>
+  <tabstop>spinRotPsi</tabstop>
+  <tabstop>editScatX0</tabstop>
+  <tabstop>editScatX1</tabstop>
+  <tabstop>editScatX2</tabstop>
+  <tabstop>editScatY0</tabstop>
+  <tabstop>editScatY1</tabstop>
+  <tabstop>editScatY2</tabstop>
+  <tabstop>editPlaneTolerance</tabstop>
+  <tabstop>checkSenseM</tabstop>
+  <tabstop>checkSenseS</tabstop>
+  <tabstop>checkSenseA</tabstop>
+  <tabstop>editMonoD</tabstop>
+  <tabstop>editAnaD</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

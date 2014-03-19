@@ -15,10 +15,10 @@ LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 
 
 taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
-	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o
+	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
-			obj/xml.o \
+			obj/xml.o obj/spacegroup.o \
 			${LIBS_TAZ}
 	strip bin/taz
 
@@ -56,6 +56,9 @@ obj/linalg.o: helper/linalg.cpp helper/linalg.h
 
 obj/lattice.o: helper/lattice.cpp helper/lattice.h
 	${CC} ${FLAGS} -c -o obj/lattice.o helper/lattice.cpp
+
+obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
+	${CC} ${FLAGS} -c -o obj/spacegroup.o helper/spacegroup.cpp
 
 
 obj/plotgl.o: plot/plotgl.cpp plot/plotgl.h
