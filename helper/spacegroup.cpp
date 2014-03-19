@@ -5,7 +5,7 @@
  * @date 19-mar-2014
  *
  * Georg's original Python version:
- * http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos-core.git/tree/lib/nicos/devices/tas/spacegroups.py
+ * http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos-core.git/tree/nicos/devices/tas/spacegroups.py
  *
  * Data sets from "spacegroups.py" are from PowderCell by W. Kraus and G. Nolze:
  * http://www.bam.de/de/service/publikationen/powder_cell_a.htm
