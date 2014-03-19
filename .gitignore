@@ -10,7 +10,6 @@ Release/*
 ui/*.h
 bin/reso
 bin/taz
-script/hermelin
 perf.data
 perf.data.old
 gmon.out
