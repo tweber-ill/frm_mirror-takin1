@@ -1,7 +1,7 @@
 /*
  * Determine allowed reflexes from space group
  * @author Georg Brandl (author of original Python version "spacegroups.py")
- * @author Tobias Weber (ported to C++, i.e. this version)
+ * @author Tobias Weber (C++ port, i.e. author of this version)
  * @date 19-mar-2014
  *
  * Georg's original Python version:
