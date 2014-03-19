@@ -371,14 +371,19 @@ bool eigenvec_sym(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& e
     return false;
 }
 
-template<>
-bool eigenvec<double>(const ublas::matrix<double>& mat,
-						std::vector<ublas::vector<double> >& evecs,
-						std::vector<double>& evals);
-template<>
-bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
-						std::vector<ublas::vector<double> >& evecs,
-						std::vector<double>& evals);
+
+#ifdef USE_LAPACK
+
+	template<>
+	bool eigenvec<double>(const ublas::matrix<double>& mat,
+							std::vector<ublas::vector<double> >& evecs,
+							std::vector<double>& evals);
+	template<>
+	bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
+							std::vector<ublas::vector<double> >& evecs,
+							std::vector<double>& evals);
+
+#endif
 
 
 // algo from:

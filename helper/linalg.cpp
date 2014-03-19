@@ -7,8 +7,8 @@
 
 #include "linalg.h"
 #include "math.h"
-#include "../main/settings.h"
 
+#ifdef USE_LAPACK
 extern "C"
 {
         #include <lapacke.h>
@@ -69,7 +69,7 @@ bool eigenvec<double>(const ublas::matrix<double>& mat,
 
     if(iInfo!=0)
     {
-    	if(Settings::Get<int>("general/debug_level") >= 1)
+    	//if(Settings::Get<int>("general/debug_level") >= 1)
     		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
     					<< std::endl;
     	bOk = false;
@@ -121,7 +121,7 @@ bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
 
     if(iInfo!=0)
     {
-    	if(Settings::Get<int>("general/debug_level") >= 1)
+    	//if(Settings::Get<int>("general/debug_level") >= 1)
     		std::cerr << "Error: Could not solve eigenproblem (lapack error " << iInfo << ")."
     					<< std::endl;
 		bOk = false;
@@ -141,7 +141,7 @@ bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
     delete[] pMem;
     return bOk;
 }
-
+#endif
 
 
 template<>
