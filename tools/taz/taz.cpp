@@ -692,12 +692,22 @@ void TazDlg::ShowAbout()
 	strAbout += QString(QT_VERSION_STR);
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
 						+ " http://qt-project.org\n";
+
 	strAbout += "Uses Boost version ";
 	std::string strBoost = BOOST_LIB_VERSION;
 	find_all_and_replace<std::string>(strBoost, "_", ".");
 	strAbout += strBoost.c_str();
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
 						+ " http://www.boost.org\n";
+	strAbout += "\n";
+
+	strAbout += "Uses space group calculations ported from Nicos version 2";
+	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
+						+ " https://forge.frm2.tum.de/redmine/projects/nicos\n";
+
+	strAbout += "Uses space group data from PowderCell version 2.3";
+	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
+						+ " http://www.bam.de/de/service/publikationen/powder_cell_a.htm\n";
 
 	QMessageBox::information(this, "About TAZ", strAbout);
 }

@@ -1,35 +1,39 @@
 /*
  * Determine allowed reflexes from space group
- * @author Georg Brandl (author of original Python version "spacegroups.py"
+ * @author Georg Brandl (author of original Python version "spacegroups.py")
  * @author Tobias Weber (ported to C++, i.e. this version)
  * @date 19-mar-2014
  *
  * Georg's original Python version:
  * http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos-core.git/tree/lib/nicos/devices/tas/spacegroups.py
+ *
+ * Data sets from "spacegroups.py" are from PowderCell by W. Kraus and G. Nolze:
+ * http://www.bam.de/de/service/publikationen/powder_cell_a.htm
  */
 
 #include "spacegroup.h"
 #include <cstdlib>
 
 // -> function "check_refcond" in Georg's Python code
+// -> http://www.ccp14.ac.uk/ccp/web-mirrors/powdcell/a_v/v_1/powder/details/extinct.htm
 static std::vector<bool (*)(int h, int k, int l)> g_vecConds =
 {
-	/*00*/ [] (int h, int k, int l) -> bool { return 1; },
+	/*00, P*/ [] (int h, int k, int l) -> bool { return 1; },
 	/*01*/ [] (int h, int k, int l) -> bool { return h%2 == 0; },
 	/*02*/ [] (int h, int k, int l) -> bool { return k%2 == 0; },
 	/*03*/ [] (int h, int k, int l) -> bool { return l%2 == 0; },
-	/*04*/ [] (int h, int k, int l) -> bool { return (k+l)%2 == 0; },
-	/*05*/ [] (int h, int k, int l) -> bool { return (h+l)%2 == 0; },
-	/*06*/ [] (int h, int k, int l) -> bool { return (h+k)%2 == 0; },
+	/*04, A*/ [] (int h, int k, int l) -> bool { return (k+l)%2 == 0; },
+	/*05, B*/ [] (int h, int k, int l) -> bool { return (h+l)%2 == 0; },
+	/*06, C*/ [] (int h, int k, int l) -> bool { return (h+k)%2 == 0; },
 	/*07*/ [] (int h, int k, int l) -> bool { return (h%2 == k%2) && (k%2 == l%2); },
 	/*08*/ [] (int h, int k, int l) -> bool { return (k+l)%4 == 0; },
 	/*09*/ [] (int h, int k, int l) -> bool { return (h+l)%4 == 0; },
 	/*10*/ [] (int h, int k, int l) -> bool { return (h+k)%4 == 0; },
 	/*11*/ [] (int h, int k, int l) -> bool { return (2*h+l)%2 == 0; },
 	/*12*/ [] (int h, int k, int l) -> bool { return (2*h+l)%4 == 0; },
-	/*13*/ [] (int h, int k, int l) -> bool { return (h+k+l)%2 == 0; },
-	/*14*/ [] (int h, int k, int l) -> bool { return (-h+k+l)%3 == 0; },
-	/*15*/ [] (int h, int k, int l) -> bool { return (h-k+l)%3 == 0; },
+	/*13, I*/ [] (int h, int k, int l) -> bool { return (h+k+l)%2 == 0; },
+	/*14, R*/ [] (int h, int k, int l) -> bool { return (-h+k+l)%3 == 0; },
+	/*15, R*/ [] (int h, int k, int l) -> bool { return (h-k+l)%3 == 0; },
 	/*16*/ [] (int h, int k, int l) -> bool { return h%4 == 0; },
 	/*17*/ [] (int h, int k, int l) -> bool { return k%4 == 0; },
 	/*18*/ [] (int h, int k, int l) -> bool { return l%3 == 0; },
@@ -97,6 +101,7 @@ static t_mapSpaceGroups g_mapSpaceGroups;
 
 
 // -> sg_by_hm and sg_by_num in Georg's Python code
+// -> http://www.ccp14.ac.uk/ccp/web-mirrors/powdcell/a_v/v_1/powder/details/pcwspgr.htm
 void init_space_groups()
 {
 	/*
