@@ -228,11 +228,12 @@ T str_to_var(const t_str& str)
 }
 
 template<typename T, class t_str=std::string>
-t_str var_to_str(const T& t)
+t_str var_to_str(const T& t, std::streamsize iPrec=16)
 {
 	typedef typename t_str::value_type t_char;
 
 	std::basic_ostringstream<t_char> ostr;
+	ostr.precision(iPrec);
 	ostr << t;
 
 	return ostr.str();
