@@ -86,7 +86,13 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		bool SaveAs();
 		bool Load();
 
+		void ExportReal();
+		void ExportRecip();
+
 		void RepopulateSpaceGroups();
+
+	protected:
+		void ExportSceneSVG(QGraphicsScene& scene);
 };
 
 #endif

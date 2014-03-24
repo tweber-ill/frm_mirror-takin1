@@ -150,7 +150,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 
 	// --------------------------------------------------------------------------------
-	// menu
+	// file menu
 	QMenu *pMenuFile = new QMenu(this);
 	pMenuFile->setTitle("File");
 
@@ -184,6 +184,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuFile->addAction(pExit);
 
 
+	// --------------------------------------------------------------------------------
+	// recip menu
 	QMenu *pMenuViewRecip = new QMenu(this);
 	pMenuViewRecip->setTitle("Reciprocal Space");
 
@@ -197,8 +199,31 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pView3D = new QAction(this);
 	pView3D->setText("3D View...");
+	pView3D->setIcon(QIcon::fromTheme("applications-graphics"));
 	pMenuViewRecip->addAction(pView3D);
 
+	pMenuViewRecip->addSeparator();
+
+	QAction *pRecipExport = new QAction(this);
+	pRecipExport->setText("Export Image...");
+	pRecipExport->setIcon(QIcon::fromTheme("image-x-generic"));
+	pMenuViewRecip->addAction(pRecipExport);
+
+
+
+	// --------------------------------------------------------------------------------
+	// real menu
+	QMenu *pMenuViewReal = new QMenu(this);
+	pMenuViewReal->setTitle("Real Space");
+
+	QAction *pRealExport = new QAction(this);
+	pRealExport->setText("Export Image...");
+	pRealExport->setIcon(QIcon::fromTheme("image-x-generic"));
+	pMenuViewReal->addAction(pRealExport);
+
+
+	// --------------------------------------------------------------------------------
+	// help menu
 	QMenu *pMenuHelp = new QMenu(this);
 	pMenuHelp->setTitle("Help");
 
@@ -215,22 +240,32 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuHelp->addAction(pAbout);
 
 
+
 	QMenuBar *pMenuBar = new QMenuBar(this);
 	pMenuBar->addMenu(pMenuFile);
 	pMenuBar->addMenu(pMenuViewRecip);
+	pMenuBar->addMenu(pMenuViewReal);
 	pMenuBar->addMenu(pMenuHelp);
 
-	setMenuBar(pMenuBar);
-	//this->layout()->setMenuBar(pMenuBar);
+
 
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
+
+	QObject::connect(pView3D, SIGNAL(triggered()), this, SLOT(Show3D()));
+
+	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
+	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
+
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-	QObject::connect(pView3D, SIGNAL(triggered()), this, SLOT(Show3D()));
+
+
+	setMenuBar(pMenuBar);
+	//this->layout()->setMenuBar(pMenuBar);
 	// --------------------------------------------------------------------------------
 
 	RepopulateSpaceGroups();
@@ -442,7 +477,7 @@ bool TazDlg::Load(const char* pcFile)
 	const std::string strXmlRoot("taz/");
 
 	std::string strFile1 = pcFile;
-	std::string strDir = get_dir(strFile1).c_str();
+	std::string strDir = get_dir(strFile1);
 
 
 	Xml xml;
@@ -682,7 +717,7 @@ bool TazDlg::SaveAs()
 	if(strFile != "")
 	{
 		std::string strFile1 = strFile.toStdString();
-		std::string strDir = get_dir(strFile1).c_str();
+		std::string strDir = get_dir(strFile1);
 
 		m_strCurFile = strFile1;
 		setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
@@ -720,7 +755,46 @@ void TazDlg::RepopulateSpaceGroups()
 }
 
 
+//--------------------------------------------------------------------------------
+// svg export
+#include <QtSvg/QSvgGenerator>
 
+void TazDlg::ExportReal() { ExportSceneSVG(m_sceneReal); }
+void TazDlg::ExportRecip() { ExportSceneSVG(m_sceneRecip); }
+
+void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
+{
+	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
+	QString strFile = QFileDialog::getSaveFileName(this,
+								"Export SVG",
+								strDirLast,
+								"SVG files (*.svg *.SVG)");
+	if(strFile == "")
+		return;
+
+
+	QRectF rect = scene.sceneRect();
+
+	QSvgGenerator svg;
+	svg.setFileName(/*"/home/tweber/0000.svg"*/ strFile);
+	svg.setSize(QSize(rect.width(), rect.height()));
+	//svg.setResolution(300);
+	svg.setViewBox(QRectF(0, 0, rect.width(), rect.height()));
+	svg.setDescription("Created with TAZ");
+
+	QPainter painter;
+	painter.begin(&svg);
+	scene.render(&painter);
+	painter.end();
+
+
+	std::string strDir = get_dir(strFile.toStdString());
+	m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
+}
+
+
+//--------------------------------------------------------------------------------
+// about dialog
 #include <boost/version.hpp>
 
 void TazDlg::ShowAbout()

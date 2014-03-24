@@ -9,7 +9,7 @@ FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG ${DEFINES}
 STD_LIBS = -lsupc++ -lstdc++ -lm
 LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack -lblas -lgfortran
 QT_LIBS = -L/usr/lib64/qt4 -L/usr/lib/x86_64-linux-gnu -L /usr/lib/qt4/lib \
-	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL \
+	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL -lQtSvg \
 	-lGL -lGLU -lX11
 LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 
