@@ -10,7 +10,8 @@
 #include "../helper/neutrons.hpp"
 
 
-RecipParamDlg::RecipParamDlg(QWidget* pParent) : QDialog(pParent)
+RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
+	: QDialog(pParent), m_pSettings(pSett)
 {
 	this->setupUi(this);
 
@@ -64,6 +65,28 @@ void RecipParamDlg::KfChanged()
 	editEf->setText(var_to_str<double>(Ef / one_meV).c_str());
 	editLamf->setText(var_to_str<double>(lamf / angstrom).c_str());
 	editVf->setText(var_to_str<double>(vf*units::si::seconds/units::si::meters).c_str());
+}
+
+
+void RecipParamDlg::closeEvent(QCloseEvent *pEvt)
+{
+	QDialog::closeEvent(pEvt);
+}
+
+void RecipParamDlg::accept()
+{
+	if(m_pSettings)
+		m_pSettings->setValue("recip_params/geo", saveGeometry());
+
+	QDialog::accept();
+}
+
+void RecipParamDlg::showEvent(QShowEvent *pEvt)
+{
+	if(m_pSettings && m_pSettings->contains("recip_params/geo"))
+		restoreGeometry(m_pSettings->value("recip_params/geo").toByteArray());
+
+	QDialog::showEvent(pEvt);
 }
 
 

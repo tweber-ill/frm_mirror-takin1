@@ -8,6 +8,7 @@
 #define __RECIP_PARAMS_H__
 
 #include <QtGui/QDialog>
+#include <QtCore/QSettings>
 #include "../ui/ui_recip_params.h"
 
 
@@ -22,9 +23,10 @@ struct RecipParams
 class RecipParamDlg : public QDialog, Ui::RecipParamDlg
 { Q_OBJECT
 	protected:
+		QSettings *m_pSettings = 0;
 
 	public:
-		RecipParamDlg(QWidget* pParent=0);
+		RecipParamDlg(QWidget* pParent=0, QSettings* pSett=0);
 		virtual ~RecipParamDlg();
 
 	public slots:
@@ -32,6 +34,11 @@ class RecipParamDlg : public QDialog, Ui::RecipParamDlg
 
 		void KiChanged();
 		void KfChanged();
+
+	protected:
+		virtual void closeEvent(QCloseEvent *pEvt);
+		virtual void showEvent(QShowEvent *pEvt);
+		virtual void accept();
 };
 
 #endif

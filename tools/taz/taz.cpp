@@ -36,7 +36,7 @@ TazDlg::TazDlg(QWidget* pParent)
 		: QMainWindow(pParent),
 		  m_settings("tobis_stuff", "taz"),
 		  m_pmapSpaceGroups(get_space_groups()),
-		  m_dlgRecipParam(this)
+		  m_dlgRecipParam(this, &m_settings)
 {
 	if(m_settings.contains("main/geo"))
 	{
