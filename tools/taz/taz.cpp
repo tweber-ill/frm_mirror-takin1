@@ -9,6 +9,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <boost/algorithm/string.hpp>
 
 #include <QtGui/QApplication>
 #include <QtGui/QHBoxLayout>
@@ -34,7 +35,8 @@ static QString dtoqstr(double dVal, unsigned int iPrec=3)
 TazDlg::TazDlg(QWidget* pParent)
 		: QMainWindow(pParent),
 		  m_settings("tobis_stuff", "taz"),
-		  m_pmapSpaceGroups(get_space_groups())
+		  m_pmapSpaceGroups(get_space_groups()),
+		  m_dlgRecipParam(this)
 {
 	if(m_settings.contains("main/geo"))
 	{
@@ -121,6 +123,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(double)),
 					&m_sceneReal, SLOT(scaleChanged(double)));
 
+	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+					&m_dlgRecipParam, SLOT(paramsChanged(const RecipParams&)));
+
 
 	for(QLineEdit* pEdit : m_vecEdits_monoana)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(UpdateDs()));
@@ -197,6 +202,10 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	pMenuViewRecip->addSeparator();
 
+	QAction *pRecipParams = new QAction(this);
+	pRecipParams->setText("Parameters...");
+	pMenuViewRecip->addAction(pRecipParams);
+
 	QAction *pView3D = new QAction(this);
 	pView3D->setText("3D View...");
 	pView3D->setIcon(QIcon::fromTheme("applications-graphics"));
@@ -255,6 +264,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
+	QObject::connect(pRecipParams, SIGNAL(triggered()), this, SLOT(ShowRecipParams()));
 	QObject::connect(pView3D, SIGNAL(triggered()), this, SLOT(Show3D()));
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
@@ -745,13 +755,24 @@ void TazDlg::RepopulateSpaceGroups()
 	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
 	{
 		const std::string& strName = pair.second.GetName();
-		if(strName.find(strFilter) == std::string::npos)
+
+		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
+		if(strFilter!="" &&
+				!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
+									t_striterrange(strFilter.begin(), strFilter.end())))
 			continue;
 
 		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
 									strName.c_str(),
 									QVariant::fromValue((void*)&pair.second));
 	}
+}
+
+
+void TazDlg::ShowRecipParams()
+{
+	m_dlgRecipParam.show();
+	m_dlgRecipParam.activateWindow();
 }
 
 

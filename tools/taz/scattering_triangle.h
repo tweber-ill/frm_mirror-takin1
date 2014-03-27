@@ -19,6 +19,7 @@
 #include <QtGui/QWheelEvent>
 
 #include "tasoptions.h"
+#include "dialogs/RecipParamDlg.h"	// for RecipParams strucs
 
 #define TRIANGLE_NODE_TYPE_KEY	0
 
@@ -109,6 +110,15 @@ class ScatteringTriangle : public QGraphicsItem
 		double GetMonoTwoTheta(double dMonoD, bool bPosSense) const;
 		double GetAnaTwoTheta(double dAnaD, bool bPosSense) const;
 
+		double GetKi() const;
+		double GetKf() const;
+		double GetE() const;
+		double GetQ() const;
+		double Getq() const;
+
+		double GetAngleKiQ() const;
+		double GetAngleKfQ() const;
+
 		void SetTwoTheta(double dTT);
 		void SetAnaTwoTheta(double dTT, double dAnaD);
 		void SetMonoTwoTheta(double dTT, double dMonoD);
@@ -155,7 +165,10 @@ class ScatteringTriangleScene : public QGraphicsScene
 		ScatteringTriangleScene();
 		virtual ~ScatteringTriangleScene();
 
+		// emits triangleChanged
 		void emitUpdate();
+		// emits paramsChanged
+		void emitAllParams();
 		void SetDs(double dMonoD, double dAnaD);
 
 		void SetSampleSense(bool bPos);
@@ -169,7 +182,10 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void tasChanged(const TriangleOptions& opts);
 		void scaleChanged(double dTotalScale);
 	signals:
+		// relevant parameters for instrument view
 		void triangleChanged(const TriangleOptions& opts);
+		// all parameters
+		void paramsChanged(const RecipParams& parms);
 
 	protected:
 		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);

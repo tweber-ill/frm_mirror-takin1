@@ -68,8 +68,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1536710058.1833539831" name="dialogs" rcbsApplicability="disable" resourcePath="tools/taz/dialogs" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -142,8 +143,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.1085676439.1305579664" name="dialogs" rcbsApplicability="disable" resourcePath="tools/taz/dialogs" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

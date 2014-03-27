@@ -40,4 +40,5 @@ struct TriangleOptions
 	double dMonoTwoTheta;
 };
 
+
 #endif

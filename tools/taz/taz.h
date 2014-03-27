@@ -19,6 +19,7 @@
 #include "scattering_triangle.h"
 #include "tas_layout.h"
 #include "recip3d.h"
+#include "dialogs/RecipParamDlg.h"
 
 #include "helper/spacegroup.h"
 
@@ -61,9 +62,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		const t_mapSpaceGroups* m_pmapSpaceGroups;
 
+		RecipParamDlg m_dlgRecipParam;
+
 	public:
 		TazDlg(QWidget *pParent);
-		TazDlg() { TazDlg(0); }
+		TazDlg() : TazDlg(0) { }
 		virtual ~TazDlg();
 
 		bool Load(const char* pcFile);
@@ -90,6 +93,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ExportRecip();
 
 		void RepopulateSpaceGroups();
+
+		void ShowRecipParams();
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

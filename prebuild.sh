@@ -26,5 +26,6 @@ moc tools/taz/taz.h -o tools/taz/taz.moc
 moc tools/taz/scattering_triangle.h -o tools/taz/scattering_triangle.moc
 moc tools/taz/tas_layout.h -o tools/taz/tas_layout.moc
 moc tools/taz/recip3d.h -o tools/taz/recip3d.moc
+moc dialogs/RecipParamDlg.h -o dialogs/RecipParamDlg.moc
 
 echo -e "\n"

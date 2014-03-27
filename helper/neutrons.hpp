@@ -93,6 +93,20 @@ p2k(const units::quantity<units::unit<units::momentum_dimension, Sys>, Y>& p)
 {
 	return p/co::hbar;
 }
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::velocity_dimension, Sys>, Y>
+k2v(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& k)
+{
+	return k2p(k) / co::m_n;
+}
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
+v2k(const units::quantity<units::unit<units::velocity_dimension, Sys>, Y>& v)
+{
+	return co::m_n*v/co::hbar;
+}
 // --------------------------------------------------------------------------------
 
 

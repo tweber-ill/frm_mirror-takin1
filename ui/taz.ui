@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>876</width>
+    <width>1013</width>
     <height>624</height>
    </rect>
   </property>
@@ -519,7 +519,7 @@
             <widget class="QComboBox" name="comboSpaceGroups">
              <item>
               <property name="text">
-               <string>&lt;no set&gt;</string>
+               <string>&lt;not set&gt;</string>
               </property>
              </item>
             </widget>

@@ -15,10 +15,12 @@ LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 
 
 taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
-	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o
+	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
+	obj/RecipParamDlg.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
+			obj/RecipParamDlg.o \
 			${LIBS_TAZ}
 	strip bin/taz
 
@@ -38,8 +40,9 @@ obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scatterin
 obj/tas_layout.o: tools/taz/tas_layout.cpp tools/taz/tas_layout.h
 	${CC} ${FLAGS} -c -o obj/tas_layout.o tools/taz/tas_layout.cpp
 
-obj/LatticeDlg.o: dialogs/LatticeDlg.cpp dialogs/LatticeDlg.h
-	${CC} ${FLAGS} -c -o obj/LatticeDlg.o dialogs/LatticeDlg.cpp
+obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
+	${CC} ${FLAGS} -c -o obj/RecipParamDlg.o dialogs/RecipParamDlg.cpp
+
 
 
 obj/string.o: helper/string.cpp helper/string.h
@@ -74,3 +77,4 @@ clean:
 	rm -f *.moc
 	rm -f tools/taz/*.moc
 	rm -f plot/*.moc
+	rm -f dialogs/*.moc

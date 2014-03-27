@@ -139,6 +139,7 @@ void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 	if(!m_bReady) return;
 
 	m_scene.emitUpdate();
+	m_scene.emitAllParams();
 	this->update();
 }
 
@@ -192,12 +193,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		painter->drawLine(lineq);
 	}
 
-	const double dQ = lineQ.length()/m_dScaleFactor/m_dZoom;
-	const double dKi = lineKi.length()/m_dScaleFactor/m_dZoom;
-	const double dKf = lineKf.length()/m_dScaleFactor/m_dZoom;
-	const double dq = lineq.length()/m_dScaleFactor/m_dZoom;
 	const double dG = lineG.length()/m_dScaleFactor/m_dZoom;
-	const double dE = get_energy_transfer(dKi/angstrom, dKf/angstrom) / one_eV * 1000.;
 
 	const std::wstring& strAA = ::get_spec_char_utf16("AA") + ::get_spec_char_utf16("sup-") + ::get_spec_char_utf16("sup1");
 	const std::wstring& strDelta = ::get_spec_char_utf16("Delta");
@@ -207,13 +203,13 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	ostrKi.precision(3); ostrKf.precision(3);
 	ostrG.precision(3); ostrq.precision(3);
 
-	ostrQ << L"Q = " << dQ << " " << strAA;
-	ostrKi << L"ki = " << dKi << " " << strAA;
-	ostrKf << L"kf = " << dKf << " " << strAA;
-	ostrE << strDelta << "E = " << dE << " meV";
+	ostrQ << L"Q = " << GetQ() << " " << strAA;
+	ostrKi << L"ki = " << GetKi() << " " << strAA;
+	ostrKf << L"kf = " << GetKf() << " " << strAA;
+	ostrE << strDelta << "E = " << GetE() << " meV";
 	if(m_bqVisible)
 	{
-		ostrq << L"q = " << dq << " " << strAA;
+		ostrq << L"q = " << Getq() << " " << strAA;
 		ostrG << L"G = " << dG << " " << strAA;
 	}
 
@@ -302,6 +298,76 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		QPointF ptText = *pPoints[i] + ptDirOut;
 		painter->drawText(ptText, QString::fromWCharArray(ostrAngle.str().c_str()));
 	}
+}
+
+double ScatteringTriangle::GetKi() const
+{
+	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0);
+	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0);
+
+	QLineF lineKi(ptKiQ, ptKiKf);
+	const double dKi = lineKi.length()/m_dScaleFactor;
+	return dKi;
+}
+
+double ScatteringTriangle::GetKf() const
+{
+	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0);
+	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0);
+
+	QLineF lineKf(ptKiKf, ptKfQ);
+	const double dKf = lineKf.length()/m_dScaleFactor;
+	return dKf;
+}
+
+double ScatteringTriangle::GetE() const
+{
+	const double dKi = GetKi();
+	double dKf = GetKf();
+	const double dE = get_energy_transfer(dKi/angstrom, dKf/angstrom) / one_eV * 1000.;
+	return dE;
+}
+
+double ScatteringTriangle::GetQ() const
+{
+  	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0) * m_dZoom;
+	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0) * m_dZoom;
+
+	QLineF lineQ(ptKiQ, ptKfQ);
+	const double dQ = lineQ.length()/m_dScaleFactor/m_dZoom;
+	return dQ;
+}
+
+double ScatteringTriangle::Getq() const
+{
+	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0) * m_dZoom;
+	QPointF ptGq = mapFromItem(m_pNodeGq, 0, 0) * m_dZoom;
+
+	QLineF lineq(ptKfQ, ptGq);
+	const double dq = lineq.length()/m_dScaleFactor/m_dZoom;
+	return dq;
+}
+
+double ScatteringTriangle::GetAngleKiQ() const
+{
+	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+
+	const double dAngle = vec_angle(vecKi) - vec_angle(vecQ);
+	return dAngle;
+}
+
+double ScatteringTriangle::GetAngleKfQ() const
+{
+	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+
+	const double dAngle = vec_angle(vecKf) - vec_angle(vecQ);
+	return dAngle;
 }
 
 double ScatteringTriangle::GetTheta(bool bPosSense) const
@@ -489,6 +555,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 				}
 			}
 
+	m_scene.emitAllParams();
 	this->update();
 }
 
@@ -558,6 +625,24 @@ void ScatteringTriangleScene::emitUpdate()
 	opts.dMonoTwoTheta = m_pTri->GetMonoTwoTheta(m_dMonoD, m_bMonoPosSense);
 
 	emit triangleChanged(opts);
+}
+
+void ScatteringTriangleScene::emitAllParams()
+{
+	if(!m_pTri || !m_pTri->IsReady())
+		return;
+
+	RecipParams parms;
+	parms.d2Theta = m_pTri->GetTwoTheta(m_bSamplePosSense);
+	parms.dTheta = m_pTri->GetTheta(m_bSamplePosSense);
+	parms.dE = m_pTri->GetE();
+	parms.dQ = m_pTri->GetQ();
+	parms.dq = m_pTri->Getq();
+	parms.dki = m_pTri->GetKi();
+	parms.dkf = m_pTri->GetKf();
+	parms.dKiQ = m_pTri->GetAngleKiQ();
+	parms.dKfQ = m_pTri->GetAngleKfQ();
+	emit paramsChanged(parms);
 }
 
 void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
