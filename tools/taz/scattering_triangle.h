@@ -19,7 +19,7 @@
 #include <QtGui/QWheelEvent>
 
 #include "tasoptions.h"
-#include "dialogs/RecipParamDlg.h"	// for RecipParams strucs
+#include "dialogs/RecipParamDlg.h"	// for RecipParams struct
 
 #define TRIANGLE_NODE_TYPE_KEY	0
 

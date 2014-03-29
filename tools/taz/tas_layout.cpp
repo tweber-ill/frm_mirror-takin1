@@ -229,6 +229,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	}
 
 	bAllowUpdate = 1;
+
+	m_scene.emitAllParams();
 	this->update();
 }
 
@@ -450,6 +452,26 @@ TasLayoutScene::TasLayoutScene()
 TasLayoutScene::~TasLayoutScene()
 {
 	delete m_pTas;
+}
+
+void TasLayoutScene::emitAllParams()
+{
+	if(!m_pTas || !m_pTas->IsReady())
+		return;
+
+	RealParams parms;
+	parms.dAnaTT = m_pTas->GetAnaTwoTheta();
+	parms.dAnaT = m_pTas->GetAnaTheta();
+	parms.dMonoTT = m_pTas->GetMonoTwoTheta();
+	parms.dMonoT = m_pTas->GetMonoTheta();
+	parms.dSampleTT = m_pTas->GetSampleTwoTheta();
+	parms.dSampleT = m_pTas->GetSampleTheta();
+
+	parms.dLenMonoSample = m_pTas->GetLenMonoSample();
+	parms.dLenSampleAna = m_pTas->GetLenSampleAna();
+	parms.dLenAnaDet = m_pTas->GetLenAnaDet();
+
+	emit paramsChanged(parms);
 }
 
 void TasLayoutScene::triangleChanged(const TriangleOptions& opts)

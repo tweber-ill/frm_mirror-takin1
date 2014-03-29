@@ -32,6 +32,7 @@ class RecipParamDlg : public QDialog, Ui::RecipParamDlg
 	public slots:
 		void paramsChanged(const RecipParams& parms);
 
+	protected slots:
 		void KiChanged();
 		void KfChanged();
 

@@ -16,11 +16,11 @@ LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 
 taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
 	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
-	obj/RecipParamDlg.o
+	obj/RecipParamDlg.o obj/RealParamDlg.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
-			obj/RecipParamDlg.o \
+			obj/RecipParamDlg.o obj/RealParamDlg.o \
 			${LIBS_TAZ}
 	strip bin/taz
 
@@ -42,6 +42,9 @@ obj/tas_layout.o: tools/taz/tas_layout.cpp tools/taz/tas_layout.h
 
 obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
 	${CC} ${FLAGS} -c -o obj/RecipParamDlg.o dialogs/RecipParamDlg.cpp
+
+obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
+	${CC} ${FLAGS} -c -o obj/RealParamDlg.o dialogs/RealParamDlg.cpp
 
 
 

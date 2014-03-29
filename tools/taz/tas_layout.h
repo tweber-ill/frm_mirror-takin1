@@ -18,6 +18,7 @@
 #include <QtGui/QWheelEvent>
 
 #include "tasoptions.h"
+#include "dialogs/RealParamDlg.h"	// for RealParams struct
 
 class TasLayout;
 class TasLayoutNode : public QGraphicsItem
@@ -66,6 +67,17 @@ class TasLayout : public QGraphicsItem
 
 		bool m_bAllowChanges = 1;
 
+	public:
+		double GetMonoTwoTheta() const { return m_dMonoTwoTheta; }
+		double GetMonoTheta() const { return m_dMonoTwoTheta/2.; }
+		double GetAnaTwoTheta() const { return m_dAnaTwoTheta; }
+		double GetAnaTheta() const { return m_dAnaTwoTheta/2.; }
+		double GetSampleTwoTheta() const { return m_dTwoTheta; }
+		double GetSampleTheta() const { return m_dTheta; }
+		double GetLenMonoSample() const { return m_dLenMonoSample; }
+		double GetLenSampleAna() const { return m_dLenSampleAna; }
+		double GetLenAnaDet() const { return m_dLenAnaDet; }
+
 	protected:
 		QRectF boundingRect() const;
 
@@ -112,11 +124,17 @@ class TasLayoutScene : public QGraphicsScene
 
 		TasLayout* GetTasLayout() { return m_pTas; }
 
+		void emitAllParams();
+
 	public slots:
 		void triangleChanged(const TriangleOptions& opts);
 		void scaleChanged(double dTotalScale);
+
 	signals:
+		// relevant parameters for triangle view
 		void tasChanged(const TriangleOptions& opts);
+		// all parameters
+		void paramsChanged(const RealParams& parms);
 };
 
 

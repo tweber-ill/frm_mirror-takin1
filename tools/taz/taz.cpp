@@ -36,7 +36,8 @@ TazDlg::TazDlg(QWidget* pParent)
 		: QMainWindow(pParent),
 		  m_settings("tobis_stuff", "taz"),
 		  m_pmapSpaceGroups(get_space_groups()),
-		  m_dlgRecipParam(this, &m_settings)
+		  m_dlgRecipParam(this, &m_settings),
+		  m_dlgRealParam(this, &m_settings)
 {
 	if(m_settings.contains("main/geo"))
 	{
@@ -125,6 +126,8 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 					&m_dlgRecipParam, SLOT(paramsChanged(const RecipParams&)));
+	QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
+					&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
 
 
 	for(QLineEdit* pEdit : m_vecEdits_monoana)
@@ -225,6 +228,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	QMenu *pMenuViewReal = new QMenu(this);
 	pMenuViewReal->setTitle("Real Space");
 
+	QAction *pRealParams = new QAction(this);
+	pRealParams->setText("Parameters...");
+	pMenuViewReal->addAction(pRealParams);
+
+	pMenuViewReal->addSeparator();
+
 	QAction *pRealExport = new QAction(this);
 	pRealExport->setText("Export Image...");
 	pRealExport->setIcon(QIcon::fromTheme("image-x-generic"));
@@ -265,6 +274,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
 	QObject::connect(pRecipParams, SIGNAL(triggered()), this, SLOT(ShowRecipParams()));
+	QObject::connect(pRealParams, SIGNAL(triggered()), this, SLOT(ShowRealParams()));
 	QObject::connect(pView3D, SIGNAL(triggered()), this, SLOT(Show3D()));
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
@@ -773,6 +783,12 @@ void TazDlg::ShowRecipParams()
 {
 	m_dlgRecipParam.show();
 	m_dlgRecipParam.activateWindow();
+}
+
+void TazDlg::ShowRealParams()
+{
+	m_dlgRealParam.show();
+	m_dlgRealParam.activateWindow();
 }
 
 
