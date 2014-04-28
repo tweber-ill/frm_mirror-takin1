@@ -430,12 +430,13 @@ void TazDlg::CalcPeaks()
 	const std::wstring& strThree = ::get_spec_char_utf16("sup3");
 
 	double dVol = lattice.GetVol();
+	double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
 	std::wostringstream ostrSample;
 	ostrSample.precision(4);
 	ostrSample << "Sample - ";
 	ostrSample << "Unit Cell Volume: ";
 	ostrSample << "Real: " << dVol << " " << strAA << strThree;
-	ostrSample << ", Reciprocal: " << (1./dVol) << " " << strAA << strMinus << strThree;
+	ostrSample << ", Reciprocal: " << dVol_recip << " " << strAA << strMinus << strThree;
 	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
 	SpaceGroup *pSpaceGroup = 0;

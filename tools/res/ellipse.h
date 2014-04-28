@@ -15,13 +15,11 @@
 #include <ostream>
 #include <cmath>
 
-#include "../../fitter/fitter.h"
-
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 namespace ublas = boost::numeric::ublas;
 
-struct Ellipse : public FunctionModel_param
+struct Ellipse
 {
 	double phi;
 	double x_hwhm, y_hwhm;
