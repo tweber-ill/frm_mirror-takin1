@@ -7,8 +7,10 @@
 #ifndef __RESO_DLG_H__
 #define __RESO_DLG_H__
 
+#include <QtCore/QSettings>
 #include <QtGui/QDialog>
 #include <QtGui/QLabel>
+
 #include <vector>
 #include <string>
 
@@ -16,7 +18,7 @@
 #include "cn.h"
 #include "pop.h"
 #include "helper/linalg.h"
-#include "../../plot/plotgl.h"
+#include "plot/plotgl.h"
 #include "ellipse.h"
 
 class ResoDlg : public QDialog, Ui::ResoDlg
@@ -39,8 +41,10 @@ protected:
 	CNResults m_res;
 	bool m_bDontCalc;
 
+	QSettings* m_pSettings = 0;
+
 public:
-	ResoDlg(QWidget* pParent);
+	ResoDlg(QWidget* pParent, QSettings* pSettings=0);
 	virtual ~ResoDlg();
 
 protected slots:

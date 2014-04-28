@@ -22,6 +22,7 @@
 
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"
+#include "../res/ResoDlg.h"
 
 #include "helper/spacegroup.h"
 
@@ -67,6 +68,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		RecipParamDlg m_dlgRecipParam;
 		RealParamDlg m_dlgRealParam;
 
+		ResoDlg *m_pReso = 0;
+
+	protected:
+		void InitReso();
+
 	public:
 		TazDlg(QWidget *pParent);
 		TazDlg() : TazDlg(0) { }
@@ -99,6 +105,10 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowRecipParams();
 		void ShowRealParams();
+
+		void ShowResoParams();
+		void ShowResoEllipses();
+		void ShowResoEllipses3D();
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

@@ -21,8 +21,8 @@
 #include <QtGui/QGridLayout>
 
 
-ResoDlg::ResoDlg(QWidget *pParent)
-			: QDialog(pParent), m_bDontCalc(1)
+ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
+			: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
 	setupUi(this);
 	m_vecSpinBoxes = {spinMonod, spinMonoMosaic, spinAnad,
@@ -265,44 +265,47 @@ void ResoDlg::Calc()
 
 void ResoDlg::WriteLastConfig()
 {
-	/*
-	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
-		Settings::Set<double>(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());
-	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
-		Settings::Set<bool>(m_vecRadioNames[iRadio].c_str(), m_vecRadioPlus[iRadio]->isChecked());
-	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
-		Settings::Set<bool>(m_vecCheckNames[iCheck].c_str(), m_vecCheckBoxes[iCheck]->isChecked());
+	if(!m_pSettings)
+		return;
 
-	Settings::Set<bool>("reso/use_guide", groupGuide->isChecked());
-	*/
+	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+		m_pSettings->setValue(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());
+	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
+		m_pSettings->setValue(m_vecRadioNames[iRadio].c_str(), m_vecRadioPlus[iRadio]->isChecked());
+	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
+		m_pSettings->setValue(m_vecCheckNames[iCheck].c_str(), m_vecCheckBoxes[iCheck]->isChecked());
+
+	m_pSettings->setValue("reso/use_guide", groupGuide->isChecked());
 }
 
 void ResoDlg::ReadLastConfig()
 {
-	/*
+	if(!m_pSettings)
+		return;
+
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
-		if(!Settings::HasKey(m_vecSpinNames[iSpinBox].c_str()))
+		if(!m_pSettings->contains(m_vecSpinNames[iSpinBox].c_str()))
 			continue;
-		m_vecSpinBoxes[iSpinBox]->setValue(Settings::Get<double>(m_vecSpinNames[iSpinBox].c_str()));
+		m_vecSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecSpinNames[iSpinBox].c_str()).value<double>());
 	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
 	{
-		if(!Settings::HasKey(m_vecCheckNames[iCheckBox].c_str()))
+		if(!m_pSettings->contains(m_vecCheckNames[iCheckBox].c_str()))
 			continue;
-		m_vecCheckBoxes[iCheckBox]->setChecked(Settings::Get<bool>(m_vecCheckNames[iCheckBox].c_str()));
+		m_vecCheckBoxes[iCheckBox]->setChecked(m_pSettings->value(m_vecCheckNames[iCheckBox].c_str()).value<bool>());
 	}
 
 	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 	{
-		if(!Settings::HasKey(m_vecRadioNames[iRadio].c_str()))
+		if(!m_pSettings->contains(m_vecRadioNames[iRadio].c_str()))
 			continue;
 
-		bool bChecked = Settings::Get<bool>(m_vecRadioNames[iRadio].c_str());
+		bool bChecked = m_pSettings->value(m_vecRadioNames[iRadio].c_str()).value<bool>();
 		if(bChecked)
 		{
 			m_vecRadioPlus[iRadio]->setChecked(1);
@@ -315,17 +318,17 @@ void ResoDlg::ReadLastConfig()
 		}
 	}
 
-	groupGuide->setChecked(Settings::Get<bool>("reso/use_guide"));
+	groupGuide->setChecked(m_pSettings->value("reso/use_guide").value<bool>());
 
 	m_bDontCalc = bOldDontCalc;
 	Calc();
-	*/
 }
 
 void ResoDlg::SaveFile()
 {
-	//QSettings *pGlobals = Settings::GetGlobals();
-	QString strLastDir = "."; //pGlobals->value("reso/lastdir", ".").toString();
+	QString strLastDir = ".";
+	if(m_pSettings)
+		strLastDir = m_pSettings->value("reso/lastdir", ".").toString();
 
 	QString strFile = QFileDialog::getSaveFileName(this, "Save resolution file...", strLastDir,
 					"RES files (*.res *.RES);;All files (*.*)"/*,
@@ -363,7 +366,9 @@ void ResoDlg::SaveFile()
 	std::string strFile1 = strFile.toStdString();
 	std::string strFileName = get_file(strFile1);
 	setWindowTitle(QString("Resolution - ") + strFileName.c_str());
-	//pGlobals->setValue("reso/lastdir", QString(::get_dir(strFile1).c_str()));
+
+	if(m_pSettings)
+		m_pSettings->setValue("reso/lastdir", QString(::get_dir(strFile1).c_str()));
 }
 
 void ResoDlg::LoadFile()
@@ -371,8 +376,9 @@ void ResoDlg::LoadFile()
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	//QSettings *pGlobals = Settings::GetGlobals();
-	QString strLastDir = "."; //pGlobals->value("reso/lastdir", ".").toString();
+	QString strLastDir = ".";
+	if(m_pSettings)
+		strLastDir = m_pSettings->value("reso/lastdir", ".").toString();
 
 	QString strFile = QFileDialog::getOpenFileName(this, "Open resolution file...", strLastDir,
 					"RES files (*.res *.RES);;All files (*.*)"/*,
@@ -414,7 +420,9 @@ void ResoDlg::LoadFile()
 
 
 	setWindowTitle(QString("Resolution - ") + strFileName.c_str());
-	//pGlobals->setValue("reso/lastdir", QString(::get_dir(strFile1).c_str()));
+
+	if(m_pSettings)
+		m_pSettings->setValue("reso/lastdir", QString(::get_dir(strFile1).c_str()));
 
 	m_bDontCalc = bOldDontCalc;
 	Calc();
@@ -441,12 +449,12 @@ void ResoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 
 void ResoDlg::hideEvent(QHideEvent *event)
 {
-	//Settings::GetGlobals()->setValue("reso/wnd_geo", saveGeometry());
+	m_pSettings->setValue("reso/wnd_geo", saveGeometry());
 }
 
 void ResoDlg::showEvent(QShowEvent *event)
 {
-	//restoreGeometry(Settings::GetGlobals()->value("reso/wnd_geo").toByteArray());
+	restoreGeometry(m_pSettings->value("reso/wnd_geo").toByteArray());
 }
 
 

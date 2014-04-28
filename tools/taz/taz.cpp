@@ -240,6 +240,28 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuViewReal->addAction(pRealExport);
 
 
+
+	// --------------------------------------------------------------------------------
+	// resolution menu
+	QMenu *pMenuReso = new QMenu(this);
+	pMenuReso->setTitle("Resolution");
+
+	QAction *pResoParams = new QAction(this);
+	pResoParams->setText("Parameters...");
+	pMenuReso->addAction(pResoParams);
+
+	pMenuReso->addSeparator();
+
+	QAction *pResoEllipses = new QAction(this);
+	pResoEllipses->setText("Ellipses...");
+	pMenuReso->addAction(pResoEllipses);
+
+	QAction *pResoEllipses3D = new QAction(this);
+	pResoEllipses3D->setText("3D Ellipses...");
+	pMenuReso->addAction(pResoEllipses3D);
+
+
+
 	// --------------------------------------------------------------------------------
 	// help menu
 	QMenu *pMenuHelp = new QMenu(this);
@@ -263,6 +285,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuBar->addMenu(pMenuFile);
 	pMenuBar->addMenu(pMenuViewRecip);
 	pMenuBar->addMenu(pMenuViewReal);
+	pMenuBar->addMenu(pMenuReso);
 	pMenuBar->addMenu(pMenuHelp);
 
 
@@ -279,6 +302,10 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
+
+	QObject::connect(pResoParams, SIGNAL(triggered()), this, SLOT(ShowResoParams()));
+	QObject::connect(pResoEllipses, SIGNAL(triggered()), this, SLOT(ShowResoEllipses()));
+	QObject::connect(pResoEllipses3D, SIGNAL(triggered()), this, SLOT(ShowResoEllipses3D()));
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -311,6 +338,12 @@ TazDlg::~TazDlg()
 	{
 		delete m_pviewRecip;
 		m_pviewRecip = 0;
+	}
+
+	if(m_pReso)
+	{
+		delete m_pReso;
+		m_pReso = 0;
 	}
 }
 
@@ -794,6 +827,33 @@ void TazDlg::ShowRealParams()
 
 
 //--------------------------------------------------------------------------------
+// reso stuff
+void TazDlg::InitReso()
+{
+	if(!m_pReso)
+		m_pReso = new ResoDlg(this, &m_settings);
+}
+
+void TazDlg::ShowResoParams()
+{
+	InitReso();
+	m_pReso->show();
+	m_pReso->activateWindow();
+}
+
+void TazDlg::ShowResoEllipses()
+{
+	InitReso();
+}
+
+void TazDlg::ShowResoEllipses3D()
+{
+	InitReso();
+}
+
+
+
+//--------------------------------------------------------------------------------
 // svg export
 #include <QtSvg/QSvgGenerator>
 
@@ -863,7 +923,10 @@ void TazDlg::ShowAbout()
 	strAbout += strBoost.c_str();
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
 						+ " http://www.boost.org\n";
-	strAbout += "\n";
+
+	strAbout += "Uses Lapack/e version 3";
+	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
+						+ " http://www.netlib.org/lapack\n";
 
 	strAbout += "Uses space group calculations ported from Nicos version 2";
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
