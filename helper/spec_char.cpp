@@ -107,6 +107,8 @@ void init_spec_chars()
 	//(*g_pmapSpecChars)["Rightarrow"] = SpecChar("\xe2\x87\x92", L"\x21d2");
 	//(*g_pmapSpecChars)["Uparrow"] = SpecChar("\xe2\x87\x91", L"\x21d1");
 	//(*g_pmapSpecChars)["Downarrow"] = SpecChar("\xe2\x87\x93", L"\x21d3");
+
+	(*g_pmapSpecChars)["return"] = SpecChar("\xe2\x8f\x8e", L"\x23ce");
 }
 
 void deinit_spec_chars()

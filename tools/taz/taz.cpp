@@ -940,6 +940,8 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 
 void TazDlg::ShowAbout()
 {
+	const std::wstring& strRet = get_spec_char_utf16("return");
+
 	QString strAbout;
 	strAbout += "TAZ version 0.5\n";
 	strAbout += "Written by Tobias Weber, 2014";
@@ -971,12 +973,19 @@ void TazDlg::ShowAbout()
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
 						+ " http://www.netlib.org/lapack\n";
 
+	strAbout += "\n";
 	strAbout += "Uses space group calculations ported from Nicos version 2";
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
 						+ " https://forge.frm2.tum.de/redmine/projects/nicos\n";
 	strAbout += "Uses space group data from PowderCell version 2.3";
 	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
 						+ " http://www.bam.de/de/service/publikationen/powder_cell_a.htm\n";
+
+	strAbout += "Uses resolution algorithms ported from Rescal version 5";
+	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
+						+ " http://www.ill.eu/en/html/instruments-support/computing-for-science/"
+						+ QString::fromUtf16((ushort*)strRet.c_str(), strRet.length())
+						+ "\n\t\tcs-software/all-software/matlab-ill/rescal-for-matlab\n";
 
 	QMessageBox::information(this, "About TAZ", strAbout);
 }
