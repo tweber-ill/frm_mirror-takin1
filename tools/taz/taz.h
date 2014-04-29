@@ -112,6 +112,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);
+
+	signals:
+		void ResoParamsChanged(const ResoParams& resoparams);
 };
 
 #endif

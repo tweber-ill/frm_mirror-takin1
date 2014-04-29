@@ -97,8 +97,8 @@ TazDlg::TazDlg(QWidget* pParent)
 		"tas/mono_d", "tas/ana_d"
 	};
 
-	 m_vecSpinBoxNamesSample = {"sample/phi", "sample/theta", "sample/psi"};
-	 m_vecCheckBoxNamesSenses = {"tas/sense_m", "tas/sense_s", "tas/sense_a"};
+	m_vecSpinBoxNamesSample = {"sample/phi", "sample/theta", "sample/psi"};
+	m_vecCheckBoxNamesSenses = {"tas/sense_m", "tas/sense_s", "tas/sense_a"};
 
 
 	QHBoxLayout *pLayoutRecip = new QHBoxLayout(groupRecip);
@@ -354,6 +354,14 @@ void TazDlg::UpdateDs()
 	double dAnaD = editAnaD->text().toDouble();
 
 	m_sceneRecip.SetDs(dMonoD, dAnaD);
+
+	ResoParams resoparams;
+	resoparams.bMonoDChanged = 1;
+	resoparams.bAnaDChanged = 1;
+	resoparams.dMonoD = dMonoD;
+	resoparams.dAnaD = dAnaD;
+
+	emit ResoParamsChanged(resoparams);
 }
 
 std::ostream& operator<<(std::ostream& ostr, const Lattice& lat)
@@ -489,17 +497,35 @@ void TazDlg::CalcPeaks()
 
 void TazDlg::UpdateSampleSense()
 {
-	m_sceneRecip.SetSampleSense(checkSenseS->isChecked());
+	const bool bSense = checkSenseS->isChecked();
+	m_sceneRecip.SetSampleSense(bSense);
+
+	ResoParams params;
+	params.bSensesChanged[1] = 1;
+	params.bScatterSenses[1] = bSense;
+	emit ResoParamsChanged(params);
 }
 
 void TazDlg::UpdateMonoSense()
 {
-	m_sceneRecip.SetMonoSense(checkSenseM->isChecked());
+	const bool bSense = checkSenseM->isChecked();
+	m_sceneRecip.SetMonoSense(bSense);
+
+	ResoParams params;
+	params.bSensesChanged[0] = 1;
+	params.bScatterSenses[0] = bSense;
+	emit ResoParamsChanged(params);
 }
 
 void TazDlg::UpdateAnaSense()
 {
-	m_sceneRecip.SetAnaSense(checkSenseA->isChecked());
+	const bool bSense = checkSenseA->isChecked();
+	m_sceneRecip.SetAnaSense(bSense);
+
+	ResoParams params;
+	params.bSensesChanged[2] = 1;
+	params.bScatterSenses[2] = bSense;
+	emit ResoParamsChanged(params);
 }
 
 void TazDlg::Show3D()
@@ -831,7 +857,24 @@ void TazDlg::ShowRealParams()
 void TazDlg::InitReso()
 {
 	if(!m_pReso)
+	{
 		m_pReso = new ResoDlg(this, &m_settings);
+
+		QObject::connect(this, SIGNAL(ResoParamsChanged(const ResoParams&)),
+						m_pReso, SLOT(ResoParamsChanged(const ResoParams&)));
+		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+						m_pReso, SLOT(RecipParamsChanged(const RecipParams&)));
+		QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
+						m_pReso, SLOT(RealParamsChanged(const RealParams&)));
+
+		UpdateDs();
+		UpdateMonoSense();
+		UpdateSampleSense();
+		UpdateAnaSense();
+
+		m_sceneRecip.emitAllParams();
+		m_sceneReal.emitAllParams();
+	}
 }
 
 void TazDlg::ShowResoParams()

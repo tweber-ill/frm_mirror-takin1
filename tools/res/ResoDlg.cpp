@@ -457,5 +457,34 @@ void ResoDlg::showEvent(QShowEvent *event)
 	restoreGeometry(m_pSettings->value("reso/wnd_geo").toByteArray());
 }
 
+void ResoDlg::ResoParamsChanged(const ResoParams& params)
+{
+	bool bOldDontCalc = m_bDontCalc;
+	m_bDontCalc = 1;
+
+	if(params.bSensesChanged[0]) params.bScatterSenses[0] ? radioMonoScatterPlus->setChecked(1) : radioMonoScatterMinus->setChecked(1);
+	if(params.bSensesChanged[1]) params.bScatterSenses[1] ? radioSampleScatterPlus->setChecked(1) : radioSampleScatterMinus->setChecked(1);
+	if(params.bSensesChanged[2]) params.bScatterSenses[2] ? radioAnaScatterPlus->setChecked(1) : radioAnaScatterMinus->setChecked(1);
+
+	if(params.bMonoDChanged) spinMonod->setValue(params.dMonoD);
+	if(params.bAnaDChanged) spinAnad->setValue(params.dAnaD);
+
+	m_bDontCalc = bOldDontCalc;
+	Calc();
+}
+
+void ResoDlg::RecipParamsChanged(const RecipParams& parms)
+{
+	spinQ->setValue(parms.dQ);
+	spinE->setValue(parms.dE);
+	spinkfix->setValue(radioFixedki->isChecked() ? parms.dki : parms.dkf);
+}
+
+void ResoDlg::RealParamsChanged(const RealParams& parms)
+{
+	// TODO
+}
+
+// TODO: also send locally changed params back to taz
 
 #include "ResoDlg.moc"

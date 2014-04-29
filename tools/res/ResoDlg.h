@@ -20,6 +20,18 @@
 #include "helper/linalg.h"
 #include "plot/plotgl.h"
 #include "ellipse.h"
+#include "dialogs/RecipParamDlg.h"
+#include "dialogs/RealParamDlg.h"
+
+// parameters that are not already in RealParams or RecipParams
+struct ResoParams
+{
+	bool bMonoDChanged = 0, bAnaDChanged = 0;
+	bool bSensesChanged[3] = {0,0,0};
+
+	double dMonoD, dAnaD;
+	bool bScatterSenses[3];
+};
 
 class ResoDlg : public QDialog, Ui::ResoDlg
 {Q_OBJECT
@@ -57,6 +69,11 @@ protected slots:
 
 	void SaveFile();
 	void LoadFile();
+
+public slots:
+	void ResoParamsChanged(const ResoParams& params);
+	void RecipParamsChanged(const RecipParams& parms);
+	void RealParamsChanged(const RealParams& parms);
 };
 
 #endif
