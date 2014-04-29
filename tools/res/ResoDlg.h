@@ -59,6 +59,8 @@ public:
 	ResoDlg(QWidget* pParent, QSettings* pSettings=0);
 	virtual ~ResoDlg();
 
+	void EmitResults();
+
 protected slots:
 	void UpdateUI();
 	void Calc();
@@ -74,6 +76,9 @@ public slots:
 	void ResoParamsChanged(const ResoParams& params);
 	void RecipParamsChanged(const RecipParams& parms);
 	void RealParamsChanged(const RealParams& parms);
+
+signals:
+	void ResoResults(const PopParams& pop, const CNResults& res);
 };
 
 #endif

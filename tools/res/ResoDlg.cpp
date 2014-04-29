@@ -250,8 +250,7 @@ void ResoDlg::Calc()
 		ostrkvar << dKVar;
 		labelkvar_val->setText(ostrkvar.str().c_str());
 
-//		if(m_pElliDlg) m_pElliDlg->SetParams(cn, res);
-//		if(m_pElli3dDlg) m_pElli3dDlg->SetParams(cn, res);
+		EmitResults();
 	}
 	else
 	{
@@ -261,6 +260,14 @@ void ResoDlg::Calc()
 
 		labelkvar_val->setText("<error>");
 	}
+}
+
+void ResoDlg::EmitResults()
+{
+	PopParams& cn = m_pop;
+	CNResults &res = m_res;
+
+	emit ResoResults(cn, res);
 }
 
 void ResoDlg::WriteLastConfig()

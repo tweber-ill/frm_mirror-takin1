@@ -1,5 +1,7 @@
 CC = gcc
-INC = -I/usr/include/qt4 -I/usr/local/include -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I./tools/plot_gpl/src/qtterminal
+INC = -I/usr/include/qt4 -I/usr/local/include -I/usr/include/qt4/QtCore \
+	-I/usr/include/qt4/QtGui -I/usr/include/qwt5 -I/usr/include/QtCore \
+	-I/usr/include/QtGui
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
 DEFINES = -DUSE_LAPACK
@@ -12,18 +14,18 @@ QT_LIBS = -L/usr/lib64/qt4 -L/usr/lib/x86_64-linux-gnu -L /usr/lib/qt4/lib \
 	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL -lQtSvg \
 	-lGL -lGLU -lX11
 LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
-LIBS_RESO = -L/usr/lib64 -lboost_iostreams-mt ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
+LIBS_RESO = -L/usr/lib64 -lqwt ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 
 
 taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
 	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
-	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o
+	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/EllipseDlg.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
 			obj/RecipParamDlg.o obj/RealParamDlg.o \
-			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
+			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/EllipseDlg.o \
 			${LIBS_TAZ} ${LIBS_RESO}
 	strip bin/taz
 
@@ -87,6 +89,8 @@ obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
 obj/ResoDlg.o: tools/res/ResoDlg.cpp tools/res/ResoDlg.h
 	${CC} ${FLAGS} -c -o obj/ResoDlg.o tools/res/ResoDlg.cpp
 
+obj/EllipseDlg.o: dialogs/EllipseDlg.cpp dialogs/EllipseDlg.h
+	${CC} ${FLAGS} -c -o obj/EllipseDlg.o dialogs/EllipseDlg.cpp
 
 
 clean:

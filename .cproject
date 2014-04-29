@@ -27,8 +27,10 @@
 								<option id="gnu.cpp.compiler.option.include.paths.1889843984" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.8"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt4"/>
-									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/Qt"/>
+									<listOptionValue builtIn="false" value="/usr/include/QtCore/"/>
+									<listOptionValue builtIn="false" value="/usr/include/qwt5"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\lib\gcc\x86_64-pc-cygwin\4.8.1\include\c++&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\lib\gcc\x86_64-pc-cygwin\4.8.1\include\c++\x86_64-pc-cygwin&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\usr\include\qt4&quot;"/>
@@ -58,6 +60,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.libs.812773704" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="QtCore"/>
+									<listOptionValue builtIn="false" value="qwt"/>
 									<listOptionValue builtIn="false" value="lapack"/>
 									<listOptionValue builtIn="false" value="lapacke"/>
 									<listOptionValue builtIn="false" value="QtSvg"/>
@@ -76,16 +79,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.2123285518" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1902212774" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
-						</toolChain>
-					</folderInfo>
-					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1536710058.1090238555" name="/" resourcePath="tools/res/dialogs">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.2124905591" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug" unusedChildren="">
-							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1857033050" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.1274879456"/>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1585529613" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2034901305"/>
-							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.151325361" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1342627832"/>
-							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.314260632" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug.418484306"/>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.896962904" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.399949835"/>
-							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.854224640" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug.2123285518"/>
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1536710058.1833539831" name="dialogs" rcbsApplicability="disable" resourcePath="tools/taz/dialogs" toolsToInvoke=""/>
@@ -122,8 +115,10 @@
 								<option id="gnu.cpp.compiler.option.include.paths.912112772" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.8"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt4"/>
-									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/Qt"/>
+									<listOptionValue builtIn="false" value="/usr/include/QtCore/"/>
+									<listOptionValue builtIn="false" value="/usr/include/qwt5"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\lib\gcc\x86_64-pc-cygwin\4.8.1\include\c++&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\lib\gcc\x86_64-pc-cygwin\4.8.1\include\c++\x86_64-pc-cygwin&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\usr\include\qt4&quot;"/>
@@ -151,6 +146,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.libs.207776251" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="QtCore"/>
+									<listOptionValue builtIn="false" value="qwt"/>
 									<listOptionValue builtIn="false" value="lapack"/>
 									<listOptionValue builtIn="false" value="lapacke"/>
 									<listOptionValue builtIn="false" value="QtSvg"/>
@@ -169,16 +165,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.713370981" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release">
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1147501588" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
-						</toolChain>
-					</folderInfo>
-					<folderInfo id="cdt.managedbuild.config.gnu.exe.release.1085676439.1031287898" name="/" resourcePath="tools/res/dialogs">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.1140904220" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.release" unusedChildren="">
-							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1434553014" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.988207793"/>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1337847159" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.692393029"/>
-							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1993304667" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1792737407"/>
-							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.967820136" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release.284415959"/>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.1210441024" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.384017152"/>
-							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.574282807" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release.713370981"/>
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.1085676439.1305579664" name="dialogs" rcbsApplicability="disable" resourcePath="tools/taz/dialogs" toolsToInvoke=""/>
@@ -217,4 +203,5 @@
 			<resource resourceType="PROJECT" workspacePath="/taz"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>

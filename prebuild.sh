@@ -28,6 +28,8 @@ moc tools/taz/tas_layout.h -o tools/taz/tas_layout.moc
 moc tools/taz/recip3d.h -o tools/taz/recip3d.moc
 
 moc tools/res/ResoDlg.h -o tools/res/ResoDlg.moc
+moc dialogs/EllipseDlg.h -o dialogs/EllipseDlg.moc
+moc dialogs/EllipseDlg3D.h -o dialogs/EllipseDlg3D.moc
 
 moc dialogs/RecipParamDlg.h -o dialogs/RecipParamDlg.moc
 moc dialogs/RealParamDlg.h -o dialogs/RealParamDlg.moc

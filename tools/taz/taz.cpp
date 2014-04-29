@@ -257,7 +257,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuReso->addAction(pResoEllipses);
 
 	QAction *pResoEllipses3D = new QAction(this);
-	pResoEllipses3D->setText("3D Ellipses...");
+	pResoEllipses3D->setText("3D Ellipsoids...");
 	pMenuReso->addAction(pResoEllipses3D);
 
 
@@ -338,6 +338,18 @@ TazDlg::~TazDlg()
 	{
 		delete m_pviewRecip;
 		m_pviewRecip = 0;
+	}
+
+	if(m_pEllipseDlg)
+	{
+		delete m_pEllipseDlg;
+		m_pEllipseDlg = 0;
+	}
+
+	if(m_pEllipseDlg3D)
+	{
+		delete m_pEllipseDlg3D;
+		m_pEllipseDlg3D = 0;
 	}
 
 	if(m_pReso)
@@ -839,6 +851,9 @@ void TazDlg::RepopulateSpaceGroups()
 }
 
 
+//--------------------------------------------------------------------------------
+// parameter dialogs
+
 void TazDlg::ShowRecipParams()
 {
 	m_dlgRecipParam.show();
@@ -880,6 +895,7 @@ void TazDlg::InitReso()
 void TazDlg::ShowResoParams()
 {
 	InitReso();
+
 	m_pReso->show();
 	m_pReso->activateWindow();
 }
@@ -887,11 +903,35 @@ void TazDlg::ShowResoParams()
 void TazDlg::ShowResoEllipses()
 {
 	InitReso();
+
+	if(!m_pEllipseDlg)
+	{
+		m_pEllipseDlg = new EllipseDlg(this, &m_settings);
+		QObject::connect(m_pReso, SIGNAL(ResoResults(const PopParams&, const CNResults&)),
+						 m_pEllipseDlg, SLOT(SetParams(const PopParams&, const CNResults&)));
+
+		m_pReso->EmitResults();
+	}
+
+	m_pEllipseDlg->show();
+	m_pEllipseDlg->activateWindow();
 }
 
 void TazDlg::ShowResoEllipses3D()
 {
 	InitReso();
+
+	if(!m_pEllipseDlg3D)
+	{
+		m_pEllipseDlg3D = new EllipseDlg3D(this, &m_settings);
+		QObject::connect(m_pReso, SIGNAL(ResoResults(const PopParams&, const CNResults&)),
+						 m_pEllipseDlg3D, SLOT(SetParams(const PopParams&, const CNResults&)));
+
+		m_pReso->EmitResults();
+	}
+
+	m_pEllipseDlg3D->show();
+	m_pEllipseDlg3D->activateWindow();
 }
 
 
