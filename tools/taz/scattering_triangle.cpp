@@ -501,7 +501,16 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 	}
 
 	ublas::vector<double> vecNorm = cross_3(recip_unrot.GetVec(0), recip_unrot.GetVec(1));
-	m_dAngleRot = -vec_angle(recip.GetVec(0), recip_unrot.GetVec(0), &vecNorm);
+
+	try
+	{
+		m_dAngleRot = -vec_angle(recip.GetVec(0), recip_unrot.GetVec(0), &vecNorm);
+	}
+	catch(const std::exception& ex)
+	{
+		std::cerr << ex.what() << std::endl;
+		return;
+	}
 	//std::cout << m_dAngleRot/M_PI*180. << std::endl;
 
 	for(double h=-m_dMaxPeaks; h<=m_dMaxPeaks; h+=1.)

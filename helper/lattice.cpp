@@ -86,7 +86,7 @@ Lattice Lattice::GetRecip() const
 
 	ublas::matrix<double> matInv;
 	if(!inverse<double>(ublas::trans(matReal), matInv))
-		std::cerr << "Could not invert matrix." << std::endl;
+		throw Err("Reciprocal lattice could not be calculated.");
 
 	ublas::matrix<double> matRecip = 2.*M_PI*matInv;
 	return Lattice(get_column(matRecip,0),

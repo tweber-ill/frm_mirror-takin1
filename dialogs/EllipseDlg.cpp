@@ -66,8 +66,8 @@ EllipseDlg::~EllipseDlg()
 		delete pGrid;
 	m_vecGrid.clear();
 
-	for(QwtPlotCurve *pCurve : m_vecPlotCurves)
-		delete pCurve;
+	//for(QwtPlotCurve *pCurve : m_vecPlotCurves)
+	//	delete pCurve;
 	m_vecPlotCurves.clear();
 }
 

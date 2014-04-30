@@ -430,81 +430,89 @@ void TazDlg::CalcPeaks()
 	if(!m_sceneRecip.GetTriangle())
 		return;
 
-	double a = editA->text().toDouble();
-	double b = editB->text().toDouble();
-	double c = editC->text().toDouble();
-
-	double alpha = editAlpha->text().toDouble()/180.*M_PI;
-	double beta = editBeta->text().toDouble()/180.*M_PI;
-	double gamma = editGamma->text().toDouble()/180.*M_PI;
-
-	Lattice lattice(a,b,c, alpha,beta,gamma);
-	Lattice recip_unrot = lattice.GetRecip();
-
-	double dPhi = spinRotPhi->value() / 180. * M_PI;
-	double dTheta = spinRotTheta->value() / 180. * M_PI;
-	double dPsi = spinRotPsi->value() / 180. * M_PI;
-	lattice.RotateEuler(dPhi, dTheta, dPsi);
-
-	Lattice recip = lattice.GetRecip();
-
-
-	double dX0 = editScatX0->text().toDouble();
-	double dX1 = editScatX1->text().toDouble();
-	double dX2 = editScatX2->text().toDouble();
-	ublas::vector<double> vecPlaneX = dX0*recip_unrot.GetVec(0) +
-									dX1*recip_unrot.GetVec(1) +
-									dX2*recip_unrot.GetVec(2);
-
-	double dY0 = editScatY0->text().toDouble();
-	double dY1 = editScatY1->text().toDouble();
-	double dY2 = editScatY2->text().toDouble();
-	ublas::vector<double> vecPlaneY = dY0*recip_unrot.GetVec(0) +
-									dY1*recip_unrot.GetVec(1) +
-									dY2*recip_unrot.GetVec(2);
-
-
-	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
-	Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
-
-
-	if(m_bUpdateRecipEdits)
+	try
 	{
-		editARecip->setText(dtoqstr(recip.GetA()));
-		editBRecip->setText(dtoqstr(recip.GetB()));
-		editCRecip->setText(dtoqstr(recip.GetC()));
-		editAlphaRecip->setText(dtoqstr(recip.GetAlpha()/M_PI*180.));
-		editBetaRecip->setText(dtoqstr(recip.GetBeta()/M_PI*180.));
-		editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
+		double a = editA->text().toDouble();
+		double b = editB->text().toDouble();
+		double c = editC->text().toDouble();
+
+		double alpha = editAlpha->text().toDouble()/180.*M_PI;
+		double beta = editBeta->text().toDouble()/180.*M_PI;
+		double gamma = editGamma->text().toDouble()/180.*M_PI;
+
+		Lattice lattice(a,b,c, alpha,beta,gamma);
+		Lattice recip_unrot = lattice.GetRecip();
+
+		double dPhi = spinRotPhi->value() / 180. * M_PI;
+		double dTheta = spinRotTheta->value() / 180. * M_PI;
+		double dPsi = spinRotPsi->value() / 180. * M_PI;
+		lattice.RotateEuler(dPhi, dTheta, dPsi);
+
+		Lattice recip = lattice.GetRecip();
+
+
+		double dX0 = editScatX0->text().toDouble();
+		double dX1 = editScatX1->text().toDouble();
+		double dX2 = editScatX2->text().toDouble();
+		ublas::vector<double> vecPlaneX = dX0*recip_unrot.GetVec(0) +
+										dX1*recip_unrot.GetVec(1) +
+										dX2*recip_unrot.GetVec(2);
+
+		double dY0 = editScatY0->text().toDouble();
+		double dY1 = editScatY1->text().toDouble();
+		double dY2 = editScatY2->text().toDouble();
+		ublas::vector<double> vecPlaneY = dY0*recip_unrot.GetVec(0) +
+										dY1*recip_unrot.GetVec(1) +
+										dY2*recip_unrot.GetVec(2);
+
+
+		ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
+		Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
+
+
+		if(m_bUpdateRecipEdits)
+		{
+			editARecip->setText(dtoqstr(recip.GetA()));
+			editBRecip->setText(dtoqstr(recip.GetB()));
+			editCRecip->setText(dtoqstr(recip.GetC()));
+			editAlphaRecip->setText(dtoqstr(recip.GetAlpha()/M_PI*180.));
+			editBetaRecip->setText(dtoqstr(recip.GetBeta()/M_PI*180.));
+			editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
+		}
+
+		const std::wstring& strAA = ::get_spec_char_utf16("AA");
+		const std::wstring& strMinus = ::get_spec_char_utf16("sup-");
+		const std::wstring& strThree = ::get_spec_char_utf16("sup3");
+
+		double dVol = lattice.GetVol();
+		double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
+		std::wostringstream ostrSample;
+		ostrSample.precision(4);
+		ostrSample << "Sample - ";
+		ostrSample << "Unit Cell Volume: ";
+		ostrSample << "Real: " << dVol << " " << strAA << strThree;
+		ostrSample << ", Reciprocal: " << dVol_recip << " " << strAA << strMinus << strThree;
+		groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
+
+		SpaceGroup *pSpaceGroup = 0;
+		int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
+		if(iSpaceGroupIdx == 0)
+			pSpaceGroup = 0;
+		else
+			pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
+
+		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
+		m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
+		m_sceneRecip.emitUpdate();
+
+		if(m_pRecip3d)
+			m_pRecip3d->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
 	}
-
-	const std::wstring& strAA = ::get_spec_char_utf16("AA");
-	const std::wstring& strMinus = ::get_spec_char_utf16("sup-");
-	const std::wstring& strThree = ::get_spec_char_utf16("sup3");
-
-	double dVol = lattice.GetVol();
-	double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
-	std::wostringstream ostrSample;
-	ostrSample.precision(4);
-	ostrSample << "Sample - ";
-	ostrSample << "Unit Cell Volume: ";
-	ostrSample << "Real: " << dVol << " " << strAA << strThree;
-	ostrSample << ", Reciprocal: " << dVol_recip << " " << strAA << strMinus << strThree;
-	groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
-
-	SpaceGroup *pSpaceGroup = 0;
-	int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
-	if(iSpaceGroupIdx == 0)
-		pSpaceGroup = 0;
-	else
-		pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
-
-	m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
-	m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
-	m_sceneRecip.emitUpdate();
-
-	if(m_pRecip3d)
-		m_pRecip3d->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
+	catch(const std::exception& ex)
+	{
+		m_sceneRecip.GetTriangle()->ClearPeaks();
+		std::cerr << ex.what() << std::endl;
+	}
 }
 
 void TazDlg::UpdateSampleSense()
