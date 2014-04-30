@@ -14,6 +14,7 @@
 #include <string>
 #include <ostream>
 #include <cmath>
+#include <vector>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -27,8 +28,10 @@ struct Ellipse
 
 	std::string x_lab, y_lab;
 
-	virtual ublas::vector<double> operator()(double t) const;
-	virtual const char* GetModelName() const { return "ellipse"; };
+	ublas::vector<double> operator()(double t) const;
+	const char* GetModelName() const { return "ellipse"; };
+
+	void GetCurvePoints(std::vector<double>& x, std::vector<double>& y, unsigned int iPoints=512);
 };
 
 struct Ellipsoid

@@ -26,9 +26,13 @@ RecipParamDlg::~RecipParamDlg()
 
 void RecipParamDlg::paramsChanged(const RecipParams& parms)
 {
+	double dQ = parms.dQ;
+	if(parms.d2Theta < 0.)
+		dQ = -dQ;
+
 	this->editKi->setText(var_to_str<double>(parms.dki).c_str());
 	this->editKf->setText(var_to_str<double>(parms.dkf).c_str());
-	this->editQ->setText(var_to_str<double>(parms.dQ).c_str());
+	this->editQ->setText(var_to_str<double>(dQ).c_str());
 	this->editq->setText(var_to_str<double>(parms.dq).c_str());
 	this->editE->setText(var_to_str<double>(parms.dE).c_str());
 	this->edit2Theta->setText(var_to_str<double>(parms.d2Theta / M_PI * 180.).c_str());

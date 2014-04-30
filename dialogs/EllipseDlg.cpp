@@ -10,14 +10,66 @@
 EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 			: QDialog(pParent), m_pSettings(pSett)
 {
+	setupUi(this);
+	m_vecPlots = {plot1,plot2,plot3,plot4};
+
 	m_elliProj.resize(4);
 	m_elliSlice.resize(4);
+	m_vecGrid.resize(4);
 
-	setupUi(this);
+	m_vecPlotCurves.resize(8);
+
+	m_vecXCurvePoints.resize(8);
+	m_vecYCurvePoints.resize(8);
+
+	for(unsigned int i=0; i<4; ++i)
+	{
+		m_vecPlots[i]->setCanvasBackground(QColor(0xff,0xff,0xff));
+		m_vecPlots[i]->setMinimumSize(200,200);
+
+		m_vecGrid[i] = new QwtPlotGrid();
+		QPen penGrid;
+		penGrid.setColor(QColor(0x99,0x99,0x99));
+		penGrid.setStyle(Qt::DashLine);
+		m_vecGrid[i]->setPen(penGrid);
+		m_vecGrid[i]->attach(m_vecPlots[i]);
+
+		QwtPlotCurve *pCurveProj = new QwtPlotCurve("projected");
+		QwtPlotCurve *pCurveSlice = new QwtPlotCurve("sliced");
+
+		QPen penProj, penSlice;
+		penProj.setColor(QColor(0, 0x99,0));
+		penSlice.setColor(QColor(0,0,0x99));
+		penProj.setWidth(2);
+		penSlice.setWidth(2);
+
+		pCurveProj->setPen(penProj);
+		pCurveSlice->setPen(penSlice);
+
+		pCurveProj->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+		pCurveSlice->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+
+		pCurveProj->attach(m_vecPlots[i]);
+		pCurveSlice->attach(m_vecPlots[i]);
+
+		m_vecPlotCurves[i*2+0] = pCurveProj;
+		m_vecPlotCurves[i*2+1] = pCurveSlice;
+	}
 }
 
 EllipseDlg::~EllipseDlg()
-{}
+{
+	for(QwtPlot* pPlot : m_vecPlots)
+		pPlot->clear();
+
+	for(QwtPlotGrid* pGrid : m_vecGrid)
+		delete pGrid;
+	m_vecGrid.clear();
+
+	for(QwtPlotCurve *pCurve : m_vecPlotCurves)
+		delete pCurve;
+	m_vecPlotCurves.clear();
+}
 
 void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 {
@@ -82,31 +134,40 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 		if(bCenterOn0)
 			Q_avg = ublas::zero_vector<double>(Q_avg.size());
 
-		m_elliProj[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[0][iEll][0], iParams[0][iEll][1], iParams[0][iEll][2], iParams[0][iEll][3], iParams[0][iEll][4]);
-		m_elliSlice[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[1][iEll][0], iParams[1][iEll][1], iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);
-	}
+		m_elliProj[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[0][iEll][0], iParams[0][iEll][1],
+										iParams[0][iEll][2], iParams[0][iEll][3], iParams[0][iEll][4]);
+		m_elliSlice[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[1][iEll][0], iParams[1][iEll][1],
+										iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);
 
-/* TODO: use new qwt plotter
-	for(unsigned int i=0; i<m_pPlots.size(); ++i)
-	{
-		m_pPlots[i]->SetLabels(m_elliProj[i].x_lab.c_str(), m_elliProj[i].y_lab.c_str());
+		QwtPlot* pPlot = m_vecPlots[iEll];
+		QwtPlotCurve* pCurveProj = m_vecPlotCurves[iEll*2+0];
+		QwtPlotCurve* pCurveSlice = m_vecPlotCurves[iEll*2+1];
+		std::vector<double>& vecXProj = m_vecXCurvePoints[iEll*2+0];
+		std::vector<double>& vecYProj = m_vecYCurvePoints[iEll*2+0];
+		std::vector<double>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
+		std::vector<double>& vecYSlice = m_vecYCurvePoints[iEll*2+1];
+
+		m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512);
+		m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512);
+
+		pCurveProj->setRawData(vecXProj.data(), vecYProj.data(), vecXProj.size());
+		pCurveSlice->setRawData(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
+
+		/*
 		std::ostringstream ostrSlope;
 		ostrSlope.precision(4);
-
 		// We do not know which principal axis corresponds to which axis,
 		// so the angle can be rotated by PI/2
 		// TODO: correct the angle which is printed here
-		ostrSlope << "Slope (proj): " << std::tan(-m_elliProj[i].phi)
-				  << ", Angle (proj): " << m_elliProj[i].phi;
+		ostrSlope << "Slope (proj): " << std::tan(-m_elliProj[iEll].phi)
+				  << ", Angle (proj): " << m_elliProj[iEll].phi;
+		pPlot->setTitle(ostrSlope.str().c_str());
+		*/
+		pPlot->setAxisTitle(QwtPlot::xBottom, m_elliProj[iEll].x_lab.c_str());
+		pPlot->setAxisTitle(QwtPlot::yLeft, m_elliProj[iEll].y_lab.c_str());
 
-		m_pPlots[i]->SetTitle(ostrSlope.str().c_str());
-		m_pPlots[i]->plot_param(m_elliProj[i],1);
-		m_pPlots[i]->plot_param(m_elliSlice[i],0);
+		pPlot->replot();
 	}
-
-	for(Plot* pPlot : m_pPlots)
-		pPlot->RefreshPlot();
-*/
 }
 
 void EllipseDlg::accept()

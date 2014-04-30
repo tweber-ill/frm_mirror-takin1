@@ -140,11 +140,13 @@ void ResoDlg::Calc()
 	cn.bki_fix = radioFixedki->isChecked();
 	cn.ki = cn.kf = spinkfix->value() / angstrom;
 	cn.E = spinE->value() * (1e-3 * codata::e * units::si::volts);
-	cn.Q = spinQ->value() / angstrom;
+	cn.Q = /*std::fabs*/(spinQ->value()) / angstrom;
 
 	cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
 	cn.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
 	cn.dsample_sense = (radioSampleScatterPlus->isChecked() ? +1. : -1.);
+	//if(spinQ->value() < 0.)
+	//	cn.dsample_sense = -cn.dsample_sense;
 
 	cn.coll_h_pre_mono = spinHCollMono->value() / (180.*60.) * M_PI * units::si::radians;
 	cn.coll_h_pre_sample = spinHCollBSample->value() / (180.*60.) * M_PI * units::si::radians;
@@ -482,7 +484,11 @@ void ResoDlg::ResoParamsChanged(const ResoParams& params)
 
 void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 {
-	spinQ->setValue(parms.dQ);
+	double dQ = parms.dQ;
+	if(parms.d2Theta < 0.)
+		dQ = -dQ;
+
+	spinQ->setValue(dQ);
 	spinE->setValue(parms.dE);
 	spinkfix->setValue(radioFixedki->isChecked() ? parms.dki : parms.dkf);
 }

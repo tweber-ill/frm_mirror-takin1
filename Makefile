@@ -20,12 +20,14 @@ LIBS_RESO = -L/usr/lib64 -lqwt ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
 	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
-	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/EllipseDlg.o
+	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
+	obj/EllipseDlg.o obj/EllipseDlg3D.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
 			obj/RecipParamDlg.o obj/RealParamDlg.o \
-			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/EllipseDlg.o \
+			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
+			obj/EllipseDlg.o obj/EllipseDlg3D.o \
 			${LIBS_TAZ} ${LIBS_RESO}
 	strip bin/taz
 
@@ -91,6 +93,9 @@ obj/ResoDlg.o: tools/res/ResoDlg.cpp tools/res/ResoDlg.h
 
 obj/EllipseDlg.o: dialogs/EllipseDlg.cpp dialogs/EllipseDlg.h
 	${CC} ${FLAGS} -c -o obj/EllipseDlg.o dialogs/EllipseDlg.cpp
+
+obj/EllipseDlg3D.o: dialogs/EllipseDlg3D.cpp dialogs/EllipseDlg3D.h
+	${CC} ${FLAGS} -c -o obj/EllipseDlg3D.o dialogs/EllipseDlg3D.cpp
 
 
 clean:

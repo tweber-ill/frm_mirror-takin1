@@ -19,11 +19,22 @@
 
 #include "../ui/ui_ellipses.h"
 
+#include <qwt_plot.h>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_grid.h>
+
 class EllipseDlg : public QDialog, Ui::EllipseDlg
 { Q_OBJECT
 	protected:
+		std::vector<QwtPlot*> m_vecPlots;
+		std::vector<QwtPlotCurve*> m_vecPlotCurves;
+		std::vector<QwtPlotGrid*> m_vecGrid;
+
 		std::vector<Ellipse> m_elliProj;
 		std::vector<Ellipse> m_elliSlice;
+
+		std::vector<std::vector<double> > m_vecXCurvePoints;
+		std::vector<std::vector<double> > m_vecYCurvePoints;
 
 		QSettings *m_pSettings = 0;
 

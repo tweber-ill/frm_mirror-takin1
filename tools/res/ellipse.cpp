@@ -24,6 +24,22 @@ ublas::vector<double> Ellipse::operator()(double t) const
     return vec;
 }
 
+void Ellipse::GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
+							unsigned int iPoints)
+{
+	x.resize(iPoints);
+	y.resize(iPoints);
+
+	for(unsigned int i=0; i<iPoints; ++i)
+	{
+		double dT = double(i)/double(iPoints-1);
+		ublas::vector<double> vec = operator()(dT);
+
+		x[i] = vec[0];
+		y[i] = vec[1];
+	}
+}
+
 /*
  * this is a 1:1 C++ reimplementation of 'proj_elip' from 'mcresplot'
  * iX, iY: dimensions to plot
