@@ -28,6 +28,7 @@ public:
 	bool Load(const char* pcFile);
 
 	std::string QueryString(const char* pcAdr, const char* pcDef, bool *pbOk=0);
+	bool Exists(const char* pcAdr);
 
 	template<typename T>
 	T Query(const char* pcAdr, T tDef, bool *pbOk=0)

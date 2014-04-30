@@ -1,7 +1,7 @@
 /*
- * mieze-tool
+ * resolution calculation
  * @author tweber
- * @date 01-may-2013
+ * @date may-2013, apr-2014
  */
 
 #include "ResoDlg.h"
@@ -12,7 +12,6 @@
 #include "helper/string.h"
 #include "helper/spec_char.h"
 #include "helper/misc.h"
-#include "helper/xml.h"
 #include "helper/math.h"
 
 #include <QtGui/QPainter>
@@ -333,105 +332,51 @@ void ResoDlg::ReadLastConfig()
 	Calc();
 }
 
-void ResoDlg::SaveFile()
+void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
-	QString strLastDir = ".";
-	if(m_pSettings)
-		strLastDir = m_pSettings->value("reso/lastdir", ".").toString();
-
-	QString strFile = QFileDialog::getSaveFileName(this, "Save resolution file...", strLastDir,
-					"RES files (*.res *.RES);;All files (*.*)"/*,
-					0, QFileDialog::DontUseNativeDialog*/);
-	if(strFile.length() == 0)
-		return;
-
-
-	typedef std::map<std::string, std::string> tmap;
-	tmap mapConf;
-
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
 		ostrVal << m_vecSpinBoxes[iSpinBox]->value();
 
-		mapConf[m_vecSpinNames[iSpinBox]] = ostrVal.str();
+		mapConf[strXmlRoot + m_vecSpinNames[iSpinBox]] = ostrVal.str();
 	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
-		mapConf[m_vecCheckNames[iCheckBox]] = (m_vecCheckBoxes[iCheckBox]->isChecked() ? "1" : "0");
+		mapConf[strXmlRoot + m_vecCheckNames[iCheckBox]] = (m_vecCheckBoxes[iCheckBox]->isChecked() ? "1" : "0");
 
 	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
-		mapConf[m_vecRadioNames[iRadio]] = (m_vecRadioPlus[iRadio]->isChecked() ? "1" : "0");
+		mapConf[strXmlRoot + m_vecRadioNames[iRadio]] = (m_vecRadioPlus[iRadio]->isChecked() ? "1" : "0");
 
-	mapConf["reso/use_guide"] = groupGuide->isChecked() ? "1" : "0";
-
-	if(!Xml::SaveMap(strFile.toStdString().c_str(), mapConf))
-	{
-		QMessageBox::critical(this, "Error", "Could not save configuration file.");
-		return;
-	}
-
-	std::string strFile1 = strFile.toStdString();
-	std::string strFileName = get_file(strFile1);
-	setWindowTitle(QString("Resolution - ") + strFileName.c_str());
-
-	if(m_pSettings)
-		m_pSettings->setValue("reso/lastdir", QString(::get_dir(strFile1).c_str()));
+	mapConf[strXmlRoot + "reso/use_guide"] = groupGuide->isChecked() ? "1" : "0";
 }
 
-void ResoDlg::LoadFile()
+void ResoDlg::Load(Xml& xml, const std::string& strXmlRoot)
 {
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	QString strLastDir = ".";
-	if(m_pSettings)
-		strLastDir = m_pSettings->value("reso/lastdir", ".").toString();
-
-	QString strFile = QFileDialog::getOpenFileName(this, "Open resolution file...", strLastDir,
-					"RES files (*.res *.RES);;All files (*.*)"/*,
-					0, QFileDialog::DontUseNativeDialog*/);
-	if(strFile.length() == 0)
-		return;
-
-	std::string strFile1 = strFile.toStdString();
-	std::string strFileName = get_file(strFile1);
-
-	Xml xml;
-	if(!xml.Load(strFile1.c_str()))
-	{
-		QMessageBox::critical(this, "Error", "Could not load configuration file.");
-		return;
-	}
-
-
 	bool bOk=0;
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
-		m_vecSpinBoxes[iSpinBox]->setValue(xml.Query<double>(m_vecSpinNames[iSpinBox].c_str(), 0., &bOk));
+		m_vecSpinBoxes[iSpinBox]->setValue(xml.Query<double>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str(), 0., &bOk));
 
 	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
-		int bChecked = xml.Query<int>(m_vecCheckNames[iCheck].c_str(), 0, &bOk);
+		int bChecked = xml.Query<int>((strXmlRoot+m_vecCheckNames[iCheck]).c_str(), 0, &bOk);
 		m_vecCheckBoxes[iCheck]->setChecked(bChecked);
 	}
 
 	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 	{
-		int bChecked = xml.Query<int>(m_vecRadioNames[iRadio].c_str(), 0, &bOk);
+		int bChecked = xml.Query<int>((strXmlRoot+m_vecRadioNames[iRadio]).c_str(), 0, &bOk);
 		if(bChecked)
 			m_vecRadioPlus[iRadio]->setChecked(1);
 		else
 			m_vecRadioMinus[iRadio]->setChecked(1);;
 	}
 
-	groupGuide->setChecked(xml.Query<int>("reso/use_guide", 0, &bOk));
-
-
-	setWindowTitle(QString("Resolution - ") + strFileName.c_str());
-
-	if(m_pSettings)
-		m_pSettings->setValue("reso/lastdir", QString(::get_dir(strFile1).c_str()));
+	groupGuide->setChecked(xml.Query<int>((strXmlRoot+"reso/use_guide").c_str(), 0, &bOk));
 
 	m_bDontCalc = bOldDontCalc;
 	Calc();

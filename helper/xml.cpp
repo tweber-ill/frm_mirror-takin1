@@ -90,6 +90,17 @@ std::string Xml::QueryString(const char* pcAdr, const char* pcDef, bool *pbOk)
 	return strOut;
 }
 
+bool Xml::Exists(const char* pcAdr)
+{
+	bool bOk = 0;
+	std::string strQuery = QueryString(pcAdr, "", &bOk);
+	if(strQuery.length() == 0)
+		bOk = 0;
+
+	//std::cout << "exists: " << bOk << std::endl;
+	return bOk;
+}
+
 
 // -------------------------------------------------------------------------------
 // saving

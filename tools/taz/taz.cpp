@@ -598,6 +598,50 @@ void TazDlg::EnableSmallq(bool bEnable)
 	m_sceneRecip.GetTriangle()->SetqVisible(bEnable);
 }
 
+
+void TazDlg::RepopulateSpaceGroups()
+{
+	if(!m_pmapSpaceGroups)
+		return;
+
+	for(int iCnt=comboSpaceGroups->count()-1; iCnt>0; --iCnt)
+		comboSpaceGroups->removeItem(iCnt);
+
+	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
+
+	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
+	{
+		const std::string& strName = pair.second.GetName();
+
+		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
+		if(strFilter!="" &&
+				!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
+									t_striterrange(strFilter.begin(), strFilter.end())))
+			continue;
+
+		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
+									strName.c_str(),
+									QVariant::fromValue((void*)&pair.second));
+	}
+}
+
+
+//--------------------------------------------------------------------------------
+// loading/saving
+
+bool TazDlg::Load()
+{
+	QString strDirLast = m_settings.value("main/last_dir", ".").toString();
+	QString strFile = QFileDialog::getOpenFileName(this,
+							"Open TAS configuration...",
+							strDirLast,
+							"TAZ files (*.taz *.TAZ)");
+	if(strFile == "")
+		return false;
+
+	return Load(strFile.toStdString().c_str());
+}
+
 bool TazDlg::Load(const char* pcFile)
 {
 	m_strCurFile = pcFile;
@@ -715,25 +759,17 @@ bool TazDlg::Load(const char* pcFile)
 			comboSpaceGroups->setCurrentIndex(iSGIdx);
 	}
 
+	if(xml.Exists((strXmlRoot + "reso").c_str()))
+	{
+		InitReso();
+		m_pReso->Load(xml, strXmlRoot);
+	}
 
 	m_strCurFile = strFile1;
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
 
 	CalcPeaks();
 	return true;
-}
-
-bool TazDlg::Load()
-{
-	QString strDirLast = m_settings.value("main/last_dir", ".").toString();
-	QString strFile = QFileDialog::getOpenFileName(this,
-							"Open TAS configuration...",
-							strDirLast,
-							"TAZ files (*.taz *.TAZ)");
-	if(strFile == "")
-		return false;
-
-	return Load(strFile.toStdString().c_str());
 }
 
 bool TazDlg::Save()
@@ -824,6 +860,9 @@ bool TazDlg::Save()
 	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
 
 
+	if(m_pReso)
+		m_pReso->Save(mapConf, strXmlRoot);
+
 
 	if(!Xml::SaveMap(m_strCurFile.c_str(), mapConf))
 	{
@@ -859,32 +898,7 @@ bool TazDlg::SaveAs()
 
 	return false;
 }
-
-void TazDlg::RepopulateSpaceGroups()
-{
-	if(!m_pmapSpaceGroups)
-		return;
-
-	for(int iCnt=comboSpaceGroups->count()-1; iCnt>0; --iCnt)
-		comboSpaceGroups->removeItem(iCnt);
-
-	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
-
-	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
-	{
-		const std::string& strName = pair.second.GetName();
-
-		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
-		if(strFilter!="" &&
-				!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
-									t_striterrange(strFilter.begin(), strFilter.end())))
-			continue;
-
-		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
-									strName.c_str(),
-									QVariant::fromValue((void*)&pair.second));
-	}
-}
+//--------------------------------------------------------------------------------
 
 
 //--------------------------------------------------------------------------------

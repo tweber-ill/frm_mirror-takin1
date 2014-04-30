@@ -1,7 +1,7 @@
 /*
- * mieze-tool
+ * resolution calculation
  * @author tweber
- * @date 01-may-2013
+ * @date may-2013, apr-2014
  */
 
 #ifndef __RESO_DLG_H__
@@ -12,12 +12,14 @@
 #include <QtGui/QLabel>
 
 #include <vector>
+#include <map>
 #include <string>
 
 #include "ui/ui_reso.h"
 #include "cn.h"
 #include "pop.h"
 #include "helper/linalg.h"
+#include "helper/xml.h"
 #include "plot/plotgl.h"
 #include "ellipse.h"
 #include "dialogs/RecipParamDlg.h"
@@ -69,13 +71,14 @@ protected slots:
 	void hideEvent (QHideEvent *event);
 	void showEvent(QShowEvent *event);
 
-	void SaveFile();
-	void LoadFile();
-
 public slots:
 	void ResoParamsChanged(const ResoParams& params);
 	void RecipParamsChanged(const RecipParams& parms);
 	void RealParamsChanged(const RealParams& parms);
+
+public:
+	void Load(Xml& xml, const std::string& strXmlRoot);
+	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 
 signals:
 	void ResoResults(const PopParams& pop, const CNResults& res);
