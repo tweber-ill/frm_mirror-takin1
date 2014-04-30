@@ -14,6 +14,7 @@
 #include <QtGui/QApplication>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QMenuBar>
+#include <QtGui/QToolBar>
 #include <QtGui/QMessageBox>
 #include <QtGui/QFileDialog>
 
@@ -157,6 +158,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(CalcPeaks()));
 
 
+
 	// --------------------------------------------------------------------------------
 	// file menu
 	QMenu *pMenuFile = new QMenu(this);
@@ -199,6 +201,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pSmallq = new QAction(this);
 	m_pSmallq->setText("Enable Reduced Scattering Vector q");
+	m_pSmallq->setIcon(QIcon("res/q.svg"));
 	m_pSmallq->setCheckable(1);
 	m_pSmallq->setChecked(bSmallqVisible);
 	pMenuViewRecip->addAction(m_pSmallq);
@@ -248,12 +251,14 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pResoParams = new QAction(this);
 	pResoParams->setText("Parameters...");
+	pResoParams->setIcon(QIcon::fromTheme("accessories-calculator"));
 	pMenuReso->addAction(pResoParams);
 
 	pMenuReso->addSeparator();
 
 	QAction *pResoEllipses = new QAction(this);
 	pResoEllipses->setText("Ellipses...");
+	pResoEllipses->setIcon(QIcon("res/ellipses.svg"));
 	pMenuReso->addAction(pResoEllipses);
 
 	QAction *pResoEllipses3D = new QAction(this);
@@ -312,8 +317,31 @@ TazDlg::TazDlg(QWidget* pParent)
 
 
 	setMenuBar(pMenuBar);
-	//this->layout()->setMenuBar(pMenuBar);
 	// --------------------------------------------------------------------------------
+
+
+
+	// --------------------------------------------------------------------------------
+	// tool bars
+	QToolBar *pFileTools = new QToolBar(this);
+	pFileTools->setWindowTitle("File");
+	pFileTools->addAction(pLoad);
+	pFileTools->addAction(pSave);
+	pFileTools->addAction(pSaveAs);
+	addToolBar(pFileTools);
+
+	QToolBar *pRecipTools = new QToolBar(this);
+	pRecipTools->setWindowTitle("Reciprocal Space");
+	pRecipTools->addAction(m_pSmallq);
+	addToolBar(pRecipTools);
+
+	QToolBar *pResoTools = new QToolBar(this);
+	pResoTools->setWindowTitle("Resolution");
+	pResoTools->addAction(pResoParams);
+	pResoTools->addAction(pResoEllipses);
+	addToolBar(pResoTools);
+	// --------------------------------------------------------------------------------
+
 
 	RepopulateSpaceGroups();
 
