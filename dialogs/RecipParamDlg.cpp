@@ -39,6 +39,20 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	this->editTheta->setText(var_to_str<double>(parms.dTheta / M_PI * 180.).c_str());
 	this->editKiQ->setText(var_to_str<double>(parms.dKiQ / M_PI * 180.).c_str());
 	this->editKfQ->setText(var_to_str<double>(parms.dKfQ / M_PI * 180.).c_str());
+
+	this->editQx->setText(var_to_str<double>(parms.Q[0]).c_str());
+	this->editQy->setText(var_to_str<double>(parms.Q[1]).c_str());
+	this->editQz->setText(var_to_str<double>(parms.Q[2]).c_str());
+	this->editQxrlu->setText(var_to_str<double>(parms.Q_rlu[0]).c_str());
+	this->editQyrlu->setText(var_to_str<double>(parms.Q_rlu[1]).c_str());
+	this->editQzrlu->setText(var_to_str<double>(parms.Q_rlu[2]).c_str());
+
+	this->editqx->setText(var_to_str<double>(parms.q[0]).c_str());
+	this->editqy->setText(var_to_str<double>(parms.q[1]).c_str());
+	this->editqz->setText(var_to_str<double>(parms.q[2]).c_str());
+	this->editqxrlu->setText(var_to_str<double>(parms.q_rlu[0]).c_str());
+	this->editqyrlu->setText(var_to_str<double>(parms.q_rlu[1]).c_str());
+	this->editqzrlu->setText(var_to_str<double>(parms.q_rlu[2]).c_str());
 }
 
 

@@ -87,6 +87,8 @@ class ScatteringTriangle : public QGraphicsItem
 		double m_dPlaneDistTolerance = 0.01;
 		double m_dMaxPeaks = 5.;
 
+		Lattice m_lattice, m_recip, m_recip_unrot;
+		ublas::matrix<double> m_matPlane, m_matPlane_inv;
 		std::vector<RecipPeak*> m_vecPeaks;
 
 		double m_dAngleRot = 0.;
@@ -123,6 +125,7 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetMonoTwoTheta(double dTT, double dMonoD);
 
 	public:
+		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_recip.IsInited(); }
 		void ClearPeaks();
 		void CalcPeaks(const Lattice& lattice,
 						const Lattice& recip, const Lattice& recip_unrot,
@@ -143,6 +146,9 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetScaleFactor(double dScale) { m_dScaleFactor = dScale; }
 
 		ScatteringTriangleNode* GetNodeGq() { return m_pNodeGq; }
+
+		ublas::vector<double> GetHKLFromPlanePos(double x, double y) const;
+		ublas::vector<double> GetQVec(bool bSmallQ=0, bool bRLU=1) const;
 };
 
 

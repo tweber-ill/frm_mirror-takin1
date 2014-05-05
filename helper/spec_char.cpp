@@ -109,6 +109,7 @@ void init_spec_chars()
 	//(*g_pmapSpecChars)["Downarrow"] = SpecChar("\xe2\x87\x93", L"\x21d3");
 
 	(*g_pmapSpecChars)["return"] = SpecChar("\xe2\x8f\x8e", L"\x23ce");
+	(*g_pmapSpecChars)["bullet"] = SpecChar("\xe2\x80\xa2", L"\x2022");
 }
 
 void deinit_spec_chars()

@@ -17,6 +17,9 @@ struct RecipParams
 	double dki, dkf;
 	double dE, dQ, dq;
 	double d2Theta, dTheta, dKiQ, dKfQ;
+
+	double Q[3], Q_rlu[3];
+	double q[3], q_rlu[3];
 };
 
 

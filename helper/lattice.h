@@ -21,7 +21,10 @@ class Lattice
 				const ublas::vector<double>& vec1,
 				const ublas::vector<double>& vec2);
 		Lattice(const Lattice& lattice);
+		Lattice();
 		virtual ~Lattice();
+
+		bool IsInited() const { return m_vecs[0].size()!=0; }
 
 		// Euler ZXZ rotation
 		void RotateEuler(double dPhi, double dTheta, double dPsi);
@@ -29,6 +32,7 @@ class Lattice
 		Lattice GetRecip() const;
 
 		ublas::vector<double> GetPos(double h, double k, double l) const;
+		ublas::vector<double> GetHKL(const ublas::vector<double>& vec) const;
 
 		double GetAlpha() const;
 		double GetBeta() const;

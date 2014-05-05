@@ -6,6 +6,8 @@
 
 #include "lattice.h"
 
+Lattice::Lattice()
+{}
 
 Lattice::Lattice(double a, double b, double c,
 				double alpha, double beta, double gamma)
@@ -70,9 +72,32 @@ double Lattice::GetVol() const
 			);
 }
 
+/*
+ (x)   (v0_x v1_x v2_x) (h)
+ (y) = (v0_y v1_y v2_y) (k)
+ (z)   (v0_z v1_z v2_z) (l)
+ */
 ublas::vector<double> Lattice::GetPos(double h, double k, double l) const
 {
 	return h*m_vecs[0] + k*m_vecs[1] + l*m_vecs[2];
+}
+
+/*
+ (h)   (v0_x v1_x v2_x)^(-1) (x)
+ (k) = (v0_y v1_y v2_y)      (y)
+ (l)   (v0_z v1_z v2_z)      (z)
+ */
+ublas::vector<double> Lattice::GetHKL(const ublas::vector<double>& vec) const
+{
+	ublas::matrix<double> mat =
+					column_matrix(std::vector<ublas::vector<double> >
+								{m_vecs[0], m_vecs[1], m_vecs[2]});
+
+	ublas::matrix<double> matInv;
+	if(!inverse<double>(mat, matInv))
+		throw Err("Miller indices could not be calculated.");
+
+	return ublas::prod(matInv, vec);
 }
 
 Lattice Lattice::GetRecip() const

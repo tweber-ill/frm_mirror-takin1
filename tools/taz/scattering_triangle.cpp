@@ -8,6 +8,8 @@
 #include "helper/neutrons.hpp"
 #include "helper/spec_char.h"
 #include "scattering_triangle.h"
+
+#include <QtGui/QToolTip>
 #include <iostream>
 #include <cmath>
 #include <sstream>
@@ -483,6 +485,10 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 {
 	ClearPeaks();
 
+	m_lattice = lattice;
+	m_recip = recip;
+	m_recip_unrot = recip_unrot;
+
 	ublas::vector<double> dir0 = plane.GetDir0();
 	//ublas::vector<double> dir1 = plane.GetDir1();
 	ublas::vector<double> dir1 = cross_3(plane.GetNorm(), dir0);
@@ -490,21 +496,19 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 	dir0 /= ublas::norm_2(dir0);
 	dir1 /= ublas::norm_2(dir1);
 
-	ublas::matrix<double> matPlane = column_matrix(
+	m_matPlane = column_matrix(
 			std::vector<ublas::vector<double> >{dir0, dir1, plane.GetNorm()});
-	ublas::matrix<double> matPlaneinv;
-	bool bInv = ::inverse(matPlane, matPlaneinv);
+	bool bInv = ::inverse(m_matPlane, m_matPlane_inv);
 	if(!bInv)
 	{
 		std::cerr << "Error: Cannot invert scattering plane metric." << std::endl;
 		return;
 	}
 
-	ublas::vector<double> vecNorm = cross_3(recip_unrot.GetVec(0), recip_unrot.GetVec(1));
-
+	ublas::vector<double> vecNorm = cross_3(m_recip_unrot.GetVec(0), m_recip_unrot.GetVec(1));
 	try
 	{
-		m_dAngleRot = -vec_angle(recip.GetVec(0), recip_unrot.GetVec(0), &vecNorm);
+		m_dAngleRot = -vec_angle(m_recip.GetVec(0), m_recip_unrot.GetVec(0), &vecNorm);
 	}
 	catch(const std::exception& ex)
 	{
@@ -525,13 +529,13 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 						continue;
 				}
 
-				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
+				ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
 				double dDist = 0.;
 				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
 				if(::float_equal(dDist, 0., m_dPlaneDistTolerance))
 				{
-					ublas::vector<double> vecCoord = ublas::prod(matPlaneinv, vecDropped);
+					ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
 					double dX = vecCoord[0];
 					double dY = vecCoord[1];
 
@@ -555,8 +559,8 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 					if(h!=0. || k!=0. || l!=0.)
 						pPeak->SetLabel(ostrTip.str().c_str());
 
-					std::string strAA = ::get_spec_char_utf8("AA")+::get_spec_char_utf8("sup-")+::get_spec_char_utf8("sup1");
-					ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
+					//std::string strAA = ::get_spec_char_utf8("AA")+::get_spec_char_utf8("sup-")+::get_spec_char_utf8("sup1");
+					//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
 					pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 
 					m_vecPeaks.push_back(pPeak);
@@ -566,6 +570,40 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 
 	m_scene.emitAllParams();
 	this->update();
+}
+
+ublas::vector<double> ScatteringTriangle::GetHKLFromPlanePos(double x, double y) const
+{
+	if(!HasPeaks())
+		return ublas::vector<double>();
+
+	ublas::vector<double> vec = x*::get_column(m_matPlane, 0)
+								+ y*::get_column(m_matPlane, 1);
+	return m_recip.GetHKL(vec);
+}
+
+ublas::vector<double> ScatteringTriangle::GetQVec(bool bSmallQ, bool bRLU) const
+{
+	ublas::vector<double> vecQPlane;
+
+	if(bSmallQ)
+		vecQPlane = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
+						- qpoint_to_vec(mapFromItem(m_pNodeGq, 0, 0));
+	else
+		vecQPlane = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+						- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+
+	vecQPlane /= m_dScaleFactor;
+	vecQPlane[1] = -vecQPlane[1];
+
+	ublas::vector<double> vecQ;
+	if(bRLU)
+		vecQ = GetHKLFromPlanePos(vecQPlane[0], vecQPlane[1]);
+	else
+		vecQ = vecQPlane[0]*::get_column(m_matPlane, 0)
+				+ vecQPlane[1]*::get_column(m_matPlane, 1);
+
+	return vecQ;
 }
 
 void ScatteringTriangle::ClearPeaks()
@@ -651,6 +689,23 @@ void ScatteringTriangleScene::emitAllParams()
 	parms.dkf = m_pTri->GetKf();
 	parms.dKiQ = m_pTri->GetAngleKiQ();
 	parms.dKfQ = m_pTri->GetAngleKfQ();
+
+	ublas::vector<double> vecQ = m_pTri->GetQVec(0,0);
+	ublas::vector<double> vecQrlu = m_pTri->GetQVec(0,1);
+	ublas::vector<double> vecq = m_pTri->GetQVec(1,0);
+	ublas::vector<double> vecqrlu = m_pTri->GetQVec(1,1);
+
+	for(unsigned int i=0; i<3; ++i)
+	{
+		set_eps_0(vecQ); set_eps_0(vecQrlu);
+		set_eps_0(vecq); set_eps_0(vecqrlu);
+
+		parms.Q[i] = vecQ[i];
+		parms.Q_rlu[i] = vecQrlu[i];
+		parms.q[i] = vecq[i];
+		parms.q_rlu[i] = vecqrlu[i];
+	}
+
 	emit paramsChanged(parms);
 }
 
@@ -752,6 +807,26 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	bool bHandled = 0;
 
+
+	// tooltip
+	if(m_pTri)
+	{
+		const double dX = pEvt->scenePos().x()/m_pTri->GetScaleFactor();
+		const double dY = -pEvt->scenePos().y()/m_pTri->GetScaleFactor();
+
+		ublas::vector<double> vecHKL = m_pTri->GetHKLFromPlanePos(dX, dY);
+		set_eps_0(vecHKL);
+
+		if(vecHKL.size()==3)
+		{
+			std::ostringstream ostrPos;
+			ostrPos << "(" << vecHKL[0] << ", " << vecHKL[1] << ", " << vecHKL[2]  << ")";
+			QToolTip::showText(pEvt->screenPos(), ostrPos.str().c_str());
+		}
+	}
+
+
+	// node dragging
 	if(m_bMousePressed)
 	{
 		QGraphicsItem* pCurItem = mouseGrabberItem();
@@ -810,6 +885,7 @@ ScatteringTriangleView::ScatteringTriangleView(QWidget* pParent)
 	setRenderHints(QPainter::Antialiasing);
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
+	setMouseTracking(1);
 }
 
 ScatteringTriangleView::~ScatteringTriangleView()

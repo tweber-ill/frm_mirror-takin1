@@ -752,6 +752,14 @@ typename vec_type::value_type vec_angle(const vec_type& vec)
 	throw Err("vec_angle not yet implemented for size != 2.");
 }
 
+template<typename vec_type, typename real_type=double>
+void set_eps_0(vec_type& vec)
+{
+	for(real_type& d : vec)
+		if(std::fabs(d) < std::numeric_limits<real_type>::epsilon())
+			d = real_type(0);
+}
+
 // signed angle between two vectors
 template<typename vec_type, typename real_type=double>
 typename vec_type::value_type vec_angle(const vec_type& vec0,

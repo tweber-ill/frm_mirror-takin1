@@ -1027,13 +1027,21 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 //--------------------------------------------------------------------------------
 // about dialog
 #include <boost/version.hpp>
+#include <qwt_global.h>
 
 void TazDlg::ShowAbout()
 {
-	const std::wstring& strRet = get_spec_char_utf16("return");
+	const std::wstring& _strRet = get_spec_char_utf16("return");
+	const std::wstring& _strBullet = get_spec_char_utf16("bullet");
+	const std::wstring& _strArrow = get_spec_char_utf16("rightarrow");
+
+	const QString strRet = QString::fromUtf16((ushort*)_strRet.c_str(), _strRet.length());
+	const QString strBullet = QString::fromUtf16((ushort*)_strBullet.c_str(), _strBullet.length());
+	const QString strArrow = QString::fromUtf16((ushort*)_strArrow.c_str(), _strArrow.length());
+
 
 	QString strAbout;
-	strAbout += "TAZ version 0.5\n";
+	strAbout += "TAZ version 0.6\n";
 	strAbout += "Written by Tobias Weber, 2014";
 	strAbout += "\n\n";
 
@@ -1047,35 +1055,41 @@ void TazDlg::ShowAbout()
 	strAbout += QString(__TIME__);
 	strAbout += "\n\n";
 
+	strAbout += strBullet + " ";
 	strAbout += "Uses Qt version ";
 	strAbout += QString(QT_VERSION_STR);
-	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
-						+ " http://qt-project.org\n";
+	strAbout += "       \t" + strArrow + " http://qt-project.org\n";
+	strAbout += strBullet + " ";
+	strAbout += "Uses Qwt version ";
+	strAbout += QString(QWT_VERSION_STR);
+	strAbout += "      \t" + strArrow + " http://qwt.sourceforge.net\n";
 
+	strAbout += strBullet + " ";
 	strAbout += "Uses Boost version ";
 	std::string strBoost = BOOST_LIB_VERSION;
 	find_all_and_replace<std::string>(strBoost, "_", ".");
 	strAbout += strBoost.c_str();
-	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
-						+ " http://www.boost.org\n";
+	strAbout += "    \t" + strArrow + " http://www.boost.org\n";
 
+	strAbout += strBullet + " ";
 	strAbout += "Uses Lapack/e version 3";
-	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
-						+ " http://www.netlib.org/lapack\n";
+	strAbout += " \t" + strArrow + " http://www.netlib.org/lapack\n";
 
 	strAbout += "\n";
+	strAbout += strBullet + " ";
 	strAbout += "Uses space group calculations ported from Nicos version 2";
-	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
-						+ " https://forge.frm2.tum.de/redmine/projects/nicos\n";
+	strAbout += "\n\t " + strArrow + " https://forge.frm2.tum.de/redmine/projects/nicos\n";
+	strAbout += strBullet + " ";
 	strAbout += "Uses space group data from PowderCell version 2.3";
-	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
-						+ " http://www.bam.de/de/service/publikationen/powder_cell_a.htm\n";
+	strAbout += "\n\t " + strArrow
+			+ " www.bam.de/de/service/publikationen/powder_cell_a.htm\n";
 
+	strAbout += strBullet + " ";
 	strAbout += "Uses resolution algorithms ported from Rescal version 5";
-	strAbout += "\n\t " + QString::fromWCharArray(get_spec_char_utf16("rightarrow").c_str())
-						+ " http://www.ill.eu/en/html/instruments-support/computing-for-science/"
-						+ QString::fromUtf16((ushort*)strRet.c_str(), strRet.length())
-						+ "\n\t\tcs-software/all-software/matlab-ill/rescal-for-matlab\n";
+	strAbout += "\n\t " + strArrow
+			+ " www.ill.eu/en/html/instruments-support/" + strRet
+			+ "\n\t\tcomputing-for-science/cs-software/" + strRet
+			+ "\n\t\tall-software/matlab-ill/rescal-for-matlab\n";
 
 	QMessageBox::information(this, "About TAZ", strAbout);
 }
