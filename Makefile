@@ -1,10 +1,10 @@
 CC = gcc
 DEFINES = 
-QWT_VER = 5
+QWT_VER = 6
 
 ifeq ($(QWT_VER), 6)
-	QWT_INC = -I/usr/include/qwt6
-	QWT_LIB = -lqwt6
+	QWT_INC = -I/usr/include/qwt6 -I/usr/include/qwt
+	QWT_LIB = -lqwt
 	DEFINES += -DUSE_QWT6
 else
 	QWT_INC = -I/usr/include/qwt5
@@ -13,6 +13,7 @@ endif
 
 INC = -I/usr/include/qt4 -I/usr/local/include -I/usr/include/qt4/QtCore \
 	-I/usr/include/qt4/QtGui -I/usr/include/QtCore -I/usr/include/QtGui \
+	-I/usr/include/lapacke \
 	${QWT_INC}
 
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
@@ -21,7 +22,7 @@ DEFINES += -DUSE_LAPACK
 #FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG ${DEFINES}
 FLAGS = ${INC} -std=c++11 -ggdb ${DEFINES}
 
-STD_LIBS = -lsupc++ -lstdc++ -lm
+STD_LIBS = -lstdc++ -lm
 LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack -lblas -lgfortran
 QT_LIBS = -L/usr/lib64/qt4 -L/usr/lib/x86_64-linux-gnu -L /usr/lib/qt4/lib \
 	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL -lQtSvg \

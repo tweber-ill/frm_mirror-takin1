@@ -59,8 +59,10 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 
 EllipseDlg::~EllipseDlg()
 {
+#ifndef USE_QWT6
 	for(QwtPlot* pPlot : m_vecPlots)
 		pPlot->clear();
+#endif
 
 	for(QwtPlotGrid* pGrid : m_vecGrid)
 		delete pGrid;
@@ -150,8 +152,13 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 		m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512);
 		m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512);
 
+#ifdef USE_QWT6
+		pCurveProj->setRawSamples(vecXProj.data(), vecYProj.data(), vecXProj.size());
+		pCurveSlice->setRawSamples(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
+#else
 		pCurveProj->setRawData(vecXProj.data(), vecYProj.data(), vecXProj.size());
 		pCurveSlice->setRawData(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
+#endif
 
 		/*
 		std::ostringstream ostrSlope;
