@@ -25,6 +25,7 @@
 #include "dialogs/EllipseDlg.h"
 #include "dialogs/EllipseDlg3D.h"
 #include "../res/ResoDlg.h"
+#include "dialogs/SpurionDlg.h"
 
 #include "helper/spacegroup.h"
 
@@ -74,6 +75,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		EllipseDlg *m_pEllipseDlg = 0;
 		EllipseDlg3D *m_pEllipseDlg3D = 0;
 
+		SpurionDlg *m_pSpuri = 0;
+
 	protected:
 		void InitReso();
 
@@ -113,6 +116,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowResoParams();
 		void ShowResoEllipses();
 		void ShowResoEllipses3D();
+
+		void ShowSpurions();
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

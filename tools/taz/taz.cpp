@@ -266,6 +266,15 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuReso->addAction(pResoEllipses3D);
 
 
+	// --------------------------------------------------------------------------------
+	// calc menu
+	QMenu *pMenuCalc = new QMenu(this);
+	pMenuCalc->setTitle("Calculation");
+
+	QAction *pSpuri = new QAction(this);
+	pSpuri->setText("Spurious Scattering...");
+	pMenuCalc->addAction(pSpuri);
+
 
 	// --------------------------------------------------------------------------------
 	// help menu
@@ -291,6 +300,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuBar->addMenu(pMenuViewRecip);
 	pMenuBar->addMenu(pMenuViewReal);
 	pMenuBar->addMenu(pMenuReso);
+	pMenuBar->addMenu(pMenuCalc);
 	pMenuBar->addMenu(pMenuHelp);
 
 
@@ -311,6 +321,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pResoParams, SIGNAL(triggered()), this, SLOT(ShowResoParams()));
 	QObject::connect(pResoEllipses, SIGNAL(triggered()), this, SLOT(ShowResoEllipses()));
 	QObject::connect(pResoEllipses3D, SIGNAL(triggered()), this, SLOT(ShowResoEllipses3D()));
+
+	QObject::connect(pSpuri, SIGNAL(triggered()), this, SLOT(ShowSpurions()));
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -384,6 +396,12 @@ TazDlg::~TazDlg()
 	{
 		delete m_pReso;
 		m_pReso = 0;
+	}
+
+	if(m_pSpuri)
+	{
+		delete m_pSpuri;
+		m_pSpuri = 0;
 	}
 }
 
@@ -901,6 +919,15 @@ bool TazDlg::SaveAs()
 //--------------------------------------------------------------------------------
 
 
+void TazDlg::ShowSpurions()
+{
+	if(!m_pSpuri)
+		m_pSpuri = new SpurionDlg(this);
+
+	m_pSpuri->show();
+	m_pSpuri->activateWindow();
+}
+
 //--------------------------------------------------------------------------------
 // parameter dialogs
 
@@ -1073,7 +1100,7 @@ void TazDlg::ShowAbout()
 
 	strAbout += strBullet + " ";
 	strAbout += "Uses Lapack/e version 3";
-	strAbout += " \t" + strArrow + " http://www.netlib.org/lapack\n";
+	strAbout += "    \t" + strArrow + " http://www.netlib.org/lapack\n";
 
 	strAbout += "\n";
 	strAbout += strBullet + " ";
@@ -1082,7 +1109,8 @@ void TazDlg::ShowAbout()
 	strAbout += strBullet + " ";
 	strAbout += "Uses space group data from PowderCell version 2.3";
 	strAbout += "\n\t " + strArrow
-			+ " www.bam.de/de/service/publikationen/powder_cell_a.htm\n";
+			+ " www.bam.de/de/service/publikationen/" + strRet
+			+ "\n\t\tpowder_cell_a.htm\n";
 
 	strAbout += strBullet + " ";
 	strAbout += "Uses resolution algorithms ported from Rescal version 5";

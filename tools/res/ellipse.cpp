@@ -113,12 +113,21 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	if(ell.phi == -M_PI)
 		ell.phi = 0.;
 
-	//std::cout << ell.phi/M_PI*180. << std::endl;
+	// sanity check
+	double dMyPhi = ell.phi/M_PI*180.;
+	double dPhiShirane = 0.5*atan(2.*m(0,1) / (m(0,0)-m(1,1))) / M_PI*180.;
+	if(!::float_equal(dMyPhi, dPhiShirane, 0.01))
+	{
+		std::cerr << "Error: Calculated ellipse phi = " << dMyPhi << " deg"
+					<< " deviates from theoretical phi = " << dPhiShirane
+					<< " deg." << std::endl;
+	}
 
 	// formula A4.61 from Shirane
 	//ell.phi = 0.5*atan(2.*m(0,1) / (m(0,0)-m(1,1)));
 	//std::cout << ell.phi/M_PI*180. << std::endl;
 	//ublas::matrix<double> rot = rotation_matrix_2d(ell.phi);
+	//evecs_rot = rot;
 
 	ublas::matrix<double> res_rot;
 	res_rot = prod(m, evecs_rot);

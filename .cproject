@@ -30,7 +30,8 @@
 									<listOptionValue builtIn="false" value="/usr/include/Qt"/>
 									<listOptionValue builtIn="false" value="/usr/include/QtCore/"/>
 									<listOptionValue builtIn="false" value="/usr/include/QtGui/"/>
-									<listOptionValue builtIn="false" value="/usr/include/qwt5"/>
+									<listOptionValue builtIn="false" value="/usr/include/qwt"/>
+									<listOptionValue builtIn="false" value="/usr/include/lapacke"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\lib\gcc\x86_64-pc-cygwin\4.8.1\include\c++&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\lib\gcc\x86_64-pc-cygwin\4.8.1\include\c++\x86_64-pc-cygwin&quot;"/>
@@ -40,6 +41,7 @@
 								<option id="gnu.cpp.compiler.option.dialect.std.281570901" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.2058905846" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_LAPACK"/>
+									<listOptionValue builtIn="false" value="USE_QWT6"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.290355900" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -119,7 +121,8 @@
 									<listOptionValue builtIn="false" value="/usr/include/Qt"/>
 									<listOptionValue builtIn="false" value="/usr/include/QtCore/"/>
 									<listOptionValue builtIn="false" value="/usr/include/QtGui/"/>
-									<listOptionValue builtIn="false" value="/usr/include/qwt5"/>
+									<listOptionValue builtIn="false" value="/usr/include/qwt"/>
+									<listOptionValue builtIn="false" value="/usr/include/lapacke"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\lib\gcc\x86_64-pc-cygwin\4.8.1\include\c++&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\cygwin64\lib\gcc\x86_64-pc-cygwin\4.8.1\include\c++\x86_64-pc-cygwin&quot;"/>
@@ -128,6 +131,7 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.954996748" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_LAPACK"/>
+									<listOptionValue builtIn="false" value="USE_QWT6"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1962756118" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

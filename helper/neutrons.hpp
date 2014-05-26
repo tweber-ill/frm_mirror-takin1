@@ -384,4 +384,29 @@ get_energy_transfer(const units::quantity<units::unit<units::wavenumber_dimensio
 // --------------------------------------------------------------------------------
 
 
+// --------------------------------------------------------------------------------
+// spurions
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::energy_dimension, Sys>, Y>
+get_inelastic_spurion(bool bConstEi,
+		units::quantity<units::unit<units::energy_dimension, Sys>, Y> E,
+		unsigned int iOrderMono, unsigned int iOrderAna)
+{
+	const double dOrderMonoSq = double(iOrderMono)*double(iOrderMono);
+	const double dOrderAnaSq = double(iOrderAna)*double(iOrderAna);
+
+	units::quantity<units::unit<units::energy_dimension, Sys>, Y> E_sp;
+
+	// formulas from Shirane, p. 147
+	if(bConstEi)
+		E_sp = (1. - dOrderMonoSq/dOrderAnaSq) * E;
+	else
+		E_sp = (dOrderAnaSq/dOrderMonoSq - 1.) * E;
+
+	return E_sp;
+}
+
+// --------------------------------------------------------------------------------
+
 #endif
