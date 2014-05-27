@@ -19,8 +19,8 @@ INC = -I/usr/include/qt4 -I/usr/local/include -I/usr/include/qt4/QtCore \
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
 DEFINES += -DUSE_LAPACK
-#FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG ${DEFINES}
-FLAGS = ${INC} -std=c++11 -ggdb ${DEFINES}
+FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG ${DEFINES}
+#FLAGS = ${INC} -std=c++11 -ggdb ${DEFINES}
 
 STD_LIBS = -lstdc++ -lm
 LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack -lblas -lgfortran
@@ -35,15 +35,15 @@ taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lat
 	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
 	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
-	obj/EllipseDlg.o obj/EllipseDlg3D.o
+	obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
 			obj/RecipParamDlg.o obj/RealParamDlg.o \
 			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
-			obj/EllipseDlg.o obj/EllipseDlg3D.o \
+			obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o \
 			${LIBS_TAZ} ${LIBS_RESO}
-#	strip bin/taz
+	strip bin/taz
 
 
 obj/taz_main.o: tools/taz/taz_main.cpp tools/taz/taz.h
@@ -66,6 +66,9 @@ obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
 
 obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
 	${CC} ${FLAGS} -c -o obj/RealParamDlg.o dialogs/RealParamDlg.cpp
+
+obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
+	${CC} ${FLAGS} -c -o obj/SpurionDlg.o dialogs/SpurionDlg.cpp
 
 
 
