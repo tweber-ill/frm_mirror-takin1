@@ -73,12 +73,15 @@ void SpurionDlg::Calc()
 			double dE_sp = get_inelastic_spurion(bFixedEi, dE*one_meV,
 										iOrderMono, iOrderAna) / one_meV;
 
-			vecSpurions.push_back(dE_sp);
+			if(dE_sp != 0.)
+			{
+				vecSpurions.push_back(dE_sp);
 
-			std::ostringstream ostrInfo;
-			ostrInfo << "Mono order: " << iOrderMono
-					<< ", Ana order: " << iOrderAna;
-			vecInfo.push_back(ostrInfo.str());
+				std::ostringstream ostrInfo;
+				ostrInfo << "Mono order: " << iOrderMono
+						<< ", Ana order: " << iOrderAna;
+				vecInfo.push_back(ostrInfo.str());
+			}
 		}
 	}
 	else
@@ -88,12 +91,16 @@ void SpurionDlg::Calc()
 		{
 			double dE_sp = get_inelastic_spurion(bFixedEi, dE*one_meV,
 										iOrderMono, iOrderAna) / one_meV;
-			vecSpurions.push_back(dE_sp);
 
-			std::ostringstream ostrInfo;
-			ostrInfo << "Mono order: " << iOrderMono
-					<< ", Ana order: " << iOrderAna;
-			vecInfo.push_back(ostrInfo.str());
+			if(dE_sp != 0.)
+			{
+				vecSpurions.push_back(dE_sp);
+
+				std::ostringstream ostrInfo;
+				ostrInfo << "Mono order: " << iOrderMono
+						<< ", Ana order: " << iOrderAna;
+				vecInfo.push_back(ostrInfo.str());
+			}
 		}
 	}
 

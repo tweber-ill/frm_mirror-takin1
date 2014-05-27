@@ -738,12 +738,23 @@ void ScatteringTriangleScene::emitAllParams()
 // check for elastic spurions
 void ScatteringTriangleScene::CheckForSpurions()
 {
+	typedef units::quantity<units::si::energy> energy;
+
 	const ublas::vector<double> vecq = m_pTri->GetQVecPlane(1);
 	const ublas::vector<double> vecKi = m_pTri->GetKiVecPlane();
 	const ublas::vector<double> vecKf = m_pTri->GetKfVecPlane();
+	energy E = m_pTri->GetE() * one_meV;
+	energy Ei = k2E(m_pTri->GetKi()/angstrom);
+	energy Ef = k2E(m_pTri->GetKf()/angstrom);
 
-	ElasticSpurions spuris = check_elastic_spurion(vecKi, vecKf, vecq);
-	emit spurionInfo(spuris);
+	// elastic ones
+	ElasticSpurion spuris = check_elastic_spurion(vecKi, vecKf, vecq);
+
+	// inelastic ones
+	std::vector<InelasticSpurion> vecInelCKI = check_inelastic_spurions(0, Ei, Ef, E, 5);
+	std::vector<InelasticSpurion> vecInelCKF = check_inelastic_spurions(1, Ei, Ef, E, 5);
+
+	emit spurionInfo(spuris, vecInelCKI, vecInelCKF);
 }
 
 void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)

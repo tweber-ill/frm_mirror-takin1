@@ -408,8 +408,52 @@ get_inelastic_spurion(bool bConstEi,
 	return E_sp;
 }
 
+struct InelasticSpurion
+{
+	double dE_meV = 0.;
+	unsigned int iOrderMono = 1;
+	unsigned int iOrderAna = 1;
+};
 
-struct ElasticSpurions
+template<class Sys, class Y>
+std::vector<InelasticSpurion> check_inelastic_spurions(bool bConstEi,
+			units::quantity<units::unit<units::energy_dimension, Sys>, Y> Ei,
+			units::quantity<units::unit<units::energy_dimension, Sys>, Y> Ef,
+			units::quantity<units::unit<units::energy_dimension, Sys>, Y> E,
+			unsigned int iMaxOrder=5)
+{
+	const double dESensitivity = 0.25;	// meV
+
+	std::vector<InelasticSpurion> vecSpuris;
+
+	for(unsigned int iOrder=1; iOrder<=iMaxOrder; ++iOrder)
+	{
+		InelasticSpurion spuri;
+		units::quantity<units::unit<units::energy_dimension, Sys>, Y> EiEf;
+
+		if(bConstEi)
+		{
+			spuri.iOrderAna = iOrder;
+			EiEf = Ei;
+		}
+		else
+		{
+			spuri.iOrderMono = iOrder;
+			EiEf = Ef;
+		}
+
+		spuri.dE_meV = get_inelastic_spurion(bConstEi, EiEf,
+							spuri.iOrderMono, spuri.iOrderAna) / one_meV;
+
+		//std::cout << spuri.dE_meV << " *** " << Y(E/one_meV) << std::endl;
+		if(spuri.dE_meV!=0. && float_equal(spuri.dE_meV, Y(E/one_meV), dESensitivity))
+			vecSpuris.push_back(spuri);
+	}
+
+	return vecSpuris;
+}
+
+struct ElasticSpurion
 {
 	bool bAType = 0;
 	bool bMType = 0;
@@ -420,7 +464,7 @@ struct ElasticSpurions
 
 // accidental elastic spurions -> Shirane pp. 150-155 (esp. fig. 6.2)
 template<typename T=double>
-ElasticSpurions check_elastic_spurion(const ublas::vector<T>& ki,
+ElasticSpurion check_elastic_spurion(const ublas::vector<T>& ki,
 							const ublas::vector<T>& kf,
 							const ublas::vector<T>& q)
 {
@@ -432,7 +476,7 @@ ElasticSpurions check_elastic_spurion(const ublas::vector<T>& ki,
 	const double dQSensitivity = std::max(dKi, dKf) / 50.;
 
 
-	ElasticSpurions result;
+	ElasticSpurion result;
 
 	ublas::vector<T> ki_norm = ki;	ki_norm /= dKi;
 	ublas::vector<T> kf_norm = kf;	kf_norm /= dKf;

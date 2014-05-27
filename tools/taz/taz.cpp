@@ -56,7 +56,6 @@ TazDlg::TazDlg(QWidget* pParent)
 	//QLabel* m_pStatusCoords = new QLabel(this);
 	m_pStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	//m_pStatusCoords->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-	m_pStatusMsg->setText("Test123");
 
 	QStatusBar *pStatusBar = new QStatusBar(this);
 	pStatusBar->addWidget(m_pStatusMsg, 1);
@@ -144,8 +143,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
 					&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
 
-	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const ElasticSpurions&)),
-					this, SLOT(spurionInfo(const ElasticSpurions&)));
+	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const ElasticSpurion&, const std::vector<InelasticSpurion>&, const std::vector<InelasticSpurion>&)),
+					this, SLOT(spurionInfo(const ElasticSpurion&, const std::vector<InelasticSpurion>&, const std::vector<InelasticSpurion>&)));
 
 
 	for(QLineEdit* pEdit : m_vecEdits_monoana)
@@ -951,31 +950,70 @@ void TazDlg::ShowSpurions()
 	m_pSpuri->activateWindow();
 }
 
-void TazDlg::spurionInfo(const ElasticSpurions& spuris)
+void TazDlg::spurionInfo(const ElasticSpurion& spuri,
+					const std::vector<InelasticSpurion>& vecInelCKI,
+					const std::vector<InelasticSpurion>& vecInelCKF)
 {
 	std::ostringstream ostrMsg;
-	if(spuris.bAType || spuris.bMType)
+	if(spuri.bAType || spuri.bMType || vecInelCKI.size() || vecInelCKF.size())
+		ostrMsg << "Warning: ";
+
+	if(spuri.bAType || spuri.bMType)
 	{
-		ostrMsg << "Warning: Spurious elastic scattering of type ";
-		if(spuris.bAType && spuris.bMType)
+		ostrMsg << "Spurious elastic scattering of type ";
+		if(spuri.bAType && spuri.bMType)
 		{
 			ostrMsg << "A and M";
-			ostrMsg << (spuris.bAKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
+			ostrMsg << (spuri.bAKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
 		}
-		else if(spuris.bAType)
+		else if(spuri.bAType)
 		{
 			ostrMsg << "A";
-			ostrMsg << (spuris.bAKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
+			ostrMsg << (spuri.bAKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
 		}
-		else if(spuris.bMType)
+		else if(spuri.bMType)
 		{
 			ostrMsg << "M";
-			ostrMsg << (spuris.bMKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
+			ostrMsg << (spuri.bMKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
+		}
+		ostrMsg << " detected.";
+
+		if(vecInelCKI.size() || vecInelCKF.size())
+			ostrMsg << " ";
+	}
+
+	const std::string& strDelta = ::get_spec_char_utf8("Delta");
+
+	if(vecInelCKI.size())
+	{
+		ostrMsg << "Spurious inelastic CKI scattering at "
+				<< strDelta << "E = ";
+		for(unsigned int iInel=0; iInel<vecInelCKI.size(); ++iInel)
+		{
+			ostrMsg << vecInelCKI[iInel].dE_meV << " meV";
+			if(iInel != vecInelCKI.size()-1)
+				ostrMsg << ", ";
+		}
+		ostrMsg << " detected.";
+
+		if(vecInelCKF.size())
+			ostrMsg << " ";
+	}
+
+	if(vecInelCKF.size())
+	{
+		ostrMsg << "Spurious inelastic CKF scattering at "
+				<< strDelta << "E = ";
+		for(unsigned int iInel=0; iInel<vecInelCKF.size(); ++iInel)
+		{
+			ostrMsg << vecInelCKF[iInel].dE_meV << " meV";
+			if(iInel != vecInelCKF.size()-1)
+				ostrMsg << ", ";
 		}
 		ostrMsg << " detected.";
 	}
 
-	m_pStatusMsg->setText(ostrMsg.str().c_str());
+	m_pStatusMsg->setText(QString::fromUtf8(ostrMsg.str().c_str(), ostrMsg.str().size()));
 }
 
 //--------------------------------------------------------------------------------

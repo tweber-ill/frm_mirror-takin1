@@ -201,7 +201,9 @@ class ScatteringTriangleScene : public QGraphicsScene
 		// all parameters
 		void paramsChanged(const RecipParams& parms);
 
-		void spurionInfo(const ElasticSpurions& spuris);
+		void spurionInfo(const ElasticSpurion& spuris,
+					const std::vector<InelasticSpurion>& vecInelCKI,
+					const std::vector<InelasticSpurion>& vecInelCKF);
 
 	protected:
 		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
