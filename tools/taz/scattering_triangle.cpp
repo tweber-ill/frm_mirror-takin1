@@ -751,8 +751,8 @@ void ScatteringTriangleScene::CheckForSpurions()
 	ElasticSpurion spuris = check_elastic_spurion(vecKi, vecKf, vecq);
 
 	// inelastic ones
-	std::vector<InelasticSpurion> vecInelCKI = check_inelastic_spurions(0, Ei, Ef, E, 5);
-	std::vector<InelasticSpurion> vecInelCKF = check_inelastic_spurions(1, Ei, Ef, E, 5);
+	std::vector<InelasticSpurion> vecInelCKI = check_inelastic_spurions(1, Ei, Ef, E, 5);
+	std::vector<InelasticSpurion> vecInelCKF = check_inelastic_spurions(0, Ei, Ef, E, 5);
 
 	emit spurionInfo(spuris, vecInelCKI, vecInelCKF);
 }
