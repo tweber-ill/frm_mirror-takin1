@@ -10,6 +10,7 @@
 #include "helper/linalg.h"
 #include "helper/lattice.h"
 #include "helper/spacegroup.h"
+#include "helper/neutrons.hpp"
 
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsView>
@@ -149,6 +150,10 @@ class ScatteringTriangle : public QGraphicsItem
 
 		ublas::vector<double> GetHKLFromPlanePos(double x, double y) const;
 		ublas::vector<double> GetQVec(bool bSmallQ=0, bool bRLU=1) const;
+
+		ublas::vector<double> GetQVecPlane(bool bSmallQ=0) const;
+		ublas::vector<double> GetKiVecPlane() const;
+		ublas::vector<double> GetKfVecPlane() const;
 };
 
 
@@ -184,14 +189,19 @@ class ScatteringTriangleScene : public QGraphicsScene
 		ScatteringTriangle* GetTriangle() { return m_pTri; }
 		void SnapToNearestPeak(ScatteringTriangleNode* pNode);
 
+		void CheckForSpurions();
+
 	public slots:
 		void tasChanged(const TriangleOptions& opts);
 		void scaleChanged(double dTotalScale);
+
 	signals:
 		// relevant parameters for instrument view
 		void triangleChanged(const TriangleOptions& opts);
 		// all parameters
 		void paramsChanged(const RecipParams& parms);
+
+		void spurionInfo(const ElasticSpurions& spuris);
 
 	protected:
 		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);

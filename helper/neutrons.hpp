@@ -387,6 +387,7 @@ get_energy_transfer(const units::quantity<units::unit<units::wavenumber_dimensio
 // --------------------------------------------------------------------------------
 // spurions
 
+// inelastic spurions -> Shirane pp. 146-148
 template<class Sys, class Y>
 units::quantity<units::unit<units::energy_dimension, Sys>, Y>
 get_inelastic_spurion(bool bConstEi,
@@ -406,6 +407,107 @@ get_inelastic_spurion(bool bConstEi,
 
 	return E_sp;
 }
+
+
+struct ElasticSpurions
+{
+	bool bAType = 0;
+	bool bMType = 0;
+
+	bool bAKfSmallerKi = 0;
+	bool bMKfSmallerKi = 0;
+};
+
+// accidental elastic spurions -> Shirane pp. 150-155 (esp. fig. 6.2)
+template<typename T=double>
+ElasticSpurions check_elastic_spurion(const ublas::vector<T>& ki,
+							const ublas::vector<T>& kf,
+							const ublas::vector<T>& q)
+{
+	const double dKi = ublas::norm_2(ki);
+	const double dKf = ublas::norm_2(kf);
+	const double dq = ublas::norm_2(q);
+
+	const double dAngleSensitivity = 2.;
+	const double dQSensitivity = std::max(dKi, dKf) / 50.;
+
+
+	ElasticSpurions result;
+
+	ublas::vector<T> ki_norm = ki;	ki_norm /= dKi;
+	ublas::vector<T> kf_norm = kf;	kf_norm /= dKf;
+	ublas::vector<T> q_norm = q;	q_norm /= dq;
+
+	const ublas::vector<T> Q = ki-kf;
+	const ublas::vector<T> G = Q+q;
+
+	double dAngleKfq = std::acos(ublas::inner_prod(kf_norm, q_norm));
+	double dAngleKiq = std::acos(ublas::inner_prod(ki_norm, q_norm));
+
+	//std::cout << "angle ki q: " << dAngleKiq/M_PI*180. << std::endl;
+	//std::cout << "angle kf q: " << dAngleKfq/M_PI*180. << std::endl;
+
+	bool bKiqParallel = 0, bkiqAntiParallel = 0;
+	bool bKfqParallel = 0, bKfqAntiParallel = 0;
+
+	if(float_equal(dAngleKiq, 0., dAngleSensitivity/180.*M_PI))
+		bKiqParallel = 1;
+	else if(float_equal(dAngleKiq, M_PI, dAngleSensitivity/180.*M_PI))
+		bkiqAntiParallel = 1;
+	if(float_equal(dAngleKfq, 0., dAngleSensitivity/180.*M_PI))
+		bKfqParallel = 1;
+	else if(float_equal(dAngleKfq, M_PI, dAngleSensitivity/180.*M_PI))
+		bKfqAntiParallel = 1;
+
+	// type A: q || kf, kf > ki
+	if(bKfqParallel)
+	{
+		double dApparentKf = dKf - dq;
+
+		if(::float_equal(dApparentKf, dKi, dQSensitivity))
+		{
+			result.bAType = 1;
+			result.bAKfSmallerKi = 0;
+		}
+	}
+	// type A: q || kf, kf < ki
+	else if(bKfqAntiParallel)
+	{
+		double dApparentKf = dKf + dq;
+
+		if(::float_equal(dApparentKf, dKi, dQSensitivity))
+		{
+			result.bAType = 1;
+			result.bAKfSmallerKi = 1;
+		}
+	}
+
+	// type M: q || ki, kf > ki
+	if(bKiqParallel)
+	{
+		double dApparentKi = dKi + dq;
+
+		if(::float_equal(dApparentKi, dKf, dQSensitivity))
+		{
+			result.bMType = 1;
+			result.bMKfSmallerKi = 0;
+		}
+	}
+	// type M: q || ki, kf < ki
+	else if(bkiqAntiParallel)
+	{
+		double dApparentKi = dKi - dq;
+
+		if(::float_equal(dApparentKi, dKf, dQSensitivity))
+		{
+			result.bMType = 1;
+			result.bMKfSmallerKi = 1;
+		}
+	}
+
+	return result;
+}
+
 
 // --------------------------------------------------------------------------------
 

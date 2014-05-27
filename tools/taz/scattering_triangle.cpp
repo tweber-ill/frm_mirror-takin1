@@ -582,7 +582,7 @@ ublas::vector<double> ScatteringTriangle::GetHKLFromPlanePos(double x, double y)
 	return m_recip.GetHKL(vec);
 }
 
-ublas::vector<double> ScatteringTriangle::GetQVec(bool bSmallQ, bool bRLU) const
+ublas::vector<double> ScatteringTriangle::GetQVecPlane(bool bSmallQ) const
 {
 	ublas::vector<double> vecQPlane;
 
@@ -593,8 +593,15 @@ ublas::vector<double> ScatteringTriangle::GetQVec(bool bSmallQ, bool bRLU) const
 		vecQPlane = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
 						- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 
-	vecQPlane /= m_dScaleFactor;
 	vecQPlane[1] = -vecQPlane[1];
+	vecQPlane /= m_dScaleFactor;
+
+	return vecQPlane;
+}
+
+ublas::vector<double> ScatteringTriangle::GetQVec(bool bSmallQ, bool bRLU) const
+{
+	ublas::vector<double> vecQPlane = GetQVecPlane(bSmallQ);
 
 	ublas::vector<double> vecQ;
 	if(bRLU)
@@ -604,6 +611,24 @@ ublas::vector<double> ScatteringTriangle::GetQVec(bool bSmallQ, bool bRLU) const
 				+ vecQPlane[1]*::get_column(m_matPlane, 1);
 
 	return vecQ;
+}
+
+ublas::vector<double> ScatteringTriangle::GetKiVecPlane() const
+{
+	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	vecKi[1] = -vecKi[1];
+	vecKi /= m_dScaleFactor;
+	return vecKi;
+}
+
+ublas::vector<double> ScatteringTriangle::GetKfVecPlane() const
+{
+	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	vecKf[1] = -vecKf[1];
+	vecKf /= m_dScaleFactor;
+	return vecKf;
 }
 
 void ScatteringTriangle::ClearPeaks()
@@ -695,18 +720,30 @@ void ScatteringTriangleScene::emitAllParams()
 	ublas::vector<double> vecq = m_pTri->GetQVec(1,0);
 	ublas::vector<double> vecqrlu = m_pTri->GetQVec(1,1);
 
+	set_eps_0(vecQ); set_eps_0(vecQrlu);
+	set_eps_0(vecq); set_eps_0(vecqrlu);
+
 	for(unsigned int i=0; i<3; ++i)
 	{
-		set_eps_0(vecQ); set_eps_0(vecQrlu);
-		set_eps_0(vecq); set_eps_0(vecqrlu);
-
 		parms.Q[i] = vecQ[i];
 		parms.Q_rlu[i] = vecQrlu[i];
 		parms.q[i] = vecq[i];
 		parms.q_rlu[i] = vecqrlu[i];
 	}
 
+	CheckForSpurions();
 	emit paramsChanged(parms);
+}
+
+// check for elastic spurions
+void ScatteringTriangleScene::CheckForSpurions()
+{
+	const ublas::vector<double> vecq = m_pTri->GetQVecPlane(1);
+	const ublas::vector<double> vecKi = m_pTri->GetKiVecPlane();
+	const ublas::vector<double> vecKf = m_pTri->GetKfVecPlane();
+
+	ElasticSpurions spuris = check_elastic_spurion(vecKi, vecKf, vecq);
+	emit spurionInfo(spuris);
 }
 
 void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)

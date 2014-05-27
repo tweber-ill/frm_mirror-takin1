@@ -15,6 +15,7 @@
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QMenuBar>
 #include <QtGui/QToolBar>
+#include <QtGui/QStatusBar>
 #include <QtGui/QMessageBox>
 #include <QtGui/QFileDialog>
 
@@ -38,7 +39,8 @@ TazDlg::TazDlg(QWidget* pParent)
 		  m_settings("tobis_stuff", "taz"),
 		  m_pmapSpaceGroups(get_space_groups()),
 		  m_dlgRecipParam(this, &m_settings),
-		  m_dlgRealParam(this, &m_settings)
+		  m_dlgRealParam(this, &m_settings),
+		  m_pStatusMsg(new QLabel(this))
 {
 	if(m_settings.contains("main/geo"))
 	{
@@ -50,6 +52,18 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
+
+	//QLabel* m_pStatusCoords = new QLabel(this);
+	m_pStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	//m_pStatusCoords->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	m_pStatusMsg->setText("Test123");
+
+	QStatusBar *pStatusBar = new QStatusBar(this);
+	pStatusBar->addWidget(m_pStatusMsg, 1);
+	//pStatusBar->addWidget(m_pStatusCoords, 0);
+	this->setStatusBar(pStatusBar);
+
+	// --------------------------------------------------------------------------------
 
 	m_vecEdits_real =
 	{
@@ -129,6 +143,9 @@ TazDlg::TazDlg(QWidget* pParent)
 					&m_dlgRecipParam, SLOT(paramsChanged(const RecipParams&)));
 	QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
 					&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
+
+	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const ElasticSpurions&)),
+					this, SLOT(spurionInfo(const ElasticSpurions&)));
 
 
 	for(QLineEdit* pEdit : m_vecEdits_monoana)
@@ -918,14 +935,47 @@ bool TazDlg::SaveAs()
 }
 //--------------------------------------------------------------------------------
 
-
 void TazDlg::ShowSpurions()
 {
 	if(!m_pSpuri)
+	{
 		m_pSpuri = new SpurionDlg(this);
+
+		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+						m_pSpuri, SLOT(paramsChanged(const RecipParams&)));
+
+		m_sceneRecip.emitAllParams();
+	}
 
 	m_pSpuri->show();
 	m_pSpuri->activateWindow();
+}
+
+void TazDlg::spurionInfo(const ElasticSpurions& spuris)
+{
+	std::ostringstream ostrMsg;
+	if(spuris.bAType || spuris.bMType)
+	{
+		ostrMsg << "Warning: Spurious elastic scattering of type ";
+		if(spuris.bAType && spuris.bMType)
+		{
+			ostrMsg << "A and M";
+			ostrMsg << (spuris.bAKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
+		}
+		else if(spuris.bAType)
+		{
+			ostrMsg << "A";
+			ostrMsg << (spuris.bAKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
+		}
+		else if(spuris.bMType)
+		{
+			ostrMsg << "M";
+			ostrMsg << (spuris.bMKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
+		}
+		ostrMsg << " detected.";
+	}
+
+	m_pStatusMsg->setText(ostrMsg.str().c_str());
 }
 
 //--------------------------------------------------------------------------------

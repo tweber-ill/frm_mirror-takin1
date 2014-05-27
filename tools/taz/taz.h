@@ -54,6 +54,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 	protected:
 		QSettings m_settings;
+		QLabel* m_pStatusMsg = 0;
 
 		ScatteringTriangleView *m_pviewRecip = 0;
 		ScatteringTriangleScene m_sceneRecip;
@@ -118,6 +119,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowResoEllipses3D();
 
 		void ShowSpurions();
+
+		void spurionInfo(const ElasticSpurions& spuris);
+		//void paramsChanged(const RecipParams& parms);
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);
