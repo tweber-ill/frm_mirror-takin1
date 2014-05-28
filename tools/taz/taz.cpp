@@ -287,6 +287,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	QMenu *pMenuCalc = new QMenu(this);
 	pMenuCalc->setTitle("Calculation");
 
+	QAction *pNeutronProps = new QAction(this);
+	pNeutronProps->setText("Neutron Properties...");
+	pMenuCalc->addAction(pNeutronProps);
+
 	QAction *pSpuri = new QAction(this);
 	pSpuri->setText("Spurious Scattering...");
 	pMenuCalc->addAction(pSpuri);
@@ -338,6 +342,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pResoEllipses, SIGNAL(triggered()), this, SLOT(ShowResoEllipses()));
 	QObject::connect(pResoEllipses3D, SIGNAL(triggered()), this, SLOT(ShowResoEllipses3D()));
 
+	QObject::connect(pNeutronProps, SIGNAL(triggered()), this, SLOT(ShowNeutronDlg()));
 	QObject::connect(pSpuri, SIGNAL(triggered()), this, SLOT(ShowSpurions()));
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
@@ -419,6 +424,22 @@ TazDlg::~TazDlg()
 		delete m_pSpuri;
 		m_pSpuri = 0;
 	}
+
+	if(m_pNeutronDlg)
+	{
+		delete m_pNeutronDlg;
+		m_pNeutronDlg = 0;
+	}
+}
+
+
+void TazDlg::ShowNeutronDlg()
+{
+	if(!m_pNeutronDlg)
+		m_pNeutronDlg = new NeutronDlg(this);
+
+	m_pNeutronDlg->show();
+	m_pNeutronDlg->activateWindow();
 }
 
 

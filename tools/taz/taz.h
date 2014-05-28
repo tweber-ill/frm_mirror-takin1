@@ -26,6 +26,7 @@
 #include "dialogs/EllipseDlg3D.h"
 #include "../res/ResoDlg.h"
 #include "dialogs/SpurionDlg.h"
+#include "dialogs/NeutronDlg.h"
 
 #include "helper/spacegroup.h"
 
@@ -77,6 +78,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		EllipseDlg3D *m_pEllipseDlg3D = 0;
 
 		SpurionDlg *m_pSpuri = 0;
+		NeutronDlg *m_pNeutronDlg = 0;
 
 	protected:
 		void InitReso();
@@ -118,8 +120,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowResoEllipses();
 		void ShowResoEllipses3D();
 
-		void ShowSpurions();
+		void ShowNeutronDlg();
 
+		void ShowSpurions();
 		void spurionInfo(const ElasticSpurion& spuris,
 				const std::vector<InelasticSpurion>& vecInelCKI,
 				const std::vector<InelasticSpurion>& vecInelCKF);

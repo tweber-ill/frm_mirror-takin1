@@ -36,5 +36,6 @@ ${MOC} dialogs/EllipseDlg3D.h -o dialogs/EllipseDlg3D.moc
 ${MOC} dialogs/RecipParamDlg.h -o dialogs/RecipParamDlg.moc
 ${MOC} dialogs/RealParamDlg.h -o dialogs/RealParamDlg.moc
 ${MOC} dialogs/SpurionDlg.h -o dialogs/SpurionDlg.moc
+${MOC} dialogs/NeutronDlg.h -o dialogs/NeutronDlg.moc
 
 echo -e "\n"
