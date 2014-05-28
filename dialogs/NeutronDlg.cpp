@@ -27,6 +27,7 @@ NeutronDlg::NeutronDlg(QWidget* pParent)
 	QObject::connect(editLam, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronLam()));
 	QObject::connect(editE, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronE()));
 	QObject::connect(editOm, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronOm()));
+	QObject::connect(editF, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronF()));
 	QObject::connect(editV, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronv()));
 	QObject::connect(editK, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronk()));
 	QObject::connect(editT, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronT()));
@@ -51,6 +52,7 @@ void NeutronDlg::CalcNeutronLam()
 
 	editE->setText(var_to_str<double>(E_n / one_meV).c_str());
 	editOm->setText(var_to_str<double>(E_n / co::hbar * units::si::second / 1e12).c_str());
+	editF->setText(var_to_str<double>(E_n / co::h * units::si::second / 1e12).c_str());
 	editK->setText(var_to_str<double>(k_n * angstrom).c_str());
 	editV->setText(var_to_str<double>((p_n / co::m_n) * units::si::second / units::si::meter).c_str());
 	editT->setText(var_to_str<double>((E_n / co::k_B) / units::si::kelvin).c_str());
@@ -69,6 +71,7 @@ void NeutronDlg::CalcNeutronk()
 	editLam->setText(var_to_str<double>(lam_n / angstrom).c_str());
 	editE->setText(var_to_str<double>(E_n / one_meV).c_str());
 	editOm->setText(var_to_str<double>(E_n / co::hbar * units::si::second / 1e12).c_str());
+	editF->setText(var_to_str<double>(E_n / co::h * units::si::second / 1e12).c_str());
 	editV->setText(var_to_str<double>((p_n / co::m_n) * units::si::second / units::si::meter).c_str());
 	editT->setText(var_to_str<double>((E_n / co::k_B) / units::si::kelvin).c_str());
 }
@@ -87,6 +90,7 @@ void NeutronDlg::CalcNeutronv()
 	editLam->setText(var_to_str<double>(lam_n / angstrom).c_str());
 	editE->setText(var_to_str<double>(E_n / one_meV).c_str());
 	editOm->setText(var_to_str<double>(E_n / co::hbar * units::si::second / 1e12).c_str());
+	editF->setText(var_to_str<double>(E_n / co::h * units::si::second / 1e12).c_str());
 	editK->setText(var_to_str<double>(k_n * angstrom).c_str());
 	editT->setText(var_to_str<double>((E_n / co::k_B) / units::si::kelvin).c_str());
 }
@@ -103,6 +107,7 @@ void NeutronDlg::CalcNeutronE()
 	units::quantity<units::si::momentum> p_n = lam2p(lam_n);
 
 	editOm->setText(var_to_str<double>(E_n / co::hbar * units::si::second / 1e12).c_str());
+	editF->setText(var_to_str<double>(E_n / co::h * units::si::second / 1e12).c_str());
 	editLam->setText(var_to_str<double>(lam_n / angstrom).c_str());
 	editK->setText(var_to_str<double>(k_n * angstrom).c_str());
 	editV->setText(var_to_str<double>((p_n / co::m_n) * units::si::second / units::si::meter).c_str());
@@ -121,6 +126,26 @@ void NeutronDlg::CalcNeutronOm()
 	units::quantity<units::si::momentum> p_n = lam2p(lam_n);
 
 	editE->setText(var_to_str<double>(E_n / one_meV).c_str());
+	editF->setText(var_to_str<double>(E_n / co::h * units::si::second / 1e12).c_str());
+	editLam->setText(var_to_str<double>(lam_n / angstrom).c_str());
+	editK->setText(var_to_str<double>(k_n * angstrom).c_str());
+	editV->setText(var_to_str<double>((p_n / co::m_n) * units::si::second / units::si::meter).c_str());
+	editT->setText(var_to_str<double>((E_n / co::k_B) / units::si::kelvin).c_str());
+}
+
+void NeutronDlg::CalcNeutronF()
+{
+	std::string strInput = editF->text().toStdString();
+
+	bool bImag = 0;
+	units::quantity<units::si::energy> E_n
+			= str_to_var<double>(strInput) / units::si::second * co::h * 1e12;
+	units::quantity<units::si::wavenumber> k_n = E2k(E_n, bImag);
+	units::quantity<units::si::length> lam_n = k2lam(k_n);
+	units::quantity<units::si::momentum> p_n = lam2p(lam_n);
+
+	editE->setText(var_to_str<double>(E_n / one_meV).c_str());
+	editOm->setText(var_to_str<double>(E_n / co::hbar * units::si::second / 1e12).c_str());
 	editLam->setText(var_to_str<double>(lam_n / angstrom).c_str());
 	editK->setText(var_to_str<double>(k_n * angstrom).c_str());
 	editV->setText(var_to_str<double>((p_n / co::m_n) * units::si::second / units::si::meter).c_str());
@@ -144,6 +169,7 @@ void NeutronDlg::CalcNeutronT()
 	editV->setText(var_to_str<double>((p_n / co::m_n) * units::si::second / units::si::meter).c_str());
 	editE->setText(var_to_str<double>(E_n / one_meV).c_str());
 	editOm->setText(var_to_str<double>(E_n / co::hbar * units::si::second / 1e12).c_str());
+	editF->setText(var_to_str<double>(E_n / co::h * units::si::second / 1e12).c_str());
 }
 
 

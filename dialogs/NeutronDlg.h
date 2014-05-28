@@ -26,6 +26,7 @@ class NeutronDlg : public QDialog, Ui::NeutronDlg
 		void CalcNeutronv();
 		void CalcNeutronE();
 		void CalcNeutronOm();
+		void CalcNeutronF();
 		void CalcNeutronT();
 };
 
