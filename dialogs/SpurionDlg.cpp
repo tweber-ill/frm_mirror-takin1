@@ -13,8 +13,8 @@
 #include <iostream>
 
 
-SpurionDlg::SpurionDlg(QWidget* pParent)
-		: QDialog(pParent)
+SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
+		: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
 
@@ -136,6 +136,23 @@ void SpurionDlg::paramsChanged(const RecipParams& parms)
 	m_dEf = Ef / one_meV;
 
 	Calc();
+}
+
+
+void SpurionDlg::accept()
+{
+	if(m_pSettings)
+		m_pSettings->setValue("spurions/geo", saveGeometry());
+
+	QDialog::accept();
+}
+
+void SpurionDlg::showEvent(QShowEvent *pEvt)
+{
+	if(m_pSettings && m_pSettings->contains("spurions/geo"))
+		restoreGeometry(m_pSettings->value("spurions/geo").toByteArray());
+
+	QDialog::showEvent(pEvt);
 }
 
 #include "SpurionDlg.moc"

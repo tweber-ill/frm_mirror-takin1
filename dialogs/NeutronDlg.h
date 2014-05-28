@@ -8,16 +8,20 @@
 #define __NEUTRON_DLG_H__
 
 #include <QtGui/QDialog>
+#include <QtCore/QSettings>
 #include "../ui/ui_neutrons.h"
 
 
 class NeutronDlg : public QDialog, Ui::NeutronDlg
 { Q_OBJECT
 	protected:
+		QSettings *m_pSettings = 0;
+
+	protected:
 		void setupConstants();
 
 	public:
-		NeutronDlg(QWidget* pParent=0);
+		NeutronDlg(QWidget* pParent=0, QSettings* pSett=0);
 		virtual ~NeutronDlg();
 
 	protected slots:
@@ -28,6 +32,10 @@ class NeutronDlg : public QDialog, Ui::NeutronDlg
 		void CalcNeutronOm();
 		void CalcNeutronF();
 		void CalcNeutronT();
+
+	protected:
+		virtual void showEvent(QShowEvent *pEvt);
+		virtual void accept();
 };
 
 

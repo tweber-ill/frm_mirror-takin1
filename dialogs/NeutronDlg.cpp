@@ -18,8 +18,8 @@
 #include <vector>
 
 
-NeutronDlg::NeutronDlg(QWidget* pParent)
-			: QDialog(pParent)
+NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
+			: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
 	setupConstants();
@@ -344,6 +344,40 @@ void NeutronDlg::setupConstants()
 		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
 		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
 	}
+}
+
+
+void NeutronDlg::accept()
+{
+	if(m_pSettings)
+	{
+		m_pSettings->setValue("neutron_props/geo", saveGeometry());
+
+		m_pSettings->setValue("neutron_props/lam", editLam->text());
+	}
+
+	QDialog::accept();
+}
+
+void NeutronDlg::showEvent(QShowEvent *pEvt)
+{
+	if(m_pSettings)
+	{
+		if(m_pSettings->contains("neutron_props/geo"))
+			restoreGeometry(m_pSettings->value("neutron_props/geo").toByteArray());
+
+		bool bOk = 0;
+		double dLam = m_pSettings->value("neutron_props/lam").toDouble(&bOk);
+		if(!bOk)
+			dLam = 5.;
+
+		std::string strLam = var_to_str(dLam);
+		editLam->setText(strLam.c_str());
+
+		CalcNeutronLam();
+	}
+
+	QDialog::showEvent(pEvt);
 }
 
 #include "NeutronDlg.moc"

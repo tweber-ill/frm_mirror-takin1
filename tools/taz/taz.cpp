@@ -436,7 +436,7 @@ TazDlg::~TazDlg()
 void TazDlg::ShowNeutronDlg()
 {
 	if(!m_pNeutronDlg)
-		m_pNeutronDlg = new NeutronDlg(this);
+		m_pNeutronDlg = new NeutronDlg(this, &m_settings);
 
 	m_pNeutronDlg->show();
 	m_pNeutronDlg->activateWindow();
@@ -959,7 +959,7 @@ void TazDlg::ShowSpurions()
 {
 	if(!m_pSpuri)
 	{
-		m_pSpuri = new SpurionDlg(this);
+		m_pSpuri = new SpurionDlg(this, &m_settings);
 
 		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 						m_pSpuri, SLOT(paramsChanged(const RecipParams&)));

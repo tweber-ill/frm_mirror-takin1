@@ -67,6 +67,8 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 	m_pAna->setPos(-m_dLenSampleAna*m_dScaleFactor, 0.);
 	m_pDet->setPos(-100., -m_dLenAnaDet*m_dScaleFactor);
 
+	//m_pSrc->setFlag(QGraphicsItem::ItemIsMovable);
+	m_pMono->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pSample->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pAna->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pDet->setFlag(QGraphicsItem::ItemIsMovable);
@@ -164,13 +166,24 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 		vecMonoSample *= m_dLenMonoSample*m_dScaleFactor;
 
-		m_pSample->setPos(vec_to_qpoint(vecMono + vecMonoSample));
+		ublas::vector<double> vecSampleNew = vecMono + vecMonoSample;
+		m_pSample->setPos(vec_to_qpoint(vecSampleNew));
 
-		ublas::vector<double> vecSampleAna = vecAna - vecSample;
+
+		ublas::vector<double> vecSampleAna = ublas::prod(rotation_matrix_2d(-m_dTwoTheta), vecMonoSample);
+		//ublas::vector<double> vecSampleAna = vecAna - vecSample;
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 		vecSampleAna *= m_dLenSampleAna*m_dScaleFactor;
 
-		m_pAna->setPos(vec_to_qpoint(vecSample + vecSampleAna));
+		ublas::vector<double> vecAnaNew = vecSampleNew + vecSampleAna;
+		m_pAna->setPos(vec_to_qpoint(vecAnaNew));
+
+
+		ublas::vector<double> vecAnaDet = ublas::prod(rotation_matrix_2d(-m_dAnaTwoTheta), vecSampleAna);
+		vecAnaDet /= ublas::norm_2(vecAnaDet);
+		vecAnaDet *= m_dLenAnaDet*m_dScaleFactor;
+
+		m_pDet->setPos(vec_to_qpoint(vecAnaNew + vecAnaDet));
 	}
 	else if(pNode==m_pDet)
 	{
@@ -197,7 +210,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		m_scene.emitUpdate(opts);
 	}
 
-	if(pNode==m_pMono || pNode==m_pAna)
+	if(/*pNode==m_pMono ||*/ pNode==m_pAna)
 	{
 		ublas::vector<double> vecSampleAna = vecAna-vecSample;
 		if(pNode==m_pAna && m_bAllowChanges)
