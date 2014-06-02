@@ -13,6 +13,7 @@
 #include <limits>
 
 #include "linalg.h"
+#include "geo.h"
 
 
 #ifndef M_PI

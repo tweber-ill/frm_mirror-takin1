@@ -28,6 +28,9 @@ template<typename T> T sign(T t);
 template<typename INT=int> bool is_even(INT i);
 template<typename INT=int> bool is_odd(INT i);
 
+template<class matrix_type=ublas::matrix<double>, typename T=double>
+T determinant(const matrix_type& mat);
+
 template<class vec_type>
 typename vec_type::value_type vec_len(const vec_type& vec)
 {
@@ -80,6 +83,21 @@ matrix_type submatrix(const matrix_type& mat, unsigned int iRow, unsigned int iC
         }
 
         return matret;
+}
+
+template<class matrix_type>
+matrix_type remove_column(const matrix_type& mat, unsigned int iCol)
+{
+	matrix_type matret(mat.size1(), mat.size2()-1);
+	for(unsigned int i=0; i<mat.size1(); ++i)
+	{
+		for(unsigned int j=0, j0=0; j<mat.size2() && j0<matret.size2(); ++j)
+		{
+			matret(i,j0) = mat(i,j);
+                        if(j!=iCol) ++j0;
+		}
+	}
+	return matret;
 }
 
 template<class matrix_type>
@@ -293,19 +311,34 @@ bool isinf(const matrix_type& mat)
 	return false;
 }
 
+
+template<typename T=double>
+bool qr(const ublas::matrix<T>& M, ublas::matrix<T>& Q, ublas::matrix<T>& R)
+{
+	std::cerr << "Error: No specialisation of \"eigenvec\" available for this type." << std::endl;
+	return false;
+}
+
+#ifdef USE_LAPACK
+	template<>
+	bool qr<double>(const ublas::matrix<double>& M,
+					ublas::matrix<double>& Q,
+					ublas::matrix<double>& R);
+#endif
+
+
 // code for inverse based on boost/libs/numeric/ublas/test/test_lu.cpp
 template<typename T=double>
 bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 {
-	if(mat.size1() != mat.size2())
+	const typename ublas::matrix<T>::size_type N = mat.size1();
+	if(N != mat.size2())
 		return false;
 	//if(isnan(mat) || isinf(mat))
 	//	return false;
 
 	try
 	{
-		const unsigned int N = mat.size2();
-
 		ublas::matrix<T> lu = mat;
 		ublas::permutation_matrix<> perm(N);
 
@@ -326,6 +359,158 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 	return true;
 }
 
+
+template<typename T=double>
+bool solve_linear_approx(const ublas::matrix<T>& M, const ublas::vector<T>& v,
+						ublas::vector<T>& x);
+
+// solve Mx = v for x
+template<typename T=double>
+bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v,
+						ublas::vector<T>& x)
+{
+	if(M.size1() == M.size2())		// determined, TODO: check rank
+	{
+		try
+		{
+			const unsigned int N = M.size1();
+
+			ublas::matrix<T> lu = M;
+			ublas::permutation_matrix<> perm(N);
+
+			typename ublas::matrix<T>::size_type sing = ublas::lu_factorize(lu, perm);
+			if(sing != 0)
+				return false;
+
+			x = v;
+			ublas::lu_substitute(lu, perm, x);
+		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << "Error: Linear equation solver failed with exception: "
+						<< ex.what() << "." << "\n";
+			return false;
+		}
+	}
+	else if(M.size1() < M.size2())	// underdetermined
+	{
+		ublas::matrix<T> Q, R;
+		if(!qr(M, Q, R))
+			return false;
+		typedef typename ublas::vector<T>::size_type t_int;
+
+		// M x = v
+		// QR x = v
+		// R x = Q^T v
+
+		ublas::vector<T> vnew = ublas::prod(ublas::trans(Q), v);
+
+		/*std::cout << "M = " << M << std::endl;
+		std::cout << "Q = " << Q << std::endl;
+		std::cout << "R = " << R << std::endl;
+		std::cout << "v' = " << vnew << std::endl;*/
+
+		x = ublas::zero_vector<T>(M.size2());
+		ublas::vector<T> xnew(R.size1());
+		bool bOk = 0;
+
+		/*
+		// pick one of the solutions
+		// TODO: resort columns so that Rupper doesn't get singular
+		ublas::matrix<T> Rupper = ublas::subrange(R, 0, R.size1(),
+						R.size2()-R.size1(), R.size2());
+		//std::cout << "Rupper = " << Rupper << std::endl;
+
+		bOk = solve_linear(Rupper, vnew, xnew);
+
+		for(t_int i=0; i<xnew.size(); ++i)
+			x[x.size()-xnew.size()+i] = xnew[i];
+		*/
+
+		// find non-singular right-upper submatrix
+		std::vector<t_int> vecDelCols;
+		unsigned int iNumToDel = R.size2()-R.size1();
+		if(iNumToDel != 1)
+		{
+			std::cerr << "Error: Still unimplemented." << std::endl;
+			return false;
+		}
+
+		bool bFoundNonSingular = 0;
+		ublas::matrix<T> Rsub;
+		for(int iCol=int(R.size2()-1); iCol>=0; --iCol)
+		{
+			Rsub = remove_column(R, (unsigned int)iCol);
+			//std::cout << "Rsub" << Rsub << std::endl;
+			//std::cout << "det: " << determinant(Rsub) << std::endl;
+
+			T det = determinant(Rsub);
+			if(!float_equal(det, 0.))
+			{
+				bFoundNonSingular = 1;
+				vecDelCols.push_back(iCol);
+				break;
+			}
+		}
+
+		if(!bFoundNonSingular)
+		{
+			std::cerr << "Error: No non-singluar submatrix found in linear equation solver." 
+				<< std::endl;
+			return false;
+		}
+
+		bOk = solve_linear(Rsub, vnew, xnew);
+		//std::cout << "Rsub = " << Rsub << std::endl;
+		//std::cout << "v' = " << vnew << std::endl;
+		//std::cout << "x' = " << xnew << std::endl;
+
+		for(t_int i=0, i0=0; i<xnew.size() && i0<x.size(); ++i, ++i0)
+		{
+			while(std::find(vecDelCols.begin(), vecDelCols.end(), i0) != vecDelCols.end())
+				++i0;
+			x[i0] = xnew[i];
+		}
+
+		return bOk;
+	}
+	else if(M.size1() > M.size2())	// overdetermined
+		return solve_linear_approx<T>(M,v,x);
+	else
+		return false;
+
+	return true;
+}
+
+// solve M^T M x = M^T v for x
+template<typename T=double>
+bool solve_linear_approx(const ublas::matrix<T>& M, const ublas::vector<T>& v,
+						ublas::vector<T>& x)
+{
+	if(M.size1() <= M.size2())
+	{
+		//std::cerr << "Error: Matrix has to be overdetermined." << std::endl;
+		return false;
+	}
+
+	ublas::matrix<T> Q, R;
+	if(!qr(M, Q, R))
+		return false;
+
+	// M^T M x = M^T v
+	// R^T Q^T Q R x = R^T Q^T v
+	// R^T R x = R^T Q^T v
+
+	const ublas::matrix<T> RT = ublas::trans(R);
+	const ublas::matrix<T> QT = ublas::trans(Q);
+	const ublas::matrix<T> RTR = ublas::prod(RT, R);
+	const ublas::matrix<T> RTQT = ublas::prod(RT, QT);
+
+	const ublas::vector<T> vnew = ublas::prod(RTQT, v);
+	return solve_linear<T>(RTR, vnew, x);
+}
+
+
 template<class matrix_type=ublas::matrix<double>, typename T=double>
 bool is_diag_matrix(const matrix_type& mat)
 {
@@ -342,6 +527,21 @@ bool is_diag_matrix(const matrix_type& mat)
 }
 
 
+// vectors form rows of matrix
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, typename T=double>
+ublas::matrix<T> row_matrix(const std::vector<vec_type>& vecs)
+{
+	if(vecs.size() == 0)
+		return matrix_type(0,0);
+
+	matrix_type mat(vecs.size(), vecs[0].size());
+	for(unsigned int j=0; j<vecs.size(); ++j)
+		for(unsigned int i=0; i<vecs[0].size(); ++i)
+			mat(j,i) = vecs[j][i];
+
+	return mat;
+}
+
 // vectors form columns of matrix
 template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, typename T=double>
 ublas::matrix<T> column_matrix(const std::vector<vec_type>& vecs)
@@ -349,9 +549,9 @@ ublas::matrix<T> column_matrix(const std::vector<vec_type>& vecs)
 	if(vecs.size() == 0)
 		return matrix_type(0,0);
 
-	matrix_type mat(vecs.size(), vecs[0].size());
-	for(unsigned int i=0; i<vecs[0].size(); ++i)
-		for(unsigned int j=0; j<vecs.size(); ++j)
+	matrix_type mat(vecs[0].size(), vecs.size());
+	for(unsigned int j=0; j<vecs.size(); ++j)
+		for(unsigned int i=0; i<vecs[0].size(); ++i)
 			mat(i,j) = vecs[j][i];
 
 	return mat;
@@ -384,6 +584,7 @@ bool eigenvec_sym(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& e
 							std::vector<double>& evals);
 
 #endif
+
 
 
 // algo from:
@@ -600,147 +801,6 @@ bool skew_basis_from_angles(T a, T b, T c,
 	return true;
 }
 
-
-template<typename T>
-class Plane
-{
-protected:
-	ublas::vector<T> m_vecX0;
-	ublas::vector<T> m_vecDir0, m_vecDir1;
-	ublas::vector<T> m_vecNorm;
-
-public:
-	Plane(const ublas::vector<T>& vec0,
-		const ublas::vector<T>& dir0, const ublas::vector<T>& dir1)
-		: m_vecX0(vec0), m_vecDir0(dir0), m_vecDir1(dir1)
-	{
-		m_vecNorm = cross_3(dir0, dir1);
-		m_vecNorm /= ublas::norm_2(m_vecNorm);
-	}
-
-	virtual ~Plane()
-	{}
-
-	const ublas::vector<T>& GetX0() const { return m_vecX0; }
-	const ublas::vector<T>& GetDir0() const { return m_vecDir0; }
-	const ublas::vector<T>& GetDir1() const { return m_vecDir1; }
-	const ublas::vector<T>& GetNorm() const { return m_vecNorm; }
-
-	ublas::vector<T> GetDroppedPerp(const ublas::vector<T>& vecP, double *pdDist=0) const
-	{
-		T d = ublas::inner_prod(m_vecNorm, m_vecX0);
-		T t = d - ublas::inner_prod(m_vecNorm, vecP);
-		ublas::vector<T> vecdropped = vecP + t*m_vecNorm;
-
-		if(pdDist)
-		{
-			ublas::vector<T> vecD = vecP - vecdropped;
-			*pdDist = std::sqrt(ublas::inner_prod(vecD, vecD));
-		}
-
-		return vecdropped;
-	}
-};
-
-
-template<typename T>
-class Line
-{
-protected:
-	ublas::vector<T> m_vecX0;
-	ublas::vector<T> m_vecDir;
-
-public:
-	Line(const ublas::vector<T>& vec0, const ublas::vector<T>& dir)
-		: m_vecX0(vec0), m_vecDir(dir)
-	{}
-
-	virtual ~Line() {}
-
-	ublas::vector<T> operator()(T t)
-	{
-		return m_vecX0 + t*m_vecDir;
-	}
-
-	const ublas::vector<T>& GetX0() const { return m_vecX0; }
-	const ublas::vector<T>& GetDir() const { return m_vecDir; }
-
-	// http://mathworld.wolfram.com/Line-PlaneIntersection.html
-	bool intersect(const Plane<T>& plane, T& t)
-	{
-		const unsigned int N = m_vecDir.size();
-		if(N != 3)
-		{
-			std::cerr << "Error: Line-plane intersection only implemented for 3d vectors."
-					<< std::endl;
-			return false;
-		}
-
-		const ublas::vector<T>& posl = this->GetX0();
-		const ublas::vector<T>& dirl = this->GetDir();
-
-		const ublas::vector<T>& xp0 = plane.GetX0();
-		const ublas::vector<T> xp1 = plane.GetX0() + plane.GetDir0();
-		const ublas::vector<T> xp2 = plane.GetX0() + plane.GetDir1();
-
-		ublas::matrix<T> matDenom(N+1,N+1);
-		matDenom(0,0) = 1;		matDenom(0,1) = 1;		matDenom(0,2) = 1;		matDenom(0,3) = 0;
-		matDenom(1,0) = xp0[0];	matDenom(1,1) = xp1[0];	matDenom(1,2) = xp2[0];	matDenom(1,3) = dirl[0];
-		matDenom(2,0) = xp0[1];	matDenom(2,1) = xp1[1];	matDenom(2,2) = xp2[1];	matDenom(2,3) = dirl[1];
-		matDenom(3,0) = xp0[2];	matDenom(3,1) = xp1[2];	matDenom(3,2) = xp2[2];	matDenom(3,3) = dirl[2];
-
-		T denom = determinant(matDenom);
-		if(::float_equal(denom, 0.))
-			return false;
-
-		ublas::matrix<T> matNum(N+1,N+1);
-		matNum(0,0) = 1;		matNum(0,1) = 1;		matNum(0,2) = 1;		matNum(0,3) = 1;
-		matNum(1,0) = xp0[0];	matNum(1,1) = xp1[0];	matNum(1,2) = xp2[0];	matNum(1,3) = posl[0];
-		matNum(2,0) = xp0[1];	matNum(2,1) = xp1[1];	matNum(2,2) = xp2[1];	matNum(2,3) = posl[1];
-		matNum(3,0) = xp0[2];	matNum(3,1) = xp1[2];	matNum(3,2) = xp2[2];	matNum(3,3) = posl[2];
-
-		T num = determinant(matNum);
-
-		t = -num / denom;
-		return true;
-	}
-
-	bool intersect(const Line<T>& line, T& t)
-	{
-		const ublas::vector<T>& pos0 =  this->GetX0();
-		const ublas::vector<T>& pos1 =  line.GetX0();
-
-		const ublas::vector<T>& dir0 =  this->GetDir();
-		const ublas::vector<T>& dir1 =  line.GetDir();
-
-		const unsigned int N = pos0.size();
-
-		// pos0 + t0*dir0 = pos1 + t1*dir1
-		// pos0 - pos1 = t1*dir1 - t0*dir0
-
-		const ublas::vector<T> pos = pos0-pos1;
-		ublas::matrix<T> mat = ublas::identity_matrix<T>(N);
-
-		for(unsigned int i=0; i<N; ++i)
-		{
-			mat(i, 0) = -dir0[i];
-			mat(i, 1) = dir1[i];
-		}
-
-		ublas::matrix<T> inv;
-		if(!::inverse(mat, inv))
-        {
-            std::cerr << "Could not invert matrix " << mat << std::endl;
-			return false;
-        }
-
-		ublas::vector<T> params = ublas::prod(inv, pos);
-		t = params[0];
-
-        //std::cout << "t=" << t << ", ";
-		return true;
-	}
-};
 
 // signed angle wrt basis
 template<typename vec_type>

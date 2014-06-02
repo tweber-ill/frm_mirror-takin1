@@ -85,8 +85,18 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1536710058.1833539831" name="dialogs" rcbsApplicability="disable" resourcePath="tools/taz/dialogs" toolsToInvoke=""/>
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1536710058.756033182" name="/" resourcePath="test">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1092995605" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug" unusedChildren="">
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.223275095" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.1274879456"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.199749421" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2034901305"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1244381623" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1342627832"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1171243671" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug.418484306"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.942623305" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.399949835"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.220343038" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug.2123285518"/>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
-						<entry excluding="tools/res/dialogs|tools/res/plot|tools/res/ui|tools/res/helper|tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="test|tools/res/dialogs|tools/res/plot|tools/res/ui|tools/res/helper|tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -174,8 +184,18 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.1085676439.1305579664" name="dialogs" rcbsApplicability="disable" resourcePath="tools/taz/dialogs" toolsToInvoke=""/>
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.release.1085676439.1675957110" name="/" resourcePath="test">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.607382506" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.release" unusedChildren="">
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.257874629" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.988207793"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1695223012" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.692393029"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1234605726" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1792737407"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.1394796215" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release.284415959"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.2124575795" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.384017152"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.1430717704" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release.713370981"/>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
-						<entry excluding="tools/res/dialogs|tools/res/plot|tools/res/ui|tools/res/helper|tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="test|tools/res/dialogs|tools/res/plot|tools/res/ui|tools/res/helper|tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

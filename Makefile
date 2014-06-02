@@ -83,7 +83,7 @@ obj/spec_char.o: helper/spec_char.cpp helper/spec_char.h
 obj/xml.o: helper/xml.cpp helper/xml.h
 	${CC} ${FLAGS} -c -o obj/xml.o helper/xml.cpp
 
-obj/linalg.o: helper/linalg.cpp helper/linalg.h
+obj/linalg.o: helper/linalg.cpp helper/linalg.h helper/geo.h
 	${CC} ${FLAGS} -c -o obj/linalg.o helper/linalg.cpp
 
 obj/lattice.o: helper/lattice.cpp helper/lattice.h
