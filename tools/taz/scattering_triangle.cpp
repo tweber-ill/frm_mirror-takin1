@@ -493,8 +493,21 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 	//ublas::vector<double> dir1 = plane.GetDir1();
 	ublas::vector<double> dir1 = cross_3(plane.GetNorm(), dir0);
 
-	dir0 /= ublas::norm_2(dir0);
-	dir1 /= ublas::norm_2(dir1);
+	double dDir0Len = ublas::norm_2(dir0);
+	double dDir1Len = ublas::norm_2(dir1);
+
+	//std::cout << "dir 0 len: " << dDir0Len << std::endl;
+	//std::cout << "dir 1 len: " << dDir1Len << std::endl;
+
+	if(float_equal(dDir0Len, 0.) || float_equal(dDir1Len, 0.)
+		|| ::isnan(dDir0Len) || ::isnan(dDir1Len))
+	{
+		std::cerr << "Error: Invalid scattering plane." << std::endl;
+		return;
+	}
+
+	dir0 /= dDir0Len;
+	dir1 /= dDir1Len;
 
 	m_matPlane = column_matrix(
 			std::vector<ublas::vector<double> >{dir0, dir1, plane.GetNorm()});

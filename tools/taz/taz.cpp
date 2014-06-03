@@ -551,6 +551,11 @@ void TazDlg::CalcPeaks()
 
 		ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
 		Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
+		if(!plane.IsValid())
+		{
+			std::cerr << "Error: Invalid scattering plane." << std::endl;
+			return;
+		}
 
 
 		if(m_bUpdateRecipEdits)

@@ -28,6 +28,7 @@ template<typename T> class Line;
 template<typename T> class Plane
 {
 protected:
+	bool m_bValid = 0;
 	ublas::vector<T> m_vecX0;
 	ublas::vector<T> m_vecDir0, m_vecDir1;
 	ublas::vector<T> m_vecNorm;
@@ -39,10 +40,17 @@ public:
 		: m_vecX0(vec0), m_vecDir0(dir0), m_vecDir1(dir1)
 	{
 		m_vecNorm = cross_3(dir0, dir1);
-		m_vecNorm /= ublas::norm_2(m_vecNorm);
+		T tLenNorm = ublas::norm_2(m_vecNorm);
+		if(float_equal<T>(tLenNorm, 0.))
+		{
+			m_bValid = 0;
+			return;
+		}
+		m_vecNorm /= tLenNorm;
 
 		// Hessian form: vecX0*vecNorm - d = 0
 		m_d = ublas::inner_prod(m_vecX0, m_vecNorm);
+		m_bValid = 1;
 	}
 
 	virtual ~Plane()
@@ -102,6 +110,8 @@ public:
 		lineRet = Line<T>(vec0, vecDir);
 		return 1;
 	}
+
+	bool IsValid() const { return m_bValid; }
 };
 
 
