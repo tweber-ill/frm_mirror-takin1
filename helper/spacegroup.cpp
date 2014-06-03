@@ -14,6 +14,16 @@
 #include "spacegroup.h"
 #include <cstdlib>
 
+// Python-like modulo
+// from: http://stackoverflow.com/questions/4003232/how-to-code-a-modulo-operator-in-c-c-obj-c-that-handles-negative-numbers
+template<typename t_int> t_int pymod(t_int a, t_int b)
+{
+	t_int m = a%b;
+	if(m < 0)
+		m += b;
+	return m;
+}
+
 // -> function "check_refcond" in Georg's Python code
 // -> http://www.ccp14.ac.uk/ccp/web-mirrors/powdcell/a_v/v_1/powder/details/extinct.htm
 static std::vector<bool (*)(int h, int k, int l)> g_vecConds =
@@ -25,7 +35,7 @@ static std::vector<bool (*)(int h, int k, int l)> g_vecConds =
 	/*04, A*/ [] (int h, int k, int l) -> bool { return (k+l)%2 == 0; },
 	/*05, B*/ [] (int h, int k, int l) -> bool { return (h+l)%2 == 0; },
 	/*06, C*/ [] (int h, int k, int l) -> bool { return (h+k)%2 == 0; },
-	/*07*/ [] (int h, int k, int l) -> bool { return (h%2 == k%2) && (k%2 == l%2); },
+	/*07*/ [] (int h, int k, int l) -> bool { return (pymod(h,2)==pymod(k,2)) && (pymod(k,2)==pymod(l,2)); },
 	/*08*/ [] (int h, int k, int l) -> bool { return (k+l)%4 == 0; },
 	/*09*/ [] (int h, int k, int l) -> bool { return (h+l)%4 == 0; },
 	/*10*/ [] (int h, int k, int l) -> bool { return (h+k)%4 == 0; },
