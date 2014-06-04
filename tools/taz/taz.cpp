@@ -215,6 +215,11 @@ TazDlg::TazDlg(QWidget* pParent)
 	QMenu *pMenuViewRecip = new QMenu(this);
 	pMenuViewRecip->setTitle("Reciprocal Space");
 
+	QAction *pRecipParams = new QAction(this);
+	pRecipParams->setText("Parameters...");
+	pMenuViewRecip->addAction(pRecipParams);
+	pMenuViewRecip->addSeparator();
+
 	m_pSmallq = new QAction(this);
 	m_pSmallq->setText("Enable Reduced Scattering Vector q");
 	m_pSmallq->setIcon(QIcon("res/q.svg"));
@@ -222,11 +227,13 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pSmallq->setChecked(bSmallqVisible);
 	pMenuViewRecip->addAction(m_pSmallq);
 
-	pMenuViewRecip->addSeparator();
+	m_pSnapSmallq = new QAction(this);
+	m_pSnapSmallq->setText("Snap G to Bragg Peak");
+	m_pSnapSmallq->setCheckable(1);
+	m_pSnapSmallq->setChecked(m_sceneRecip.getSnapq());
+	pMenuViewRecip->addAction(m_pSnapSmallq);
 
-	QAction *pRecipParams = new QAction(this);
-	pRecipParams->setText("Parameters...");
-	pMenuViewRecip->addAction(pRecipParams);
+	pMenuViewRecip->addSeparator();
 
 	QAction *pView3D = new QAction(this);
 	pView3D->setText("3D View...");
@@ -329,6 +336,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
+	QObject::connect(m_pSnapSmallq, SIGNAL(toggled(bool)), &m_sceneRecip, SLOT(setSnapq(bool)));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
 	QObject::connect(pRecipParams, SIGNAL(triggered()), this, SLOT(ShowRecipParams()));
@@ -590,7 +598,8 @@ void TazDlg::CalcPeaks()
 			pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
 
 		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
-		m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
+		if(m_sceneRecip.getSnapq())
+			m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();
 
 		if(m_pRecip3d)
@@ -808,6 +817,10 @@ bool TazDlg::Load(const char* pcFile)
 	if(bOk)
 		m_pSmallq->setChecked(bSmallqEnabled!=0);
 
+	int bSmallqSnapped = xml.Query<int>((strXmlRoot + "recip/snap_q").c_str(), 1, &bOk);
+	if(bOk)
+		m_pSnapSmallq->setChecked(bSmallqSnapped!=0);
+
 
 	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
 	trim(strSpaceGroup);
@@ -915,6 +928,9 @@ bool TazDlg::Save()
 
 	bool bSmallqEnabled = m_pSmallq->isChecked();
 	mapConf[strXmlRoot + "recip/enable_q"] = (bSmallqEnabled ? "1" : "0");
+
+	bool bSmallqSnapped = m_sceneRecip.getSnapq();
+	mapConf[strXmlRoot + "recip/snap_q"] = (bSmallqSnapped ? "1" : "0");
 
 
 	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();

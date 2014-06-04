@@ -170,6 +170,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 
 		bool m_bDontEmitChange = 0;
 		bool m_bSnap = 0;
+		bool m_bSnapq = 1;
 		bool m_bMousePressed = 0;
 
 	public:
@@ -194,6 +195,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 	public slots:
 		void tasChanged(const TriangleOptions& opts);
 		void scaleChanged(double dTotalScale);
+		void setSnapq(bool bSnap);
+		bool getSnapq() const { return m_bSnapq; }
 
 	signals:
 		// relevant parameters for instrument view

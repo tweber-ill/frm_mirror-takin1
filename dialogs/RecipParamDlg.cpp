@@ -53,6 +53,13 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	this->editqxrlu->setText(var_to_str<double>(parms.q_rlu[0]).c_str());
 	this->editqyrlu->setText(var_to_str<double>(parms.q_rlu[1]).c_str());
 	this->editqzrlu->setText(var_to_str<double>(parms.q_rlu[2]).c_str());
+
+	this->editGx->setText(var_to_str<double>(parms.G[0]).c_str());
+	this->editGy->setText(var_to_str<double>(parms.G[1]).c_str());
+	this->editGz->setText(var_to_str<double>(parms.G[2]).c_str());
+	this->editGxrlu->setText(var_to_str<double>(parms.G_rlu[0]).c_str());
+	this->editGyrlu->setText(var_to_str<double>(parms.G_rlu[1]).c_str());
+	this->editGzrlu->setText(var_to_str<double>(parms.G_rlu[2]).c_str());
 }
 
 

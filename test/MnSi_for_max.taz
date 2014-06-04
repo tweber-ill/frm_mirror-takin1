@@ -32,6 +32,7 @@
 		<kikf_x> 71.412 </kikf_x>
 		<kikf_y> -78.0093 </kikf_y>
 		<pixels_per_A-1> 75 </pixels_per_A-1>
+		<snap_q> 1 </snap_q>
 	</recip>
 	<reso>
 		<E> -2.635000e-02 </E>

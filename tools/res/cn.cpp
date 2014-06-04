@@ -228,11 +228,11 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 	ublas::matrix<double> rot_kikf = rotation_matrix_2d(res.twotheta/units::si::radians);
 	ublas::vector<double> vecKf = ublas::prod(rot_kikf, vecKi) * (cn.kf/cn.ki);
 
-	ublas::vector<double> vecQ = vecKf - vecKi;
+	ublas::vector<double> vecQ = vecKi - vecKf;
 
 	res.Q_avg.resize(4);
-	res.Q_avg[0] = vecQ[0];
-	res.Q_avg[1] = vecQ[1];
+	res.Q_avg[0] = -vecQ[0];
+	res.Q_avg[1] = -vecQ[1];
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = cn.E / one_meV;
 

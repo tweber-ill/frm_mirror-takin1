@@ -36,6 +36,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		bool m_bUpdateRecipEdits = 1;
 
 		QAction *m_pSmallq = 0;
+		QAction *m_pSnapSmallq = 0;
 
 		std::vector<QLineEdit*> m_vecEdits_real;
 		std::vector<QLineEdit*> m_vecEdits_recip;

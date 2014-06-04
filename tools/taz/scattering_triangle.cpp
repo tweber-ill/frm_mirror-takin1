@@ -191,8 +191,13 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 	if(m_bqVisible)
 	{
+		QPen penOrg = painter->pen();
+		painter->setPen(Qt::darkGreen);
+
 		painter->drawLine(lineG);
 		painter->drawLine(lineq);
+
+		painter->setPen(penOrg);
 	}
 
 	const double dG = lineG.length()/m_dScaleFactor/m_dZoom;
@@ -252,53 +257,76 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	QLineF lineKf2(ptKfQ, ptKiKf);
 	QLineF lineQ2(ptKfQ, ptKiQ);
 
-	const QLineF* pLines1[] = {&lineKi2, &lineKi, &lineKf};
-	const QLineF* pLines2[] = {&lineQ, &lineKf, &lineQ2};
-	const QPointF* pPoints[] = {&ptKiQ, &ptKiKf, &ptKfQ};
+	std::vector<const QLineF*> vecLines1 = {&lineKi2, &lineKi, &lineKf};
+	std::vector<const QLineF*> vecLines2 = {&lineQ, &lineKf, &lineQ2};
+	std::vector<const QPointF*> vecPoints = {&ptKiQ, &ptKiKf, &ptKfQ};
 
-	const QLineF* pLines_arrow[] = {&lineKi, &lineKf2, &lineQ};
-	const QPointF* pPoints_arrow[] = {&ptKiQ, &ptKfQ, &ptKiQ};
+	std::vector<const QLineF*> vecLinesArrow = {&lineKi, &lineKf2, &lineQ};
+	std::vector<const QPointF*> vecPointsArrow = {&ptKiQ, &ptKfQ, &ptKiQ};
 
-	for(unsigned int i=0; i<3; ++i)
+	std::vector<bool> vecDrawAngles = {1,1,1};
+	std::vector<QColor> vecColor {Qt::black, Qt::black, Qt::black};
+
+	QLineF lineG2(ptGq, ptKiQ);
+	QLineF lineq2(ptGq, ptKfQ);
+
+	if(m_bqVisible)
+	{
+		vecLinesArrow.push_back(&lineq2);
+		vecLinesArrow.push_back(&lineG);
+
+		vecPointsArrow.push_back(&ptGq);
+		vecPointsArrow.push_back(&ptKiQ);
+
+		vecDrawAngles.push_back(0);
+		vecDrawAngles.push_back(0);
+
+		vecColor.push_back(Qt::darkGreen);
+		vecColor.push_back(Qt::darkGreen);
+	}
+
+	for(unsigned int i=0; i<vecDrawAngles.size(); ++i)
 	{
 		// arrow heads
-		double dAng = (pLines_arrow[i]->angle() + 90.) / 180. * M_PI;
+		double dAng = (vecLinesArrow[i]->angle() + 90.) / 180. * M_PI;
 		double dC = std::cos(dAng);
 		double dS = std::sin(dAng);
 
 		double dTriagX = 5., dTriagY = 10.;
-		QPointF ptTriag1 = *pPoints_arrow[i] + QPointF(dTriagX*dC + dTriagY*dS, -dTriagX*dS + dTriagY*dC);
-		QPointF ptTriag2 = *pPoints_arrow[i] + QPointF(-dTriagX*dC + dTriagY*dS, dTriagX*dS + dTriagY*dC);
+		QPointF ptTriag1 = *vecPointsArrow[i] + QPointF(dTriagX*dC + dTriagY*dS, -dTriagX*dS + dTriagY*dC);
+		QPointF ptTriag2 = *vecPointsArrow[i] + QPointF(-dTriagX*dC + dTriagY*dS, dTriagX*dS + dTriagY*dC);
 
 		QPainterPath triag;
-		triag.moveTo(*pPoints_arrow[i]);
+		triag.moveTo(*vecPointsArrow[i]);
 		triag.lineTo(ptTriag1);
 		triag.lineTo(ptTriag2);
 
-		painter->setPen(Qt::black);
-		painter->fillPath(triag, Qt::black);
+		painter->setPen(vecColor[i]);
+		painter->fillPath(triag, vecColor[i]);
 
+		if(vecDrawAngles[i])
+		{
+			// angle arcs
+			double dArcSize = (vecLines1[i]->length() + vecLines2[i]->length()) / 2. / 3.;
+			double dBeginArcAngle = vecLines1[i]->angle() + 180.;
+			double dArcAngle = vecLines1[i]->angleTo(*vecLines2[i]) - 180.;
 
-		// angle arcs
-		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 3.;
-		double dBeginArcAngle = pLines1[i]->angle() + 180.;
-		double dArcAngle = pLines1[i]->angleTo(*pLines2[i]) - 180.;
+			painter->setPen(Qt::blue);
+			painter->drawArc(QRectF(vecPoints[i]->x()-dArcSize/2., vecPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
+							dBeginArcAngle*16., dArcAngle*16.);
 
-		painter->setPen(Qt::blue);
-		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
-						dBeginArcAngle*16., dArcAngle*16.);
+			const std::wstring& strDEG = ::get_spec_char_utf16("deg");
+			std::wostringstream ostrAngle;
+			ostrAngle.precision(4);
+			ostrAngle << std::fabs(dArcAngle) << strDEG;
 
-		const std::wstring& strDEG = ::get_spec_char_utf16("deg");
-		std::wostringstream ostrAngle;
-		ostrAngle.precision(4);
-		ostrAngle << std::fabs(dArcAngle) << strDEG;
+			QPointF ptDirOut = *vecPoints[i] - ptMid;
+			ptDirOut /= std::sqrt(ptDirOut.x()*ptDirOut.x() + ptDirOut.y()*ptDirOut.y());
+			ptDirOut *= 15.;
 
-		QPointF ptDirOut = *pPoints[i] - ptMid;
-		ptDirOut /= std::sqrt(ptDirOut.x()*ptDirOut.x() + ptDirOut.y()*ptDirOut.y());
-		ptDirOut *= 15.;
-
-		QPointF ptText = *pPoints[i] + ptDirOut;
-		painter->drawText(ptText, QString::fromWCharArray(ostrAngle.str().c_str()));
+			QPointF ptText = *vecPoints[i] + ptDirOut;
+			painter->drawText(ptText, QString::fromWCharArray(ostrAngle.str().c_str()));
+		}
 	}
 }
 
@@ -600,8 +628,8 @@ ublas::vector<double> ScatteringTriangle::GetQVecPlane(bool bSmallQ) const
 	ublas::vector<double> vecQPlane;
 
 	if(bSmallQ)
-		vecQPlane = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
-						- qpoint_to_vec(mapFromItem(m_pNodeGq, 0, 0));
+		vecQPlane = qpoint_to_vec(mapFromItem(m_pNodeGq,0,0))
+						- qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0));
 	else
 		vecQPlane = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
 						- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
@@ -732,9 +760,12 @@ void ScatteringTriangleScene::emitAllParams()
 	ublas::vector<double> vecQrlu = m_pTri->GetQVec(0,1);
 	ublas::vector<double> vecq = m_pTri->GetQVec(1,0);
 	ublas::vector<double> vecqrlu = m_pTri->GetQVec(1,1);
+	ublas::vector<double> vecG = vecQ - vecq;
+	ublas::vector<double> vecGrlu = vecQrlu - vecqrlu;
 
 	set_eps_0(vecQ); set_eps_0(vecQrlu);
 	set_eps_0(vecq); set_eps_0(vecqrlu);
+	set_eps_0(vecG); set_eps_0(vecGrlu);
 
 	for(unsigned int i=0; i<3; ++i)
 	{
@@ -742,6 +773,8 @@ void ScatteringTriangleScene::emitAllParams()
 		parms.Q_rlu[i] = vecQrlu[i];
 		parms.q[i] = vecq[i];
 		parms.q_rlu[i] = vecqrlu[i];
+		parms.G[i] = vecG[i];
+		parms.G_rlu[i] = vecGrlu[i];
 	}
 
 	CheckForSpurions();
@@ -864,6 +897,14 @@ void ScatteringTriangleScene::SnapToNearestPeak(ScatteringTriangleNode* pNode)
 		pNode->setPos(pNearestNode->pos());
 }
 
+void ScatteringTriangleScene::setSnapq(bool bSnap)
+{
+	m_bSnapq = bSnap;
+
+	if(m_bSnapq && m_pTri)
+		SnapToNearestPeak(m_pTri->GetNodeGq());
+}
+
 void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	bool bHandled = 0;
@@ -895,7 +936,7 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		if(pCurItem)
 			iNodeType = pCurItem->data(TRIANGLE_NODE_TYPE_KEY).toInt();
 
-		if(pCurItem && (m_bSnap || iNodeType == NODE_q))
+		if(pCurItem && (m_bSnap || (m_bSnapq && iNodeType == NODE_q)))
 		{
 			QList<QGraphicsItem*> nodes = items();
 			const QGraphicsItem *pNearestNode =

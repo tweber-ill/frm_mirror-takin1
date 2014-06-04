@@ -311,9 +311,9 @@ Y debye_waller_low_T(const units::quantity<units::unit<units::temperature_dimens
 // scattering triangle / TAS stuff
 
 // Q_vec = ki_vec - kf_vec
-// Q^2 = ki^2 + kf^2 - 2ki kf cos 2th
-// cos 2th = (-Q^2 + ki^2 + kf^2) / (2ki kf)
-
+// kf_vec = ki_vec - Q_vec
+// kf^2 = ki^2 + Q^2 - 2ki Q cos th
+// cos th = (-kf^2 + ki^2 + Q^2) / (2kiQ)
 template<class Sys, class Y>
 units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
 get_angle_ki_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
@@ -326,6 +326,10 @@ get_angle_ki_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sy
 	return units::acos((ki*ki - kf*kf + Q*Q)/(2.*ki*Q));
 }
 
+// Q_vec = ki_vec - kf_vec
+// ki_vec = Q_vec + kf_vec
+// ki^2 = Q^2 + kf^2 + 2Q kf cos th
+// cos th = (ki^2 - Q^2 - kf^2) / (2Q kf)
 template<class Sys, class Y>
 units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
 get_angle_kf_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
@@ -335,8 +339,7 @@ get_angle_kf_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sy
 	if(Q*(1e-10 * units::si::meter) == 0.)
 		return M_PI/2. * units::si::radians;
 
-	return M_PI*units::si::radians
-			- units::acos((kf*kf - ki*ki + Q*Q)/(2.*kf*Q));
+	return units::acos((-kf*kf + ki*ki - Q*Q)/(2.*kf*Q));
 }
 
 template<class Sys, class Y>
@@ -352,6 +355,9 @@ get_mono_twotheta(const units::quantity<units::unit<units::wavenumber_dimension,
 	return tt;
 }
 
+// Q_vec = ki_vec - kf_vec
+// Q^2 = ki^2 + kf^2 - 2ki kf cos 2th
+// cos 2th = (-Q^2 + ki^2 + kf^2) / (2ki kf)
 template<class Sys, class Y>
 units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
 get_sample_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
@@ -480,10 +486,11 @@ ElasticSpurion check_elastic_spurion(const ublas::vector<T>& ki,
 
 	ublas::vector<T> ki_norm = ki;	ki_norm /= dKi;
 	ublas::vector<T> kf_norm = kf;	kf_norm /= dKf;
-	ublas::vector<T> q_norm = q;	q_norm /= dq;
 
-	const ublas::vector<T> Q = ki-kf;
-	const ublas::vector<T> G = Q+q;
+	// Q, q and G point in the opposite direction in Shirane!
+	// Shirane: Q = kf - ki, E = Ei - Ef
+	// here: Q = ki - kf, E = Ei - Ef
+	ublas::vector<T> q_norm = -q;	q_norm /= dq;
 
 	double dAngleKfq = std::acos(ublas::inner_prod(kf_norm, q_norm));
 	double dAngleKiq = std::acos(ublas::inner_prod(ki_norm, q_norm));
