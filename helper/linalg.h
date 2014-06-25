@@ -23,13 +23,31 @@ namespace math = boost::math;
 
 
 //#include "math.h"
-template<typename T=double> bool float_equal(T t1, T t2, T eps=std::numeric_limits<T>::epsilon());
+template<typename T> bool float_equal(T t1, T t2, T eps = std::numeric_limits<T>::epsilon());
 template<typename T> T sign(T t);
-template<typename INT=int> bool is_even(INT i);
-template<typename INT=int> bool is_odd(INT i);
+template<typename INT> bool is_even(INT i);
+template<typename INT> bool is_odd(INT i);
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
+template<class matrix_type, typename T>
 T determinant(const matrix_type& mat);
+
+
+template<class vec_type>
+bool vec_equal(const vec_type& vec0, const vec_type& vec1,
+		typename vec_type::value_type eps = std::numeric_limits<typename vec_type::value_type>::epsilon())
+{
+	typedef typename vec_type::value_type T;
+
+	if(vec0.size() != vec1.size())
+		return false;
+
+	for(unsigned int i=0; i<vec0.size(); ++i)
+		if(!float_equal<T>(vec0[i], vec1[i], eps))
+			return false;
+
+	return true;
+}
+
 
 template<class vec_type>
 typename vec_type::value_type vec_len(const vec_type& vec)
@@ -348,7 +366,7 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 		inv = ublas::identity_matrix<T>(N);
 		ublas::lu_substitute(lu, perm, inv);
 	}
-	catch(ublas::internal_logic& ex)
+	catch(const std::exception& ex)
 	{
 		std::cerr << "Error: Matrix inversion failed with exception: " << ex.what() << "." << "\n";
 		std::cerr << "Matrix to be inverted was: " << mat << "." << std::endl;
@@ -360,7 +378,7 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 }
 
 
-template<typename T=double>
+template<typename T>
 bool solve_linear_approx(const ublas::matrix<T>& M, const ublas::vector<T>& v,
 						ublas::vector<T>& x);
 
@@ -444,7 +462,7 @@ bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v,
 			//std::cout << "Rsub" << Rsub << std::endl;
 			//std::cout << "det: " << determinant(Rsub) << std::endl;
 
-			T det = determinant(Rsub);
+			T det = determinant<ublas::matrix<T>, T>(Rsub);
 			if(!float_equal(det, 0.))
 			{
 				bFoundNonSingular = 1;
@@ -750,7 +768,7 @@ T determinant(const matrix_type& mat)
 		T dSign = 1.;
 		if(is_odd<unsigned int>(i+j))
 			dSign = -1.;
-		val += dSign * mat(i,j) * determinant(submatrix(mat, i, j));
+		val += dSign * mat(i,j) * determinant<matrix_type,T>(submatrix(mat, i, j));
 	}
 
 	return val;
@@ -764,12 +782,13 @@ T get_volume(const matrix_type& mat)
 
 
 
-// calculate skew coordinate basis vectors from angles
-// see: http://www.ccl.net/cca/documents/molecular-modeling/node4.html
+// calculate fractional coordinate basis vectors from angles
+// see: http://www.bmsc.washington.edu/CrystaLinks/man/pdb/part_75.html
+// for the reciprocal lattice this is equal to the B matrix from Acta Cryst. (1967), 22, 457
 template<class t_vec, class T>
-bool skew_basis_from_angles(T a, T b, T c,
-							T alpha, T beta, T gamma,
-							t_vec& veca, t_vec& vecb, t_vec& vecc)
+bool fractional_basis_from_angles(T a, T b, T c,
+			T alpha, T beta, T gamma,
+			t_vec& veca, t_vec& vecb, t_vec& vecc)
 {
 	const T dSG = std::sin(gamma);
 	const T dCG = std::cos(gamma);

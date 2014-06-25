@@ -10,6 +10,19 @@
 #include "linalg.h"
 #include "math.h"
 
+
+template<typename T=double>
+bool reciprocal(const ublas::matrix<T>& matReal, ublas::matrix<T>& matRecip)
+{
+	ublas::matrix<double> matInv;
+	if(!inverse<double>(ublas::trans(matReal), matInv))
+		return false;
+
+	matRecip = 2.*M_PI*matInv;
+	return true;
+}
+
+
 class Lattice
 {
 	protected:
@@ -28,6 +41,11 @@ class Lattice
 
 		// Euler ZXZ rotation
 		void RotateEuler(double dPhi, double dTheta, double dPsi);
+		// Euler vecRecipZ vecRecipX vecRecipZ rotation
+		void RotateEulerRecip(const ublas::vector<double>& vecRecipX,
+						const ublas::vector<double>& vecRecipY,
+						const ublas::vector<double>& vecRecipZ,
+						double dPhi, double dTheta, double dPsi);
 
 		Lattice GetRecip() const;
 

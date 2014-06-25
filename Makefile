@@ -1,4 +1,5 @@
-CC = gcc
+#CC = gcc
+CC = clang
 DEFINES = 
 QWT_VER = 6
 

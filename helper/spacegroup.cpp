@@ -16,7 +16,7 @@
 
 // Python-like modulo
 // from: http://stackoverflow.com/questions/4003232/how-to-code-a-modulo-operator-in-c-c-obj-c-that-handles-negative-numbers
-template<typename t_int> t_int pymod(t_int a, t_int b)
+template<typename t_int=int> static inline t_int pymod(t_int a, t_int b)
 {
 	t_int m = a%b;
 	if(m < 0)

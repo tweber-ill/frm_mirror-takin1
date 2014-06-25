@@ -135,7 +135,7 @@ bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
 		evals[i] = peigenvals_real[i];
 	}
 
-	if(determinant(column_matrix(evecs)) < 0.)
+	if(determinant<ublas::matrix<double>, double>(column_matrix(evecs)) < 0.)
 		evecs[0] = -evecs[0];
 
 	delete[] pMem;

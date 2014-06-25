@@ -16,7 +16,7 @@ Lattice::Lattice(double a, double b, double c,
 	m_vecs[1].resize(3,0);
 	m_vecs[2].resize(3,0);
 
-	skew_basis_from_angles(a,b,c, alpha,beta,gamma, m_vecs[0],m_vecs[1],m_vecs[2]);
+	fractional_basis_from_angles(a,b,c, alpha,beta,gamma, m_vecs[0],m_vecs[1],m_vecs[2]);
 }
 
 Lattice::Lattice(const ublas::vector<double>& vec0,
@@ -43,6 +43,59 @@ void Lattice::RotateEuler(double dPhi, double dTheta, double dPsi)
 	ublas::matrix<double> mat1 = ::rotation_matrix_3d_z(dPhi);
 	ublas::matrix<double> mat2 = ::rotation_matrix_3d_x(dTheta);
 	ublas::matrix<double> mat3 = ::rotation_matrix_3d_z(dPsi);
+
+	ublas::matrix<double> mat21 = ublas::prod(mat2,mat1);
+	ublas::matrix<double> mat = ublas::prod(mat3, mat21);
+
+	for(unsigned int i=0; i<3; ++i)
+		m_vecs[i] = ublas::prod(mat, m_vecs[i]);
+}
+
+void Lattice::RotateEulerRecip(const ublas::vector<double>& vecRecipX,
+				const ublas::vector<double>& vecRecipY,
+				const ublas::vector<double>& vecRecipZ,
+				double dPhi, double dTheta, double dPsi)
+{
+	// get real vectors
+	const unsigned int iDim=3;
+	ublas::matrix<double> matReal =
+					column_matrix(std::vector<ublas::vector<double> >
+								{vecRecipX, vecRecipY, vecRecipZ});
+	if(matReal.size1()!=matReal.size2() || matReal.size1()!=iDim)
+		throw Err("Invalid real matrix.");
+
+	ublas::matrix<double> matRecip;
+	if(!reciprocal(matReal, matRecip))
+		throw Err("Reciprocal matrix could not be calculated.");
+
+	ublas::vector<double> vecX = get_column(matRecip,0);
+	ublas::vector<double> vecY = get_column(matRecip,1);
+	ublas::vector<double> vecZ = get_column(matRecip,2);
+
+	double dLenX = ublas::norm_2(vecX);
+	double dLenY = ublas::norm_2(vecY);
+	double dLenZ = ublas::norm_2(vecZ);
+
+	if(float_equal(dLenX, 0.) || float_equal(dLenY, 0.) || float_equal(dLenZ, 0.)
+		|| ::isnan(dLenX) || ::isnan(dLenY) || ::isnan(dLenZ))
+	{
+		throw Err("Invalid reciprocal matrix.");
+		return;
+	}
+
+	vecX /= dLenX;
+	vecY /= dLenY;
+	vecZ /= dLenZ;
+
+	//std::cout << "x = " << vecX << std::endl;
+	//std::cout << "y = " << vecY << std::endl;
+	//std::cout << "z = " << vecZ << std::endl;
+
+
+	// rotate around real vectors
+	ublas::matrix<double> mat1 = ::rotation_matrix(vecZ, dPhi);
+	ublas::matrix<double> mat2 = ::rotation_matrix(vecX, dTheta);
+	ublas::matrix<double> mat3 = ::rotation_matrix(vecZ, dPsi);
 
 	ublas::matrix<double> mat21 = ublas::prod(mat2,mat1);
 	ublas::matrix<double> mat = ublas::prod(mat3, mat21);
@@ -103,17 +156,16 @@ ublas::vector<double> Lattice::GetHKL(const ublas::vector<double>& vec) const
 Lattice Lattice::GetRecip() const
 {
 	const unsigned int iDim=3;
+	ublas::matrix<double> matReal =
+					column_matrix(std::vector<ublas::vector<double> >
+								{m_vecs[0], m_vecs[1], m_vecs[2]});
+	if(matReal.size1()!=matReal.size2() || matReal.size1()!=iDim)
+		throw Err("Invalid real lattice matrix.");
 
-	ublas::matrix<double> matReal(iDim,iDim);
-	for(unsigned int iVec=0; iVec<iDim; ++iVec)
-		for(unsigned int iComp=0; iComp<iDim; ++iComp)
-			matReal(iComp, iVec) = m_vecs[iVec][iComp];
-
-	ublas::matrix<double> matInv;
-	if(!inverse<double>(ublas::trans(matReal), matInv))
+	ublas::matrix<double> matRecip;
+	if(!reciprocal(matReal, matRecip))
 		throw Err("Reciprocal lattice could not be calculated.");
 
-	ublas::matrix<double> matRecip = 2.*M_PI*matInv;
 	return Lattice(get_column(matRecip,0),
 					get_column(matRecip,1),
 					get_column(matRecip,2));

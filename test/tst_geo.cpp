@@ -1,10 +1,12 @@
 // gcc -DUSE_LAPACK -o tst_geo tst_geo.cpp ../helper/linalg.cpp -std=c++11 -lstdc++ -lm -I/usr/include/lapacke -llapacke -llapack
 
 #include "../helper/geo.h"
+#include "../helper/math.h"
 
 typedef ublas::vector<double> vec;
 
-int main()
+
+void tst0()
 {
 	vec v0(3), dir0_0(3), dir0_1(3);
 	vec v1(3), dir1_0(3), dir1_1(3);
@@ -29,5 +31,37 @@ int main()
 		std::cout << "Line: " << line << std::endl;
 	else
 		std::cout << "Error." << std::endl;
+}
+
+void tst1()
+{
+	ublas::vector<double> vecPos(2), vecDir(2);
+	vecPos[0] = 0.;
+	vecPos[1] = 0.;
+
+	vecDir[0] = 1.;
+	vecDir[1] = 1.;
+
+
+	Line<double> line(vecPos, vecDir);
+	ublas::vector<double> v0(2), v1(2);
+	v0[0] = -1.;
+	v0[1] = 1.;
+
+	v1[0] = 2.;
+	v1[1] = 1.;
+
+	double dDist0, dDist1;
+	std::cout << "side: " << line.GetSide(v0, &dDist0);
+	std::cout << ", dist: " << dDist0 << std::endl;
+	std::cout << "side: " << line.GetSide(v1, &dDist1);
+	std::cout << ", dist: " << dDist1 << std::endl;
+}
+
+int main()
+{
+	//tst0();
+	tst1();
+
 	return 0;
 }

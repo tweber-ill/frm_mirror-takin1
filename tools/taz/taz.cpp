@@ -49,6 +49,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	}
 
 	const bool bSmallqVisible = 0;
+	const bool bBZVisible = 1;
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
@@ -233,6 +234,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pSnapSmallq->setChecked(m_sceneRecip.getSnapq());
 	pMenuViewRecip->addAction(m_pSnapSmallq);
 
+	m_pBZ = new QAction(this);
+	m_pBZ->setText("Enable First Brillouin Zone");
+	m_pBZ->setCheckable(1);
+	m_pBZ->setChecked(bBZVisible);
+	pMenuViewRecip->addAction(m_pBZ);
+
 	pMenuViewRecip->addSeparator();
 
 	QAction *pView3D = new QAction(this);
@@ -336,6 +343,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
+	QObject::connect(m_pBZ, SIGNAL(toggled(bool)), this, SLOT(EnableBZ(bool)));
 	QObject::connect(m_pSnapSmallq, SIGNAL(toggled(bool)), &m_sceneRecip, SLOT(setSnapq(bool)));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
@@ -390,6 +398,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	CalcPeaks();
 
 	m_sceneRecip.GetTriangle()->SetqVisible(bSmallqVisible);
+	m_sceneRecip.GetTriangle()->SetBZVisible(bBZVisible);
 	m_sceneRecip.emitUpdate();
 }
 
@@ -523,6 +532,7 @@ void TazDlg::CalcPeaks()
 
 	try
 	{
+		// lattice
 		double a = editA->text().toDouble();
 		double b = editB->text().toDouble();
 		double c = editC->text().toDouble();
@@ -534,14 +544,10 @@ void TazDlg::CalcPeaks()
 		Lattice lattice(a,b,c, alpha,beta,gamma);
 		Lattice recip_unrot = lattice.GetRecip();
 
-		double dPhi = spinRotPhi->value() / 180. * M_PI;
-		double dTheta = spinRotTheta->value() / 180. * M_PI;
-		double dPsi = spinRotPsi->value() / 180. * M_PI;
-		lattice.RotateEuler(dPhi, dTheta, dPsi);
-
-		Lattice recip = lattice.GetRecip();
 
 
+
+		// scattering plane
 		double dX0 = editScatX0->text().toDouble();
 		double dX1 = editScatX1->text().toDouble();
 		double dX2 = editScatX2->text().toDouble();
@@ -564,6 +570,36 @@ void TazDlg::CalcPeaks()
 			std::cerr << "Error: Invalid scattering plane." << std::endl;
 			return;
 		}
+
+
+		// rotated lattice
+		double dPhi = spinRotPhi->value() / 180. * M_PI;
+		double dTheta = spinRotTheta->value() / 180. * M_PI;
+		double dPsi = spinRotPsi->value() / 180. * M_PI;
+		//lattice.RotateEuler(dPhi, dTheta, dPsi);
+
+		ublas::vector<double> dir0 = plane.GetDir0();
+		ublas::vector<double> dirup = plane.GetNorm();
+		ublas::vector<double> dir1 = cross_3(dirup, dir0);
+
+		double dDir0Len = ublas::norm_2(dir0);
+		double dDir1Len = ublas::norm_2(dir1);
+		double dDirUpLen = ublas::norm_2(dirup);
+
+		if(float_equal(dDir0Len, 0.) || float_equal(dDir1Len, 0.) || float_equal(dDirUpLen, 0.)
+			|| ::isnan(dDir0Len) || ::isnan(dDir1Len) || ::isnan(dDirUpLen))
+		{
+			std::cerr << "Error: Invalid scattering plane." << std::endl;
+			return;
+		}
+
+		dir0 /= dDir0Len;
+		dir1 /= dDir1Len;
+		//dirup /= dDirUpLen;
+
+		lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
+		Lattice recip = lattice.GetRecip();
+
 
 
 		if(m_bUpdateRecipEdits)
@@ -665,6 +701,11 @@ void TazDlg::Show3D()
 void TazDlg::EnableSmallq(bool bEnable)
 {
 	m_sceneRecip.GetTriangle()->SetqVisible(bEnable);
+}
+
+void TazDlg::EnableBZ(bool bEnable)
+{
+	m_sceneRecip.GetTriangle()->SetBZVisible(bEnable);
 }
 
 
@@ -821,6 +862,9 @@ bool TazDlg::Load(const char* pcFile)
 	if(bOk)
 		m_pSnapSmallq->setChecked(bSmallqSnapped!=0);
 
+	int bBZEnabled = xml.Query<int>((strXmlRoot + "recip/enable_bz").c_str(), 0, &bOk);
+	if(bOk)
+		m_pBZ->setChecked(bBZEnabled!=0);
 
 	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
 	trim(strSpaceGroup);
@@ -931,6 +975,9 @@ bool TazDlg::Save()
 
 	bool bSmallqSnapped = m_sceneRecip.getSnapq();
 	mapConf[strXmlRoot + "recip/snap_q"] = (bSmallqSnapped ? "1" : "0");
+
+	bool bBZEnabled = m_pBZ->isChecked();
+	mapConf[strXmlRoot + "recip/enable_bz"] = (bBZEnabled ? "1" : "0");
 
 
 	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();

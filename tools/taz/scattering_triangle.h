@@ -10,6 +10,7 @@
 #include "helper/linalg.h"
 #include "helper/lattice.h"
 #include "helper/spacegroup.h"
+#include "helper/bz.h"
 #include "helper/neutrons.hpp"
 
 #include <QtGui/QGraphicsScene>
@@ -61,12 +62,15 @@ class RecipPeak : public QGraphicsItem
 
 	protected:
 		QString m_strLabel;
+		//const Brillouin2D<double>* m_pBZ = 0;
 
 	public:
 		RecipPeak();
 
 		void SetLabel(const QString& str) { m_strLabel = str; }
 		void SetColor(const QColor& col) { m_color = col; }
+
+		//void SetBZ(const Brillouin2D<double>* pBZ) { this->m_pBZ = pBZ; }
 };
 
 class ScatteringTriangleScene;
@@ -86,11 +90,14 @@ class ScatteringTriangle : public QGraphicsItem
 		double m_dScaleFactor = 75.;	// pixels per A^-1 for zoom == 1.
 		double m_dZoom = 1.;
 		double m_dPlaneDistTolerance = 0.01;
-		double m_dMaxPeaks = 5.;
+		int m_iMaxPeaks = 7;
 
 		Lattice m_lattice, m_recip, m_recip_unrot;
 		ublas::matrix<double> m_matPlane, m_matPlane_inv;
 		std::vector<RecipPeak*> m_vecPeaks;
+
+		bool m_bShowBZ = 1;
+		Brillouin2D<double> m_bz;
 
 		double m_dAngleRot = 0.;
 
@@ -134,10 +141,11 @@ class ScatteringTriangle : public QGraphicsItem
 						const SpaceGroup* pSpaceGroup=0);
 
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
-		void SetMaxPeaks(double dMax) { m_dMaxPeaks = dMax; }
+		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
 		void SetZoom(double dZoom);
 
 		void SetqVisible(bool bVisible);
+		void SetBZVisible(bool bVisible);
 
 	public:
 		std::vector<ScatteringTriangleNode*> GetNodes();

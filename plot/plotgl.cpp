@@ -275,7 +275,7 @@ void PlotGl::clear()
 
 void PlotGl::SetObjectColor(int iObjIdx, const std::vector<double>& vecCol)
 {
-	if(m_vecObjs.size() <= iObjIdx || iObjIdx<0)
+	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
 		return;
 
 	m_vecObjs[iObjIdx].vecColor = vecCol;

@@ -147,8 +147,8 @@ void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 
 QRectF ScatteringTriangle::boundingRect() const
 {
-	return QRectF(-500.*m_dZoom, -500.*m_dZoom,
-					1000.*m_dZoom, 1000.*m_dZoom);
+	return QRectF(-1000.*m_dZoom, -1000.*m_dZoom,
+					2000.*m_dZoom, 2000.*m_dZoom);
 }
 
 void ScatteringTriangle::SetZoom(double dZoom)
@@ -163,8 +163,45 @@ void ScatteringTriangle::SetqVisible(bool bVisible)
 	this->update();
 }
 
+void ScatteringTriangle::SetBZVisible(bool bVisible)
+{
+	m_bShowBZ = bVisible;
+	this->update();
+}
+
 void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+	// Brillouin zone
+	if(m_bShowBZ && m_bz.IsValid())
+	{
+		QPen penOrg = painter->pen();
+		painter->setPen(Qt::lightGray);
+
+		for(const RecipPeak* pPeak : m_vecPeaks)
+		{
+			QPointF peakPos = pPeak->pos();
+			peakPos *= m_dZoom;
+
+			const Brillouin2D<double>::t_vertices<double>& verts = m_bz.GetVertices();
+			for(const Brillouin2D<double>::t_vecpair<double>& vertpair : verts)
+			{
+				const ublas::vector<double>& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
+				const ublas::vector<double>& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
+
+				QPointF pt1 = vec_to_qpoint(vec1) + peakPos;
+				QPointF pt2 = vec_to_qpoint(vec2) + peakPos;
+
+				QLineF lineBZ(pt1, pt2);
+				painter->drawLine(lineBZ);
+			}
+		}
+
+		painter->setPen(penOrg);
+	}
+
+
+
+
 	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0) * m_dZoom;
 	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0) * m_dZoom;
 	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0) * m_dZoom;
@@ -546,26 +583,35 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 		return;
 	}
 
-	ublas::vector<double> vecNorm = cross_3(m_recip_unrot.GetVec(0), m_recip_unrot.GetVec(1));
+
+	// crystal rotation angle
 	try
 	{
-		m_dAngleRot = -vec_angle(m_recip.GetVec(0), m_recip_unrot.GetVec(0), &vecNorm);
+		ublas::vector<double> vecUnrotX = plane.GetDroppedPerp(m_recip_unrot.GetVec(0));
+		ublas::vector<double> vecRotX = plane.GetDroppedPerp(m_recip.GetVec(0));
+
+		const ublas::vector<double> &vecNorm = plane.GetNorm();
+		m_dAngleRot = -vec_angle(vecRotX, vecUnrotX, &vecNorm);
+
+		//std::cout << "rotation angle: " << m_dAngleRot/M_PI*180. << std::endl;
 	}
 	catch(const std::exception& ex)
 	{
 		std::cerr << ex.what() << std::endl;
 		return;
 	}
-	//std::cout << m_dAngleRot/M_PI*180. << std::endl;
 
-	for(double h=-m_dMaxPeaks; h<=m_dMaxPeaks; h+=1.)
-		for(double k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
-			for(double l=-m_dMaxPeaks; l<=m_dMaxPeaks; l+=1.)
+
+	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
+		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
+			for(int il=-m_iMaxPeaks; il<=m_iMaxPeaks; ++il)
 			{
+				double h = double(ih);
+				double k = double(ik);
+				double l = double(il);
+
 				if(pSpaceGroup)
 				{
-					int ih = int(h), ik = int(k), il = int(l);
-
 					if(!pSpaceGroup->HasReflection(ih, ik, il))
 						continue;
 				}
@@ -580,7 +626,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 					double dX = vecCoord[0];
 					double dY = vecCoord[1];
 
-					/*if(h==1 && k==0 && l==0)
+					/*if(ih==1 && ik==0 && il==0)
 					{
 						std::cout << h << k << l << ": ";
 						std::cout << "Lotfusspunkt: " << vecDropped << ", Distanz: " << dDist;
@@ -588,16 +634,16 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 					}*/
 
 					RecipPeak *pPeak = new RecipPeak();
-					if(float_equal(h, 0.) && float_equal(k,0.) && float_equal(l,0.))
+					if(ih==0 && ik==0 && il==0)
 						pPeak->SetColor(Qt::green);
 					pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 					pPeak->setPos(dX * m_dScaleFactor, -dY * m_dScaleFactor);
 					pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
 					std::ostringstream ostrTip;
-					ostrTip << "(" << int(h) << " " << int(k) << " " << int(l) << ")";
+					ostrTip << "(" << ih << " " << ik << " " << il << ")";
 
-					if(h!=0. || k!=0. || l!=0.)
+					if(ih!=0 || ik!=0 || il!=0)
 						pPeak->SetLabel(ostrTip.str().c_str());
 
 					//std::string strAA = ::get_spec_char_utf8("AA")+::get_spec_char_utf8("sup-")+::get_spec_char_utf8("sup1");
@@ -606,8 +652,31 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 
 					m_vecPeaks.push_back(pPeak);
 					m_scene.addItem(pPeak);
+
+
+					// 1st BZ
+					if(ih==0 && ik==0 && il==0)
+					{
+						ublas::vector<double> vecCentral(2);
+						vecCentral[0] = dX;
+						vecCentral[1] = dY;
+						m_bz.SetCentralReflex(vecCentral);
+					}
+					// TODO: check if 2 next neighbours is sufficient for all space groups
+					else if(std::abs(ih)<=2 && std::abs(ik)<=2 && std::abs(il)<=2)
+					{
+						ublas::vector<double> vecN(2);
+						vecN[0] = dX;
+						vecN[1] = dY;
+						m_bz.AddReflex(vecN);
+					}
 				}
 			}
+
+	m_bz.CalcBZ();
+
+	//for(RecipPeak* pPeak : m_vecPeaks)
+	//	pPeak->SetBZ(&m_bz);
 
 	m_scene.emitAllParams();
 	this->update();
@@ -674,6 +743,8 @@ ublas::vector<double> ScatteringTriangle::GetKfVecPlane() const
 
 void ScatteringTriangle::ClearPeaks()
 {
+	m_bz.Clear();
+
 	for(RecipPeak*& pPeak : m_vecPeaks)
 	{
 		if(pPeak)

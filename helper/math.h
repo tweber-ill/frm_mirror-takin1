@@ -30,6 +30,40 @@ T sign(T t)
 	return T(1);
 }
 
+
+template<class vec_type>
+typename vec_type::value_type mean_value(const vec_type& vec)
+{
+	typedef typename vec_type::value_type T;
+
+	T tMean = T(0);
+	for(const T& tval : vec)
+		tMean += tval;
+	tMean /= T(vec.size());
+
+	return tMean;
+}
+
+// standard deviation of mean value
+template<class vec_type>
+typename vec_type::value_type std_dev(const vec_type& vec)
+{
+	typedef typename vec_type::value_type T;
+
+	T tMean = mean_value(vec);
+	T t = T(0);
+	for(const T& tval : vec)
+		t += (tval-tMean) * (tval-tMean);
+
+	T tN = T(vec.size());
+	t /= tN-T(1);
+
+	//std::cout << t << " " << std::sqrt(t) << std::endl;
+	return std::sqrt(t);
+}
+
+
+
 template<typename T=double>
 void diff(unsigned int N, const T* pXIn, const T* pYIn, T* pYOut)
 {
@@ -93,7 +127,7 @@ template<typename T> T t_abs(const T& t)
 }
 
 template<typename T=double>
-bool float_equal(T t1, T t2, T eps = std::numeric_limits<T>::epsilon())
+bool float_equal(T t1, T t2, T eps /*= std::numeric_limits<T>::epsilon()*/)
 {
 	return t_abs<T>(t1-t2) < eps;
 }
