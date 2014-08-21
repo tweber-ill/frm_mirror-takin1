@@ -624,7 +624,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 				{
 					ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
 					double dX = vecCoord[0];
-					double dY = vecCoord[1];
+					double dY = -vecCoord[1];
 
 					/*if(ih==1 && ik==0 && il==0)
 					{
@@ -637,7 +637,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 					if(ih==0 && ik==0 && il==0)
 						pPeak->SetColor(Qt::green);
 					pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-					pPeak->setPos(dX * m_dScaleFactor, -dY * m_dScaleFactor);
+					pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
 					pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
 					std::ostringstream ostrTip;
