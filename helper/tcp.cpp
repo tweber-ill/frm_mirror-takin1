@@ -4,8 +4,6 @@
  * @date aug-2014
  * based on chat client by M. Kohlhoff:
  * 	www.boost.org/doc/libs/1_56_0/doc/html/boost_asio/example/cpp11/chat/chat_client.cpp
- *
- * clang -o tst_client tst_client.cpp -lstdc++ -std=c++11 -lboost_system -lpthread
  */
 
 #include "tcp.h"
@@ -46,33 +44,44 @@ static inline bool get_cmd_tokens(const std::string& str, const std::string& str
 }
 
 
-TcpClient::TcpClient() : m_sock(m_service)
+TcpClient::TcpClient()
 {}
 
 TcpClient::~TcpClient()
 {
 	disconnect();
-}
+	kill_service();
 
-void TcpClient::add_receiver(const t_sigRecv::slot_type& conn)
-{
-	m_sigRecv.connect(conn);
+	m_sigRecv.disconnect_all_slots();
+	m_sigDisconn.disconnect_all_slots();
+	m_sigConn.disconnect_all_slots();
 }
 
 bool TcpClient::connect(const char* pcHost, const char* pcService)
 {
+	m_strHost = pcHost;
+	m_strService = pcService;
+
 	try
 	{
-		ip::tcp::resolver res(m_service);
+		disconnect();
+		kill_service();
+
+		m_pservice = new asio::io_service;
+		m_psock = new ip::tcp::socket(*m_pservice);
+
+		ip::tcp::resolver res(*m_pservice);
 		ip::tcp::resolver::iterator iter = res.resolve({pcHost, pcService});
-		asio::async_connect(m_sock, iter,
+		asio::async_connect(*m_psock, iter,
 		[&](const sys::error_code& err, ip::tcp::resolver::iterator) 
 		{
 			if(!err)
 				read_loop();
+
+			m_sigConn(m_strHost, m_strService);
 		});
 
-		m_pthread = new std::thread([&]() { m_service.run(); });
+		m_pthread = new std::thread([&]() { m_pservice->run(); });
 	}
 	catch(const std::exception& ex)
 	{
@@ -85,21 +94,48 @@ bool TcpClient::connect(const char* pcHost, const char* pcService)
 
 void TcpClient::disconnect()
 {
-	m_sock.close();
+	if(is_connected())
+	{
+		m_psock->close();
+		m_sigDisconn(m_strHost, m_strService);
 
+		m_strHost = "";
+		m_strService = "";
+	}
+}
+
+void TcpClient::kill_service()
+{
 	if(m_pthread)
 	{
 		m_pthread->join();
 		delete m_pthread;
 		m_pthread = 0;
 	}
+
+	if(m_psock)
+	{
+		delete m_psock;
+		m_psock = 0;
+	}
+
+	if(m_pservice)
+	{
+		delete m_pservice;
+		m_pservice = 0;
+	}
 }
 
+bool TcpClient::is_connected()
+{
+	if(!m_psock) return 0;
+	return m_psock->is_open();
+}
 
 void TcpClient::write(const std::string& str)
 {
 	m_listWriteBuffer.push_back(str);
-	m_service.post([&](){ flush_write(); });
+	m_pservice->post([&](){ flush_write(); });
 }
 
 void TcpClient::flush_write()
@@ -109,12 +145,12 @@ void TcpClient::flush_write()
 
 	const std::string& str = m_listWriteBuffer.front();
 	//std::cout << "str = " << str << std::endl;
-	asio::async_write(m_sock, asio::buffer(str.data(), str.length()),
+	asio::async_write(*m_psock, asio::buffer(str.data(), str.length()),
 	[&](const sys::error_code& err, std::size_t len)
 	{
 		if(err)
 		{
-			m_sock.close();
+			disconnect();
 			return;
 		}
 
@@ -128,13 +164,13 @@ void TcpClient::read_loop()
 	static const std::size_t iBufLen = 256;
 	static char pcBuf[iBufLen];
 
-	asio::async_read(m_sock, asio::buffer(pcBuf, iBufLen), asio::transfer_at_least(1),
+	asio::async_read(*m_psock, asio::buffer(pcBuf, iBufLen), asio::transfer_at_least(1),
 	[&](const sys::error_code& err, std::size_t len)
 	{
 		if(err)
 		{
-			std::cerr << "Read error." << std::endl;
-			m_sock.close();
+			//std::cerr << "Read error." << std::endl;
+			disconnect();
 			return;
 		}
 
@@ -157,3 +193,22 @@ void TcpClient::read_loop()
 		read_loop();
 	});
   }
+
+
+// --------------------------------------------------------------------------------
+// Signals
+void TcpClient::add_receiver(const t_sigRecv::slot_type& conn)
+{
+	m_sigRecv.connect(conn);
+}
+
+void TcpClient::add_disconnect(const t_sigDisconn::slot_type& disconn)
+{
+	m_sigDisconn.connect(disconn);
+}
+
+void TcpClient::add_connect(const t_sigConn::slot_type& conn)
+{
+	m_sigConn.connect(conn);
+}
+// --------------------------------------------------------------------------------

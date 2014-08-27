@@ -310,6 +310,24 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuCalc->addAction(pSpuri);
 
 
+
+	// --------------------------------------------------------------------------------
+	// network menu
+	QMenu *pMenuNet = new QMenu(this);
+	pMenuNet->setTitle("Network");
+
+	QAction *pConn = new QAction(this);
+	pConn->setText("Connect to NICOS...");
+	pConn->setIcon(QIcon::fromTheme("network-wireless"));
+	pMenuNet->addAction(pConn);
+
+	QAction *pDisconn = new QAction(this);
+	pDisconn->setText("Disconnect");
+	pDisconn->setIcon(QIcon::fromTheme("network-offline"));
+	pMenuNet->addAction(pDisconn);
+
+
+
 	// --------------------------------------------------------------------------------
 	// help menu
 	QMenu *pMenuHelp = new QMenu(this);
@@ -329,12 +347,14 @@ TazDlg::TazDlg(QWidget* pParent)
 
 
 
+	// --------------------------------------------------------------------------------
 	QMenuBar *pMenuBar = new QMenuBar(this);
 	pMenuBar->addMenu(pMenuFile);
 	pMenuBar->addMenu(pMenuViewRecip);
 	pMenuBar->addMenu(pMenuViewReal);
 	pMenuBar->addMenu(pMenuReso);
 	pMenuBar->addMenu(pMenuCalc);
+	pMenuBar->addMenu(pMenuNet);
 	pMenuBar->addMenu(pMenuHelp);
 
 
@@ -360,6 +380,9 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pNeutronProps, SIGNAL(triggered()), this, SLOT(ShowNeutronDlg()));
 	QObject::connect(pSpuri, SIGNAL(triggered()), this, SLOT(ShowSpurions()));
+
+	QObject::connect(pConn, SIGNAL(triggered()), this, SLOT(ShowConnectDlg()));
+	QObject::connect(pDisconn, SIGNAL(triggered()), this, SLOT(Disconnect()));
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -389,6 +412,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	pResoTools->addAction(pResoParams);
 	pResoTools->addAction(pResoEllipses);
 	addToolBar(pResoTools);
+
+	QToolBar *pNetTools = new QToolBar(this);
+	pNetTools->setWindowTitle("Network");
+	pNetTools->addAction(pConn);
+	pNetTools->addAction(pDisconn);
+	addToolBar(pNetTools);
 	// --------------------------------------------------------------------------------
 
 
@@ -446,6 +475,12 @@ TazDlg::~TazDlg()
 	{
 		delete m_pNeutronDlg;
 		m_pNeutronDlg = 0;
+	}
+
+	if(m_pSrvDlg)
+	{
+		delete m_pSrvDlg;
+		m_pSrvDlg = 0;
 	}
 }
 
@@ -1225,6 +1260,40 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 
 	std::string strDir = get_dir(strFile.toStdString());
 	m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
+}
+
+
+
+//--------------------------------------------------------------------------------
+// server stuff
+
+void TazDlg::ShowConnectDlg()
+{
+	if(!m_pSrvDlg)
+	{
+		m_pSrvDlg = new SrvDlg(this, &m_settings);
+		QObject::connect(m_pSrvDlg, SIGNAL(ConnectTo(const QString&, const QString&)),
+						this, SLOT(ConnectTo(const QString&, const QString&)));
+	}
+
+	m_pSrvDlg->show();
+	m_pSrvDlg->activateWindow();
+}
+
+void TazDlg::ConnectTo(const QString& _strHost, const QString& _strPort)
+{
+	Disconnect();
+
+	std::string strHost =  _strHost.toStdString();
+	std::string strPort =  _strPort.toStdString();
+
+	// TODO
+	//std::cout << "Connect to " << strHost << " on port " << strPort << std::endl;
+}
+
+void TazDlg::Disconnect()
+{
+	// TODO
 }
 
 

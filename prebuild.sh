@@ -37,5 +37,6 @@ ${MOC} dialogs/RecipParamDlg.h -o dialogs/RecipParamDlg.moc
 ${MOC} dialogs/RealParamDlg.h -o dialogs/RealParamDlg.moc
 ${MOC} dialogs/SpurionDlg.h -o dialogs/SpurionDlg.moc
 ${MOC} dialogs/NeutronDlg.h -o dialogs/NeutronDlg.moc
+${MOC} dialogs/SrvDlg.h -o dialogs/SrvDlg.moc
 
 echo -e "\n"

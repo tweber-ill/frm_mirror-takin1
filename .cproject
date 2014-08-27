@@ -63,6 +63,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.libs.812773704" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="QtCore"/>
+									<listOptionValue builtIn="false" value="boost_system"/>
 									<listOptionValue builtIn="false" value="qwt"/>
 									<listOptionValue builtIn="false" value="lapack"/>
 									<listOptionValue builtIn="false" value="lapacke"/>
@@ -152,6 +153,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.libs.207776251" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="QtCore"/>
+									<listOptionValue builtIn="false" value="boost_system"/>
 									<listOptionValue builtIn="false" value="qwt"/>
 									<listOptionValue builtIn="false" value="lapack"/>
 									<listOptionValue builtIn="false" value="lapacke"/>

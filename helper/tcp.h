@@ -27,8 +27,10 @@ namespace sig = boost::signals2;
 class TcpClient
 {
 	protected:
-		asio::io_service m_service;
-		ip::tcp::socket m_sock;
+		std::string m_strHost, m_strService;
+
+		asio::io_service *m_pservice = 0;
+		ip::tcp::socket *m_psock = 0;
 		std::thread* m_pthread = 0;
 
 		std::string m_strCmdDelim = "\n";
@@ -36,7 +38,12 @@ class TcpClient
 		std::string m_strReadBuffer;
 
 		typedef sig::signal<void(const std::string&)> t_sigRecv;
+		typedef sig::signal<void(const std::string&, const std::string&)> t_sigDisconn;
+		typedef sig::signal<void(const std::string&, const std::string&)> t_sigConn;
+
 		t_sigRecv m_sigRecv;
+		t_sigDisconn m_sigDisconn;
+		t_sigConn m_sigConn;
 
 	public:
 		TcpClient();
@@ -44,11 +51,16 @@ class TcpClient
 		void set_delim(const char* pcDelim) { m_strCmdDelim = pcDelim; }
 
 		void add_receiver(const t_sigRecv::slot_type& conn);
+		void add_disconnect(const t_sigDisconn::slot_type& disconn);
+		void add_connect(const t_sigConn::slot_type& conn);
 
 		bool connect(const char* pcHost, const char* pcService);
 		void disconnect();
+		void kill_service();
 
 		void write(const std::string& str);
+
+		bool is_connected();
 
 	protected:
 		void flush_write();

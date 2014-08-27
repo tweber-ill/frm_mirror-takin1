@@ -3,33 +3,48 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include "../helper/tcp.h"
 
 
 struct TstOut
 {
-	void print(const std::string& str) const
+	std::ofstream ofstr;
+
+	TstOut() : ofstr("tst_out.txt")
+	{}
+
+	void print(const std::string& str)
 	{
+		//ofstr << str << std::endl;
 		std::cout << "out: " << str << std::endl;
 	}
 };
 
-/*void tst_out(const std::string& str)
+void disconnected(const std::string& strHost, const std::string& strSrv)
 {
-	std::cout << str << std::endl;
-}*/
+	std::cout << "Disonnected from " << strHost << " on port " << strSrv << "." << std::endl;
+}
+
+void connected(const std::string& strHost, const std::string& strSrv)
+{
+	std::cout << "Connected to " << strHost << " on port " << strSrv << "." << std::endl;
+}
+
 
 int main()
 {
 	TcpClient client;
-	//client.add_receiver(tst_out);
 	TstOut tstout;
 	client.add_receiver(boost::bind(&TstOut::print, &tstout, _1));
+	client.add_disconnect(disconnected);
+	client.add_connect(connected);
 
-	if(!client.connect("localhost", "1701"))
+
+	if(!client.connect("mira1.mira.frm2", "14869"))
 		return -1;
 
-	while(1)
+	while(client.is_connected())
 	{
 		std::string strMsg;
 		std::cout << "in: ";

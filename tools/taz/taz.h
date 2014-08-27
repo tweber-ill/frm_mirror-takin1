@@ -27,6 +27,7 @@
 #include "../res/ResoDlg.h"
 #include "dialogs/SpurionDlg.h"
 #include "dialogs/NeutronDlg.h"
+#include "dialogs/SrvDlg.h"
 
 #include "helper/spacegroup.h"
 
@@ -82,6 +83,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		SpurionDlg *m_pSpuri = 0;
 		NeutronDlg *m_pNeutronDlg = 0;
 
+		SrvDlg *m_pSrvDlg = 0;
+
 	protected:
 		void InitReso();
 
@@ -130,6 +133,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 				const std::vector<InelasticSpurion>& vecInelCKI,
 				const std::vector<InelasticSpurion>& vecInelCKF);
 		//void paramsChanged(const RecipParams& parms);
+
+		void ShowConnectDlg();
+
+		void ConnectTo(const QString& strHost, const QString& strPort);
+		void Disconnect();
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

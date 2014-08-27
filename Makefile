@@ -23,7 +23,7 @@ DEFINES += -DUSE_LAPACK
 FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG ${DEFINES}
 #FLAGS = ${INC} -std=c++11 -ggdb ${DEFINES}
 
-STD_LIBS = -lstdc++ -lm
+STD_LIBS = -lstdc++ -lm -lboost_system
 LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack -lblas -lgfortran
 QT_LIBS = -L/usr/lib64/qt4 -L/usr/lib/x86_64-linux-gnu -L /usr/lib/qt4/lib \
 	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL -lQtSvg \
@@ -36,13 +36,15 @@ taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lat
 	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
 	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
-	obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o
+	obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
+	obj/SrvDlg.o obj/tcp.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
 			obj/RecipParamDlg.o obj/RealParamDlg.o \
 			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
 			obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
+			obj/SrvDlg.o obj/tcp.o \
 			${LIBS_TAZ} ${LIBS_RESO}
 	strip bin/taz
 
@@ -74,6 +76,9 @@ obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
 obj/NeutronDlg.o: dialogs/NeutronDlg.cpp dialogs/NeutronDlg.h
 	${CC} ${FLAGS} -c -o obj/NeutronDlg.o dialogs/NeutronDlg.cpp
 
+obj/SrvDlg.o: dialogs/SrvDlg.cpp dialogs/SrvDlg.h
+	${CC} ${FLAGS} -c -o obj/SrvDlg.o dialogs/SrvDlg.cpp
+
 
 obj/string.o: helper/string.cpp helper/string.h
 	${CC} ${FLAGS} -c -o obj/string.o helper/string.cpp
@@ -83,6 +88,9 @@ obj/spec_char.o: helper/spec_char.cpp helper/spec_char.h
 
 obj/xml.o: helper/xml.cpp helper/xml.h
 	${CC} ${FLAGS} -c -o obj/xml.o helper/xml.cpp
+
+obj/tcp.o: helper/tcp.cpp helper/tcp.h
+	${CC} ${FLAGS} -c -o obj/tcp.o helper/tcp.cpp
 
 obj/linalg.o: helper/linalg.cpp helper/linalg.h helper/geo.h
 	${CC} ${FLAGS} -c -o obj/linalg.o helper/linalg.cpp
