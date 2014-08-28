@@ -326,6 +326,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	pDisconn->setIcon(QIcon::fromTheme("network-offline"));
 	pMenuNet->addAction(pDisconn);
 
+	QAction *pNetRefresh = new QAction(this);
+	pNetRefresh->setText("Refresh");
+	pNetRefresh->setIcon(QIcon::fromTheme("view-refresh"));
+	pMenuNet->addSeparator();
+	pMenuNet->addAction(pNetRefresh);
+
 
 
 	// --------------------------------------------------------------------------------
@@ -383,6 +389,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pConn, SIGNAL(triggered()), this, SLOT(ShowConnectDlg()));
 	QObject::connect(pDisconn, SIGNAL(triggered()), this, SLOT(Disconnect()));
+	QObject::connect(pNetRefresh, SIGNAL(triggered()), this, SLOT(NetRefresh()));
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -417,6 +424,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pNetTools->setWindowTitle("Network");
 	pNetTools->addAction(pConn);
 	pNetTools->addAction(pDisconn);
+	pNetTools->addAction(pNetRefresh);
 	addToolBar(pNetTools);
 	// --------------------------------------------------------------------------------
 
@@ -1296,6 +1304,11 @@ void TazDlg::ConnectTo(const QString& _strHost, const QString& _strPort)
 	m_pNicosCache = new NicosCache();
 	QObject::connect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
+	QObject::connect(m_pNicosCache, SIGNAL(connected(const QString&, const QString&)),
+					this, SLOT(Connected(const QString&, const QString&)));
+	QObject::connect(m_pNicosCache, SIGNAL(disconnected()),
+					this, SLOT(Disconnected()));
+
 	m_pNicosCache->connect(strHost, strPort);
 }
 
@@ -1306,6 +1319,27 @@ void TazDlg::Disconnect()
 		delete m_pNicosCache;
 		m_pNicosCache = 0;
 	}
+}
+
+void TazDlg::NetRefresh()
+{
+	if(!m_pNicosCache)
+	{
+		QMessageBox::warning(this, "Warning", "Not connected to a server.");
+		return;
+	}
+
+	m_pNicosCache->RefreshKeys();
+}
+
+void TazDlg::Connected(const QString& strHost, const QString& strSrv)
+{
+	setWindowTitle((s_strTitle + " - ").c_str() + strHost + ":" + strSrv);
+}
+
+void TazDlg::Disconnected()
+{
+	setWindowTitle((s_strTitle).c_str());
 }
 
 void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag)

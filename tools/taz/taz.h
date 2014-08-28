@@ -142,6 +142,10 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ConnectTo(const QString& strHost, const QString& strPort);
 		void Disconnect();
+		void NetRefresh();
+
+		void Connected(const QString& strHost, const QString& strSrv);
+		void Disconnected();
 		void VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag);
 
 	protected:

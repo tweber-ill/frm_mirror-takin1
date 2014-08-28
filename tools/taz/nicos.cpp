@@ -16,6 +16,7 @@ static const std::string g_strSampleAngles = "nicos/sample/angles";
 static const std::string g_strSampleOrient1 = "nicos/sample/orient1";
 static const std::string g_strSampleOrient2 = "nicos/sample/orient2";
 static const std::string g_strSampleSpacegroup = "nicos/sample/spacegroup";
+//static const std::string g_strSamplePsi0 = "nicos/sample/psi0";
 
 static const std::string g_strMonoTheta = "nicos/m2th/value";
 static const std::string g_strMono2Theta = "nicos/m2tt/value";
@@ -239,6 +240,7 @@ void NicosCache::slot_receive(const std::string& str)
 	else if(strKey == g_strSampleTheta)
 	{
 		triag.dTheta = str_to_var<double>(strVal) /180.*M_PI;
+		//std::cout << triag.dTheta << std::endl;
 		triag.bChangedTheta = 1;
 	}
 	else if(strKey == g_strMonoD)

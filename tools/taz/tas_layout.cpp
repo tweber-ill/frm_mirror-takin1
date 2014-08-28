@@ -419,7 +419,6 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 
 void TasLayout::SetSampleTheta(double dAngle)
 {
-	//std::cout << "theta = " << dAngle << std::endl;
 	m_dTheta = dAngle;
 	this->update();
 }
@@ -496,10 +495,14 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 	m_bDontEmitChange = 1;
 	m_pTas->AllowChanges(0);
 
-	m_pTas->SetMonoTwoTheta(opts.dMonoTwoTheta);
-	m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
-	m_pTas->SetSampleTheta(opts.dTheta);
-	m_pTas->SetAnaTwoTheta(opts.dAnaTwoTheta);
+	if(opts.bChangedMonoTwoTheta)
+		m_pTas->SetMonoTwoTheta(opts.dMonoTwoTheta);
+	if(opts.bChangedTwoTheta)
+		m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
+	if(opts.bChangedAnaTwoTheta)
+		m_pTas->SetAnaTwoTheta(opts.dAnaTwoTheta);
+	if(opts.bChangedTheta)
+		m_pTas->SetSampleTheta(opts.dTheta);
 
 	update();
 
