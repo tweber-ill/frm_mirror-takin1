@@ -49,7 +49,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	}
 
 	const bool bSmallqVisible = 0;
-	const bool bBZVisible = 1;
+	const bool bBZVisible = 0;
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
@@ -481,6 +481,12 @@ TazDlg::~TazDlg()
 	{
 		delete m_pSrvDlg;
 		m_pSrvDlg = 0;
+	}
+
+	if(m_pNicosCache)
+	{
+		delete m_pNicosCache;
+		m_pNicosCache = 0;
 	}
 }
 
@@ -1287,13 +1293,87 @@ void TazDlg::ConnectTo(const QString& _strHost, const QString& _strPort)
 	std::string strHost =  _strHost.toStdString();
 	std::string strPort =  _strPort.toStdString();
 
-	// TODO
-	//std::cout << "Connect to " << strHost << " on port " << strPort << std::endl;
+	m_pNicosCache = new NicosCache();
+	QObject::connect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
+					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
+	m_pNicosCache->connect(strHost, strPort);
 }
 
 void TazDlg::Disconnect()
 {
-	// TODO
+	if(m_pNicosCache)
+	{
+		delete m_pNicosCache;
+		m_pNicosCache = 0;
+	}
+}
+
+void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag)
+{
+	if(crys.bChangedLattice)
+	{
+		this->editA->setText(QString::number(crys.dLattice[0]));
+		this->editB->setText(QString::number(crys.dLattice[1]));
+		this->editC->setText(QString::number(crys.dLattice[2]));
+
+		CalcPeaks();
+	}
+
+	if(crys.bChangedLatticeAngles)
+	{
+		this->editAlpha->setText(QString::number(crys.dLatticeAngles[0]));
+		this->editBeta->setText(QString::number(crys.dLatticeAngles[1]));
+		this->editGamma->setText(QString::number(crys.dLatticeAngles[2]));
+
+		CalcPeaks();
+	}
+
+	if(crys.bChangedSpacegroup)
+	{
+		editSpaceGroupsFilter->clear();
+		int iSGIdx = comboSpaceGroups->findText(crys.strSpacegroup.c_str());
+		if(iSGIdx >= 0)
+			comboSpaceGroups->setCurrentIndex(iSGIdx);
+
+		CalcPeaks();
+	}
+
+	if(crys.bChangedPlane1)
+	{
+		this->editScatX0->setText(QString::number(crys.dPlane1[0]));
+		this->editScatX1->setText(QString::number(crys.dPlane1[1]));
+		this->editScatX2->setText(QString::number(crys.dPlane1[2]));
+
+		CalcPeaks();
+	}
+	if(crys.bChangedPlane2)
+	{
+		this->editScatY0->setText(QString::number(crys.dPlane2[0]));
+		this->editScatY1->setText(QString::number(crys.dPlane2[1]));
+		this->editScatY2->setText(QString::number(crys.dPlane2[2]));
+
+		CalcPeaks();
+	}
+
+	if(triag.bChangedMonoD)
+	{
+		this->editMonoD->setText(QString::number(triag.dMonoD));
+		UpdateDs();
+	}
+	if(triag.bChangedAnaD)
+	{
+		this->editAnaD->setText(QString::number(triag.dAnaD));
+		UpdateDs();
+	}
+
+
+	m_sceneReal.triangleChanged(triag);
+	m_sceneReal.emitUpdate(triag);
+
+	UpdateMonoSense();
+	UpdateAnaSense();
+	UpdateSampleSense();
+	//m_sceneReal.emitAllParams();
 }
 
 

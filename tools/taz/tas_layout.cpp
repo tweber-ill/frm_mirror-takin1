@@ -419,6 +419,7 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 
 void TasLayout::SetSampleTheta(double dAngle)
 {
+	//std::cout << "theta = " << dAngle << std::endl;
 	m_dTheta = dAngle;
 	this->update();
 }

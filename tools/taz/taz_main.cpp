@@ -5,6 +5,7 @@
  */
 #include "taz.h"
 #include "helper/spec_char.h"
+#include <QMetaType>
 
 #ifdef Q_WS_X11
 	extern "C" int XInitThreads();
@@ -17,6 +18,10 @@ int main(int argc, char** argv)
 	#endif
 
 	init_spec_chars();
+
+	// qt needs to be able to copy these structs when emitting signals from a different thread
+	qRegisterMetaType<TriangleOptions>("TriangleOptions");
+	qRegisterMetaType<CrystalOptions>("CrystalOptions");
 
 	QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
 

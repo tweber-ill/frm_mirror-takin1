@@ -37,14 +37,14 @@ taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lat
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
 	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
 	obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
-	obj/SrvDlg.o obj/tcp.o
+	obj/SrvDlg.o obj/tcp.o obj/nicos.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
 			obj/RecipParamDlg.o obj/RealParamDlg.o \
 			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
 			obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
-			obj/SrvDlg.o obj/tcp.o \
+			obj/SrvDlg.o obj/tcp.o obj/nicos.o \
 			${LIBS_TAZ} ${LIBS_RESO}
 	strip bin/taz
 
@@ -78,6 +78,9 @@ obj/NeutronDlg.o: dialogs/NeutronDlg.cpp dialogs/NeutronDlg.h
 
 obj/SrvDlg.o: dialogs/SrvDlg.cpp dialogs/SrvDlg.h
 	${CC} ${FLAGS} -c -o obj/SrvDlg.o dialogs/SrvDlg.cpp
+
+obj/nicos.o: tools/taz/nicos.cpp tools/taz/nicos.h
+	${CC} ${FLAGS} -c -o obj/nicos.o tools/taz/nicos.cpp
 
 
 obj/string.o: helper/string.cpp helper/string.h

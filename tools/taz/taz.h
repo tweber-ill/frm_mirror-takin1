@@ -31,6 +31,9 @@
 
 #include "helper/spacegroup.h"
 
+#include "nicos.h"
+
+
 class TazDlg : public QMainWindow, Ui::TazDlg
 { Q_OBJECT
 	private:
@@ -84,6 +87,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		NeutronDlg *m_pNeutronDlg = 0;
 
 		SrvDlg *m_pSrvDlg = 0;
+		NicosCache *m_pNicosCache = 0;
 
 	protected:
 		void InitReso();
@@ -138,6 +142,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ConnectTo(const QString& strHost, const QString& strPort);
 		void Disconnect();
+		void VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag);
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

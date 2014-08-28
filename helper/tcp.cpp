@@ -50,28 +50,26 @@ TcpClient::TcpClient()
 TcpClient::~TcpClient()
 {
 	disconnect();
-	kill_service();
 
 	m_sigRecv.disconnect_all_slots();
 	m_sigDisconn.disconnect_all_slots();
 	m_sigConn.disconnect_all_slots();
 }
 
-bool TcpClient::connect(const char* pcHost, const char* pcService)
+bool TcpClient::connect(const std::string& strHost, const std::string& strService)
 {
-	m_strHost = pcHost;
-	m_strService = pcService;
+	m_strHost = strHost;
+	m_strService = strService;
 
 	try
 	{
 		disconnect();
-		kill_service();
 
 		m_pservice = new asio::io_service;
 		m_psock = new ip::tcp::socket(*m_pservice);
 
 		ip::tcp::resolver res(*m_pservice);
-		ip::tcp::resolver::iterator iter = res.resolve({pcHost, pcService});
+		ip::tcp::resolver::iterator iter = res.resolve({strHost, strService});
 		asio::async_connect(*m_psock, iter,
 		[&](const sys::error_code& err, ip::tcp::resolver::iterator) 
 		{
@@ -94,23 +92,11 @@ bool TcpClient::connect(const char* pcHost, const char* pcService)
 
 void TcpClient::disconnect()
 {
-	if(is_connected())
+	bool bConnected = is_connected();
+	if(bConnected)
 	{
+		m_pservice->stop();
 		m_psock->close();
-		m_sigDisconn(m_strHost, m_strService);
-
-		m_strHost = "";
-		m_strService = "";
-	}
-}
-
-void TcpClient::kill_service()
-{
-	if(m_pthread)
-	{
-		m_pthread->join();
-		delete m_pthread;
-		m_pthread = 0;
 	}
 
 	if(m_psock)
@@ -119,10 +105,26 @@ void TcpClient::kill_service()
 		m_psock = 0;
 	}
 
+	if(m_pthread)
+	{
+		m_pthread->join();
+		delete m_pthread;
+		m_pthread = 0;
+	}
+
 	if(m_pservice)
 	{
 		delete m_pservice;
 		m_pservice = 0;
+	}
+
+
+	if(bConnected)
+	{
+		m_sigDisconn(m_strHost, m_strService);
+
+		m_strHost = "";
+		m_strService = "";
 	}
 }
 
@@ -134,16 +136,25 @@ bool TcpClient::is_connected()
 
 void TcpClient::write(const std::string& str)
 {
+	//m_mutexWrite.lock();
+	//std::cout << "push_back: " << str << std::endl;
 	m_listWriteBuffer.push_back(str);
+	//m_mutexWrite.unlock();
 	m_pservice->post([&](){ flush_write(); });
 }
 
 void TcpClient::flush_write()
 {
+	//m_mutexWrite.lock();
 	if(m_listWriteBuffer.empty())
+	{
+		//m_mutexWrite.unlock();
 		return;
+	}
 
 	const std::string& str = m_listWriteBuffer.front();
+	//m_mutexWrite.unlock();
+
 	//std::cout << "str = " << str << std::endl;
 	asio::async_write(*m_psock, asio::buffer(str.data(), str.length()),
 	[&](const sys::error_code& err, std::size_t len)
@@ -154,8 +165,16 @@ void TcpClient::flush_write()
 			return;
 		}
 
-		m_listWriteBuffer.pop_front();
-		flush_write();
+		int iBufSize = m_listWriteBuffer.size();
+		if(iBufSize != 0)
+		{
+			//m_mutexWrite.lock();
+			m_listWriteBuffer.pop_front();
+			//m_mutexWrite.unlock();
+
+			if(iBufSize != 0)
+				flush_write();
+		}
 	});
 }
 

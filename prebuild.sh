@@ -28,6 +28,7 @@ ${MOC} tools/taz/taz.h -o tools/taz/taz.moc
 ${MOC} tools/taz/scattering_triangle.h -o tools/taz/scattering_triangle.moc
 ${MOC} tools/taz/tas_layout.h -o tools/taz/tas_layout.moc
 ${MOC} tools/taz/recip3d.h -o tools/taz/recip3d.moc
+${MOC} tools/taz/nicos.h -o tools/taz/nicos.moc
 
 ${MOC} tools/res/ResoDlg.h -o tools/res/ResoDlg.moc
 ${MOC} dialogs/EllipseDlg.h -o dialogs/EllipseDlg.moc
@@ -38,5 +39,6 @@ ${MOC} dialogs/RealParamDlg.h -o dialogs/RealParamDlg.moc
 ${MOC} dialogs/SpurionDlg.h -o dialogs/SpurionDlg.moc
 ${MOC} dialogs/NeutronDlg.h -o dialogs/NeutronDlg.moc
 ${MOC} dialogs/SrvDlg.h -o dialogs/SrvDlg.moc
+
 
 echo -e "\n"

@@ -165,11 +165,15 @@ class Brillouin2D
 				}
 			}
 
+			if(vecPts.size() == 0)
+				return;
 
 			// sort vertices
 			m_vecVertices.clear();
 			m_vecVertices.reserve(vecPts.size());
 			m_vecVertices.push_back(*vecPts.begin());
+
+
 			vecPts.erase(vecPts.begin());
 
 			unsigned int iIdx;

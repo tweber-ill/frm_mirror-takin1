@@ -13,6 +13,7 @@
 #include <string>
 #include <list>
 #include <thread>
+//#include <mutex>
 
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
@@ -32,6 +33,7 @@ class TcpClient
 		asio::io_service *m_pservice = 0;
 		ip::tcp::socket *m_psock = 0;
 		std::thread* m_pthread = 0;
+		//std::mutex m_mutexWrite;
 
 		std::string m_strCmdDelim = "\n";
 		std::list<std::string> m_listWriteBuffer;
@@ -48,15 +50,14 @@ class TcpClient
 	public:
 		TcpClient();
 		virtual ~TcpClient();
-		void set_delim(const char* pcDelim) { m_strCmdDelim = pcDelim; }
+		void set_delim(const std::string& strDelim) { m_strCmdDelim = strDelim; }
 
 		void add_receiver(const t_sigRecv::slot_type& conn);
 		void add_disconnect(const t_sigDisconn::slot_type& disconn);
 		void add_connect(const t_sigConn::slot_type& conn);
 
-		bool connect(const char* pcHost, const char* pcService);
+		bool connect(const std::string& strHost, const std::string& strService);
 		void disconnect();
-		void kill_service();
 
 		void write(const std::string& str);
 
