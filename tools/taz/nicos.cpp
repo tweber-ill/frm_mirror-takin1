@@ -16,7 +16,7 @@ static const std::string g_strSampleAngles = "nicos/sample/angles";
 static const std::string g_strSampleOrient1 = "nicos/sample/orient1";
 static const std::string g_strSampleOrient2 = "nicos/sample/orient2";
 static const std::string g_strSampleSpacegroup = "nicos/sample/spacegroup";
-//static const std::string g_strSamplePsi0 = "nicos/sample/psi0";
+static const std::string g_strSamplePsi0 = "nicos/sample/psi0";
 
 static const std::string g_strMonoTheta = "nicos/m2th/value";
 static const std::string g_strMono2Theta = "nicos/m2tt/value";
@@ -38,6 +38,7 @@ NicosCache::NicosCache()
 					g_strSampleOrient1,
 					g_strSampleOrient2,
 					g_strSampleSpacegroup,
+					g_strSamplePsi0,
 
 					g_strMonoD,
 					//g_strMonoTheta,
@@ -174,6 +175,9 @@ void NicosCache::slot_receive(const std::string& str)
 	if(strVal.length() == 0)
 		return;
 
+	m_mapCache[strKey] = strVal;
+
+
 	CrystalOptions crys;
 	TriangleOptions triag;
 
@@ -215,7 +219,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 		crys.bChangedPlane2 = 1;
 		for(int i=0; i<3; ++i)
-			crys.dPlane2[i] = vecOrient[i];
+			crys.dPlane2[i] = -vecOrient[i];	// hack to convert left-handed nicos to right-handed coordinates
 	}
 	else if(strKey == g_strSampleSpacegroup)
 	{
@@ -237,12 +241,12 @@ void NicosCache::slot_receive(const std::string& str)
 		triag.dTwoTheta = str_to_var<double>(strVal) /180.*M_PI;
 		triag.bChangedTwoTheta = 1;
 	}
-	else if(strKey == g_strSampleTheta)
+	/*else if(strKey == g_strSampleTheta)
 	{
 		triag.dTheta = str_to_var<double>(strVal) /180.*M_PI;
 		//std::cout << triag.dTheta << std::endl;
 		triag.bChangedTheta = 1;
-	}
+	}*/
 	else if(strKey == g_strMonoD)
 	{
 		triag.dMonoD = str_to_var<double>(strVal);
@@ -252,6 +256,26 @@ void NicosCache::slot_receive(const std::string& str)
 	{
 		triag.dAnaD = str_to_var<double>(strVal);
 		triag.bChangedAnaD = 1;
+	}
+	/*else if(strKey == g_strSamplePsi0)
+	{
+		crys.dAngle = str_to_var<double>(strVal);
+		crys.bChangedAngle = 1;
+	}*/
+
+
+	if(m_mapCache.find(g_strSampleTheta) != m_mapCache.end()
+			&& m_mapCache.find(g_strSamplePsi0) != m_mapCache.end())
+	{
+		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
+
+		double dOm = str_to_var<double>(m_mapCache[g_strSampleTheta]) /180.*M_PI;
+		double dPsi = str_to_var<double>(m_mapCache[g_strSamplePsi0]) /180.*M_PI;
+
+		// angle from ki to bragg peak at orient1
+		triag.dAngleKiVec0 = -dOm-dPsi;
+		triag.bChangedAngleKiVec0 = 1;
+		//std::cout << "rotation: " << triag.dAngleKiVec0 << std::endl;
 	}
 
 	emit vars_changed(crys, triag);

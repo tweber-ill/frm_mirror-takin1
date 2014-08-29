@@ -422,6 +422,9 @@ double ScatteringTriangle::GetAngleKiQ() const
 	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
 								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 
+	vecKi /= ublas::norm_2(vecKi);
+	vecQ /= ublas::norm_2(vecQ);
+
 	const double dAngle = vec_angle(vecKi) - vec_angle(vecQ);
 	return dAngle;
 }
@@ -433,6 +436,9 @@ double ScatteringTriangle::GetAngleKfQ() const
 	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
 								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 
+	vecKf /= ublas::norm_2(vecKf);
+	vecQ /= ublas::norm_2(vecQ);
+
 	const double dAngle = vec_angle(vecKf) - vec_angle(vecQ);
 	return dAngle;
 }
@@ -441,7 +447,9 @@ double ScatteringTriangle::GetTheta(bool bPosSense) const
 {
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
 								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	vecKi /= ublas::norm_2(vecKi);
 
+	// direction of 1st Bragg reflex (orient1)
 	ublas::vector<double> vecSampleDirX(2);
 	vecSampleDirX[0] = 1.;
 	vecSampleDirX[1] = 0.;
@@ -542,6 +550,26 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 	nodeMoved(m_pNodeKfQ);
 }
 
+void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
+{
+	double dAngleCorr = bSense ? -M_PI/2. : M_PI/2.;
+	double dCurAngle = GetTheta(bSense) + dAngleCorr;
+	if(bSense) dCurAngle = -dCurAngle;
+	//std::cout << "old: " << dCurAngle/M_PI*180. << "new: " << dAngle/M_PI*180. << std::endl;
+
+	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	ublas::vector<double> vecNodeKfQ = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+
+	ublas::matrix<double> matRot = ::rotation_matrix_2d(dCurAngle - dAngle);
+	vecNodeKiKf = ublas::prod(matRot, vecNodeKiKf);
+	vecNodeKfQ = ublas::prod(matRot, vecNodeKfQ);
+
+	m_pNodeKiKf->setPos(vec_to_qpoint(vecNodeKiKf));
+	m_pNodeKfQ->setPos(vec_to_qpoint(vecNodeKfQ));
+
+	nodeMoved(m_pNodeKiKf);
+	nodeMoved(m_pNodeKfQ);
+}
 
 void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 								const Lattice& recip, const Lattice& recip_unrot,
@@ -887,6 +915,8 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 		m_pTri->SetAnaTwoTheta(opts.dAnaTwoTheta, m_dAnaD);
 	if(opts.bChangedTwoTheta)
 		m_pTri->SetTwoTheta(m_bSamplePosSense?opts.dTwoTheta:-opts.dTwoTheta);
+	if(opts.bChangedAngleKiVec0)
+		m_pTri->RotateKiVec0To(m_bSamplePosSense, opts.dAngleKiVec0);
 
 	m_bDontEmitChange = 0;
 }

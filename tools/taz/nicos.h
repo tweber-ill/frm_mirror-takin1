@@ -13,6 +13,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 
+#include <map>
 #include <vector>
 #include <string>
 
@@ -21,6 +22,7 @@ class NicosCache : public QObject
 	protected:
 		TcpClient m_tcp;
 		std::vector<std::string> m_vecKeys;
+		std::map<std::string, std::string> m_mapCache;
 
 		// endpoints of the TcpClient signals
 		void slot_connected(const std::string& strHost, const std::string& strSrv);

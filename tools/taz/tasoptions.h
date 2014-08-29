@@ -37,6 +37,9 @@ struct TriangleOptions
 	bool bChangedMonoD = 0;
 	bool bChangedAnaD = 0;
 
+	bool bChangedAngleKiVec0 = 0;
+
+
 	double dTheta;
 	double dTwoTheta;
 	double dAnaTwoTheta;
@@ -44,6 +47,8 @@ struct TriangleOptions
 
 	double dMonoD;
 	double dAnaD;
+
+	double dAngleKiVec0;
 };
 
 struct CrystalOptions

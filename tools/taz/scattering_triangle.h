@@ -162,6 +162,8 @@ class ScatteringTriangle : public QGraphicsItem
 		ublas::vector<double> GetQVecPlane(bool bSmallQ=0) const;
 		ublas::vector<double> GetKiVecPlane() const;
 		ublas::vector<double> GetKfVecPlane() const;
+
+		void RotateKiVec0To(bool bSense, double dAngle);
 };
 
 

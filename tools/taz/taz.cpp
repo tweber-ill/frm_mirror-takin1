@@ -1400,6 +1400,9 @@ void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& tria
 		UpdateDs();
 	}
 
+	// hack!
+	if(triag.bChangedTwoTheta && !checkSenseS->isChecked())
+		const_cast<TriangleOptions&>(triag).dTwoTheta = -triag.dTwoTheta;
 
 	m_sceneReal.triangleChanged(triag);
 	m_sceneReal.emitUpdate(triag);
@@ -1408,6 +1411,14 @@ void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& tria
 	UpdateAnaSense();
 	UpdateSampleSense();
 	//m_sceneReal.emitAllParams();
+
+
+	if(triag.bChangedAngleKiVec0)
+	{
+		m_sceneRecip.tasChanged(triag);
+		m_sceneRecip.emitUpdate();
+		//m_sceneRecip.emitAllParams();
+	}
 }
 
 
