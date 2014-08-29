@@ -262,6 +262,10 @@ void NicosCache::slot_receive(const std::string& str)
 		crys.dAngle = str_to_var<double>(strVal);
 		crys.bChangedAngle = 1;
 	}*/
+	else if(strKey == g_strSampleName)
+	{
+		crys.strSampleName = get_py_string(strVal);
+	}
 
 
 	if(m_mapCache.find(g_strSampleTheta) != m_mapCache.end()

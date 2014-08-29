@@ -73,6 +73,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
+		std::string m_strSampleName;
 
 		const t_mapSpaceGroups* m_pmapSpaceGroups;
 

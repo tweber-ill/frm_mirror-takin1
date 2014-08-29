@@ -276,6 +276,9 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 	if(m_bqVisible)
 	{
+		QPen penOrg = painter->pen();
+		painter->setPen(Qt::darkGreen);
+
 		painter->translate(ptKfQ);
 		painter->rotate(-lineq.angle());
 		painter->drawText(QPointF(lineq.length()/5.,-4.), QString::fromWCharArray(ostrq.str().c_str()));
@@ -285,6 +288,8 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		painter->rotate(-lineG.angle());
 		painter->drawText(QPointF(lineG.length()/5.,-4.), QString::fromWCharArray(ostrG.str().c_str()));
 		painter->rotate(lineG.angle());
+
+		painter->setPen(penOrg);
 	}
 
 	painter->restore();

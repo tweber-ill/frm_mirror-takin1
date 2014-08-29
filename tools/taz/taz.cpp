@@ -667,9 +667,15 @@ void TazDlg::CalcPeaks()
 
 		double dVol = lattice.GetVol();
 		double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
+
 		std::wostringstream ostrSample;
 		ostrSample.precision(4);
-		ostrSample << "Sample - ";
+		ostrSample << "Sample";
+
+		if(m_strSampleName!="")
+			ostrSample << " \"" << str_to_wstr(m_strSampleName) << "\"";
+		ostrSample << " - ";
+
 		ostrSample << "Unit Cell Volume: ";
 		ostrSample << "Real: " << dVol << " " << strAA << strThree;
 		ostrSample << ", Reciprocal: " << dVol_recip << " " << strAA << strMinus << strThree;
@@ -933,6 +939,7 @@ bool TazDlg::Load(const char* pcFile)
 
 	m_strCurFile = strFile1;
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
+	m_strSampleName = "";
 
 	CalcPeaks();
 	return true;
@@ -1344,6 +1351,12 @@ void TazDlg::Disconnected()
 
 void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag)
 {
+	if(crys.strSampleName != "")
+	{
+		m_strSampleName = crys.strSampleName;
+		//CalcPeaks();
+	}
+
 	if(crys.bChangedLattice)
 	{
 		this->editA->setText(QString::number(crys.dLattice[0]));
@@ -1399,6 +1412,7 @@ void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& tria
 		this->editAnaD->setText(QString::number(triag.dAnaD));
 		UpdateDs();
 	}
+
 
 	// hack!
 	if(triag.bChangedTwoTheta && !checkSenseS->isChecked())

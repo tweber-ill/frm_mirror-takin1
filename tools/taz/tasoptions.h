@@ -64,6 +64,8 @@ struct CrystalOptions
 	std::string strSpacegroup;
 	double dPlane1[3];
 	double dPlane2[3];
+
+	std::string strSampleName;
 };
 
 
