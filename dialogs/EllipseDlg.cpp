@@ -160,16 +160,17 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 		pCurveSlice->setRawData(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
 #endif
 
-		/*
+
 		std::ostringstream ostrSlope;
 		ostrSlope.precision(4);
-		// We do not know which principal axis corresponds to which axis,
-		// so the angle can be rotated by PI/2
-		// TODO: correct the angle which is printed here
 		ostrSlope << "Slope (proj): " << std::tan(-m_elliProj[iEll].phi)
-				  << ", Angle (proj): " << m_elliProj[iEll].phi;
-		pPlot->setTitle(ostrSlope.str().c_str());
-		*/
+				  << ", Angle (proj): " << m_elliProj[iEll].phi << "; ";
+		ostrSlope << "Slope (slice): " << std::tan(-m_elliSlice[iEll].phi)
+				  << ", Angle (slice): " << m_elliSlice[iEll].phi;
+		//pPlot->setTitle(ostrSlope.str().c_str());
+		std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
+
+
 		pPlot->setAxisTitle(QwtPlot::xBottom, m_elliProj[iEll].x_lab.c_str());
 		pPlot->setAxisTitle(QwtPlot::yLeft, m_elliProj[iEll].y_lab.c_str());
 

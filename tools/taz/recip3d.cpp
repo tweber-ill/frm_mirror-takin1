@@ -5,6 +5,7 @@
  */
 
 #include "recip3d.h"
+#include "helper/geo.h"
 #include <QtGui/QGridLayout>
 
 Recip3DDlg::Recip3DDlg(QWidget* pParent)

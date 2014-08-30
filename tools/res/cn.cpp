@@ -289,7 +289,7 @@ void calc_cn_vol(CNParams& cn, CNResults& res)
 					);
 	res.dR0_vf = fabs(res.dR0_vf);
 
-	const double dResDet = determinant<ublas::matrix<double>, double>(res.reso);
+	const double dResDet = determinant<ublas::matrix<double>>(res.reso);
 	res.dR0 = res.dR0_vi*res.dR0_vf*std::sqrt(dResDet) / (2.*M_PI * 2.*M_PI);
 	res.dR0 /= cn.sample_mosaic/units::si::radians *
 					std::sqrt(

@@ -11,6 +11,7 @@
 #include <list>
 #include <map>
 #include <algorithm>
+#include <tuple>
 #include "math.h"
 //#include "../data/data.h"
 
@@ -214,6 +215,17 @@ void sort_3(Iter begin1, Iter end1, Iter begin2, Iter begin3)
 
 	delete[] pObj;
 }
+
+
+// sort tuple-vector
+template<const int isortidx, class... Ts>
+void sorttuples(std::vector<std::tuple<Ts...> >& vec)
+{
+	std::sort(vec.begin(), vec.end(), 
+		[](const std::tuple<Ts...>& tup1, const std::tuple<Ts...>& tup2) -> bool
+		{ return std::get<isortidx>(tup1) < std::get<isortidx>(tup2);});
+}
+
 
 
 template<typename T>

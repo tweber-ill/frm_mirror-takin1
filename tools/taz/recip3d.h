@@ -10,6 +10,7 @@
 #include <QtGui/QDialog>
 #include "plot/plotgl.h"
 #include "helper/linalg.h"
+#include "helper/geo.h"
 #include "helper/lattice.h"
 #include "helper/spacegroup.h"
 

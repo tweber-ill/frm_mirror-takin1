@@ -35,14 +35,14 @@ LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
 	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
-	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
+	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/linalg2.o \
 	obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/SrvDlg.o obj/tcp.o obj/nicos.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
 			obj/RecipParamDlg.o obj/RealParamDlg.o \
-			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o \
+			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/linalg2.o \
 			obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
 			obj/SrvDlg.o obj/tcp.o obj/nicos.o \
 			${LIBS_TAZ} ${LIBS_RESO}
@@ -97,6 +97,9 @@ obj/tcp.o: helper/tcp.cpp helper/tcp.h
 
 obj/linalg.o: helper/linalg.cpp helper/linalg.h helper/geo.h
 	${CC} ${FLAGS} -c -o obj/linalg.o helper/linalg.cpp
+
+obj/linalg2.o: helper/linalg2.cpp helper/linalg2.h helper/geo.h
+	${CC} ${FLAGS} -c -o obj/linalg2.o helper/linalg2.cpp
 
 obj/lattice.o: helper/lattice.cpp helper/lattice.h
 	${CC} ${FLAGS} -c -o obj/lattice.o helper/lattice.cpp

@@ -4,10 +4,11 @@
  * Date: May 2012, 11-jul-2013
  */
 
-#ifndef __NEUTRON_FORMULAS__
-#define __NEUTRON_FORMULAS__
+#ifndef __NEUTRONS__
+#define __NEUTRONS__
 
 #include "math.h"
+#include "linalg.h"
 #include "exception.h"
 
 #include <boost/units/unit.hpp>

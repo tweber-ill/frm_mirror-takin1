@@ -1,5 +1,5 @@
 /*
- * linalg helpers
+ * basic linalg helpers
  *
  * @author: tweber
  * @date: 30-apr-2013
@@ -10,7 +10,10 @@
 
 #include "flags.h"
 #include "exception.h"
+#include "math.h"
+
 #include <cmath>
+
 #include <boost/algorithm/minmax_element.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -21,15 +24,53 @@
 namespace ublas = boost::numeric::ublas;
 namespace math = boost::math;
 
+#include <initializer_list>
 
-//#include "math.h"
-template<typename T> bool float_equal(T t1, T t2, T eps = std::numeric_limits<T>::epsilon());
-template<typename T> T sign(T t);
-template<typename INT> bool is_even(INT i);
-template<typename INT> bool is_odd(INT i);
 
-template<class matrix_type, typename T>
-T determinant(const matrix_type& mat);
+template<class matrix_type=ublas::matrix<double> >
+typename matrix_type::value_type determinant(const matrix_type& mat);
+
+
+
+// create a vector
+template<class V=ublas::vector<double> >
+V make_vec(const std::initializer_list<typename V::value_type>& lst)
+{
+	typedef typename V::value_type T;
+
+	V vec(lst.size());
+
+	typename std::initializer_list<T>::const_iterator iter = lst.begin();
+	for(std::size_t i=0; i<lst.size(); ++i, ++iter)
+		vec[i] = *iter;
+
+	return vec;
+}
+
+
+// create a matrix
+template<class M=ublas::matrix<double> >
+M make_mat(const std::initializer_list<std::initializer_list<typename M::value_type> >& lst)
+{
+	typedef typename M::value_type T;
+
+	std::size_t I = lst.size();
+	std::size_t J = lst.begin()->size();
+
+	M mat(I, J);
+	typename std::initializer_list<std::initializer_list<T> >::const_iterator iter = lst.begin();
+
+	for(std::size_t i=0; i<I; ++i, ++iter)
+	{
+		typename std::initializer_list<T>::const_iterator iterinner = iter->begin();
+		for(std::size_t j=0; j<J; ++j, ++iterinner)
+		{
+			mat(i,j) = *iterinner;
+		}
+	}
+
+	return mat;
+}
 
 
 template<class vec_type>
@@ -145,9 +186,11 @@ vector_type get_column(const matrix_type& mat, unsigned int iCol)
 }
 
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
-matrix_type rotation_matrix_2d(T angle)
+template<class matrix_type=ublas::matrix<double> >
+matrix_type rotation_matrix_2d(typename matrix_type::value_type angle)
 {
+	typedef typename matrix_type::value_type T;
+
 	T s, c;
 
 	if(angle==0.)
@@ -161,18 +204,14 @@ matrix_type rotation_matrix_2d(T angle)
 		c = std::cos(angle);
 	}
 
-	matrix_type mat(2,2);
-
-	mat(0,0) = c; mat(0,1) = -s;
-	mat(1,0) = s; mat(1,1) = c;
-
-	return mat;
+	return make_mat<matrix_type>({	{c, -s},
+					{s,  c}});
 }
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
-matrix_type rotation_matrix_3d_x(T angle)
+template<class matrix_type=ublas::matrix<double> >
+matrix_type rotation_matrix_3d_x(typename matrix_type::value_type angle)
 {
-	matrix_type mat(3,3);
+	typedef typename matrix_type::value_type T;
 
 	T s, c;
 	if(angle==0.)
@@ -186,17 +225,15 @@ matrix_type rotation_matrix_3d_x(T angle)
 		c = std::cos(angle);
 	}
 
-	mat(0,0)=1; mat(0,1)=0; mat(0,2)=0;
-	mat(1,0)=0; mat(1,1)=c; mat(1,2)=-s;
-	mat(2,0)=0; mat(2,1)=s; mat(2,2)=c;
-
-	return mat;
+	return make_mat<matrix_type>({	{1, 0,  0},
+					{0, c, -s},
+					{0, s,  c}});
 }
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
-matrix_type rotation_matrix_3d_y(T angle)
+template<class matrix_type=ublas::matrix<double> >
+matrix_type rotation_matrix_3d_y(typename matrix_type::value_type angle)
 {
-	matrix_type mat(3,3);
+	typedef typename matrix_type::value_type T;
 
 	T s, c;
 	if(angle==0.)
@@ -210,17 +247,15 @@ matrix_type rotation_matrix_3d_y(T angle)
 		c = std::cos(angle);
 	}
 
-	mat(0,0)=c; mat(0,1)=0; mat(0,2)=s;
-	mat(1,0)=0; mat(1,1)=1; mat(1,2)=0;
-	mat(2,0)=-s; mat(2,1)=0; mat(2,2)=c;
-
-	return mat;
+	return make_mat<matrix_type>({	{c,  0, s},
+					{0,  1, 0},
+					{-s, 0, c}});
 }
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
-matrix_type rotation_matrix_3d_z(T angle)
+template<class matrix_type=ublas::matrix<double> >
+matrix_type rotation_matrix_3d_z(typename matrix_type::value_type angle)
 {
-	matrix_type mat(3,3);
+	typedef typename matrix_type::value_type T;
 
 	T s, c;
 	if(angle==0.)
@@ -234,32 +269,25 @@ matrix_type rotation_matrix_3d_z(T angle)
 		c = std::cos(angle);
 	}
 
-	mat(0,0)=c; mat(0,1)=-s; mat(0,2)=0;
-	mat(1,0)=s; mat(1,1)=c; mat(1,2)=0;
-	mat(2,0)=0; mat(2,1)=0; mat(2,2)=1;
 
-	return mat;
+	return make_mat<matrix_type>({	{c, -s, 0},
+					{s,  c, 0},
+					{0,  0, 1}});
 }
 
-template<typename T=double>
-ublas::matrix<T> skew(const ublas::vector<T>& vec)
+template<class matrix_type = ublas::matrix<double>, 
+	class vector_type = ublas::vector<double>>
+matrix_type skew(const vector_type& vec)
 {
-	ublas::matrix<T> mat = ublas::zero_matrix<T>(vec.size(), vec.size());
-
 	if(vec.size() == 3)
 	{
-		mat(0,1) = -vec[2];
-		mat(0,2) = vec[1];
-		mat(1,2) = -vec[0];
-
-		mat(1,0) = -mat(0,1);
-		mat(2,0) = -mat(0,2);
-		mat(2,1) = -mat(1,2);
+		return make_mat<matrix_type>
+				({	{       0, -vec[2],  vec[1]},
+					{  vec[2],       0, -vec[0]},
+					{ -vec[1],  vec[0],       0}});
 	}
 	else
 		throw Err("Skew only defined for three dimensions.");
-
-	return mat;
 }
 
 template<typename T=double>
@@ -294,9 +322,11 @@ ublas::matrix<T> rotation_matrix(const ublas::vector<T>& vec, T angle)
 }
 
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
-T trace(const matrix_type& mat)
+template<class matrix_type=ublas::matrix<double> >
+typename matrix_type::value_type trace(const matrix_type& mat)
 {
+	typedef typename matrix_type::value_type T;
+
 	if(mat.size1() != mat.size2())
 		return T(0);
 
@@ -309,7 +339,7 @@ T trace(const matrix_type& mat)
 
 
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
+template<class matrix_type=ublas::matrix<double> >
 bool isnan(const matrix_type& mat)
 {
 	for(unsigned int i=0; i<mat.size1(); ++i)
@@ -319,7 +349,7 @@ bool isnan(const matrix_type& mat)
 	return false;
 }
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
+template<class matrix_type=ublas::matrix<double> >
 bool isinf(const matrix_type& mat)
 {
 	for(unsigned int i=0; i<mat.size1(); ++i)
@@ -328,22 +358,6 @@ bool isinf(const matrix_type& mat)
 				return true;
 	return false;
 }
-
-
-template<typename T=double>
-bool qr(const ublas::matrix<T>& M, ublas::matrix<T>& Q, ublas::matrix<T>& R)
-{
-	std::cerr << "Error: No specialisation of \"eigenvec\" available for this type." << std::endl;
-	return false;
-}
-
-#ifdef USE_LAPACK
-	template<>
-	bool qr<double>(const ublas::matrix<double>& M,
-					ublas::matrix<double>& Q,
-					ublas::matrix<double>& R);
-#endif
-
 
 // code for inverse based on boost/libs/numeric/ublas/test/test_lu.cpp
 template<typename T=double>
@@ -380,7 +394,7 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 
 template<typename T>
 bool solve_linear_approx(const ublas::matrix<T>& M, const ublas::vector<T>& v,
-						ublas::vector<T>& x);
+				ublas::vector<T>& x);
 
 // solve Mx = v for x
 template<typename T=double>
@@ -462,7 +476,7 @@ bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v,
 			//std::cout << "Rsub" << Rsub << std::endl;
 			//std::cout << "det: " << determinant(Rsub) << std::endl;
 
-			T det = determinant<ublas::matrix<T>, T>(Rsub);
+			T det = determinant<ublas::matrix<T>>(Rsub);
 			if(!float_equal(det, 0.))
 			{
 				bFoundNonSingular = 1;
@@ -529,9 +543,11 @@ bool solve_linear_approx(const ublas::matrix<T>& M, const ublas::vector<T>& v,
 }
 
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
+template<class matrix_type=ublas::matrix<double> >
 bool is_diag_matrix(const matrix_type& mat)
 {
+	typedef typename matrix_type::value_type T;
+
 	for(unsigned int i=0; i<mat.size1(); ++i)
 		for(unsigned int j=0; j<mat.size2(); ++j)
 		{
@@ -546,8 +562,8 @@ bool is_diag_matrix(const matrix_type& mat)
 
 
 // vectors form rows of matrix
-template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, typename T=double>
-ublas::matrix<T> row_matrix(const std::vector<vec_type>& vecs)
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double> >
+matrix_type row_matrix(const std::vector<vec_type>& vecs)
 {
 	if(vecs.size() == 0)
 		return matrix_type(0,0);
@@ -561,8 +577,8 @@ ublas::matrix<T> row_matrix(const std::vector<vec_type>& vecs)
 }
 
 // vectors form columns of matrix
-template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, typename T=double>
-ublas::matrix<T> column_matrix(const std::vector<vec_type>& vecs)
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double> >
+matrix_type column_matrix(const std::vector<vec_type>& vecs)
 {
 	if(vecs.size() == 0)
 		return matrix_type(0,0);
@@ -574,35 +590,6 @@ ublas::matrix<T> column_matrix(const std::vector<vec_type>& vecs)
 
 	return mat;
 }
-
-template<typename T=double>
-bool eigenvec(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs, std::vector<T>& evals)
-{
-	std::cerr << "Error: No specialisation of \"eigenvec\" available for this type." << std::endl;
-	return false;
-}
-
-template<typename T=double>
-bool eigenvec_sym(const ublas::matrix<T>& mat, std::vector<ublas::vector<T> >& evecs, std::vector<T>& evals)
-{
-	std::cerr << "Error: No specialisation of \"eigenvec_sym\" available for this type." << std::endl;
-    return false;
-}
-
-
-#ifdef USE_LAPACK
-
-	template<>
-	bool eigenvec<double>(const ublas::matrix<double>& mat,
-							std::vector<ublas::vector<double> >& evecs,
-							std::vector<double>& evals);
-	template<>
-	bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
-							std::vector<ublas::vector<double> >& evecs,
-							std::vector<double>& evals);
-
-#endif
-
 
 
 // algo from:
@@ -708,7 +695,10 @@ std::vector<T> rotation_angle(const ublas::matrix<T>& rot)
 
 	if(rot.size2()==2)
 	{
-		T angle = atan2(rot(1,0), rot(0,0));
+		// rot = ( c -s )
+		//       ( s  c )
+
+		T angle = std::atan2(rot(1,0), rot(0,0));
 		vecResult.push_back(angle);
 	}
 	else if(rot.size2()==3)
@@ -724,20 +714,20 @@ std::vector<T> rotation_angle(const ublas::matrix<T>& rot)
 template<typename vector_type = ublas::vector<double> >
 vector_type cross_3(const vector_type& vec0, const vector_type& vec1)
 {
-	vector_type vec;
-	vec.resize(3);
-
-	vec[0] = vec0[1]*vec1[2] - vec1[1]*vec0[2];
-	vec[1] = vec0[2]*vec1[0] - vec1[2]*vec0[0];
-	vec[2] = vec0[0]*vec1[1] - vec1[0]*vec0[1];
-
-	return vec;
+	return make_vec<vector_type>
+		({
+			vec0[1]*vec1[2] - vec1[1]*vec0[2],
+			vec0[2]*vec1[0] - vec1[2]*vec0[0],
+			vec0[0]*vec1[1] - vec1[0]*vec0[1]
+		});
 }
 
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
-T determinant(const matrix_type& mat)
+template<class matrix_type/*=ublas::matrix<double>*/>
+typename matrix_type::value_type determinant(const matrix_type& mat)
 {
+	typedef typename matrix_type::value_type T;
+
 	if(mat.size1() != mat.size2())
 		return T(0);
 
@@ -768,16 +758,17 @@ T determinant(const matrix_type& mat)
 		T dSign = 1.;
 		if(is_odd<unsigned int>(i+j))
 			dSign = -1.;
-		val += dSign * mat(i,j) * determinant<matrix_type,T>(submatrix(mat, i, j));
+		val += dSign * mat(i,j) * determinant<matrix_type>(submatrix(mat, i, j));
 	}
 
 	return val;
 }
 
-template<class matrix_type=ublas::matrix<double>, typename T=double>
-T get_volume(const matrix_type& mat)
+template<class matrix_type=ublas::matrix<double> >
+typename matrix_type::value_type get_volume(const matrix_type& mat)
 {
-	return determinant<matrix_type, T>(mat);
+	typedef typename matrix_type::value_type T;
+	return determinant<matrix_type>(mat);
 }
 
 
@@ -785,11 +776,17 @@ T get_volume(const matrix_type& mat)
 // calculate fractional coordinate basis vectors from angles
 // see: http://www.bmsc.washington.edu/CrystaLinks/man/pdb/part_75.html
 // for the reciprocal lattice this is equal to the B matrix from Acta Cryst. (1967), 22, 457
-template<class t_vec, class T>
-bool fractional_basis_from_angles(T a, T b, T c,
-			T alpha, T beta, T gamma,
-			t_vec& veca, t_vec& vecb, t_vec& vecc)
+template<class t_vec>
+bool fractional_basis_from_angles(typename t_vec::value_type a, 
+					typename t_vec::value_type b, 
+					typename t_vec::value_type c,
+					typename t_vec::value_type alpha, 
+					typename t_vec::value_type beta, 
+					typename t_vec::value_type gamma,
+				t_vec& veca, t_vec& vecb, t_vec& vecc)
 {
+	typedef typename t_vec::value_type T;
+
 	const T dSG = std::sin(gamma);
 	const T dCG = std::cos(gamma);
 	const T dCA = std::cos(alpha);
@@ -831,20 +828,24 @@ typename vec_type::value_type vec_angle(const vec_type& vec)
 	throw Err("vec_angle not yet implemented for size != 2.");
 }
 
-template<typename vec_type, typename real_type=double>
+template<typename vec_type>
 void set_eps_0(vec_type& vec)
 {
+	typedef typename vec_type::value_type real_type;
+
 	for(real_type& d : vec)
 		if(std::fabs(d) < std::numeric_limits<real_type>::epsilon())
 			d = real_type(0);
 }
 
 // signed angle between two vectors
-template<typename vec_type, typename real_type=double>
+template<typename vec_type>
 typename vec_type::value_type vec_angle(const vec_type& vec0,
-										const vec_type& vec1,
-										const vec_type* pvec_norm=0)
+					const vec_type& vec1,
+					const vec_type* pvec_norm=0)
 {
+	typedef typename vec_type::value_type real_type;
+
 	if(vec0.size() != vec1.size())
 		throw Err("In vec_angle: Vector sizes do not match.");
 
@@ -877,9 +878,11 @@ typename vec_type::value_type vec_angle(const vec_type& vec0,
 }
 
 // unsigned angle between two vectors
-template<class T, typename REAL>
-REAL vec_angle_unsigned(const T& q1, const T& q2)
+template<class T>
+typename T::value_type vec_angle_unsigned(const T& q1, const T& q2)
 {
+	typedef typename T::value_type REAL;
+
 	if(q1.size() != q2.size())
 		return REAL();
 
@@ -908,9 +911,11 @@ double vec_angle_unsigned(const math::quaternion<double>& q1,
 				const math::quaternion<double>& q2);
 
 // see: http://run.usc.edu/cs520-s12/assign2/p245-shoemake.pdf
-template<class T, typename REAL=double>
-T slerp(const T& q1, const T& q2, REAL t)
+template<class T>
+T slerp(const T& q1, const T& q2, typename T::value_type t)
 {
+	typedef typename T::value_type REAL;
+
 	REAL angle = vec_angle_unsigned<T, REAL>(q1, q2);
 
 	T q = std::sin((1.-t)*angle)/std::sin(angle) * q1 +

@@ -219,7 +219,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 		crys.bChangedPlane2 = 1;
 		for(int i=0; i<3; ++i)
-			crys.dPlane2[i] = -vecOrient[i];	// hack to convert left-handed nicos to right-handed coordinates
+			crys.dPlane2[i] = -vecOrient[i];	// hack to convert left-handed (nicos) to right-handed coordinates
 	}
 	else if(strKey == g_strSampleSpacegroup)
 	{
@@ -241,12 +241,6 @@ void NicosCache::slot_receive(const std::string& str)
 		triag.dTwoTheta = str_to_var<double>(strVal) /180.*M_PI;
 		triag.bChangedTwoTheta = 1;
 	}
-	/*else if(strKey == g_strSampleTheta)
-	{
-		triag.dTheta = str_to_var<double>(strVal) /180.*M_PI;
-		//std::cout << triag.dTheta << std::endl;
-		triag.bChangedTheta = 1;
-	}*/
 	else if(strKey == g_strMonoD)
 	{
 		triag.dMonoD = str_to_var<double>(strVal);
@@ -257,11 +251,6 @@ void NicosCache::slot_receive(const std::string& str)
 		triag.dAnaD = str_to_var<double>(strVal);
 		triag.bChangedAnaD = 1;
 	}
-	/*else if(strKey == g_strSamplePsi0)
-	{
-		crys.dAngle = str_to_var<double>(strVal);
-		crys.bChangedAngle = 1;
-	}*/
 	else if(strKey == g_strSampleName)
 	{
 		crys.strSampleName = get_py_string(strVal);

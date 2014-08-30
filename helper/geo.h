@@ -311,4 +311,50 @@ std::ostream& operator<<(std::ostream& ostr, const Line<T>& line)
 	return ostr;
 }
 
+
+template<typename T=double>
+std::vector<unsigned int> find_zeroes(unsigned int N, const T* pIn)
+{
+	/*
+	double dMin = 0.;
+	double dMax = 0.;
+	std::pair<const double*, const double*> minmax = boost::minmax_element(pIn, pIn+N);
+	if(minmax.first != pIn+N) dMin = *minmax.first;
+	if(minmax.second != pIn+N) dMax = *minmax.second;
+	*/
+
+	//const double dThres = std::numeric_limits<double>::epsilon();
+
+	std::vector<unsigned int> vecIndices;
+
+	for(unsigned int i=0; i<N-1; ++i)
+	{
+		ublas::vector<T> zero(2);
+		zero[0] = zero[1] = 0.;
+		ublas::vector<T> xdir(2);
+		xdir[0] = 1.; xdir[1] = 0.;
+		Line<T> xaxis(zero, xdir);
+
+		ublas::vector<T> pos0(2);
+		pos0[0] = 0.; pos0[1] = pIn[i];
+		ublas::vector<T> pos1(2);
+		pos1[0] = 1.; pos1[1] = pIn[i+1];
+		Line<T> line(pos0, pos1-pos0);
+
+		T param;
+		if(!line.intersect(xaxis, param))
+        {
+            //std::cerr << "No intersection." << std::endl;
+			continue;
+        }
+        //std::cout << "Intersection param: " << param << std::endl;
+
+		ublas::vector<T> posInters = line(param);
+		if(posInters[0]>=0. && posInters[0]<=1.)
+			vecIndices.push_back(i);
+	}
+
+	return vecIndices;
+}
+
 #endif

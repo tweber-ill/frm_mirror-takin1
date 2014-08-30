@@ -10,6 +10,7 @@
 
 #include "ellipse.h"
 #include "helper/linalg.h"
+#include "helper/linalg2.h"
 #include "helper/math.h"
 #include "cn.h"
 
@@ -100,11 +101,17 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	std::vector<ublas::vector<double> > evecs;
 	std::vector<double> evals;
 	::eigenvec_sym(m, evecs, evals);
+	::sort_eigenvecs(evecs, evals, 1);	// sort evals from larger to smaller
+
+	/*std::cout << "Eigenvalues: ";
+	for(double dEv : evals)
+		std::cout << dEv << " ";
+	std::cout << std::endl;*/
 
 	ublas::matrix<double> evecs_rot = column_matrix(evecs);
 	ell.phi = rotation_angle(evecs_rot)[0];
 
-	if(::fabs(ell.phi) > M_PI/4.)
+	/*if(::fabs(ell.phi) > M_PI/4.)
 	{
 		ublas::matrix<double> rot_m90 = rotation_matrix_2d(-M_PI/2.);
 		evecs_rot = ublas::prod(evecs_rot, rot_m90);
@@ -121,7 +128,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 		std::cerr << "Error: Calculated ellipse phi = " << dMyPhi << " deg"
 					<< " deviates from theoretical phi = " << dPhiShirane
 					<< " deg." << std::endl;
-	}
+	}*/
 
 	// formula A4.61 from Shirane
 	//ell.phi = 0.5*atan(2.*m(0,1) / (m(0,0)-m(1,1)));
