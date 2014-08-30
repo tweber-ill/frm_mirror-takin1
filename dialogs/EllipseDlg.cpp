@@ -163,9 +163,9 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 
 		std::ostringstream ostrSlope;
 		ostrSlope.precision(4);
-		ostrSlope << "Slope (proj): " << std::tan(-m_elliProj[iEll].phi)
+		ostrSlope << "Slope (proj): " << std::tan(m_elliProj[iEll].phi)
 				  << ", Angle (proj): " << m_elliProj[iEll].phi << "; ";
-		ostrSlope << "Slope (slice): " << std::tan(-m_elliSlice[iEll].phi)
+		ostrSlope << "Slope (slice): " << std::tan(m_elliSlice[iEll].phi)
 				  << ", Angle (slice): " << m_elliSlice[iEll].phi;
 		//pPlot->setTitle(ostrSlope.str().c_str());
 		std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;

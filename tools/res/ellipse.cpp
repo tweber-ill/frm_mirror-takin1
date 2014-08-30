@@ -101,7 +101,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	std::vector<ublas::vector<double> > evecs;
 	std::vector<double> evals;
 	::eigenvec_sym(m, evecs, evals);
-	::sort_eigenvecs(evecs, evals, 1);	// sort evals from larger to smaller
+	::sort_eigenvecs<double>(evecs, evals, 1, [](double d) -> double { return 1./d; });
 
 	/*std::cout << "Eigenvalues: ";
 	for(double dEv : evals)
