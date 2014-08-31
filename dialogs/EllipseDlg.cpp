@@ -5,6 +5,7 @@
  */
 
 #include "EllipseDlg.h"
+#include <qwt_picker_machine.h>
 
 
 EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
@@ -16,6 +17,7 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 	m_elliProj.resize(4);
 	m_elliSlice.resize(4);
 	m_vecGrid.resize(4);
+	m_vecPickers.resize(4);
 
 	m_vecPlotCurves.resize(8);
 
@@ -54,11 +56,35 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 
 		m_vecPlotCurves[i*2+0] = pCurveProj;
 		m_vecPlotCurves[i*2+1] = pCurveSlice;
+
+
+		m_vecPlots[i]->canvas()->setMouseTracking(1);
+		m_vecPickers[i] = new QwtPlotPicker(m_vecPlots[i]->xBottom,
+											m_vecPlots[i]->yLeft,
+											//QwtPlotPicker::CrossRubberBand,
+											QwtPlotPicker::NoRubberBand,
+											QwtPlotPicker::AlwaysOff,
+											m_vecPlots[i]->canvas());
+		m_vecPickers[i]->setStateMachine(new QwtPickerTrackerMachine());
+		connect(m_vecPickers[i], SIGNAL(moved(const QPointF&)),
+				this, SLOT(cursorMoved(const QPointF&)));
+		m_vecPickers[i]->setEnabled(1);
 	}
 }
 
 EllipseDlg::~EllipseDlg()
 {
+	for(QwtPlotPicker* pPicker : m_vecPickers)
+	{
+		pPicker->setEnabled(0);
+		//QwtPickerMachine *pMachine = pPicker->stateMachine();
+		//pPicker->setStateMachine(0);
+		//if(pMachine)
+		//	delete pMachine;
+		delete pPicker;
+	}
+	m_vecPickers.clear();
+
 #ifndef USE_QWT6
 	for(QwtPlot* pPlot : m_vecPlots)
 		pPlot->clear();
@@ -71,6 +97,17 @@ EllipseDlg::~EllipseDlg()
 	//for(QwtPlotCurve *pCurve : m_vecPlotCurves)
 	//	delete pCurve;
 	m_vecPlotCurves.clear();
+}
+
+void EllipseDlg::cursorMoved(const QPointF& pt)
+{
+	std::string strX = std::to_string(pt.x());
+	std::string strY = std::to_string(pt.y());
+
+	std::ostringstream ostr;
+	ostr << "(" << strX << ", " << strY << ")";
+
+	this->labelStatus->setText(ostr.str().c_str());
 }
 
 void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
@@ -163,13 +200,17 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 
 		std::ostringstream ostrSlope;
 		ostrSlope.precision(4);
-		ostrSlope << "Slope (proj): " << std::tan(m_elliProj[iEll].phi)
-				  << ", Angle (proj): " << m_elliProj[iEll].phi << "; ";
-		ostrSlope << "Slope (slice): " << std::tan(m_elliSlice[iEll].phi)
-				  << ", Angle (slice): " << m_elliSlice[iEll].phi;
+		ostrSlope << "Projected ellipse (green):\n";
+		ostrSlope << "\tSlope: " << std::tan(m_elliProj[iEll].phi) << "\n";
+		ostrSlope << "\tAngle: " << m_elliProj[iEll].phi << "\n";
+		ostrSlope << "\tArea " << m_elliProj[iEll].x_hwhm*m_elliProj[iEll].y_hwhm*M_PI << "\n";
+		ostrSlope << "Sliced ellipse (blue):\n";
+		ostrSlope << "\tSlope: " << std::tan(m_elliSlice[iEll].phi) << "\n";
+		ostrSlope << "\tAngle: " << m_elliSlice[iEll].phi << "\n";
+		ostrSlope << "\tArea " << m_elliSlice[iEll].x_hwhm*m_elliSlice[iEll].y_hwhm*M_PI;
 		//pPlot->setTitle(ostrSlope.str().c_str());
-		std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
-
+		//std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
+		m_vecPlots[iEll]->setToolTip(ostrSlope.str().c_str());
 
 		pPlot->setAxisTitle(QwtPlot::xBottom, m_elliProj[iEll].x_lab.c_str());
 		pPlot->setAxisTitle(QwtPlot::yLeft, m_elliProj[iEll].y_lab.c_str());

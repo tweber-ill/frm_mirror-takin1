@@ -22,6 +22,7 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
+#include <qwt_plot_picker.h>
 
 class EllipseDlg : public QDialog, Ui::EllipseDlg
 { Q_OBJECT
@@ -29,6 +30,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		std::vector<QwtPlot*> m_vecPlots;
 		std::vector<QwtPlotCurve*> m_vecPlotCurves;
 		std::vector<QwtPlotGrid*> m_vecGrid;
+		std::vector<QwtPlotPicker*> m_vecPickers;
 
 		std::vector<Ellipse> m_elliProj;
 		std::vector<Ellipse> m_elliSlice;
@@ -45,6 +47,9 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);
 		virtual void accept();
+
+	protected slots:
+		void cursorMoved(const QPointF& pt);
 
 	public slots:
 		void SetParams(const PopParams& pop, const CNResults& res);
