@@ -62,6 +62,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 	protected:
 		QSettings m_settings;
 		QLabel* m_pStatusMsg = 0;
+		QLabel* m_pCoordStatusMsg = 0;
 
 		ScatteringTriangleView *m_pviewRecip = 0;
 		ScatteringTriangleScene m_sceneRecip;
@@ -148,6 +149,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void Connected(const QString& strHost, const QString& strSrv);
 		void Disconnected();
 		void VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag);
+
+		void RecipCoordsChanged(double dh, double dk, double dl);
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

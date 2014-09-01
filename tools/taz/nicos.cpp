@@ -102,8 +102,7 @@ void NicosCache::RegisterKeys()
 
 void NicosCache::slot_connected(const std::string& strHost, const std::string& strSrv)
 {
-	std::cout << "Connected to " << strHost << " on port " << strSrv << "." << std::endl;
-
+	//std::cout << "Connected to " << strHost << " on port " << strSrv << "." << std::endl;
 	QString qstrHost = strHost.c_str();
 	QString qstrSrv = strSrv.c_str();
 	emit connected(qstrHost, qstrSrv);
@@ -114,7 +113,7 @@ void NicosCache::slot_connected(const std::string& strHost, const std::string& s
 
 void NicosCache::slot_disconnected(const std::string& strHost, const std::string& strSrv)
 {
-	std::cout << "Disconnected from " << strHost << " on port " << strSrv << "." << std::endl;
+	//std::cout << "Disconnected from " << strHost << " on port " << strSrv << "." << std::endl;
 	emit disconnected();
 }
 

@@ -24,6 +24,7 @@
 #include "helper/string.h"
 #include "helper/xml.h"
 
+#define DEFAULT_MSG_TIMEOUT 4000
 const std::string TazDlg::s_strTitle = "TAZ - Triple-Axis Tool";
 
 static QString dtoqstr(double dVal, unsigned int iPrec=3)
@@ -40,7 +41,8 @@ TazDlg::TazDlg(QWidget* pParent)
 		  m_pmapSpaceGroups(get_space_groups()),
 		  m_dlgRecipParam(this, &m_settings),
 		  m_dlgRealParam(this, &m_settings),
-		  m_pStatusMsg(new QLabel(this))
+		  m_pStatusMsg(new QLabel(this)),
+		  m_pCoordStatusMsg(new QLabel(this))
 {
 	if(m_settings.contains("main/geo"))
 	{
@@ -54,13 +56,14 @@ TazDlg::TazDlg(QWidget* pParent)
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
 
-	//QLabel* m_pStatusCoords = new QLabel(this);
 	m_pStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-	//m_pStatusCoords->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	m_pCoordStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 
 	QStatusBar *pStatusBar = new QStatusBar(this);
 	pStatusBar->addWidget(m_pStatusMsg, 1);
-	//pStatusBar->addWidget(m_pStatusCoords, 0);
+	pStatusBar->addPermanentWidget(m_pCoordStatusMsg, 0);
+	m_pCoordStatusMsg->setMinimumWidth(200);
+	m_pCoordStatusMsg->setAlignment(Qt::AlignCenter);
 	this->setStatusBar(pStatusBar);
 
 	// --------------------------------------------------------------------------------
@@ -143,6 +146,9 @@ TazDlg::TazDlg(QWidget* pParent)
 					&m_dlgRecipParam, SLOT(paramsChanged(const RecipParams&)));
 	QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
 					&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
+
+	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(double, double, double)),
+					this, SLOT(RecipCoordsChanged(double, double, double)));
 
 	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const ElasticSpurion&, const std::vector<InelasticSpurion>&, const std::vector<InelasticSpurion>&)),
 					this, SLOT(spurionInfo(const ElasticSpurion&, const std::vector<InelasticSpurion>&, const std::vector<InelasticSpurion>&)));
@@ -791,6 +797,14 @@ void TazDlg::RepopulateSpaceGroups()
 }
 
 
+void TazDlg::RecipCoordsChanged(double dh, double dk, double dl)
+{
+	std::ostringstream ostrPos;
+	ostrPos << "(" << dh << ", " << dk << ", " << dl  << ") rlu";
+
+	m_pCoordStatusMsg->setText(ostrPos.str().c_str());
+}
+
 //--------------------------------------------------------------------------------
 // loading/saving
 
@@ -1326,6 +1340,8 @@ void TazDlg::Disconnect()
 		delete m_pNicosCache;
 		m_pNicosCache = 0;
 	}
+
+	statusBar()->showMessage("Disconnected.", DEFAULT_MSG_TIMEOUT);
 }
 
 void TazDlg::NetRefresh()
@@ -1342,6 +1358,7 @@ void TazDlg::NetRefresh()
 void TazDlg::Connected(const QString& strHost, const QString& strSrv)
 {
 	setWindowTitle((s_strTitle + " - ").c_str() + strHost + ":" + strSrv);
+	statusBar()->showMessage("Connected to " + strHost + " on port " + strSrv + ".", DEFAULT_MSG_TIMEOUT);
 }
 
 void TazDlg::Disconnected()

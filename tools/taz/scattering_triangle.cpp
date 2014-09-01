@@ -1027,9 +1027,11 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 
 		if(vecHKL.size()==3)
 		{
-			std::ostringstream ostrPos;
-			ostrPos << "(" << vecHKL[0] << ", " << vecHKL[1] << ", " << vecHKL[2]  << ")";
-			QToolTip::showText(pEvt->screenPos(), ostrPos.str().c_str());
+			//std::ostringstream ostrPos;
+			//ostrPos << "(" << vecHKL[0] << ", " << vecHKL[1] << ", " << vecHKL[2]  << ")";
+			//QToolTip::showText(pEvt->screenPos(), ostrPos.str().c_str());
+
+			emit coordsChanged(vecHKL[0], vecHKL[1], vecHKL[2]);
 		}
 	}
 

@@ -218,6 +218,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 					const std::vector<InelasticSpurion>& vecInelCKI,
 					const std::vector<InelasticSpurion>& vecInelCKF);
 
+		void coordsChanged(double dh, double dk, double dl);
+
 	protected:
 		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
 		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);
