@@ -4,12 +4,13 @@ DEFINES =
 QWT_VER = 6
 
 ifeq ($(QWT_VER), 6)
-	QWT_INC = -I/usr/include/qwt6 -I/usr/include/qwt
+	QWT_INC = -I/usr/include/qwt6 -I/usr/include/qwt -I/usr/include/qwt-qt4
 	QWT_LIB = -lqwt
 	DEFINES += -DUSE_QWT6
 else
-	QWT_INC = -I/usr/include/qwt5
+	QWT_INC = -I/usr/include/qwt5 -I/usr/include/qwt-qt4
 	QWT_LIB = -lqwt
+#	QWT_LIB = -lqwt-qt4
 endif
 
 INC = -I/usr/include/qt4 -I/usr/local/include -I/usr/include/qt4/QtCore \
@@ -24,6 +25,7 @@ FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG ${DEFINES}
 #FLAGS = ${INC} -std=c++11 -ggdb ${DEFINES}
 
 STD_LIBS = -lstdc++ -lm -lboost_system
+STD_LIBS += -lpthread
 LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack -lblas -lgfortran
 QT_LIBS = -L/usr/lib64/qt4 -L/usr/lib/x86_64-linux-gnu -L /usr/lib/qt4/lib \
 	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL -lQtSvg \

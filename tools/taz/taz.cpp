@@ -44,17 +44,24 @@ TazDlg::TazDlg(QWidget* pParent)
 		  m_pStatusMsg(new QLabel(this)),
 		  m_pCoordStatusMsg(new QLabel(this))
 {
-	if(m_settings.contains("main/geo"))
-	{
-		QByteArray geo = m_settings.value("main/geo").toByteArray();
-		restoreGeometry(geo);
-	}
-
 	const bool bSmallqVisible = 0;
 	const bool bBZVisible = 0;
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
+
+	if(m_settings.contains("main/geo"))
+	{
+		QByteArray geo = m_settings.value("main/geo").toByteArray();
+		restoreGeometry(geo);
+	}
+/*
+	if(m_settings.contains("main/width") && m_settings.contains("main/height"))
+	{
+		int iW = m_settings.value("main/width").toInt();
+		int iH = m_settings.value("main/height").toInt();
+		resize(iW, iH);
+	}*/
 
 	m_pStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	m_pCoordStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
@@ -447,6 +454,8 @@ TazDlg::TazDlg(QWidget* pParent)
 
 TazDlg::~TazDlg()
 {
+	//m_settings.setValue("main/width", this->width());
+	//m_settings.setValue("main/height", this->height());
 	m_settings.setValue("main/geo", saveGeometry());
 
 	if(m_pRecip3d)

@@ -6,6 +6,7 @@
 
 #include "EllipseDlg.h"
 #include <qwt_picker_machine.h>
+#include <future>
 
 
 EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
@@ -61,13 +62,23 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 		m_vecPlots[i]->canvas()->setMouseTracking(1);
 		m_vecPickers[i] = new QwtPlotPicker(m_vecPlots[i]->xBottom,
 											m_vecPlots[i]->yLeft,
+#ifndef USE_QWT6
+											QwtPlotPicker::PointSelection,
+#endif
 											//QwtPlotPicker::CrossRubberBand,
 											QwtPlotPicker::NoRubberBand,
+#ifdef USE_QWT6
 											QwtPlotPicker::AlwaysOff,
+#else
+											QwtPlotPicker::AlwaysOn,
+#endif
 											m_vecPlots[i]->canvas());
+
+#ifdef USE_QWT6
 		m_vecPickers[i]->setStateMachine(new QwtPickerTrackerMachine());
 		connect(m_vecPickers[i], SIGNAL(moved(const QPointF&)),
 				this, SLOT(cursorMoved(const QPointF&)));
+#endif
 		m_vecPickers[i]->setEnabled(1);
 	}
 }
@@ -133,6 +144,13 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 	bool bXMLLoaded = 0; //xmlparams.Load("res/res.conf");
 	bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
 
+	ublas::vector<double> Q_avg = res.Q_avg;
+	if(bCenterOn0)
+		Q_avg = ublas::zero_vector<double>(Q_avg.size());
+
+
+	std::vector<std::future<Ellipse>> tasks_ell_proj, tasks_ell_slice;
+
 	for(unsigned int iEll=0; iEll<4; ++iEll)
 	{/*
 		if(bXMLLoaded)
@@ -169,14 +187,29 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 			}
 		}*/
 
-		ublas::vector<double> Q_avg = res.Q_avg;
-		if(bCenterOn0)
-			Q_avg = ublas::zero_vector<double>(Q_avg.size());
+		const int *iP = iParams[0][iEll];
+		const int *iS = iParams[1][iEll];
 
-		m_elliProj[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[0][iEll][0], iParams[0][iEll][1],
+		std::future<Ellipse> ell_proj = std::async(std::launch::deferred|std::launch::async,
+					[=, &res, &Q_avg]()
+					{ return ::calc_res_ellipse(res.reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+		std::future<Ellipse> ell_slice = std::async(std::launch::deferred|std::launch::async,
+					[=, &res, &Q_avg]()
+					{ return ::calc_res_ellipse(res.reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+
+		tasks_ell_proj.push_back(std::move(ell_proj));
+		tasks_ell_slice.push_back(std::move(ell_slice));
+	}
+
+	for(unsigned int iEll=0; iEll<4; ++iEll)
+	{
+		m_elliProj[iEll] = tasks_ell_proj[iEll].get();
+		m_elliSlice[iEll] = tasks_ell_slice[iEll].get();
+
+		/*m_elliProj[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[0][iEll][0], iParams[0][iEll][1],
 										iParams[0][iEll][2], iParams[0][iEll][3], iParams[0][iEll][4]);
 		m_elliSlice[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[1][iEll][0], iParams[1][iEll][1],
-										iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);
+										iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);*/
 
 		QwtPlot* pPlot = m_vecPlots[iEll];
 		QwtPlotCurve* pCurveProj = m_vecPlotCurves[iEll*2+0];
