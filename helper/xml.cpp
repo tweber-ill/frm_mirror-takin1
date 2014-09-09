@@ -64,15 +64,17 @@ std::string Xml::QueryString(const char* pcAdr, const char* pcDef, bool *pbOk)
 	std::ostringstream ostrQuery;
 	ostrQuery << "doc($xml)" << strAdr << "/string()";
 
-	m_mutex.lock();
+	QStringList strlstOut;
+	bool bOk = 0;
+	{
+		std::lock_guard<std::mutex> _lck(m_mutex);
 		m_bufXml.seek(0);
 		QXmlQuery query;
 		query.bindVariable("xml", &m_bufXml);
 		query.setQuery(QString(ostrQuery.str().c_str()));
 
-		QStringList strlstOut;
-		bool bOk = query.evaluateTo(&strlstOut);
-	m_mutex.unlock();
+		bOk = query.evaluateTo(&strlstOut);
+	}
 
 	if(!bOk || strlstOut.size()==0)
 	{

@@ -123,7 +123,7 @@ void EllipseDlg::cursorMoved(const QPointF& pt)
 
 void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 {
-	int iParams[2][4][5] =
+	static const int iParams[2][4][5] =
 	{
 		{
 			{0, 3, 1, 2, -1},
