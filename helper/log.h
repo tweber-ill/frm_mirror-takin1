@@ -61,7 +61,7 @@ public:
 	void AddOstr(std::ostream* pOstr);
 
 	template<typename Arg>
-	void operator()(Arg arg)
+	void operator()(const Arg& arg)
 	{
 		if(!m_bEnabled) return;
 
@@ -74,7 +74,7 @@ public:
 	}
 
 	template<typename Arg, typename... Args>
-	void operator()(Arg arg, Args... args)
+	void operator()(const Arg& arg, Args... args)
 	{
 		if(!m_bEnabled) return;
 

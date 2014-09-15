@@ -126,6 +126,9 @@ Log log_info("INFO", LogColor::WHITE),
 
 int main()
 {
+	log_info.template operator()<std::string>("Start");
+	log_info("Test");
+
 	std::thread th1([&]{ for(int i=0; i<10; ++i) {log_err("In thread 1."); std::this_thread::sleep_for(std::chrono::milliseconds(10));} });
 	std::thread th2([&]{ for(int i=0; i<10; ++i) {log_warn("In thread 2."); std::this_thread::sleep_for(std::chrono::milliseconds(100));} });
 	std::thread th3([&]{ for(int i=0; i<10; ++i) {log_crit("In thread 3."); std::this_thread::sleep_for(std::chrono::milliseconds(250));} });
@@ -140,4 +143,5 @@ int main()
 	th2.join();
 	th3.join();
 	return 0;
-}*/
+}
+*/
