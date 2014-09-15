@@ -155,6 +155,7 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetScaleFactor(double dScale) { m_dScaleFactor = dScale; }
 
 		ScatteringTriangleNode* GetNodeGq() { return m_pNodeGq; }
+		ScatteringTriangleNode* GetNodeKfQ() { return m_pNodeKfQ; }
 
 		ublas::vector<double> GetHKLFromPlanePos(double x, double y) const;
 		ublas::vector<double> GetQVec(bool bSmallQ=0, bool bRLU=1) const;
@@ -198,9 +199,13 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void SetAnaSense(bool bPos);
 
 		ScatteringTriangle* GetTriangle() { return m_pTri; }
-		void SnapToNearestPeak(ScatteringTriangleNode* pNode);
+		void SnapToNearestPeak(ScatteringTriangleNode* pNode,
+							const ScatteringTriangleNode* pNodeOrg=0);
 
 		void CheckForSpurions();
+
+	protected:
+		void Snapq();
 
 	public slots:
 		void tasChanged(const TriangleOptions& opts);

@@ -141,6 +141,9 @@ void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 {
 	if(!m_bReady) return;
 
+	if(m_scene.getSnapq() && pNode==GetNodeKfQ())
+		m_scene.SnapToNearestPeak(GetNodeGq(), GetNodeKfQ());
+
 	m_scene.emitUpdate();
 	m_scene.emitAllParams();
 	this->update();
@@ -1011,24 +1014,32 @@ static inline const QGraphicsItem* get_nearest_node(const QPointF& pt,
 	return nodes[iMinIdx];
 }
 
-void ScatteringTriangleScene::SnapToNearestPeak(ScatteringTriangleNode* pNode)
+// snap pNode to a peak near pNodeOrg
+void ScatteringTriangleScene::SnapToNearestPeak(ScatteringTriangleNode* pNode,
+									const ScatteringTriangleNode* pNodeOrg)
 {
 	if(!pNode)
 		return;
+	if(!pNodeOrg)
+		pNodeOrg = pNode;
 
 	const QGraphicsItem *pNearestNode =
-					get_nearest_node(pNode->pos(), pNode, items());
+					get_nearest_node(pNodeOrg->pos(), pNode, items());
 
 	if(pNearestNode)
 		pNode->setPos(pNearestNode->pos());
 }
 
+void ScatteringTriangleScene::Snapq()
+{
+	if(m_bSnapq && m_pTri)
+		SnapToNearestPeak(m_pTri->GetNodeGq(), m_pTri->GetNodeKfQ());
+}
+
 void ScatteringTriangleScene::setSnapq(bool bSnap)
 {
 	m_bSnapq = bSnap;
-
-	if(m_bSnapq && m_pTri)
-		SnapToNearestPeak(m_pTri->GetNodeGq());
+	Snapq();
 }
 
 void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
