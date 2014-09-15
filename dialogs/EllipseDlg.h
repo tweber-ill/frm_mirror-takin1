@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#include "../plot/plotgl.h"
+#include "../helper/plotgl.h"
 #include "../helper/linalg.h"
 #include "../tools/res/ellipse.h"
 #include "../tools/res/pop.h"

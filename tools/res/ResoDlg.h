@@ -20,7 +20,7 @@
 #include "pop.h"
 #include "helper/linalg.h"
 #include "helper/xml.h"
-#include "plot/plotgl.h"
+#include "helper/plotgl.h"
 #include "ellipse.h"
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"

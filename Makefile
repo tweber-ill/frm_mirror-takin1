@@ -113,8 +113,8 @@ obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
 	${CC} ${FLAGS} -c -o obj/spacegroup.o helper/spacegroup.cpp
 
 
-obj/plotgl.o: plot/plotgl.cpp plot/plotgl.h
-	${CC} ${FLAGS} -c -o obj/plotgl.o plot/plotgl.cpp
+obj/plotgl.o: helper/plotgl.cpp helper/plotgl.h
+	${CC} ${FLAGS} -c -o obj/plotgl.o helper/plotgl.cpp
 
 
 
@@ -145,5 +145,5 @@ clean:
 	rm -f *.moc
 	rm -f tools/taz/*.moc
 	rm -f tools/res/*.moc
-	rm -f plot/*.moc
+	rm -f helper/*.moc
 	rm -f dialogs/*.moc
