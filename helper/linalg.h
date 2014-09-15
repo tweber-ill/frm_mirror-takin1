@@ -11,6 +11,7 @@
 #include "flags.h"
 #include "exception.h"
 #include "math.h"
+#include "log.h"
 
 #include <cmath>
 
@@ -382,9 +383,8 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << "Error: Matrix inversion failed with exception: " << ex.what() << "." << "\n";
-		std::cerr << "Matrix to be inverted was: " << mat << "." << std::endl;
-		//std::cerr << "with determinant " << determinant(mat) << "." << std::endl;
+		log_err("Matrix inversion failed with exception: ", ex.what(), ".", "\n",
+				"Matrix to be inverted was: ", mat, ".");
 		return false;
 	}
 
@@ -419,8 +419,7 @@ bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v,
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Error: Linear equation solver failed with exception: "
-						<< ex.what() << "." << "\n";
+			log_err("Linear equation solver failed with exception: ", ex.what(), ".");
 			return false;
 		}
 	}
@@ -464,7 +463,7 @@ bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v,
 		unsigned int iNumToDel = R.size2()-R.size1();
 		if(iNumToDel != 1)
 		{
-			std::cerr << "Error: Still unimplemented." << std::endl;
+			log_err(__func__, " not yet implemented.");
 			return false;
 		}
 
@@ -487,8 +486,7 @@ bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v,
 
 		if(!bFoundNonSingular)
 		{
-			std::cerr << "Error: No non-singluar submatrix found in linear equation solver." 
-				<< std::endl;
+			log_err("No non-singluar submatrix found in linear equation solver.");
 			return false;
 		}
 

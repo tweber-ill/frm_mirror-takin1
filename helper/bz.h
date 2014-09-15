@@ -10,6 +10,7 @@
 #include "exception.h"
 #include "math.h"
 #include "geo.h"
+#include "log.h"
 #include <vector>
 
 
@@ -45,7 +46,7 @@ class Brillouin2D
 
 			if(vecPts.size())
 			{
-				std::cerr << "Error: Invalid vertices in Brillouin zone." << std::endl;
+				log_err("Invalid vertices in Brillouin zone.");
 				m_bValid = 0;
 			}
 			return 0;

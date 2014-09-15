@@ -302,8 +302,8 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	vecSampleRotDir /= ublas::norm_2(vecSampleRotDir);
 	vecSampleRotDir *= m_dLenSample*m_dScaleFactor;
 
-	QPointF ptSampleThM =  vec_to_qpoint(vecSample-vecSampleRotDir);
-	QPointF ptSampleThP =  vec_to_qpoint(vecSample+vecSampleRotDir);
+	QPointF ptSampleThM = vec_to_qpoint(vecSample-vecSampleRotDir);
+	QPointF ptSampleThP = vec_to_qpoint(vecSample+vecSampleRotDir);
 	QLineF lineSampleRot(ptSampleThM, ptSampleThP);
 
 	QPen penSample(Qt::red);
@@ -326,6 +326,32 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 	painter->setPen(penOrig);
 
+
+	QLineF *plineQ = nullptr;
+	QPointF *pptQ = nullptr;
+	// Q vector direction visible?
+	if(this->m_bRealQVisible)
+	{
+		const double &dAngleKiQ = m_dAngleKiQ;
+		ublas::matrix<double> matRotQ = rotation_matrix_2d(dAngleKiQ);
+		ublas::vector<double> vecKi = vecSample-vecMono;
+		ublas::vector<double> vecQ = ublas::prod(matRotQ, vecKi);
+		vecQ /= ublas::norm_2(vecQ);
+		vecQ *= (m_dLenMonoSample + m_dLenSampleAna)/2.;	// some arbitrary length
+		vecQ *= m_dScaleFactor * m_dZoom;
+
+		pptQ = new QPointF(vec_to_qpoint(vecSample + vecQ));
+		plineQ = new QLineF(ptSample, *pptQ);
+
+		painter->setPen(Qt::red);
+		painter->drawLine(*plineQ);
+		painter->save();
+			painter->translate(ptSample);
+			painter->rotate(-plineQ->angle());
+			painter->drawText(QPointF(plineQ->length()/2.,12.), "Q");
+		painter->restore();
+		painter->setPen(penOrig);
+	}
 
 
 	// angle arcs
@@ -372,10 +398,14 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 
 	// arrow heads
-	const QLineF* pLines_arrow[] = {&lineKi, &lineKf};
-	const QPointF* pPoints_arrow[] = {&ptSample, &ptAna};
-	for(unsigned int i=0; i<2; ++i)
+	const QLineF* pLines_arrow[] = {&lineKi, &lineKf, plineQ};
+	const QPointF* pPoints_arrow[] = {&ptSample, &ptAna, pptQ};
+	QColor colArrowHead[] = {Qt::black, Qt::black, Qt::red};
+	for(unsigned int i=0; i<3; ++i)
 	{
+		if(!pLines_arrow[i] || !pPoints_arrow[i])
+			continue;
+
 		double dAng = (pLines_arrow[i]->angle() - 90.) / 180. * M_PI;
 		double dC = std::cos(dAng);
 		double dS = std::sin(dAng);
@@ -389,9 +419,14 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 		triag.lineTo(ptTriag1);
 		triag.lineTo(ptTriag2);
 
-		painter->setPen(Qt::black);
-		painter->fillPath(triag, Qt::black);
+		painter->setPen(colArrowHead[i]);
+		painter->fillPath(triag, colArrowHead[i]);
 	}
+
+	painter->setPen(penOrig);
+
+	if(plineQ) delete plineQ;
+	if(pptQ) delete pptQ;
 }
 
 void TasLayout::SetSampleTwoTheta(double dAngle)
@@ -433,6 +468,18 @@ void TasLayout::SetAnaTwoTheta(double dAngle)
 {
 	m_dAnaTwoTheta = dAngle;
 	nodeMoved(m_pAna);
+}
+
+void TasLayout::SetAngleKiQ(double dAngle)
+{
+	m_dAngleKiQ = dAngle;
+	this->update();
+}
+
+void TasLayout::SetRealQVisible(bool bVisible)
+{
+	m_bRealQVisible = bVisible;
+	this->update();
 }
 
 void TasLayout::SetZoom(double dZoom)
@@ -503,11 +550,18 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 		m_pTas->SetAnaTwoTheta(opts.dAnaTwoTheta);
 	if(opts.bChangedTheta)
 		m_pTas->SetSampleTheta(opts.dTheta);
+	//if(opts.bChangedAngleKiQ)
+	//	m_pTas->SetAngleKiQ(opts.dAngleKiQ);
 
 	update();
 
 	m_pTas->AllowChanges(1);
 	m_bDontEmitChange = 0;
+}
+
+void TasLayoutScene::recipParamsChanged(const RecipParams& params)
+{
+	m_pTas->SetAngleKiQ(params.dKiQ);
 }
 
 void TasLayoutScene::emitUpdate(const TriangleOptions& opts)
@@ -525,7 +579,6 @@ void TasLayoutScene::scaleChanged(double dTotalScale)
 
 	m_pTas->SetZoom(dTotalScale);
 }
-
 
 
 // --------------------------------------------------------------------------------

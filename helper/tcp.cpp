@@ -7,6 +7,7 @@
  */
 
 #include "tcp.h"
+#include "log.h"
 #include <boost/tokenizer.hpp>
 #include <iostream>
 
@@ -14,10 +15,10 @@
 static inline bool get_cmd_tokens(const std::string& str, const std::string& strDelim, 
 				std::vector<std::string>& vecStr, std::string& strRemainder)
 {
-        boost::char_separator<char> delim(strDelim.c_str(), "", boost::keep_empty_tokens);
-        boost::tokenizer<boost::char_separator<char> > tok(str, delim);
+	boost::char_separator<char> delim(strDelim.c_str(), "", boost::keep_empty_tokens);
+	boost::tokenizer<boost::char_separator<char> > tok(str, delim);
 
-        for(const std::string& strTok : tok)
+	for(const std::string& strTok : tok)
 	{
 		//std::cout << "tok: " << strTok << std::endl;
 		vecStr.push_back(strTok);
@@ -83,7 +84,7 @@ bool TcpClient::connect(const std::string& strHost, const std::string& strServic
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << "Error: " << ex.what() << std::endl;
+		log_err(ex.what());
 		return 0;
 	}
 
@@ -188,7 +189,7 @@ void TcpClient::read_loop()
 	{
 		if(err)
 		{
-			//std::cerr << "Read error." << std::endl;
+			log_err("TCP read error.");
 			disconnect();
 			return;
 		}

@@ -16,8 +16,8 @@ class Err : public std::exception
 		std::string m_strErr;
 
 	public:
-		Err(const std::string& strErr) noexcept
-				: m_strErr("Error: " + strErr)
+		Err(const std::string& strErr, bool bErrStr=0) noexcept
+				: m_strErr((bErrStr? "Exception: " : "") + strErr)
 		{}
 
 		Err(const char* pcErr) noexcept : Err(std::string(pcErr))

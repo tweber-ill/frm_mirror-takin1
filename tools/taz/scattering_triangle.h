@@ -125,8 +125,8 @@ class ScatteringTriangle : public QGraphicsItem
 		double GetQ() const;
 		double Getq() const;
 
-		double GetAngleKiQ() const;
-		double GetAngleKfQ() const;
+		double GetAngleKiQ(bool bSense) const;
+		double GetAngleKfQ(bool bSense) const;
 
 		void SetTwoTheta(double dTT);
 		void SetAnaTwoTheta(double dTT, double dAnaD);

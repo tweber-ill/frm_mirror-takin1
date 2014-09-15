@@ -29,13 +29,8 @@ namespace co = boost::units::si::constants::codata;
 #include <boost/units/base_units/metric/angstrom.hpp>
 #include <boost/units/cmath.hpp>
 
-#ifndef one_meV
-	#define one_meV (1e-3 * co::e * units::si::volts)
-#endif
-
-#ifndef one_eV
-	#define one_eV (co::e * units::si::volts)
-#endif
+static const auto one_meV = 1e-3 * co::e * units::si::volts;
+static const auto one_eV = co::e * units::si::volts;
 
 static const double SIGMA2FWHM = 2.*sqrt(2.*log(2.));
 static const double SIGMA2HWHM = SIGMA2FWHM/2.;

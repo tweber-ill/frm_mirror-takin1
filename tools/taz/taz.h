@@ -42,6 +42,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		QAction *m_pSmallq = 0;
 		QAction *m_pSnapSmallq = 0;
 		QAction *m_pBZ = 0;
+		QAction *m_pShowRealQDir = 0;
 
 		std::vector<QLineEdit*> m_vecEdits_real;
 		std::vector<QLineEdit*> m_vecEdits_recip;
@@ -112,6 +113,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void UpdateAnaSense();
 		void EnableSmallq(bool bEnable);
 		void EnableBZ(bool bEnable);
+		void EnableRealQDir(bool bEnable);
 
 		void Show3D();
 		void ShowAbout();

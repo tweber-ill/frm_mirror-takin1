@@ -11,6 +11,7 @@
 #include "flags.h"
 #include "exception.h"
 #include "linalg.h"
+#include "log.h"
 
 #include <iostream>
 #include <cmath>
@@ -180,8 +181,7 @@ public:
 		const unsigned int N = m_vecDir.size();
 		if(N != 2)
 		{
-			std::cerr << "Error: \"Side of line\" only defined for 2d vectors."
-					<< std::endl;
+			log_err("\"Side of line\" only defined for 2d vectors.");
 			return false;
 		}
 
@@ -205,8 +205,7 @@ public:
 		const unsigned int N = m_vecDir.size();
 		if(N != 3)
 		{
-			std::cerr << "Error: Line-plane intersection only implemented for 3d vectors."
-					<< std::endl;
+			log_err("Line-plane intersection only implemented for 3d vectors.");
 			return false;
 		}
 
@@ -264,7 +263,7 @@ public:
 		ublas::matrix<T> inv;
 		if(!::inverse(mat, inv))
 		{
-			//std::cerr << "Could not invert matrix " << mat << std::endl;
+			//log_warn("Could not invert matrix ", mat, ".");
 			return false;
 		}
 
@@ -280,8 +279,7 @@ public:
 		const unsigned int N = m_vecDir.size();
 		if(N != 2)
 		{
-			std::cerr << "Error: Perpendicular line only implemented for 2d vectors."
-					<< std::endl;
+			log_err("Perpendicular line only implemented for 2d vectors.");
 			return false;
 		}
 

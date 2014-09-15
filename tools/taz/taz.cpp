@@ -23,6 +23,7 @@
 #include "helper/spec_char.h"
 #include "helper/string.h"
 #include "helper/xml.h"
+#include "helper/log.h"
 
 #define DEFAULT_MSG_TIMEOUT 4000
 const std::string TazDlg::s_strTitle = "TAZ - Triple-Axis Tool";
@@ -44,6 +45,8 @@ TazDlg::TazDlg(QWidget* pParent)
 		  m_pStatusMsg(new QLabel(this)),
 		  m_pCoordStatusMsg(new QLabel(this))
 {
+	//log_debug("In ", __func__, ".");
+
 	const bool bSmallqVisible = 0;
 	const bool bBZVisible = 0;
 
@@ -143,6 +146,8 @@ TazDlg::TazDlg(QWidget* pParent)
 					&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));
 	QObject::connect(&m_sceneReal, SIGNAL(tasChanged(const TriangleOptions&)),
 					&m_sceneRecip, SLOT(tasChanged(const TriangleOptions&)));
+	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+					&m_sceneReal, SLOT(recipParamsChanged(const RecipParams&)));
 
 	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(double)),
 					&m_sceneRecip, SLOT(scaleChanged(double)));
@@ -235,7 +240,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuViewRecip->addSeparator();
 
 	m_pSmallq = new QAction(this);
-	m_pSmallq->setText("Enable Reduced Scattering Vector q");
+	m_pSmallq->setText("Show Reduced Scattering Vector q");
 	m_pSmallq->setIcon(QIcon("res/q.svg"));
 	m_pSmallq->setCheckable(1);
 	m_pSmallq->setChecked(bSmallqVisible);
@@ -248,7 +253,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuViewRecip->addAction(m_pSnapSmallq);
 
 	m_pBZ = new QAction(this);
-	m_pBZ->setText("Enable First Brillouin Zone");
+	m_pBZ->setText("Show First Brillouin Zone");
 	m_pBZ->setCheckable(1);
 	m_pBZ->setChecked(bBZVisible);
 	pMenuViewRecip->addAction(m_pBZ);
@@ -277,6 +282,14 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pRealParams = new QAction(this);
 	pRealParams->setText("Parameters...");
 	pMenuViewReal->addAction(pRealParams);
+
+	pMenuViewReal->addSeparator();
+
+	m_pShowRealQDir = new QAction(this);
+	m_pShowRealQDir->setText("Show Q Direction");
+	m_pShowRealQDir->setCheckable(1);
+	m_pShowRealQDir->setChecked(m_sceneReal.GetTasLayout()->GetRealQVisible());
+	pMenuViewReal->addAction(m_pShowRealQDir);
 
 	pMenuViewReal->addSeparator();
 
@@ -381,10 +394,13 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
+	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
+
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
 	QObject::connect(m_pBZ, SIGNAL(toggled(bool)), this, SLOT(EnableBZ(bool)));
+	QObject::connect(m_pShowRealQDir, SIGNAL(toggled(bool)), this, SLOT(EnableRealQDir(bool)));
+
 	QObject::connect(m_pSnapSmallq, SIGNAL(toggled(bool)), &m_sceneRecip, SLOT(setSnapq(bool)));
-	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
 	QObject::connect(pRecipParams, SIGNAL(triggered()), this, SLOT(ShowRecipParams()));
 	QObject::connect(pRealParams, SIGNAL(triggered()), this, SLOT(ShowRealParams()));
@@ -454,6 +470,8 @@ TazDlg::TazDlg(QWidget* pParent)
 
 TazDlg::~TazDlg()
 {
+	//log_debug("In ", __func__, ".");
+
 	//m_settings.setValue("main/width", this->width());
 	//m_settings.setValue("main/height", this->height());
 	m_settings.setValue("main/geo", saveGeometry());
@@ -631,7 +649,7 @@ void TazDlg::CalcPeaks()
 		Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
 		if(!plane.IsValid())
 		{
-			std::cerr << "Error: Invalid scattering plane." << std::endl;
+			log_err("Invalid scattering plane.");
 			return;
 		}
 
@@ -653,7 +671,7 @@ void TazDlg::CalcPeaks()
 		if(float_equal(dDir0Len, 0.) || float_equal(dDir1Len, 0.) || float_equal(dDirUpLen, 0.)
 			|| ::isnan(dDir0Len) || ::isnan(dDir1Len) || ::isnan(dDirUpLen))
 		{
-			std::cerr << "Error: Invalid scattering plane." << std::endl;
+			log_err("Invalid scattering plane.");
 			return;
 		}
 
@@ -691,9 +709,9 @@ void TazDlg::CalcPeaks()
 			ostrSample << " \"" << str_to_wstr(m_strSampleName) << "\"";
 		ostrSample << " - ";
 
-		ostrSample << "Unit Cell Volume: ";
+		ostrSample << "UC Vol.: ";
 		ostrSample << "Real: " << dVol << " " << strAA << strThree;
-		ostrSample << ", Reciprocal: " << dVol_recip << " " << strAA << strMinus << strThree;
+		ostrSample << ", Recip.: " << dVol_recip << " " << strAA << strMinus << strThree;
 		groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
 		SpaceGroup *pSpaceGroup = 0;
@@ -714,7 +732,7 @@ void TazDlg::CalcPeaks()
 	catch(const std::exception& ex)
 	{
 		m_sceneRecip.GetTriangle()->ClearPeaks();
-		std::cerr << ex.what() << std::endl;
+		log_err(ex.what());
 	}
 }
 
@@ -776,6 +794,11 @@ void TazDlg::EnableSmallq(bool bEnable)
 void TazDlg::EnableBZ(bool bEnable)
 {
 	m_sceneRecip.GetTriangle()->SetBZVisible(bEnable);
+}
+
+void TazDlg::EnableRealQDir(bool bEnable)
+{
+	m_sceneReal.GetTasLayout()->SetRealQVisible(bEnable);
 }
 
 
@@ -944,6 +967,10 @@ bool TazDlg::Load(const char* pcFile)
 	if(bOk)
 		m_pBZ->setChecked(bBZEnabled!=0);
 
+	int bRealQEnabled = xml.Query<int>((strXmlRoot + "real/enable_realQDir").c_str(), 0, &bOk);
+	if(bOk)
+		m_pShowRealQDir->setChecked(bRealQEnabled!=0);
+
 	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
 	trim(strSpaceGroup);
 	if(bOk)
@@ -1057,6 +1084,9 @@ bool TazDlg::Save()
 
 	bool bBZEnabled = m_pBZ->isChecked();
 	mapConf[strXmlRoot + "recip/enable_bz"] = (bBZEnabled ? "1" : "0");
+
+	bool bRealQDir = m_pShowRealQDir->isChecked();
+	mapConf[strXmlRoot + "real/enable_realQDir"] = (bRealQDir ? "1" : "0");
 
 
 	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
@@ -1479,7 +1509,7 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "TAZ version 0.7\n";
+	strAbout += "TAZ version 0.7.5\n";
 	strAbout += "Written by Tobias Weber, 2014";
 	strAbout += "\n\n";
 

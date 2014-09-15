@@ -6,6 +6,7 @@
 
 #include "nicos.h"
 #include "helper/string.h"
+#include "helper/log.h"
 #include <chrono>
 
 
@@ -102,7 +103,8 @@ void NicosCache::RegisterKeys()
 
 void NicosCache::slot_connected(const std::string& strHost, const std::string& strSrv)
 {
-	//std::cout << "Connected to " << strHost << " on port " << strSrv << "." << std::endl;
+	log_info("Connected to ", strHost, " on port ", strSrv, ".");
+
 	QString qstrHost = strHost.c_str();
 	QString qstrSrv = strSrv.c_str();
 	emit connected(qstrHost, qstrSrv);
@@ -113,7 +115,8 @@ void NicosCache::slot_connected(const std::string& strHost, const std::string& s
 
 void NicosCache::slot_disconnected(const std::string& strHost, const std::string& strSrv)
 {
-	//std::cout << "Disconnected from " << strHost << " on port " << strSrv << "." << std::endl;
+	log_info("Disconnected from ", strHost, " on port ", strSrv, ".");
+
 	emit disconnected();
 }
 

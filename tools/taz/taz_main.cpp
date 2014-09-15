@@ -5,6 +5,7 @@
  */
 #include "taz.h"
 #include "helper/spec_char.h"
+#include "helper/log.h"
 #include <QMetaType>
 
 #ifdef Q_WS_X11
@@ -13,29 +14,42 @@
 
 int main(int argc, char** argv)
 {
-	#ifdef Q_WS_X11
-		XInitThreads();
-	#endif
+	try
+	{
+		log_info("Starting up TAZ.");
 
-	init_spec_chars();
+		#ifdef Q_WS_X11
+			XInitThreads();
+		#endif
 
-	// qt needs to be able to copy these structs when emitting signals from a different thread
-	qRegisterMetaType<TriangleOptions>("TriangleOptions");
-	qRegisterMetaType<CrystalOptions>("CrystalOptions");
+		init_spec_chars();
 
-	QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
+		// qt needs to be able to copy these structs when emitting signals from a different thread
+		qRegisterMetaType<TriangleOptions>("TriangleOptions");
+		qRegisterMetaType<CrystalOptions>("CrystalOptions");
 
-	QApplication app(argc, argv);
+		QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
 
-	::setlocale(LC_ALL, "C");
-	QLocale::setDefault(QLocale::English);
+		QApplication app(argc, argv);
 
-	TazDlg dlg(0);
-	if(argc > 1)
-		dlg.Load(argv[1]);
-	dlg.show();
-	int iRet = app.exec();
+		::setlocale(LC_ALL, "C");
+		QLocale::setDefault(QLocale::English);
 
-	deinit_spec_chars();
-	return iRet;
+		TazDlg dlg(0);
+		if(argc > 1)
+			dlg.Load(argv[1]);
+		dlg.show();
+		int iRet = app.exec();
+
+		deinit_spec_chars();
+
+		log_info("Shutting down TAZ.");
+		return iRet;
+	}
+	catch(const std::exception& ex)
+	{
+		log_crit(ex.what());
+	}
+
+	return -1;
 }

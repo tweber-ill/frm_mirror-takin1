@@ -19,6 +19,7 @@
 
 #include "tasoptions.h"
 #include "dialogs/RealParamDlg.h"	// for RealParams struct
+#include "dialogs/RecipParamDlg.h"	// for RecipParams struct
 
 class TasLayout;
 class TasLayoutNode : public QGraphicsItem
@@ -56,6 +57,7 @@ class TasLayout : public QGraphicsItem
 		double m_dAnaTwoTheta = 3.1415/2.;
 		double m_dTwoTheta = 3.1415/2.;
 		double m_dTheta = 3.1415/4.;
+		double m_dAngleKiQ = 3.1415/4.;
 
 		double m_dLenMonoSample = 150.;
 		double m_dLenSampleAna = 100.;
@@ -64,6 +66,8 @@ class TasLayout : public QGraphicsItem
 
 		double m_dScaleFactor = 1.; // pixels per cm for zoom == 1
 		double m_dZoom = 1.;
+
+		bool m_bRealQVisible = 1;
 
 		bool m_bAllowChanges = 1;
 
@@ -93,6 +97,7 @@ class TasLayout : public QGraphicsItem
 		void SetSampleTheta(double dT);
 		void SetMonoTwoTheta(double dTT);
 		void SetAnaTwoTheta(double dTT);
+		void SetAngleKiQ(double dKiQ);
 
 		void nodeMoved(const TasLayoutNode* pNode=0);
 
@@ -106,6 +111,9 @@ class TasLayout : public QGraphicsItem
 
 		double GetScaleFactor() const { return m_dScaleFactor; }
 		void SetScaleFactor(double dScale) { m_dScaleFactor = dScale; }
+
+		void SetRealQVisible(bool bVisible);
+		bool GetRealQVisible() const { return m_bRealQVisible; }
 };
 
 
@@ -129,6 +137,8 @@ class TasLayoutScene : public QGraphicsScene
 	public slots:
 		void triangleChanged(const TriangleOptions& opts);
 		void scaleChanged(double dTotalScale);
+
+		void recipParamsChanged(const RecipParams& params);
 
 	signals:
 		// relevant parameters for triangle view
