@@ -81,8 +81,7 @@ bool eigenvec<double>(const ublas::matrix<double>& mat,
 
 	if(iInfo!=0)
 	{
-		//if(Settings::Get<int>("general/debug_level") >= 1)
-			log_err("Could not solve eigenproblem", " (lapack error ", iInfo , ").");
+		log_err("Could not solve eigenproblem", " (lapack error ", iInfo , ").");
 		bOk = false;
 	}
 
@@ -166,8 +165,7 @@ bool eigenvec_sym<double>(const ublas::matrix<double>& mat,
 
 	if(iInfo!=0)
 	{
-		//if(Settings::Get<int>("general/debug_level") >= 1)
-			log_err("Could not solve eigenproblem", " (lapack error ", iInfo, ").");
+		log_err("Could not solve eigenproblem", " (lapack error ", iInfo, ").");
 		bOk = false;
 	}
 

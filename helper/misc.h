@@ -11,6 +11,7 @@
 #include <list>
 #include <map>
 #include <algorithm>
+#include <iterator>
 #include <tuple>
 #include "math.h"
 //#include "../data/data.h"
@@ -171,9 +172,11 @@ bool comp_fkt(sort_obj<T> t0, sort_obj<T> t1)
 
 
 // simultaneously sort two arrays
-template<class Iter=double*, typename T=double>
+template<class Iter=double*>
 void sort_2(Iter begin1, Iter end1, Iter begin2)
 {
+	typedef typename std::iterator_traits<Iter>::value_type T;
+
 	const unsigned int N = end1-begin1;
 	sort_obj<T> *pObj = new sort_obj<T>[N];
 	for(unsigned int i=0; i<N; ++i)
@@ -193,9 +196,11 @@ void sort_2(Iter begin1, Iter end1, Iter begin2)
 }
 
 // simultaneously sort three arrays
-template<class Iter=double*, typename T=double>
+template<class Iter=double*>
 void sort_3(Iter begin1, Iter end1, Iter begin2, Iter begin3)
 {
+	typedef typename std::iterator_traits<Iter>::value_type T;
+
 	const unsigned int N = end1-begin1;
 	sort_obj<T> *pObj = new sort_obj<T>[N];
 	for(unsigned int i=0; i<N; ++i)
