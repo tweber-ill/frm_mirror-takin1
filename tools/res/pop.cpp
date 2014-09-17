@@ -252,7 +252,7 @@ CNResults calc_pop(PopParams& pop)
 	res.reso = M*SIGMA2FWHM*SIGMA2FWHM;
 
 	calc_bragg_widths(pop, res);
-	calc_cn_vol(pop, res);
+	calc_pop_vol(pop, res);
 
 	if(std::isnan(res.dR0) || isnan(res.reso))
 	{
@@ -265,3 +265,8 @@ CNResults calc_pop(PopParams& pop)
 	return res;
 }
 
+// TODO
+void calc_pop_vol(PopParams& pop, CNResults& res)
+{
+	calc_cn_vol(pop, res);
+}

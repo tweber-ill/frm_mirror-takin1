@@ -46,8 +46,8 @@ declare -a hfiles=(
 for hfile in ${hfiles[@]}
 do
         mocfile=${hfile%\.h}.moc
-        echo -e "${hfile} -> ${mocfile}"
 
+        echo -e "${hfile} -> ${mocfile}"
         ${MOC} ${hfile} -o ${mocfile}
 done
 

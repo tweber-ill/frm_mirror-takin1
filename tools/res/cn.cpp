@@ -224,78 +224,28 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 
 
 	ublas::vector<double> vecKi(2);
-	vecKi[0] = 1.; vecKi[1] = 0.;
+	vecKi[0] = cn.ki*angstrom; vecKi[1] = 0.;	// ki along [100]
 	ublas::matrix<double> rot_kikf = rotation_matrix_2d(res.twotheta/units::si::radians);
 	ublas::vector<double> vecKf = ublas::prod(rot_kikf, vecKi) * (cn.kf/cn.ki);
 
 	ublas::vector<double> vecQ = vecKi - vecKf;
 
 	res.Q_avg.resize(4);
-	res.Q_avg[0] = -vecQ[0];
+	res.Q_avg[0] = -vecQ[0];	// minus since Q points from peak towards zero in TAZ
 	res.Q_avg[1] = -vecQ[1];
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = cn.E / one_meV;
+
+	//std::copy(vecQ.begin(), vecQ.end(), std::ostream_iterator<double>(std::cout, " "));
+	//std::cout << std::endl;
 
 	return true;
 }
 
 
+// TODO: implement one of the more modern algos
 void calc_cn_vol(CNParams& cn, CNResults& res)
 {
-	// TODO: Look in Shirane for factor
-	const double dFactor = 15.75;
-
-	if(cn.bConstMon)
-	{
-		res.dR0_vi = 1.;
-	}
-	else
-	{
-		res.dR0_vi = cn.dmono_refl * std::pow(cn.ki*angstrom, 3.);
-		res.dR0_vi *= units::cos(res.thetam)/units::sin(res.thetam);
-		res.dR0_vi *= cn.coll_v_pre_mono * cn.coll_v_pre_sample * cn.coll_h_pre_mono * cn.coll_h_pre_sample
-								/ units::si::radians/units::si::radians/units::si::radians/units::si::radians;
-		res.dR0_vi *= dFactor * cn.mono_mosaic / units::si::radians;
-
-		res.dR0_vi /= std::sqrt(
-						std::pow(2.*units::sin(res.thetam) * cn.mono_mosaic/units::si::radians, 2.)
-						+ std::pow(cn.coll_v_pre_mono/units::si::radians, 2.)
-						+ std::pow(cn.coll_v_pre_sample/units::si::radians, 2.)
-						);
-		res.dR0_vi /= std::sqrt(
-						std::pow(cn.coll_h_pre_mono/units::si::radians, 2.)
-						+ std::pow(cn.coll_h_pre_sample/units::si::radians, 2.)
-						+ std::pow(2.*cn.mono_mosaic/units::si::radians, 2.)
-						);
-		res.dR0_vi = fabs(res.dR0_vi);
-	}
-
-	res.dR0_vf = cn.dana_effic * std::pow(cn.kf*angstrom, 3.);
-	res.dR0_vf *= units::cos(res.thetaa)/units::sin(res.thetaa);
-	res.dR0_vf *= cn.coll_v_post_sample * cn.coll_v_post_ana * cn.coll_h_post_sample * cn.coll_h_post_ana
-							/ units::si::radians/units::si::radians/units::si::radians/units::si::radians;
-	res.dR0_vf *= dFactor * cn.ana_mosaic / units::si::radians;
-
-	res.dR0_vf /= std::sqrt(
-					std::pow(2.*units::sin(res.thetaa) * cn.ana_mosaic/units::si::radians, 2.)
-					+ std::pow(cn.coll_v_post_sample/units::si::radians, 2.)
-					+ std::pow(cn.coll_v_post_ana/units::si::radians, 2.)
-					);
-
-	res.dR0_vf /= std::sqrt(
-					std::pow(cn.coll_h_post_sample/units::si::radians, 2.)
-					+ std::pow(cn.coll_h_post_ana/units::si::radians, 2.)
-					+ std::pow(2.*cn.ana_mosaic/units::si::radians, 2.)
-					);
-	res.dR0_vf = fabs(res.dR0_vf);
-
-	const double dResDet = determinant<ublas::matrix<double>>(res.reso);
-	res.dR0 = res.dR0_vi*res.dR0_vf*std::sqrt(dResDet) / (2.*M_PI * 2.*M_PI);
-	res.dR0 /= cn.sample_mosaic/units::si::radians *
-					std::sqrt(
-							1./std::pow(cn.sample_mosaic/units::si::radians, 2.)
-							+ std::pow(cn.Q*angstrom, 2.)
-								* res.reso(1,1)/(SIGMA2FWHM*SIGMA2FWHM)
-							);
-	res.dR0 = fabs(res.dR0);
+	// placeholder: volume of ellipsoid
+	res.dR0 = get_ellipsoid_volume(res.reso);
 }

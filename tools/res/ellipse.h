@@ -22,9 +22,10 @@ namespace ublas = boost::numeric::ublas;
 
 struct Ellipse
 {
-	double phi;
+	double phi, slope;
 	double x_hwhm, y_hwhm;
 	double x_offs, y_offs;
+	double area;
 
 	std::string x_lab, y_lab;
 
@@ -41,6 +42,7 @@ struct Ellipsoid
 
 	double x_hwhm, y_hwhm, z_hwhm;
 	double x_offs, y_offs, z_offs;
+	double vol;
 
 	std::string x_lab, y_lab, z_lab;
 };

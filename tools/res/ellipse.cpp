@@ -84,23 +84,20 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 		if(iY>=iRem2) --iY;
 	}
 
-	ublas::matrix<double> m_int = res_mat;
 	if(iInt>-1)
 	{
-		m_int = gauss_int(res_mat, iInt);
+		res_mat = gauss_int(res_mat, iInt);
 		Q_offs = remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
 	}
 
-	ublas::matrix<double> m(2,2);
-	m(0,0)=m_int(iX,iX); m(0,1)=m_int(iX,iY);
-	m(1,0)=m_int(iY,iX); m(1,1)=m_int(iY,iY);
-
 	std::vector<ublas::vector<double> > evecs;
 	std::vector<double> evals;
-	::eigenvec_sym(m, evecs, evals);
+	::eigenvec_sym(res_mat, evecs, evals);
+
+	// sort by axis length: long axis is first axis
 	::sort_eigenvecs<double>(evecs, evals, 1, [](double d) -> double { return 1./d; });
 
 	/*std::cout << "Eigenvalues: ";
@@ -111,33 +108,25 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	ublas::matrix<double> evecs_rot = column_matrix(evecs);
 	ell.phi = rotation_angle(evecs_rot)[0];
 
-	/*if(::fabs(ell.phi) > M_PI/4.)
+	// if rotation angle >= 90° -> choose other axis as first axis
+	if(std::fabs(ell.phi) >= M_PI/2.)
 	{
-		ublas::matrix<double> rot_m90 = rotation_matrix_2d(-M_PI/2.);
-		evecs_rot = ublas::prod(evecs_rot, rot_m90);
+		std::swap(evecs[0], evecs[1]);
+		std::swap(evals[0], evals[1]);
+
+		if(ell.phi > 0.)
+		{
+			evecs[0] = -evecs[0];
+			evals[0] = -evals[0];
+		}
+
+		evecs_rot = column_matrix(evecs);
 		ell.phi = rotation_angle(evecs_rot)[0];
 	}
-	if(ell.phi == -M_PI)
-		ell.phi = 0.;
 
-	// sanity check
-	double dMyPhi = ell.phi/M_PI*180.;
-	double dPhiShirane = 0.5*atan(2.*m(0,1) / (m(0,0)-m(1,1))) / M_PI*180.;
-	if(!::float_equal(dMyPhi, dPhiShirane, 0.01))
-	{
-		std::cerr << "Error: Calculated ellipse phi = " << dMyPhi << " deg"
-					<< " deviates from theoretical phi = " << dPhiShirane
-					<< " deg." << std::endl;
-	}*/
-
-	// formula A4.61 from Shirane
-	//ell.phi = 0.5*atan(2.*m(0,1) / (m(0,0)-m(1,1)));
-	//std::cout << ell.phi/M_PI*180. << std::endl;
-	//ublas::matrix<double> rot = rotation_matrix_2d(ell.phi);
-	//evecs_rot = rot;
 
 	ublas::matrix<double> res_rot;
-	res_rot = prod(m, evecs_rot);
+	res_rot = prod(res_mat, evecs_rot);
 	res_rot = prod(trans(evecs_rot), res_rot);
 
 	ell.x_hwhm = SIGMA2HWHM/sqrt(res_rot(0,0));
@@ -145,6 +134,21 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
+
+	ell.area = get_ellipsoid_volume(res_mat);
+	ell.slope = std::tan(ell.phi);
+
+
+	// sanity check
+	double dMyPhi = ell.phi/M_PI*180.;
+	double dPhiShirane = 0.5*atan(2.*res_mat(0,1) / (res_mat(0,0)-res_mat(1,1))) / M_PI*180.;
+	if(!::float_equal(dMyPhi, dPhiShirane, 0.01)
+		&& !::float_equal(dMyPhi-90., dPhiShirane, 0.01))
+	{
+		log_warn("Calculated ellipse phi = ", dMyPhi, " deg",
+				" deviates from theoretical phi = ", dPhiShirane,
+				" deg.");
+	}
 
 	return ell;
 }
@@ -194,6 +198,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	std::vector<ublas::vector<double> > evecs;
 	std::vector<double> evals;
 	::eigenvec_sym(res_mat, evecs, evals);
+	::sort_eigenvecs<double>(evecs, evals, 1, [](double d) -> double { return 1./d; });
 
 	ell.rot = column_matrix(evecs);
 	//std::vector<double> vecRot = rotation_angle(ell.rot);
@@ -212,6 +217,8 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
 	ell.z_offs = Q_offs[iZ];
+
+	ell.vol = get_ellipsoid_volume(res_mat);
 
 	//std::cout << ell.rot << std::endl;
 	//std::cout << quat_to_rot3(rot3_to_quat(ell.rot)) << std::endl;
@@ -233,12 +240,14 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 std::ostream& operator<<(std::ostream& ostr, const Ellipse& ell)
 {
 	ostr << "phi = " << ell.phi/M_PI*180. << " deg \n";
+	ostr << "slope = " << ell.slope << " deg \n";
 	ostr << "x_hwhm = " << ell.x_hwhm << ", ";
 	ostr << "y_hwhm = " << ell.y_hwhm << "\n";
 	ostr << "x_offs = " << ell.x_offs << ", ";
 	ostr << "y_offs = " << ell.y_offs << "\n";
 	ostr << "x_lab = " << ell.x_lab << ", ";
 	ostr << "y_lab = " << ell.y_lab;
+	ostr << "area = " << ell.area;
 
 	return ostr;
 }

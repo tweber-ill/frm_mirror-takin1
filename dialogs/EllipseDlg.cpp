@@ -5,6 +5,8 @@
  */
 
 #include "EllipseDlg.h"
+#include "../helper/spec_char.h"
+
 #include <qwt_picker_machine.h>
 #include <future>
 
@@ -139,6 +141,8 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 		}
 	};
 
+	static const std::string strDeg = get_spec_char_utf8("deg");
+
 
 	//Xml xmlparams;
 	bool bXMLLoaded = 0; //xmlparams.Load("res/res.conf");
@@ -234,16 +238,16 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 		std::ostringstream ostrSlope;
 		ostrSlope.precision(4);
 		ostrSlope << "Projected ellipse (green):\n";
-		ostrSlope << "\tSlope: " << std::tan(m_elliProj[iEll].phi) << "\n";
-		ostrSlope << "\tAngle: " << m_elliProj[iEll].phi << "\n";
-		ostrSlope << "\tArea " << m_elliProj[iEll].x_hwhm*m_elliProj[iEll].y_hwhm*M_PI << "\n";
+		ostrSlope << "\tSlope: " << m_elliProj[iEll].slope << "\n";
+		ostrSlope << "\tAngle: " << m_elliProj[iEll].phi/M_PI*180. << strDeg << "\n";
+		ostrSlope << "\tArea " << m_elliProj[iEll].area << "\n";
 		ostrSlope << "Sliced ellipse (blue):\n";
-		ostrSlope << "\tSlope: " << std::tan(m_elliSlice[iEll].phi) << "\n";
-		ostrSlope << "\tAngle: " << m_elliSlice[iEll].phi << "\n";
-		ostrSlope << "\tArea " << m_elliSlice[iEll].x_hwhm*m_elliSlice[iEll].y_hwhm*M_PI;
+		ostrSlope << "\tSlope: " << m_elliSlice[iEll].slope << "\n";
+		ostrSlope << "\tAngle: " << m_elliSlice[iEll].phi/M_PI*180. << strDeg << "\n";
+		ostrSlope << "\tArea " << m_elliSlice[iEll].area;
 		//pPlot->setTitle(ostrSlope.str().c_str());
 		//std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
-		m_vecPlots[iEll]->setToolTip(ostrSlope.str().c_str());
+		m_vecPlots[iEll]->setToolTip(QString::fromUtf8(ostrSlope.str().c_str()));
 
 		pPlot->setAxisTitle(QwtPlot::xBottom, m_elliProj[iEll].x_lab.c_str());
 		pPlot->setAxisTitle(QwtPlot::yLeft, m_elliProj[iEll].y_lab.c_str());

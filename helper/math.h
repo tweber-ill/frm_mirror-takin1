@@ -117,7 +117,7 @@ std::vector<T> linspace(const T& tmin, const T& tmax, unsigned int iNum)
 template<typename T=double, typename REAL=double>
 std::vector<T> logspace(const T& tmin, const T& tmax, unsigned int iNum, T tBase=T(10))
 {
-	std::vector<T> vec = linspace(tmin, tmax, iNum);
+	std::vector<T> vec = linspace<T, REAL>(tmin, tmax, iNum);
 	for(T& t : vec)
 		t = std::pow(tBase, t);
 	return vec;
