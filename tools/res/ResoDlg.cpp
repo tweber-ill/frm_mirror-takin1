@@ -15,7 +15,6 @@
 #include "helper/spec_char.h"
 #include "helper/misc.h"
 #include "helper/math.h"
-#include "helper/rand.h"
 
 #include <QtGui/QPainter>
 #include <QtGui/QFileDialog>
@@ -26,8 +25,6 @@
 ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 			: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
-	init_rand();
-
 	setupUi(this);
 	m_vecSpinBoxes = {spinMonod, spinMonoMosaic, spinAnad,
 						spinAnaMosaic, spinSampleMosaic, spinkfix,
@@ -501,21 +498,29 @@ void ResoDlg::CalcElli4d()
 
 void ResoDlg::MCGenerate()
 {
-	const bool bCenter = checkMCCenter->isChecked();
-
 	if(!m_bEll4dCurrent)
 		CalcElli4d();
 
-	ublas::vector<double> vecTrans(4);
-	vecTrans[0] = m_ell4d.x_offs;
-	vecTrans[1] = m_ell4d.y_offs;
-	vecTrans[2] = m_ell4d.z_offs;
-	vecTrans[3] = m_ell4d.w_offs;
+	QString strLastDir = m_pSettings ? m_pSettings->value("reso/mc_dir", ".").toString() : ".";
+	QString _strFile = QFileDialog::getSaveFileName(this, "Save MC neutron data...", strLastDir, "DAT files (*.dat);;All files (*.*)");
+	if(_strFile == "")
+		return;
 
-	const ublas::matrix<double>& rot = m_ell4d.rot;
-	const ublas::matrix<double> rot_inv = ublas::trans(rot);
+	std::string strFile = _strFile.toStdString();
 
-	std::ofstream ofstr("neutrons.dat");
+	const int iNeutrons = spinMCNeutrons->value();
+	const bool bCenter = checkMCCenter->isChecked();
+
+	std::vector<ublas::vector<double>> vecNeutrons;
+	mc_neutrons(m_ell4d, iNeutrons, bCenter, vecNeutrons);
+
+	std::ofstream ofstr(strFile);
+	if(!ofstr.is_open())
+	{
+		QMessageBox::critical(this, "Error", "Cannot open file.");
+		return;
+	}
+
 	ofstr.precision(16);
 
 	ofstr << "#" << std::setw(23) << m_ell4d.x_lab
@@ -523,23 +528,15 @@ void ResoDlg::MCGenerate()
 			<< std::setw(24) << m_ell4d.z_lab
 			<< std::setw(24) << m_ell4d.w_lab << "\n";
 
-	const int iNeutrons = spinMCNeutrons->value();
-	for(unsigned int iCur=0; iCur<unsigned(iNeutrons); ++iCur)
+	for(const ublas::vector<double>& vecNeutron : vecNeutrons)
 	{
-		ublas::vector<double> vecRand = rand_norm_nd<ublas::vector<double>>({0.,0.,0.,0.},
-														{m_ell4d.x_hwhm*HWHM2SIGMA,
-														m_ell4d.y_hwhm*HWHM2SIGMA,
-														m_ell4d.z_hwhm*HWHM2SIGMA,
-														m_ell4d.w_hwhm*HWHM2SIGMA});
-
-		vecRand = ublas::prod(rot_inv, vecRand);
-		if(!bCenter)
-			vecRand += vecTrans;
-
 		for(unsigned i=0; i<4; ++i)
-			ofstr << std::setw(24) << vecRand[i];
+			ofstr << std::setw(24) << vecNeutron[i];
 		ofstr << "\n";
 	}
+
+	if(m_pSettings)
+		m_pSettings->setValue("reso/mc_dir", QString(::get_dir(strFile).c_str()));
 }
 // --------------------------------------------------------------------------------
 

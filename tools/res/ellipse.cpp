@@ -12,6 +12,8 @@
 #include "helper/linalg.h"
 #include "helper/linalg2.h"
 #include "helper/math.h"
+#include "helper/rand.h"
+
 #include "cn.h"
 
 
@@ -319,3 +321,35 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 	return ell;
 }
 
+
+void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
+				std::vector<ublas::vector<double>>& vecResult)
+{
+	init_rand();
+
+	ublas::vector<double> vecTrans(4);
+	vecTrans[0] = ell4d.x_offs;
+	vecTrans[1] = ell4d.y_offs;
+	vecTrans[2] = ell4d.z_offs;
+	vecTrans[3] = ell4d.w_offs;
+
+	const ublas::matrix<double>& rot = ell4d.rot;
+	const ublas::matrix<double> rot_inv = ublas::trans(rot);
+
+	vecResult.reserve(iNum);
+
+	for(unsigned int iCur=0; iCur<iNum; ++iCur)
+	{
+		ublas::vector<double> vecMC = rand_norm_nd<ublas::vector<double>>({0.,0.,0.,0.},
+														{ell4d.x_hwhm*HWHM2SIGMA,
+														ell4d.y_hwhm*HWHM2SIGMA,
+														ell4d.z_hwhm*HWHM2SIGMA,
+														ell4d.w_hwhm*HWHM2SIGMA});
+
+		vecMC = ublas::prod(rot_inv, vecMC);
+		if(!bCenter)
+			vecMC += vecTrans;
+
+		vecResult.push_back(std::move(vecMC));
+	}
+}

@@ -63,4 +63,7 @@ extern Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, const ublas::
 extern Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iZ, int iInt, int iRem=-1);
 extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
 
+extern void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
+						std::vector<ublas::vector<double>>& vecResult);
+
 #endif
