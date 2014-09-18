@@ -15,6 +15,45 @@
 #include "cn.h"
 
 
+// --------------------------------------------------------------------------------
+
+std::ostream& operator<<(std::ostream& ostr, const Ellipse& ell)
+{
+	ostr << "phi = " << ell.phi/M_PI*180. << " deg \n";
+	ostr << "slope = " << ell.slope << " deg \n";
+	ostr << "x_hwhm = " << ell.x_hwhm << ", ";
+	ostr << "y_hwhm = " << ell.y_hwhm << "\n";
+	ostr << "x_offs = " << ell.x_offs << ", ";
+	ostr << "y_offs = " << ell.y_offs << "\n";
+	ostr << "x_lab = " << ell.x_lab << ", ";
+	ostr << "y_lab = " << ell.y_lab << "\n";
+	ostr << "area = " << ell.area;
+
+	return ostr;
+}
+
+
+std::ostream& operator<<(std::ostream& ostr, const Ellipsoid4d& ell)
+{
+	ostr << "x_hwhm = " << ell.x_hwhm << ", ";
+	ostr << "y_hwhm = " << ell.y_hwhm << ", ";
+	ostr << "z_hwhm = " << ell.z_hwhm << ", ";
+	ostr << "w_hwhm = " << ell.w_hwhm << "\n";
+	ostr << "x_offs = " << ell.x_offs << ", ";
+	ostr << "y_offs = " << ell.y_offs << ", ";
+	ostr << "z_offs = " << ell.z_offs << ", ";
+	ostr << "w_offs = " << ell.w_offs << "\n";
+	ostr << "x_lab = " << ell.x_lab << ", ";
+	ostr << "y_lab = " << ell.y_lab << ", ";
+	ostr << "z_lab = " << ell.z_lab << ", ";
+	ostr << "w_lab = " << ell.w_lab << "\n";
+	ostr << "volume = " << ell.vol;
+
+	return ostr;
+}
+
+// --------------------------------------------------------------------------------
+
 ublas::vector<double> Ellipse::operator()(double t) const
 {
 	ublas::vector<double> vec(2);
@@ -41,6 +80,10 @@ void Ellipse::GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
 	}
 }
 
+// --------------------------------------------------------------------------------
+
+static const std::string g_strLabels[] = {"Q_{para} (1/A)", "Q_{ortho} (1/A)", "Q_z (1/A)", "E (meV)"};
+
 /*
  * this is a 1:1 C++ reimplementation of 'proj_elip' from 'mcresplot'
  * iX, iY: dimensions to plot
@@ -51,13 +94,11 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 									const ublas::vector<double>& Q_avg,
 									int iX, int iY, int iInt, int iRem1, int iRem2)
 {
-	static const std::string strLabels[] = {"Q_{para} (1/A)", "Q_{ortho} (1/A)", "Q_z (1/A)", "E (meV)"};
-
 	Ellipse ell;
 	ell.x_offs = ell.y_offs = 0.;
 
-	ell.x_lab = strLabels[iX];
-	ell.y_lab = strLabels[iY];
+	ell.x_lab = g_strLabels[iX];
+	ell.y_lab = g_strLabels[iY];
 
 
 	ublas::matrix<double> res_mat = reso;
@@ -153,18 +194,18 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	return ell;
 }
 
+// --------------------------------------------------------------------------------
+
 Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 										const ublas::vector<double>& Q_avg,
 										int iX, int iY, int iZ, int iInt, int iRem)
 {
-	static const std::string strLabels[] = {"Q_para (1/A)", "Q_ortho (1/A)", "Q_z (1/A)", "E (meV)"};
-
 	Ellipsoid ell;
 	ell.x_offs = ell.y_offs = ell.z_offs = 0.;
 
-	ell.x_lab = strLabels[iX];
-	ell.y_lab = strLabels[iY];
-	ell.z_lab = strLabels[iZ];
+	ell.x_lab = g_strLabels[iX];
+	ell.y_lab = g_strLabels[iY];
+	ell.z_lab = g_strLabels[iZ];
 
 
 	ublas::matrix<double> res_mat = reso;
@@ -237,17 +278,43 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	return ell;
 }
 
-std::ostream& operator<<(std::ostream& ostr, const Ellipse& ell)
-{
-	ostr << "phi = " << ell.phi/M_PI*180. << " deg \n";
-	ostr << "slope = " << ell.slope << " deg \n";
-	ostr << "x_hwhm = " << ell.x_hwhm << ", ";
-	ostr << "y_hwhm = " << ell.y_hwhm << "\n";
-	ostr << "x_offs = " << ell.x_offs << ", ";
-	ostr << "y_offs = " << ell.y_offs << "\n";
-	ostr << "x_lab = " << ell.x_lab << ", ";
-	ostr << "y_lab = " << ell.y_lab;
-	ostr << "area = " << ell.area;
+// --------------------------------------------------------------------------------
 
-	return ostr;
+Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg)
+{
+	Ellipsoid4d ell;
+
+	std::vector<ublas::vector<double> > evecs;
+	std::vector<double> evals;
+	::eigenvec_sym(reso, evecs, evals);
+	::sort_eigenvecs<double>(evecs, evals, 1, [](double d) -> double { return 1./d; });
+
+	// TODO: determine correct sorting of eigenvectors and -values for (Qx, Qy, Qz, E) mapping
+
+	ell.rot = column_matrix(evecs);
+
+	ublas::matrix<double> res_rot;
+	res_rot = prod(reso, ell.rot);
+	res_rot = prod(trans(ell.rot), res_rot);
+
+	ell.x_hwhm = SIGMA2HWHM/sqrt(res_rot(0,0));
+	ell.y_hwhm = SIGMA2HWHM/sqrt(res_rot(1,1));
+	ell.z_hwhm = SIGMA2HWHM/sqrt(res_rot(2,2));
+	ell.w_hwhm = SIGMA2HWHM/sqrt(res_rot(3,3));
+
+	ell.x_offs = Q_avg[0];
+	ell.y_offs = Q_avg[1];
+	ell.z_offs = Q_avg[2];
+	ell.w_offs = Q_avg[3];
+
+	ell.x_lab = g_strLabels[0];
+	ell.y_lab = g_strLabels[1];
+	ell.z_lab = g_strLabels[2];
+	ell.w_lab = g_strLabels[3];
+
+	ell.vol = get_ellipsoid_volume(reso);
+
+	//std::cout << ell << std::endl;
+	return ell;
 }
+

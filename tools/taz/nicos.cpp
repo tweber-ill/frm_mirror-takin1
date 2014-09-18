@@ -156,12 +156,12 @@ void NicosCache::slot_receive(const std::string& str)
 	std::pair<std::string, std::string> pairTimeVal = ::split_first<std::string>(str, "@", 1);
 	std::pair<std::string, std::string> pairKeyVal = ::split_first<std::string>(pairTimeVal.second, "=", 1);
 
-	//const std::string& strTime = pairTimeVal.first;
 	const std::string& strKey = pairKeyVal.first;
 	const std::string& strVal = pairKeyVal.second;
 
 
-	/*
+/*
+	const std::string& strTime = pairTimeVal.first;
 	double dTimestamp = str_to_var<double>(strTime);
 	double dNow = std::chrono::system_clock::now().time_since_epoch().count();
 	dNow *= double(std::chrono::system_clock::period::num) / double(std::chrono::system_clock::period::den);
@@ -170,7 +170,7 @@ void NicosCache::slot_receive(const std::string& str)
 	std::cout << "age: " << dAge << " s" << "\n";
 	std::cout << "key: " << strKey << "\n";
 	std::cout << "val: " << strVal << std::endl;
-	*/
+*/
 
 
 

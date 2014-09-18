@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>705</width>
-    <height>406</height>
+    <width>804</width>
+    <height>459</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Resolution Parameters</string>
+   <string>TAS Resolution</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -54,7 +54,7 @@
      <property name="currentIndex">
       <number>2</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabCN">
       <attribute name="title">
        <string>Cooper-Nathans Parameters</string>
       </attribute>
@@ -475,7 +475,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="tabPop">
       <attribute name="title">
        <string>Popovici Parameters</string>
       </attribute>
@@ -1116,7 +1116,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_3">
+     <widget class="QWidget" name="tabCalc">
       <attribute name="title">
        <string>Calculation</string>
       </attribute>
@@ -1343,6 +1343,126 @@ Resolution Matrix:
            <widget class="QRadioButton" name="radioConstTime">
             <property name="text">
              <string>Constant time</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabMC">
+      <attribute name="title">
+       <string>Monte-Carlo</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="3" column="0">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="1" rowspan="4">
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Ellipsoid</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0" colspan="2">
+           <widget class="QLabel" name="labelElli">
+            <property name="font">
+             <font>
+              <family>DejaVu Sans Mono [unknown]</family>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Not calculated.</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox_13">
+         <property name="title">
+          <string>Ellipsoid</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="checkElli4dAutoCalc">
+            <property name="text">
+             <string>Calculate automatically</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="btnCalcElli4d">
+            <property name="text">
+             <string>Calculate</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="groupBox_11">
+         <property name="title">
+          <string>Monte-Carlo Neutrons</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="1" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkMCCenter">
+            <property name="text">
+             <string>Center around (0,0,0,0)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Count:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinMCNeutrons">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000000</number>
+            </property>
+            <property name="value">
+             <number>1000</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QPushButton" name="btnMCGenerate">
+            <property name="text">
+             <string>Generate...</string>
             </property>
            </widget>
           </item>

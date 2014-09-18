@@ -88,6 +88,10 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	for(QRadioButton* pRadio : m_vecRadioPlus)
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(Calc()));
 
+
+	connect(checkElli4dAutoCalc, SIGNAL(stateChanged(int)), this, SLOT(checkAutoCalcElli4dChanged()));
+	connect(btnCalcElli4d, SIGNAL(clicked()), this, SLOT(CalcElli4d()));
+	connect(btnMCGenerate, SIGNAL(clicked()), this, SLOT(MCGenerate()));
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 
 	m_bDontCalc = 0;
@@ -121,6 +125,8 @@ void ResoDlg::UpdateUI()
 
 void ResoDlg::Calc()
 {
+	m_bEll4dCurrent = 0;
+
 	if(m_bDontCalc)
 		return;
 
@@ -256,6 +262,13 @@ void ResoDlg::Calc()
 		//ostrkvar.precision(4);
 		ostrkvar << dKVar;
 		labelkvar_val->setText(ostrkvar.str().c_str());
+
+
+		if(checkElli4dAutoCalc->isChecked())
+		{
+			CalcElli4d();
+			m_bEll4dCurrent = 1;
+		}
 
 		EmitResults();
 	}
@@ -450,5 +463,45 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 }
 
 // TODO: also send locally changed params back to taz
+
+
+// --------------------------------------------------------------------------------
+// Monte-Carlo stuff
+
+void ResoDlg::checkAutoCalcElli4dChanged()
+{
+	if(checkElli4dAutoCalc->isChecked() && !m_bEll4dCurrent)
+		CalcElli4d();
+}
+
+void ResoDlg::CalcElli4d()
+{
+	m_ell4d = calc_res_ellipsoid4d(m_res.reso, m_res.Q_avg);
+
+	std::ostringstream ostrElli;
+	ostrElli << "Ellipsoid volume: " << m_ell4d.vol << "\n\n";
+	ostrElli << "Ellipsoid offsets:\n"
+			<< "\t" << m_ell4d.x_offs << "\n"
+			<< "\t" << m_ell4d.y_offs << "\n"
+			<< "\t" << m_ell4d.z_offs << "\n"
+			<< "\t" << m_ell4d.w_offs << "\n\n";
+	ostrElli << "Ellipsoid HWHMs:\n"
+			<< "\t" << m_ell4d.x_hwhm << "\n"
+			<< "\t" << m_ell4d.y_hwhm << "\n"
+			<< "\t" << m_ell4d.z_hwhm << "\n"
+			<< "\t" << m_ell4d.w_hwhm << "\n\n";
+
+	labelElli->setText(QString::fromUtf8(ostrElli.str().c_str()));
+}
+
+void ResoDlg::MCGenerate()
+{
+	const bool bCenter = checkMCCenter->isChecked();
+
+	if(!m_bEll4dCurrent)
+		CalcElli4d();
+}
+// --------------------------------------------------------------------------------
+
 
 #include "ResoDlg.moc"

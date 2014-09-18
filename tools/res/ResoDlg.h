@@ -55,6 +55,9 @@ protected:
 	CNResults m_res;
 	bool m_bDontCalc;
 
+	bool m_bEll4dCurrent = 0;
+	Ellipsoid4d m_ell4d;
+
 	QSettings* m_pSettings = 0;
 
 public:
@@ -70,6 +73,10 @@ protected slots:
 	void ButtonBoxClicked(QAbstractButton*);
 	void hideEvent (QHideEvent *event);
 	void showEvent(QShowEvent *event);
+
+	void checkAutoCalcElli4dChanged();
+	void CalcElli4d();
+	void MCGenerate();
 
 public slots:
 	void ResoParamsChanged(const ResoParams& params);
