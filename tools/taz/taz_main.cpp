@@ -6,7 +6,9 @@
 #include "taz.h"
 #include "helper/spec_char.h"
 #include "helper/log.h"
+
 #include <QMetaType>
+
 
 #ifdef Q_WS_X11
 	extern "C" int XInitThreads();

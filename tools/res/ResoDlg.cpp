@@ -6,6 +6,8 @@
 
 #include "ResoDlg.h"
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <map>
 
 //#include "../../main/settings.h"
@@ -13,6 +15,7 @@
 #include "helper/spec_char.h"
 #include "helper/misc.h"
 #include "helper/math.h"
+#include "helper/rand.h"
 
 #include <QtGui/QPainter>
 #include <QtGui/QFileDialog>
@@ -23,6 +26,8 @@
 ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 			: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
+	init_rand();
+
 	setupUi(this);
 	m_vecSpinBoxes = {spinMonod, spinMonoMosaic, spinAnad,
 						spinAnaMosaic, spinSampleMosaic, spinkfix,
@@ -481,11 +486,11 @@ void ResoDlg::CalcElli4d()
 	std::ostringstream ostrElli;
 	ostrElli << "Ellipsoid volume: " << m_ell4d.vol << "\n\n";
 	ostrElli << "Ellipsoid offsets:\n"
-			<< "\t" << m_ell4d.x_offs << "\n"
-			<< "\t" << m_ell4d.y_offs << "\n"
-			<< "\t" << m_ell4d.z_offs << "\n"
-			<< "\t" << m_ell4d.w_offs << "\n\n";
-	ostrElli << "Ellipsoid HWHMs:\n"
+			<< "\tQx = " << m_ell4d.x_offs << "\n"
+			<< "\tQy = " << m_ell4d.y_offs << "\n"
+			<< "\tQz = " << m_ell4d.z_offs << "\n"
+			<< "\tE = " << m_ell4d.w_offs << "\n\n";
+	ostrElli << "Ellipsoid HWHMs (unsorted):\n"
 			<< "\t" << m_ell4d.x_hwhm << "\n"
 			<< "\t" << m_ell4d.y_hwhm << "\n"
 			<< "\t" << m_ell4d.z_hwhm << "\n"
@@ -500,6 +505,41 @@ void ResoDlg::MCGenerate()
 
 	if(!m_bEll4dCurrent)
 		CalcElli4d();
+
+	ublas::vector<double> vecTrans(4);
+	vecTrans[0] = m_ell4d.x_offs;
+	vecTrans[1] = m_ell4d.y_offs;
+	vecTrans[2] = m_ell4d.z_offs;
+	vecTrans[3] = m_ell4d.w_offs;
+
+	const ublas::matrix<double>& rot = m_ell4d.rot;
+	const ublas::matrix<double> rot_inv = ublas::trans(rot);
+
+	std::ofstream ofstr("neutrons.dat");
+	ofstr.precision(16);
+
+	ofstr << "#" << std::setw(23) << m_ell4d.x_lab
+			<< std::setw(24) << m_ell4d.y_lab
+			<< std::setw(24) << m_ell4d.z_lab
+			<< std::setw(24) << m_ell4d.w_lab << "\n";
+
+	const int iNeutrons = spinMCNeutrons->value();
+	for(unsigned int iCur=0; iCur<unsigned(iNeutrons); ++iCur)
+	{
+		ublas::vector<double> vecRand = rand_norm_nd<ublas::vector<double>>({0.,0.,0.,0.},
+														{m_ell4d.x_hwhm*HWHM2SIGMA,
+														m_ell4d.y_hwhm*HWHM2SIGMA,
+														m_ell4d.z_hwhm*HWHM2SIGMA,
+														m_ell4d.w_hwhm*HWHM2SIGMA});
+
+		vecRand = ublas::prod(rot_inv, vecRand);
+		if(!bCenter)
+			vecRand += vecTrans;
+
+		for(unsigned i=0; i<4; ++i)
+			ofstr << std::setw(24) << vecRand[i];
+		ofstr << "\n";
+	}
 }
 // --------------------------------------------------------------------------------
 

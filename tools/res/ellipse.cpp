@@ -97,6 +97,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	Ellipse ell;
 	ell.x_offs = ell.y_offs = 0.;
 
+	// labels only valid for non-rotated system
 	ell.x_lab = g_strLabels[iX];
 	ell.y_lab = g_strLabels[iY];
 
@@ -203,6 +204,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	Ellipsoid ell;
 	ell.x_offs = ell.y_offs = ell.z_offs = 0.;
 
+	// labels only valid for non-rotated system
 	ell.x_lab = g_strLabels[iX];
 	ell.y_lab = g_strLabels[iY];
 	ell.z_lab = g_strLabels[iZ];
@@ -289,8 +291,6 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 	::eigenvec_sym(reso, evecs, evals);
 	::sort_eigenvecs<double>(evecs, evals, 1, [](double d) -> double { return 1./d; });
 
-	// TODO: determine correct sorting of eigenvectors and -values for (Qx, Qy, Qz, E) mapping
-
 	ell.rot = column_matrix(evecs);
 
 	ublas::matrix<double> res_rot;
@@ -307,6 +307,7 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 	ell.z_offs = Q_avg[2];
 	ell.w_offs = Q_avg[3];
 
+	// labels only valid for non-rotated system
 	ell.x_lab = g_strLabels[0];
 	ell.y_lab = g_strLabels[1];
 	ell.z_lab = g_strLabels[2];

@@ -34,6 +34,8 @@ static const auto one_eV = co::e * units::si::volts;
 
 static const double SIGMA2FWHM = 2.*sqrt(2.*log(2.));
 static const double SIGMA2HWHM = SIGMA2FWHM/2.;
+static const double HWHM2SIGMA = 1./ SIGMA2HWHM;
+static const double FWHM2SIGMA = 1./ SIGMA2FWHM;
 
 static const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
 
