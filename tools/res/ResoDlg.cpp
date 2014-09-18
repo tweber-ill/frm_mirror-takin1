@@ -511,15 +511,15 @@ void ResoDlg::MCGenerate()
 	const int iNeutrons = spinMCNeutrons->value();
 	const bool bCenter = checkMCCenter->isChecked();
 
-	std::vector<ublas::vector<double>> vecNeutrons;
-	mc_neutrons(m_ell4d, iNeutrons, bCenter, vecNeutrons);
-
 	std::ofstream ofstr(strFile);
 	if(!ofstr.is_open())
 	{
 		QMessageBox::critical(this, "Error", "Cannot open file.");
 		return;
 	}
+
+	std::vector<ublas::vector<double>> vecNeutrons;
+	mc_neutrons(m_ell4d, iNeutrons, bCenter, vecNeutrons);
 
 	ofstr.precision(16);
 
