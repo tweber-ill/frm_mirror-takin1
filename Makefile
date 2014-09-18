@@ -39,7 +39,7 @@ taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lat
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
 	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/linalg2.o \
 	obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
-	obj/SrvDlg.o obj/tcp.o obj/nicos.o obj/log.o
+	obj/SrvDlg.o obj/tcp.o obj/nicos.o obj/log.o obj/rand.o
 	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
@@ -47,6 +47,7 @@ taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lat
 			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/linalg2.o \
 			obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
 			obj/SrvDlg.o obj/tcp.o obj/nicos.o obj/log.o \
+			obj/rand.o \
 			${LIBS_TAZ} ${LIBS_RESO}
 	strip bin/taz
 
@@ -112,6 +113,8 @@ obj/lattice.o: helper/lattice.cpp helper/lattice.h
 obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
 	${CC} ${FLAGS} -c -o obj/spacegroup.o helper/spacegroup.cpp
 
+obj/rand.o: helper/rand.cpp helper/rand.h
+	${CC} ${FLAGS} -c -o obj/rand.o helper/rand.cpp
 
 obj/plotgl.o: helper/plotgl.cpp helper/plotgl.h
 	${CC} ${FLAGS} -c -o obj/plotgl.o helper/plotgl.cpp
