@@ -285,7 +285,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 		// if the rotation sample stick is used, sth is an additional angle,
 		// otherwise sth copies the om value.
-		if(strSthAlias != "om")
+		if(get_py_string(strSthAlias) != "om")
 			triag.dAngleKiVec0 -= dTh_aux;
 
 		triag.bChangedAngleKiVec0 = 1;
