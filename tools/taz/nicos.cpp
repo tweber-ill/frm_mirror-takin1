@@ -28,6 +28,11 @@ static const std::string g_strAna2Theta = "nicos/att/value";
 static const std::string g_strAnaD = "nicos/ana/dvalue";
 
 static const std::string g_strSampleTheta = "nicos/om/value";
+
+// rotation sample stick: sth != om, otherwise: sth == om
+static const std::string g_strSampleTheta_aux = "nicos/sth/value";
+static const std::string g_strSampleTheta_aux_alias = "nicos/sth/alias";
+
 static const std::string g_strSample2Theta = "nicos/phi/value";
 
 
@@ -51,6 +56,9 @@ NicosCache::NicosCache()
 
 					g_strSampleTheta,
 					g_strSample2Theta,
+
+					g_strSampleTheta_aux,
+					g_strSampleTheta_aux_alias,
 			})
 {
 	m_tcp.add_connect(boost::bind(&NicosCache::slot_connected, this, _1, _2));
@@ -260,15 +268,26 @@ void NicosCache::slot_receive(const std::string& str)
 
 
 	if(m_mapCache.find(g_strSampleTheta) != m_mapCache.end()
-			&& m_mapCache.find(g_strSamplePsi0) != m_mapCache.end())
+			&& m_mapCache.find(g_strSamplePsi0) != m_mapCache.end()
+			&& m_mapCache.find(g_strSampleTheta_aux) != m_mapCache.end()
+			&& m_mapCache.find(g_strSampleTheta_aux_alias) != m_mapCache.end())
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 
 		double dOm = str_to_var<double>(m_mapCache[g_strSampleTheta]) /180.*M_PI;
+		double dTh_aux = str_to_var<double>(m_mapCache[g_strSampleTheta_aux]) /180.*M_PI;
 		double dPsi = str_to_var<double>(m_mapCache[g_strSamplePsi0]) /180.*M_PI;
+
+		const std::string& strSthAlias = m_mapCache[g_strSampleTheta_aux_alias];
 
 		// angle from ki to bragg peak at orient1
 		triag.dAngleKiVec0 = -dOm-dPsi;
+
+		// if the rotation sample stick is used, sth is an additional angle,
+		// otherwise sth copies the om value.
+		if(strSthAlias != "om")
+			triag.dAngleKiVec0 -= dTh_aux;
+
 		triag.bChangedAngleKiVec0 = 1;
 		//std::cout << "rotation: " << triag.dAngleKiVec0 << std::endl;
 	}
