@@ -10,6 +10,7 @@ Release/*
 ui/*.h
 bin/reso
 bin/taz
+bin/takin
 perf.data
 perf.data.old
 gmon.out

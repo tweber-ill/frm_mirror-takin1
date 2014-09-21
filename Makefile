@@ -34,13 +34,13 @@ LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 
 
-taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
+takin: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
 	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
 	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/linalg2.o \
 	obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/SrvDlg.o obj/tcp.o obj/nicos.o obj/log.o obj/rand.o
-	${CC} ${FLAGS} -o bin/taz obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
+	${CC} ${FLAGS} -o bin/takin obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
 			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
 			obj/xml.o obj/spacegroup.o \
 			obj/RecipParamDlg.o obj/RealParamDlg.o \
@@ -49,7 +49,7 @@ taz: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lat
 			obj/SrvDlg.o obj/tcp.o obj/nicos.o obj/log.o \
 			obj/rand.o \
 			${LIBS_TAZ} ${LIBS_RESO}
-	strip bin/taz
+	strip bin/takin
 
 
 obj/taz_main.o: tools/taz/taz_main.cpp tools/taz/taz.h

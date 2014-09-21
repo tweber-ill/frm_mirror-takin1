@@ -26,7 +26,7 @@
 #include "helper/log.h"
 
 #define DEFAULT_MSG_TIMEOUT 4000
-const std::string TazDlg::s_strTitle = "TAZ - Triple-Axis Tool";
+const std::string TazDlg::s_strTitle = "Takin";
 
 static QString dtoqstr(double dVal, unsigned int iPrec=3)
 {
@@ -38,7 +38,7 @@ static QString dtoqstr(double dVal, unsigned int iPrec=3)
 
 TazDlg::TazDlg(QWidget* pParent)
 		: QMainWindow(pParent),
-		  m_settings("tobis_stuff", "taz"),
+		  m_settings("tobis_stuff", "takin"),
 		  m_pmapSpaceGroups(get_space_groups()),
 		  m_dlgRecipParam(this, &m_settings),
 		  m_dlgRealParam(this, &m_settings),
@@ -1509,7 +1509,7 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "TAZ version 0.7.5\n";
+	strAbout += "Takin version 0.7.5\n";
 	strAbout += "Written by Tobias Weber, 2014";
 	strAbout += "\n\n";
 
@@ -1560,7 +1560,7 @@ void TazDlg::ShowAbout()
 			+ "\n\t\tcomputing-for-science/cs-software/" + strRet
 			+ "\n\t\tall-software/matlab-ill/rescal-for-matlab\n";
 
-	QMessageBox::information(this, "About TAZ", strAbout);
+	QMessageBox::information(this, "About Takin", strAbout);
 }
 
 #include "taz.moc"

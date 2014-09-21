@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		log_info("Starting up TAZ.");
+		log_info("Starting up Takin.");
 
 		#ifdef Q_WS_X11
 			XInitThreads();
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 
 		deinit_spec_chars();
 
-		log_info("Shutting down TAZ.");
+		log_info("Shutting down Takin.");
 		return iRet;
 	}
 	catch(const std::exception& ex)
