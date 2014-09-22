@@ -37,12 +37,15 @@ Resolution calc_res(unsigned int uiLen, const vector<double>* Q_vec,
 
 	const double p_sum = pp_sum ? *pp_sum : double(uiLen);
 
-	vector<double> Q_dir(3);
+	vector<double> Q_dir(3), Q_perp(3);
 	Q_dir[0] = Q_avg[0];
 	Q_dir[1] = Q_avg[1];
-	Q_dir[2] = /*Q_avg[2]*/ 0.;
-
+	Q_dir[2] = Q_avg[2];
 	Q_dir = Q_dir / norm_2(Q_dir);
+
+	Q_perp[0] = -Q_dir[1];
+	Q_perp[1] = Q_dir[0];
+	Q_perp[2] = Q_dir[2];
 
 
 	matrix<double> trafo(4, 4);
@@ -53,14 +56,15 @@ Resolution calc_res(unsigned int uiLen, const vector<double>* Q_vec,
 	trafo(2,0) = Q_dir[2];
 
 	// perpendicular to Q_dir
-	trafo(0,1) = Q_dir[1];
-	trafo(1,1) = -Q_dir[0];
-	trafo(2,1) = Q_dir[2];
+	trafo(0,1) = Q_perp[0];
+	trafo(1,1) = Q_perp[1];
+	trafo(2,1) = Q_perp[2];
 
+	vector<double> vecUp = cross_3(Q_dir, Q_perp);
 	// z direction up
-	trafo(0,2) = 0.;
-	trafo(1,2) = 0.;
-	trafo(2,2) = 1.;
+	trafo(0,2) = vecUp[0];
+	trafo(1,2) = vecUp[1];
+	trafo(2,2) = vecUp[2];
 
 	// energy
 	trafo(3,0) = trafo(0,3) = 0.;
@@ -69,17 +73,6 @@ Resolution calc_res(unsigned int uiLen, const vector<double>* Q_vec,
 	trafo(3,3) = 1.;
 
 	//std::cout << "trafo = " << trafo << std::endl;
-
-
-	// transform Q
-	for(unsigned int uiRow=0; uiRow<uiLen; ++uiRow)
-	{
-		const vector<double>& Q = Q_vec[uiRow];
-		vector<double>& Q_trafo = Q_trafo_vec[uiRow];
-		
-		Q_trafo.resize(4, 0);
-		Q_trafo = prod(trans(trafo), Q);
-	}
 
 
 	matrix<double> ubermatrix(uiLen, 4);

@@ -1270,8 +1270,8 @@ void TazDlg::ShowResoEllipses()
 	if(!m_pEllipseDlg)
 	{
 		m_pEllipseDlg = new EllipseDlg(this, &m_settings);
-		QObject::connect(m_pReso, SIGNAL(ResoResults(const PopParams&, const CNResults&)),
-						 m_pEllipseDlg, SLOT(SetParams(const PopParams&, const CNResults&)));
+		QObject::connect(m_pReso, SIGNAL(ResoResults(const ublas::matrix<double>&, const ublas::vector<double>&)),
+						 m_pEllipseDlg, SLOT(SetParams(const ublas::matrix<double>&, const ublas::vector<double>&)));
 
 		m_pReso->EmitResults();
 	}
@@ -1287,8 +1287,8 @@ void TazDlg::ShowResoEllipses3D()
 	if(!m_pEllipseDlg3D)
 	{
 		m_pEllipseDlg3D = new EllipseDlg3D(this, &m_settings);
-		QObject::connect(m_pReso, SIGNAL(ResoResults(const PopParams&, const CNResults&)),
-						 m_pEllipseDlg3D, SLOT(SetParams(const PopParams&, const CNResults&)));
+		QObject::connect(m_pReso, SIGNAL(ResoResults(const ublas::matrix<double>&, const ublas::vector<double>&)),
+						 m_pEllipseDlg3D, SLOT(SetParams(const ublas::matrix<double>&, const ublas::vector<double>&)));
 
 		m_pReso->EmitResults();
 	}

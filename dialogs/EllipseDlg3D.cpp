@@ -74,7 +74,7 @@ EllipseDlg3D::ProjRotatedVec(const ublas::matrix<double>& rot,
 	return vecCoord;
 }
 
-void EllipseDlg3D::SetParams(const PopParams& pop, const CNResults& res)
+void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg)
 {
 	const int iX[] = {0, 0};
 	const int iY[] = {1, 1};
@@ -85,14 +85,14 @@ void EllipseDlg3D::SetParams(const PopParams& pop, const CNResults& res)
 	//bool bXMLLoaded = xmlparams.Load("res/res.conf");
 	bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
 
-	ublas::vector<double> Q_avg = res.Q_avg;
+	ublas::vector<double> Q_avg = _Q_avg;
 	if(bCenterOn0)
 		Q_avg = ublas::zero_vector<double>(Q_avg.size());
 
 	for(unsigned int i=0; i<m_pPlots.size(); ++i)
 	{
-		m_elliProj[i] = ::calc_res_ellipsoid(res.reso, Q_avg, iX[i], iY[i], iZ[i], iIntOrRem[i], -1);
-		m_elliSlice[i] = ::calc_res_ellipsoid(res.reso, Q_avg, iX[i], iY[i], iZ[i], -1, iIntOrRem[i]);
+		m_elliProj[i] = ::calc_res_ellipsoid(reso, Q_avg, iX[i], iY[i], iZ[i], iIntOrRem[i], -1);
+		m_elliSlice[i] = ::calc_res_ellipsoid(reso, Q_avg, iX[i], iY[i], iZ[i], -1, iIntOrRem[i]);
 
 		ublas::vector<double> vecWProj(3), vecWSlice(3);
 		ublas::vector<double> vecOffsProj(3), vecOffsSlice(3);

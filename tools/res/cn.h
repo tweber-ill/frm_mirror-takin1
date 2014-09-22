@@ -80,7 +80,6 @@ struct CNResults
 };
 
 
-extern ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx);
 extern CNResults calc_cn(CNParams& cn);
 extern bool calc_cn_angles(CNParams& cn, CNResults& res);
 extern void calc_bragg_widths(CNParams& cn, CNResults& res);

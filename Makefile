@@ -53,10 +53,12 @@ takin: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/l
 	strip bin/takin
 
 
-montereso: obj/montereso.o obj/montereso_main.o obj/log.o obj/linalg.o obj/string.o
+montereso: obj/montereso.o obj/montereso_main.o obj/log.o obj/linalg.o obj/linalg2.o obj/string.o \
+		obj/EllipseDlg.o obj/ellipse.o obj/spec_char.o obj/rand.o
 	${CC} ${FLAGS} -o bin/montereso obj/montereso.o obj/montereso_main.o \
-			obj/log.o obj/linalg.o obj/string.o \
-			${STD_LIBS}
+			obj/log.o obj/linalg.o obj/string.o obj/EllipseDlg.o obj/ellipse.o \
+			obj/spec_char.o obj/linalg2.o obj/rand.o \
+			${STD_LIBS} ${QT_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
 
 
 

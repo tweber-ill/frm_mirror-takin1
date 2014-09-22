@@ -361,3 +361,28 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 		vecResult.push_back(std::move(vecMC));
 	}
 }
+
+
+// --------------------------------------------------------------------------------
+
+
+/*
+ * this is a 1:1 C++ reimplementation of 'rc_int' from 'mcresplot' and 'rescal5'
+ * integrate over row/column iIdx
+ */
+ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx)
+{
+	unsigned int iSize = mat.size1();
+	ublas::vector<double> b(iSize);
+
+	for(unsigned int i=0; i<iSize; ++i)
+		b[i] = mat(i,iIdx) + mat(iIdx,i);
+
+	b = remove_elem(b, iIdx);
+	ublas::matrix<double> m = remove_elems(mat, iIdx);
+	ublas::matrix<double> bb = outer_prod(b,b);
+
+	double d = mat(iIdx, iIdx);
+	m = m - 0.25/d * bb;
+	return m;
+}

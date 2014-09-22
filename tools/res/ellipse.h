@@ -66,4 +66,7 @@ extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const
 extern void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 						std::vector<ublas::vector<double>>& vecResult);
 
+
+extern ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx);
+
 #endif

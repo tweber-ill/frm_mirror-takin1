@@ -88,7 +88,7 @@ public:
 	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 
 signals:
-	void ResoResults(const PopParams& pop, const CNResults& res);
+	void ResoResults(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
 };
 
 #endif

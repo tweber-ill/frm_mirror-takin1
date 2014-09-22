@@ -286,10 +286,7 @@ void ResoDlg::Calc()
 
 void ResoDlg::EmitResults()
 {
-	PopParams& cn = m_pop;
-	CNResults &res = m_res;
-
-	emit ResoResults(cn, res);
+	emit ResoResults(m_res.reso, m_res.Q_avg);
 }
 
 void ResoDlg::WriteLastConfig()

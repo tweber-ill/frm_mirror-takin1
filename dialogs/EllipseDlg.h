@@ -52,7 +52,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		void cursorMoved(const QPointF& pt);
 
 	public slots:
-		void SetParams(const PopParams& pop, const CNResults& res);
+		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
 };
 
 #endif

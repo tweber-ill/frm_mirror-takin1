@@ -123,7 +123,7 @@ void EllipseDlg::cursorMoved(const QPointF& pt)
 	this->labelStatus->setText(ostr.str().c_str());
 }
 
-void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
+void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg)
 {
 	static const int iParams[2][4][5] =
 	{
@@ -148,7 +148,7 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 	bool bXMLLoaded = 0; //xmlparams.Load("res/res.conf");
 	bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
 
-	ublas::vector<double> Q_avg = res.Q_avg;
+	ublas::vector<double> Q_avg = _Q_avg;
 	if(bCenterOn0)
 		Q_avg = ublas::zero_vector<double>(Q_avg.size());
 
@@ -195,11 +195,11 @@ void EllipseDlg::SetParams(const PopParams& pop, const CNResults& res)
 		const int *iS = iParams[1][iEll];
 
 		std::future<Ellipse> ell_proj = std::async(std::launch::deferred|std::launch::async,
-					[=, &res, &Q_avg]()
-					{ return ::calc_res_ellipse(res.reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+					[=, &reso, &Q_avg]()
+					{ return ::calc_res_ellipse(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
 		std::future<Ellipse> ell_slice = std::async(std::launch::deferred|std::launch::async,
-					[=, &res, &Q_avg]()
-					{ return ::calc_res_ellipse(res.reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+					[=, &reso, &Q_avg]()
+					{ return ::calc_res_ellipse(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
 
 		tasks_ell_proj.push_back(std::move(ell_proj));
 		tasks_ell_slice.push_back(std::move(ell_slice));

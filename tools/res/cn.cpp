@@ -9,6 +9,7 @@
  */
 
 #include "cn.h"
+#include "ellipse.h"
 #include "helper/linalg.h"
 #include "helper/math.h"
 #include "helper/neutrons.hpp"
@@ -23,27 +24,6 @@ typedef units::quantity<units::si::plane_angle> angle;
 typedef units::quantity<units::si::wavenumber> wavenumber;
 typedef units::quantity<units::si::energy> energy;
 typedef units::quantity<units::si::length> length;
-
-/*
- * this is a 1:1 C++ reimplementation of 'rc_int' from 'mcresplot' and 'rescal5'
- * integrate over row/column iIdx
- */
-ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx)
-{
-	unsigned int iSize = mat.size1();
-	ublas::vector<double> b(iSize);
-
-	for(unsigned int i=0; i<iSize; ++i)
-		b[i] = mat(i,iIdx) + mat(iIdx,i);
-
-	b = remove_elem(b, iIdx);
-	ublas::matrix<double> m = remove_elems(mat, iIdx);
-	ublas::matrix<double> bb = outer_prod(b,b);
-
-	double d = mat(iIdx, iIdx);
-	m = m - 0.25/d * bb;
-	return m;
-}
 
 
 CNResults calc_cn(CNParams& cn)

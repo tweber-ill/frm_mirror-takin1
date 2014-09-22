@@ -7,6 +7,7 @@
 #include "res.h"
 #include "helper/log.h"
 #include "helper/string.h"
+#include "dialogs/EllipseDlg.h"
 
 #include <fstream>
 #include <vector>
@@ -14,6 +15,9 @@
 
 int main(int argc, char **argv)
 {
+	::setlocale(LC_ALL, "C");
+
+
 	if(argc <= 1)
 	{
 		log_err("No input file given.");
@@ -55,6 +59,21 @@ int main(int argc, char **argv)
 	log_info("Number of neutrons in file: ", vecQx.size());
 
 	Resolution res = calc_res(vecQx.size(), vecQx.data(), vecQy.data(), vecQz.data(), vecE.data());
+	if(!res.bHasRes)
+	{
+		log_err("Cannot calculate resolution matrix.");
+		return -1;
+	}
+
+
+	QLocale::setDefault(QLocale::English);
+	QApplication app(argc, argv);
+
+	EllipseDlg dlg(0);
+	dlg.show();
+	dlg.SetParams(res.res, res.Q_avg);
+	int iRet = app.exec();
+
 
 	return 0;
 }
