@@ -86,9 +86,19 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1536710058.1833539831" name="dialogs" rcbsApplicability="disable" resourcePath="tools/taz/dialogs" toolsToInvoke=""/>
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1536710058.2044821098" name="/" resourcePath="tools/montereso">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.63367347" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug" unusedChildren="">
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.487751480" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.1274879456"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.44540676" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2034901305"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1460355998" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1342627832"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1842246438" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug.418484306"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1060591570" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.399949835"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1887076610" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug.2123285518"/>
+						</toolChain>
+					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1536710058.523046163" name="Makefile" rcbsApplicability="disable" resourcePath="Makefile" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Makefile|Debug|test|tools/res/dialogs|tools/res/plot|tools/res/ui|tools/res/helper|tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="tools/montereso|tools/montereso/ui|tools/montereso/helper|tools/montereso/dialogs|Makefile|Debug|test|tools/res/dialogs|tools/res/plot|tools/res/ui|tools/res/helper|tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -179,9 +189,19 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.1085676439.1305579664" name="dialogs" rcbsApplicability="disable" resourcePath="tools/taz/dialogs" toolsToInvoke=""/>
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.release.1085676439.341847833" name="/" resourcePath="tools/montereso">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.249400270" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.release" unusedChildren="">
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1988849276" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.988207793"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1705488764" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.692393029"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1712492190" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1792737407"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.932573833" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release.284415959"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.1427198145" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.384017152"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.1743516550" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release.713370981"/>
+						</toolChain>
+					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.1085676439.770727782" name="Makefile" rcbsApplicability="disable" resourcePath="Makefile" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Debug|test|tools/res/dialogs|tools/res/plot|tools/res/ui|tools/res/helper|tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="tools/montereso|tools/montereso/ui|tools/montereso/helper|tools/montereso/dialogs|Debug|test|tools/res/dialogs|tools/res/plot|tools/res/ui|tools/res/helper|tools/taz/dialogs|tools/taz/ui|tools/taz/plot|tools/taz/helper|bin|obj" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

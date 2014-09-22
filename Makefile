@@ -34,6 +34,7 @@ LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 
 
+
 takin: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
 	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
@@ -50,6 +51,14 @@ takin: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/l
 			obj/rand.o \
 			${LIBS_TAZ} ${LIBS_RESO}
 	strip bin/takin
+
+
+montereso: obj/montereso.o obj/montereso_main.o obj/log.o obj/linalg.o obj/string.o
+	${CC} ${FLAGS} -o bin/montereso obj/montereso.o obj/montereso_main.o \
+			obj/log.o obj/linalg.o obj/string.o \
+			${STD_LIBS}
+
+
 
 
 obj/taz_main.o: tools/taz/taz_main.cpp tools/taz/taz.h
@@ -138,6 +147,15 @@ obj/EllipseDlg.o: dialogs/EllipseDlg.cpp dialogs/EllipseDlg.h
 
 obj/EllipseDlg3D.o: dialogs/EllipseDlg3D.cpp dialogs/EllipseDlg3D.h
 	${CC} ${FLAGS} -c -o obj/EllipseDlg3D.o dialogs/EllipseDlg3D.cpp
+
+
+
+obj/montereso.o: tools/montereso/res.cpp tools/montereso/res.h
+	${CC} ${FLAGS} -c -o obj/montereso.o tools/montereso/res.cpp
+
+obj/montereso_main.o: tools/montereso/res_main.cpp
+	${CC} ${FLAGS} -c -o obj/montereso_main.o tools/montereso/res_main.cpp
+
 
 
 clean:

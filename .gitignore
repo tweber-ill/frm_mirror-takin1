@@ -9,6 +9,7 @@ Debug/*
 Release/*
 ui/*.h
 bin/reso
+bin/montereso
 bin/taz
 bin/takin
 perf.data
