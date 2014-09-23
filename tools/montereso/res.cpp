@@ -110,7 +110,7 @@ Resolution calc_res(unsigned int uiLen, const vector<double>* Q_vec,
 		reso.dQ.resize(4, 0);
 		for(int iQ=0; iQ<4; ++iQ)
 			reso.dQ[iQ] = SIGMA2HWHM/sqrt(res(iQ,iQ));
-		
+
 		log_info("Resolution matrix: ", res);
 
 		const vector<double>& dQ = reso.dQ;

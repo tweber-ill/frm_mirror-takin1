@@ -59,9 +59,9 @@ INT rand_poisson(REAL dMu)
 }
 
 
-template<class t_vec=std::vector<double>, class REAL=typename t_vec::value_type>
-t_vec rand_norm_nd(const std::initializer_list<REAL>& vecMu,
-					const std::initializer_list<REAL>& vecSigma)
+template<class t_vec=std::vector<double>, class REAL=typename t_vec::value_type,
+	class t_initlst=std::initializer_list<REAL>>
+t_vec rand_norm_nd(const t_initlst& vecMu, const t_initlst& vecSigma)
 {
 	if(vecMu.size() != vecSigma.size())
 		return t_vec();
@@ -72,7 +72,7 @@ t_vec rand_norm_nd(const std::initializer_list<REAL>& vecMu,
 	std::vector<std::future<REAL>> vecFut;
 	vecFut.reserve(iDim);
 
-	using iter = typename std::initializer_list<REAL>::const_iterator;
+	using iter = typename t_initlst::const_iterator;
 	iter iterMu = vecMu.begin();
 	iter iterSig = vecSigma.begin();
 

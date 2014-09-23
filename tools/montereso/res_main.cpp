@@ -33,16 +33,11 @@ int main(int argc, char **argv)
 
 
 	std::vector<double> vecQx, vecQy, vecQz, vecE;
+	std::string strLine;
 
-	while(1)
+	while(std::getline(ifstr, strLine))
 	{
-		if(ifstr.eof())
-			break;
-
-		std::string strLine;
-		std::getline(ifstr, strLine);
 		trim(strLine);
-
 		if(strLine.length()==0 || strLine[0]=='#')
 			continue;
 
