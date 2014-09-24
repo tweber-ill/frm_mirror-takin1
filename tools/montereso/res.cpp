@@ -32,44 +32,21 @@ Resolution calc_res(const std::vector<vector<double>>& Q_vec,
 					const vector<double>& Q_avg,
 					const std::vector<double>* pp_vec)
 {
-	const unsigned int uiLen = Q_vec.size();
-
-	std::unique_ptr<vector<double>[]> ptr_q_trafo_vec(new vector<double>[uiLen]);
-	vector<double> *Q_trafo_vec = ptr_q_trafo_vec.get();
-
-	vector<double> Q_dir(3), Q_perp(3);
-	Q_dir[0] = Q_avg[0];
-	Q_dir[1] = Q_avg[1];
-	Q_dir[2] = Q_avg[2];
+	vector<double> Q_dir = make_vec({Q_avg[0], Q_avg[1], Q_avg[2]});
 	Q_dir = Q_dir / norm_2(Q_dir);
 
-	Q_perp[0] = -Q_dir[1];
-	Q_perp[1] = Q_dir[0];
-	Q_perp[2] = Q_dir[2];
+	vector<double> vecUp = make_vec({0., 0., 1.});
+	vector<double> Q_perp = cross_3(vecUp, Q_dir);
+
+	Q_perp[0]=Q_dir[1]; Q_perp[1]=Q_dir[0]; Q_perp[2]=Q_dir[2];
 
 
 	matrix<double> trafo(4, 4);
+	trafo(0,0)=Q_dir[0];	trafo(1,0)=Q_dir[1];	trafo(2,0)=Q_dir[2];
+	trafo(0,1)=Q_perp[0];	trafo(1,1)=Q_perp[1];	trafo(2,1)=Q_perp[2];
+	trafo(0,2)=vecUp[0];	trafo(1,2)=vecUp[1];	trafo(2,2)=vecUp[2];
 
-	// point to Q_dir direction
-	trafo(0,0) = Q_dir[0];
-	trafo(1,0) = Q_dir[1];
-	trafo(2,0) = Q_dir[2];
-
-	// perpendicular to Q_dir
-	trafo(0,1) = Q_perp[0];
-	trafo(1,1) = Q_perp[1];
-	trafo(2,1) = Q_perp[2];
-
-	vector<double> vecUp = cross_3(Q_dir, Q_perp);
-	// z direction up
-	trafo(0,2) = vecUp[0];
-	trafo(1,2) = vecUp[1];
-	trafo(2,2) = vecUp[2];
-
-	// energy
-	trafo(3,0) = trafo(0,3) = 0.;
-	trafo(3,1) = trafo(1,3) = 0.;
-	trafo(3,2) = trafo(2,3) = 0.;
+	trafo(3,0)=trafo(0,3)=trafo(3,1)=trafo(1,3)=trafo(3,2)=trafo(2,3) = 0.;
 	trafo(3,3) = 1.;
 
 	//std::cout << "trafo = " << trafo << std::endl;
