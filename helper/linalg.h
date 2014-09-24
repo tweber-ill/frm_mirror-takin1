@@ -945,7 +945,8 @@ ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 	if(vecVals.size() == 0) return ublas::matrix<T>();
 
 	using t_vecvec = typename std::remove_reference<decltype(vecVals)>::type;
-	using t_innervec = decltype(vecVals[0]);
+	using t_innervec_org = decltype(vecVals[0]);
+	using t_innervec = typename std::remove_const<typename std::remove_reference<t_innervec_org>::type>::type;
 
 	t_innervec vecMean = mean_value<t_vecvec>(vecVals);
 	//std::cout << "Mean: " << vecMean << std::endl;
@@ -958,7 +959,7 @@ ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 	{
 		T tprob = 1.;
 
-		ublas::vector<T> vec = vecVals[i] - vecMean;
+		t_innervec vec = vecVals[i] - vecMean;
 		if(pProb)
 		{
 			tprob = (*pProb)[i];

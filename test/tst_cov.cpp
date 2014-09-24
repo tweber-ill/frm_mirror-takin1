@@ -1,4 +1,4 @@
-// clang -o tst_cov tst_cov.cpp -lstdc++ -std=c++11
+// clang -o tst_cov tst_cov.cpp -lstdc++ -lm -std=c++11
 
 #include <iostream>
 #include <vector>
