@@ -31,11 +31,12 @@ template<class vec_type>
 typename vec_type::value_type mean_value(const vec_type& vec)
 {
 	typedef typename vec_type::value_type T;
+	if(vec.size()==0) return T();
 
-	T tMean = T(0);
-	for(const T& tval : vec)
-		tMean += tval;
-	tMean /= T(vec.size());
+	T tMean = vec[0];
+	for(std::size_t i=1; i<vec.size(); ++i)
+		tMean += vec[i];
+	tMean /= vec.size();
 
 	return tMean;
 }

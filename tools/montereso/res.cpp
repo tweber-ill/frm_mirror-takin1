@@ -28,14 +28,14 @@ using namespace ublas;
  * this function tries to be a 1:1 C++ reimplementation of the Perl function
  * 'read_mcstas_res' of the McStas 'mcresplot' program
  */
-Resolution calc_res(unsigned int uiLen, const vector<double>* Q_vec,
+Resolution calc_res(const std::vector<vector<double>>& Q_vec,
 					const vector<double>& Q_avg,
-					const double *pp_vec, const double *pp_sum)
+					const std::vector<double>* pp_vec)
 {
+	const unsigned int uiLen = Q_vec.size();
+
 	std::unique_ptr<vector<double>[]> ptr_q_trafo_vec(new vector<double>[uiLen]);
 	vector<double> *Q_trafo_vec = ptr_q_trafo_vec.get();
-
-	const double p_sum = pp_sum ? *pp_sum : double(uiLen);
 
 	vector<double> Q_dir(3), Q_perp(3);
 	Q_dir[0] = Q_avg[0];
@@ -74,31 +74,15 @@ Resolution calc_res(unsigned int uiLen, const vector<double>* Q_vec,
 
 	//std::cout << "trafo = " << trafo << std::endl;
 
-
-	matrix<double> ubermatrix(uiLen, 4);
-
-	for(unsigned int uiRow=0; uiRow<uiLen; ++uiRow)
-	{
-		const vector<double>& Q = Q_vec[uiRow];
-		const double p = pp_vec ? pp_vec[uiRow] : 1.;
-
-		vector<double> Q_delta(4);
-		Q_delta = Q - Q_avg;
-
-		for(unsigned int ui=0; ui<4; ++ui)
-			ubermatrix(uiRow,ui) = Q_delta[ui] * sqrt(p);
-	}
-
-
 	Resolution reso;
 	reso.Q_avg = prod(trans(trafo), Q_avg);
 
 	matrix<double>& res = reso.res;
-	matrix<double>& cov = reso.cov;	
+	matrix<double>& cov = reso.cov;
 	res.resize(4,4,0);
 	cov.resize(4,4,0);
 
-	cov = prod(trans(ubermatrix), ubermatrix) / p_sum;
+	cov = covariance(Q_vec, pp_vec);
 	cov = prod(cov, trafo);
 	cov = prod(trans(trafo), cov);
 
@@ -143,25 +127,26 @@ Resolution calc_res(unsigned int uiLen,
 	vector<double> Q_avg(4);
 	Q_avg[0] = Q_avg[1] = Q_avg[2] = Q_avg[3] = 0.;
 
-	std::unique_ptr<vector<double>[]> ptr_Q_vec(new vector<double>[uiLen]);
-	vector<double> *Q_vec = ptr_Q_vec.get();
+	std::vector<vector<double>> Q_vec;
+	Q_vec.reserve(uiLen);
 
 	for(unsigned int uiRow=0; uiRow<uiLen; ++uiRow)
 	{
-		vector<double>& Q = Q_vec[uiRow];
+		vector<double> Q(4);
 
-		Q.resize(4, 0);
 		Q[0] = _Q_x[uiRow];
 		Q[1] = _Q_y[uiRow];
 		Q[2] = _Q_z[uiRow];
 		Q[3] = _E[uiRow];
 
 		Q_avg += Q;
+
+		Q_vec.push_back(Q);
 	}
 	Q_avg /= double(uiLen);
 	log_info("Average Q vector: ", Q_avg);
 
-	return calc_res(uiLen, Q_vec, Q_avg);
+	return calc_res(Q_vec, Q_avg);
 }
 
 
@@ -176,15 +161,14 @@ Resolution calc_res(unsigned int uiLen,
 {
 	log_info("Calculating resolution...");
 
-	std::unique_ptr<vector<double>[]> ptr_Q_vec(new vector<double>[uiLen]);
-	vector<double> *Q_vec = ptr_Q_vec.get();
-
+	std::vector<vector<double>> Q_vec;
+	std::vector<double> p_vec;
+	Q_vec.reserve(uiLen);
+	p_vec.reserve(uiLen);
 
 	std::unique_ptr<double[]> ptr_dE_vec(new double[uiLen]);
-	std::unique_ptr<double[]> ptr_p_vec(new double[uiLen]);
 
 	double *dE_vec = ptr_dE_vec.get();
-	double *p_vec = ptr_p_vec.get();
 
 
 	const double pi_max = _p_i ? *std::max_element(_p_i, _p_i+uiLen) : 1.;
@@ -199,9 +183,8 @@ Resolution calc_res(unsigned int uiLen,
 
 	for(unsigned int uiRow=0; uiRow<uiLen; ++uiRow)
 	{
-		vector<double>& Q = Q_vec[uiRow];
-		Q.resize(3, 0);
-		double& p = p_vec[uiRow];
+		vector<double> Q(3);
+		double p;
 
 		p = (_p_i && _p_f) ? fabs(_p_i[uiRow]*_p_f[uiRow]) : 1.;
 		p /= p_max;		// normalize p to 0..1
@@ -223,10 +206,13 @@ Resolution calc_res(unsigned int uiLen,
 		Q[3] = dE;
 
 		Q_avg += Q*p;
+
+		Q_vec.push_back(Q);
+		p_vec.push_back(p);
 	}
 	Q_avg /= p_sum;
 	log_info("Average Q vector: ", Q_avg);
 
 
-	return calc_res(uiLen, Q_vec, Q_avg, p_vec, &p_sum);
+	return calc_res(Q_vec, Q_avg, &p_vec);
 }

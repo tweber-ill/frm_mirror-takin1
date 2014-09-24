@@ -30,10 +30,9 @@ struct Resolution
 };
 
 
-Resolution calc_res(unsigned int uiLen, const ublas::vector<double>* Q_vec,
+Resolution calc_res(const std::vector<ublas::vector<double>>& Q_vec,
 					const ublas::vector<double>& Q_avg,
-					const double *pp_vec = 0,
-					const double *pp_sum = 0);
+					const std::vector<double>* pp_vec = 0);
 
 Resolution calc_res(unsigned int uiLen,
 			  const double *_Q_x, const double *_Q_y, const double *_Q_z,
