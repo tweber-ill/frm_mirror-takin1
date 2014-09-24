@@ -447,6 +447,9 @@ void ResoDlg::ResoParamsChanged(const ResoParams& params)
 
 void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 {
+	bool bOldDontCalc = m_bDontCalc;
+	m_bDontCalc = 1;
+
 	double dQ = parms.dQ;
 	if(parms.d2Theta < 0.)
 		dQ = -dQ;
@@ -454,6 +457,10 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	spinQ->setValue(dQ);
 	spinE->setValue(parms.dE);
 	spinkfix->setValue(radioFixedki->isChecked() ? parms.dki : parms.dkf);
+
+	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
+	m_bDontCalc = bOldDontCalc;
+	Calc();
 }
 
 void ResoDlg::RealParamsChanged(const RealParams& parms)

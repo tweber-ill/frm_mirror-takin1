@@ -334,16 +334,6 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 	vecTrans[3] = ell4d.w_offs;
 
 	const ublas::matrix<double>& rot = ell4d.rot;
-	const ublas::matrix<double> rot_inv = ublas::trans(rot);
-
-	/* orthonormal matrix => inv == trans
-	ublas::matrix<double> inv;
-	inverse(rot, inv);
-
-	std::cout << "trans: " << rot_inv << std::endl;
-	std::cout << "inverse: " << inv << std::endl;
-	*/
-
 	vecResult.reserve(iNum);
 
 	for(unsigned int iCur=0; iCur<iNum; ++iCur)
@@ -354,7 +344,7 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 														ell4d.z_hwhm*HWHM2SIGMA,
 														ell4d.w_hwhm*HWHM2SIGMA});
 
-		vecMC = ublas::prod(rot_inv, vecMC);
+		vecMC = ublas::prod(rot, vecMC);
 		if(!bCenter)
 			vecMC += vecTrans;
 

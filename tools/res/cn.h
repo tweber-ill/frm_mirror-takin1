@@ -52,6 +52,7 @@ struct CNParams
 	// scattering triangle
 	bool bki_fix;		// ki or kf fixed?
 	units::quantity<units::si::wavenumber> ki, kf, Q;
+	//ublas::vector<double> Q_vec;
 	units::quantity<units::si::energy> E;		// Ei - Ef
 
 	// resolution volume stuff

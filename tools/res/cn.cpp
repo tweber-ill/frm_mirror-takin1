@@ -13,6 +13,7 @@
 #include "helper/linalg.h"
 #include "helper/math.h"
 #include "helper/neutrons.hpp"
+#include "helper/log.h"
 
 #include <string>
 #include <iostream>
@@ -203,16 +204,24 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 	}
 
 
-	ublas::vector<double> vecKi(2);
-	vecKi[0] = cn.ki*angstrom; vecKi[1] = 0.;	// ki along [100]
-	ublas::matrix<double> rot_kikf = rotation_matrix_2d(res.twotheta/units::si::radians);
-	ublas::vector<double> vecKf = ublas::prod(rot_kikf, vecKi) * (cn.kf/cn.ki);
+	/*ublas::vector<double> vecQ = -cn.Q_vec;		// minus: Q pointf from peak towards zero
+	if(vecQ.size() == 0)
+	{
+		log_warn("Q vector not given.");
 
-	ublas::vector<double> vecQ = vecKi - vecKf;
+		ublas::vector<double> vecKi(2);
+		vecKi[0] = cn.ki*angstrom; vecKi[1] = 0.;	// ki along [100]
+		ublas::matrix<double> rot_kikf = rotation_matrix_2d(res.twotheta/units::si::radians);
+		ublas::vector<double> vecKf = ublas::prod(rot_kikf, vecKi) * (cn.kf/cn.ki);
+
+		vecQ = vecKi - vecKf;
+		vecQ.resize(3, 1);
+		vecQ[2] = 0.;
+	}*/
 
 	res.Q_avg.resize(4);
-	res.Q_avg[0] = -vecQ[0];	// minus since Q points from peak towards zero in TAZ
-	res.Q_avg[1] = -vecQ[1];
+	res.Q_avg[0] = cn.Q*angstrom;
+	res.Q_avg[1] = 0.;
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = cn.E / one_meV;
 

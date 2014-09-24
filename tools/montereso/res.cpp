@@ -37,6 +37,7 @@ Resolution calc_res(const std::vector<vector<double>>& Q_vec,
 
 	vector<double> vecUp = make_vec({0., 0., 1.});
 	vector<double> Q_perp = cross_3(vecUp, Q_dir);
+	vecUp = cross_3(Q_dir, Q_perp);
 
 	Q_perp[0]=Q_dir[1]; Q_perp[1]=Q_dir[0]; Q_perp[2]=Q_dir[2];
 
