@@ -34,129 +34,89 @@ LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 
 
-
-takin: obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o obj/lattice.o obj/plotgl.o \
-	obj/recip3d.o obj/spec_char.o obj/string.o obj/xml.o obj/spacegroup.o \
+OBJ_COMMON = obj/log.o obj/linalg.o obj/linalg2.o obj/string.o obj/rand.o \
+	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
+OBJ_TAZ = obj/taz_main.o obj/taz.o obj/recip3d.o \
+	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o \
-	obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/linalg2.o \
-	obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
-	obj/SrvDlg.o obj/tcp.o obj/nicos.o obj/log.o obj/rand.o
-	${CC} ${FLAGS} -o bin/takin obj/taz.o obj/taz_main.o obj/scattering_triangle.o obj/tas_layout.o \
-			obj/lattice.o obj/plotgl.o obj/recip3d.o obj/spec_char.o obj/string.o \
-			obj/xml.o obj/spacegroup.o \
-			obj/RecipParamDlg.o obj/RealParamDlg.o \
-			obj/cn.o obj/pop.o obj/ellipse.o obj/ResoDlg.o obj/linalg.o obj/linalg2.o \
-			obj/EllipseDlg.o obj/EllipseDlg3D.o obj/SpurionDlg.o obj/NeutronDlg.o \
-			obj/SrvDlg.o obj/tcp.o obj/nicos.o obj/log.o \
-			obj/rand.o \
-			${LIBS_TAZ} ${LIBS_RESO}
+	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
+	obj/xml.o obj/tcp.o obj/lattice.o obj/spacegroup.o \
+	obj/plotgl.o obj/cn.o obj/pop.o obj/ResoDlg.o obj/EllipseDlg3D.o
+OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
+
+
+takin: ${OBJ_COMMON} ${OBJ_TAZ}
+	${CC} ${FLAGS} -o bin/takin $+ ${LIBS_TAZ} ${LIBS_RESO}
 	strip bin/takin
 
-
-montereso: obj/montereso.o obj/montereso_main.o obj/log.o obj/linalg.o obj/linalg2.o obj/string.o \
-		obj/EllipseDlg.o obj/ellipse.o obj/spec_char.o obj/rand.o
-	${CC} ${FLAGS} -o bin/montereso obj/montereso.o obj/montereso_main.o \
-			obj/log.o obj/linalg.o obj/string.o obj/EllipseDlg.o obj/ellipse.o \
-			obj/spec_char.o obj/linalg2.o obj/rand.o \
-			${STD_LIBS} ${QT_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
-
-
+montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
+	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${QT_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
+	strip montereso
 
 
 obj/taz_main.o: tools/taz/taz_main.cpp tools/taz/taz.h
-	${CC} ${FLAGS} -c -o obj/taz_main.o tools/taz/taz_main.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/taz.o: tools/taz/taz.cpp tools/taz/taz.h
-	${CC} ${FLAGS} -c -o obj/taz.o tools/taz/taz.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/recip3d.o: tools/taz/recip3d.cpp tools/taz/recip3d.h
-	${CC} ${FLAGS} -c -o obj/recip3d.o tools/taz/recip3d.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scattering_triangle.h
-	${CC} ${FLAGS} -c -o obj/scattering_triangle.o tools/taz/scattering_triangle.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/tas_layout.o: tools/taz/tas_layout.cpp tools/taz/tas_layout.h
-	${CC} ${FLAGS} -c -o obj/tas_layout.o tools/taz/tas_layout.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
-	${CC} ${FLAGS} -c -o obj/RecipParamDlg.o dialogs/RecipParamDlg.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
-	${CC} ${FLAGS} -c -o obj/RealParamDlg.o dialogs/RealParamDlg.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
-	${CC} ${FLAGS} -c -o obj/SpurionDlg.o dialogs/SpurionDlg.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/NeutronDlg.o: dialogs/NeutronDlg.cpp dialogs/NeutronDlg.h
-	${CC} ${FLAGS} -c -o obj/NeutronDlg.o dialogs/NeutronDlg.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/SrvDlg.o: dialogs/SrvDlg.cpp dialogs/SrvDlg.h
-	${CC} ${FLAGS} -c -o obj/SrvDlg.o dialogs/SrvDlg.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/nicos.o: tools/taz/nicos.cpp tools/taz/nicos.h
-	${CC} ${FLAGS} -c -o obj/nicos.o tools/taz/nicos.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 
 obj/string.o: helper/string.cpp helper/string.h
-	${CC} ${FLAGS} -c -o obj/string.o helper/string.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/spec_char.o: helper/spec_char.cpp helper/spec_char.h
-	${CC} ${FLAGS} -c -o obj/spec_char.o helper/spec_char.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/xml.o: helper/xml.cpp helper/xml.h
-	${CC} ${FLAGS} -c -o obj/xml.o helper/xml.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/log.o: helper/log.cpp helper/log.h
-	${CC} ${FLAGS} -c -o obj/log.o helper/log.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/tcp.o: helper/tcp.cpp helper/tcp.h
-	${CC} ${FLAGS} -c -o obj/tcp.o helper/tcp.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/linalg.o: helper/linalg.cpp helper/linalg.h helper/geo.h
-	${CC} ${FLAGS} -c -o obj/linalg.o helper/linalg.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/linalg2.o: helper/linalg2.cpp helper/linalg2.h helper/geo.h
-	${CC} ${FLAGS} -c -o obj/linalg2.o helper/linalg2.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/lattice.o: helper/lattice.cpp helper/lattice.h
-	${CC} ${FLAGS} -c -o obj/lattice.o helper/lattice.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
-	${CC} ${FLAGS} -c -o obj/spacegroup.o helper/spacegroup.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/rand.o: helper/rand.cpp helper/rand.h
-	${CC} ${FLAGS} -c -o obj/rand.o helper/rand.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/plotgl.o: helper/plotgl.cpp helper/plotgl.h
-	${CC} ${FLAGS} -c -o obj/plotgl.o helper/plotgl.cpp
-
-
+	${CC} ${FLAGS} -c -o $@ $<
 
 obj/cn.o: tools/res/cn.cpp tools/res/cn.h
-	${CC} ${FLAGS} -c -o obj/cn.o tools/res/cn.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/pop.o: tools/res/pop.cpp tools/res/pop.h
-	${CC} ${FLAGS} -c -o obj/pop.o tools/res/pop.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
-	${CC} ${FLAGS} -c -o obj/ellipse.o tools/res/ellipse.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/ResoDlg.o: tools/res/ResoDlg.cpp tools/res/ResoDlg.h
-	${CC} ${FLAGS} -c -o obj/ResoDlg.o tools/res/ResoDlg.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/EllipseDlg.o: dialogs/EllipseDlg.cpp dialogs/EllipseDlg.h
-	${CC} ${FLAGS} -c -o obj/EllipseDlg.o dialogs/EllipseDlg.cpp
-
+	${CC} ${FLAGS} -c -o $@ $<
 obj/EllipseDlg3D.o: dialogs/EllipseDlg3D.cpp dialogs/EllipseDlg3D.h
-	${CC} ${FLAGS} -c -o obj/EllipseDlg3D.o dialogs/EllipseDlg3D.cpp
+	${CC} ${FLAGS} -c -o $@ $<
 
-
-
-obj/montereso.o: tools/montereso/res.cpp tools/montereso/res.h
-	${CC} ${FLAGS} -c -o obj/montereso.o tools/montereso/res.cpp
-
-obj/montereso_main.o: tools/montereso/res_main.cpp
-	${CC} ${FLAGS} -c -o obj/montereso_main.o tools/montereso/res_main.cpp
+obj/montereso_res.o: tools/montereso/res.cpp tools/montereso/res.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/montereso_res_main.o: tools/montereso/res_main.cpp
+	${CC} ${FLAGS} -c -o $@ $<
 
 
 
