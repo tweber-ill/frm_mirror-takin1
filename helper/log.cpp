@@ -120,6 +120,21 @@ Log log_info("INFO", LogColor::WHITE),
 
 
 
+#ifdef DEBUG
+#include <execinfo.h>
+
+void log_backtrace()
+{
+	void *pBtrBuf[512];
+	int iBtr = backtrace(pBtrBuf, 512);
+	char **ppcBtr = backtrace_symbols(pBtrBuf, iBtr);
+	for(unsigned int _iBtr=0; _iBtr<iBtr; ++_iBtr)
+		log_debug("Backtrace ", _iBtr, ": ", ppcBtr[_iBtr]);
+}
+#else
+void log_backtrace() {}
+#endif
+
 
 /*
 #include <thread>

@@ -14,9 +14,9 @@ SrvDlg::SrvDlg(QWidget* pParent, QSettings *pSett)
 	if(m_pSettings)
 	{
 		if(m_pSettings->contains("server/nicos-host"))
-				editHost->setText(m_pSettings->value("server/nicos-host").toString());
+			editHost->setText(m_pSettings->value("server/nicos-host").toString());
 		if(m_pSettings->contains("server/nicos-port"))
-				editPort->setText(m_pSettings->value("server/nicos-port").toString());
+			editPort->setText(m_pSettings->value("server/nicos-port").toString());
 	}
 }
 

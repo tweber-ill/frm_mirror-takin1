@@ -93,5 +93,6 @@ public:
 
 
 extern Log log_info, log_warn, log_err, log_crit, log_debug;
+extern void log_backtrace();
 
 #endif
