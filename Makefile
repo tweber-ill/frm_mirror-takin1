@@ -21,8 +21,8 @@ INC = -I/usr/include/qt4 -I/usr/local/include -I/usr/include/qt4/QtCore \
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
 DEFINES += -DUSE_LAPACK
-FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG ${DEFINES}
-#FLAGS = ${INC} -std=c++11 -ggdb ${DEFINES}
+FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall ${DEFINES}
+#FLAGS = ${INC} -std=c++11 -ggdb -Wall ${DEFINES}
 
 STD_LIBS = -lstdc++ -lm -lboost_system
 STD_LIBS += -lpthread

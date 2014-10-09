@@ -78,6 +78,9 @@ protected slots:
 	void CalcElli4d();
 	void MCGenerate();
 
+protected:
+	void RefreshSimCmd();
+
 public slots:
 	void ResoParamsChanged(const ResoParams& params);
 	void RecipParamsChanged(const RecipParams& parms);

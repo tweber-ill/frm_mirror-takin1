@@ -21,6 +21,7 @@ struct PopParams : public CNParams
 	units::quantity<units::si::length> mono_curvh;
 	units::quantity<units::si::length> mono_curvv;
 	bool bMonoIsCurvedH, bMonoIsCurvedV;
+	unsigned int mono_numtiles_v, mono_numtiles_h;
 
 	units::quantity<units::si::length> ana_w;
 	units::quantity<units::si::length> ana_h;
@@ -28,6 +29,7 @@ struct PopParams : public CNParams
 	units::quantity<units::si::length> ana_curvh;
 	units::quantity<units::si::length> ana_curvv;
 	bool bAnaIsCurvedH, bAnaIsCurvedV;
+	unsigned int ana_numtiles_v, ana_numtiles_h;
 
 	bool bSampleCub;
 	units::quantity<units::si::length> sample_w_q;

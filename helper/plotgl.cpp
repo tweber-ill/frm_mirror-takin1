@@ -24,16 +24,7 @@ static QString to_string(double d)
 QMutex PlotGl::s_mutexShared(QMutex::Recursive);
 
 
-PlotGl::PlotGl(QWidget* pParent) : QGLWidget(pParent),
-								m_mutex(QMutex::Recursive),
-								m_bMouseRotateActive(0), m_bMouseScaleActive(0),
-								m_bRenderThreadActive(1), m_bGLInited(0), m_bDoResize(1),
-								m_iW(640), m_iH(480),
-								m_pfont(0),
-								m_pfontsmall(0),
-								m_dXMin(-10.), m_dXMax(10.),
-								m_dYMin(-10.), m_dYMax(10.),
-								m_dZMin(-10.), m_dZMax(10.)
+PlotGl::PlotGl(QWidget* pParent) : QGLWidget(pParent), m_mutex(QMutex::Recursive)
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
 	m_dMouseScale = 25.;
@@ -339,7 +330,7 @@ void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
 	for(unsigned int i=0; i<3; ++i)
 		for(unsigned int j=0; j<3; ++j)
 			obj.vecParams[iNum++] = rot(j,i);
-	
+
 	m_mutex.unlock();
 }
 

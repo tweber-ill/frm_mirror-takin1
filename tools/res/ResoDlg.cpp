@@ -208,6 +208,13 @@ void ResoDlg::Calc()
 	cn.dist_ana_det = spinDistAnaDet->value()*0.01*units::si::meter;
 	cn.dist_src_mono = spinDistSrcMono->value()*0.01*units::si::meter;
 
+	// TODO
+	cn.mono_numtiles_h = 1;
+	cn.mono_numtiles_v = 1;
+	cn.ana_numtiles_h = 1;
+	cn.ana_numtiles_v = 1;
+
+
 	const bool bUseCN = radioCN->isChecked();
 	res = (bUseCN ? calc_cn(cn) : calc_pop(cn));
 
@@ -272,6 +279,9 @@ void ResoDlg::Calc()
 			m_bEll4dCurrent = 1;
 		}
 
+		if(groupSim->isChecked())
+			RefreshSimCmd();
+
 		EmitResults();
 	}
 	else
@@ -282,6 +292,61 @@ void ResoDlg::Calc()
 
 		labelkvar_val->setText("<error>");
 	}
+}
+
+void ResoDlg::RefreshSimCmd()
+{
+	std::ostringstream ostrCmd;
+	ostrCmd.precision(12);
+
+	ostrCmd << "./templateTAS -n 1e6 verbose=1 ";
+
+	ostrCmd << "KI=" << (m_pop.ki * angstrom) << " ";
+	ostrCmd << "KF=" << (m_pop.kf * angstrom) << " ";
+	ostrCmd << "QM=" << (m_pop.Q * angstrom) << " ";
+	ostrCmd << "EN=" << (m_pop.E / one_meV) << " ";
+	//ostrCmt << "FX=" << (m_pop.bki_fix ? "1" : "2") << " ";
+
+	ostrCmd << "L1=" << (m_pop.dist_src_mono / units::si::meters) << " ";
+	ostrCmd << "L2=" << (m_pop.dist_mono_sample / units::si::meters) << " ";
+	ostrCmd << "L3=" << (m_pop.dist_sample_ana / units::si::meters) << " ";
+	ostrCmd << "L4=" << (m_pop.dist_ana_det / units::si::meters) << " ";
+
+	ostrCmd << "SM=" << m_pop.dmono_sense << " ";
+	ostrCmd << "SS=" << m_pop.dsample_sense << " ";
+	ostrCmd << "SA=" << m_pop.dana_sense << " ";
+
+	ostrCmd << "DM=" << (m_pop.mono_d / angstrom) << " ";
+	ostrCmd << "DA=" << (m_pop.ana_d / angstrom) << " ";
+
+	ostrCmd << "RMV=" << (m_pop.mono_curvv / units::si::meters) << " ";
+	ostrCmd << "RMH=" << (m_pop.mono_curvh / units::si::meters) << " ";
+	ostrCmd << "RAV=" << (m_pop.ana_curvv / units::si::meters) << " ";
+	ostrCmd << "RAH=" << (m_pop.ana_curvh / units::si::meters) << " ";
+
+	ostrCmd << "ETAM=" << (m_pop.mono_mosaic/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ETAA=" << (m_pop.ana_mosaic/units::si::radians/M_PI*180.*60.) << " ";
+
+	ostrCmd << "ALF1=" << (m_pop.coll_h_pre_mono/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ALF2=" << (m_pop.coll_h_pre_sample/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ALF3=" << (m_pop.coll_h_post_sample/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ALF4=" << (m_pop.coll_h_post_ana/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "BET1=" << (m_pop.coll_v_pre_mono/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "BET2=" << (m_pop.coll_v_pre_sample/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "BET3=" << (m_pop.coll_v_post_sample/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "BET4=" << (m_pop.coll_v_post_ana/units::si::radians/M_PI*180.*60.) << " ";
+
+	ostrCmd << "WM=" << (m_pop.mono_w / units::si::meters) << " ";
+	ostrCmd << "HM=" << (m_pop.mono_h / units::si::meters) << " ";
+	ostrCmd << "WA=" << (m_pop.ana_w / units::si::meters) << " ";
+	ostrCmd << "HA=" << (m_pop.ana_h / units::si::meters) << " ";
+
+	ostrCmd << "NVM=" << m_pop.mono_numtiles_v << " ";
+	ostrCmd << "NHM=" << m_pop.mono_numtiles_h << " ";
+	ostrCmd << "NVA=" << m_pop.ana_numtiles_v << " ";
+	ostrCmd << "NHA=" << m_pop.ana_numtiles_h << " ";
+
+	editSim->setPlainText(ostrCmd.str().c_str());
 }
 
 void ResoDlg::EmitResults()

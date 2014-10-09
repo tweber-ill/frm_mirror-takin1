@@ -864,8 +864,8 @@ typename vec_type::value_type vec_angle(const vec_type& vec0,
 	}
 	if(vec0.size() == 3)
 	{
-		real_type dNorm0 = ublas::norm_2(vec0);
-		real_type dNorm1 = ublas::norm_2(vec1);
+		//real_type dNorm0 = ublas::norm_2(vec0);
+		//real_type dNorm1 = ublas::norm_2(vec1);
 
 		real_type dC = ublas::inner_prod(vec0, vec1);
 		vec_type veccross = cross_3<vec_type>(vec0, vec1);

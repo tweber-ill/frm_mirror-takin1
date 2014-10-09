@@ -43,11 +43,11 @@ protected:
 	std::vector<PlotObjGl> m_vecObjs;
 	GLuint m_iLstSphere;
 	QString m_strLabels[3];
-	QFont *m_pfont, *m_pfontsmall;
+	QFont *m_pfont=0, *m_pfontsmall=0;
 
-	double m_dXMin, m_dXMax;
-	double m_dYMin, m_dYMax;
-	double m_dZMin, m_dZMax;
+	double m_dXMin=-10., m_dXMax=10.;
+	double m_dYMin=-10., m_dYMax=10.;
+	double m_dZMin=-10., m_dZMax=10.;
 	double m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
 
 	//void initializeGL();
@@ -59,11 +59,11 @@ protected:
 
 	// ------------------------------------------------------------------------
 	// mouse stuff
-	bool m_bMouseRotateActive;
+	bool m_bMouseRotateActive = 0;
 	double m_dMouseRot[2];
 	double m_dMouseBegin[2];
 
-	bool m_bMouseScaleActive;
+	bool m_bMouseScaleActive = 0;
 	double m_dMouseScale;
 	double m_dMouseScaleBegin;
 
@@ -74,16 +74,16 @@ protected:
 
 	// ------------------------------------------------------------------------
 	// render thread
-	bool m_bGLInited;
-	bool m_bDoResize;
-	bool m_bRenderThreadActive;
+	bool m_bGLInited = 0;
+	bool m_bDoResize = 1;
+	bool m_bRenderThreadActive = 1;
 
 	void initializeGLThread();
 	void resizeGLThread(int w, int h);
 	void paintGLThread();
 	void run();
 
-	int m_iW, m_iH;
+	int m_iW=640, m_iH=480;
 	// ------------------------------------------------------------------------
 
 public:
