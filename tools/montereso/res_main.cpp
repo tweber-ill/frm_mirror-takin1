@@ -70,5 +70,5 @@ int main(int argc, char **argv)
 	int iRet = app.exec();
 
 
-	return 0;
+	return iRet;
 }

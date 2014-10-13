@@ -441,8 +441,10 @@ double ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 	const double dAngle = vec_angle(vecKi) - vec_angle(vecQ);*/
 
 	double dTT = GetTwoTheta(bPosSense);
-	double dAngle = get_angle_ki_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom) / units::si::radians;
-	if(dTT < 0.)
+	double dAngle = get_angle_ki_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom, bPosSense) / units::si::radians;
+	//std::cout << "tt=" << dTT << ", kiQ="<<dAngle << std::endl;
+
+	if(std::fabs(dTT) > M_PI)
 		dAngle = -dAngle;
 
 	return dAngle;
@@ -461,8 +463,9 @@ double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 	const double dAngle = vec_angle(vecKf) - vec_angle(vecQ);*/
 
 	double dTT = GetTwoTheta(bPosSense);
-	double dAngle = M_PI-get_angle_kf_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom) / units::si::radians;
-	if(dTT < 0.)
+	double dAngle = M_PI-get_angle_kf_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom, bPosSense) / units::si::radians;
+
+	if(std::fabs(dTT) > M_PI)
 		dAngle = -dAngle;
 
 	return dAngle;
@@ -498,6 +501,10 @@ double ScatteringTriangle::GetTwoTheta(bool bPosSense) const
 	vecKf /= ublas::norm_2(vecKf);
 
 	double dTT = vec_angle(vecKi) - vec_angle(vecKf);
+	if(dTT < 0.)
+		dTT += 2.*M_PI;
+	dTT = std::fmod(dTT, 2.*M_PI);
+
 	if(!bPosSense)
 		dTT = -dTT;
 
