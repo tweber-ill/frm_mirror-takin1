@@ -52,7 +52,7 @@
    <item row="0" column="0" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabCN">
       <attribute name="title">
@@ -1659,6 +1659,38 @@ Resolution Matrix:
     <hint type="destinationlabel">
      <x>494</x>
      <y>317</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupGuide</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinVCollMono</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>401</x>
+     <y>326</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>286</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupGuide</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinHCollMono</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>401</x>
+     <y>326</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>231</x>
+     <y>286</y>
     </hint>
    </hints>
   </connection>

@@ -26,6 +26,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 			: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
 	setupUi(this);
+	groupGuide->setChecked(false);
+
 	m_vecSpinBoxes = {spinMonod, spinMonoMosaic, spinAnad,
 						spinAnaMosaic, spinSampleMosaic, spinkfix,
 						spinE, spinQ, spinHCollMono, spinHCollBSample,

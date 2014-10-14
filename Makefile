@@ -1,5 +1,5 @@
-#CC = gcc
-CC = clang
+CC = gcc
+#CC = clang
 DEFINES = 
 QWT_VER = 6
 
@@ -21,7 +21,7 @@ INC = -I/usr/include/qt4 -I/usr/local/include -I/usr/include/qt4/QtCore \
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
 DEFINES += -DUSE_LAPACK
-FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall ${DEFINES}
+FLAGS = ${INC} -O3 -march=native -std=c++11 -DNDEBUG -Wall ${DEFINES}
 #FLAGS = ${INC} -std=c++11 -ggdb -Wall ${DEFINES}
 
 STD_LIBS = -lstdc++ -lm -lboost_system
@@ -43,6 +43,9 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/recip3d.o \
 	obj/xml.o obj/tcp.o obj/lattice.o obj/spacegroup.o \
 	obj/plotgl.o obj/cn.o obj/pop.o obj/ResoDlg.o obj/EllipseDlg3D.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
+
+
+all: takin montereso
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
