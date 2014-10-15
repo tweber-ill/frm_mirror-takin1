@@ -66,4 +66,10 @@ class Lattice
 		ublas::matrix<double> GetMetric() const;
 };
 
+extern bool get_tas_angles(const Lattice& lattice_real,
+						const ublas::vector<double>& vec1, const ublas::vector<double>& vec2,
+						double dKi, double dKf,
+						double dh, double dk, double dl,
+						double *pTheta, double *pTwoTheta);
+
 #endif

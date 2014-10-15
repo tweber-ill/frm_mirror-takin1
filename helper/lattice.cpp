@@ -5,6 +5,7 @@
  */
 
 #include "lattice.h"
+#include "neutrons.hpp"
 
 Lattice::Lattice()
 {}
@@ -176,6 +177,60 @@ ublas::matrix<double> Lattice::GetMetric() const
 {
 	std::vector<ublas::vector<double> > vecs = {m_vecs[0], m_vecs[1], m_vecs[2]};
 	return column_matrix(vecs);
+}
+
+
+
+bool get_tas_angles(const Lattice& lattice_real,
+					const ublas::vector<double>& _vec1, const ublas::vector<double>& _vec2,
+					double dKi, double dKf,
+					double dh, double dk, double dl,
+					double *pTheta, double *pTwoTheta)
+{
+	using t_vec = ublas::vector<double>;
+	using t_mat = ublas::matrix<double>;
+
+	try
+	{
+		t_mat matB = lattice_real.GetRecip().GetMetric();
+
+
+		t_vec vec1 = _vec1;
+		t_vec vec2 = _vec2;
+
+		t_vec vecUp = ::cross_3(vec1, vec2);
+		vec2 = ::cross_3(vecUp, vec1);
+
+		vec1 /= ublas::norm_2(vec1);
+		vec2 /= ublas::norm_2(vec2);
+		vecUp /= ublas::norm_2(vecUp);
+
+		std::vector<ublas::vector<double> > vecs = {vec1, vec2, vecUp};
+		t_mat matU = ::row_matrix(vecs);
+
+
+		t_mat matUB = ublas::prod(matU, matB);
+
+
+		t_vec vechkl = ::make_vec({dh, dk, dl});
+		t_vec vecQ = ublas::prod(matUB, vechkl);
+		double dQ = ublas::norm_2(vecQ);
+
+		if(std::fabs(vecQ[2]) > 1e-6)
+			throw Err("Position not in scattering plane.");
+
+		*pTwoTheta = get_sample_twotheta(dKi/angstrom, dKf/angstrom, dQ/angstrom) / units::si::radians;
+		double dKiQ = get_angle_ki_Q(dKi/angstrom, dKf/angstrom, dQ/angstrom) / units::si::radians;
+
+		*pTheta = -dKiQ - std::atan2(vecQ[0], vecQ[1]) + M_PI;
+	}
+	catch(const std::exception& ex)
+	{
+		log_err(ex.what());
+		return false;
+	}
+
+	return true;
 }
 
 

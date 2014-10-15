@@ -33,6 +33,10 @@ GotoDlg::~GotoDlg()
 
 void GotoDlg::Calc()
 {
+	std::vector<QLineEdit*> vecEdits{editThetaM, edit2ThetaM, editThetaS, edit2ThetaS, editThetaA, edit2ThetaA};
+	for(QLineEdit* pEdit : vecEdits)
+		pEdit->setText("");
+
 	bool bHOk=0, bKOk=0, bLOk=0, bKiOk=0, bKfOk=0;
 
 	double dH = editH->text().toDouble(&bHOk);
@@ -44,10 +48,26 @@ void GotoDlg::Calc()
 	if(!bHOk || !bKOk || !bLOk || !bKiOk || !bKfOk)
 		return;
 
-	wavenumber ki = dKi / angstrom;
-	wavenumber kf = dKf / angstrom;
+	// Test values
+	double a=5., b=5., c=5.;
+	double alpha=M_PI/2., beta=M_PI/2., gamma=M_PI/2.;
+	Lattice lattice(a,b,c, alpha,beta,gamma);
 
-	// TODO
+	ublas::vector<double> vec1 = ::make_vec({1,1,0});
+	ublas::vector<double> vec2 = ::make_vec({0,0,1});
+
+	double dTheta, dTwoTheta;
+	bool bOk = ::get_tas_angles(lattice,
+								vec1, vec2,
+								dKi, dKf,
+								dH, dK, dL,
+								&dTheta, &dTwoTheta);
+
+	if(!bOk)
+		return;
+
+	editThetaS->setText(var_to_str(dTheta/M_PI*180.).c_str());
+	edit2ThetaS->setText(var_to_str(dTwoTheta/M_PI*180.).c_str());
 }
 
 

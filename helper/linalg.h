@@ -766,7 +766,7 @@ typename matrix_type::value_type determinant(const matrix_type& mat)
 template<class matrix_type=ublas::matrix<double> >
 typename matrix_type::value_type get_volume(const matrix_type& mat)
 {
-	typedef typename matrix_type::value_type T;
+	//typedef typename matrix_type::value_type T;
 	return determinant<matrix_type>(mat);
 }
 
