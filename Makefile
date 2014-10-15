@@ -38,7 +38,7 @@ OBJ_COMMON = obj/log.o obj/linalg.o obj/linalg2.o obj/string.o obj/rand.o \
 	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/recip3d.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
-	obj/RecipParamDlg.o obj/RealParamDlg.o \
+	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
 	obj/xml.o obj/tcp.o obj/lattice.o obj/spacegroup.o \
 	obj/plotgl.o obj/cn.o obj/pop.o obj/ResoDlg.o obj/EllipseDlg3D.o
@@ -70,6 +70,8 @@ obj/tas_layout.o: tools/taz/tas_layout.cpp tools/taz/tas_layout.h
 obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/GotoDlg.o: dialogs/GotoDlg.cpp dialogs/GotoDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
