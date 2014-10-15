@@ -41,6 +41,7 @@ declare -a hfiles=(
         "dialogs/SpurionDlg.h"
         "dialogs/NeutronDlg.h"
         "dialogs/SrvDlg.h"
+        "dialogs/GotoDlg.h"
 )
 
 for hfile in ${hfiles[@]}

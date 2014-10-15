@@ -9,6 +9,7 @@
 
 //#include <QtGui/QDialog>
 #include <QtGui/QMainWindow>
+#include <QtGui/QMenu>
 #include <QtCore/QSettings>
 #include <QtCore/QVariant>
 
@@ -28,6 +29,7 @@
 #include "dialogs/SpurionDlg.h"
 #include "dialogs/NeutronDlg.h"
 #include "dialogs/SrvDlg.h"
+#include "dialogs/GotoDlg.h"
 
 #include "helper/spacegroup.h"
 
@@ -65,6 +67,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		QLabel* m_pStatusMsg = 0;
 		QLabel* m_pCoordStatusMsg = 0;
 
+		QMenu *m_pMenuViewRecip = 0;
+		QMenu *m_pMenuViewReal = 0;
+
 		ScatteringTriangleView *m_pviewRecip = 0;
 		ScatteringTriangleScene m_sceneRecip;
 
@@ -88,6 +93,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		SpurionDlg *m_pSpuri = 0;
 		NeutronDlg *m_pNeutronDlg = 0;
+		GotoDlg *m_pGotoDlg = 0;
 
 		SrvDlg *m_pSrvDlg = 0;
 		NicosCache *m_pNicosCache = 0;
@@ -115,6 +121,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void EnableBZ(bool bEnable);
 		void EnableRealQDir(bool bEnable);
 
+		void RecipContextMenu(const QPoint&);
+		void RealContextMenu(const QPoint&);
+
 		void Show3D();
 		void ShowAbout();
 
@@ -135,6 +144,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowResoEllipses3D();
 
 		void ShowNeutronDlg();
+		void ShowGotoDlg();
 
 		void ShowSpurions();
 		void spurionInfo(const ElasticSpurion& spuris,

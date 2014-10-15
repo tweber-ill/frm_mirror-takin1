@@ -231,72 +231,76 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	// --------------------------------------------------------------------------------
 	// recip menu
-	QMenu *pMenuViewRecip = new QMenu(this);
-	pMenuViewRecip->setTitle("Reciprocal Space");
+	m_pMenuViewRecip = new QMenu(this);
+	m_pMenuViewRecip->setTitle("Reciprocal Space");
+
+	QAction *pGoto = new QAction(this);
+	pGoto->setText("Go to Position...");
+	m_pMenuViewRecip->addAction(pGoto);
 
 	QAction *pRecipParams = new QAction(this);
 	pRecipParams->setText("Parameters...");
-	pMenuViewRecip->addAction(pRecipParams);
-	pMenuViewRecip->addSeparator();
+	m_pMenuViewRecip->addAction(pRecipParams);
+	m_pMenuViewRecip->addSeparator();
 
 	m_pSmallq = new QAction(this);
 	m_pSmallq->setText("Show Reduced Scattering Vector q");
 	m_pSmallq->setIcon(QIcon("res/q.svg"));
 	m_pSmallq->setCheckable(1);
 	m_pSmallq->setChecked(bSmallqVisible);
-	pMenuViewRecip->addAction(m_pSmallq);
+	m_pMenuViewRecip->addAction(m_pSmallq);
 
 	m_pSnapSmallq = new QAction(this);
 	m_pSnapSmallq->setText("Snap G to Bragg Peak");
 	m_pSnapSmallq->setCheckable(1);
 	m_pSnapSmallq->setChecked(m_sceneRecip.getSnapq());
-	pMenuViewRecip->addAction(m_pSnapSmallq);
+	m_pMenuViewRecip->addAction(m_pSnapSmallq);
 
 	m_pBZ = new QAction(this);
 	m_pBZ->setText("Show First Brillouin Zone");
 	m_pBZ->setCheckable(1);
 	m_pBZ->setChecked(bBZVisible);
-	pMenuViewRecip->addAction(m_pBZ);
+	m_pMenuViewRecip->addAction(m_pBZ);
 
-	pMenuViewRecip->addSeparator();
+	m_pMenuViewRecip->addSeparator();
 
 	QAction *pView3D = new QAction(this);
 	pView3D->setText("3D View...");
 	pView3D->setIcon(QIcon::fromTheme("applications-graphics"));
-	pMenuViewRecip->addAction(pView3D);
+	m_pMenuViewRecip->addAction(pView3D);
 
-	pMenuViewRecip->addSeparator();
+	m_pMenuViewRecip->addSeparator();
 
 	QAction *pRecipExport = new QAction(this);
 	pRecipExport->setText("Export Image...");
 	pRecipExport->setIcon(QIcon::fromTheme("image-x-generic"));
-	pMenuViewRecip->addAction(pRecipExport);
+	m_pMenuViewRecip->addAction(pRecipExport);
 
 
 
 	// --------------------------------------------------------------------------------
 	// real menu
-	QMenu *pMenuViewReal = new QMenu(this);
-	pMenuViewReal->setTitle("Real Space");
+	m_pMenuViewReal = new QMenu(this);
+	m_pMenuViewReal->setTitle("Real Space");
 
 	QAction *pRealParams = new QAction(this);
 	pRealParams->setText("Parameters...");
-	pMenuViewReal->addAction(pRealParams);
+	m_pMenuViewReal->addAction(pRealParams);
 
-	pMenuViewReal->addSeparator();
+	m_pMenuViewReal->addSeparator();
 
 	m_pShowRealQDir = new QAction(this);
 	m_pShowRealQDir->setText("Show Q Direction");
 	m_pShowRealQDir->setCheckable(1);
 	m_pShowRealQDir->setChecked(m_sceneReal.GetTasLayout()->GetRealQVisible());
-	pMenuViewReal->addAction(m_pShowRealQDir);
+	m_pMenuViewReal->addAction(m_pShowRealQDir);
 
-	pMenuViewReal->addSeparator();
+	m_pMenuViewReal->addSeparator();
 
 	QAction *pRealExport = new QAction(this);
 	pRealExport->setText("Export Image...");
 	pRealExport->setIcon(QIcon::fromTheme("image-x-generic"));
-	pMenuViewReal->addAction(pRealExport);
+	m_pMenuViewReal->addAction(pRealExport);
 
 
 
@@ -382,8 +386,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	// --------------------------------------------------------------------------------
 	QMenuBar *pMenuBar = new QMenuBar(this);
 	pMenuBar->addMenu(pMenuFile);
-	pMenuBar->addMenu(pMenuViewRecip);
-	pMenuBar->addMenu(pMenuViewReal);
+	pMenuBar->addMenu(m_pMenuViewRecip);
+	pMenuBar->addMenu(m_pMenuViewReal);
 	pMenuBar->addMenu(pMenuReso);
 	pMenuBar->addMenu(pMenuCalc);
 	pMenuBar->addMenu(pMenuNet);
@@ -414,6 +418,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pResoEllipses3D, SIGNAL(triggered()), this, SLOT(ShowResoEllipses3D()));
 
 	QObject::connect(pNeutronProps, SIGNAL(triggered()), this, SLOT(ShowNeutronDlg()));
+	QObject::connect(pGoto, SIGNAL(triggered()), this, SLOT(ShowGotoDlg()));
 	QObject::connect(pSpuri, SIGNAL(triggered()), this, SLOT(ShowSpurions()));
 
 	QObject::connect(pConn, SIGNAL(triggered()), this, SLOT(ShowConnectDlg()));
@@ -427,6 +432,16 @@ TazDlg::TazDlg(QWidget* pParent)
 	setMenuBar(pMenuBar);
 	// --------------------------------------------------------------------------------
 
+
+	// --------------------------------------------------------------------------------
+	// context menus
+	m_pviewRecip->setContextMenuPolicy(Qt::CustomContextMenu);
+	m_pviewReal->setContextMenuPolicy(Qt::CustomContextMenu);
+
+	QObject::connect(m_pviewRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
+					this, SLOT(RecipContextMenu(const QPoint&)));
+	QObject::connect(m_pviewReal, SIGNAL(customContextMenuRequested(const QPoint&)),
+					this, SLOT(RealContextMenu(const QPoint&)));
 
 
 	// --------------------------------------------------------------------------------
@@ -455,6 +470,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pNetTools->addAction(pDisconn);
 	pNetTools->addAction(pNetRefresh);
 	addToolBar(pNetTools);
+
 	// --------------------------------------------------------------------------------
 
 
@@ -518,6 +534,12 @@ TazDlg::~TazDlg()
 		m_pNeutronDlg = 0;
 	}
 
+	if(m_pGotoDlg)
+	{
+		delete m_pGotoDlg;
+		m_pGotoDlg = 0;
+	}
+
 	if(m_pSrvDlg)
 	{
 		delete m_pSrvDlg;
@@ -539,6 +561,15 @@ void TazDlg::ShowNeutronDlg()
 
 	m_pNeutronDlg->show();
 	m_pNeutronDlg->activateWindow();
+}
+
+void TazDlg::ShowGotoDlg()
+{
+	if(!m_pGotoDlg)
+		m_pGotoDlg = new GotoDlg(this);
+
+	m_pGotoDlg->show();
+	m_pGotoDlg->activateWindow();
 }
 
 
@@ -1295,6 +1326,27 @@ void TazDlg::ShowResoEllipses3D()
 
 	m_pEllipseDlg3D->show();
 	m_pEllipseDlg3D->activateWindow();
+}
+
+
+
+//--------------------------------------------------------------------------------
+// context menus
+
+void TazDlg::RecipContextMenu(const QPoint& _pt)
+{
+	if(!m_pviewRecip) return;
+
+	QPoint pt = this->m_pviewRecip->mapToGlobal(_pt);
+	m_pMenuViewRecip->exec(pt);
+}
+
+void TazDlg::RealContextMenu(const QPoint& _pt)
+{
+	if(!m_pviewReal) return;
+
+	QPoint pt = this->m_pviewReal->mapToGlobal(_pt);
+	m_pMenuViewReal->exec(pt);
 }
 
 
