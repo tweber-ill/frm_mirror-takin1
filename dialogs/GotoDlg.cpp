@@ -6,7 +6,6 @@
 
 #include "GotoDlg.h"
 #include "../helper/neutrons.hpp"
-#include "../helper/lattice.h"
 #include "../helper/string.h"
 
 
@@ -24,16 +23,16 @@ GotoDlg::GotoDlg(QWidget* pParent) : QDialog(pParent)
 
 	std::vector<QObject*> vecObjs {editH, editK, editL};
 	for(QObject* pObj : vecObjs)
-		QObject::connect(pObj, SIGNAL(textEdited(const QString&)), this, SLOT(Calc()));
+		QObject::connect(pObj, SIGNAL(textEdited(const QString&)), this, SLOT(CalcSample()));
 }
 
 GotoDlg::~GotoDlg()
 {}
 
 
-void GotoDlg::Calc()
+void GotoDlg::CalcSample()
 {
-	std::vector<QLineEdit*> vecEdits{editThetaM, edit2ThetaM, editThetaS, edit2ThetaS, editThetaA, edit2ThetaA};
+	std::vector<QLineEdit*> vecEdits{editThetaS, edit2ThetaS};
 	for(QLineEdit* pEdit : vecEdits)
 		pEdit->setText("");
 
@@ -48,19 +47,12 @@ void GotoDlg::Calc()
 	if(!bHOk || !bKOk || !bLOk || !bKiOk || !bKfOk)
 		return;
 
-	// Test values
-	double a=5., b=5., c=5.;
-	double alpha=M_PI/2., beta=M_PI/2., gamma=M_PI/2.;
-	Lattice lattice(a,b,c, alpha,beta,gamma);
-
-	ublas::vector<double> vec1 = ::make_vec({1,1,0});
-	ublas::vector<double> vec2 = ::make_vec({0,0,1});
-
 	double dTheta, dTwoTheta;
-	bool bOk = ::get_tas_angles(lattice,
-								vec1, vec2,
+	bool bOk = ::get_tas_angles(m_lattice,
+								m_vec1, m_vec2,
 								dKi, dKf,
 								dH, dK, dL,
+								m_bSenseS,
 								&dTheta, &dTwoTheta);
 
 	if(!bOk)
@@ -70,6 +62,31 @@ void GotoDlg::Calc()
 	edit2ThetaS->setText(var_to_str(dTwoTheta/M_PI*180.).c_str());
 }
 
+void GotoDlg::CalcMonoAna()
+{
+	std::vector<QLineEdit*> vecEdits{editThetaM, edit2ThetaM, editThetaA, edit2ThetaA};
+	for(QLineEdit* pEdit : vecEdits)
+		pEdit->setText("");
+
+	bool bKiOk=0, bKfOk=0;
+	double dKi = editKi->text().toDouble(&bKiOk);
+	double dKf = editKf->text().toDouble(&bKfOk);
+	if(!bKiOk || !bKfOk) return;
+
+	wavenumber ki = dKi / angstrom;
+	wavenumber kf = dKf / angstrom;
+
+	double dTTMono = get_mono_twotheta(ki, m_dMono*angstrom, m_bSenseM) / units::si::radians;
+	double dTTAna = get_mono_twotheta(kf, m_dAna*angstrom, m_bSenseA) / units::si::radians;
+
+	double dTMono = dTTMono / 2.;
+	double dTAna = dTTAna / 2.;
+
+	edit2ThetaM->setText(var_to_str(dTTMono/M_PI*180.).c_str());
+	editThetaM->setText(var_to_str(dTMono/M_PI*180.).c_str());
+	edit2ThetaA->setText(var_to_str(dTTAna/M_PI*180.).c_str());
+	editThetaA->setText(var_to_str(dTAna/M_PI*180.).c_str());
+}
 
 void GotoDlg::EditedKiKf()
 {
@@ -87,7 +104,8 @@ void GotoDlg::EditedKiKf()
 	std::string strE = var_to_str<double>(dE);
 	editE->setText(strE.c_str());
 
-	Calc();
+	CalcMonoAna();
+	CalcSample();
 }
 
 void GotoDlg::EditedE()
@@ -129,7 +147,8 @@ void GotoDlg::EditedE()
 		editKi->setText(strKi.c_str());
 	}
 
-	Calc();
+	CalcMonoAna();
+	CalcSample();
 }
 
 

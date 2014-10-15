@@ -43,7 +43,8 @@ TazDlg::TazDlg(QWidget* pParent)
 		  m_dlgRecipParam(this, &m_settings),
 		  m_dlgRealParam(this, &m_settings),
 		  m_pStatusMsg(new QLabel(this)),
-		  m_pCoordStatusMsg(new QLabel(this))
+		  m_pCoordStatusMsg(new QLabel(this)),
+		  m_pGotoDlg(new GotoDlg(this))
 {
 	//log_debug("In ", __func__, ".");
 
@@ -586,6 +587,13 @@ void TazDlg::UpdateDs()
 	resoparams.dMonoD = dMonoD;
 	resoparams.dAnaD = dAnaD;
 
+	if(m_pGotoDlg)
+	{
+		m_pGotoDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
+		m_pGotoDlg->CalcMonoAna();
+		m_pGotoDlg->CalcSample();
+	}
+
 	emit ResoParamsChanged(resoparams);
 }
 
@@ -685,6 +693,14 @@ void TazDlg::CalcPeaks()
 		}
 
 
+		if(m_pGotoDlg)
+		{
+			m_pGotoDlg->SetLattice(lattice);
+			m_pGotoDlg->SetScatteringPlane(make_vec({dX0, dX1, dX2}), make_vec({dY0, dY1, dY2}));
+			m_pGotoDlg->CalcSample();
+		}
+
+
 		// rotated lattice
 		double dPhi = spinRotPhi->value() / 180. * M_PI;
 		double dTheta = spinRotTheta->value() / 180. * M_PI;
@@ -772,6 +788,12 @@ void TazDlg::UpdateSampleSense()
 	const bool bSense = checkSenseS->isChecked();
 	m_sceneRecip.SetSampleSense(bSense);
 
+	if(m_pGotoDlg)
+	{
+		m_pGotoDlg->SetSampleSense(bSense);
+		m_pGotoDlg->CalcSample();
+	}
+
 	ResoParams params;
 	params.bSensesChanged[1] = 1;
 	params.bScatterSenses[1] = bSense;
@@ -783,6 +805,12 @@ void TazDlg::UpdateMonoSense()
 	const bool bSense = checkSenseM->isChecked();
 	m_sceneRecip.SetMonoSense(bSense);
 
+	if(m_pGotoDlg)
+	{
+		m_pGotoDlg->SetMonoSense(bSense);
+		m_pGotoDlg->CalcMonoAna();
+	}
+
 	ResoParams params;
 	params.bSensesChanged[0] = 1;
 	params.bScatterSenses[0] = bSense;
@@ -793,6 +821,12 @@ void TazDlg::UpdateAnaSense()
 {
 	const bool bSense = checkSenseA->isChecked();
 	m_sceneRecip.SetAnaSense(bSense);
+
+	if(m_pGotoDlg)
+	{
+		m_pGotoDlg->SetAnaSense(bSense);
+		m_pGotoDlg->CalcMonoAna();
+	}
 
 	ResoParams params;
 	params.bSensesChanged[2] = 1;

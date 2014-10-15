@@ -185,6 +185,7 @@ bool get_tas_angles(const Lattice& lattice_real,
 					const ublas::vector<double>& _vec1, const ublas::vector<double>& _vec2,
 					double dKi, double dKf,
 					double dh, double dk, double dl,
+					bool bSense,
 					double *pTheta, double *pTwoTheta)
 {
 	using t_vec = ublas::vector<double>;
@@ -219,10 +220,11 @@ bool get_tas_angles(const Lattice& lattice_real,
 		if(std::fabs(vecQ[2]) > 1e-6)
 			throw Err("Position not in scattering plane.");
 
-		*pTwoTheta = get_sample_twotheta(dKi/angstrom, dKf/angstrom, dQ/angstrom) / units::si::radians;
-		double dKiQ = get_angle_ki_Q(dKi/angstrom, dKf/angstrom, dQ/angstrom) / units::si::radians;
+		*pTwoTheta = get_sample_twotheta(dKi/angstrom, dKf/angstrom, dQ/angstrom, bSense) / units::si::radians;
+		double dKiQ = get_angle_ki_Q(dKi/angstrom, dKf/angstrom, dQ/angstrom, /*bSense*/1) / units::si::radians;
 
 		*pTheta = -dKiQ - std::atan2(vecQ[0], vecQ[1]) + M_PI;
+		if(!bSense) *pTheta = -*pTheta;
 	}
 	catch(const std::exception& ex)
 	{
