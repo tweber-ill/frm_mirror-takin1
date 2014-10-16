@@ -324,7 +324,13 @@ get_angle_ki_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sy
 	if(Q*(1e-10 * units::si::meter) == 0.)
 		angle = M_PI/2. * units::si::radians;
 	else
-		angle = units::acos((ki*ki - kf*kf + Q*Q)/(2.*ki*Q));
+	{
+		auto c = (ki*ki - kf*kf + Q*Q)/(2.*ki*Q);
+		if(units::abs(c) > 1.)
+			throw Err("Scattering triangle not closed.");
+
+		angle = units::acos(c);
+	}
 
 	if(!bPosSense)
 		angle = -angle;
@@ -348,7 +354,13 @@ get_angle_kf_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sy
 	if(Q*(1e-10 * units::si::meter) == 0.)
 		angle = M_PI/2. * units::si::radians;
 	else
-		angle = units::acos((-kf*kf + ki*ki - Q*Q)/(2.*kf*Q));
+	{
+		auto c = (-kf*kf + ki*ki - Q*Q)/(2.*kf*Q);
+		if(units::abs(c) > 1.)
+			throw Err("Scattering triangle not closed.");
+
+		angle = units::acos(c);
+	}
 
 	if(!bPosSense)
 		angle = -angle;
@@ -382,7 +394,7 @@ get_sample_twotheta(const units::quantity<units::unit<units::wavenumber_dimensio
 	units::quantity<units::si::dimensionless> ttCos
 							= (ki*ki + kf*kf - Q*Q)/(2.*ki*kf);
 	if(units::abs(ttCos) > 1.)
-		throw Err("Error: Scattering triangle not closed.");
+		throw Err("Scattering triangle not closed.");
 
 	units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y> tt;
 	tt = units::acos(ttCos);

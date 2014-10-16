@@ -28,10 +28,18 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="edit2Theta"/>
+       <widget class="QLineEdit" name="edit2Theta">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="editKfQ"/>
+       <widget class="QLineEdit" name="editKfQ">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_11">
@@ -41,7 +49,11 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="editKiQ"/>
+       <widget class="QLineEdit" name="editKiQ">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_10">
@@ -58,7 +70,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="editTheta"/>
+       <widget class="QLineEdit" name="editTheta">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -77,7 +93,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="editE"/>
+       <widget class="QLineEdit" name="editE">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_13">
@@ -87,7 +107,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="editQ"/>
+       <widget class="QLineEdit" name="editQ">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_14">
@@ -97,7 +121,11 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="editq"/>
+       <widget class="QLineEdit" name="editq">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -116,7 +144,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="editKi"/>
+       <widget class="QLineEdit" name="editKi">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_2">
@@ -126,7 +158,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="editEi"/>
+       <widget class="QLineEdit" name="editEi">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_3">
@@ -136,7 +172,11 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="editLami"/>
+       <widget class="QLineEdit" name="editLami">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_4">
@@ -146,7 +186,11 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="editVi"/>
+       <widget class="QLineEdit" name="editVi">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -165,7 +209,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="editKf"/>
+       <widget class="QLineEdit" name="editKf">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_8">
@@ -175,7 +223,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="editEf"/>
+       <widget class="QLineEdit" name="editEf">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_5">
@@ -185,7 +237,11 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="editLamf"/>
+       <widget class="QLineEdit" name="editLamf">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_7">
@@ -195,7 +251,11 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="editVf"/>
+       <widget class="QLineEdit" name="editVf">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -207,10 +267,18 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
       <item row="0" column="1">
-       <widget class="QLineEdit" name="editQx"/>
+       <widget class="QLineEdit" name="editQx">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="0" column="3">
-       <widget class="QLineEdit" name="editQxrlu"/>
+       <widget class="QLineEdit" name="editQxrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_15">
@@ -220,7 +288,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="editQy"/>
+       <widget class="QLineEdit" name="editQy">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="2">
        <widget class="QLabel" name="label_16">
@@ -230,13 +302,25 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QLineEdit" name="editQyrlu"/>
+       <widget class="QLineEdit" name="editQyrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="editQz"/>
+       <widget class="QLineEdit" name="editQz">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="3">
-       <widget class="QLineEdit" name="editQzrlu"/>
+       <widget class="QLineEdit" name="editQzrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -248,10 +332,18 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
       <item row="0" column="1">
-       <widget class="QLineEdit" name="editqx"/>
+       <widget class="QLineEdit" name="editqx">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="0" column="3">
-       <widget class="QLineEdit" name="editqxrlu"/>
+       <widget class="QLineEdit" name="editqxrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_17">
@@ -261,7 +353,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="editqy"/>
+       <widget class="QLineEdit" name="editqy">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="2">
        <widget class="QLabel" name="label_18">
@@ -271,13 +367,25 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QLineEdit" name="editqyrlu"/>
+       <widget class="QLineEdit" name="editqyrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="editqz"/>
+       <widget class="QLineEdit" name="editqz">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="3">
-       <widget class="QLineEdit" name="editqzrlu"/>
+       <widget class="QLineEdit" name="editqzrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -289,10 +397,18 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_8">
       <item row="0" column="1">
-       <widget class="QLineEdit" name="editGx"/>
+       <widget class="QLineEdit" name="editGx">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="0" column="3">
-       <widget class="QLineEdit" name="editGxrlu"/>
+       <widget class="QLineEdit" name="editGxrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_20">
@@ -302,7 +418,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="editGy"/>
+       <widget class="QLineEdit" name="editGy">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="2">
        <widget class="QLabel" name="label_21">
@@ -312,13 +432,25 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QLineEdit" name="editGyrlu"/>
+       <widget class="QLineEdit" name="editGyrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="editGz"/>
+       <widget class="QLineEdit" name="editGz">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="3">
-       <widget class="QLineEdit" name="editGzrlu"/>
+       <widget class="QLineEdit" name="editGzrlu">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

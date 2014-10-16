@@ -168,33 +168,57 @@ void calc_bragg_widths(CNParams& cn, CNResults& res)
 
 bool calc_cn_angles(CNParams& cn, CNResults& res)
 {
-	bool bImag=0;
-	wavenumber E_as_k = E2k(cn.E, bImag);
-	double dSign = 1.;
-	if(bImag) dSign = -1.;
+	try
+	{
+		bool bImag=0;
+		wavenumber E_as_k = E2k(cn.E, bImag);
+		double dSign = 1.;
+		if(bImag) dSign = -1.;
 
-	if(cn.bki_fix)
-		cn.kf = units::sqrt(cn.ki*cn.ki - dSign*E_as_k*E_as_k);
-	else
-		cn.ki = units::sqrt(cn.kf*cn.kf + dSign*E_as_k*E_as_k);
+		if(cn.bki_fix)
+			cn.kf = units::sqrt(cn.ki*cn.ki - dSign*E_as_k*E_as_k);
+		else
+			cn.ki = units::sqrt(cn.kf*cn.kf + dSign*E_as_k*E_as_k);
 
-	res.angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
-	res.angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
+		res.angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
+		res.angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
 
-	res.thetaa = 0.5*get_mono_twotheta(cn.kf, cn.ana_d, cn.dana_sense > 0.);
-	res.thetam = 0.5*get_mono_twotheta(cn.ki, cn.mono_d, cn.dmono_sense > 0.);
+		res.thetaa = 0.5*get_mono_twotheta(cn.kf, cn.ana_d, cn.dana_sense > 0.);
+		res.thetam = 0.5*get_mono_twotheta(cn.ki, cn.mono_d, cn.dmono_sense > 0.);
 
-	/*std::cout << "k_i = " << cn.ki << ", "
+		/*std::cout << "k_i = " << cn.ki << ", "
 	  	  	  << "k_f = " << cn.kf << ", "
 	  		  << "theta_m = " << res.thetam << ", "
 			  << "theta_a = " << res.thetaa << ", "
 			  << "lam_i = " << k2lam(cn.ki)
 			  << std::endl;*/
 
-	try
-	{
 		res.twotheta = get_sample_twotheta(cn.ki, cn.kf, cn.Q, cn.dsample_sense>0.);
 		res.thetas = res.twotheta/2.;	// TODO: !! valid only for elastic ki == kf !!
+
+		/*ublas::vector<double> vecQ = -cn.Q_vec;		// minus: Q pointf from peak towards zero
+		if(vecQ.size() == 0)
+		{
+			log_warn("Q vector not given.");
+
+			ublas::vector<double> vecKi(2);
+			vecKi[0] = cn.ki*angstrom; vecKi[1] = 0.;	// ki along [100]
+			ublas::matrix<double> rot_kikf = rotation_matrix_2d(res.twotheta/units::si::radians);
+			ublas::vector<double> vecKf = ublas::prod(rot_kikf, vecKi) * (cn.kf/cn.ki);
+
+			vecQ = vecKi - vecKf;
+			vecQ.resize(3, 1);
+			vecQ[2] = 0.;
+		}*/
+
+		res.Q_avg.resize(4);
+		res.Q_avg[0] = cn.Q*angstrom;
+		res.Q_avg[1] = 0.;
+		res.Q_avg[2] = 0.;
+		res.Q_avg[3] = cn.E / one_meV;
+
+		//std::copy(vecQ.begin(), vecQ.end(), std::ostream_iterator<double>(std::cout, " "));
+		//std::cout << std::endl;
 	}
 	catch(const std::exception& ex)
 	{
@@ -202,31 +226,6 @@ bool calc_cn_angles(CNParams& cn, CNResults& res)
 		res.strErr = ex.what();
 		return false;
 	}
-
-
-	/*ublas::vector<double> vecQ = -cn.Q_vec;		// minus: Q pointf from peak towards zero
-	if(vecQ.size() == 0)
-	{
-		log_warn("Q vector not given.");
-
-		ublas::vector<double> vecKi(2);
-		vecKi[0] = cn.ki*angstrom; vecKi[1] = 0.;	// ki along [100]
-		ublas::matrix<double> rot_kikf = rotation_matrix_2d(res.twotheta/units::si::radians);
-		ublas::vector<double> vecKf = ublas::prod(rot_kikf, vecKi) * (cn.kf/cn.ki);
-
-		vecQ = vecKi - vecKf;
-		vecQ.resize(3, 1);
-		vecQ[2] = 0.;
-	}*/
-
-	res.Q_avg.resize(4);
-	res.Q_avg[0] = cn.Q*angstrom;
-	res.Q_avg[1] = 0.;
-	res.Q_avg[2] = 0.;
-	res.Q_avg[3] = cn.E / one_meV;
-
-	//std::copy(vecQ.begin(), vecQ.end(), std::ostream_iterator<double>(std::cout, " "));
-	//std::cout << std::endl;
 
 	return true;
 }

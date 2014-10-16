@@ -440,14 +440,22 @@ double ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 
 	const double dAngle = vec_angle(vecKi) - vec_angle(vecQ);*/
 
-	double dTT = GetTwoTheta(bPosSense);
-	double dAngle = get_angle_ki_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom, bPosSense) / units::si::radians;
-	//std::cout << "tt=" << dTT << ", kiQ="<<dAngle << std::endl;
+	try
+	{
+		double dTT = GetTwoTheta(bPosSense);
+		double dAngle = get_angle_ki_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom, bPosSense) / units::si::radians;
+		//std::cout << "tt=" << dTT << ", kiQ="<<dAngle << std::endl;
 
-	if(std::fabs(dTT) > M_PI)
-		dAngle = -dAngle;
+		if(std::fabs(dTT) > M_PI)
+			dAngle = -dAngle;
 
-	return dAngle;
+		return dAngle;
+	}
+	catch(const std::exception& ex)
+	{
+		log_err(ex.what());
+		return 0.;
+	}
 }
 
 double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
@@ -462,13 +470,21 @@ double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 
 	const double dAngle = vec_angle(vecKf) - vec_angle(vecQ);*/
 
-	double dTT = GetTwoTheta(bPosSense);
-	double dAngle = M_PI-get_angle_kf_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom, bPosSense) / units::si::radians;
+	try
+	{
+		double dTT = GetTwoTheta(bPosSense);
+		double dAngle = M_PI-get_angle_kf_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom, bPosSense) / units::si::radians;
 
-	if(std::fabs(dTT) > M_PI)
-		dAngle = -dAngle;
+		if(std::fabs(dTT) > M_PI)
+			dAngle = -dAngle;
 
-	return dAngle;
+		return dAngle;
+	}
+	catch(const std::exception& ex)
+	{
+		log_err(ex.what());
+		return 0.;
+	}
 }
 
 double ScatteringTriangle::GetTheta(bool bPosSense) const

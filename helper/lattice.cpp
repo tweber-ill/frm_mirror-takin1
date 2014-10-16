@@ -181,7 +181,7 @@ ublas::matrix<double> Lattice::GetMetric() const
 
 
 
-bool get_tas_angles(const Lattice& lattice_real,
+void get_tas_angles(const Lattice& lattice_real,
 					const ublas::vector<double>& _vec1, const ublas::vector<double>& _vec2,
 					double dKi, double dKf,
 					double dh, double dk, double dl,
@@ -191,7 +191,7 @@ bool get_tas_angles(const Lattice& lattice_real,
 	using t_vec = ublas::vector<double>;
 	using t_mat = ublas::matrix<double>;
 
-	try
+	//try
 	{
 		t_mat matB = lattice_real.GetRecip().GetMetric();
 
@@ -222,17 +222,16 @@ bool get_tas_angles(const Lattice& lattice_real,
 
 		*pTwoTheta = get_sample_twotheta(dKi/angstrom, dKf/angstrom, dQ/angstrom, bSense) / units::si::radians;
 		double dKiQ = get_angle_ki_Q(dKi/angstrom, dKf/angstrom, dQ/angstrom, /*bSense*/1) / units::si::radians;
+		double dQVec0 = std::atan2(vecQ[1], vecQ[0]);
 
-		*pTheta = -dKiQ - std::atan2(vecQ[0], vecQ[1]) + M_PI;
+		*pTheta = -dKiQ - dQVec0 + M_PI;	// a3 convention
+		*pTheta = *pTheta - M_PI/2.;		// theta here
 		if(!bSense) *pTheta = -*pTheta;
 	}
-	catch(const std::exception& ex)
+	/*catch(const std::exception& ex)
 	{
 		log_err(ex.what());
-		return false;
-	}
-
-	return true;
+	}*/
 }
 
 

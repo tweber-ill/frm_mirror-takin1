@@ -12,10 +12,15 @@
 
 #include "../helper/lattice.h"
 #include "../helper/linalg.h"
+#include "../tools/taz/tasoptions.h"
 
 
 class GotoDlg : public QDialog, Ui::GotoDlg
 { Q_OBJECT
+	private:
+		bool m_bMonoAnaOk = 0;
+		bool m_bSampleOk = 0;
+
 	public:
 		GotoDlg(QWidget* pParent=0);
 		virtual ~GotoDlg();
@@ -23,6 +28,11 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 	protected:
 		ublas::vector<double> m_vec1, m_vec2;
 		Lattice m_lattice;
+
+		double m_dMono2Theta;
+		double m_dSample2Theta;
+		double m_dSampleTheta;
+		double m_dAna2Theta;
 
 		double m_dAna = 3.355;
 		double m_dMono = 3.355;
@@ -49,6 +59,12 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		void SetMonoSense(bool bSense) { m_bSenseM = bSense; }
 		void SetSampleSense(bool bSense) { m_bSenseS = bSense; }
 		void SetAnaSense(bool bSense) { m_bSenseA = bSense; }
+
+	protected slots:
+		void ButtonBoxClicked(QAbstractButton* pBtn);
+
+	signals:
+		void vars_changed(const CrystalOptions& crys, const TriangleOptions& triag);
 };
 
 #endif

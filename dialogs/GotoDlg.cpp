@@ -16,6 +16,7 @@ using wavenumber = units::quantity<units::si::wavenumber>;
 GotoDlg::GotoDlg(QWidget* pParent) : QDialog(pParent)
 {
 	this->setupUi(this);
+	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 
 	QObject::connect(editKi, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
 	QObject::connect(editKf, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
@@ -32,6 +33,8 @@ GotoDlg::~GotoDlg()
 
 void GotoDlg::CalcSample()
 {
+	m_bSampleOk = 0;
+
 	std::vector<QLineEdit*> vecEdits{editThetaS, edit2ThetaS};
 	for(QLineEdit* pEdit : vecEdits)
 		pEdit->setText("");
@@ -47,23 +50,39 @@ void GotoDlg::CalcSample()
 	if(!bHOk || !bKOk || !bLOk || !bKiOk || !bKfOk)
 		return;
 
-	double dTheta, dTwoTheta;
-	bool bOk = ::get_tas_angles(m_lattice,
-								m_vec1, m_vec2,
-								dKi, dKf,
-								dH, dK, dL,
-								m_bSenseS,
-								&dTheta, &dTwoTheta);
+	try
+	{
+		::get_tas_angles(m_lattice,
+					m_vec1, m_vec2,
+					dKi, dKf,
+					dH, dK, dL,
+					m_bSenseS,
+					&m_dSampleTheta, &m_dSample2Theta);
 
-	if(!bOk)
+		if(::isinf(m_dSample2Theta) || ::isnan(m_dSample2Theta))
+			throw Err("Invalid sample 2theta.");
+		if(::isinf(m_dSampleTheta) || ::isnan(m_dSampleTheta))
+			throw Err("Invalid sample theta.");
+	}
+	catch(const std::exception& ex)
+	{
+		editThetaS->setText("invalid");
+		edit2ThetaS->setText("invalid");
+
+		log_err(ex.what());
 		return;
+	}
 
-	editThetaS->setText(var_to_str(dTheta/M_PI*180.).c_str());
-	edit2ThetaS->setText(var_to_str(dTwoTheta/M_PI*180.).c_str());
+	editThetaS->setText(var_to_str(m_dSampleTheta/M_PI*180.).c_str());
+	edit2ThetaS->setText(var_to_str(m_dSample2Theta/M_PI*180.).c_str());
+
+	m_bSampleOk = 1;
 }
 
 void GotoDlg::CalcMonoAna()
 {
+	m_bMonoAnaOk = 0;
+
 	std::vector<QLineEdit*> vecEdits{editThetaM, edit2ThetaM, editThetaA, edit2ThetaA};
 	for(QLineEdit* pEdit : vecEdits)
 		pEdit->setText("");
@@ -76,16 +95,52 @@ void GotoDlg::CalcMonoAna()
 	wavenumber ki = dKi / angstrom;
 	wavenumber kf = dKf / angstrom;
 
-	double dTTMono = get_mono_twotheta(ki, m_dMono*angstrom, m_bSenseM) / units::si::radians;
-	double dTTAna = get_mono_twotheta(kf, m_dAna*angstrom, m_bSenseA) / units::si::radians;
+	bool bMonoOk = 0;
+	bool bAnaOk = 0;
 
-	double dTMono = dTTMono / 2.;
-	double dTAna = dTTAna / 2.;
+	try
+	{
+		m_dMono2Theta = get_mono_twotheta(ki, m_dMono*angstrom, m_bSenseM) / units::si::radians;
+		if(::isinf(m_dMono2Theta) || ::isnan(m_dMono2Theta))
+			throw Err("Invalid monochromator angle.");
+		bMonoOk = 1;
+	}
+	catch(const std::exception& ex)
+	{
+		editThetaM->setText("invalid");
+		edit2ThetaM->setText("invalid");
 
-	edit2ThetaM->setText(var_to_str(dTTMono/M_PI*180.).c_str());
+		log_err(ex.what());
+	}
+
+	try
+	{
+		m_dAna2Theta = get_mono_twotheta(kf, m_dAna*angstrom, m_bSenseA) / units::si::radians;
+		if(::isinf(m_dAna2Theta) || ::isnan(m_dAna2Theta))
+			throw Err("Invalid analysator angle.");
+		bAnaOk = 1;
+	}
+	catch(const std::exception& ex)
+	{
+		editThetaA->setText("invalid");
+		edit2ThetaA->setText("invalid");
+
+		log_err(ex.what());
+	}
+
+	if(!bMonoOk || !bAnaOk)
+		return;
+
+
+	double dTMono = m_dMono2Theta / 2.;
+	double dTAna = m_dAna2Theta / 2.;
+
+	edit2ThetaM->setText(var_to_str(m_dMono2Theta/M_PI*180.).c_str());
 	editThetaM->setText(var_to_str(dTMono/M_PI*180.).c_str());
-	edit2ThetaA->setText(var_to_str(dTTAna/M_PI*180.).c_str());
+	edit2ThetaA->setText(var_to_str(m_dAna2Theta/M_PI*180.).c_str());
 	editThetaA->setText(var_to_str(dTAna/M_PI*180.).c_str());
+
+	m_bMonoAnaOk = 1;
 }
 
 void GotoDlg::EditedKiKf()
@@ -149,6 +204,46 @@ void GotoDlg::EditedE()
 
 	CalcMonoAna();
 	CalcSample();
+}
+
+
+void GotoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
+{
+	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ApplyRole ||
+	   buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
+	{
+		if(m_bMonoAnaOk && m_bSampleOk)
+		{
+			CrystalOptions crys;
+			TriangleOptions triag;
+
+			triag.bChangedMonoTwoTheta = 1;
+			triag.dMonoTwoTheta = this->m_dMono2Theta;
+
+			triag.bChangedAnaTwoTheta = 1;
+			triag.dAnaTwoTheta = this->m_dAna2Theta;
+
+			//triag.bChangedTheta = 1;
+			//triag.dTheta = this->m_dSampleTheta;
+
+			triag.bChangedAngleKiVec0 = 1;
+			triag.dAngleKiVec0 = M_PI/2. - this->m_dSampleTheta;
+
+			triag.bChangedTwoTheta = 1;
+			triag.dTwoTheta = this->m_dSample2Theta;
+
+			emit vars_changed(crys, triag);
+		}
+	}
+	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::RejectRole)
+	{
+		reject();
+	}
+
+	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
+	{
+		QDialog::accept();
+	}
 }
 
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>446</width>
-    <height>230</height>
+    <height>266</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,11 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="3" column="1">
-       <widget class="QLineEdit" name="editThetaS"/>
+       <widget class="QLineEdit" name="editThetaS">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_12">
@@ -38,7 +42,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="editThetaM"/>
+       <widget class="QLineEdit" name="editThetaM">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_11">
@@ -62,10 +70,18 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="edit2ThetaM"/>
+       <widget class="QLineEdit" name="edit2ThetaM">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="edit2ThetaS"/>
+       <widget class="QLineEdit" name="edit2ThetaS">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_2">
@@ -75,10 +91,18 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QLineEdit" name="edit2ThetaA"/>
+       <widget class="QLineEdit" name="edit2ThetaA">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QLineEdit" name="editThetaA"/>
+       <widget class="QLineEdit" name="editThetaA">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -103,7 +127,11 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="2">
-       <widget class="QLineEdit" name="editLenMonoSample"/>
+       <widget class="QLineEdit" name="editLenMonoSample">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="label_9">
@@ -119,10 +147,18 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="QLineEdit" name="editLenSampleAna"/>
+       <widget class="QLineEdit" name="editLenSampleAna">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="5" column="0" colspan="2">
-       <widget class="QLineEdit" name="editLenAnaDet"/>
+       <widget class="QLineEdit" name="editLenAnaDet">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="4" column="0" colspan="2">
        <widget class="QLabel" name="label_14">

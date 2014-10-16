@@ -566,8 +566,16 @@ void TazDlg::ShowNeutronDlg()
 
 void TazDlg::ShowGotoDlg()
 {
+	static bool bConnected = 0;
+
 	if(!m_pGotoDlg)
 		m_pGotoDlg = new GotoDlg(this);
+	if(!bConnected)
+	{
+		QObject::connect(m_pGotoDlg, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
+						this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
+		bConnected = 1;
+	}
 
 	m_pGotoDlg->show();
 	m_pGotoDlg->activateWindow();
