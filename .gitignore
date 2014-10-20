@@ -17,6 +17,7 @@ Debug/*
 Release/*
 .clang/*
 .codelite/*
+.settings/*
 takin.txt
 takin.mk
 Makefile
