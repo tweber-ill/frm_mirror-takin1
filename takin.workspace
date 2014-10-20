@@ -4,12 +4,15 @@
   <Environment>
     <![CDATA[]]>
   </Environment>
+  <Project Name="montereso" Path="montereso.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="takin" ConfigName="Debug"/>
+      <Project Name="montereso" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="no">
       <Project Name="takin" ConfigName="Release"/>
+      <Project Name="montereso" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>

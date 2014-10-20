@@ -20,4 +20,6 @@ Release/*
 .settings/*
 takin.txt
 takin.mk
+montereso.txt
+montereso.mk
 Makefile
