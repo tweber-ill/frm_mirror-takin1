@@ -255,6 +255,8 @@ QRectF TasLayout::boundingRect() const
 
 void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+	const bool bDisplayLengths = 0;
+
 	QPointF ptSrc = mapFromItem(m_pSrc, 0, 0) * m_dZoom;
 	QPointF ptMono = mapFromItem(m_pMono, 0, 0) * m_dZoom;
 	QPointF ptSample = mapFromItem(m_pSample, 0, 0) * m_dZoom;
@@ -279,17 +281,19 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	QPointF ptMidKf = ptSample + (ptAna-ptSample)/2.;
 	QPointF ptMidAnaDet = ptAna + (ptDet-ptAna)/2.;
 
-	std::ostringstream ostrLenKi, ostrLenKf, ostrLenAnaDet;
-	ostrLenKi.precision(4); ostrLenKf.precision(4); ostrLenAnaDet.precision(4);
+	if(bDisplayLengths)
+	{
+		std::ostringstream ostrLenKi, ostrLenKf, ostrLenAnaDet;
+		ostrLenKi.precision(4); ostrLenKf.precision(4); ostrLenAnaDet.precision(4);
 
-	ostrLenKi << m_dLenMonoSample << " cm";
-	ostrLenKf << m_dLenSampleAna << " cm";
-	ostrLenAnaDet << m_dLenAnaDet << " cm";
+		ostrLenKi << m_dLenMonoSample << " cm";
+		ostrLenKf << m_dLenSampleAna << " cm";
+		ostrLenAnaDet << m_dLenAnaDet << " cm";
 
-	painter->drawText(ptMidKi, ostrLenKi.str().c_str());
-	painter->drawText(ptMidKf, ostrLenKf.str().c_str());
-	painter->drawText(ptMidAnaDet, ostrLenAnaDet.str().c_str());
-
+		painter->drawText(ptMidKi, ostrLenKi.str().c_str());
+		painter->drawText(ptMidKf, ostrLenKf.str().c_str());
+		painter->drawText(ptMidAnaDet, ostrLenAnaDet.str().c_str());
+	}
 
 
 	ublas::vector<double> vecMono = qpoint_to_vec(ptMono);
@@ -531,6 +535,7 @@ void TasLayoutScene::emitAllParams()
 	parms.dLenSampleAna = m_pTas->GetLenSampleAna();
 	parms.dLenAnaDet = m_pTas->GetLenAnaDet();
 
+	//log_info(parms.dSampleT/M_PI*180.);
 	emit paramsChanged(parms);
 }
 

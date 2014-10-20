@@ -44,7 +44,7 @@ TazDlg::TazDlg(QWidget* pParent)
 		  m_dlgRealParam(this, &m_settings),
 		  m_pStatusMsg(new QLabel(this)),
 		  m_pCoordStatusMsg(new QLabel(this)),
-		  m_pGotoDlg(new GotoDlg(this))
+		  m_pGotoDlg(new GotoDlg(this, &m_settings))
 {
 	//log_debug("In ", __func__, ".");
 
@@ -166,6 +166,11 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const ElasticSpurion&, const std::vector<InelasticSpurion>&, const std::vector<InelasticSpurion>&)),
 					this, SLOT(spurionInfo(const ElasticSpurion&, const std::vector<InelasticSpurion>&, const std::vector<InelasticSpurion>&)));
 
+	QObject::connect(m_pGotoDlg, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
+					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
+	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+					m_pGotoDlg, SLOT(RecipParamsChanged(const RecipParams&)));
+
 
 	for(QLineEdit* pEdit : m_vecEdits_monoana)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(UpdateDs()));
@@ -235,9 +240,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pMenuViewRecip = new QMenu(this);
 	m_pMenuViewRecip->setTitle("Reciprocal Space");
 
-	QAction *pGoto = new QAction(this);
-	pGoto->setText("Go to Position...");
-	m_pMenuViewRecip->addAction(pGoto);
+	m_pGoto = new QAction(this);
+	m_pGoto->setText("Go to Position...");
+	m_pGoto->setIcon(QIcon("res/goto.svg"));
+	m_pMenuViewRecip->addAction(m_pGoto);
 
 	QAction *pRecipParams = new QAction(this);
 	pRecipParams->setText("Parameters...");
@@ -259,6 +265,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pBZ = new QAction(this);
 	m_pBZ->setText("Show First Brillouin Zone");
+	m_pBZ->setIcon(QIcon("res/brillouin.svg"));
 	m_pBZ->setCheckable(1);
 	m_pBZ->setChecked(bBZVisible);
 	m_pMenuViewRecip->addAction(m_pBZ);
@@ -283,6 +290,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	// real menu
 	m_pMenuViewReal = new QMenu(this);
 	m_pMenuViewReal->setTitle("Real Space");
+
+	m_pMenuViewReal->addAction(m_pGoto);
 
 	QAction *pRealParams = new QAction(this);
 	pRealParams->setText("Parameters...");
@@ -419,7 +428,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pResoEllipses3D, SIGNAL(triggered()), this, SLOT(ShowResoEllipses3D()));
 
 	QObject::connect(pNeutronProps, SIGNAL(triggered()), this, SLOT(ShowNeutronDlg()));
-	QObject::connect(pGoto, SIGNAL(triggered()), this, SLOT(ShowGotoDlg()));
+	QObject::connect(m_pGoto, SIGNAL(triggered()), this, SLOT(ShowGotoDlg()));
 	QObject::connect(pSpuri, SIGNAL(triggered()), this, SLOT(ShowSpurions()));
 
 	QObject::connect(pConn, SIGNAL(triggered()), this, SLOT(ShowConnectDlg()));
@@ -456,7 +465,9 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QToolBar *pRecipTools = new QToolBar(this);
 	pRecipTools->setWindowTitle("Reciprocal Space");
+	pRecipTools->addAction(m_pGoto);
 	pRecipTools->addAction(m_pSmallq);
+	pRecipTools->addAction(m_pBZ);
 	addToolBar(pRecipTools);
 
 	QToolBar *pResoTools = new QToolBar(this);
@@ -477,12 +488,15 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	RepopulateSpaceGroups();
 
+	m_sceneRecip.GetTriangle()->SetMaxPeaks(10);
+
 	UpdateDs();
 	CalcPeaks();
 
 	m_sceneRecip.GetTriangle()->SetqVisible(bSmallqVisible);
 	m_sceneRecip.GetTriangle()->SetBZVisible(bBZVisible);
 	m_sceneRecip.emitUpdate();
+	//m_sceneRecip.emitAllParams();
 }
 
 TazDlg::~TazDlg()
@@ -566,16 +580,8 @@ void TazDlg::ShowNeutronDlg()
 
 void TazDlg::ShowGotoDlg()
 {
-	static bool bConnected = 0;
-
 	if(!m_pGotoDlg)
-		m_pGotoDlg = new GotoDlg(this);
-	if(!bConnected)
-	{
-		QObject::connect(m_pGotoDlg, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
-						this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
-		bConnected = 1;
-	}
+		m_pGotoDlg = new GotoDlg(this, &m_settings);
 
 	m_pGotoDlg->show();
 	m_pGotoDlg->activateWindow();
@@ -605,7 +611,7 @@ void TazDlg::UpdateDs()
 	emit ResoParamsChanged(resoparams);
 }
 
-std::ostream& operator<<(std::ostream& ostr, const Lattice& lat)
+std::ostream& operator<<(std::ostream& ostr, const Lattice<double>& lat)
 {
 	ostr << "a = " << lat.GetA();
 	ostr << ", b = " << lat.GetB();
@@ -639,8 +645,8 @@ void TazDlg::CalcPeaksRecip()
 	double beta = editBetaRecip->text().toDouble()/180.*M_PI;
 	double gamma = editGammaRecip->text().toDouble()/180.*M_PI;
 
-	Lattice lattice(a,b,c, alpha,beta,gamma);
-	Lattice recip = lattice.GetRecip();
+	Lattice<double> lattice(a,b,c, alpha,beta,gamma);
+	Lattice<double> recip = lattice.GetRecip();
 
 	editA->setText(dtoqstr(recip.GetA()));
 	editB->setText(dtoqstr(recip.GetB()));
@@ -670,8 +676,8 @@ void TazDlg::CalcPeaks()
 		double beta = editBeta->text().toDouble()/180.*M_PI;
 		double gamma = editGamma->text().toDouble()/180.*M_PI;
 
-		Lattice lattice(a,b,c, alpha,beta,gamma);
-		Lattice recip_unrot = lattice.GetRecip();
+		Lattice<double> lattice(a,b,c, alpha,beta,gamma);
+		Lattice<double> recip_unrot = lattice.GetRecip();
 
 
 
@@ -735,7 +741,7 @@ void TazDlg::CalcPeaks()
 		//dirup /= dDirUpLen;
 
 		lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
-		Lattice recip = lattice.GetRecip();
+		Lattice<double> recip = lattice.GetRecip();
 
 
 
@@ -806,6 +812,8 @@ void TazDlg::UpdateSampleSense()
 	params.bSensesChanged[1] = 1;
 	params.bScatterSenses[1] = bSense;
 	emit ResoParamsChanged(params);
+
+	m_sceneRecip.emitUpdate();
 }
 
 void TazDlg::UpdateMonoSense()
@@ -1418,7 +1426,7 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 	svg.setSize(QSize(rect.width(), rect.height()));
 	//svg.setResolution(300);
 	svg.setViewBox(QRectF(0, 0, rect.width(), rect.height()));
-	svg.setDescription("Created with TAZ");
+	svg.setDescription("Created with Takin");
 
 	QPainter painter;
 	painter.begin(&svg);
@@ -1603,7 +1611,7 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "Takin version 0.7.5\n";
+	strAbout += "Takin version 0.8\n";
 	strAbout += "Written by Tobias Weber, 2014";
 	strAbout += "\n\n";
 

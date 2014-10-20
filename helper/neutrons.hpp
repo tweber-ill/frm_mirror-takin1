@@ -368,6 +368,7 @@ get_angle_kf_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sy
 	return angle;
 }
 
+
 template<class Sys, class Y>
 units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>
 get_mono_twotheta(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& k,
@@ -380,6 +381,20 @@ get_mono_twotheta(const units::quantity<units::unit<units::wavenumber_dimension,
 		tt = -tt;
 	return tt;
 }
+
+template<class Sys, class Y>
+units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
+get_mono_k(const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& _theta,
+				const units::quantity<units::unit<units::length_dimension, Sys>, Y>& d,
+				bool bPosSense=1)
+{
+	units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y> theta = _theta;
+	if(!bPosSense)
+		theta = -theta;
+
+	return M_PI/(units::sin(theta) * d);
+}
+
 
 // Q_vec = ki_vec - kf_vec
 // Q^2 = ki^2 + kf^2 - 2ki kf cos 2th
@@ -403,6 +418,20 @@ get_sample_twotheta(const units::quantity<units::unit<units::wavenumber_dimensio
 
 	return tt;
 }
+
+template<class Sys, class Y>
+const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
+get_sample_Q(const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& ki,
+					const units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>& kf,
+					const units::quantity<units::unit<units::plane_angle_dimension, Sys>, Y>& tt)
+{
+	units::quantity<units::si::dimensionless> ctt = units::cos(tt);
+	units::quantity<units::unit<units::wavenumber_dimension, Sys>, Y>
+		Q = units::sqrt(-ctt*(2.*ki*kf) + ki*ki + kf*kf);
+	return Q;
+}
+
+
 
 template<class Sys, class Y>
 units::quantity<units::unit<units::energy_dimension, Sys>, Y>

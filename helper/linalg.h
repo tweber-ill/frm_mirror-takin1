@@ -560,34 +560,47 @@ bool is_diag_matrix(const matrix_type& mat)
 }
 
 
-// vectors form rows of matrix
-template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double> >
-matrix_type row_matrix(const std::vector<vec_type>& vecs)
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, 
+	class container_type=std::initializer_list<vec_type>, const bool bRowMat>
+inline matrix_type row_col_matrix(const container_type& vecs)
 {
 	if(vecs.size() == 0)
 		return matrix_type(0,0);
 
-	matrix_type mat(vecs.size(), vecs[0].size());
-	for(unsigned int j=0; j<vecs.size(); ++j)
-		for(unsigned int i=0; i<vecs[0].size(); ++i)
-			mat(j,i) = vecs[j][i];
+	matrix_type mat(vecs.size(), vecs.begin()->size());
+	unsigned int j=0;
+	for(typename container_type::const_iterator iter=vecs.begin(); iter!=vecs.end(); ++iter)
+	{
+		const vec_type& vec = *iter;
+
+		for(unsigned int i=0; i<vec.size(); ++i)
+		{
+			if(bRowMat)
+				mat(j,i) = vec[i];
+			else
+				mat(i,j) = vec[i];
+		}
+
+		++j;
+	}
 
 	return mat;
 }
 
-// vectors form columns of matrix
-template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double> >
-matrix_type column_matrix(const std::vector<vec_type>& vecs)
+// vectors form rows of matrix
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, 
+	class container_type=std::initializer_list<vec_type> >
+matrix_type row_matrix(const container_type& vecs)
 {
-	if(vecs.size() == 0)
-		return matrix_type(0,0);
+	return row_col_matrix<matrix_type, vec_type, container_type, true>(vecs);
+}
 
-	matrix_type mat(vecs[0].size(), vecs.size());
-	for(unsigned int j=0; j<vecs.size(); ++j)
-		for(unsigned int i=0; i<vecs[0].size(); ++i)
-			mat(i,j) = vecs[j][i];
-
-	return mat;
+// vectors form columns of matrix
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, 
+	class container_type=std::initializer_list<vec_type> >
+matrix_type column_matrix(const container_type& vecs)
+{
+	return row_col_matrix<matrix_type, vec_type, container_type, false>(vecs);
 }
 
 

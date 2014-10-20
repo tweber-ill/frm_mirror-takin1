@@ -43,6 +43,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		QAction *m_pSmallq = 0;
 		QAction *m_pSnapSmallq = 0;
+		QAction *m_pGoto = 0;
 		QAction *m_pBZ = 0;
 		QAction *m_pShowRealQDir = 0;
 

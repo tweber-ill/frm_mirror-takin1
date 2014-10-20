@@ -92,7 +92,7 @@ class ScatteringTriangle : public QGraphicsItem
 		double m_dPlaneDistTolerance = 0.01;
 		int m_iMaxPeaks = 7;
 
-		Lattice m_lattice, m_recip, m_recip_unrot;
+		Lattice<double> m_lattice, m_recip, m_recip_unrot;
 		ublas::matrix<double> m_matPlane, m_matPlane_inv;
 		std::vector<RecipPeak*> m_vecPeaks;
 
@@ -135,8 +135,8 @@ class ScatteringTriangle : public QGraphicsItem
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_recip.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const Lattice& lattice,
-						const Lattice& recip, const Lattice& recip_unrot,
+		void CalcPeaks(const Lattice<double>& lattice,
+						const Lattice<double>& recip, const Lattice<double>& recip_unrot,
 						const Plane<double>& plane,
 						const SpaceGroup* pSpaceGroup=0);
 

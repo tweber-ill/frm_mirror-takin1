@@ -63,7 +63,7 @@ obj/taz.o: tools/taz/taz.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/recip3d.o: tools/taz/recip3d.cpp tools/taz/recip3d.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scattering_triangle.h
+obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scattering_triangle.h helper/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tas_layout.o: tools/taz/tas_layout.cpp tools/taz/tas_layout.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -71,7 +71,7 @@ obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/GotoDlg.o: dialogs/GotoDlg.cpp dialogs/GotoDlg.h
+obj/GotoDlg.o: dialogs/GotoDlg.cpp dialogs/GotoDlg.h helper/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
 	${CC} ${FLAGS} -c -o $@ $<

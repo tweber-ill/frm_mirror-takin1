@@ -490,19 +490,15 @@ double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 double ScatteringTriangle::GetTheta(bool bPosSense) const
 {
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+						- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	vecKi /= ublas::norm_2(vecKi);
 
-	// direction of 1st Bragg reflex (orient1)
-	ublas::vector<double> vecSampleDirX(2);
-	vecSampleDirX[0] = 1.;
-	vecSampleDirX[1] = 0.;
-
-	double dTh = vec_angle(vecKi) - vec_angle(vecSampleDirX) - M_PI/2.;
+	double dTh = vec_angle(vecKi) - M_PI/2.;
 	dTh += m_dAngleRot;
 	if(!bPosSense)
 		dTh = -dTh;
 
+	//log_info("theta: ", dTh/M_PI*180.);
 	return dTh;
 }
 
@@ -619,8 +615,8 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
 	nodeMoved(m_pNodeKfQ);
 }
 
-void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
-								const Lattice& recip, const Lattice& recip_unrot,
+void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
+								const Lattice<double>& recip, const Lattice<double>& recip_unrot,
 								const Plane<double>& plane,
 								const SpaceGroup* pSpaceGroup)
 {
@@ -650,8 +646,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice& lattice,
 	dir0 /= dDir0Len;
 	dir1 /= dDir1Len;
 
-	m_matPlane = column_matrix(
-			std::vector<ublas::vector<double> >{dir0, dir1, plane.GetNorm()});
+	m_matPlane = column_matrix({dir0, dir1, plane.GetNorm()});
 	bool bInv = ::inverse(m_matPlane, m_matPlane_inv);
 	if(!bInv)
 	{
@@ -874,7 +869,6 @@ void ScatteringTriangleScene::emitUpdate()
 		return;
 
 	TriangleOptions opts;
-
 	opts.bChangedMonoTwoTheta = 1;
 	opts.bChangedAnaTwoTheta = 1;
 	opts.bChangedTwoTheta = 1;

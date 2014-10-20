@@ -13,7 +13,7 @@ using energy = units::quantity<units::si::energy>;
 using wavenumber = units::quantity<units::si::wavenumber>;
 
 
-GotoDlg::GotoDlg(QWidget* pParent) : QDialog(pParent)
+GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSettings(pSett)
 {
 	this->setupUi(this);
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
@@ -21,10 +21,15 @@ GotoDlg::GotoDlg(QWidget* pParent) : QDialog(pParent)
 	QObject::connect(editKi, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
 	QObject::connect(editKf, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
 	QObject::connect(editE, SIGNAL(textEdited(const QString&)), this, SLOT(EditedE()));
+	QObject::connect(btnGetPos, SIGNAL(clicked()), this, SLOT(GetCurPos()));
 
 	std::vector<QObject*> vecObjs {editH, editK, editL};
 	for(QObject* pObj : vecObjs)
 		QObject::connect(pObj, SIGNAL(textEdited(const QString&)), this, SLOT(CalcSample()));
+
+	std::vector<QObject*> vecAngles {edit2ThetaM, editThetaM, edit2ThetaA, editThetaA, edit2ThetaS, editThetaS};
+	for(QObject* pObj : vecAngles)
+		QObject::connect(pObj, SIGNAL(textEdited(const QString&)), this, SLOT(EditedAngles()));
 }
 
 GotoDlg::~GotoDlg()
@@ -69,7 +74,8 @@ void GotoDlg::CalcSample()
 		editThetaS->setText("invalid");
 		edit2ThetaS->setText("invalid");
 
-		log_err(ex.what());
+		//log_err(ex.what());
+		labelStatus->setText((std::string("Error: ") + ex.what()).c_str());
 		return;
 	}
 
@@ -77,6 +83,9 @@ void GotoDlg::CalcSample()
 	edit2ThetaS->setText(var_to_str(m_dSample2Theta/M_PI*180.).c_str());
 
 	m_bSampleOk = 1;
+
+	if(m_bMonoAnaOk && m_bSampleOk)
+		labelStatus->setText("Position OK.");
 }
 
 void GotoDlg::CalcMonoAna()
@@ -110,7 +119,8 @@ void GotoDlg::CalcMonoAna()
 		editThetaM->setText("invalid");
 		edit2ThetaM->setText("invalid");
 
-		log_err(ex.what());
+		//log_err(ex.what());
+		labelStatus->setText((std::string("Error: ") + ex.what()).c_str());
 	}
 
 	try
@@ -125,7 +135,8 @@ void GotoDlg::CalcMonoAna()
 		editThetaA->setText("invalid");
 		edit2ThetaA->setText("invalid");
 
-		log_err(ex.what());
+		//log_err(ex.what());
+		labelStatus->setText((std::string("Error: ") + ex.what()).c_str());
 	}
 
 	if(!bMonoOk || !bAnaOk)
@@ -141,6 +152,9 @@ void GotoDlg::CalcMonoAna()
 	editThetaA->setText(var_to_str(dTAna/M_PI*180.).c_str());
 
 	m_bMonoAnaOk = 1;
+
+	if(m_bMonoAnaOk && m_bSampleOk)
+		labelStatus->setText("Position OK.");
 }
 
 void GotoDlg::EditedKiKf()
@@ -206,6 +220,87 @@ void GotoDlg::EditedE()
 	CalcSample();
 }
 
+// calc. tas angles -> hkl
+void GotoDlg::EditedAngles()
+{
+	bool bthmOk;
+	double th_m = edit2ThetaM->text().toDouble(&bthmOk)/2. / 180.*M_PI;
+	if(bthmOk)
+		editThetaM->setText(var_to_str<double>(th_m/M_PI*180.).c_str());
+
+	bool bthaOk;
+	double th_a = edit2ThetaA->text().toDouble(&bthaOk)/2. / 180.*M_PI;
+	if(bthaOk)
+		editThetaA->setText(var_to_str<double>(th_a/M_PI*180.).c_str());
+
+	bool bthsOk, bttsOk;
+	double th_s = editThetaS->text().toDouble(&bthsOk) / 180.*M_PI;
+	double tt_s = edit2ThetaS->text().toDouble(&bttsOk) / 180.*M_PI;
+
+	if(!bthmOk || !bthaOk || !bthsOk || !bttsOk)
+		return;
+
+
+	double h,k,l;
+	double dKi, dKf, dE;
+	try
+	{
+		::get_hkl_from_tas_angles(m_lattice,
+								m_vec1, m_vec2,
+								m_dMono, m_dAna,
+								th_m, th_a, th_s, tt_s,
+								m_bSenseM, m_bSenseA, m_bSenseS,
+								&h, &k, &l,
+								&dKi, &dKf, &dE);
+		if(::isinf(h) || ::isnan(h) || ::isinf(k) || ::isnan(k) || ::isinf(l) || ::isnan(l))
+			throw Err("Invalid hkl.");
+	}
+	catch(const std::exception& ex)
+	{
+		//log_err(ex.what());
+		labelStatus->setText((std::string("Error: ") + ex.what()).c_str());
+		return;
+	}
+
+	editH->setText(var_to_str<double>(h).c_str());
+	editK->setText(var_to_str<double>(k).c_str());
+	editL->setText(var_to_str<double>(l).c_str());
+
+	editKi->setText(var_to_str<double>(dKi).c_str());
+	editKf->setText(var_to_str<double>(dKf).c_str());
+	editE->setText(var_to_str<double>(dE).c_str());
+
+	m_dMono2Theta = th_m*2.;
+	m_dAna2Theta = th_a*2.;
+	m_dSample2Theta = tt_s;
+	m_dSampleTheta = th_s;
+	m_bMonoAnaOk = 1;
+	m_bSampleOk = 1;
+	labelStatus->setText("Position OK.");
+}
+
+void GotoDlg::GetCurPos()
+{
+	if(!m_bHasParamsRecip)
+		return;
+
+	editKi->setText(var_to_str(m_paramsRecip.dki).c_str());
+	editKf->setText(var_to_str(m_paramsRecip.dkf).c_str());
+
+	editH->setText(var_to_str(-m_paramsRecip.Q_rlu[0]).c_str());
+	editK->setText(var_to_str(-m_paramsRecip.Q_rlu[1]).c_str());
+	editL->setText(var_to_str(-m_paramsRecip.Q_rlu[2]).c_str());
+
+	EditedKiKf();
+	CalcMonoAna();
+	CalcSample();
+}
+
+void GotoDlg::RecipParamsChanged(const RecipParams& params)
+{
+	m_bHasParamsRecip = 1;
+	m_paramsRecip = params;
+}
 
 void GotoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 {
@@ -223,14 +318,21 @@ void GotoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 			triag.bChangedAnaTwoTheta = 1;
 			triag.dAnaTwoTheta = this->m_dAna2Theta;
 
-			//triag.bChangedTheta = 1;
-			//triag.dTheta = this->m_dSampleTheta;
+			triag.bChangedTheta = 1;
+			triag.dTheta = this->m_dSampleTheta;
 
 			triag.bChangedAngleKiVec0 = 1;
-			triag.dAngleKiVec0 = M_PI/2. - this->m_dSampleTheta;
+
+			double dSampleTheta = m_dSampleTheta;
+			if(!m_bSenseS) dSampleTheta = -dSampleTheta;
+			triag.dAngleKiVec0 = M_PI/2. - dSampleTheta;
+			//log_info("kivec0 = ", triag.dAngleKiVec0/M_PI*180.);
+			//log_info("th = ", m_dSampleTheta/M_PI*180.);
 
 			triag.bChangedTwoTheta = 1;
 			triag.dTwoTheta = this->m_dSample2Theta;
+			// TODO: correct hack in taz.cpp
+			if(!m_bSenseS) triag.dTwoTheta = -triag.dTwoTheta;
 
 			emit vars_changed(crys, triag);
 		}
@@ -242,8 +344,19 @@ void GotoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
+		if(m_pSettings)
+			m_pSettings->setValue("goto_pos/geo", saveGeometry());
+
 		QDialog::accept();
 	}
+}
+
+void GotoDlg::showEvent(QShowEvent *pEvt)
+{
+	if(m_pSettings && m_pSettings->contains("goto_pos/geo"))
+		restoreGeometry(m_pSettings->value("goto_pos/geo").toByteArray());
+
+	QDialog::showEvent(pEvt);
 }
 
 

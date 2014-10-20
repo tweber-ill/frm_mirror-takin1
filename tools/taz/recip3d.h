@@ -25,8 +25,8 @@ public:
 	Recip3DDlg(QWidget* pParent);
 	virtual ~Recip3DDlg();
 
-	void CalcPeaks(const Lattice& lattice,
-					const Lattice& recip, const Lattice& recip_unrot,
+	void CalcPeaks(const Lattice<double>& lattice,
+					const Lattice<double>& recip, const Lattice<double>& recip_unrot,
 					const Plane<double>& plane,
 					const SpaceGroup* pSpaceGroup=0);
 

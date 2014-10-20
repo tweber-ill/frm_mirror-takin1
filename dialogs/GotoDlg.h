@@ -8,12 +8,13 @@
 #define __GOTO_DLG_H__
 
 #include <QtGui/QDialog>
+#include <QtCore/QSettings>
 #include "../ui/ui_goto.h"
 
 #include "../helper/lattice.h"
 #include "../helper/linalg.h"
 #include "../tools/taz/tasoptions.h"
-
+#include "RecipParamDlg.h"
 
 class GotoDlg : public QDialog, Ui::GotoDlg
 { Q_OBJECT
@@ -22,12 +23,16 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		bool m_bSampleOk = 0;
 
 	public:
-		GotoDlg(QWidget* pParent=0);
+		GotoDlg(QWidget* pParent=0, QSettings* pSett=0);
 		virtual ~GotoDlg();
 
 	protected:
+		QSettings *m_pSettings = 0;
+
 		ublas::vector<double> m_vec1, m_vec2;
-		Lattice m_lattice;
+		Lattice<double> m_lattice;
+		RecipParams m_paramsRecip;
+		bool m_bHasParamsRecip = 0;
 
 		double m_dMono2Theta;
 		double m_dSample2Theta;
@@ -42,13 +47,16 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 	protected slots:
 		void EditedKiKf();
 		void EditedE();
+		void EditedAngles();
+
+		void GetCurPos();
 
 	public slots:
 		void CalcMonoAna();
 		void CalcSample();
 
 	public:
-		void SetLattice(const Lattice& lattice) { m_lattice = lattice; }
+		void SetLattice(const Lattice<double>& lattice) { m_lattice = lattice; }
 		void SetScatteringPlane(const ublas::vector<double>& vec1, const ublas::vector<double>& vec2)
 		{ m_vec1 = vec1; m_vec2 = vec2; }
 
@@ -62,9 +70,14 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 
 	protected slots:
 		void ButtonBoxClicked(QAbstractButton* pBtn);
+	public slots:
+		void RecipParamsChanged(const RecipParams&);
 
 	signals:
 		void vars_changed(const CrystalOptions& crys, const TriangleOptions& triag);
+
+	protected:
+		virtual void showEvent(QShowEvent *pEvt);
 };
 
 #endif

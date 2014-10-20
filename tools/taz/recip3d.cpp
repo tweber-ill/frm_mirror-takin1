@@ -31,8 +31,8 @@ Recip3DDlg::~Recip3DDlg()
 }
 
 
-void Recip3DDlg::CalcPeaks(const Lattice& lattice,
-							const Lattice& recip, const Lattice& recip_unrot,
+void Recip3DDlg::CalcPeaks(const Lattice<double>& lattice,
+							const Lattice<double>& recip, const Lattice<double>& recip_unrot,
 							const Plane<double>& plane,
 							const SpaceGroup* pSpaceGroup)
 {

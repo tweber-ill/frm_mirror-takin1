@@ -97,8 +97,7 @@ public:
 		ublas::vector<T> vecDir = cross_3(plane1.GetNorm(), plane2.GetNorm());
 
 		// find common point in the two planes
-		std::vector<ublas::vector<T> > vecNorms = {plane1.GetNorm(), plane2.GetNorm()};
-		ublas::matrix<T> M = row_matrix(vecNorms);
+		ublas::matrix<T> M = row_matrix({plane1.GetNorm(), plane2.GetNorm()});
 
 		ublas::vector<T> vecD(2);
 		vecD[0] = plane1.GetD();
