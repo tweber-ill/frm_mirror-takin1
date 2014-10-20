@@ -1,7 +1,14 @@
 #!/bin/bash
 
-UIC=uic-qt4
-MOC=moc-qt4
+UIC="$(which uic-qt4)"
+MOC="$(which moc-qt4)"
+
+if [ -z "$UIC" ] || [ -z "${MOC}" ];
+then
+	echo "Error: moc/uic tools not found!";
+	exit -1;
+fi
+
 
 
 echo -e "--------------------------------------------------------------------------------"
@@ -53,3 +60,4 @@ do
 done
 
 echo -e "--------------------------------------------------------------------------------"
+exit 0
