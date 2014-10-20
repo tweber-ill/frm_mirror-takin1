@@ -141,7 +141,6 @@ void Lattice<T>::RotateEulerRecip(const ublas::vector<T>& vecRecipX,
 		|| ::isnan(dLenX) || ::isnan(dLenY) || ::isnan(dLenZ))
 	{
 		throw Err("Invalid reciprocal matrix.");
-		return;
 	}
 
 	vecX /= dLenX;

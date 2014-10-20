@@ -136,7 +136,7 @@ struct XmlNode
 
 	void SortIntoTree(const std::list<std::string>& lstKey, const std::string& strVal)
 	{
-		if(lstKey.size() == 0)
+		if(lstKey.empty())
 			return;
 
 		XmlNode* pNode = GetChild(*lstKey.begin());

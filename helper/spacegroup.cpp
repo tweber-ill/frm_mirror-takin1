@@ -697,7 +697,7 @@ void init_space_groups()
 
 const t_mapSpaceGroups* get_space_groups()
 {
-	if(g_mapSpaceGroups.size() == 0)
+	if(g_mapSpaceGroups.empty())
 		init_space_groups();
 
 	return &g_mapSpaceGroups;
