@@ -947,6 +947,7 @@ bool TazDlg::Load()
 
 bool TazDlg::Load(const char* pcFile)
 {
+	Disconnect();
 	m_strCurFile = pcFile;
 
 	const std::string strXmlRoot("taz/");
@@ -1496,6 +1497,8 @@ void TazDlg::Disconnect()
 {
 	if(m_pNicosCache)
 	{
+		m_pNicosCache->disconnect();
+		
 		QObject::disconnect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 						this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
 		QObject::disconnect(m_pNicosCache, SIGNAL(connected(const QString&, const QString&)),
@@ -1535,6 +1538,8 @@ void TazDlg::NetRefresh()
 
 void TazDlg::Connected(const QString& strHost, const QString& strSrv)
 {
+	m_strCurFile = "";
+
 	setWindowTitle((s_strTitle + " - ").c_str() + strHost + ":" + strSrv);
 	statusBar()->showMessage("Connected to " + strHost + " on port " + strSrv + ".", DEFAULT_MSG_TIMEOUT);
 }
