@@ -10,6 +10,7 @@
 #include "linalg.h"
 #include "math.h"
 #include "neutrons.hpp"
+#include <ostream>
 
 
 template<typename T=double>
@@ -171,12 +172,9 @@ template<typename T> T Lattice<T>::GetBeta() const
 template<typename T> T Lattice<T>::GetGamma() const
 { return std::acos(ublas::inner_prod(m_vecs[0]/GetA(), m_vecs[1]/GetB())); }
 
-template<typename T> T Lattice<T>::GetA() const
-{ return std::sqrt(ublas::inner_prod(m_vecs[0], m_vecs[0])); }
-template<typename T> T Lattice<T>::GetB() const
-{ return std::sqrt(ublas::inner_prod(m_vecs[1], m_vecs[1])); }
-template<typename T> T Lattice<T>::GetC() const
-{ return std::sqrt(ublas::inner_prod(m_vecs[2], m_vecs[2])); }
+template<typename T> T Lattice<T>::GetA() const { return ublas::norm_2(m_vecs[0]); }
+template<typename T> T Lattice<T>::GetB() const { return ublas::norm_2(m_vecs[1]); }
+template<typename T> T Lattice<T>::GetC() const { return ublas::norm_2(m_vecs[2]); }
 
 template<typename T>
 T Lattice<T>::GetVol() const
@@ -224,9 +222,21 @@ Lattice<T> Lattice<T>::GetRecip() const
 	if(!reciprocal(matReal, matRecip))
 		throw Err("Reciprocal lattice could not be calculated.");
 
-	return Lattice<T>(get_column(matRecip,0),
-					get_column(matRecip,1),
-					get_column(matRecip,2));
+	// warning: first axis does not (necessarily) coincide with assumed first 
+	//			orientation vector [0,0,1] anymore!
+	// 			-> would give theta angle offset for non-90-degree crystals!
+	Lattice<T> latRecip = Lattice<T>(get_column(matRecip,0),
+										get_column(matRecip,1),
+										get_column(matRecip,2));
+	//std::cout << "latRecip1 = " << latRecip << std::endl;
+
+	// construct new, correctly oriented reciprocal lattice with first axis along
+	// [0,0,1]
+	latRecip = Lattice<T>(latRecip.GetA(), latRecip.GetB(), latRecip.GetC(),
+						latRecip.GetAlpha(), latRecip.GetBeta(), latRecip.GetGamma());
+	//std::cout << "latRecip2 = " << latRecip << std::endl;
+
+	return latRecip;
 }
 
 template<typename T>
@@ -294,7 +304,7 @@ void get_tas_angles(const Lattice<T>& lattice_real,
 
 		T dAngleKiOrient1 = -dKiQ - vec_angle(vecQ);
 		*pTheta = dAngleKiOrient1 + M_PI;		// a3 convention
-		*pTheta -= M_PI/2.;				// theta here
+		*pTheta -= M_PI/2.;						// theta here
 		if(!bSense) *pTheta = -*pTheta;
 	}
 	/*catch(const std::exception& ex)
@@ -354,4 +364,23 @@ void get_hkl_from_tas_angles(const Lattice<T>& lattice_real,
 	if(pQ) *pQ = Q;
 }
 
+
+template<typename T=double>
+std::ostream& operator<<(std::ostream& ostr, const Lattice<T>& lat)
+{
+	ostr << "a = " << lat.GetA() << ", ";
+	ostr << "b = " << lat.GetB() << ", ";
+	ostr << "c = " << lat.GetC() << "; ";
+
+	ostr << "alpha = " << lat.GetAlpha() << ", ";
+	ostr << "beta = " << lat.GetBeta() << ", ";
+	ostr << "gamma = " << lat.GetGamma() << "; ";
+	
+	ostr << "\n";
+	ostr << "vec0 = " << lat.GetVec(0) << ", ";
+	ostr << "vec1 = " << lat.GetVec(1) << ", ";
+	ostr << "vec2 = " << lat.GetVec(2);
+
+	return ostr;
+}
 #endif
