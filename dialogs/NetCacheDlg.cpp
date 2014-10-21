@@ -141,8 +141,8 @@ void NetCacheDlg::UpdateAge(int iRow)
 	}
 	if(iAgeH > 24)
 	{
-		iAgeD = iAgeH / 60;
-		iAgeH = iAgeH  % 60;
+		iAgeD = iAgeH / 24;
+		iAgeH = iAgeH  % 24;
 	}
 	
 	bool bHadPrev = 0;
