@@ -41,7 +41,8 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/recip3d.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
 	obj/xml.o obj/tcp.o obj/lattice.o obj/spacegroup.o \
-	obj/plotgl.o obj/cn.o obj/pop.o obj/ResoDlg.o obj/EllipseDlg3D.o
+	obj/plotgl.o obj/cn.o obj/pop.o obj/ResoDlg.o obj/EllipseDlg3D.o \
+	obj/NetCacheDlg.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 
 
@@ -78,6 +79,8 @@ obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
 obj/NeutronDlg.o: dialogs/NeutronDlg.cpp dialogs/NeutronDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SrvDlg.o: dialogs/SrvDlg.cpp dialogs/SrvDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/NetCacheDlg.o: dialogs/NetCacheDlg.cpp dialogs/NetCacheDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/nicos.o: tools/taz/nicos.cpp tools/taz/nicos.h
 	${CC} ${FLAGS} -c -o $@ $<
