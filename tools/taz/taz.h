@@ -55,7 +55,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::vector<QLineEdit*> m_vecEdits_plane;
 		std::vector<QLineEdit*> m_vecEdits_monoana;
 
-		std::vector<QDoubleSpinBox*> m_vecSpinBoxesSample;
+		//std::vector<QDoubleSpinBox*> m_vecSpinBoxesSample;
 		std::vector<QCheckBox*> m_vecCheckBoxesSenses;
 
 		std::vector<std::string> m_vecEditNames_real;

@@ -187,6 +187,17 @@ vector_type get_column(const matrix_type& mat, unsigned int iCol)
         return vecret;
 }
 
+template<class vector_type=ublas::vector<double>, class matrix_type=ublas::matrix<double> >
+vector_type get_row(const matrix_type& mat, unsigned int iRow)
+{
+        vector_type vecret(mat.size2());
+
+        for(unsigned int i=0; i<mat.size2(); ++i)
+        	vecret[i] = mat(iRow, i);
+
+        return vecret;
+}
+
 
 template<class matrix_type=ublas::matrix<double> >
 matrix_type rotation_matrix_2d(typename matrix_type::value_type angle)
@@ -567,7 +578,10 @@ inline matrix_type row_col_matrix(const container_type& vecs)
 	if(vecs.size() == 0)
 		return matrix_type(0,0);
 
-	matrix_type mat(vecs.size(), vecs.begin()->size());
+	const unsigned int N = vecs.size();
+	const unsigned int M = vecs.begin()->size();
+
+	matrix_type mat(bRowMat?N:M, bRowMat?M:N);
 	unsigned int j=0;
 	for(typename container_type::const_iterator iter=vecs.begin(); iter!=vecs.end(); ++iter)
 	{

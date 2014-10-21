@@ -101,7 +101,7 @@ TazDlg::TazDlg(QWidget* pParent)
 		editMonoD, editAnaD
 	};
 
-	m_vecSpinBoxesSample = { spinRotPhi, spinRotTheta, spinRotPsi };
+	//m_vecSpinBoxesSample = { spinRotPhi, spinRotTheta, spinRotPsi };
 	m_vecCheckBoxesSenses = { checkSenseM, checkSenseS, checkSenseA };
 
 
@@ -185,8 +185,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	}
 	QObject::connect(editPlaneTolerance, SIGNAL(textEdited(const QString&)), this, SLOT(ChangedTolerance()));
 
-	for(QDoubleSpinBox* pSpin : m_vecSpinBoxesSample)
-		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
+	//for(QDoubleSpinBox* pSpin : m_vecSpinBoxesSample)
+	//	QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
 
 	for(QLineEdit* pEdit : m_vecEdits_recip)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaksRecip()));
@@ -726,11 +726,11 @@ void TazDlg::CalcPeaks()
 		}
 
 
-		// rotated lattice
+		/*// rotated lattice
 		double dPhi = spinRotPhi->value() / 180. * M_PI;
 		double dTheta = spinRotTheta->value() / 180. * M_PI;
 		double dPsi = spinRotPsi->value() / 180. * M_PI;
-		//lattice.RotateEuler(dPhi, dTheta, dPsi);
+		//lattice.RotateEuler(dPhi, dTheta, dPsi);*/
 
 		ublas::vector<double> dir0 = plane.GetDir0();
 		ublas::vector<double> dirup = plane.GetNorm();
@@ -751,7 +751,7 @@ void TazDlg::CalcPeaks()
 		dir1 /= dDir1Len;
 		//dirup /= dDirUpLen;
 
-		lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
+		//lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
 		Lattice<double> recip = lattice.GetRecip();
 
 
@@ -992,13 +992,13 @@ bool TazDlg::Load(const char* pcFile)
 	}
 
 
-	// spin boxes
+	/*// spin boxes
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxesSample.size(); ++iSpinBox)
 	{
 		double dVal = xml.Query<double>((strXmlRoot+m_vecSpinBoxNamesSample[iSpinBox]).c_str(), 0., &bOk);
 		if(bOk)
 			m_vecSpinBoxesSample[iSpinBox]->setValue(dVal);
-	}
+	}*/
 
 
 	// check boxes
@@ -1118,7 +1118,7 @@ bool TazDlg::Save()
 	}
 
 
-	// spin boxes
+	/*// spin boxes
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxesSample.size(); ++iSpinBox)
 	{
 		std::ostringstream ostrVal;
@@ -1126,7 +1126,7 @@ bool TazDlg::Save()
 		ostrVal << m_vecSpinBoxesSample[iSpinBox]->value();
 
 		mapConf[strXmlRoot + m_vecSpinBoxNamesSample[iSpinBox]] = ostrVal.str();
-	}
+	}*/
 
 
 	// check boxes

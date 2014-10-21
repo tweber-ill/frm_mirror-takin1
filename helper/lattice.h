@@ -235,7 +235,6 @@ Lattice<T> Lattice<T>::GetRecip() const
 	latRecip = Lattice<T>(latRecip.GetA(), latRecip.GetB(), latRecip.GetC(),
 						latRecip.GetAlpha(), latRecip.GetBeta(), latRecip.GetGamma());
 	//std::cout << "latRecip2 = " << latRecip << std::endl;
-
 	return latRecip;
 }
 
@@ -256,11 +255,11 @@ ublas::matrix<T> get_UB(const Lattice<T>& lattice_real,
 	using t_mat = ublas::matrix<T>;
 
 	t_mat matB = lattice_real.GetRecip().GetMetric();
+	t_mat matOrient = ::column_matrix({_vec1, _vec2});
+	t_mat matOrientB = ublas::prod(matB, matOrient);
 
-
-	t_vec vec1 = _vec1;
-	t_vec vec2 = _vec2;
-
+	t_vec vec1 = ::get_column(matOrientB, 0);
+	t_vec vec2 = ::get_column(matOrientB, 1);
 	t_vec vecUp = ::cross_3(vec1, vec2);
 	vec2 = ::cross_3(vecUp, vec1);
 
@@ -268,10 +267,10 @@ ublas::matrix<T> get_UB(const Lattice<T>& lattice_real,
 	vec2 /= ublas::norm_2(vec2);
 	vecUp /= ublas::norm_2(vecUp);
 
-
 	t_mat matU = ::row_matrix({vec1, vec2, vecUp});
 	t_mat matUB = ublas::prod(matU, matB);
 
+	//std::cout << "UB = " << matUB << std::endl;
 	return matUB;
 }
 
@@ -284,6 +283,8 @@ void get_tas_angles(const Lattice<T>& lattice_real,
 						bool bSense,
 						T *pTheta, T *pTwoTheta)
 {
+	const T dDelta = 1e-5;
+	
 	using t_vec = ublas::vector<T>;
 	using t_mat = ublas::matrix<T>;
 
@@ -295,8 +296,15 @@ void get_tas_angles(const Lattice<T>& lattice_real,
 		t_vec vecQ = ublas::prod(matUB, vechkl);
 		double dQ = ublas::norm_2(vecQ);
 
-		if(std::fabs(vecQ[2]) > 1e-6)
-			throw Err("Position not in scattering plane.");
+		if(std::fabs(vecQ[2]) > dDelta)
+		{
+			std::string strErr("Position not in scattering plane.");
+			std::ostringstream ostrErr;
+			ostrErr << strErr;
+			ostrErr << " " << "UB*hkl = " << vecQ << ".";
+			log_err(ostrErr.str());
+			throw Err(strErr);
+		}
 
 		*pTwoTheta = get_sample_twotheta(dKi/angstrom, dKf/angstrom, dQ/angstrom, bSense) / units::si::radians;
 		T dKiQ = get_angle_ki_Q(dKi/angstrom, dKf/angstrom, dQ/angstrom, /*bSense*/1) / units::si::radians;
