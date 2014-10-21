@@ -365,6 +365,11 @@ TazDlg::TazDlg(QWidget* pParent)
 	pDisconn->setText("Disconnect");
 	pDisconn->setIcon(QIcon::fromTheme("network-offline"));
 	pMenuNet->addAction(pDisconn);
+	
+	QAction *pNetCache = new QAction(this);
+	pNetCache->setText("Show Network Cache...");
+	pMenuNet->addSeparator();
+	pMenuNet->addAction(pNetCache);
 
 	QAction *pNetRefresh = new QAction(this);
 	pNetRefresh->setText("Refresh");
@@ -434,6 +439,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pConn, SIGNAL(triggered()), this, SLOT(ShowConnectDlg()));
 	QObject::connect(pDisconn, SIGNAL(triggered()), this, SLOT(Disconnect()));
 	QObject::connect(pNetRefresh, SIGNAL(triggered()), this, SLOT(NetRefresh()));
+	QObject::connect(pNetCache, SIGNAL(triggered()), this, SLOT(ShowNetCache()));
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -560,7 +566,12 @@ TazDlg::~TazDlg()
 		delete m_pSrvDlg;
 		m_pSrvDlg = 0;
 	}
-
+	
+	if(m_pNetCacheDlg)
+	{
+		delete m_pNetCacheDlg;
+		m_pNetCacheDlg = 0;
+	}
 	if(m_pNicosCache)
 	{
 		delete m_pNicosCache;
@@ -1462,7 +1473,7 @@ void TazDlg::ConnectTo(const QString& _strHost, const QString& _strPort)
 
 	std::string strHost =  _strHost.toStdString();
 	std::string strPort =  _strPort.toStdString();
-
+	
 	m_pNicosCache = new NicosCache();
 	QObject::connect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
@@ -1470,6 +1481,13 @@ void TazDlg::ConnectTo(const QString& _strHost, const QString& _strPort)
 					this, SLOT(Connected(const QString&, const QString&)));
 	QObject::connect(m_pNicosCache, SIGNAL(disconnected()),
 					this, SLOT(Disconnected()));
+					
+	if(!m_pNetCacheDlg)
+		m_pNetCacheDlg = new NetCacheDlg(this, &m_settings);
+
+	m_pNetCacheDlg->ClearAll();
+	QObject::connect(m_pNicosCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)), 
+					m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
 
 	m_pNicosCache->connect(strHost, strPort);
 }
@@ -1478,11 +1496,30 @@ void TazDlg::Disconnect()
 {
 	if(m_pNicosCache)
 	{
+		QObject::disconnect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
+						this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
+		QObject::disconnect(m_pNicosCache, SIGNAL(connected(const QString&, const QString&)),
+						this, SLOT(Connected(const QString&, const QString&)));
+		QObject::disconnect(m_pNicosCache, SIGNAL(disconnected()),
+						this, SLOT(Disconnected()));
+						
+		QObject::disconnect(m_pNicosCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)), 
+						m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
+		
 		delete m_pNicosCache;
 		m_pNicosCache = 0;
 	}
 
 	statusBar()->showMessage("Disconnected.", DEFAULT_MSG_TIMEOUT);
+}
+
+void TazDlg::ShowNetCache()
+{
+	if(!m_pNetCacheDlg)
+		m_pNetCacheDlg = new NetCacheDlg(this, &m_settings);
+
+	m_pNetCacheDlg->show();
+	m_pNetCacheDlg->activateWindow();
 }
 
 void TazDlg::NetRefresh()

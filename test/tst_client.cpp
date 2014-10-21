@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 
 		strMsg+="\n";
 		client.write(strMsg);
-	};
+	}
 
 	return 0;
 }

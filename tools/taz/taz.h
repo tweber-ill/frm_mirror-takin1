@@ -30,10 +30,13 @@
 #include "dialogs/NeutronDlg.h"
 #include "dialogs/SrvDlg.h"
 #include "dialogs/GotoDlg.h"
+#include "dialogs/NetCacheDlg.h"
+#include "nicos.h"
 
 #include "helper/spacegroup.h"
 
-#include "nicos.h"
+
+
 
 
 class TazDlg : public QMainWindow, Ui::TazDlg
@@ -98,6 +101,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		SrvDlg *m_pSrvDlg = 0;
 		NicosCache *m_pNicosCache = 0;
+		NetCacheDlg *m_pNetCacheDlg = 0;
 
 	protected:
 		void InitReso();
@@ -158,6 +162,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ConnectTo(const QString& strHost, const QString& strPort);
 		void Disconnect();
 		void NetRefresh();
+		void ShowNetCache();
 
 		void Connected(const QString& strHost, const QString& strSrv);
 		void Disconnected();

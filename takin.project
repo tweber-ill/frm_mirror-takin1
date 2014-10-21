@@ -71,6 +71,8 @@
     <File Name="dialogs/EllipseDlg.cpp"/>
     <File Name="dialogs/NeutronDlg.cpp"/>
     <File Name="dialogs/RealParamDlg.cpp"/>
+    <File Name="dialogs/NetCacheDlg.cpp"/>
+    <File Name="dialogs/NetCacheDlg.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
     <File Name="helper/spec_char.cpp"/>

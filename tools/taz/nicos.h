@@ -10,6 +10,8 @@
 #include "helper/tcp.h"
 #include "tasoptions.h"
 
+#include "../../dialogs/NetCacheDlg.h"
+
 #include <QtCore/QObject>
 #include <QtCore/QString>
 
@@ -22,7 +24,7 @@ class NicosCache : public QObject
 	protected:
 		TcpClient m_tcp;
 		std::vector<std::string> m_vecKeys;
-		std::map<std::string, std::string> m_mapCache;
+		t_mapCacheVal m_mapCache;
 
 		// endpoints of the TcpClient signals
 		void slot_connected(const std::string& strHost, const std::string& strSrv);
@@ -47,6 +49,9 @@ class NicosCache : public QObject
 		void disconnected();
 
 		void vars_changed(const CrystalOptions& crys, const TriangleOptions& triag);
+		
+		void updated_cache_value(const std::string& strKey, const CacheVal& val);
+		void cleared_cache();
 };
 
 #endif

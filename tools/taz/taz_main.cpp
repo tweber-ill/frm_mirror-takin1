@@ -6,6 +6,7 @@
 #include "taz.h"
 #include "helper/spec_char.h"
 #include "helper/log.h"
+#include "dialogs/NetCacheDlg.h"
 
 #include <QMetaType>
 
@@ -29,6 +30,8 @@ int main(int argc, char** argv)
 		// qt needs to be able to copy these structs when emitting signals from a different thread
 		qRegisterMetaType<TriangleOptions>("TriangleOptions");
 		qRegisterMetaType<CrystalOptions>("CrystalOptions");
+		qRegisterMetaType<std::string>("std::string");
+		qRegisterMetaType<CacheVal>("CacheVal");
 
 		QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
 

@@ -7,7 +7,6 @@
 #include "nicos.h"
 #include "helper/string.h"
 #include "helper/log.h"
-#include <chrono>
 
 
 // TODO: move to config file
@@ -59,6 +58,9 @@ NicosCache::NicosCache()
 
 					g_strSampleTheta_aux,
 					g_strSampleTheta_aux_alias,
+					
+					// misc stuff
+					"logbook/remark",
 			})
 {
 	m_tcp.add_connect(boost::bind(&NicosCache::slot_connected, this, _1, _2));
@@ -73,6 +75,9 @@ NicosCache::~NicosCache()
 
 void NicosCache::connect(const std::string& strHost, const std::string& strPort)
 {
+	m_mapCache.clear();
+	emit cleared_cache();
+	
 	if(!m_tcp.connect(strHost, strPort))
 		return;
 }
@@ -168,24 +173,20 @@ void NicosCache::slot_receive(const std::string& str)
 	const std::string& strVal = pairKeyVal.second;
 
 
-/*
 	const std::string& strTime = pairTimeVal.first;
 	double dTimestamp = str_to_var<double>(strTime);
-	double dNow = std::chrono::system_clock::now().time_since_epoch().count();
-	dNow *= double(std::chrono::system_clock::period::num) / double(std::chrono::system_clock::period::den);
-	double dAge = dNow - dTimestamp;
-
-	std::cout << "age: " << dAge << " s" << "\n";
-	std::cout << "key: " << strKey << "\n";
-	std::cout << "val: " << strVal << std::endl;
-*/
-
-
 
 	if(strVal.length() == 0)
 		return;
 
-	m_mapCache[strKey] = strVal;
+	CacheVal cacheval;
+	cacheval.strVal = strVal;
+	cacheval.dTimestamp = dTimestamp;
+	m_mapCache[strKey] = cacheval;
+	
+	//std::cout << strKey << " = " << strVal << std::endl;
+	emit updated_cache_value(strKey, cacheval);
+
 
 
 	CrystalOptions crys;
@@ -274,11 +275,11 @@ void NicosCache::slot_receive(const std::string& str)
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 
-		double dOm = str_to_var<double>(m_mapCache[g_strSampleTheta]) /180.*M_PI;
-		double dTh_aux = str_to_var<double>(m_mapCache[g_strSampleTheta_aux]) /180.*M_PI;
-		double dPsi = str_to_var<double>(m_mapCache[g_strSamplePsi0]) /180.*M_PI;
+		double dOm = str_to_var<double>(m_mapCache[g_strSampleTheta].strVal) /180.*M_PI;
+		double dTh_aux = str_to_var<double>(m_mapCache[g_strSampleTheta_aux].strVal) /180.*M_PI;
+		double dPsi = str_to_var<double>(m_mapCache[g_strSamplePsi0].strVal) /180.*M_PI;
 
-		const std::string& strSthAlias = m_mapCache[g_strSampleTheta_aux_alias];
+		const std::string& strSthAlias = m_mapCache[g_strSampleTheta_aux_alias].strVal;
 
 		// angle from ki to bragg peak at orient1
 		triag.dAngleKiVec0 = -dOm-dPsi;
