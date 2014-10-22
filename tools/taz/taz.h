@@ -34,6 +34,7 @@
 #include "nicos.h"
 
 #include "helper/spacegroup.h"
+#include "helper/lattice.h"
 
 
 
@@ -67,6 +68,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::vector<std::string> m_vecCheckBoxNamesSenses;
 
 	protected:
+		static constexpr unsigned int s_iMaxPeaks = 10;
+		static constexpr double s_dPlaneDistTolerance = get_plane_dist_tolerance<double>();
+	
 		QSettings m_settings;
 		QLabel* m_pStatusMsg = 0;
 		QLabel* m_pCoordStatusMsg = 0;
@@ -84,7 +88,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
-		std::string m_strSampleName;
 
 		const t_mapSpaceGroups* m_pmapSpaceGroups;
 
@@ -114,7 +117,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		bool Load(const char* pcFile);
 
 	protected slots:
-		void ChangedTolerance();
 		void CalcPeaks();
 		void CalcPeaksRecip();
 		void UpdateDs();

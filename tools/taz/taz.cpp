@@ -94,7 +94,6 @@ TazDlg::TazDlg(QWidget* pParent)
 	{
 		editScatX0, editScatX1, editScatX2,
 		editScatY0, editScatY1, editScatY2,
-		editPlaneTolerance
 	};
 	m_vecEdits_monoana =
 	{
@@ -180,10 +179,8 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	for(QLineEdit* pEdit : m_vecEdits_plane)
 	{
-		if(pEdit != editPlaneTolerance)
-			QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
 	}
-	QObject::connect(editPlaneTolerance, SIGNAL(textEdited(const QString&)), this, SLOT(ChangedTolerance()));
 
 	//for(QDoubleSpinBox* pSpin : m_vecSpinBoxesSample)
 	//	QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
@@ -494,7 +491,10 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	RepopulateSpaceGroups();
 
-	m_sceneRecip.GetTriangle()->SetMaxPeaks(10);
+	m_sceneRecip.GetTriangle()->SetMaxPeaks(s_iMaxPeaks);
+	m_sceneRecip.GetTriangle()->SetPlaneDistTolerance(s_dPlaneDistTolerance);
+	if(m_pRecip3d)
+		m_pRecip3d->SetPlaneDistTolerance(s_dPlaneDistTolerance);	
 
 	UpdateDs();
 	CalcPeaks();
@@ -633,19 +633,6 @@ std::ostream& operator<<(std::ostream& ostr, const Lattice<double>& lat)
 	return ostr;
 }
 
-void TazDlg::ChangedTolerance()
-{
-	if(!m_sceneRecip.GetTriangle())
-		return;
-
-	double dTol = editPlaneTolerance->text().toDouble();
-	m_sceneRecip.GetTriangle()->SetPlaneDistTolerance(dTol);
-	if(m_pRecip3d)
-		m_pRecip3d->SetPlaneDistTolerance(dTol);
-
-	CalcPeaks();
-}
-
 void TazDlg::CalcPeaksRecip()
 {
 	double a = editARecip->text().toDouble();
@@ -776,12 +763,8 @@ void TazDlg::CalcPeaks()
 		std::wostringstream ostrSample;
 		ostrSample.precision(4);
 		ostrSample << "Sample";
-
-		if(m_strSampleName!="")
-			ostrSample << " \"" << str_to_wstr(m_strSampleName) << "\"";
 		ostrSample << " - ";
-
-		ostrSample << "UC Vol.: ";
+		ostrSample << "Unit Cell Vol.: ";
 		ostrSample << "Real: " << dVol << " " << strAA << strThree;
 		ostrSample << ", Recip.: " << dVol_recip << " " << strAA << strMinus << strThree;
 		groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
@@ -867,7 +850,7 @@ void TazDlg::Show3D()
 	{
 		m_pRecip3d = new Recip3DDlg(this);
 
-		double dTol = editPlaneTolerance->text().toDouble();
+		double dTol = s_dPlaneDistTolerance;
 		m_pRecip3d->SetPlaneDistTolerance(dTol);
 	}
 
@@ -990,6 +973,10 @@ bool TazDlg::Load(const char* pcFile)
 
 		++iIdxEdit;
 	}
+	
+	std::string strDescr = xml.QueryString((strXmlRoot+"sample/descr").c_str(), "", &bOk);
+	if(bOk)
+		this->editDescr->setPlainText(strDescr.c_str());
 
 
 	/*// spin boxes
@@ -1082,7 +1069,6 @@ bool TazDlg::Load(const char* pcFile)
 
 	m_strCurFile = strFile1;
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
-	m_strSampleName = "";
 
 	CalcPeaks();
 	return true;
@@ -1117,6 +1103,7 @@ bool TazDlg::Save()
 		++iIdxEdit;
 	}
 
+	mapConf[strXmlRoot + "sample/descr"] = editDescr->toPlainText().toStdString();
 
 	/*// spin boxes
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxesSample.size(); ++iSpinBox)
@@ -1553,8 +1540,7 @@ void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& tria
 {
 	if(crys.strSampleName != "")
 	{
-		m_strSampleName = crys.strSampleName;
-		//CalcPeaks();
+		this->editDescr->setPlainText(crys.strSampleName.c_str());
 	}
 
 	if(crys.bChangedLattice)

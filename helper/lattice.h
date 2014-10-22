@@ -275,6 +275,8 @@ ublas::matrix<T> get_UB(const Lattice<T>& lattice_real,
 	return matUB;
 }
 
+// distance for point to be considered inside scattering plane
+template<typename T> constexpr T get_plane_dist_tolerance() { return T(1e-6); }
 
 template<typename T=double>
 void get_tas_angles(const Lattice<T>& lattice_real,
@@ -285,7 +287,7 @@ void get_tas_angles(const Lattice<T>& lattice_real,
 						T *pTheta, T *pTwoTheta,
 						ublas::vector<T>* pVecQ = 0)
 {
-	const T dDelta = 1e-5;
+	const T dDelta = get_plane_dist_tolerance<T>();
 
 	using t_vec = ublas::vector<T>;
 	using t_mat = ublas::matrix<T>;
