@@ -16,8 +16,8 @@
 template<typename T=double>
 bool reciprocal(const ublas::matrix<T>& matReal, ublas::matrix<T>& matRecip)
 {
-	ublas::matrix<double> matInv;
-	if(!inverse<double>(ublas::trans(matReal), matInv))
+	ublas::matrix<T> matInv;
+	if(!inverse<T>(ublas::trans(matReal), matInv))
 		return false;
 
 	matRecip = 2.*M_PI*matInv;
@@ -51,6 +51,7 @@ class Lattice
 						T dPhi, T dTheta, T dPsi);
 
 		Lattice GetRecip() const;
+		Lattice GetAligned() const;
 
 		ublas::vector<T> GetPos(T h, T k, T l) const;
 		ublas::vector<T> GetHKL(const ublas::vector<T>& vec) const;
@@ -225,18 +226,18 @@ Lattice<T> Lattice<T>::GetRecip() const
 	// warning: first axis does not (necessarily) coincide with assumed first 
 	//			orientation vector [0,0,1] anymore!
 	// 			-> would give theta angle offset for non-90-degree crystals!
-	Lattice<T> latRecip = Lattice<T>(get_column(matRecip,0),
-										get_column(matRecip,1),
-										get_column(matRecip,2));
-	//std::cout << "latRecip1 = " << latRecip << std::endl;
+	return Lattice<T>(get_column(matRecip,0), get_column(matRecip,1), 
+get_column(matRecip,2));
+}
 
+template<typename T>
+Lattice<T> Lattice<T>::GetAligned() const
+{
 	// construct new, correctly oriented reciprocal lattice with first axis along
 	// [0,0,1]
-	latRecip = Lattice<T>(latRecip.GetA(), latRecip.GetB(), latRecip.GetC(),
-						latRecip.GetAlpha(), latRecip.GetBeta(), latRecip.GetGamma());
-	//std::cout << "latRecip2 = " << latRecip << std::endl;
-	return latRecip;
+	return Lattice<T>(GetA(), GetB(), GetC(), GetAlpha(), GetBeta(), GetGamma());
 }
+
 
 template<typename T>
 ublas::matrix<T> Lattice<T>::GetMetric() const
@@ -254,7 +255,7 @@ ublas::matrix<T> get_UB(const Lattice<T>& lattice_real,
 	using t_vec = ublas::vector<T>;
 	using t_mat = ublas::matrix<T>;
 
-	t_mat matB = lattice_real.GetRecip().GetMetric();
+	t_mat matB = lattice_real.GetRecip()/*.GetAligned()*/.GetMetric();
 	t_mat matOrient = ::column_matrix({_vec1, _vec2});
 	t_mat matOrientB = ublas::prod(matB, matOrient);
 
@@ -281,10 +282,11 @@ void get_tas_angles(const Lattice<T>& lattice_real,
 						T dKi, T dKf,
 						T dh, T dk, T dl,
 						bool bSense,
-						T *pTheta, T *pTwoTheta)
+						T *pTheta, T *pTwoTheta,
+						ublas::vector<T>* pVecQ = 0)
 {
 	const T dDelta = 1e-5;
-	
+
 	using t_vec = ublas::vector<T>;
 	using t_mat = ublas::matrix<T>;
 
@@ -294,7 +296,9 @@ void get_tas_angles(const Lattice<T>& lattice_real,
 
 		t_vec vechkl = ::make_vec({dh, dk, dl});
 		t_vec vecQ = ublas::prod(matUB, vechkl);
-		double dQ = ublas::norm_2(vecQ);
+		T dQ = ublas::norm_2(vecQ);
+		
+		if(pVecQ) *pVecQ = vecQ;
 
 		if(std::fabs(vecQ[2]) > dDelta)
 		{
@@ -327,7 +331,8 @@ void get_hkl_from_tas_angles(const Lattice<T>& lattice_real,
 						T dm, T da, T th_m, T th_a, T _th_s, T _tt_s,
 						bool bSense_m, bool bSense_a, bool bSense_s,
 						T* h, T* k, T* l,
-						T* pki=0, T* pkf=0, T* pE=0, T* pQ=0)
+						T* pki=0, T* pkf=0, T* pE=0, T* pQ=0,
+						ublas::vector<T>* pVecQ = 0)
 {
 	using t_vec = ublas::vector<T>;
 	using t_mat = ublas::matrix<T>;
@@ -358,6 +363,8 @@ void get_hkl_from_tas_angles(const Lattice<T>& lattice_real,
 	t_mat rot = ::rotation_matrix_3d_z(Qvec1);
 	t_vec vecQ = ublas::prod(rot, make_vec({Q,0.,0.}));
 	t_vec vechkl = ublas::prod(matUBinv, vecQ);
+	
+	if(pVecQ) *pVecQ = vecQ;
 
 	if(vechkl.size() != 3)
 		throw Err("Cannot determine hkl.");
@@ -380,15 +387,15 @@ std::ostream& operator<<(std::ostream& ostr, const Lattice<T>& lat)
 	ostr << "b = " << lat.GetB() << ", ";
 	ostr << "c = " << lat.GetC() << "; ";
 
-	ostr << "alpha = " << lat.GetAlpha() << ", ";
-	ostr << "beta = " << lat.GetBeta() << ", ";
-	ostr << "gamma = " << lat.GetGamma() << "; ";
-	
-	ostr << "\n";
+	ostr << "alpha = " << lat.GetAlpha() /M_PI*180. << " deg, ";
+	ostr << "beta = " << lat.GetBeta() /M_PI*180. << " deg, ";
+	ostr << "gamma = " << lat.GetGamma() /M_PI*180. << " deg; ";
+
+/*	ostr << "\n";
 	ostr << "vec0 = " << lat.GetVec(0) << ", ";
 	ostr << "vec1 = " << lat.GetVec(1) << ", ";
 	ostr << "vec2 = " << lat.GetVec(2);
-
+*/
 	return ostr;
 }
 #endif

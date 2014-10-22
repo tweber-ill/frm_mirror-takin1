@@ -55,6 +55,8 @@ void GotoDlg::CalcSample()
 	if(!bHOk || !bKOk || !bLOk || !bKiOk || !bKfOk)
 		return;
 
+	ublas::vector<double> vecQ;
+	bool bFailed = 0;
 	try
 	{
 		::get_tas_angles(m_lattice,
@@ -62,7 +64,8 @@ void GotoDlg::CalcSample()
 					dKi, dKf,
 					dH, dK, dL,
 					m_bSenseS,
-					&m_dSampleTheta, &m_dSample2Theta);
+					&m_dSampleTheta, &m_dSample2Theta,
+					&vecQ);
 
 		if(::isinf(m_dSample2Theta) || ::isnan(m_dSample2Theta))
 			throw Err("Invalid sample 2theta.");
@@ -76,8 +79,14 @@ void GotoDlg::CalcSample()
 
 		//log_err(ex.what());
 		labelStatus->setText((std::string("Error: ") + ex.what()).c_str());
-		return;
+		bFailed = 1;
 	}
+	
+	std::ostringstream ostrStatus;
+	ostrStatus << "Q = " << vecQ;
+	labelQ->setText(ostrStatus.str().c_str());	
+	
+	if(bFailed) return;
 
 	editThetaS->setText(var_to_str(m_dSampleTheta/M_PI*180.).c_str());
 	edit2ThetaS->setText(var_to_str(m_dSample2Theta/M_PI*180.).c_str());
@@ -85,7 +94,7 @@ void GotoDlg::CalcSample()
 	m_bSampleOk = 1;
 
 	if(m_bMonoAnaOk && m_bSampleOk)
-		labelStatus->setText("Position OK.");
+		labelStatus->setText("Position OK.");	
 }
 
 void GotoDlg::CalcMonoAna()
@@ -243,15 +252,19 @@ void GotoDlg::EditedAngles()
 
 	double h,k,l;
 	double dKi, dKf, dE;
+	ublas::vector<double> vecQ;
+	bool bFailed = 0;
 	try
 	{
-		::get_hkl_from_tas_angles(m_lattice,
+		::get_hkl_from_tas_angles<double>(m_lattice,
 								m_vec1, m_vec2,
 								m_dMono, m_dAna,
 								th_m, th_a, th_s, tt_s,
 								m_bSenseM, m_bSenseA, m_bSenseS,
 								&h, &k, &l,
-								&dKi, &dKf, &dE);
+								&dKi, &dKf, &dE, 0,
+								&vecQ);
+
 		if(::isinf(h) || ::isnan(h) || ::isinf(k) || ::isnan(k) || ::isinf(l) || ::isnan(l))
 			throw Err("Invalid hkl.");
 	}
@@ -259,8 +272,14 @@ void GotoDlg::EditedAngles()
 	{
 		//log_err(ex.what());
 		labelStatus->setText((std::string("Error: ") + ex.what()).c_str());
-		return;
+		bFailed = 1;
 	}
+	
+	std::ostringstream ostrStatus;
+	ostrStatus << "Q = " << vecQ;
+	labelQ->setText(ostrStatus.str().c_str());
+
+	if(bFailed) return;
 
 	editH->setText(var_to_str<double>(h).c_str());
 	editK->setText(var_to_str<double>(k).c_str());
@@ -276,7 +295,9 @@ void GotoDlg::EditedAngles()
 	m_dSampleTheta = th_s;
 	m_bMonoAnaOk = 1;
 	m_bSampleOk = 1;
-	labelStatus->setText("Position OK.");
+
+	if(m_bMonoAnaOk && m_bSampleOk)
+		labelStatus->setText("Position OK.");		
 }
 
 void GotoDlg::GetCurPos()

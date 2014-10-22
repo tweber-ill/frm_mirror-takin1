@@ -15,7 +15,8 @@ void get_tas_angles<double>(const Lattice<double>& lattice_real,
 						double dKi, double dKf,
 						double dh, double dk, double dl,
 						bool bSense,
-						double *pTheta, double *pTwoTheta);
+						double *pTheta, double *pTwoTheta,
+						ublas::vector<double>* pVecQ);
 
 template
 void get_hkl_from_tas_angles<double>(const Lattice<double>& lattice_real,
@@ -23,4 +24,5 @@ void get_hkl_from_tas_angles<double>(const Lattice<double>& lattice_real,
 						double dm, double da, double th_m, double th_a, double _th_s, double tt_s,
 						bool bSense_m, bool bSense_a, bool bSense_s,
 						double* h, double* k, double* l,
-						double*, double*, double*, double*);
+						double*, double*, double*, double*,
+						ublas::vector<double>* pVecQ);
