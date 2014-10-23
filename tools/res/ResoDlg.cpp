@@ -125,7 +125,7 @@ void ResoDlg::Calc()
 
 	cn.ki = editKi->text().toDouble() / angstrom;
 	cn.kf = editKf->text().toDouble() / angstrom;
-	cn.E = editE->text().toDouble() * (1e-3 * codata::e * units::si::volts);
+	//cn.E = editE->text().toDouble() * one_meV;
 	cn.Q = editQ->text().toDouble() / angstrom;
 
 	cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
@@ -197,6 +197,7 @@ void ResoDlg::Calc()
 	const bool bUseCN = radioCN->isChecked();
 	res = (bUseCN ? calc_cn(cn) : calc_pop(cn));
 
+	editE->setText(std::to_string(cn.E / one_meV).c_str());
 	//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
 	//if(m_pScatterDlg) m_pScatterDlg->SetParams(cn, res);
 
@@ -244,6 +245,7 @@ void ResoDlg::Calc()
 		labelStatus->setText("Calculation successful.");
 		labelResult->setText(QString::fromUtf8(ostrRes.str().c_str()));
 
+		
 
 		if(checkElli4dAutoCalc->isChecked())
 		{
@@ -508,7 +510,7 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 		dQ = -dQ;
 
 	editQ->setText(std::to_string(dQ).c_str());
-	editE->setText(std::to_string(parms.dE).c_str());
+	//editE->setText(std::to_string(parms.dE).c_str());		// redundant
 	editKi->setText(std::to_string(parms.dki).c_str());
 	editKf->setText(std::to_string(parms.dkf).c_str());
 
