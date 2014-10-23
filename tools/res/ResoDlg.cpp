@@ -29,8 +29,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	groupGuide->setChecked(false);
 
 	m_vecSpinBoxes = {spinMonod, spinMonoMosaic, spinAnad,
-						spinAnaMosaic, spinSampleMosaic, spinkfix,
-						spinE, spinQ, spinHCollMono, spinHCollBSample,
+						spinAnaMosaic, spinSampleMosaic,
+						spinHCollMono, spinHCollBSample,
 						spinHCollASample, spinHCollAna, spinVCollMono,
 						spinVCollBSample, spinVCollASample, spinVCollAna,
 						spinMonoRefl, spinAnaEffic,
@@ -44,8 +44,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 						spinDistMonoSample, spinDistSampleAna, spinDistAnaDet, spinDistSrcMono};
 
 	m_vecSpinNames = {"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
-					"reso/ana_mosaic", "reso/sample_mosaic", "reso/k_fix",
-					"reso/E", "reso/Q", "reso/h_coll_mono", "reso/h_coll_before_sample",
+					"reso/ana_mosaic", "reso/sample_mosaic",
+					"reso/h_coll_mono", "reso/h_coll_before_sample",
 					"reso/h_coll_after_sample", "reso/h_coll_ana",
 					"reso/v_coll_mono", "reso/v_coll_before_sample",
 					"reso/v_coll_after_sample", "reso/v_coll_ana",
@@ -59,25 +59,23 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 					"reso/pop_det_w", "reso/pop_det_h",
 					"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det", "reso/pop_dist_src_mono"};
 
+	m_vecEditBoxes = {editE, editQ, editKi, editKf};
+	m_vecEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
 	m_vecCheckBoxes = {checkAnaCurvH, checkAnaCurvV, checkMonoCurvH, checkMonoCurvV};
 	m_vecCheckNames = {"reso/pop_ana_use_curvh", "reso/pop_ana_use_curvv", "reso/pop_mono_use_curvh", "reso/pop_mono_use_curvv"};
 
 
-	m_vecRadioPlus = {radioFixedki, radioMonoScatterPlus, radioAnaScatterPlus,
+	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
 						radioSampleScatterPlus, radioConstMon, radioCN,
 						radioSampleCub, radioSrcRect, radioDetRect};
-	m_vecRadioMinus = {radioFixedkf, radioMonoScatterMinus, radioAnaScatterMinus,
+	m_vecRadioMinus = {radioMonoScatterMinus, radioAnaScatterMinus,
 						radioSampleScatterMinus, radioConstTime, radioPop,
 						radioSampleCyl, radioSrcCirc, radioDetCirc};
-	m_vecRadioNames = {"reso/check_fixed_ki", "reso/mono_scatter_sense", "reso/ana_scatter_sense",
+	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense",
 						"reso/sample_scatter_sense", "reso/meas_const_mon",
 						"reso/algo",
 						"reso/pop_sample_cuboid", "reso/pop_source_rect", "reso/pop_det_rect"};
-
-
-	UpdateUI();
-	QObject::connect(radioFixedki, SIGNAL(toggled(bool)), this, SLOT(UpdateUI()));
 
 	ReadLastConfig();
 
@@ -89,6 +87,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 	for(QDoubleSpinBox* pSpinBox : m_vecSpinBoxes)
 		QObject::connect(pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(Calc()));
+	for(QLineEdit* pEditBox : m_vecEditBoxes)
+		QObject::connect(pEditBox, SIGNAL(textEdited(const QString&)), this, SLOT(Calc()));		
 	for(QRadioButton* pRadio : m_vecRadioPlus)
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(Calc()));
 
@@ -106,33 +106,10 @@ ResoDlg::~ResoDlg()
 {}
 
 
-void ResoDlg::UpdateUI()
-{
-	const std::string& strAA = get_spec_char_utf8("AA") +
-								get_spec_char_utf8("sup-")+
-								get_spec_char_utf8("sup1");
-
-	std::string strKi = std::string("k_i (") + strAA + "):";
-	std::string strKf = std::string("k_f (") + strAA + "):";
-
-	if(radioFixedki->isChecked())
-	{
-		labelkfix->setText(QString::fromUtf8(strKi.c_str()));
-		labelkvar->setText(QString::fromUtf8(strKf.c_str()));
-	}
-	else
-	{
-		labelkfix->setText(QString::fromUtf8(strKf.c_str()));
-		labelkvar->setText(QString::fromUtf8(strKi.c_str()));
-	}
-}
-
 void ResoDlg::Calc()
 {
 	m_bEll4dCurrent = 0;
-
-	if(m_bDontCalc)
-		return;
+	if(m_bDontCalc) return;
 
 	const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
 
@@ -146,10 +123,10 @@ void ResoDlg::Calc()
 	cn.ana_mosaic = spinAnaMosaic->value() / (180.*60.) * M_PI * units::si::radians;
 	cn.sample_mosaic = spinSampleMosaic->value() / (180.*60.) * M_PI * units::si::radians;
 
-	cn.bki_fix = radioFixedki->isChecked();
-	cn.ki = cn.kf = spinkfix->value() / angstrom;
-	cn.E = spinE->value() * (1e-3 * codata::e * units::si::volts);
-	cn.Q = /*std::fabs*/(spinQ->value()) / angstrom;
+	cn.ki = editKi->text().toDouble() / angstrom;
+	cn.kf = editKf->text().toDouble() / angstrom;
+	cn.E = editE->text().toDouble() * (1e-3 * codata::e * units::si::volts);
+	cn.Q = editQ->text().toDouble() / angstrom;
 
 	cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
 	cn.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
@@ -267,13 +244,6 @@ void ResoDlg::Calc()
 		labelStatus->setText("Calculation successful.");
 		labelResult->setText(QString::fromUtf8(ostrRes.str().c_str()));
 
-		std::ostringstream ostrkvar;
-
-		double dKVar = cn.bki_fix?(cn.kf*angstrom):(cn.ki*angstrom);
-		//ostrkvar.precision(4);
-		ostrkvar << dKVar;
-		labelkvar_val->setText(ostrkvar.str().c_str());
-
 
 		if(checkElli4dAutoCalc->isChecked())
 		{
@@ -291,8 +261,6 @@ void ResoDlg::Calc()
 		QString strErr = "Error: ";
 		strErr += res.strErr.c_str();
 		labelStatus->setText(QString("<font color='red'>") + strErr + QString("</font>"));
-
-		labelkvar_val->setText("<error>");
 	}
 }
 
@@ -363,6 +331,8 @@ void ResoDlg::WriteLastConfig()
 
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 		m_pSettings->setValue(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());
+	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+		m_pSettings->setValue(m_vecEditNames[iEditBox].c_str(), m_vecEditBoxes[iEditBox]->text().toDouble());
 	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 		m_pSettings->setValue(m_vecRadioNames[iRadio].c_str(), m_vecRadioPlus[iRadio]->isChecked());
 	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
@@ -384,6 +354,13 @@ void ResoDlg::ReadLastConfig()
 		if(!m_pSettings->contains(m_vecSpinNames[iSpinBox].c_str()))
 			continue;
 		m_vecSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecSpinNames[iSpinBox].c_str()).value<double>());
+	}
+
+	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	{
+		if(!m_pSettings->contains(m_vecEditNames[iEditBox].c_str()))
+			continue;
+		m_vecEditBoxes[iEditBox]->setText(std::to_string(m_pSettings->value(m_vecEditNames[iEditBox].c_str()).value<double>()).c_str());
 	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
@@ -427,6 +404,12 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 
 		mapConf[strXmlRoot + m_vecSpinNames[iSpinBox]] = ostrVal.str();
 	}
+	
+	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	{
+		double dVal = m_vecEditBoxes[iEditBox]->text().toDouble();
+		mapConf[strXmlRoot + m_vecEditNames[iEditBox]] = dVal;
+	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
 		mapConf[strXmlRoot + m_vecCheckNames[iCheckBox]] = (m_vecCheckBoxes[iCheckBox]->isChecked() ? "1" : "0");
@@ -445,6 +428,9 @@ void ResoDlg::Load(Xml& xml, const std::string& strXmlRoot)
 	bool bOk=0;
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 		m_vecSpinBoxes[iSpinBox]->setValue(xml.Query<double>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str(), 0., &bOk));
+
+	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+		m_vecEditBoxes[iEditBox]->setText(std::to_string(xml.Query<double>((strXmlRoot+m_vecEditNames[iEditBox]).c_str(), 0., &bOk)).c_str());
 
 	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
@@ -521,9 +507,10 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	if(parms.d2Theta < 0.)
 		dQ = -dQ;
 
-	spinQ->setValue(dQ);
-	spinE->setValue(parms.dE);
-	spinkfix->setValue(radioFixedki->isChecked() ? parms.dki : parms.dkf);
+	editQ->setText(std::to_string(dQ).c_str());
+	editE->setText(std::to_string(parms.dE).c_str());
+	editKi->setText(std::to_string(parms.dki).c_str());
+	editKf->setText(std::to_string(parms.dkf).c_str());
 
 	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
 	m_bDontCalc = bOldDontCalc;

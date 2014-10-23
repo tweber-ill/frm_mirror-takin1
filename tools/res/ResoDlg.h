@@ -43,6 +43,9 @@ protected:
 
 	std::vector<QCheckBox*> m_vecCheckBoxes;
 	std::vector<std::string> m_vecCheckNames;
+	
+	std::vector<QLineEdit*> m_vecEditBoxes;
+	std::vector<std::string> m_vecEditNames;	
 
 	std::vector<QRadioButton*> m_vecRadioPlus;
 	std::vector<QRadioButton*> m_vecRadioMinus;
@@ -67,7 +70,6 @@ public:
 	void EmitResults();
 
 protected slots:
-	void UpdateUI();
 	void Calc();
 
 	void ButtonBoxClicked(QAbstractButton*);

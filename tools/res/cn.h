@@ -49,14 +49,11 @@ struct CNParams
 	units::quantity<units::si::plane_angle> coll_v_post_sample;
 	units::quantity<units::si::plane_angle> coll_v_post_ana;
 
-	// scattering triangle
-	bool bki_fix;		// ki or kf fixed?
 	units::quantity<units::si::wavenumber> ki, kf, Q;
-	//ublas::vector<double> Q_vec;
-	units::quantity<units::si::energy> E;		// Ei - Ef
+	units::quantity<units::si::energy> E;
 
 	// resolution volume stuff
-	bool bConstMon;		// constant monitor or time?
+	bool bConstMon;			// constant monitor or time?
 	double dmono_refl;
 	double dana_effic;
 };
@@ -82,7 +79,7 @@ struct CNResults
 
 
 extern CNResults calc_cn(CNParams& cn);
-extern bool calc_cn_angles(CNParams& cn, CNResults& res);
+extern bool calc_tas_angles(CNParams& cn, CNResults& res);
 extern void calc_bragg_widths(CNParams& cn, CNResults& res);
 extern void calc_cn_vol(CNParams& cn, CNResults& res);
 

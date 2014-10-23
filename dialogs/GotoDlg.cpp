@@ -81,11 +81,11 @@ void GotoDlg::CalcSample()
 		labelStatus->setText((std::string("Error: ") + ex.what()).c_str());
 		bFailed = 1;
 	}
-	
+
 	std::ostringstream ostrStatus;
 	ostrStatus << "Q = " << vecQ;
-	labelQ->setText(ostrStatus.str().c_str());	
-	
+	labelQ->setText(ostrStatus.str().c_str());
+
 	if(bFailed) return;
 
 	editThetaS->setText(var_to_str(m_dSampleTheta/M_PI*180.).c_str());
@@ -94,7 +94,7 @@ void GotoDlg::CalcSample()
 	m_bSampleOk = 1;
 
 	if(m_bMonoAnaOk && m_bSampleOk)
-		labelStatus->setText("Position OK.");	
+		labelStatus->setText("Position OK.");
 }
 
 void GotoDlg::CalcMonoAna()
@@ -274,7 +274,7 @@ void GotoDlg::EditedAngles()
 		labelStatus->setText((std::string("Error: ") + ex.what()).c_str());
 		bFailed = 1;
 	}
-	
+
 	std::ostringstream ostrStatus;
 	ostrStatus << "Q = " << vecQ;
 	labelQ->setText(ostrStatus.str().c_str());
@@ -297,7 +297,7 @@ void GotoDlg::EditedAngles()
 	m_bSampleOk = 1;
 
 	if(m_bMonoAnaOk && m_bSampleOk)
-		labelStatus->setText("Position OK.");		
+		labelStatus->setText("Position OK.");
 }
 
 void GotoDlg::GetCurPos()

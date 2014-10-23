@@ -52,7 +52,7 @@
    <item row="0" column="0" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabCN">
       <attribute name="title">
@@ -1130,106 +1130,62 @@
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Scattering Triangle</string>
+          <string>Transfers</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_13">
-          <item row="2" column="0">
-           <widget class="QLabel" name="labelkfix">
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelki">
             <property name="text">
-             <string>k_fix (Å⁻¹):</string>
+             <string>k_i (Å⁻¹):</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="spinkfix">
-            <property name="decimals">
-             <number>6</number>
-            </property>
-            <property name="minimum">
-             <double>0.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.000000000000000</double>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="editKi">
+            <property name="readOnly">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelkf">
+            <property name="text">
+             <string>k_f (Å⁻¹):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="editKf">
+            <property name="readOnly">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QLabel" name="labelQ">
             <property name="text">
              <string>Q (Å⁻¹):</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="spinQ">
-            <property name="decimals">
-             <number>6</number>
-            </property>
-            <property name="minimum">
-             <double>-99.989999999999995</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.100000000000000</double>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="editQ">
+            <property name="readOnly">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_27">
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelE">
             <property name="text">
              <string>E (meV):</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="spinE">
-            <property name="decimals">
-             <number>6</number>
-            </property>
-            <property name="minimum">
-             <double>-999.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>999.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="radioFixedki">
-            <property name="text">
-             <string>Fixed k_i</string>
-            </property>
-            <property name="checked">
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="editE">
+            <property name="readOnly">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QRadioButton" name="radioFixedkf">
-            <property name="text">
-             <string>Fixed k_f</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="labelkvar">
-            <property name="text">
-             <string>k_var (Å⁻¹):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLabel" name="labelkvar_val">
-            <property name="text">
-             <string>0.0</string>
             </property>
            </widget>
           </item>

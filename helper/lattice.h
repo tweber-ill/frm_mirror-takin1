@@ -223,11 +223,10 @@ Lattice<T> Lattice<T>::GetRecip() const
 	if(!reciprocal(matReal, matRecip))
 		throw Err("Reciprocal lattice could not be calculated.");
 
-	// warning: first axis does not (necessarily) coincide with assumed first 
+	// warning: first axis does not (necessarily) coincide with assumed first
 	//			orientation vector [0,0,1] anymore!
-	// 			-> would give theta angle offset for non-90-degree crystals!
-	return Lattice<T>(get_column(matRecip,0), get_column(matRecip,1), 
-get_column(matRecip,2));
+	return Lattice<T>(get_column(matRecip,0), get_column(matRecip,1),
+			get_column(matRecip,2));
 }
 
 template<typename T>
@@ -271,7 +270,10 @@ ublas::matrix<T> get_UB(const Lattice<T>& lattice_real,
 	t_mat matU = ::row_matrix({vec1, vec2, vecUp});
 	t_mat matUB = ublas::prod(matU, matB);
 
-	//std::cout << "UB = " << matUB << std::endl;
+	/*std::cout << "orient = " << matOrient << std::endl;
+	std::cout << "orientB = " << matOrientB << std::endl;
+	std::cout << "U = " << matU << std::endl;
+	std::cout << "UB = " << matUB << std::endl;*/
 	return matUB;
 }
 
@@ -299,16 +301,16 @@ void get_tas_angles(const Lattice<T>& lattice_real,
 		t_vec vechkl = ::make_vec({dh, dk, dl});
 		t_vec vecQ = ublas::prod(matUB, vechkl);
 		T dQ = ublas::norm_2(vecQ);
-		
+
 		if(pVecQ) *pVecQ = vecQ;
 
 		if(std::fabs(vecQ[2]) > dDelta)
 		{
 			std::string strErr("Position not in scattering plane.");
-			std::ostringstream ostrErr;
+			/*std::ostringstream ostrErr;
 			ostrErr << strErr;
 			ostrErr << " " << "UB*hkl = " << vecQ << ".";
-			log_err(ostrErr.str());
+			log_err(ostrErr.str());*/
 			throw Err(strErr);
 		}
 

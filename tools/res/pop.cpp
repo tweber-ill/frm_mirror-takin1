@@ -32,10 +32,10 @@ CNResults calc_pop(PopParams& pop)
 	const units::quantity<units::si::plane_angle> sample_mosaic_spread = pop.sample_mosaic;
 
 	CNResults res;
-	if(!calc_cn_angles(pop, res))
+	if(!calc_tas_angles(pop, res))
 		return res;
 
-	length lam = 2.*M_PI / pop.ki;
+	length lam = k2lam(pop.ki);
 	angle phi = units::atan2(-pop.kf * units::sin(2.*res.thetas), pop.ki-pop.kf*units::cos(2.*res.thetas));
 
 	if(pop.bGuide)

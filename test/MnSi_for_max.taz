@@ -1,6 +1,5 @@
 <taz>
 	<plane>
-		<delta> 0.01 </delta>
 		<x0> 1 </x0>
 		<x1> -1 </x1>
 		<x2> 0 </x2>
@@ -13,6 +12,7 @@
 		<analyser_y> 8.126500732 </analyser_y>
 		<detector_x> -129.3416974 </detector_x>
 		<detector_y> -52.07243879 </detector_y>
+		<enable_realQDir> 1 </enable_realQDir>
 		<monochromator_x> 0 </monochromator_x>
 		<monochromator_y> 150 </monochromator_y>
 		<pixels_per_cm> 1 </pixels_per_cm>
@@ -24,6 +24,7 @@
 	<recip>
 		<Gq_x> 146.1474651 </Gq_x>
 		<Gq_y> -0 </Gq_y>
+		<enable_bz> 1 </enable_bz>
 		<enable_q> 1 </enable_q>
 		<kfQ_x> 146.178 </kfQ_x>
 		<kfQ_y> -2.73182 </kfQ_y>
@@ -102,12 +103,10 @@
 		<beta_recip> 90 </beta_recip>
 		<c> 4.56 </c>
 		<c_recip> 1.38 </c_recip>
+		<descr> MnSi </descr>
 		<gamma> 90 </gamma>
 		<gamma_recip> 90 </gamma_recip>
-		<phi> 0.000000e+00 </phi>
-		<psi> 0.000000e+00 </psi>
 		<spacegroup> P2_13 </spacegroup>
-		<theta> 0.000000e+00 </theta>
 	</sample>
 	<tas>
 		<ana_d> 3.355 </ana_d>
