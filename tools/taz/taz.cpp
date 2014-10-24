@@ -193,6 +193,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(checkSenseA, SIGNAL(stateChanged(int)), this, SLOT(UpdateAnaSense()));
 
 	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
+	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SetCrystalType()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(CalcPeaks()));
 
 
@@ -513,70 +514,17 @@ TazDlg::~TazDlg()
 	//m_settings.setValue("main/height", this->height());
 	m_settings.setValue("main/geo", saveGeometry());
 
-	if(m_pRecip3d)
-	{
-		delete m_pRecip3d;
-		m_pRecip3d = 0;
-	}
-
-	if(m_pviewRecip)
-	{
-		delete m_pviewRecip;
-		m_pviewRecip = 0;
-	}
-
-	if(m_pEllipseDlg)
-	{
-		delete m_pEllipseDlg;
-		m_pEllipseDlg = 0;
-	}
-
-	if(m_pEllipseDlg3D)
-	{
-		delete m_pEllipseDlg3D;
-		m_pEllipseDlg3D = 0;
-	}
-
-	if(m_pReso)
-	{
-		delete m_pReso;
-		m_pReso = 0;
-	}
-
-	if(m_pSpuri)
-	{
-		delete m_pSpuri;
-		m_pSpuri = 0;
-	}
-
-	if(m_pNeutronDlg)
-	{
-		delete m_pNeutronDlg;
-		m_pNeutronDlg = 0;
-	}
-
-	if(m_pGotoDlg)
-	{
-		delete m_pGotoDlg;
-		m_pGotoDlg = 0;
-	}
-
-	if(m_pSrvDlg)
-	{
-		delete m_pSrvDlg;
-		m_pSrvDlg = 0;
-	}
-	
-	if(m_pNetCacheDlg)
-	{
-		delete m_pNetCacheDlg;
-		m_pNetCacheDlg = 0;
-	}
-	if(m_pNicosCache)
-	{
-		delete m_pNicosCache;
-		m_pNicosCache = 0;
-	}
+	if(m_pRecip3d) { delete m_pRecip3d; m_pRecip3d = 0; }
+	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
+	if(m_pEllipseDlg) { delete m_pEllipseDlg; m_pEllipseDlg = 0; }
+	if(m_pEllipseDlg3D) { delete m_pEllipseDlg3D; m_pEllipseDlg3D = 0; }
+	if(m_pReso) { delete m_pReso; m_pReso = 0; }
+	if(m_pSpuri) { delete m_pSpuri; m_pSpuri = 0; }
+	if(m_pNeutronDlg) { delete m_pNeutronDlg; m_pNeutronDlg = 0; }
+	if(m_pGotoDlg) { delete m_pGotoDlg; m_pGotoDlg = 0; }
+	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
+	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
+	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
 }
 
 
@@ -631,6 +579,50 @@ std::ostream& operator<<(std::ostream& ostr, const Lattice<double>& lat)
 	ostr << ", beta = " << lat.GetBeta();
 	ostr << ", gamma = " << lat.GetGamma();
 	return ostr;
+}
+
+void TazDlg::SetCrystalType()
+{	
+	m_crystaltype = CrystalType::CRYS_NOT_SET;
+	
+	SpaceGroup *pSpaceGroup = 0;
+	int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
+	if(iSpaceGroupIdx != 0)
+		pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
+	if(pSpaceGroup)
+		m_crystaltype = pSpaceGroup->GetCrystalType();
+		
+	CheckCrystalType();
+}
+
+// TODO
+void TazDlg::CheckCrystalType()
+{
+	switch(m_crystaltype)
+	{
+		case CRYS_CUBIC:
+			break;
+			
+		case CRYS_HEXAGONAL:
+			break;
+			
+		case CRYS_MONOCLINIC:
+			break;
+			
+		case CRYS_ORTHORHOMBIC:
+			break;
+			
+		case CRYS_TETRAGONAL:
+			break;
+
+		case CRYS_TRIGONAL:
+			break;
+			
+		case CRYS_TRICLINIC:
+		case CRYS_NOT_SET:
+		default:
+			break;
+	}
 }
 
 void TazDlg::CalcPeaksRecip()
@@ -769,12 +761,19 @@ void TazDlg::CalcPeaks()
 		ostrSample << ", Recip.: " << dVol_recip << " " << strAA << strMinus << strThree;
 		groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
 
+
+		const char* pcCryTy = "<not set>";
 		SpaceGroup *pSpaceGroup = 0;
 		int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
-		if(iSpaceGroupIdx == 0)
-			pSpaceGroup = 0;
-		else
+		if(iSpaceGroupIdx != 0)
 			pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
+			
+		if(pSpaceGroup)
+		{
+			CrystalType crty = pSpaceGroup->GetCrystalType();
+			pcCryTy = get_crystal_type_name(crty);
+		}
+		editCrystalSystem->setText(pcCryTy);
 
 		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
 		if(m_sceneRecip.getSnapq())

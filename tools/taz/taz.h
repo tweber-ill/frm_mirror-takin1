@@ -89,6 +89,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
 
+		CrystalType m_crystaltype = CRYS_NOT_SET;
 		const t_mapSpaceGroups* m_pmapSpaceGroups;
 
 		RecipParamDlg m_dlgRecipParam;
@@ -120,6 +121,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void CalcPeaks();
 		void CalcPeaksRecip();
 		void UpdateDs();
+
+		void SetCrystalType();
+		void CheckCrystalType();
 
 		void UpdateSampleSense();
 		void UpdateMonoSense();

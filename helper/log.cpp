@@ -1,6 +1,6 @@
 /**
  * Simple logger
- * @autor tweber
+ * @author tweber
  * @date 12-sep-2014
  */
 

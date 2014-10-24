@@ -12,7 +12,7 @@
 #define __SPACEGROUP_H__
 
 #include <string>
-#include <vector>
+#include <array>
 #include <map>
 
 enum Refls
@@ -33,18 +33,34 @@ enum Refls
 	REFL_HHH = 13
 };
 
+enum CrystalType
+{
+	CRYS_NOT_SET,
+
+	CRYS_TRICLINIC,		// all params free
+	CRYS_MONOCLINIC,	// beta=gamma=90
+	CRYS_ORTHORHOMBIC,	// alpha=beta=gamma=90
+	CRYS_TETRAGONAL,	// a=b, alpha=beta=gamma=90
+	CRYS_TRIGONAL,		// a=b=c, alpha=beta=gamma
+	CRYS_HEXAGONAL,		// a=b, gamma=120, alpha=beta=90
+	CRYS_CUBIC			// a=b=c, alpha=beta=gamma=90
+};
+
+extern const char* get_crystal_type_name(CrystalType ty);
+
 class SpaceGroup
 {
 	protected:
 		std::string m_strName;
-		std::vector<unsigned int> m_vecCond;	// conditions in the order as given in Refls
+		std::array<unsigned char, 14> m_vecCond;		// conditions in the order as given in Refls
+		CrystalType m_crystaltype;
 
 	public:
-		SpaceGroup(const std::vector<unsigned int>& vecCond)
-					: m_vecCond(vecCond)
+		SpaceGroup(const std::array<unsigned char, 14>& vecCond, CrystalType ty=CRYS_NOT_SET)
+					: m_vecCond(vecCond), m_crystaltype(ty)
 		{}
-		SpaceGroup(const std::string& strName, const std::vector<unsigned int>& vecCond)
-					: m_strName(strName), m_vecCond(vecCond)
+		SpaceGroup(const std::string& strName, const std::array<unsigned char, 14>& vecCond, CrystalType ty=CRYS_NOT_SET)
+					: m_strName(strName), m_vecCond(vecCond), m_crystaltype(ty)
 		{}
 		virtual ~SpaceGroup()
 		{}
@@ -53,6 +69,8 @@ class SpaceGroup
 
 		void SetName(const std::string& str) { m_strName = str; }
 		const std::string& GetName() const { return m_strName; }
+
+		CrystalType GetCrystalType() const { return m_crystaltype; }
 };
 
 
