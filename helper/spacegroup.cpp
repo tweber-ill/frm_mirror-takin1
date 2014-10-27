@@ -45,38 +45,48 @@ template<typename t_int=int> static inline t_int pymod(t_int a, t_int b)
 // -> http://www.ccp14.ac.uk/ccp/web-mirrors/powdcell/a_v/v_1/powder/details/extinct.htm
 static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
 {
-	/*00, P*/ [] (int h, int k, int l) -> bool { return 1; },
-	/*01*/ [] (int h, int k, int l) -> bool { return h%2 == 0; },
-	/*02*/ [] (int h, int k, int l) -> bool { return k%2 == 0; },
-	/*03*/ [] (int h, int k, int l) -> bool { return l%2 == 0; },
-	/*04, A*/ [] (int h, int k, int l) -> bool { return (k+l)%2 == 0; },
-	/*05, B*/ [] (int h, int k, int l) -> bool { return (h+l)%2 == 0; },
-	/*06, C*/ [] (int h, int k, int l) -> bool { return (h+k)%2 == 0; },
+	/*00, P*/ [] (int, int, int) -> bool { return 1; },
+	
+	/*01*/ [] (int h, int, int) -> bool { return h%2 == 0; },
+	/*02*/ [] (int, int k, int) -> bool { return k%2 == 0; },
+	/*03*/ [] (int, int, int l) -> bool { return l%2 == 0; },
+
+	/*04, A*/ [] (int, int k, int l) -> bool { return (k+l)%2 == 0; },
+	/*05, B*/ [] (int h, int, int l) -> bool { return (h+l)%2 == 0; },
+	/*06, C*/ [] (int h, int k, int) -> bool { return (h+k)%2 == 0; },
+
 	/*07*/ [] (int h, int k, int l) -> bool { return (pymod(h,2)==pymod(k,2)) && (pymod(k,2)==pymod(l,2)); },
-	/*08*/ [] (int h, int k, int l) -> bool { return (k+l)%4 == 0; },
-	/*09*/ [] (int h, int k, int l) -> bool { return (h+l)%4 == 0; },
-	/*10*/ [] (int h, int k, int l) -> bool { return (h+k)%4 == 0; },
-	/*11*/ [] (int h, int k, int l) -> bool { return (2*h+l)%2 == 0; },
-	/*12*/ [] (int h, int k, int l) -> bool { return (2*h+l)%4 == 0; },
+
+	/*08*/ [] (int, int k, int l) -> bool { return (k+l)%4 == 0; },
+	/*09*/ [] (int h, int, int l) -> bool { return (h+l)%4 == 0; },
+	/*10*/ nullptr,
+
+	/*11*/ nullptr,
+	/*12*/ [] (int h, int, int l) -> bool { return (2*h+l)%4 == 0; },
+	
 	/*13, I*/ [] (int h, int k, int l) -> bool { return (h+k+l)%2 == 0; },
 	/*14, R*/ [] (int h, int k, int l) -> bool { return (-h+k+l)%3 == 0; },
-	/*15, R*/ [] (int h, int k, int l) -> bool { return (h-k+l)%3 == 0; },
-	/*16*/ [] (int h, int k, int l) -> bool { return h%4 == 0; },
-	/*17*/ [] (int h, int k, int l) -> bool { return k%4 == 0; },
-	/*18*/ [] (int h, int k, int l) -> bool { return l%3 == 0; },
-	/*19*/ [] (int h, int k, int l) -> bool { return l%4 == 0; },
-	/*20*/ [] (int h, int k, int l) -> bool { return l%6 == 0; },
-	/*21*/ [] (int h, int k, int l) -> bool { return (std::abs(h) >= std::abs(k)) && (std::abs(k) >= std::abs(l)); },
-	/*22*/ [] (int h, int k, int l) -> bool { return (2*h+k)%2 == 0; },
-	/*23*/ [] (int h, int k, int l) -> bool { return (2*h+k)%4 == 0; },
-	/*24*/ [] (int h, int k, int l) -> bool { return (h+2*k)%2 == 0; },
-	/*25*/ [] (int h, int k, int l) -> bool { return (h+2*k)%4 == 0; },
-	/*26*/ [] (int h, int k, int l) -> bool { return h%2 == 0 && k%2 == 0; },
-	/*27*/ [] (int h, int k, int l) -> bool { return k%2 == 0 && l%2 == 0; },
-	/*28*/ [] (int h, int k, int l) -> bool { return h%2 == 0 && l%2 == 0; },
-	/*29*/ [] (int h, int k, int l) -> bool { return (k+l)%4 == 0 && k%2 == 0 && l%2 == 0; },
-	/*30*/ [] (int h, int k, int l) -> bool { return (h+l)%4 == 0 && h%2 == 0 && l%2 == 0; },
-	/*31*/ [] (int h, int k, int l) -> bool { return (h+k)%4 == 0 && h%2 == 0 && k%2 == 0; },
+	/*15, R*/ nullptr,
+
+	/*16*/ [] (int h, int, int) -> bool { return h%4 == 0; },
+	/*17*/ [] (int, int k, int) -> bool { return k%4 == 0; },
+	/*18*/ [] (int, int, int l) -> bool { return l%3 == 0; },
+	/*19*/ [] (int, int, int l) -> bool { return l%4 == 0; },
+	/*20*/ [] (int, int, int l) -> bool { return l%6 == 0; },
+
+	/*21*/ nullptr,
+	/*22*/ nullptr,
+	/*23*/ [] (int h, int k, int) -> bool { return (2*h+k)%4 == 0; },
+	/*24*/ nullptr,
+	/*25*/ [] (int h, int k, int) -> bool { return (h+2*k)%4 == 0; },
+
+	/*26*/ [] (int h, int k, int) -> bool { return h%2 == 0 && k%2 == 0; },
+	/*27*/ [] (int, int k, int l) -> bool { return k%2 == 0 && l%2 == 0; },
+	/*28*/ [] (int h, int, int l) -> bool { return h%2 == 0 && l%2 == 0; },
+
+	/*29*/ [] (int, int k, int l) -> bool { return (k+l)%4 == 0 && k%2 == 0 && l%2 == 0; },
+	/*30*/ [] (int h, int, int l) -> bool { return (h+l)%4 == 0 && h%2 == 0 && l%2 == 0; },
+	/*31*/ [] (int h, int k, int) -> bool { return (h+k)%4 == 0 && h%2 == 0 && k%2 == 0; },
 };
 
 // -> function "can_reflect" in Georg's Python code
@@ -711,10 +721,10 @@ void init_space_groups()
 		{"I4_132",      SpaceGroup({{19, 17, 4, 16, 5, 6, 13, 0, 0, 3, 0, 1, 2, 0}}, CRYS_CUBIC)},
 		{"F4_1/d-32/m", SpaceGroup({{19, 17, 8, 16, 9, 31, 7, 0, 0, 5, 0, 6, 6, 0}}, CRYS_CUBIC)},
 		{"Fd-3m",       SpaceGroup({{19, 17, 8, 16, 9, 31, 7, 0, 0, 5, 0, 6, 6, 0}}, CRYS_CUBIC)},
-		{"Fd-3",        SpaceGroup({{19, 17, 8, 16, 30, 31, 7, 0, 0, 5, 0, 6, 6, 0}}, CRYS_CUBIC)},
-		{"F2/d-3",      SpaceGroup({{19, 17, 8, 16, 30, 31, 7, 0, 0, 5, 0, 6, 6, 0}}, CRYS_CUBIC)},
 		{"Fd-3c",       SpaceGroup({{19, 17, 8, 16, 9, 31, 7, 0, 0, 28, 0, 26, 26, 1}}, CRYS_CUBIC)},
 		{"F4_1/d-32/c", SpaceGroup({{19, 17, 8, 16, 9, 31, 7, 0, 0, 28, 0, 26, 26, 1}}, CRYS_CUBIC)},
+		{"Fd-3",        SpaceGroup({{19, 17, 8, 16, 30, 31, 7, 0, 0, 5, 0, 6, 6, 0}}, CRYS_CUBIC)},
+		{"F2/d-3",      SpaceGroup({{19, 17, 8, 16, 30, 31, 7, 0, 0, 5, 0, 6, 6, 0}}, CRYS_CUBIC)},
 		{"F4_132",      SpaceGroup({{19, 17, 27, 16, 28, 26, 7, 0, 0, 5, 0, 6, 6, 0}}, CRYS_CUBIC)},
 		{"I4_1/a-32/d", SpaceGroup({{19, 17, 27, 16, 28, 26, 13, 0, 0, 12, 0, 25, 23, 12}}, CRYS_CUBIC)},
 		{"Ia-3d",       SpaceGroup({{19, 17, 27, 16, 28, 26, 13, 0, 0, 12, 0, 25, 23, 12}}, CRYS_CUBIC)},
@@ -737,16 +747,32 @@ const t_mapSpaceGroups* get_space_groups()
 
 
 /*#include <iostream>
+#include <set>
+#include <algorithm>
+#include <iterator>
 
 int main()
 {
 	init_space_groups();
+	
+	std::set<unsigned char> setConds;
+	std::set<unsigned char> setAll;
+	for(unsigned char ch=0; ch<32; ++ch)
+		setAll.insert(ch);
+		
+	std::cout << g_mapSpaceGroups.size() << " spacegroups.\n";
 
 	for(const t_mapSpaceGroups::value_type& sg : g_mapSpaceGroups)
 	{
 		const std::string& strName = sg.first;
 		const SpaceGroup& thesg = sg.second;
 
-		std::cout << thesg.GetName() << ": " << thesg.GetCrystalSystem() << std::endl;
+		for(unsigned char ch : thesg.GetConds())
+			setConds.insert(ch);
 	}
+
+	std::cout << "Unused conditions: ";
+	std::set_difference(setAll.begin(), setAll.end(), setConds.begin(), setConds.end(),
+						std::ostream_iterator<unsigned>(std::cout, ", "));
+	std::cout << std::endl;
 }*/

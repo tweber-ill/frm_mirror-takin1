@@ -72,6 +72,8 @@ class SpaceGroup
 
 		CrystalSystem GetCrystalSystem() const { return m_crystalsys; }
 		const char* GetCrystalSystemName() const { return get_crystal_system_name(m_crystalsys); }
+		
+		//const std::array<unsigned char, 14>& GetConds() const { return m_vecCond; }
 };
 
 
