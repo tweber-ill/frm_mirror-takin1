@@ -142,11 +142,6 @@ static t_mapSpaceGroups g_mapSpaceGroups;
 // -> matched against CFML_Sym_Table.f90 in CrysFML
 void init_space_groups()
 {
-	/*
-	 * conversion from Python:
-	 * 	for sg in sg_by_hm:
-	 *		print "{\"" + sg + "\", SpaceGroup({{" + str(sg_by_num[sg_by_hm[sg]]) + "})},"
-	 */
 	g_mapSpaceGroups =
 	{
 		// 1 - 2
@@ -745,7 +740,39 @@ const t_mapSpaceGroups* get_space_groups()
 }
 
 
-/*#include <iostream>
+/*
+// check against Georg's Python spacegroup module:
+//
+//from spacegroups import *
+//
+//def get_type(num):
+//	if num>=1 and num<=2:
+//		return "triclinic"
+//	elif num>=3 and num<=15:
+//		return "monoclinic"
+//	elif num>=16 and num<=74:
+//		return "orthorhombic"
+//	elif num>=75 and num<=142:
+//		return "tetragonal"
+//	elif num>=143 and num<=167:
+//		return "trigonal"
+//	elif num>=168 and num<=194:
+//		return "hexagonal"
+//	elif num>=195 and num<=230:
+//		return "cubic"
+//
+//sgs = []
+//
+//for sg in sg_by_hm:
+//	numsg = sg_by_hm[sg][0]
+//	sgs.append([sg, get_type(numsg), sg_by_num[sg_by_hm[sg]]])
+//
+//sgs = sorted(sgs)
+//for sg in sgs:
+//	print(sg[0] + " " + sg[1] + " " + str(sg[2]))
+//
+
+#include <iostream>
 #include <set>
 #include <algorithm>
 #include <iterator>
@@ -765,13 +792,24 @@ int main()
 	{
 		const std::string& strName = sg.first;
 		const SpaceGroup& thesg = sg.second;
-
-		for(unsigned char ch : thesg.GetConds())
+		
+		std::cout << thesg.GetName() << " " << thesg.GetCrystalSystemName();
+		std::cout << " " << "[";
+		
+		for(unsigned int iCond=0; iCond<thesg.GetConds().size(); ++iCond)
+		{
+			unsigned char ch = thesg.GetConds()[iCond];
 			setConds.insert(ch);
+			
+			std::cout << unsigned(ch);
+			if(iCond != thesg.GetConds().size()-1)
+				std::cout << ", ";
+		}
+		std::cout << "]\n";
 	}
 
-	std::cout << "Unused conditions: ";
-	std::set_difference(setAll.begin(), setAll.end(), setConds.begin(), setConds.end(),
-						std::ostream_iterator<unsigned>(std::cout, ", "));
+	//std::cout << "Unused conditions: ";
+	//std::set_difference(setAll.begin(), setAll.end(), setConds.begin(), setConds.end(),
+	//					std::ostream_iterator<unsigned>(std::cout, ", "));
 	std::cout << std::endl;
 }*/
