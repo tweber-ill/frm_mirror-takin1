@@ -1,5 +1,5 @@
 /*
- * Scattering Triangle
+ * TAS tool
  * @author tweber
  * @date feb-2014
  */

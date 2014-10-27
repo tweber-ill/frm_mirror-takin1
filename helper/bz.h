@@ -26,6 +26,7 @@ class Brillouin2D
 		std::vector<ublas::vector<T> > m_vecNeighbours;
 		std::vector<t_vecpair<T> > m_vecVertices;
 		bool m_bValid = 1;
+		bool m_bHasCentralPeak = 0;
 
 		const T eps = 0.001;
 
@@ -68,12 +69,15 @@ class Brillouin2D
 
 		bool IsValid() const { return m_bValid; }
 
+		const ublas::vector<T>& GetCentralReflex() const { return m_vecCentralReflex; }
+
 		void SetCentralReflex(const ublas::vector<T>& vec)
 		{
 			if(vec.size() != 2)
 				throw Err("Brillouin2D needs 2d vectors.");
 
 			m_vecCentralReflex = vec;
+			m_bHasCentralPeak = 1;
 		}
 		void AddReflex(const ublas::vector<T>& vec)
 		{
@@ -85,6 +89,7 @@ class Brillouin2D
 
 		void CalcBZ()
 		{
+			if(!m_bHasCentralPeak) return;
 			m_bValid = 1;
 
 			// calculate perpendicular lines

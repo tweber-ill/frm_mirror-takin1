@@ -812,4 +812,5 @@ int main()
 	//std::set_difference(setAll.begin(), setAll.end(), setConds.begin(), setConds.end(),
 	//					std::ostream_iterator<unsigned>(std::cout, ", "));
 	std::cout << std::endl;
+	return 0;
 }*/

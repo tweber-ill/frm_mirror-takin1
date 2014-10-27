@@ -180,6 +180,8 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	{
 		QPen penOrg = painter->pen();
 		painter->setPen(Qt::lightGray);
+		
+		const ublas::vector<double>& vecCentral = m_bz.GetCentralReflex();
 
 		for(const RecipPeak* pPeak : m_vecPeaks)
 		{
@@ -192,8 +194,8 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 				const ublas::vector<double>& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
 				const ublas::vector<double>& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
 
-				QPointF pt1 = vec_to_qpoint(vec1) + peakPos;
-				QPointF pt2 = vec_to_qpoint(vec2) + peakPos;
+				QPointF pt1 = vec_to_qpoint(vec1 - vecCentral) + peakPos;
+				QPointF pt2 = vec_to_qpoint(vec2 - vecCentral) + peakPos;
 
 				QLineF lineBZ(pt1, pt2);
 				painter->drawLine(lineBZ);
@@ -724,21 +726,28 @@ void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
 					m_vecPeaks.push_back(pPeak);
 					m_scene.addItem(pPeak);
 
+					const int iCent[] = {0,0,0};
 
 					// 1st BZ
-					if(ih==0 && ik==0 && il==0)
+					if(ih==iCent[0] && ik==iCent[1] && il==iCent[2])
 					{
 						ublas::vector<double> vecCentral(2);
 						vecCentral[0] = dX;
 						vecCentral[1] = dY;
+						
+						//log_debug("Central ", ih, ik, il, ": ", vecCentral);
 						m_bz.SetCentralReflex(vecCentral);
 					}
 					// TODO: check if 2 next neighbours is sufficient for all space groups
-					else if(std::abs(ih)<=2 && std::abs(ik)<=2 && std::abs(il)<=2)
+					else if(std::abs(ih-iCent[0])<=2 
+							&& std::abs(ik-iCent[1])<=2 
+							&& std::abs(il-iCent[2])<=2)
 					{
 						ublas::vector<double> vecN(2);
 						vecN[0] = dX;
 						vecN[1] = dY;
+						
+						//log_debug("Reflex: ", vecN);
 						m_bz.AddReflex(vecN);
 					}
 				}
