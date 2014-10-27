@@ -282,7 +282,8 @@ void init_space_groups()
 		{"Cc11",     SpaceGroup({{3, 2, 27, 1, 1, 6, 6, 0, 0, 0, 0, 0, 0, 0}}, CRYS_MONOCLINIC)},
 		{"C2/n11",   SpaceGroup({{3, 2, 27, 1, 1, 6, 6, 0, 0, 0, 0, 0, 0, 0}}, CRYS_MONOCLINIC)},
 		{"C2/c11",   SpaceGroup({{3, 2, 27, 1, 1, 6, 6, 0, 0, 0, 0, 0, 0, 0}}, CRYS_MONOCLINIC)},
-
+		{"F121",     SpaceGroup({{3, 2, 27, 1, 28, 26, 7, 0, 0, 0, 0, 0, 0, 0}}, CRYS_MONOCLINIC)},
+		
 		// 16 - 74
 		{"P2mm",             SpaceGroup({{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}, CRYS_ORTHORHOMBIC)},
 		{"Pmm2",             SpaceGroup({{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}, CRYS_ORTHORHOMBIC)},
@@ -728,8 +729,6 @@ void init_space_groups()
 		{"F4_132",      SpaceGroup({{19, 17, 27, 16, 28, 26, 7, 0, 0, 5, 0, 6, 6, 0}}, CRYS_CUBIC)},
 		{"I4_1/a-32/d", SpaceGroup({{19, 17, 27, 16, 28, 26, 13, 0, 0, 12, 0, 25, 23, 12}}, CRYS_CUBIC)},
 		{"Ia-3d",       SpaceGroup({{19, 17, 27, 16, 28, 26, 13, 0, 0, 12, 0, 25, 23, 12}}, CRYS_CUBIC)},
-
-		{"F121", SpaceGroup({3, 2, 27, 1, 28, 26, 7, 0, 0, 0, 0, 0, 0, 0})},
 	};
 
 	// set the names for all space groups
