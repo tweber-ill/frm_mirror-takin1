@@ -1002,4 +1002,38 @@ ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 	return matCov;
 }
 
+
+// --------------------------------------------------------------------------------
+
+
+#include <boost/math/common_factor_rt.hpp>
+
+template<class t_vec=ublas::vector<int>>
+t_vec get_gcd_vec(const t_vec& vec)
+{
+	if(vec.size() <= 1)
+		return vec;
+
+	typedef typename t_vec::value_type t_int;
+
+	int igcd_total = 1;
+	for(std::size_t i=0; i<vec.size()-1; ++i)
+	{
+		t_int i0 = vec[i];
+		t_int i1 = vec[i+1];
+
+		t_int igcd = boost::math::gcd<t_int>(i0, i1);
+
+		if(i==0)
+			igcd_total = igcd;
+		else
+			igcd_total = boost::math::gcd<t_int>(igcd, igcd_total);
+	}
+
+	if(igcd_total == 0)
+		return vec;
+
+	return vec/igcd_total;
+}
+
 #endif

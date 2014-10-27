@@ -175,7 +175,10 @@ TazDlg::TazDlg(QWidget* pParent)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(UpdateDs()));
 
 	for(QLineEdit* pEdit : m_vecEdits_real)
+	{
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CheckCrystalType()));
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
+	}
 
 	for(QLineEdit* pEdit : m_vecEdits_plane)
 	{
@@ -186,7 +189,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	//	QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
 
 	for(QLineEdit* pEdit : m_vecEdits_recip)
+	{
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CheckCrystalType()));
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaksRecip()));
+	}
 
 	QObject::connect(checkSenseM, SIGNAL(stateChanged(int)), this, SLOT(UpdateMonoSense()));
 	QObject::connect(checkSenseS, SIGNAL(stateChanged(int)), this, SLOT(UpdateSampleSense()));
@@ -582,15 +588,15 @@ std::ostream& operator<<(std::ostream& ostr, const Lattice<double>& lat)
 }
 
 void TazDlg::SetCrystalType()
-{	
-	m_crystaltype = CrystalType::CRYS_NOT_SET;
+{
+	m_crystalsys = CrystalSystem::CRYS_NOT_SET;
 	
 	SpaceGroup *pSpaceGroup = 0;
 	int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
 	if(iSpaceGroupIdx != 0)
 		pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
 	if(pSpaceGroup)
-		m_crystaltype = pSpaceGroup->GetCrystalType();
+		m_crystalsys = pSpaceGroup->GetCrystalSystem();
 		
 	CheckCrystalType();
 }
@@ -598,29 +604,170 @@ void TazDlg::SetCrystalType()
 // TODO
 void TazDlg::CheckCrystalType()
 {
-	switch(m_crystaltype)
+	switch(m_crystalsys)
 	{
 		case CRYS_CUBIC:
+			editA->setEnabled(1);
+			editB->setEnabled(0);
+			editC->setEnabled(0);
+			editAlpha->setEnabled(0);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editARecip->setEnabled(1);
+			editBRecip->setEnabled(0);
+			editCRecip->setEnabled(0);
+			editAlphaRecip->setEnabled(0);
+			editBetaRecip->setEnabled(0);
+			editGammaRecip->setEnabled(0);
+
+			editB->setText(editA->text());
+			editC->setText(editA->text());
+			editBRecip->setText(editARecip->text());
+			editCRecip->setText(editARecip->text());
+			editAlpha->setText("90");
+			editBeta->setText("90");
+			editGamma->setText("90");
+			editAlphaRecip->setText("90");
+			editBetaRecip->setText("90");
+			editGammaRecip->setText("90");
 			break;
 			
 		case CRYS_HEXAGONAL:
+			editA->setEnabled(1);
+			editB->setEnabled(0);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(0);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editARecip->setEnabled(1);
+			editBRecip->setEnabled(0);
+			editCRecip->setEnabled(1);
+			editAlphaRecip->setEnabled(0);
+			editBetaRecip->setEnabled(0);
+			editGammaRecip->setEnabled(0);
+
+			editB->setText(editA->text());
+			editBRecip->setText(editARecip->text());
+			editAlpha->setText("90");
+			editBeta->setText("90");
+			editGamma->setText("120");
+			editAlphaRecip->setText("90");
+			editBetaRecip->setText("90");
+			editGammaRecip->setText("60");
 			break;
 			
 		case CRYS_MONOCLINIC:
+			editA->setEnabled(1);
+			editB->setEnabled(1);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(1);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editARecip->setEnabled(1);
+			editBRecip->setEnabled(1);
+			editCRecip->setEnabled(1);
+			editAlphaRecip->setEnabled(1);
+			editBetaRecip->setEnabled(0);
+			editGammaRecip->setEnabled(0);
+
+			editBeta->setText("90");
+			editGamma->setText("90");
+			editBetaRecip->setText("90");
+			editGammaRecip->setText("90");
 			break;
 			
 		case CRYS_ORTHORHOMBIC:
+			editA->setEnabled(1);
+			editB->setEnabled(1);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(0);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editARecip->setEnabled(1);
+			editBRecip->setEnabled(1);
+			editCRecip->setEnabled(1);
+			editAlphaRecip->setEnabled(0);
+			editBetaRecip->setEnabled(0);
+			editGammaRecip->setEnabled(0);
+
+			editAlpha->setText("90");
+			editBeta->setText("90");
+			editGamma->setText("90");
+			editAlphaRecip->setText("90");
+			editBetaRecip->setText("90");
+			editGammaRecip->setText("90");
 			break;
 			
 		case CRYS_TETRAGONAL:
+			editA->setEnabled(1);
+			editB->setEnabled(0);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(0);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editARecip->setEnabled(1);
+			editBRecip->setEnabled(0);
+			editCRecip->setEnabled(1);
+			editAlphaRecip->setEnabled(0);
+			editBetaRecip->setEnabled(0);
+			editGammaRecip->setEnabled(0);
+
+			editB->setText(editA->text());
+			editBRecip->setText(editARecip->text());
+			editAlpha->setText("90");
+			editBeta->setText("90");
+			editGamma->setText("90");
+			editAlphaRecip->setText("90");
+			editBetaRecip->setText("90");
+			editGammaRecip->setText("90");
 			break;
 
 		case CRYS_TRIGONAL:
+			editA->setEnabled(1);
+			editB->setEnabled(0);
+			editC->setEnabled(0);
+			editAlpha->setEnabled(1);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editARecip->setEnabled(1);
+			editBRecip->setEnabled(0);
+			editCRecip->setEnabled(0);
+			editAlphaRecip->setEnabled(1);
+			editBetaRecip->setEnabled(0);
+			editGammaRecip->setEnabled(0);
+
+			editB->setText(editA->text());
+			editC->setText(editA->text());
+			editBRecip->setText(editARecip->text());
+			editCRecip->setText(editARecip->text());
+			editBeta->setText(editAlpha->text());
+			editGamma->setText(editAlpha->text());
+			editBetaRecip->setText(editAlphaRecip->text());
+			editGammaRecip->setText(editAlphaRecip->text());
 			break;
-			
+
 		case CRYS_TRICLINIC:
 		case CRYS_NOT_SET:
 		default:
+			editA->setEnabled(1);
+			editB->setEnabled(1);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(1);
+			editBeta->setEnabled(1);
+			editGamma->setEnabled(1);
+
+			editARecip->setEnabled(1);
+			editBRecip->setEnabled(1);
+			editCRecip->setEnabled(1);
+			editAlphaRecip->setEnabled(1);
+			editBetaRecip->setEnabled(1);
+			editGammaRecip->setEnabled(1);
 			break;
 	}
 }
@@ -687,6 +834,21 @@ void TazDlg::CalcPeaks()
 										dY1*recip_unrot.GetVec(1) +
 										dY2*recip_unrot.GetVec(2);
 
+		//----------------------------------------------------------------------
+		// show integer up vector
+		unsigned int iMaxDec = 4;	// TODO: determine max. # of entered decimals
+		ublas::vector<int> ivecUp = ::cross_3(
+			::make_vec<ublas::vector<int>>({int(dX0*std::pow(10, iMaxDec)),
+											int(dX1*std::pow(10, iMaxDec)),
+											int(dX2*std::pow(10, iMaxDec))}),
+			::make_vec<ublas::vector<int>>({int(dY0*std::pow(10, iMaxDec)),
+											int(dY1*std::pow(10, iMaxDec)),
+											int(dY2*std::pow(10, iMaxDec))}));
+		ivecUp = get_gcd_vec(ivecUp);
+		editScatZ0->setText(std::to_string(ivecUp[0]).c_str());
+		editScatZ1->setText(std::to_string(ivecUp[1]).c_str());
+		editScatZ2->setText(std::to_string(ivecUp[2]).c_str());
+		//----------------------------------------------------------------------
 
 		ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
 		Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
@@ -769,10 +931,8 @@ void TazDlg::CalcPeaks()
 			pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
 			
 		if(pSpaceGroup)
-		{
-			CrystalType crty = pSpaceGroup->GetCrystalType();
-			pcCryTy = get_crystal_type_name(crty);
-		}
+			pcCryTy = pSpaceGroup->GetCrystalSystemName();
+
 		editCrystalSystem->setText(pcCryTy);
 
 		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);

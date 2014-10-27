@@ -33,7 +33,7 @@ enum Refls
 	REFL_HHH = 13
 };
 
-enum CrystalType
+enum CrystalSystem
 {
 	CRYS_NOT_SET,
 
@@ -46,21 +46,21 @@ enum CrystalType
 	CRYS_CUBIC			// a=b=c, alpha=beta=gamma=90
 };
 
-extern const char* get_crystal_type_name(CrystalType ty);
+extern const char* get_crystal_system_name(CrystalSystem ty);
 
 class SpaceGroup
 {
 	protected:
 		std::string m_strName;
 		std::array<unsigned char, 14> m_vecCond;		// conditions in the order as given in Refls
-		CrystalType m_crystaltype;
+		CrystalSystem m_crystalsys;
 
 	public:
-		SpaceGroup(const std::array<unsigned char, 14>& vecCond, CrystalType ty=CRYS_NOT_SET)
-					: m_vecCond(vecCond), m_crystaltype(ty)
+		SpaceGroup(const std::array<unsigned char, 14>& vecCond, CrystalSystem ty=CRYS_NOT_SET)
+					: m_vecCond(vecCond), m_crystalsys(ty)
 		{}
-		SpaceGroup(const std::string& strName, const std::array<unsigned char, 14>& vecCond, CrystalType ty=CRYS_NOT_SET)
-					: m_strName(strName), m_vecCond(vecCond), m_crystaltype(ty)
+		SpaceGroup(const std::string& strName, const std::array<unsigned char, 14>& vecCond, CrystalSystem ty=CRYS_NOT_SET)
+					: m_strName(strName), m_vecCond(vecCond), m_crystalsys(ty)
 		{}
 		virtual ~SpaceGroup()
 		{}
@@ -70,7 +70,8 @@ class SpaceGroup
 		void SetName(const std::string& str) { m_strName = str; }
 		const std::string& GetName() const { return m_strName; }
 
-		CrystalType GetCrystalType() const { return m_crystaltype; }
+		CrystalSystem GetCrystalSystem() const { return m_crystalsys; }
+		const char* GetCrystalSystemName() const { return get_crystal_system_name(m_crystalsys); }
 };
 
 
