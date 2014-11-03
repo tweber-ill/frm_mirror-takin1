@@ -1,7 +1,22 @@
 CC = gcc
 #CC = clang
 DEFINES = 
+
 QWT_VER = 6
+QT_VER = 4
+
+ifeq ($(QT_VER), 5)
+	QT_INC = -I/usr/include/qt5 -I/usr/include/qt5/QtCore \
+		-I/usr/include/qt5/QtGui
+	QT_LIB = -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
+        	-lQt5Core -lQt5Gui -lQt5Xml -lQt5XmlPatterns -lQt5OpenGL -lQt5Svg		
+	DEFINES += -DUSE_QT5 -fPIC
+else
+	QT_INC = -I/usr/include/qt4 -I/usr/include/qt4/QtCore \
+        	-I/usr/include/qt4/QtGui -I/usr/include/QtCore -I/usr/include/QtGui
+	QT_LIB =  -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
+        	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL -lQtSvg
+endif
 
 ifeq ($(QWT_VER), 6)
 	QWT_INC = -I/usr/include/qwt6 -I/usr/include/qwt -I/usr/include/qwt-qt4
@@ -13,11 +28,7 @@ else
 #	QWT_LIB = -lqwt-qt4
 endif
 
-INC = -I/usr/include/qt4 -I/usr/local/include -I/usr/include/qt4/QtCore \
-	-I/usr/include/qt4/QtGui -I/usr/include/QtCore -I/usr/include/QtGui \
-	-I/usr/include/lapacke \
-	${QWT_INC}
-
+INC = 	${QT_INC} ${QWT_INC} -I/usr/local/include -I/usr/include/lapacke
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
 DEFINES += -DUSE_LAPACK
@@ -27,9 +38,7 @@ FLAGS = ${INC} -O3 -march=native -fexpensive-optimizations -std=c++11 -DNDEBUG -
 STD_LIBS = -lstdc++ -lm -lboost_system
 STD_LIBS += -lpthread
 LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack -lblas -lgfortran
-QT_LIBS = -L/usr/lib64/qt4 -L/usr/lib/x86_64-linux-gnu -L /usr/lib/qt4/lib \
-	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL -lQtSvg \
-	-lGL -lGLU -lX11
+QT_LIBS = ${QT_LIB} -lGL -lGLU -lX11
 LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 

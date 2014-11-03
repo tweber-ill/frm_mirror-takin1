@@ -113,6 +113,8 @@ class ScatteringTriangle : public QGraphicsItem
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 		void nodeMoved(const ScatteringTriangleNode* pNode=0);
 
+		const ublas::matrix<double>& GetPlane() const { return m_matPlane; }
+
 		bool IsReady() const { return m_bReady; }
 		double GetTheta(bool bPosSense) const;
 		double GetTwoTheta(bool bPosSense) const;
@@ -127,6 +129,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		double GetAngleKiQ(bool bSense) const;
 		double GetAngleKfQ(bool bSense) const;
+		double GetAngleQVec0() const;
 
 		void SetTwoTheta(double dTT);
 		void SetAnaTwoTheta(double dTT, double dAnaD);

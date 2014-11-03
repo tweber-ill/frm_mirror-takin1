@@ -37,16 +37,16 @@ CNResults calc_cn(CNParams& cn)
 	// ------------------------------------------------------------------------------------------------
 	// transformation matrix
 
-	double dSi = cn.dsample_sense*units::sin(res.angle_ki_Q);
-	double dCi = units::cos(res.angle_ki_Q);
+	double dSi = cn.dsample_sense*units::sin(cn.angle_ki_Q);
+	double dCi = units::cos(cn.angle_ki_Q);
 
 	ublas::matrix<double> Ti(2,2);
 	Ti(0,0)=dCi; Ti(0,1)=-dSi;
 	Ti(1,0)=dSi; Ti(1,1)=dCi;
 
 
-	double dSf = cn.dsample_sense*units::sin(res.angle_kf_Q);
-	double dCf = units::cos(res.angle_kf_Q);
+	double dSf = cn.dsample_sense*units::sin(cn.angle_kf_Q);
+	double dCf = units::cos(cn.angle_kf_Q);
 
 	ublas::matrix<double> Tf(2,2);
 	Tf(0,0)=dCf; Tf(0,1)=-dSf;
@@ -78,17 +78,17 @@ CNResults calc_cn(CNParams& cn)
 	// resolution matrix
 
 	ublas::vector<double> pm(2);
-	pm[0] = units::tan(res.thetam);
+	pm[0] = units::tan(cn.thetam);
 	pm[1] = 1.;
 	pm /= cn.ki*angstrom * cn.mono_mosaic/units::si::radians;
 
 	ublas::vector<double> pa(2);
-	pa[0] = -units::tan(res.thetaa);
+	pa[0] = -units::tan(cn.thetaa);
 	pa[1] = 1.;
 	pa /= cn.kf*angstrom * cn.ana_mosaic/units::si::radians;
 
 	ublas::vector<double> palf0(2);
-	palf0[0] = 2.*units::tan(res.thetam);
+	palf0[0] = 2.*units::tan(cn.thetam);
 	palf0[1] = 1.;
 	palf0 /= (cn.ki*angstrom * cn.coll_h_pre_mono/units::si::radians);
 
@@ -98,7 +98,7 @@ CNResults calc_cn(CNParams& cn)
 	palf1 /= (cn.ki*angstrom * cn.coll_h_pre_sample/units::si::radians);
 
 	ublas::vector<double> palf2(2);
-	palf2[0] = -2.*units::tan(res.thetaa);
+	palf2[0] = -2.*units::tan(cn.thetaa);
 	palf2[1] = 1.;
 	palf2 /= (cn.kf*angstrom * cn.coll_h_post_ana/units::si::radians);
 
@@ -119,12 +119,12 @@ CNResults calc_cn(CNParams& cn)
 	M(2,2) = 1./(cn.ki*cn.ki * angstrom*angstrom) *
 					(
 							1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/units::si::radians/units::si::radians) +
-							1./((2.*units::sin(res.thetam)*cn.mono_mosaic/units::si::radians)*(2.*units::sin(res.thetam)*cn.mono_mosaic/units::si::radians) + cn.coll_v_pre_mono*cn.coll_v_pre_mono/units::si::radians/units::si::radians)
+							1./((2.*units::sin(cn.thetam)*cn.mono_mosaic/units::si::radians)*(2.*units::sin(cn.thetam)*cn.mono_mosaic/units::si::radians) + cn.coll_v_pre_mono*cn.coll_v_pre_mono/units::si::radians/units::si::radians)
 					);
 	M(5,5) = 1./(cn.kf*cn.kf * angstrom*angstrom) *
 					(
 							1./(cn.coll_v_post_sample*cn.coll_v_post_sample/units::si::radians/units::si::radians) +
-							1./((2.*units::sin(res.thetaa)*cn.ana_mosaic/units::si::radians)*(2.*units::sin(res.thetaa)*cn.ana_mosaic/units::si::radians) + cn.coll_v_post_ana*cn.coll_v_post_ana/units::si::radians/units::si::radians)
+							1./((2.*units::sin(cn.thetaa)*cn.ana_mosaic/units::si::radians)*(2.*units::sin(cn.thetaa)*cn.ana_mosaic/units::si::radians) + cn.coll_v_post_ana*cn.coll_v_post_ana/units::si::radians/units::si::radians)
 					);
 	// ------------------------------------------------------------------------------------------------
 
@@ -170,29 +170,31 @@ bool calc_tas_angles(CNParams& cn, CNResults& res)
 {
 	try
 	{
-		cn.E = get_energy_transfer(cn.ki, cn.kf);
-		
-		res.angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
-		res.angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);		
+		if(cn.bCalcE)
+			cn.E = get_energy_transfer(cn.ki, cn.kf);
+		//std::cout << "E = " << (cn.E/one_meV) << std::endl;
 
-		res.thetaa = 0.5*get_mono_twotheta(cn.kf, cn.ana_d, cn.dana_sense > 0.);
-		res.thetam = 0.5*get_mono_twotheta(cn.ki, cn.mono_d, cn.dmono_sense > 0.);
+		cn.angle_ki_Q = get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
+		cn.angle_kf_Q = get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
 
-		res.twotheta = get_sample_twotheta(cn.ki, cn.kf, cn.Q, cn.dsample_sense>0.);
-		
-		angle angleKiOrient1 = -res.angle_ki_Q /*- vec_angle(vecQ)*/;	// only valid for Q along orient1
-		res.thetas = angleKiOrient1 + M_PI*units::si::radians;
-		res.thetas -= M_PI/2. * units::si::radians;	
-		if(!cn.dsample_sense) res.thetas = -res.thetas;
+		if(cn.bCalcMonoAnaAngles)
+		{
+			cn.thetaa = 0.5*get_mono_twotheta(cn.kf, cn.ana_d, cn.dana_sense > 0.);
+			cn.thetam = 0.5*get_mono_twotheta(cn.ki, cn.mono_d, cn.dmono_sense > 0.);
+		}
+		//std::cout << double(cn.thetaa/units::si::radians)/M_PI*180. << ", " << double(cn.thetam/units::si::radians)/M_PI*180. << std::endl;
 
-		/*std::cout << "k_i = " << cn.ki << ", "
-	  	  	  << "k_f = " << cn.kf << ", "
-	  		  << "theta_m = " << res.thetam << ", "
-			  << "theta_a = " << res.thetaa << ", "
-			  << "lam_i = " << k2lam(cn.ki) << ", "
-			  << "twotheta: " << res.twotheta << ", "
-			  << "theta: " << res.thetas
-			  << std::endl;*/
+		if(cn.bCalcSampleAngles)
+			cn.twotheta = get_sample_twotheta(cn.ki, cn.kf, cn.Q, cn.dsample_sense>0.);
+		//std::cout << double(cn.twotheta/units::si::radians)/M_PI*180. << std::endl;
+
+		//if(cn.bCalcSampleAngles)
+		{
+			angle angleKiOrient1 = -cn.angle_ki_Q /*- vec_angle(vecQ)*/;	// only valid for Q along orient1
+			cn.thetas = angleKiOrient1 + M_PI*units::si::radians;
+			cn.thetas -= M_PI/2. * units::si::radians;
+			if(!cn.dsample_sense) cn.thetas = -cn.thetas;
+		}
 
 		res.Q_avg.resize(4);
 		res.Q_avg[0] = cn.Q*angstrom;

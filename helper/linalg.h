@@ -32,7 +32,6 @@ template<class matrix_type=ublas::matrix<double> >
 typename matrix_type::value_type determinant(const matrix_type& mat);
 
 
-
 // create a vector
 template<class V=ublas::vector<double> >
 V make_vec(const std::initializer_list<typename V::value_type>& lst)
@@ -217,7 +216,8 @@ matrix_type rotation_matrix_2d(typename matrix_type::value_type angle)
 		c = std::cos(angle);
 	}
 
-	return make_mat<matrix_type>({	{c, -s},
+	return make_mat<matrix_type>
+				({	{c, -s},
 					{s,  c}});
 }
 
@@ -238,7 +238,8 @@ matrix_type rotation_matrix_3d_x(typename matrix_type::value_type angle)
 		c = std::cos(angle);
 	}
 
-	return make_mat<matrix_type>({	{1, 0,  0},
+	return make_mat<matrix_type>
+				({	{1, 0,  0},
 					{0, c, -s},
 					{0, s,  c}});
 }
@@ -260,7 +261,8 @@ matrix_type rotation_matrix_3d_y(typename matrix_type::value_type angle)
 		c = std::cos(angle);
 	}
 
-	return make_mat<matrix_type>({	{c,  0, s},
+	return make_mat<matrix_type>
+				({	{c,  0, s},
 					{0,  1, 0},
 					{-s, 0, c}});
 }
@@ -282,13 +284,13 @@ matrix_type rotation_matrix_3d_z(typename matrix_type::value_type angle)
 		c = std::cos(angle);
 	}
 
-
-	return make_mat<matrix_type>({	{c, -s, 0},
+	return make_mat<matrix_type>
+				({	{c, -s, 0},
 					{s,  c, 0},
 					{0,  0, 1}});
 }
 
-template<class matrix_type = ublas::matrix<double>, 
+template<class matrix_type = ublas::matrix<double>,
 	class vector_type = ublas::vector<double>>
 matrix_type skew(const vector_type& vec)
 {
@@ -571,7 +573,7 @@ bool is_diag_matrix(const matrix_type& mat)
 }
 
 
-template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, 
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>,
 	class container_type=std::initializer_list<vec_type>, const bool bRowMat>
 inline matrix_type row_col_matrix(const container_type& vecs)
 {
@@ -602,7 +604,7 @@ inline matrix_type row_col_matrix(const container_type& vecs)
 }
 
 // vectors form rows of matrix
-template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, 
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>,
 	class container_type=std::initializer_list<vec_type> >
 matrix_type row_matrix(const container_type& vecs)
 {
@@ -610,7 +612,7 @@ matrix_type row_matrix(const container_type& vecs)
 }
 
 // vectors form columns of matrix
-template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>, 
+template<class matrix_type=ublas::matrix<double>, class vec_type=ublas::vector<double>,
 	class container_type=std::initializer_list<vec_type> >
 matrix_type column_matrix(const container_type& vecs)
 {
@@ -697,7 +699,10 @@ ublas::matrix<T> quat_to_rot3(const math::quaternion<T>& quat)
 template<typename T=double>
 std::vector<T> quat_to_euler(const math::quaternion<T>& quat)
 {
-	T q[] = {quat.R_component_1(), quat.R_component_2(), quat.R_component_3(), quat.R_component_4()};
+	T q[] = {quat.R_component_1(),
+			quat.R_component_2(),
+			quat.R_component_3(),
+			quat.R_component_4()};
 
 	// formulas from:
 	// http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -813,11 +818,11 @@ typename matrix_type::value_type get_ellipsoid_volume(const matrix_type& mat)
 // see: http://www.bmsc.washington.edu/CrystaLinks/man/pdb/part_75.html
 // for the reciprocal lattice this is equal to the B matrix from Acta Cryst. (1967), 22, 457
 template<class t_vec>
-bool fractional_basis_from_angles(typename t_vec::value_type a, 
-					typename t_vec::value_type b, 
+bool fractional_basis_from_angles(typename t_vec::value_type a,
+					typename t_vec::value_type b,
 					typename t_vec::value_type c,
-					typename t_vec::value_type alpha, 
-					typename t_vec::value_type beta, 
+					typename t_vec::value_type alpha,
+					typename t_vec::value_type beta,
 					typename t_vec::value_type gamma,
 				t_vec& veca, t_vec& vecb, t_vec& vecc)
 {
@@ -864,15 +869,46 @@ typename vec_type::value_type vec_angle(const vec_type& vec)
 	throw Err("vec_angle not yet implemented for size != 2.");
 }
 
-template<typename vec_type>
-void set_eps_0(vec_type& vec)
-{
-	typedef typename vec_type::value_type real_type;
 
-	for(real_type& d : vec)
+// -----------------------------------------------------------------------------
+template<typename T> void set_eps_0(T& d);
+
+template<typename T, bool bScalar>
+struct set_eps_0_impl
+{
+	void operator()(T&) { throw Err("No implementation of set_eps_0!"); }
+};
+
+template<typename real_type>
+struct set_eps_0_impl<real_type, 1>
+{
+	void operator()(real_type& d)
+	{
 		if(std::fabs(d) < std::numeric_limits<real_type>::epsilon())
 			d = real_type(0);
+	}
+};
+
+template<typename vec_type>
+struct set_eps_0_impl<vec_type, 0>
+{
+	void operator()(vec_type& vec)
+	{
+		typedef typename vec_type::value_type real_type;
+
+		for(real_type& d : vec)
+			set_eps_0<real_type>(d);
+	}
+};
+
+template<typename T>
+void set_eps_0(T& d)
+{
+	set_eps_0_impl<T, std::is_scalar<T>::value> op;
+	op(d);
 }
+// -----------------------------------------------------------------------------
+
 
 // signed angle between two vectors
 template<typename vec_type>
@@ -973,7 +1009,9 @@ ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 
 	using t_vecvec = typename std::remove_reference<decltype(vecVals)>::type;
 	using t_innervec_org = decltype(vecVals[0]);
-	using t_innervec = typename std::remove_const<typename std::remove_reference<t_innervec_org>::type>::type;
+	using t_innervec = typename std::remove_const<
+						typename std::remove_reference<t_innervec_org>::type>
+								::type;
 
 	t_innervec vecMean = mean_value<t_vecvec>(vecVals);
 	//std::cout << "Mean: " << vecMean << std::endl;
@@ -1016,7 +1054,7 @@ t_vec get_gcd_vec(const t_vec& vec)
 
 	typedef typename t_vec::value_type t_int;
 
-	int igcd_total = 1;
+	t_int igcd_total = 1;
 	for(std::size_t i=0; i<vec.size()-1; ++i)
 	{
 		t_int i0 = vec[i];

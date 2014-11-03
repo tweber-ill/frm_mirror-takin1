@@ -17,9 +17,7 @@ RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
 }
 
 RealParamDlg::~RealParamDlg()
-{
-
-}
+{}
 
 void RealParamDlg::paramsChanged(const RealParams& parms)
 {

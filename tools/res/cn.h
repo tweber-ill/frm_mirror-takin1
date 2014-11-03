@@ -37,6 +37,8 @@ struct CNParams
 
 	// sample
 	units::quantity<units::si::plane_angle> sample_mosaic;
+	units::quantity<units::si::length> sample_lattice[3];
+	units::quantity<units::si::plane_angle> sample_angles[3];
 	double dsample_sense;
 
 	// collimators
@@ -50,7 +52,19 @@ struct CNParams
 	units::quantity<units::si::plane_angle> coll_v_post_ana;
 
 	units::quantity<units::si::wavenumber> ki, kf, Q;
+
+	bool bCalcE = 1;
 	units::quantity<units::si::energy> E;
+
+	bool bCalcMonoAnaAngles = 1;
+	bool bCalcSampleAngles = 1;
+	units::quantity<units::si::plane_angle> thetaa, thetam, thetas;
+
+	units::quantity<units::si::plane_angle> twotheta;
+	units::quantity<units::si::plane_angle> angle_ki_Q;
+	units::quantity<units::si::plane_angle> angle_kf_Q;
+
+	ublas::vector<double> vec0, vec1, vecUp;
 
 	// resolution volume stuff
 	bool bConstMon;			// constant monitor or time?
@@ -62,12 +76,6 @@ struct CNResults
 {
 	bool bOk;
 	std::string strErr;
-
-	units::quantity<units::si::plane_angle> thetaa, thetam, thetas;
-
-	units::quantity<units::si::plane_angle> twotheta;
-	units::quantity<units::si::plane_angle> angle_ki_Q;
-	units::quantity<units::si::plane_angle> angle_kf_Q;
 
 	ublas::matrix<double> reso;
 	ublas::vector<double> Q_avg;

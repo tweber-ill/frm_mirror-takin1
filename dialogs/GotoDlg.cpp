@@ -82,6 +82,10 @@ void GotoDlg::CalcSample()
 		bFailed = 1;
 	}
 
+	::set_eps_0(vecQ);
+	::set_eps_0(m_dSample2Theta);
+	::set_eps_0(m_dSampleTheta);
+
 	std::ostringstream ostrStatus;
 	ostrStatus << "Q = " << vecQ;
 	labelQ->setText(ostrStatus.str().c_str());
@@ -121,6 +125,8 @@ void GotoDlg::CalcMonoAna()
 		m_dMono2Theta = get_mono_twotheta(ki, m_dMono*angstrom, m_bSenseM) / units::si::radians;
 		if(::isinf(m_dMono2Theta) || ::isnan(m_dMono2Theta))
 			throw Err("Invalid monochromator angle.");
+
+		::set_eps_0(m_dMono2Theta);
 		bMonoOk = 1;
 	}
 	catch(const std::exception& ex)
@@ -137,6 +143,8 @@ void GotoDlg::CalcMonoAna()
 		m_dAna2Theta = get_mono_twotheta(kf, m_dAna*angstrom, m_bSenseA) / units::si::radians;
 		if(::isinf(m_dAna2Theta) || ::isnan(m_dAna2Theta))
 			throw Err("Invalid analysator angle.");
+
+		::set_eps_0(m_dAna2Theta);
 		bAnaOk = 1;
 	}
 	catch(const std::exception& ex)
@@ -178,6 +186,7 @@ void GotoDlg::EditedKiKf()
 
 	energy E = Ei-Ef;
 	double dE = E/one_meV;
+	::set_eps_0(dE);
 
 	std::string strE = var_to_str<double>(dE);
 	editE->setText(strE.c_str());
@@ -208,6 +217,8 @@ void GotoDlg::EditedE()
 		wavenumber kf = units::sqrt(ki*ki - dSign*k_E*k_E);
 
 		double dKf = kf*angstrom;
+		::set_eps_0(dKf);
+
 		std::string strKf = var_to_str<double>(dKf);
 		editKf->setText(strKf.c_str());
 	}
@@ -221,6 +232,8 @@ void GotoDlg::EditedE()
 		wavenumber ki = units::sqrt(kf*kf + dSign*k_E*k_E);
 
 		double dKi = ki*angstrom;
+		::set_eps_0(dKi);
+
 		std::string strKi = var_to_str<double>(dKi);
 		editKi->setText(strKi.c_str());
 	}
@@ -234,11 +247,13 @@ void GotoDlg::EditedAngles()
 {
 	bool bthmOk;
 	double th_m = edit2ThetaM->text().toDouble(&bthmOk)/2. / 180.*M_PI;
+	::set_eps_0(th_m);
 	if(bthmOk)
 		editThetaM->setText(var_to_str<double>(th_m/M_PI*180.).c_str());
 
 	bool bthaOk;
 	double th_a = edit2ThetaA->text().toDouble(&bthaOk)/2. / 180.*M_PI;
+	::set_eps_0(th_a);
 	if(bthaOk)
 		editThetaA->setText(var_to_str<double>(th_a/M_PI*180.).c_str());
 
@@ -281,6 +296,9 @@ void GotoDlg::EditedAngles()
 
 	if(bFailed) return;
 
+	for(double* d : {&h,&k,&l, &dKi,&dKf,&dE})
+		::set_eps_0(*d);
+
 	editH->setText(var_to_str<double>(h).c_str());
 	editK->setText(var_to_str<double>(k).c_str());
 	editL->setText(var_to_str<double>(l).c_str());
@@ -304,6 +322,12 @@ void GotoDlg::GetCurPos()
 {
 	if(!m_bHasParamsRecip)
 		return;
+
+	::set_eps_0(m_paramsRecip.dki);
+	::set_eps_0(m_paramsRecip.dkf);
+	::set_eps_0(m_paramsRecip.Q_rlu[0]);
+	::set_eps_0(m_paramsRecip.Q_rlu[1]);
+	::set_eps_0(m_paramsRecip.Q_rlu[2]);
 
 	editKi->setText(var_to_str(m_paramsRecip.dki).c_str());
 	editKf->setText(var_to_str(m_paramsRecip.dkf).c_str());

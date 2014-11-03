@@ -4,6 +4,8 @@
  * @date may-2013, apr-2014
  */
 
+// TODO: send locally changed params back to taz
+
 #include "ResoDlg.h"
 #include <iostream>
 #include <fstream>
@@ -88,7 +90,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	for(QDoubleSpinBox* pSpinBox : m_vecSpinBoxes)
 		QObject::connect(pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(Calc()));
 	for(QLineEdit* pEditBox : m_vecEditBoxes)
-		QObject::connect(pEditBox, SIGNAL(textEdited(const QString&)), this, SLOT(Calc()));		
+		QObject::connect(pEditBox, SIGNAL(textEdited(const QString&)), this, SLOT(Calc()));
 	for(QRadioButton* pRadio : m_vecRadioPlus)
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(Calc()));
 
@@ -97,6 +99,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	connect(btnCalcElli4d, SIGNAL(clicked()), this, SLOT(CalcElli4d()));
 	connect(btnMCGenerate, SIGNAL(clicked()), this, SLOT(MCGenerate()));
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
+	connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveRes()));
+	connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadRes()));
 
 	m_bDontCalc = 0;
 	Calc();
@@ -105,6 +109,65 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 ResoDlg::~ResoDlg()
 {}
 
+void ResoDlg::SaveRes()
+{
+	const std::string strXmlRoot("taz/");
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		m_pSettings->value("reso/last_dir", ".").toString();
+	QString qstrFile = QFileDialog::getSaveFileName(this,
+								"Save resolution configuration",
+								strDirLast,
+								"TAZ files (*.taz *.TAZ)");
+
+	if(qstrFile == "")
+		return;
+
+	std::string strFile = qstrFile.toStdString();
+	std::string strDir = get_dir(strFile);
+
+	std::map<std::string, std::string> mapConf;
+	Save(mapConf, strXmlRoot);
+
+	bool bOk = Xml::SaveMap(strFile.c_str(), mapConf);
+	if(!bOk)
+		QMessageBox::critical(this, "Error", "Could not save resolution file.");
+
+	if(bOk && m_pSettings)
+		m_pSettings->setValue("reso/last_dir", QString(strDir.c_str()));
+}
+
+void ResoDlg::LoadRes()
+{
+	const std::string strXmlRoot("taz/");
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		strDirLast = m_pSettings->value("reso/last_dir", ".").toString();
+	QString qstrFile = QFileDialog::getOpenFileName(this,
+							"Open resolution configuration...",
+							strDirLast,
+							"TAZ files (*.taz *.TAZ)");
+	if(qstrFile == "")
+		return;
+
+
+	std::string strFile = qstrFile.toStdString();
+	std::string strDir = get_dir(strFile);
+
+	Xml xml;
+	if(!xml.Load(strFile.c_str()))
+	{
+		QMessageBox::critical(this, "Error", "Could not load resolution file.");
+		return;
+	}
+
+	Load(xml, strXmlRoot);
+	if(m_pSettings)
+		m_pSettings->setValue("reso/last_dir", QString(strDir.c_str()));
+
+}
 
 void ResoDlg::Calc()
 {
@@ -125,7 +188,9 @@ void ResoDlg::Calc()
 
 	cn.ki = editKi->text().toDouble() / angstrom;
 	cn.kf = editKf->text().toDouble() / angstrom;
-	//cn.E = editE->text().toDouble() * one_meV;
+	cn.E = editE->text().toDouble() * one_meV;
+	cn.bCalcE = 0;
+	//std::cout << "E = " << editE->text().toStdString() << std::endl;
 	cn.Q = editQ->text().toDouble() / angstrom;
 
 	cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
@@ -245,7 +310,7 @@ void ResoDlg::Calc()
 		labelStatus->setText("Calculation successful.");
 		labelResult->setText(QString::fromUtf8(ostrRes.str().c_str()));
 
-		
+
 
 		if(checkElli4dAutoCalc->isChecked())
 		{
@@ -406,11 +471,11 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 
 		mapConf[strXmlRoot + m_vecSpinNames[iSpinBox]] = ostrVal.str();
 	}
-	
+
 	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
 	{
-		double dVal = m_vecEditBoxes[iEditBox]->text().toDouble();
-		mapConf[strXmlRoot + m_vecEditNames[iEditBox]] = dVal;
+		std::string strVal = m_vecEditBoxes[iEditBox]->text().toStdString();
+		mapConf[strXmlRoot + m_vecEditNames[iEditBox]] = strVal;
 	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
@@ -510,9 +575,13 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 		dQ = -dQ;
 
 	editQ->setText(std::to_string(dQ).c_str());
-	//editE->setText(std::to_string(parms.dE).c_str());		// redundant
+	editE->setText(std::to_string(parms.dE).c_str());
 	editKi->setText(std::to_string(parms.dki).c_str());
 	editKf->setText(std::to_string(parms.dkf).c_str());
+
+	m_pop.vec0 = make_vec({parms.orient_0[0], parms.orient_0[1], parms.orient_0[2]});
+	m_pop.vec1 = make_vec({parms.orient_1[0], parms.orient_1[1], parms.orient_1[2]});
+	m_pop.vecUp = make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
 
 	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
 	m_bDontCalc = bOldDontCalc;
@@ -521,10 +590,22 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 
 void ResoDlg::RealParamsChanged(const RealParams& parms)
 {
-	// TODO
+	bool bOldDontCalc = m_bDontCalc;
+	m_bDontCalc = 1;
+
+	m_pop.bCalcMonoAnaAngles = 0;
+	m_pop.thetam = parms.dMonoT * units::si::radians;
+	m_pop.thetaa = parms.dAnaT * units::si::radians;
+	//std::cout << parms.dMonoT/M_PI*180. << ", " << parms.dAnaT/M_PI*180. << std::endl;
+
+	m_pop.bCalcSampleAngles = 0;
+	m_pop.thetas = parms.dSampleT * units::si::radians;
+	m_pop.twotheta = parms.dSampleTT * units::si::radians;
+
+	m_bDontCalc = bOldDontCalc;
+	Calc();
 }
 
-// TODO: also send locally changed params back to taz
 
 
 // --------------------------------------------------------------------------------

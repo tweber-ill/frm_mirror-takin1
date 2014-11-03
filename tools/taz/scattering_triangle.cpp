@@ -430,17 +430,21 @@ double ScatteringTriangle::Getq() const
 	return dq;
 }
 
+double ScatteringTriangle::GetAngleQVec0() const
+{
+	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+	vecQ /= ublas::norm_2(vecQ);
+	return vec_angle(vecQ);
+}
+
 double ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 {
 	/*ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
 								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
-	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
-
 	vecKi /= ublas::norm_2(vecKi);
-	vecQ /= ublas::norm_2(vecQ);
 
-	const double dAngle = vec_angle(vecKi) - vec_angle(vecQ);*/
+	const double dAngle = vec_angle(vecKi) - GetAngleQVec0();*/
 
 	try
 	{
@@ -464,13 +468,9 @@ double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 {
 	/*ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
 								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
-	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
-
 	vecKf /= ublas::norm_2(vecKf);
-	vecQ /= ublas::norm_2(vecQ);
 
-	const double dAngle = vec_angle(vecKf) - vec_angle(vecQ);*/
+	const double dAngle = vec_angle(vecKf) - GetAngleQVec0();*/
 
 	try
 	{
@@ -905,6 +905,7 @@ void ScatteringTriangleScene::emitAllParams()
 	parms.dkf = m_pTri->GetKf();
 	parms.dKiQ = m_pTri->GetAngleKiQ(m_bSamplePosSense);
 	parms.dKfQ = m_pTri->GetAngleKfQ(m_bSamplePosSense);
+	parms.dAngleQVec0 = m_pTri->GetAngleQVec0();
 
 	ublas::vector<double> vecQ = m_pTri->GetQVec(0,0);
 	ublas::vector<double> vecQrlu = m_pTri->GetQVec(0,1);
@@ -912,6 +913,11 @@ void ScatteringTriangleScene::emitAllParams()
 	ublas::vector<double> vecqrlu = m_pTri->GetQVec(1,1);
 	ublas::vector<double> vecG = vecQ - vecq;
 	ublas::vector<double> vecGrlu = vecQrlu - vecqrlu;
+
+	const ublas::matrix<double>& matPlane = m_pTri->GetPlane();
+	ublas::vector<double> vec0 = ::get_column(matPlane, 0);
+	ublas::vector<double> vec1 = ::get_column(matPlane, 1);
+	ublas::vector<double> vecUp = ::get_column(matPlane, 2);
 
 	set_eps_0(vecQ); set_eps_0(vecQrlu);
 	set_eps_0(vecq); set_eps_0(vecqrlu);
@@ -921,10 +927,16 @@ void ScatteringTriangleScene::emitAllParams()
 	{
 		parms.Q[i] = vecQ[i];
 		parms.Q_rlu[i] = vecQrlu[i];
+
 		parms.q[i] = vecq[i];
 		parms.q_rlu[i] = vecqrlu[i];
+
 		parms.G[i] = vecG[i];
 		parms.G_rlu[i] = vecGrlu[i];
+
+		parms.orient_0[i] = vec0[i];
+		parms.orient_1[i] = vec1[i];
+		parms.orient_up[i] = vecUp[i];
 	}
 
 	CheckForSpurions();

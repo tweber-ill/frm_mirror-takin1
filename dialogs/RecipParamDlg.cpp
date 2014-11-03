@@ -20,9 +20,7 @@ RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
 }
 
 RecipParamDlg::~RecipParamDlg()
-{
-
-}
+{}
 
 void RecipParamDlg::paramsChanged(const RecipParams& parms)
 {

@@ -37,9 +37,6 @@
 #include "helper/lattice.h"
 
 
-
-
-
 class TazDlg : public QMainWindow, Ui::TazDlg
 { Q_OBJECT
 	private:
