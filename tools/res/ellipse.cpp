@@ -159,23 +159,16 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 		std::swap(evals[0], evals[1]);
 
 		if(ell.phi > 0.)
-		{
 			evecs[0] = -evecs[0];
-			evals[0] = -evals[0];
-		}
 
 		evecs_rot = column_matrix(evecs);
 		ell.phi = rotation_angle(evecs_rot)[0];
 	}
 
 
-	ublas::matrix<double> res_rot;
-	res_rot = prod(res_mat, evecs_rot);
-	res_rot = prod(trans(evecs_rot), res_rot);
-
-	ell.x_hwhm = SIGMA2HWHM/sqrt(res_rot(0,0));
-	ell.y_hwhm = SIGMA2HWHM/sqrt(res_rot(1,1));
-
+	ell.x_hwhm = SIGMA2HWHM/sqrt(evals[0]);
+	ell.y_hwhm = SIGMA2HWHM/sqrt(evals[1]);
+	
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
 
@@ -251,13 +244,13 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	//ell.beta = vecRot[1];
 	//ell.gamma = vecRot[2];
 
-	ublas::matrix<double> res_rot;
+	/*ublas::matrix<double> res_rot;
 	res_rot = prod(res_mat, ell.rot);
-	res_rot = prod(trans(ell.rot), res_rot);
+	res_rot = prod(trans(ell.rot), res_rot);*/
 
-	ell.x_hwhm = SIGMA2HWHM/sqrt(res_rot(0,0));
-	ell.y_hwhm = SIGMA2HWHM/sqrt(res_rot(1,1));
-	ell.z_hwhm = SIGMA2HWHM/sqrt(res_rot(2,2));
+	ell.x_hwhm = SIGMA2HWHM/sqrt(evals[0]);
+	ell.y_hwhm = SIGMA2HWHM/sqrt(evals[1]);
+	ell.z_hwhm = SIGMA2HWHM/sqrt(evals[2]);
 
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
@@ -295,14 +288,14 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 
 	ell.rot = column_matrix(evecs);
 
-	ublas::matrix<double> res_rot;
+	/*ublas::matrix<double> res_rot;
 	res_rot = prod(reso, ell.rot);
-	res_rot = prod(trans(ell.rot), res_rot);
+	res_rot = prod(trans(ell.rot), res_rot);*/
 
-	ell.x_hwhm = SIGMA2HWHM/sqrt(res_rot(0,0));
-	ell.y_hwhm = SIGMA2HWHM/sqrt(res_rot(1,1));
-	ell.z_hwhm = SIGMA2HWHM/sqrt(res_rot(2,2));
-	ell.w_hwhm = SIGMA2HWHM/sqrt(res_rot(3,3));
+	ell.x_hwhm = SIGMA2HWHM/sqrt(evals[0]);
+	ell.y_hwhm = SIGMA2HWHM/sqrt(evals[1]);
+	ell.z_hwhm = SIGMA2HWHM/sqrt(evals[2]);
+	ell.w_hwhm = SIGMA2HWHM/sqrt(evals[3]);
 
 	ell.x_offs = Q_avg[0];
 	ell.y_offs = Q_avg[1];
