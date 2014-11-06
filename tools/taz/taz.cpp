@@ -1801,6 +1801,17 @@ void TazDlg::ShowAbout()
 	strAbout += "Takin version 0.8\n";
 	strAbout += "Written by Tobias Weber, 2014";
 	strAbout += "\n\n";
+	
+	strAbout += "Takin is free software: you can redistribute it and/or modify ";
+	strAbout += "it under the terms of the GNU General Public License as published by ";
+	strAbout += "the Free Software Foundation, either version 3 of the License, or ";
+	strAbout += "(at your option) any later version.\n\n";
+	strAbout += "Takin is distributed in the hope that it will be useful, ";
+	strAbout += "but WITHOUT ANY WARRANTY; without even the implied warranty of ";
+	strAbout += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the ";
+	strAbout += "GNU General Public License for more details.\n\n";
+	strAbout += "You should have received a copy of the GNU General Public License ";
+	strAbout += "along with Takin.  If not, see <http://www.gnu.org/licenses/>.\n\n";
 
 	strAbout += "Built with CC version ";
 	strAbout += QString(__VERSION__);
