@@ -18,6 +18,8 @@
 #include "helper/misc.h"
 #include "helper/math.h"
 
+//#include <boost/units/io.hpp>
+
 #include <QtGui/QPainter>
 #include <QtGui/QFileDialog>
 #include <QtGui/QMessageBox>
@@ -309,9 +311,25 @@ void ResoDlg::Calc()
 
 		labelStatus->setText("Calculation successful.");
 		labelResult->setText(QString::fromUtf8(ostrRes.str().c_str()));
+/*
+#ifndef NDEBUG
+		// check against ELASTIC approximation for perp. slope from Shirane p. 268
+		// valid for small mosaicities
+		double dEoverQperp = co::hbar*co::hbar*cn.ki / co::m_n 
+								* units::cos(cn.thetas) 
+								* (1. + units::tan(units::abs(cn.thetas))
+									* units::tan(units::abs(cn.thetas) - units::abs(cn.thetam))
+								  )
+								/ one_meV / angstrom;
 
-
-
+		log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
+		log_info("E/Q_perp (2nd approximation for ki=kf) = ", double(4.*cn.ki * angstrom), " meV*A");
+		
+		//std::cout << "thetas = " << m_pop.thetas/units::si::radians/M_PI*180. << std::endl;
+		//std::cout << "thetam = " << m_pop.thetam/units::si::radians/M_PI*180. << std::endl;
+		//std::cout << "thetaa = " << m_pop.thetaa/units::si::radians/M_PI*180. << std::endl;
+#endif
+*/
 		if(checkElli4dAutoCalc->isChecked())
 		{
 			CalcElli4d();
@@ -582,6 +600,12 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.vec0 = make_vec({parms.orient_0[0], parms.orient_0[1], parms.orient_0[2]});
 	m_pop.vec1 = make_vec({parms.orient_1[0], parms.orient_1[1], parms.orient_1[2]});
 	m_pop.vecUp = make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
+	
+	m_pop.bCalcSampleAngles = 0;
+	m_pop.thetas = parms.dTheta * units::si::radians;
+	m_pop.twotheta = parms.d2Theta * units::si::radians;
+
+	std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
 	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
 	m_bDontCalc = bOldDontCalc;
@@ -601,7 +625,7 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	m_pop.bCalcSampleAngles = 0;
 	m_pop.thetas = parms.dSampleT * units::si::radians;
 	m_pop.twotheta = parms.dSampleTT * units::si::radians;
-
+	
 	m_bDontCalc = bOldDontCalc;
 	Calc();
 }

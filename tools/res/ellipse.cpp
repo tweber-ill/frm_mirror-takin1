@@ -176,7 +176,8 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	ell.slope = std::tan(ell.phi);
 
 
-	// sanity check
+#ifndef NDEBUG
+	// sanity check, see Shirane p. 267
 	double dMyPhi = ell.phi/M_PI*180.;
 	double dPhiShirane = 0.5*atan(2.*res_mat(0,1) / (res_mat(0,0)-res_mat(1,1))) / M_PI*180.;
 	if(!::float_equal(dMyPhi, dPhiShirane, 0.01)
@@ -186,6 +187,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 				" deviates from theoretical phi = ", dPhiShirane,
 				" deg.");
 	}
+#endif
 
 	return ell;
 }
