@@ -316,9 +316,9 @@ void ResoDlg::Calc()
 		// check against ELASTIC approximation for perp. slope from Shirane p. 268
 		// valid for small mosaicities
 		double dEoverQperp = co::hbar*co::hbar*cn.ki / co::m_n 
-								* units::cos(cn.thetas) 
-								* (1. + units::tan(units::abs(cn.thetas))
-									* units::tan(units::abs(cn.thetas) - units::abs(cn.thetam))
+								* units::cos(cn.twotheta/2.) 
+								* (1. + units::tan(units::abs(cn.twotheta/2.))
+									* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam))
 								  )
 								/ one_meV / angstrom;
 
@@ -326,8 +326,8 @@ void ResoDlg::Calc()
 		log_info("E/Q_perp (2nd approximation for ki=kf) = ", double(4.*cn.ki * angstrom), " meV*A");
 		
 		//std::cout << "thetas = " << m_pop.thetas/units::si::radians/M_PI*180. << std::endl;
-		//std::cout << "thetam = " << m_pop.thetam/units::si::radians/M_PI*180. << std::endl;
-		//std::cout << "thetaa = " << m_pop.thetaa/units::si::radians/M_PI*180. << std::endl;
+		//std::cout << "2thetam = " << 2.*m_pop.thetam/units::si::radians/M_PI*180. << std::endl;
+		//std::cout << "2thetaa = " << 2.*m_pop.thetaa/units::si::radians/M_PI*180. << std::endl;
 #endif
 */
 		if(checkElli4dAutoCalc->isChecked())
@@ -605,7 +605,7 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.thetas = parms.dTheta * units::si::radians;
 	m_pop.twotheta = parms.d2Theta * units::si::radians;
 
-	std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
+	//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
 	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
 	m_bDontCalc = bOldDontCalc;

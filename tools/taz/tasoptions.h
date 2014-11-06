@@ -8,7 +8,7 @@
 #define __TASOPTIONS_H__
 
 #include "helper/linalg.h"
-#include <QtGui/QWheelEvent>
+#include <QtCore/QPointF>
 
 static inline ublas::vector<double> qpoint_to_vec(const QPointF& pt)
 {
