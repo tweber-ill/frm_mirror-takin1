@@ -940,6 +940,8 @@ void ScatteringTriangleScene::emitAllParams()
 	}
 
 	CheckForSpurions();
+	
+	//log_debug("triangle: emitAllParams");
 	emit paramsChanged(parms);
 }
 

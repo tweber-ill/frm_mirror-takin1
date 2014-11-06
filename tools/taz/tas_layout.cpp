@@ -536,6 +536,7 @@ void TasLayoutScene::emitAllParams()
 	parms.dLenAnaDet = m_pTas->GetLenAnaDet();
 
 	//log_info(parms.dSampleT/M_PI*180.);
+	//log_debug("tas: emitAllParams");
 	emit paramsChanged(parms);
 }
 
@@ -554,7 +555,10 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 	if(opts.bChangedAnaTwoTheta)
 		m_pTas->SetAnaTwoTheta(opts.dAnaTwoTheta);
 	if(opts.bChangedTheta)
+	{
 		m_pTas->SetSampleTheta(opts.dTheta);
+		m_pTas->nodeMoved();	// no node moved, but force this call to update the theta angle
+	}
 	//if(opts.bChangedAngleKiQ)
 	//	m_pTas->SetAngleKiQ(opts.dAngleKiQ);
 
