@@ -10,4 +10,4 @@ fi
 
 
 echo -e "\nBuilding..."
-make -f themakefile
+make -j4 -f themakefile

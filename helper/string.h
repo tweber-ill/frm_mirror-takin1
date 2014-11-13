@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include "exception.h"
 
 template<class t_str=std::string>
 t_str insert_before(const t_str& str,
@@ -187,10 +188,39 @@ split_first(const t_str& str, const t_str& strSep, bool bTrim=0)
 //extern std::vector<std::string>
 //		split(const std::string& str, const std::string& strSep);
 
+template<typename T, class t_str=std::string, bool bTIsStr=0>
+struct _str_to_var_impl
+{
+	inline T operator()(const t_str& str) const { throw Err("No implementation for str_to_var"); }
+};
 
-template<class T, class t_str=std::string>
+template<typename T, class t_str>
+struct _str_to_var_impl<T, t_str, 1>
+{
+	inline const T& operator()(const t_str& str) const
+	{
+		return str;
+	}
+};
+
+template<typename T, class t_str>
+struct _str_to_var_impl<T, t_str, 0>
+{
+	inline T operator()(const t_str& str) const
+	{
+		typedef typename t_str::value_type t_char;
+		std::basic_istringstream<t_char> istr(str);
+
+		T t;
+		istr >> t;
+		return t;
+	}
+};
+
+
+template<class T, class t_str=std::string, class t_cont=std::vector<T>>
 void get_tokens(const t_str& str, const t_str& strDelim,
-				std::vector<T>& vecRet)
+				t_cont& vecRet)
 {
 	typedef typename t_str::value_type t_char;
 
@@ -200,33 +230,15 @@ void get_tokens(const t_str& str, const t_str& strDelim,
 	typename boost::tokenizer<boost::char_separator<t_char> >::iterator iter;
 	for(iter=tok.begin(); iter!=tok.end(); ++iter)
 	{
-		std::basic_istringstream<t_char> istr(*iter);
-
-		T t;
-		istr >> t;              // WARNING: if T==string this terminates after first whitespace!
-
-		vecRet.push_back(t);
+		T t = _str_to_var_impl<T, t_str, !std::is_fundamental<T>::value>()(*iter);
+		vecRet.push_back(std::move(t));
 	}
 }
-
-template<>
-void get_tokens<std::string>(const std::string& str, const std::string& strDelim,
-                                        std::vector<std::string>& vecRet);
-template<>
-void get_tokens<std::wstring>(const std::wstring& str, const std::wstring& strDelim,
-                                        std::vector<std::wstring>& vecRet);
-
 
 template<typename T, class t_str=std::string>
 T str_to_var(const t_str& str)
 {
-	typedef typename t_str::value_type t_char;
-
-	std::basic_istringstream<t_char> istr(str);
-	T t;
-
-	istr >> t;
-	return t;
+	return _str_to_var_impl<T, t_str, !std::is_fundamental<T>::value>()(str);
 }
 
 template<typename T, class t_str=std::string>
@@ -253,7 +265,7 @@ void get_val_and_err(const t_str& str, T& val, T& err)
 	strPlusMinus[1] = '-';
 
 	std::vector<T> vec;
-	get_tokens(str, strPlusMinus, vec);
+	get_tokens<T, t_str>(str, strPlusMinus, vec);
 
 	if(vec.size() >= 1)
 		val = vec[0];
