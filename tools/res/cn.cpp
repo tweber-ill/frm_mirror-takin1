@@ -147,7 +147,7 @@ CNResults calc_cn(CNParams& cn)
 	calc_bragg_widths(cn, res);
 	calc_cn_vol(cn, res);
 
-	if(std::isnan(res.dR0) || isnan(res.reso))
+	if(is_nan_or_inf(res.dR0) || is_nan_or_inf(res.reso))
 	{
 		res.strErr = "Invalid result.";
 		res.bOk = false;

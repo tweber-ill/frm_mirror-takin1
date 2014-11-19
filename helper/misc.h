@@ -134,7 +134,7 @@ inline unsigned int lerprgb(unsigned int col1, unsigned int col2, double dval)
 	return (0xff<<24) | (r<<16) | (g<<8) | (b);
 }
 
-template<typename T> bool has_nan_or_inf(T d)
+/*template<typename T> bool has_nan_or_inf(T d)
 {
         // NaN?
         if(d!=d)
@@ -145,7 +145,7 @@ template<typename T> bool has_nan_or_inf(T d)
                 return true;
 
         return false;
-}
+}*/
 
 template<typename T> T* vec_to_array(const std::vector<T>& vec)
 {

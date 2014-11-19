@@ -639,7 +639,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
 	//std::cout << "dir 1 len: " << dDir1Len << std::endl;
 
 	if(float_equal(dDir0Len, 0.) || float_equal(dDir1Len, 0.)
-		|| ::isnan(dDir0Len) || ::isnan(dDir1Len))
+		|| ::is_nan_or_inf<double>(dDir0Len) || ::is_nan_or_inf<double>(dDir1Len))
 	{
 		log_err("Invalid scattering plane.");
 		return;

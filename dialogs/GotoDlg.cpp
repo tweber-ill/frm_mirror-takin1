@@ -67,9 +67,9 @@ void GotoDlg::CalcSample()
 					&m_dSampleTheta, &m_dSample2Theta,
 					&vecQ);
 
-		if(::isinf(m_dSample2Theta) || ::isnan(m_dSample2Theta))
+		if(::is_nan_or_inf<double>(m_dSample2Theta))
 			throw Err("Invalid sample 2theta.");
-		if(::isinf(m_dSampleTheta) || ::isnan(m_dSampleTheta))
+		if(::is_nan_or_inf<double>(m_dSampleTheta))
 			throw Err("Invalid sample theta.");
 	}
 	catch(const std::exception& ex)
@@ -123,7 +123,7 @@ void GotoDlg::CalcMonoAna()
 	try
 	{
 		m_dMono2Theta = get_mono_twotheta(ki, m_dMono*angstrom, m_bSenseM) / units::si::radians;
-		if(::isinf(m_dMono2Theta) || ::isnan(m_dMono2Theta))
+		if(::is_nan_or_inf<double>(m_dMono2Theta))
 			throw Err("Invalid monochromator angle.");
 
 		::set_eps_0(m_dMono2Theta);
@@ -141,7 +141,7 @@ void GotoDlg::CalcMonoAna()
 	try
 	{
 		m_dAna2Theta = get_mono_twotheta(kf, m_dAna*angstrom, m_bSenseA) / units::si::radians;
-		if(::isinf(m_dAna2Theta) || ::isnan(m_dAna2Theta))
+		if(::is_nan_or_inf<double>(m_dAna2Theta))
 			throw Err("Invalid analysator angle.");
 
 		::set_eps_0(m_dAna2Theta);
@@ -280,7 +280,7 @@ void GotoDlg::EditedAngles()
 								&dKi, &dKf, &dE, 0,
 								&vecQ);
 
-		if(::isinf(h) || ::isnan(h) || ::isinf(k) || ::isnan(k) || ::isinf(l) || ::isnan(l))
+		if(::is_nan_or_inf<double>(h) || ::is_nan_or_inf<double>(k) || ::is_nan_or_inf<double>(l))
 			throw Err("Invalid hkl.");
 	}
 	catch(const std::exception& ex)

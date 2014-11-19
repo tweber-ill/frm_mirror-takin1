@@ -882,7 +882,7 @@ void TazDlg::CalcPeaks()
 		double dDirUpLen = ublas::norm_2(dirup);
 
 		if(float_equal(dDir0Len, 0.) || float_equal(dDir1Len, 0.) || float_equal(dDirUpLen, 0.)
-			|| ::isnan(dDir0Len) || ::isnan(dDir1Len) || ::isnan(dDirUpLen))
+			|| ::is_nan_or_inf<double>(dDir0Len) || ::is_nan_or_inf<double>(dDir1Len) || ::is_nan_or_inf<double>(dDirUpLen))
 		{
 			log_err("Invalid scattering plane.");
 			return;

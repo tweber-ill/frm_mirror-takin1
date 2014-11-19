@@ -254,7 +254,7 @@ CNResults calc_pop(PopParams& pop)
 	calc_bragg_widths(pop, res);
 	calc_pop_vol(pop, res);
 
-	if(std::isnan(res.dR0) || isnan(res.reso))
+	if(is_nan_or_inf(res.dR0) || is_nan_or_inf(res.reso))
 	{
 		res.strErr = "Invalid result.";
 		res.bOk = false;
