@@ -12,6 +12,7 @@
 #include "exception.h"
 #include "math.h"
 #include "log.h"
+#include "traits.h"
 
 #include <cmath>
 
@@ -350,25 +351,6 @@ typename matrix_type::value_type trace(const matrix_type& mat)
 		tr += mat(i,i);
 	return tr;
 }
-
-
-// -----------------------------------------------------------------------------
-template<class T, bool bScalar=std::is_scalar<T>::value>
-struct underlying_value_type
-{};
-
-template<class T>
-struct underlying_value_type<T, 1>
-{
-	typedef T value_type;
-};
-
-template<class T>
-struct underlying_value_type<T, 0>
-{
-	typedef typename T::value_type value_type;
-};
-// -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------

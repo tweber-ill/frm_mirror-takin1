@@ -105,6 +105,7 @@
     <File Name="helper/exception.h"/>
     <File Name="helper/log.cpp"/>
     <File Name="helper/xml.h"/>
+    <File Name="helper/traits.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
