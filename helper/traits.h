@@ -38,15 +38,19 @@ struct underlying_value_type<T, 0>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
-template<class> struct is_1d_type : std::false_type {};
-template<class... PARAMS> struct is_1d_type<std::vector<PARAMS...>> : std::true_type {};
-template<class... PARAMS> struct is_1d_type<std::array<PARAMS...>> : std::true_type {};
-template<class... PARAMS> struct is_1d_type<std::list<PARAMS...>> : std::true_type {};
-template<class... PARAMS> struct is_1d_type<boost::numeric::ublas::vector<PARAMS...>> : std::true_type {};
-template<class... PARAMS> struct is_1d_type<std::initializer_list<PARAMS...>> : std::true_type {};
+typedef std::integral_constant<int, 0>	dim_0d_type;
+typedef std::integral_constant<int, 1>	dim_1d_type;
+typedef std::integral_constant<int, 2>	dim_2d_type;
 
-template<class> struct is_2d_type : std::false_type {};
-template<class... PARAMS> struct is_2d_type<boost::numeric::ublas::matrix<PARAMS...>> : std::true_type {};
+template<class> struct get_type_dim : dim_0d_type {};
+
+template<class... PARAMS> struct get_type_dim<std::vector<PARAMS...>> : dim_1d_type {};
+template<class... PARAMS> struct get_type_dim<std::array<PARAMS...>> : dim_1d_type {};
+template<class... PARAMS> struct get_type_dim<std::list<PARAMS...>> : dim_1d_type {};
+template<class... PARAMS> struct get_type_dim<boost::numeric::ublas::vector<PARAMS...>> : dim_1d_type {};
+template<class... PARAMS> struct get_type_dim<std::initializer_list<PARAMS...>> : dim_1d_type {};
+
+template<class... PARAMS> struct get_type_dim<boost::numeric::ublas::matrix<PARAMS...>> : dim_2d_type {};
 // -----------------------------------------------------------------------------
 
 

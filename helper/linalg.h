@@ -354,7 +354,7 @@ typename matrix_type::value_type trace(const matrix_type& mat)
 
 
 // -----------------------------------------------------------------------------
-template<typename T, class FKT, bool bScalar=std::is_scalar<T>::value>
+template<typename T, class FKT, const int iDim=get_type_dim<T>::value>
 struct is_nan_or_inf_impl
 {
 	is_nan_or_inf_impl(const FKT&) {}
@@ -362,15 +362,30 @@ struct is_nan_or_inf_impl
 };
 
 template<typename real_type, class FKT>
-struct is_nan_or_inf_impl<real_type, FKT, 1>	// scalar impl.
+struct is_nan_or_inf_impl<real_type, FKT, 0>	// scalar impl.
 {
 	const FKT& m_fkt;
 	is_nan_or_inf_impl(const FKT& fkt) : m_fkt(fkt) {}
 	bool operator()(real_type d) const { return m_fkt(d); }
 };
 
+template<typename vec_type, class FKT>
+struct is_nan_or_inf_impl<vec_type, FKT, 1>		// vector impl.
+{
+	const FKT& m_fkt;
+	is_nan_or_inf_impl(const FKT& fkt) : m_fkt(fkt) {}
+
+	bool operator()(const vec_type& vec) const
+	{
+		for(unsigned int i=0; i<vec.size(); ++i)
+			if(m_fkt(vec[i]))
+				return true;
+		return false;
+	}
+};
+
 template<typename mat_type, class FKT>
-struct is_nan_or_inf_impl<mat_type, FKT, 0>		// matrix impl.
+struct is_nan_or_inf_impl<mat_type, FKT, 2>		// matrix impl.
 {
 	const FKT& m_fkt;
 	is_nan_or_inf_impl(const FKT& fkt) : m_fkt(fkt) {}
@@ -389,7 +404,7 @@ template<class T=ublas::matrix<double> >
 bool isnan(const T& mat)
 {
 	typedef typename underlying_value_type<T>::value_type real_type;
-	
+
 	using fkt = std::function<bool(real_type)>;
 	fkt stdisnan = (bool(*)(real_type))std::isnan;
 	is_nan_or_inf_impl<T, fkt> _isnan(stdisnan);
@@ -400,7 +415,7 @@ template<class T=ublas::matrix<double> >
 bool isinf(const T& mat)
 {
 	typedef typename underlying_value_type<T>::value_type real_type;
-	
+
 	using fkt = std::function<bool(real_type)>;
 	fkt stdisinf = (bool(*)(real_type))std::isinf;
 	is_nan_or_inf_impl<T, fkt> _isinf(stdisinf);
@@ -411,7 +426,7 @@ template<class T=ublas::matrix<double> >
 bool is_nan_or_inf(const T& mat)
 {
 	typedef typename underlying_value_type<T>::value_type real_type;
-	
+
 	using fkt = std::function<bool(real_type)>;
 	fkt stdisnaninf = [](real_type d)->bool { return std::isnan(d) || std::isinf(d); };
 	is_nan_or_inf_impl<T, fkt> _isnaninf(stdisnaninf);
