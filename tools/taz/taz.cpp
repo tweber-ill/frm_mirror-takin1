@@ -22,6 +22,7 @@
 #include "helper/lattice.h"
 #include "helper/spec_char.h"
 #include "helper/string.h"
+#include "helper/flags.h"
 #include "helper/xml.h"
 #include "helper/log.h"
 

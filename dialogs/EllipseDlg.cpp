@@ -6,6 +6,7 @@
 
 #include "EllipseDlg.h"
 #include "../helper/spec_char.h"
+#include "../helper/flags.h"
 
 #include <qwt_picker_machine.h>
 #include <future>

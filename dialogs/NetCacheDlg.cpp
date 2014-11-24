@@ -3,8 +3,10 @@
  * @author Tobias Weber
  * @date 21-oct-2014
  */
- 
+
 #include "NetCacheDlg.h"
+#include "../helper/string.h"
+#include "../helper/flags.h"
 #include <chrono>
 #include <iostream>
 
@@ -23,7 +25,7 @@ NetCacheDlg::NetCacheDlg(QWidget* pParent, QSettings* pSett)
 	tableCache->setHorizontalHeaderItem(0, new QTableWidgetItem("Value"));
 	tableCache->setHorizontalHeaderItem(1, new QTableWidgetItem("Time Stamp"));
 	tableCache->setHorizontalHeaderItem(2, new QTableWidgetItem("Age"));
-	
+
 	QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(UpdateTimer()));
 	m_timer.start(s_iTimer);
 }
@@ -45,7 +47,7 @@ void NetCacheDlg::showEvent(QShowEvent *pEvt)
 {
 	if(m_pSettings && m_pSettings->contains("net_cache/geo"))
 		restoreGeometry(m_pSettings->value("net_cache/geo").toByteArray());
-	
+
 	m_timer.start(s_iTimer);
 }
 
@@ -53,12 +55,12 @@ void NetCacheDlg::accept()
 {
 	if(m_pSettings)
 		m_pSettings->setValue("net_cache/geo", saveGeometry());
-		
+
 	QDialog::accept();
 }
 
 void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
-{	
+{
 	int iRow = 0;
 	QTableWidgetItem *pItem = 0;
 	QString qstrKey = strKey.c_str();
@@ -73,7 +75,7 @@ void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 			break;
 		}
 	}
-	
+
 	if(pItem) 	// update items
 	{
 		tableCache->item(iRow, 0)->setText(qstrVal);
@@ -88,7 +90,7 @@ void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 		tableCache->setItem(iRow, 1, new QTableWidgetItem(qstrTimestamp));
 		tableCache->setItem(iRow, 2, new QTableWidgetItem());
 	}
-	
+
 	UpdateAge(iRow);
 }
 
@@ -98,7 +100,7 @@ void NetCacheDlg::UpdateAll(const t_mapCacheVal& map)
 	{
 		const std::string& strKey = pair.first;
 		const CacheVal& val = pair.second;
-		
+
 		UpdateValue(strKey, val);
 	}
 }
@@ -110,20 +112,20 @@ void NetCacheDlg::UpdateAge(int iRow)
 	{
 		for(int iCurRow=0; iCurRow<tableCache->rowCount(); ++iCurRow)
 			UpdateAge(iCurRow);
-			
+
 		return;
 	}
-	
+
 	QTableWidgetItem *pItemTimestamp = tableCache->item(iRow, 1);
 	QTableWidgetItem *pItem = tableCache->item(iRow, 2);
 	if(!pItemTimestamp || !pItem) return;
-	
-	double dTimestamp = std::stod(pItemTimestamp->text().toStdString());
+
+	double dTimestamp = str_to_var<double, std::string>(pItemTimestamp->text().toStdString());
 	double dNow = std::chrono::system_clock::now().time_since_epoch().count();
 	dNow *= double(std::chrono::system_clock::period::num) / double(std::chrono::system_clock::period::den);
 	double dAgeS = dNow - dTimestamp;
 	//std::cout << strKey << " = " << val.strVal << " (age: " << dAge << "s)" << std::endl;
-	
+
 	int iAgeS = int(dAgeS);
 	int iAgeM = 0;
 	int iAgeH = 0;
@@ -144,7 +146,7 @@ void NetCacheDlg::UpdateAge(int iRow)
 		iAgeD = iAgeH / 24;
 		iAgeH = iAgeH  % 24;
 	}
-	
+
 	bool bHadPrev = 0;
 	std::string strAge;
 	if(iAgeD || bHadPrev) { strAge += std::to_string(iAgeD) + "d "; bHadPrev = 1; }

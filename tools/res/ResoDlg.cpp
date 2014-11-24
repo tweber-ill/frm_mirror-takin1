@@ -14,6 +14,7 @@
 
 //#include "../../main/settings.h"
 #include "helper/string.h"
+#include "helper/flags.h"
 #include "helper/spec_char.h"
 #include "helper/misc.h"
 #include "helper/math.h"

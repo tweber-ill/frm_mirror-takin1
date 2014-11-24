@@ -7,7 +7,8 @@
 
 #include "plotgl.h"
 #include <GL/glu.h>
-#include "../helper/math.h"
+#include "math.h"
+#include "flags.h"
 #include <time.h>
 #include <iostream>
 #include <sstream>
