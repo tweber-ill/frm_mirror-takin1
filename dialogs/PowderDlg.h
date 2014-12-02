@@ -11,11 +11,16 @@
 #include <QtCore/QSettings>
 #include "../ui/ui_powder.h"
 
+#include "../helper/spacegroup.h"
+
 
 class PowderDlg : public QDialog, Ui::PowderDlg
 { Q_OBJECT
 	protected:
 		QSettings *m_pSettings = 0;
+
+		CrystalSystem m_crystalsys = CRYS_NOT_SET;
+		const t_mapSpaceGroups* m_pmapSpaceGroups;
 
 	public:	
 		PowderDlg(QWidget* pParent=0, QSettings* pSett=0);
@@ -24,9 +29,15 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 	protected slots:
 		void CalcPeaks();
 		
+		void CheckCrystalType();
+		void SpaceGroupChanged();
+		void RepopulateSpaceGroups();
+		
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);
 		virtual void accept();
+		
+		const SpaceGroup* GetCurSpaceGroup() const;
 };
 
 #endif

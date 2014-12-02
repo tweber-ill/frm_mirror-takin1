@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <boost/algorithm/string.hpp>
 
 
 struct PowderLine
@@ -28,7 +29,8 @@ struct PowderLine
 
 
 PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett) 
-			: QDialog(pParent), m_pSettings(pSett)
+			: QDialog(pParent), m_pSettings(pSett), 
+				m_pmapSpaceGroups(get_space_groups())
 {
 	this->setupUi(this);
 	tablePowderLines->horizontalHeader()->setVisible(true);
@@ -36,14 +38,19 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	tablePowderLines->setColumnWidth(1, 75);
 	tablePowderLines->setColumnWidth(2, 250);
 	
-	std::vector<QLineEdit*> vecEdits = {editA, editB, editC, 
-									editAlpha, editBeta, editGamma,
-									editLam};
-	for(QLineEdit* pEdit : vecEdits)
+	std::vector<QLineEdit*> vecEditsUC = {editA, editB, editC, editAlpha, editBeta, editGamma};
+	for(QLineEdit* pEdit : vecEditsUC)
+	{
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CheckCrystalType()));
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
+	}
+	QObject::connect(editLam, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
 	QObject::connect(spinOrder, SIGNAL(valueChanged(int)), this, SLOT(CalcPeaks()));
-	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(CalcPeaks()));
+
+	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
+	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SpaceGroupChanged()));
 	
+	RepopulateSpaceGroups();
 	CalcPeaks();
 }
 
@@ -68,6 +75,7 @@ void PowderDlg::CalcPeaks()
 	Lattice<double> lattice(dA, dB, dC, dAlpha, dBeta, dGamma);
 	Lattice<double> recip = lattice.GetRecip();
 	
+	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 	
 	std::map<std::string, PowderLine> mapPeaks;
 
@@ -75,7 +83,8 @@ void PowderDlg::CalcPeaks()
 		for(int ik=0; ik<iOrder; ++ik)
 			for(int il=0; il<iOrder; ++il)
 			{
-				if(ih==0 && ik==0 && il ==0) continue;
+				if(ih==0 && ik==0 && il==0) continue;
+				if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il)) continue;
 
 				ublas::vector<double> vecBragg = recip.GetPos(ih, ik, il);
 				double dQ = ublas::norm_2(vecBragg);
@@ -132,6 +141,159 @@ void PowderDlg::CalcPeaks()
 		tablePowderLines->item(iRow, 2)->setText(vecPowderLines[iRow]->strPeaks.c_str());
 	}
 }
+
+
+const SpaceGroup* PowderDlg::GetCurSpaceGroup() const
+{
+	SpaceGroup *pSpaceGroup = 0;
+	int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
+	if(iSpaceGroupIdx != 0)
+		pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
+	return pSpaceGroup;
+}
+
+void PowderDlg::SpaceGroupChanged()
+{
+	m_crystalsys = CrystalSystem::CRYS_NOT_SET;
+	const char* pcCryTy = "<not set>";
+	
+	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
+	if(pSpaceGroup)
+	{
+		m_crystalsys = pSpaceGroup->GetCrystalSystem();
+		pcCryTy = pSpaceGroup->GetCrystalSystemName();
+	}
+	editCrystalSystem->setText(pcCryTy);
+	
+	CheckCrystalType();
+	CalcPeaks();
+}
+
+void PowderDlg::RepopulateSpaceGroups()
+{
+	if(!m_pmapSpaceGroups)
+		return;
+
+	for(int iCnt=comboSpaceGroups->count()-1; iCnt>0; --iCnt)
+		comboSpaceGroups->removeItem(iCnt);
+
+	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
+
+	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
+	{
+		const std::string& strName = pair.second.GetName();
+
+		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
+		if(strFilter!="" &&
+				!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
+									t_striterrange(strFilter.begin(), strFilter.end())))
+			continue;
+
+		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
+									strName.c_str(),
+									QVariant::fromValue((void*)&pair.second));
+	}
+}
+
+void PowderDlg::CheckCrystalType()
+{
+	switch(m_crystalsys)
+	{
+		case CRYS_CUBIC:
+			editA->setEnabled(1);
+			editB->setEnabled(0);
+			editC->setEnabled(0);
+			editAlpha->setEnabled(0);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editB->setText(editA->text());
+			editC->setText(editA->text());
+			editAlpha->setText("90");
+			editBeta->setText("90");
+			editGamma->setText("90");
+			break;
+			
+		case CRYS_HEXAGONAL:
+			editA->setEnabled(1);
+			editB->setEnabled(0);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(0);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editB->setText(editA->text());
+			editAlpha->setText("90");
+			editBeta->setText("90");
+			editGamma->setText("120");
+			break;
+			
+		case CRYS_MONOCLINIC:
+			editA->setEnabled(1);
+			editB->setEnabled(1);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(1);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editBeta->setText("90");
+			editGamma->setText("90");
+			break;
+			
+		case CRYS_ORTHORHOMBIC:
+			editA->setEnabled(1);
+			editB->setEnabled(1);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(0);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editAlpha->setText("90");
+			editBeta->setText("90");
+			editGamma->setText("90");
+			break;
+			
+		case CRYS_TETRAGONAL:
+			editA->setEnabled(1);
+			editB->setEnabled(0);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(0);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editB->setText(editA->text());
+			editAlpha->setText("90");
+			editBeta->setText("90");
+			editGamma->setText("90");
+			break;
+
+		case CRYS_TRIGONAL:
+			editA->setEnabled(1);
+			editB->setEnabled(0);
+			editC->setEnabled(0);
+			editAlpha->setEnabled(1);
+			editBeta->setEnabled(0);
+			editGamma->setEnabled(0);
+
+			editB->setText(editA->text());
+			editC->setText(editA->text());
+			editBeta->setText(editAlpha->text());
+			editGamma->setText(editAlpha->text());
+			break;
+
+		case CRYS_TRICLINIC:
+		case CRYS_NOT_SET:
+		default:
+			editA->setEnabled(1);
+			editB->setEnabled(1);
+			editC->setEnabled(1);
+			editAlpha->setEnabled(1);
+			editBeta->setEnabled(1);
+			editGamma->setEnabled(1);
+			break;
+	}
+}
+
 
 void PowderDlg::accept()
 {
