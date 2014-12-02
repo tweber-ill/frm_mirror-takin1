@@ -29,7 +29,7 @@
 #define DEFAULT_MSG_TIMEOUT 4000
 const std::string TazDlg::s_strTitle = "Takin";
 
-static QString dtoqstr(double dVal, unsigned int iPrec=3)
+static QString dtoqstr(double dVal, unsigned int iPrec=8)
 {
 	std::ostringstream ostr;
 	ostr.precision(iPrec);
@@ -930,7 +930,7 @@ void TazDlg::CalcPeaks()
 		double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
 
 		std::wostringstream ostrSample;
-		ostrSample.precision(4);
+		ostrSample.precision(8);
 		ostrSample << "Sample";
 		ostrSample << " - ";
 		ostrSample << "Unit Cell Vol.: ";
