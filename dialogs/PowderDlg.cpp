@@ -37,6 +37,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 {
 	this->setupUi(this);
 	tablePowderLines->horizontalHeader()->setVisible(true);
+	tablePowderLines->verticalHeader()->setDefaultSectionSize(tablePowderLines->verticalHeader()->defaultSectionSize()*1.4);
 	tablePowderLines->setColumnWidth(0, 75);
 	tablePowderLines->setColumnWidth(1, 75);
 	tablePowderLines->setColumnWidth(2, 250);
@@ -87,9 +88,9 @@ void PowderDlg::CalcPeaks()
 	
 	std::map<std::string, PowderLine> mapPeaks;
 
-	for(int ih=0; ih<iOrder; ++ih)
-		for(int ik=0; ik<iOrder; ++ik)
-			for(int il=0; il<iOrder; ++il)
+	for(int ih=-iOrder; ih<iOrder; ++ih)
+		for(int ik=-iOrder; ik<iOrder; ++ik)
+			for(int il=-iOrder; il<iOrder; ++il)
 			{
 				if(ih==0 && ik==0 && il==0) continue;
 				if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il)) continue;
@@ -108,7 +109,7 @@ void PowderDlg::CalcPeaks()
 				ostrAngle << (dAngle/M_PI*180.);
 
 				std::ostringstream ostrPeak;
-				ostrPeak << "(" << ih << " " << ik << " " << il << ") ";
+				ostrPeak << "(" << ih << "," << ik << "," << il << ") ";
 
 				mapPeaks[ostrAngle.str()].strPeaks += ostrPeak.str();
 				mapPeaks[ostrAngle.str()].dAngle = dAngle;
