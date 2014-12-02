@@ -12,7 +12,6 @@
 #include <iomanip>
 #include <map>
 
-//#include "../../main/settings.h"
 #include "helper/string.h"
 #include "helper/flags.h"
 #include "helper/spec_char.h"

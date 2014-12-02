@@ -15,6 +15,9 @@
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 
+#include <QtGui/QFileDialog>
+#include <QtGui/QMessageBox>
+
 
 struct PowderLine
 {
@@ -50,6 +53,10 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SpaceGroupChanged()));
 	
+	connect(btnSave, SIGNAL(clicked()), this, SLOT(SavePowder()));
+	connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadPowder()));	
+	
+	m_bDontCalc = 0;
 	RepopulateSpaceGroups();
 	CalcPeaks();
 }
@@ -60,6 +67,7 @@ PowderDlg::~PowderDlg()
 
 void PowderDlg::CalcPeaks()
 {
+	if(m_bDontCalc) return;
 	static const unsigned int iPrec = 8;
 	
 	const double dA = editA->text().toDouble();
@@ -293,6 +301,114 @@ void PowderDlg::CheckCrystalType()
 			break;
 	}
 }
+
+
+void PowderDlg::SavePowder()
+{
+	const std::string strXmlRoot("taz/");
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		m_pSettings->value("powder/last_dir", ".").toString();
+	QString qstrFile = QFileDialog::getSaveFileName(this,
+								"Save powder configuration",
+								strDirLast,
+								"TAZ files (*.taz *.TAZ)");
+
+	if(qstrFile == "")
+		return;
+
+	std::string strFile = qstrFile.toStdString();
+	std::string strDir = get_dir(strFile);
+
+	std::map<std::string, std::string> mapConf;
+	Save(mapConf, strXmlRoot);
+
+	bool bOk = Xml::SaveMap(strFile.c_str(), mapConf);
+	if(!bOk)
+		QMessageBox::critical(this, "Error", "Could not save powder file.");
+
+	if(bOk && m_pSettings)
+		m_pSettings->setValue("powder/last_dir", QString(strDir.c_str()));
+}
+
+void PowderDlg::LoadPowder()
+{
+	const std::string strXmlRoot("taz/");
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		strDirLast = m_pSettings->value("powder/last_dir", ".").toString();
+	QString qstrFile = QFileDialog::getOpenFileName(this,
+							"Open powder configuration...",
+							strDirLast,
+							"TAZ files (*.taz *.TAZ)");
+	if(qstrFile == "")
+		return;
+
+
+	std::string strFile = qstrFile.toStdString();
+	std::string strDir = get_dir(strFile);
+
+	Xml xml;
+	if(!xml.Load(strFile.c_str()))
+	{
+		QMessageBox::critical(this, "Error", "Could not load powder file.");
+		return;
+	}
+
+	Load(xml, strXmlRoot);
+	if(m_pSettings)
+		m_pSettings->setValue("powder/last_dir", QString(strDir.c_str()));
+
+}
+
+void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
+{
+	mapConf[strXmlRoot + "sample/a"] = editA->text().toStdString();
+	mapConf[strXmlRoot + "sample/b"] = editB->text().toStdString();
+	mapConf[strXmlRoot + "sample/c"] = editC->text().toStdString();
+	
+	mapConf[strXmlRoot + "sample/alpha"] = editAlpha->text().toStdString();
+	mapConf[strXmlRoot + "sample/beta"] = editBeta->text().toStdString();
+	mapConf[strXmlRoot + "sample/gamma"] = editGamma->text().toStdString();
+	
+	mapConf[strXmlRoot + "powder/maxhkl"] = var_to_str<int>(spinOrder->value());
+	mapConf[strXmlRoot + "powder/lambda"] = editLam->text().toStdString();
+
+	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
+}
+
+void PowderDlg::Load(Xml& xml, const std::string& strXmlRoot)
+{
+	m_bDontCalc = 1;
+	bool bOk=0;
+	
+	editA->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/a").c_str(), 5., &bOk)).c_str());
+	editB->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/b").c_str(), 5., &bOk)).c_str());
+	editC->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/c").c_str(), 5., &bOk)).c_str());
+
+	editAlpha->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/alpha").c_str(), 90., &bOk)).c_str());
+	editBeta->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/beta").c_str(), 90., &bOk)).c_str());
+	editGamma->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/gamma").c_str(), 90., &bOk)).c_str());
+
+	spinOrder->setValue(xml.Query<int>((strXmlRoot + "powder/maxhkl").c_str(), 10, &bOk));
+	editC->setText(std::to_string(xml.Query<double>((strXmlRoot + "powder/lambda").c_str(), 5., &bOk)).c_str());
+	
+	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
+	trim(strSpaceGroup);
+	if(bOk)
+	{
+		editSpaceGroupsFilter->clear();
+		int iSGIdx = comboSpaceGroups->findText(strSpaceGroup.c_str());
+		if(iSGIdx >= 0)
+			comboSpaceGroups->setCurrentIndex(iSGIdx);
+	}
+
+	m_bDontCalc = 0;
+	CalcPeaks();
+}
+
 
 
 void PowderDlg::accept()

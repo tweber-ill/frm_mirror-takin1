@@ -11,12 +11,16 @@
 #include <QtCore/QSettings>
 #include "../ui/ui_powder.h"
 
+#include <map>
+#include <string>
 #include "../helper/spacegroup.h"
+#include "../helper/xml.h"
 
 
 class PowderDlg : public QDialog, Ui::PowderDlg
 { Q_OBJECT
 	protected:
+		bool m_bDontCalc = 1;
 		QSettings *m_pSettings = 0;
 
 		CrystalSystem m_crystalsys = CRYS_NOT_SET;
@@ -33,11 +37,17 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		void SpaceGroupChanged();
 		void RepopulateSpaceGroups();
 		
+		void SavePowder();
+		void LoadPowder();
+		
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);
 		virtual void accept();
 		
 		const SpaceGroup* GetCurSpaceGroup() const;
+		
+		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
+		void Load(Xml& xml, const std::string& strXmlRoot);
 };
 
 #endif
