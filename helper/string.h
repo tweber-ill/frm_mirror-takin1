@@ -191,7 +191,7 @@ split_first(const t_str& str, const t_str& strSep, bool bTrim=0)
 template<typename T, class t_str=std::string, bool bTIsStr=0>
 struct _str_to_var_impl
 {
-	inline T operator()(const t_str& str) const { throw Err("No implementation for str_to_var"); }
+	inline T operator()(const t_str&) const { throw Err("No implementation for str_to_var"); }
 };
 
 template<typename T, class t_str>
