@@ -73,6 +73,8 @@
     <File Name="dialogs/RealParamDlg.cpp"/>
     <File Name="dialogs/NetCacheDlg.cpp"/>
     <File Name="dialogs/NetCacheDlg.h"/>
+    <File Name="dialogs/PowderDlg.cpp"/>
+    <File Name="dialogs/PowderDlg.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
     <File Name="helper/spec_char.cpp"/>

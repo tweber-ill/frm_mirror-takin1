@@ -13,7 +13,7 @@
 
 // normal popen is not thread-safe on all systems
 void *my_popen(const char* pcCmd, const char* pcType="w");
-
+int my_pclose(void*);
 
 #ifdef __CYGWIN__
 	#include "string.h"

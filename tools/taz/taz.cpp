@@ -349,6 +349,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pNeutronProps = new QAction(this);
 	pNeutronProps->setText("Neutron Properties...");
 	pMenuCalc->addAction(pNeutronProps);
+	
+	QAction *pPowder = new QAction(this);
+	pPowder->setText("Powder Lines...");
+	pMenuCalc->addAction(pPowder);
 
 	QAction *pSpuri = new QAction(this);
 	pSpuri->setText("Spurious Scattering...");
@@ -439,6 +443,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pNeutronProps, SIGNAL(triggered()), this, SLOT(ShowNeutronDlg()));
 	QObject::connect(m_pGoto, SIGNAL(triggered()), this, SLOT(ShowGotoDlg()));
+	QObject::connect(pPowder, SIGNAL(triggered()), this, SLOT(ShowPowderDlg()));
 	QObject::connect(pSpuri, SIGNAL(triggered()), this, SLOT(ShowSpurions()));
 
 	QObject::connect(pConn, SIGNAL(triggered()), this, SLOT(ShowConnectDlg()));
@@ -529,6 +534,7 @@ TazDlg::~TazDlg()
 	if(m_pSpuri) { delete m_pSpuri; m_pSpuri = 0; }
 	if(m_pNeutronDlg) { delete m_pNeutronDlg; m_pNeutronDlg = 0; }
 	if(m_pGotoDlg) { delete m_pGotoDlg; m_pGotoDlg = 0; }
+	if(m_pPowderDlg) { delete m_pPowderDlg; m_pPowderDlg = 0; }
 	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
 	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
 	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
@@ -553,6 +559,14 @@ void TazDlg::ShowGotoDlg()
 	m_pGotoDlg->activateWindow();
 }
 
+void TazDlg::ShowPowderDlg()
+{
+	if(!m_pPowderDlg)
+		m_pPowderDlg = new PowderDlg(this, &m_settings);
+		
+	m_pPowderDlg->show();
+	m_pPowderDlg->activateWindow();
+}
 
 void TazDlg::UpdateDs()
 {
