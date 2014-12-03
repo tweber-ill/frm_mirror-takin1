@@ -43,7 +43,7 @@ LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 
 
-OBJ_COMMON = obj/log.o obj/linalg.o obj/linalg2.o obj/string.o obj/rand.o \
+OBJ_COMMON = obj/log.o obj/linalg2.o obj/string.o obj/rand.o \
 	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/recip3d.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
@@ -105,8 +105,6 @@ obj/xml.o: helper/xml.cpp helper/xml.h
 obj/log.o: helper/log.cpp helper/log.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tcp.o: helper/tcp.cpp helper/tcp.h
-	${CC} ${FLAGS} -c -o $@ $<
-obj/linalg.o: helper/linalg.cpp helper/linalg.h helper/geo.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/linalg2.o: helper/linalg2.cpp helper/linalg2.h helper/geo.h
 	${CC} ${FLAGS} -c -o $@ $<

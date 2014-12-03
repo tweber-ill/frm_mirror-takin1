@@ -96,7 +96,6 @@
     <File Name="helper/xml.cpp"/>
     <File Name="helper/misc.h"/>
     <File Name="helper/bz.h"/>
-    <File Name="helper/linalg.cpp"/>
     <File Name="helper/plotgl.h"/>
     <File Name="helper/spacegroup.cpp"/>
     <File Name="helper/spacegroup.h"/>
@@ -108,6 +107,7 @@
     <File Name="helper/log.cpp"/>
     <File Name="helper/xml.h"/>
     <File Name="helper/traits.h"/>
+    <File Name="helper/quat.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>

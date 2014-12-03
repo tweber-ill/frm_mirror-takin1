@@ -18,12 +18,14 @@ int main()
 		make_vec({1.4, 2.1, 3.6}),
 	};
 
+	std::vector<double> vecProb = { 1./5., 1./5., 1./5., 1./5., 1./5.};
+
 	std::cout << "Measured values:\n";
 	std::copy(vals.begin(), vals.end(), std::ostream_iterator<decltype(vals[0])>(std::cout,"\n"));
 	std::cout << std::endl;
 
-	ublas::matrix<double> mat = covariance(vals);
-	std::cout << "Covarance:\n" << mat << std::endl;
+	ublas::matrix<double> mat = covariance(vals, &vecProb);
+	std::cout << "Covariance matrix:\n" << mat << std::endl;
 
 	return 0;
 }

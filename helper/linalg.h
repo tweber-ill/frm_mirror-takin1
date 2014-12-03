@@ -5,8 +5,8 @@
  * @date: 30-apr-2013
  */
 
-#ifndef __MIEZE_LINALG__
-#define __MIEZE_LINALG__
+#ifndef __TAZ_LINALG_H__
+#define __TAZ_LINALG_H__
 
 #include "flags.h"
 #include "exception.h"
@@ -22,11 +22,13 @@
 #include <boost/numeric/ublas/lu.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/exception.hpp>
-#include <boost/math/quaternion.hpp>
 namespace ublas = boost::numeric::ublas;
-namespace math = boost::math;
+
+//#include <boost/math/quaternion.hpp>
+//namespace math = boost::math;
 
 #include <initializer_list>
+
 
 
 template<class matrix_type=ublas::matrix<double> >
@@ -680,129 +682,6 @@ matrix_type column_matrix(const container_type& vecs)
 	return row_col_matrix<matrix_type, vec_type, container_type, false>(vecs);
 }
 
-
-// algo from:
-// http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q55
-template<typename T=double>
-math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
-{
-	T tr = trace(rot) + 1.;
-	T x,y,z,w;
-
-	if(tr > std::numeric_limits<T>::epsilon())
-	{
-		T s = std::sqrt(tr) * 2.;
-		x = (rot(2,1) - rot(1,2)) / s;
-		y = (rot(0,2) - rot(2,0)) / s;
-		z = (rot(1,0) - rot(0,1)) / s;
-		w = s/4.;
-	}
-	else
-	{
-		if (rot(0,0) > rot(1,1) && rot(0,0) > rot(2,2))
-		{
-			T s = std::sqrt(1. + rot(0,0) - rot(1,1) - rot(2,2)) * 2.;
-			x = s/4.;
-			y = (rot(1,0) + rot(0,1)) / s;
-			z = (rot(0,2) + rot(2,0)) / s;
-			w = (rot(2,1) - rot(1,2)) / s;
-		}
-		else if(rot(1,1) > rot(2,2))
-		{
-			T s = std::sqrt(1. + rot(1,1) - rot(0,0) - rot(2,2)) * 2.;
-			x = (rot(1,0) + rot(0,1)) / s;
-			y = s/4.;
-			z = (rot(2,1) + rot(1,2)) / s;
-			w = (rot(0,2) - rot(2,0)) / s;
-		}
-		else
-		{
-			T s = std::sqrt(1. + rot(2,2) - rot(0,0) - rot(1,1)) * 2.;
-			x = (rot(0,2) + rot(2,0)) / s;
-			y = (rot(2,1) + rot(1,2)) / s;
-			z = s/4.;
-			w = (rot(1,0) - rot(0,1)) / s;
-		}
-	}
-
-	T n = std::sqrt(w*w + x*x + y*y + z*z);
-	return math::quaternion<T>(w,x,y,z)/n;
-}
-
-// algo from:
-// http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
-// http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche52.html
-template<typename T=double>
-ublas::matrix<T> quat_to_rot3(const math::quaternion<T>& quat)
-{
-	ublas::matrix<T> mat(3,3);
-	T w = quat.R_component_1();
-	T x = quat.R_component_2();
-	T y = quat.R_component_3();
-	T z = quat.R_component_4();
-
-	mat(0,0) = 1. - 2.*(y*y + z*z);
-	mat(1,1) = 1. - 2.*(x*x + z*z);
-	mat(2,2) = 1. - 2.*(x*x + y*y);
-
-	mat(0,1) = 2.*(x*y - z*w);
-	mat(1,0) = 2.*(x*y + z*w);
-	mat(0,2) = 2.*(x*z + y*w);
-	mat(2,0) = 2.*(x*z - y*w);
-	mat(1,2) = 2.*(y*z - x*w);
-	mat(2,1) = 2.*(y*z + x*w);
-	//mat = ublas::trans(mat);
-
-	return mat;
-}
-
-
-template<typename T=double>
-std::vector<T> quat_to_euler(const math::quaternion<T>& quat)
-{
-	T q[] = {quat.R_component_1(),
-			quat.R_component_2(),
-			quat.R_component_3(),
-			quat.R_component_4()};
-
-	// formulas from:
-	// http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-	T phi = std::atan2(2.*(q[0]*q[1] + q[2]*q[3]), 1.-2.*(q[1]*q[1] + q[2]*q[2]));
-	T theta = std::asin(2.*(q[0]*q[2] - q[3]*q[1]));
-	T psi = std::atan2(2.*(q[0]*q[3] + q[1]*q[2]), 1.-2.*(q[2]*q[2] + q[3]*q[3]));
-
-	std::vector<T> vec = { phi, theta, psi };
-	return vec;
-}
-
-template<typename T=double>
-std::vector<T> rotation_angle(const ublas::matrix<T>& rot)
-{
-	std::vector<T> vecResult;
-
-	if(rot.size1()!=rot.size2())
-		return vecResult;
-	if(rot.size1()<2)
-		return vecResult;
-
-	if(rot.size2()==2)
-	{
-		// rot = ( c -s )
-		//       ( s  c )
-
-		T angle = std::atan2(rot(1,0), rot(0,0));
-		vecResult.push_back(angle);
-	}
-	else if(rot.size2()==3)
-	{
-		math::quaternion<T> quat = rot3_to_quat(rot);
-		vecResult = quat_to_euler(quat);
-	}
-
-	return vecResult;
-}
-
-
 template<typename vector_type = ublas::vector<double> >
 vector_type cross_3(const vector_type& vec0, const vector_type& vec1)
 {
@@ -934,16 +813,16 @@ typename vec_type::value_type vec_angle(const vec_type& vec)
 // -----------------------------------------------------------------------------
 template<typename T> void set_eps_0(T& d);
 
-template<typename T, bool bScalar>
+template<typename T, bool bScalar=std::is_scalar<T>::value>
 struct set_eps_0_impl
 {
-	void operator()(T&) { throw Err("No implementation of set_eps_0!"); }
+	void operator()(T&) const { throw Err("No implementation of set_eps_0!"); }
 };
 
 template<typename real_type>
 struct set_eps_0_impl<real_type, 1>
 {
-	void operator()(real_type& d)
+	void operator()(real_type& d) const
 	{
 		if(std::fabs(d) < std::numeric_limits<real_type>::epsilon())
 			d = real_type(0);
@@ -953,7 +832,7 @@ struct set_eps_0_impl<real_type, 1>
 template<typename vec_type>
 struct set_eps_0_impl<vec_type, 0>
 {
-	void operator()(vec_type& vec)
+	void operator()(vec_type& vec) const
 	{
 		typedef typename vec_type::value_type real_type;
 
@@ -1010,38 +889,51 @@ typename vec_type::value_type vec_angle(const vec_type& vec0,
 	throw Err("vec_angle only implemented for size == 2 and size == 3.");
 }
 
+
+template<class T, LinalgType ty=get_linalg_type<T>::value>
+struct vec_angle_unsigned_impl
+{
+	void operator()(const T&, const T&) const { throw Err("No implementation of vec_angle_unsigned!"); }
+};
+
 // unsigned angle between two vectors
+template<class T>
+struct vec_angle_unsigned_impl<T, LinalgType::VECTOR>
+{
+	typename T::value_type operator()(const T& q1, const T& q2) const
+	{
+		typedef typename T::value_type REAL;
+
+		if(q1.size() != q2.size())
+			return REAL();
+
+		REAL dot = REAL();
+		REAL len1 = REAL();
+		REAL len2 = REAL();
+		for(unsigned int i=0; i<q1.size(); ++i)
+		{
+			dot += q1[i]*q2[i];
+
+			len1 += q1[i]*q1[i];
+			len2 += q2[i]*q2[i];
+		}
+
+		len1 = std::sqrt(len1);
+		len2 = std::sqrt(len2);
+
+		dot /= len1;
+		dot /= len2;
+
+		return std::acos(dot);
+	}
+};
+
 template<class T>
 typename T::value_type vec_angle_unsigned(const T& q1, const T& q2)
 {
-	typedef typename T::value_type REAL;
-
-	if(q1.size() != q2.size())
-		return REAL();
-
-	REAL dot = REAL();
-	REAL len1 = REAL();
-	REAL len2 = REAL();
-	for(unsigned int i=0; i<q1.size(); ++i)
-	{
-		dot += q1[i]*q2[i];
-
-		len1 += q1[i]*q1[i];
-		len2 += q2[i]*q2[i];
-	}
-
-	len1 = std::sqrt(len1);
-	len2 = std::sqrt(len2);
-
-	dot /= len1;
-	dot /= len2;
-
-	return std::acos(dot);
+	return vec_angle_unsigned_impl<T>(q1, q2);
 }
 
-template<>
-double vec_angle_unsigned(const math::quaternion<double>& q1,
-				const math::quaternion<double>& q2);
 
 // see: http://run.usc.edu/cs520-s12/assign2/p245-shoemake.pdf
 template<class T>
@@ -1049,7 +941,7 @@ T slerp(const T& q1, const T& q2, typename T::value_type t)
 {
 	typedef typename T::value_type REAL;
 
-	REAL angle = vec_angle_unsigned<T, REAL>(q1, q2);
+	REAL angle = vec_angle_unsigned<T>(q1, q2);
 
 	T q = std::sin((1.-t)*angle)/std::sin(angle) * q1 +
 			std::sin(t*angle)/std::sin(angle) * q2;
@@ -1062,6 +954,7 @@ T slerp(const T& q1, const T& q2, typename T::value_type t)
 // --------------------------------------------------------------------------------
 
 
+// see e.g.: http://www.itl.nist.gov/div898/handbook/pmc/section5/pmc541.htm
 template<typename T=double>
 ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 							const std::vector<T>* pProb = 0)
@@ -1086,14 +979,15 @@ ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 		T tprob = 1.;
 
 		t_innervec vec = vecVals[i] - vecMean;
+		ublas::matrix<T> matOuter = ublas::outer_prod(vec, vec);
+		
 		if(pProb)
 		{
 			tprob = (*pProb)[i];
-			vec *= std::sqrt(tprob);
-			tSum += tprob;
+			matOuter *= tprob;
 		}
 
-		matCov += ublas::outer_prod(vec, vec);
+		matCov += matOuter;
 		tSum += tprob;
 	}
 	matCov /= tSum;

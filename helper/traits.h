@@ -37,6 +37,7 @@ struct underlying_value_type<T, 0>
 #include <initializer_list>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/math/quaternion.hpp>
 
 typedef std::integral_constant<int, 0>	dim_0d_type;
 typedef std::integral_constant<int, 1>	dim_1d_type;
@@ -51,6 +52,23 @@ template<class... PARAMS> struct get_type_dim<boost::numeric::ublas::vector<PARA
 template<class... PARAMS> struct get_type_dim<std::initializer_list<PARAMS...>> : dim_1d_type {};
 
 template<class... PARAMS> struct get_type_dim<boost::numeric::ublas::matrix<PARAMS...>> : dim_2d_type {};
+
+
+
+enum class LinalgType : short
+{
+	UNKNOWN,
+	VECTOR,
+	MATRIX,
+	QUATERNION
+};
+
+template<LinalgType val>  struct linalg_type { static constexpr LinalgType value = val; };
+
+template<class> struct get_linalg_type : linalg_type<LinalgType::UNKNOWN> {};
+template<class... PARAMS> struct get_linalg_type<boost::numeric::ublas::vector<PARAMS...>> : linalg_type<LinalgType::VECTOR> {};
+template<class... PARAMS> struct get_linalg_type<boost::numeric::ublas::matrix<PARAMS...>> : linalg_type<LinalgType::MATRIX> {};
+template<class... PARAMS> struct get_linalg_type<boost::math::quaternion<PARAMS...>> : linalg_type<LinalgType::QUATERNION> {};
 // -----------------------------------------------------------------------------
 
 
