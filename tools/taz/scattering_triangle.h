@@ -87,7 +87,7 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode *m_pNodeKfQ = 0;
 		ScatteringTriangleNode *m_pNodeGq = 0;
 
-		double m_dScaleFactor = 75.;	// pixels per A^-1 for zoom == 1.
+		double m_dScaleFactor = 150.;	// pixels per A^-1 for zoom == 1.
 		double m_dZoom = 1.;
 		double m_dPlaneDistTolerance = 0.01;
 		int m_iMaxPeaks = 7;

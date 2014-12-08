@@ -31,7 +31,7 @@ QRectF ScatteringTriangleNode::boundingRect() const
 	return QRectF(-5., -5., 10., 10.);
 }
 
-void ScatteringTriangleNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void ScatteringTriangleNode::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	painter->drawEllipse(QRectF(-2., -2., 4., 4.));
 }
@@ -73,7 +73,7 @@ QRectF RecipPeak::boundingRect() const
 	return QRectF(-3., -3., 64., 25.);
 }
 
-void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	painter->setBrush(m_color);
 	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
@@ -111,9 +111,9 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_pNodeGq->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
 	m_pNodeKiQ->setPos(0., 0.);
-	m_pNodeKiKf->setPos(50., -100.);
-	m_pNodeKfQ->setPos(100., 0.);
-	m_pNodeGq->setPos(100., 0.);
+	m_pNodeKiKf->setPos(80., -150.);
+	m_pNodeKfQ->setPos(160., 0.);
+	m_pNodeGq->setPos(160., 0.);
 
 	m_scene.addItem(m_pNodeKiQ);
 	m_scene.addItem(m_pNodeKiKf);
@@ -152,7 +152,7 @@ void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 QRectF ScatteringTriangle::boundingRect() const
 {
 	return QRectF(-1000.*m_dZoom, -1000.*m_dZoom,
-					2000.*m_dZoom, 2000.*m_dZoom);
+			2000.*m_dZoom, 2000.*m_dZoom);
 }
 
 void ScatteringTriangle::SetZoom(double dZoom)
@@ -173,14 +173,14 @@ void ScatteringTriangle::SetBZVisible(bool bVisible)
 	this->update();
 }
 
-void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	// Brillouin zone
 	if(m_bShowBZ && m_bz.IsValid())
 	{
 		QPen penOrg = painter->pen();
 		painter->setPen(Qt::lightGray);
-		
+
 		const ublas::vector<double>& vecCentral = m_bz.GetCentralReflex();
 
 		for(const RecipPeak* pPeak : m_vecPeaks)
@@ -734,19 +734,19 @@ void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
 						ublas::vector<double> vecCentral(2);
 						vecCentral[0] = dX;
 						vecCentral[1] = dY;
-						
+
 						//log_debug("Central ", ih, ik, il, ": ", vecCentral);
 						m_bz.SetCentralReflex(vecCentral);
 					}
 					// TODO: check if 2 next neighbours is sufficient for all space groups
-					else if(std::abs(ih-iCent[0])<=2 
-							&& std::abs(ik-iCent[1])<=2 
+					else if(std::abs(ih-iCent[0])<=2
+							&& std::abs(ik-iCent[1])<=2
 							&& std::abs(il-iCent[2])<=2)
 					{
 						ublas::vector<double> vecN(2);
 						vecN[0] = dX;
 						vecN[1] = dY;
-						
+
 						//log_debug("Reflex: ", vecN);
 						m_bz.AddReflex(vecN);
 					}
@@ -940,7 +940,7 @@ void ScatteringTriangleScene::emitAllParams()
 	}
 
 	CheckForSpurions();
-	
+
 	//log_debug("triangle: emitAllParams");
 	emit paramsChanged(parms);
 }

@@ -32,6 +32,7 @@
 #include "dialogs/GotoDlg.h"
 #include "dialogs/PowderDlg.h"
 #include "dialogs/NetCacheDlg.h"
+#include "dialogs/SettingsDlg.h"
 #include "nicos.h"
 
 #include "helper/spacegroup.h"
@@ -68,8 +69,10 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 	protected:
 		static constexpr unsigned int s_iMaxPeaks = 10;
 		static constexpr double s_dPlaneDistTolerance = get_plane_dist_tolerance<double>();
-	
+
 		QSettings m_settings;
+		SettingsDlg *m_pSettingsDlg = 0;
+
 		QLabel* m_pStatusMsg = 0;
 		QLabel* m_pCoordStatusMsg = 0;
 
@@ -156,6 +159,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowNeutronDlg();
 		void ShowGotoDlg();
 		void ShowPowderDlg();
+		void ShowSettingsDlg();
 
 		void ShowSpurions();
 		void spurionInfo(const ElasticSpurion& spuris,

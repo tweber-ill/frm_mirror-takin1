@@ -1,6 +1,6 @@
 /*
  * Special chars
- * @autor tweber
+ * @author tweber
  * @date 09-mar-14
  */
 

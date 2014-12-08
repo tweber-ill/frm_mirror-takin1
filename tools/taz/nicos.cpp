@@ -9,60 +9,55 @@
 #include "helper/log.h"
 
 
-// TODO: move to config file
-static const std::string g_strSampleName = "nicos/sample/samplename";
-static const std::string g_strSampleLattice = "nicos/sample/lattice";
-static const std::string g_strSampleAngles = "nicos/sample/angles";
-static const std::string g_strSampleOrient1 = "nicos/sample/orient1";
-static const std::string g_strSampleOrient2 = "nicos/sample/orient2";
-static const std::string g_strSampleSpacegroup = "nicos/sample/spacegroup";
-static const std::string g_strSamplePsi0 = "nicos/sample/psi0";
-
-static const std::string g_strMonoTheta = "nicos/m2th/value";
-static const std::string g_strMono2Theta = "nicos/m2tt/value";
-static const std::string g_strMonoD = "nicos/mono/dvalue";
-
-static const std::string g_strAnaTheta = "nicos/ath/value";
-static const std::string g_strAna2Theta = "nicos/att/value";
-static const std::string g_strAnaD = "nicos/ana/dvalue";
-
-static const std::string g_strSampleTheta = "nicos/om/value";
-
-// rotation sample stick: sth != om, otherwise: sth == om
-static const std::string g_strSampleTheta_aux = "nicos/sth/value";
-static const std::string g_strSampleTheta_aux_alias = "nicos/sth/alias";
-
-static const std::string g_strSample2Theta = "nicos/phi/value";
-
-
-
-NicosCache::NicosCache()
-	: m_vecKeys({	g_strSampleName,
-					g_strSampleLattice,
-					g_strSampleAngles,
-					g_strSampleOrient1,
-					g_strSampleOrient2,
-					g_strSampleSpacegroup,
-					g_strSamplePsi0,
-
-					g_strMonoD,
-					//g_strMonoTheta,
-					g_strMono2Theta,
-
-					g_strAnaD,
-					//g_strAnaTheta,
-					g_strAna2Theta,
-
-					g_strSampleTheta,
-					g_strSample2Theta,
-
-					g_strSampleTheta_aux,
-					g_strSampleTheta_aux_alias,
-					
-					// misc stuff
-					"logbook/remark",
-			})
+NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 {
+	std::vector<std::pair<std::string, std::string*>> vecStrings =
+	{
+		{"sample_name", &m_strSampleName},
+		{"lattice", &m_strSampleLattice},
+		{"angles", &m_strSampleAngles},
+		{"orient1", &m_strSampleOrient1},
+		{"orient2", &m_strSampleOrient2},
+		{"spacegroup", &m_strSampleSpacegroup},
+		{"psi0", &m_strSamplePsi0},
+		{"stheta", &m_strSampleTheta},
+		{"s2theta", &m_strSample2Theta},
+		{"mtheta", &m_strMonoTheta},
+		{"m2theta", &m_strMono2Theta},
+		{"mono_d", &m_strMonoD},
+		{"atheta", &m_strAnaTheta},
+		{"a2theta", &m_strAna2Theta},
+		{"ana_d", &m_strAnaD},
+		{"stheta_aux", &m_strSampleTheta_aux},
+		{"stheta_aux_alias", &m_strSampleTheta_aux_alias}
+	};
+
+	for(const std::pair<std::string, std::string*>& pair : vecStrings)
+	{
+		std::string strKey = std::string("net/") + pair.first;
+		if(!m_pSettings->contains(strKey.c_str()))
+			continue;
+
+		*pair.second = m_pSettings->value(strKey.c_str(), pair.second->c_str()
+										).toString().toStdString();
+	}
+
+	m_vecKeys = std::vector<std::string>
+	{
+		m_strSampleName,
+		m_strSampleLattice, m_strSampleAngles,
+		m_strSampleOrient1, m_strSampleOrient2,
+		m_strSampleSpacegroup,
+		m_strSamplePsi0, m_strSampleTheta, m_strSample2Theta,
+
+		m_strMonoD, m_strMonoTheta, m_strMono2Theta,
+		m_strAnaD, m_strAnaTheta, m_strAna2Theta,
+
+		m_strSampleTheta_aux, m_strSampleTheta_aux_alias,
+
+		"logbook/remark",
+	};
+
 	m_tcp.add_connect(boost::bind(&NicosCache::slot_connected, this, _1, _2));
 	m_tcp.add_disconnect(boost::bind(&NicosCache::slot_disconnected, this, _1, _2));
 	m_tcp.add_receiver(boost::bind(&NicosCache::slot_receive, this, _1));
@@ -77,7 +72,7 @@ void NicosCache::connect(const std::string& strHost, const std::string& strPort)
 {
 	m_mapCache.clear();
 	emit cleared_cache();
-	
+
 	if(!m_tcp.connect(strHost, strPort))
 		return;
 }
@@ -183,7 +178,7 @@ void NicosCache::slot_receive(const std::string& str)
 	cacheval.strVal = strVal;
 	cacheval.dTimestamp = dTimestamp;
 	m_mapCache[strKey] = cacheval;
-	
+
 	//std::cout << strKey << " = " << strVal << std::endl;
 	emit updated_cache_value(strKey, cacheval);
 
@@ -192,7 +187,7 @@ void NicosCache::slot_receive(const std::string& str)
 	CrystalOptions crys;
 	TriangleOptions triag;
 
-	if(strKey == g_strSampleLattice)
+	if(strKey == m_strSampleLattice)
 	{
 		std::vector<double> vecLattice = get_py_array(strVal);
 		if(vecLattice.size() != 3)
@@ -202,7 +197,7 @@ void NicosCache::slot_receive(const std::string& str)
 		for(int i=0; i<3; ++i)
 			crys.dLattice[i] = vecLattice[i];
 	}
-	else if(strKey == g_strSampleAngles)
+	else if(strKey == m_strSampleAngles)
 	{
 		std::vector<double> vecAngles = get_py_array(strVal);
 		if(vecAngles.size() != 3)
@@ -212,7 +207,7 @@ void NicosCache::slot_receive(const std::string& str)
 		for(int i=0; i<3; ++i)
 			crys.dLatticeAngles[i] = vecAngles[i];
 	}
-	else if(strKey == g_strSampleOrient1)
+	else if(strKey == m_strSampleOrient1)
 	{
 		std::vector<double> vecOrient = get_py_array(strVal);
 		if(vecOrient.size() != 3)
@@ -222,7 +217,7 @@ void NicosCache::slot_receive(const std::string& str)
 		for(int i=0; i<3; ++i)
 			crys.dPlane1[i] = vecOrient[i];
 	}
-	else if(strKey == g_strSampleOrient2)
+	else if(strKey == m_strSampleOrient2)
 	{
 		std::vector<double> vecOrient = get_py_array(strVal);
 		if(vecOrient.size() != 3)
@@ -232,54 +227,54 @@ void NicosCache::slot_receive(const std::string& str)
 		for(int i=0; i<3; ++i)
 			crys.dPlane2[i] = -vecOrient[i];	// hack to convert left-handed (nicos) to right-handed coordinates
 	}
-	else if(strKey == g_strSampleSpacegroup)
+	else if(strKey == m_strSampleSpacegroup)
 	{
 		crys.strSpacegroup = get_py_string(strVal);
 		crys.bChangedSpacegroup = 1;
 	}
-	else if(strKey == g_strMono2Theta)
+	else if(strKey == m_strMono2Theta)
 	{
 		triag.dMonoTwoTheta = str_to_var<double>(strVal) /180.*M_PI;
 		triag.bChangedMonoTwoTheta = 1;
 	}
-	else if(strKey == g_strAna2Theta)
+	else if(strKey == m_strAna2Theta)
 	{
 		triag.dAnaTwoTheta = str_to_var<double>(strVal) /180.*M_PI;
 		triag.bChangedAnaTwoTheta = 1;
 	}
-	else if(strKey == g_strSample2Theta)
+	else if(strKey == m_strSample2Theta)
 	{
 		triag.dTwoTheta = str_to_var<double>(strVal) /180.*M_PI;
 		triag.bChangedTwoTheta = 1;
 	}
-	else if(strKey == g_strMonoD)
+	else if(strKey == m_strMonoD)
 	{
 		triag.dMonoD = str_to_var<double>(strVal);
 		triag.bChangedMonoD = 1;
 	}
-	else if(strKey == g_strAnaD)
+	else if(strKey == m_strAnaD)
 	{
 		triag.dAnaD = str_to_var<double>(strVal);
 		triag.bChangedAnaD = 1;
 	}
-	else if(strKey == g_strSampleName)
+	else if(strKey == m_strSampleName)
 	{
 		crys.strSampleName = get_py_string(strVal);
 	}
 
 
-	if(m_mapCache.find(g_strSampleTheta) != m_mapCache.end()
-			&& m_mapCache.find(g_strSamplePsi0) != m_mapCache.end()
-			&& m_mapCache.find(g_strSampleTheta_aux) != m_mapCache.end()
-			&& m_mapCache.find(g_strSampleTheta_aux_alias) != m_mapCache.end())
+	if(m_mapCache.find(m_strSampleTheta) != m_mapCache.end()
+			&& m_mapCache.find(m_strSamplePsi0) != m_mapCache.end()
+			&& m_mapCache.find(m_strSampleTheta_aux) != m_mapCache.end()
+			&& m_mapCache.find(m_strSampleTheta_aux_alias) != m_mapCache.end())
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 
-		double dOm = str_to_var<double>(m_mapCache[g_strSampleTheta].strVal) /180.*M_PI;
-		double dTh_aux = str_to_var<double>(m_mapCache[g_strSampleTheta_aux].strVal) /180.*M_PI;
-		double dPsi = str_to_var<double>(m_mapCache[g_strSamplePsi0].strVal) /180.*M_PI;
+		double dOm = str_to_var<double>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
+		double dTh_aux = str_to_var<double>(m_mapCache[m_strSampleTheta_aux].strVal) /180.*M_PI;
+		double dPsi = str_to_var<double>(m_mapCache[m_strSamplePsi0].strVal) /180.*M_PI;
 
-		const std::string& strSthAlias = m_mapCache[g_strSampleTheta_aux_alias].strVal;
+		const std::string& strSthAlias = m_mapCache[m_strSampleTheta_aux_alias].strVal;
 
 		// angle from ki to bragg peak at orient1
 		triag.dAngleKiVec0 = -dOm-dPsi;

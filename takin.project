@@ -50,6 +50,8 @@
       <File Name="tools/taz/tas_layout.cpp"/>
       <File Name="tools/taz/nicos.cpp"/>
       <File Name="tools/taz/scattering_triangle.h"/>
+      <File Name="tools/taz/taz_net.cpp"/>
+      <File Name="tools/taz/taz_crys.cpp"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
@@ -75,6 +77,8 @@
     <File Name="dialogs/NetCacheDlg.h"/>
     <File Name="dialogs/PowderDlg.cpp"/>
     <File Name="dialogs/PowderDlg.h"/>
+    <File Name="dialogs/SettingsDlg.h"/>
+    <File Name="dialogs/SettingsDlg.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
     <File Name="helper/spec_char.cpp"/>
@@ -84,7 +88,6 @@
     <File Name="helper/string.h"/>
     <File Name="helper/log.h"/>
     <File Name="helper/flags.cpp"/>
-    <File Name="helper/lattice.cpp"/>
     <File Name="helper/linalg.h"/>
     <File Name="helper/lattice.h"/>
     <File Name="helper/flags.h"/>

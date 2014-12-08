@@ -14,6 +14,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
+#include <QtCore/QSettings>
 
 #include <map>
 #include <vector>
@@ -22,6 +23,8 @@
 class NicosCache : public QObject
 { Q_OBJECT
 	protected:
+		QSettings* m_pSettings = 0;
+
 		TcpClient m_tcp;
 		std::vector<std::string> m_vecKeys;
 		t_mapCacheVal m_mapCache;
@@ -32,7 +35,7 @@ class NicosCache : public QObject
 		void slot_receive(const std::string& str);
 
 	public:
-		NicosCache();
+		NicosCache(QSettings* pSettings=0);
 		virtual ~NicosCache();
 
 		void connect(const std::string& strHost, const std::string& strPort);
@@ -49,9 +52,22 @@ class NicosCache : public QObject
 		void disconnected();
 
 		void vars_changed(const CrystalOptions& crys, const TriangleOptions& triag);
-		
+
 		void updated_cache_value(const std::string& strKey, const CacheVal& val);
 		void cleared_cache();
+
+	protected:
+		// Nicos device names
+		std::string m_strSampleName;
+		std::string m_strSampleLattice, m_strSampleAngles;
+		std::string m_strSampleOrient1, m_strSampleOrient2;
+		std::string m_strSampleSpacegroup;
+		std::string m_strSamplePsi0, m_strSampleTheta, m_strSample2Theta;
+		std::string m_strMonoTheta, m_strMono2Theta, m_strMonoD;
+		std::string m_strAnaTheta, m_strAna2Theta, m_strAnaD;
+
+		// rotation sample stick: sth != om, otherwise: sth == om
+		std::string m_strSampleTheta_aux, m_strSampleTheta_aux_alias;
 };
 
 #endif

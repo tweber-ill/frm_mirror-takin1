@@ -4,7 +4,7 @@
  * @author: tweber
  * @date: 2013, 3-dec-2014
  */
- 
+
  #ifndef __TAZ_QUAT_H__
  #define __TAZ_QUAT_H__
 
@@ -21,7 +21,7 @@ math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
 	T tr = trace(rot) + 1.;
 	T x,y,z,w;
 
-	if(tr > std::numeric_limits<T>::epsilon())
+	if(tr > std::numeric_limits<T>::epsilon())				// w largest
 	{
 		T s = std::sqrt(tr) * 2.;
 		x = (rot(2,1) - rot(1,2)) / s;
@@ -31,7 +31,7 @@ math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
 	}
 	else
 	{
-		if (rot(0,0) > rot(1,1) && rot(0,0) > rot(2,2))
+		if(rot(0,0)>=rot(1,1) && rot(0,0)>=rot(2,2))		// x largest
 		{
 			T s = std::sqrt(1. + rot(0,0) - rot(1,1) - rot(2,2)) * 2.;
 			x = s/4.;
@@ -39,7 +39,7 @@ math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
 			z = (rot(0,2) + rot(2,0)) / s;
 			w = (rot(2,1) - rot(1,2)) / s;
 		}
-		else if(rot(1,1) > rot(2,2))
+		else if(rot(1,1)>=rot(0,0) && rot(1,1)>=rot(2,2))	// y largest
 		{
 			T s = std::sqrt(1. + rot(1,1) - rot(0,0) - rot(2,2)) * 2.;
 			x = (rot(1,0) + rot(0,1)) / s;
@@ -47,7 +47,7 @@ math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
 			z = (rot(2,1) + rot(1,2)) / s;
 			w = (rot(0,2) - rot(2,0)) / s;
 		}
-		else
+		else if(rot(2,2)>=rot(0,0) && rot(2,2)>=rot(1,1))	// z largest
 		{
 			T s = std::sqrt(1. + rot(2,2) - rot(0,0) - rot(1,1)) * 2.;
 			x = (rot(0,2) + rot(2,0)) / s;
@@ -55,35 +55,35 @@ math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
 			z = s/4.;
 			w = (rot(1,0) - rot(0,1)) / s;
 		}
+		else
+		{
+			throw Err("rot3_to_quat: Invalid condition.");
+		}
 	}
 
-	T n = std::sqrt(w*w + x*x + y*y + z*z);
-	return math::quaternion<T>(w,x,y,z)/n;
+	T norm_eucl = std::sqrt(w*w + x*x + y*y + z*z);
+	math::quaternion<T> quatRet(w,x,y,z);
+	return quatRet /*/ math::norm(quatRet)*/ / norm_eucl;
 }
 
-// algo from:
-// http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
-// http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche52.html
+
 template<typename T=double>
 ublas::matrix<T> quat_to_rot3(const math::quaternion<T>& quat)
 {
+	const math::quaternion<T> cquat = math::conj(quat);
+	const math::quaternion<T> i(0,1,0,0), j(0,0,1,0), k(0,0,0,1);
+
+	const math::quaternion<T> cols[] = {quat*i*cquat,
+										quat*j*cquat,
+										quat*k*cquat};
+
 	ublas::matrix<T> mat(3,3);
-	T w = quat.R_component_1();
-	T x = quat.R_component_2();
-	T y = quat.R_component_3();
-	T z = quat.R_component_4();
-
-	mat(0,0) = 1. - 2.*(y*y + z*z);
-	mat(1,1) = 1. - 2.*(x*x + z*z);
-	mat(2,2) = 1. - 2.*(x*x + y*y);
-
-	mat(0,1) = 2.*(x*y - z*w);
-	mat(1,0) = 2.*(x*y + z*w);
-	mat(0,2) = 2.*(x*z + y*w);
-	mat(2,0) = 2.*(x*z - y*w);
-	mat(1,2) = 2.*(y*z - x*w);
-	mat(2,1) = 2.*(y*z + x*w);
-	//mat = ublas::trans(mat);
+	for(unsigned int icol=0; icol<3; ++icol)
+	{
+		mat(0, icol) = cols[icol].R_component_2();
+		mat(1, icol) = cols[icol].R_component_3();
+		mat(2, icol) = cols[icol].R_component_4();
+	}
 
 	return mat;
 }
@@ -134,6 +134,16 @@ std::vector<T> rotation_angle(const ublas::matrix<T>& rot)
 	return vecResult;
 }
 
+
+template<typename T=double>
+math::quaternion<T> stereo_proj(const math::quaternion<T>& quat)
+{ return (1.+quat)/(1.-quat); }
+
+template<typename T=double>
+math::quaternion<T> stereo_proj_inv(const math::quaternion<T>& quat)
+{ return (1.-quat)/(1.+quat); }
+
+
 template<class QUAT>
 struct vec_angle_unsigned_impl<QUAT, LinalgType::QUATERNION>
 {
@@ -149,7 +159,7 @@ struct vec_angle_unsigned_impl<QUAT, LinalgType::QUATERNION>
 		dot /= math::norm(q2);
 
 		return std::acos(dot);
-	} 
+	}
 };
 
 #endif

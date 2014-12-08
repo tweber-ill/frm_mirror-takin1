@@ -21,7 +21,7 @@ QRectF TasLayoutNode::boundingRect() const
 	return QRectF(-5., -5., 10., 10.);
 }
 
-void TasLayoutNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void TasLayoutNode::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	painter->drawEllipse(QRectF(-2., -2., 4., 4.));
 }
@@ -253,7 +253,7 @@ QRectF TasLayout::boundingRect() const
 				2000.*m_dZoom, 2000.*m_dZoom);
 }
 
-void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	const bool bDisplayLengths = 0;
 
@@ -296,24 +296,42 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	}
 
 
+
+	ublas::vector<double> vecSrc = qpoint_to_vec(ptSrc);
 	ublas::vector<double> vecMono = qpoint_to_vec(ptMono);
 	ublas::vector<double> vecSample = qpoint_to_vec(ptSample);
+	ublas::vector<double> vecAna = qpoint_to_vec(ptAna);
+	ublas::vector<double> vecDet = qpoint_to_vec(ptDet);
+
+	ublas::vector<double> vecSrcMono = vecMono-vecSrc;
 	ublas::vector<double> vecMonoSample = vecSample-vecMono;
+	ublas::vector<double> vecSampleAna = vecAna-vecSample;
+	ublas::vector<double> vecAnaDet = vecDet-vecAna;
 
+	double dThetas[] = {-m_dMonoTwoTheta/2., -m_dAnaTwoTheta/2., -m_dTheta};
+	std::vector<const ublas::vector<double>*> vecPos = {&vecMono, &vecAna, &vecSample};
+	std::vector<const ublas::vector<double>*> vecDirs = {&vecSrcMono, &vecSampleAna, &vecMonoSample};
+	QColor colThs[] = {Qt::gray, Qt::gray, Qt::red};
 
-	// sample theta rotation
-	ublas::vector<double> vecSampleRotDir = ublas::prod(rotation_matrix_2d(-m_dTheta), vecMonoSample);
-	vecSampleRotDir /= ublas::norm_2(vecSampleRotDir);
-	vecSampleRotDir *= m_dLenSample*m_dScaleFactor;
+	QLineF lineRot[3];
+	QPointF ptThP[3];
 
-	QPointF ptSampleThM = vec_to_qpoint(vecSample-vecSampleRotDir);
-	QPointF ptSampleThP = vec_to_qpoint(vecSample+vecSampleRotDir);
-	QLineF lineSampleRot(ptSampleThM, ptSampleThP);
+	// mono/ana/sample theta rotation
+	for(unsigned int iTh=0; iTh<sizeof(dThetas)/sizeof(*dThetas); ++iTh)
+	{
+		ublas::vector<double> vecRotDir = ublas::prod(rotation_matrix_2d(dThetas[iTh]), *vecDirs[iTh]);
+		vecRotDir /= ublas::norm_2(vecRotDir);
+		vecRotDir *= m_dLenSample*m_dScaleFactor;
 
-	QPen penSample(Qt::red);
-	penSample.setWidthF(1.5);
-	painter->setPen(penSample);
-	painter->drawLine(lineSampleRot);
+		QPointF ptThM = vec_to_qpoint(*vecPos[iTh]-vecRotDir);
+		ptThP[iTh] = vec_to_qpoint(*vecPos[iTh]+vecRotDir);
+		lineRot[iTh] = QLineF(ptThM, ptThP[iTh]);
+
+		QPen pen(colThs[iTh]);
+		pen.setWidthF(1.5);
+		painter->setPen(pen);
+		painter->drawLine(lineRot[iTh]);
+	}
 
 
 	// dashed extended lines
@@ -359,10 +377,10 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 
 	// angle arcs
-	const QLineF* pLines1[] = {&lineSrcMono, &lineKi, &lineKf, &lineSampleRot};
+	const QLineF* pLines1[] = {&lineSrcMono, &lineKi, &lineKf, &lineRot[2]};
 	const QLineF* pLines2[] = {&lineKi, &lineKf, &lineAnaDet, &lineKi};
 	const QPointF* pPoints[] = {&ptMono, &ptSample, &ptAna, &ptSample};
-	const QPointF* pPoints_ext[] = {&ptSrc, &ptMono, &ptSample, &ptSampleThP};
+	const QPointF* pPoints_ext[] = {&ptSrc, &ptMono, &ptSample, &ptThP[2]};
 	const double dAngles[] = {m_dMonoTwoTheta, m_dTwoTheta, m_dAnaTwoTheta, -m_dTheta};
 	const double dAngleOffs[] = {0., 0., 0., 180.};
 
@@ -370,7 +388,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	QPen pen2(Qt::red);
 	QPen* arcPens[] = {&pen1, &pen1, &pen1, &pen2};
 
-	for(unsigned int i=0; i<4; ++i)
+	for(unsigned int i=0; i<sizeof(pPoints)/sizeof(*pPoints); ++i)
 	{
 		double dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 3.;
 		double dBeginArcAngle = pLines1[i]->angle() + dAngleOffs[i];
@@ -402,10 +420,10 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 
 	// arrow heads
-	const QLineF* pLines_arrow[] = {&lineKi, &lineKf, plineQ};
-	const QPointF* pPoints_arrow[] = {&ptSample, &ptAna, pptQ};
-	QColor colArrowHead[] = {Qt::black, Qt::black, Qt::red};
-	for(unsigned int i=0; i<3; ++i)
+	const QLineF* pLines_arrow[] = {&lineKi, &lineKf, plineQ, &lineSrcMono, &lineAnaDet};
+	const QPointF* pPoints_arrow[] = {&ptSample, &ptAna, pptQ, &ptMono, &ptDet};
+	QColor colArrowHead[] = {Qt::black, Qt::black, Qt::red, Qt::gray, Qt::gray};
+	for(unsigned int i=0; i<sizeof(pLines_arrow)/sizeof(*pLines_arrow); ++i)
 	{
 		if(!pLines_arrow[i] || !pPoints_arrow[i])
 			continue;

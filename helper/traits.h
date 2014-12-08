@@ -3,7 +3,7 @@
  * @author Tobias Weber
  * @date 19-nov-2014
  */
- 
+
 #ifndef __MY_TRAITS_H__
 #define __MY_TRAITS_H__
 
@@ -39,9 +39,9 @@ struct underlying_value_type<T, 0>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/math/quaternion.hpp>
 
-typedef std::integral_constant<int, 0>	dim_0d_type;
-typedef std::integral_constant<int, 1>	dim_1d_type;
-typedef std::integral_constant<int, 2>	dim_2d_type;
+typedef std::integral_constant<int, 0> dim_0d_type;
+typedef std::integral_constant<int, 1> dim_1d_type;
+typedef std::integral_constant<int, 2> dim_2d_type;
 
 template<class> struct get_type_dim : dim_0d_type {};
 
@@ -80,7 +80,6 @@ struct remove_constref
 		typename std::remove_reference<T>::type
 			>::type type;
 };
-
 
 
 #endif

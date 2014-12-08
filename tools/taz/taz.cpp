@@ -26,30 +26,22 @@
 #include "helper/xml.h"
 #include "helper/log.h"
 
-#define DEFAULT_MSG_TIMEOUT 4000
 const std::string TazDlg::s_strTitle = "Takin";
-
-static QString dtoqstr(double dVal, unsigned int iPrec=8)
-{
-	std::ostringstream ostr;
-	ostr.precision(iPrec);
-	ostr << dVal;
-	return QString(ostr.str().c_str());
-}
 
 TazDlg::TazDlg(QWidget* pParent)
 		: QMainWindow(pParent),
 		  m_settings("tobis_stuff", "takin"),
+		  m_pSettingsDlg(new SettingsDlg(this, &m_settings)),
+		  m_pStatusMsg(new QLabel(this)),
+		  m_pCoordStatusMsg(new QLabel(this)),
 		  m_pmapSpaceGroups(get_space_groups()),
 		  m_dlgRecipParam(this, &m_settings),
 		  m_dlgRealParam(this, &m_settings),
-		  m_pStatusMsg(new QLabel(this)),
-		  m_pCoordStatusMsg(new QLabel(this)),
 		  m_pGotoDlg(new GotoDlg(this, &m_settings))
 {
 	//log_debug("In ", __func__, ".");
 
-	const bool bSmallqVisible = 1;
+	const bool bSmallqVisible = 0;
 	const bool bBZVisible = 0;
 
 	this->setupUi(this);
@@ -234,6 +226,13 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	pMenuFile->addSeparator();
 
+	QAction *pSettings = new QAction(this);
+	pSettings->setText("Settings...");
+	pSettings->setIcon(QIcon::fromTheme("preferences-system"));
+	pMenuFile->addAction(pSettings);
+
+	pMenuFile->addSeparator();
+
 	QAction *pExit = new QAction(this);
 	pExit->setText("Exit");
 	pExit->setIcon(QIcon::fromTheme("application-exit"));
@@ -349,7 +348,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pNeutronProps = new QAction(this);
 	pNeutronProps->setText("Neutron Properties...");
 	pMenuCalc->addAction(pNeutronProps);
-	
+
 	QAction *pPowder = new QAction(this);
 	pPowder->setText("Powder Lines...");
 	pMenuCalc->addAction(pPowder);
@@ -374,7 +373,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pDisconn->setText("Disconnect");
 	pDisconn->setIcon(QIcon::fromTheme("network-offline"));
 	pMenuNet->addAction(pDisconn);
-	
+
 	QAction *pNetCache = new QAction(this);
 	pNetCache->setText("Show Network Cache...");
 	pMenuNet->addSeparator();
@@ -422,6 +421,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
+	QObject::connect(pSettings, SIGNAL(triggered()), this, SLOT(ShowSettingsDlg()));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
@@ -507,7 +507,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_sceneRecip.GetTriangle()->SetMaxPeaks(s_iMaxPeaks);
 	m_sceneRecip.GetTriangle()->SetPlaneDistTolerance(s_dPlaneDistTolerance);
 	if(m_pRecip3d)
-		m_pRecip3d->SetPlaneDistTolerance(s_dPlaneDistTolerance);	
+		m_pRecip3d->SetPlaneDistTolerance(s_dPlaneDistTolerance);
 
 	UpdateDs();
 	CalcPeaks();
@@ -538,6 +538,7 @@ TazDlg::~TazDlg()
 	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
 	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
 	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
+	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
 }
 
 
@@ -563,9 +564,18 @@ void TazDlg::ShowPowderDlg()
 {
 	if(!m_pPowderDlg)
 		m_pPowderDlg = new PowderDlg(this, &m_settings);
-		
+
 	m_pPowderDlg->show();
 	m_pPowderDlg->activateWindow();
+}
+
+void TazDlg::ShowSettingsDlg()
+{
+	if(!m_pSettingsDlg)
+		m_pSettingsDlg = new SettingsDlg(this, &m_settings);
+
+	m_pSettingsDlg->show();
+	m_pSettingsDlg->activateWindow();
 }
 
 void TazDlg::UpdateDs()
@@ -589,380 +599,6 @@ void TazDlg::UpdateDs()
 	}
 
 	emit ResoParamsChanged(resoparams);
-}
-
-std::ostream& operator<<(std::ostream& ostr, const Lattice<double>& lat)
-{
-	ostr << "a = " << lat.GetA();
-	ostr << ", b = " << lat.GetB();
-	ostr << ", c = " << lat.GetC();
-	ostr << ", alpha = " << lat.GetAlpha();
-	ostr << ", beta = " << lat.GetBeta();
-	ostr << ", gamma = " << lat.GetGamma();
-	return ostr;
-}
-
-void TazDlg::SetCrystalType()
-{
-	m_crystalsys = CrystalSystem::CRYS_NOT_SET;
-	
-	SpaceGroup *pSpaceGroup = 0;
-	int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
-	if(iSpaceGroupIdx != 0)
-		pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
-	if(pSpaceGroup)
-		m_crystalsys = pSpaceGroup->GetCrystalSystem();
-		
-	CheckCrystalType();
-}
-
-// TODO
-void TazDlg::CheckCrystalType()
-{
-	switch(m_crystalsys)
-	{
-		case CRYS_CUBIC:
-			editA->setEnabled(1);
-			editB->setEnabled(0);
-			editC->setEnabled(0);
-			editAlpha->setEnabled(0);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editARecip->setEnabled(1);
-			editBRecip->setEnabled(0);
-			editCRecip->setEnabled(0);
-			editAlphaRecip->setEnabled(0);
-			editBetaRecip->setEnabled(0);
-			editGammaRecip->setEnabled(0);
-
-			editB->setText(editA->text());
-			editC->setText(editA->text());
-			editBRecip->setText(editARecip->text());
-			editCRecip->setText(editARecip->text());
-			editAlpha->setText("90");
-			editBeta->setText("90");
-			editGamma->setText("90");
-			editAlphaRecip->setText("90");
-			editBetaRecip->setText("90");
-			editGammaRecip->setText("90");
-			break;
-			
-		case CRYS_HEXAGONAL:
-			editA->setEnabled(1);
-			editB->setEnabled(0);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(0);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editARecip->setEnabled(1);
-			editBRecip->setEnabled(0);
-			editCRecip->setEnabled(1);
-			editAlphaRecip->setEnabled(0);
-			editBetaRecip->setEnabled(0);
-			editGammaRecip->setEnabled(0);
-
-			editB->setText(editA->text());
-			editBRecip->setText(editARecip->text());
-			editAlpha->setText("90");
-			editBeta->setText("90");
-			editGamma->setText("120");
-			editAlphaRecip->setText("90");
-			editBetaRecip->setText("90");
-			editGammaRecip->setText("60");
-			break;
-			
-		case CRYS_MONOCLINIC:
-			editA->setEnabled(1);
-			editB->setEnabled(1);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(1);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editARecip->setEnabled(1);
-			editBRecip->setEnabled(1);
-			editCRecip->setEnabled(1);
-			editAlphaRecip->setEnabled(1);
-			editBetaRecip->setEnabled(0);
-			editGammaRecip->setEnabled(0);
-
-			editBeta->setText("90");
-			editGamma->setText("90");
-			editBetaRecip->setText("90");
-			editGammaRecip->setText("90");
-			break;
-			
-		case CRYS_ORTHORHOMBIC:
-			editA->setEnabled(1);
-			editB->setEnabled(1);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(0);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editARecip->setEnabled(1);
-			editBRecip->setEnabled(1);
-			editCRecip->setEnabled(1);
-			editAlphaRecip->setEnabled(0);
-			editBetaRecip->setEnabled(0);
-			editGammaRecip->setEnabled(0);
-
-			editAlpha->setText("90");
-			editBeta->setText("90");
-			editGamma->setText("90");
-			editAlphaRecip->setText("90");
-			editBetaRecip->setText("90");
-			editGammaRecip->setText("90");
-			break;
-			
-		case CRYS_TETRAGONAL:
-			editA->setEnabled(1);
-			editB->setEnabled(0);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(0);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editARecip->setEnabled(1);
-			editBRecip->setEnabled(0);
-			editCRecip->setEnabled(1);
-			editAlphaRecip->setEnabled(0);
-			editBetaRecip->setEnabled(0);
-			editGammaRecip->setEnabled(0);
-
-			editB->setText(editA->text());
-			editBRecip->setText(editARecip->text());
-			editAlpha->setText("90");
-			editBeta->setText("90");
-			editGamma->setText("90");
-			editAlphaRecip->setText("90");
-			editBetaRecip->setText("90");
-			editGammaRecip->setText("90");
-			break;
-
-		case CRYS_TRIGONAL:
-			editA->setEnabled(1);
-			editB->setEnabled(0);
-			editC->setEnabled(0);
-			editAlpha->setEnabled(1);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editARecip->setEnabled(1);
-			editBRecip->setEnabled(0);
-			editCRecip->setEnabled(0);
-			editAlphaRecip->setEnabled(1);
-			editBetaRecip->setEnabled(0);
-			editGammaRecip->setEnabled(0);
-
-			editB->setText(editA->text());
-			editC->setText(editA->text());
-			editBRecip->setText(editARecip->text());
-			editCRecip->setText(editARecip->text());
-			editBeta->setText(editAlpha->text());
-			editGamma->setText(editAlpha->text());
-			editBetaRecip->setText(editAlphaRecip->text());
-			editGammaRecip->setText(editAlphaRecip->text());
-			break;
-
-		case CRYS_TRICLINIC:
-		case CRYS_NOT_SET:
-		default:
-			editA->setEnabled(1);
-			editB->setEnabled(1);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(1);
-			editBeta->setEnabled(1);
-			editGamma->setEnabled(1);
-
-			editARecip->setEnabled(1);
-			editBRecip->setEnabled(1);
-			editCRecip->setEnabled(1);
-			editAlphaRecip->setEnabled(1);
-			editBetaRecip->setEnabled(1);
-			editGammaRecip->setEnabled(1);
-			break;
-	}
-}
-
-void TazDlg::CalcPeaksRecip()
-{
-	double a = editARecip->text().toDouble();
-	double b = editBRecip->text().toDouble();
-	double c = editCRecip->text().toDouble();
-
-	double alpha = editAlphaRecip->text().toDouble()/180.*M_PI;
-	double beta = editBetaRecip->text().toDouble()/180.*M_PI;
-	double gamma = editGammaRecip->text().toDouble()/180.*M_PI;
-
-	Lattice<double> lattice(a,b,c, alpha,beta,gamma);
-	Lattice<double> recip = lattice.GetRecip();
-
-	editA->setText(dtoqstr(recip.GetA()));
-	editB->setText(dtoqstr(recip.GetB()));
-	editC->setText(dtoqstr(recip.GetC()));
-	editAlpha->setText(dtoqstr(recip.GetAlpha()/M_PI*180.));
-	editBeta->setText(dtoqstr(recip.GetBeta()/M_PI*180.));
-	editGamma->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
-
-	m_bUpdateRecipEdits = 0;
-	CalcPeaks();
-	m_bUpdateRecipEdits = 1;
-}
-
-void TazDlg::CalcPeaks()
-{
-	if(!m_sceneRecip.GetTriangle())
-		return;
-
-	try
-	{
-		// lattice
-		double a = editA->text().toDouble();
-		double b = editB->text().toDouble();
-		double c = editC->text().toDouble();
-
-		double alpha = editAlpha->text().toDouble()/180.*M_PI;
-		double beta = editBeta->text().toDouble()/180.*M_PI;
-		double gamma = editGamma->text().toDouble()/180.*M_PI;
-
-		Lattice<double> lattice(a,b,c, alpha,beta,gamma);
-		Lattice<double> recip_unrot = lattice.GetRecip();
-
-
-
-
-		// scattering plane
-		double dX0 = editScatX0->text().toDouble();
-		double dX1 = editScatX1->text().toDouble();
-		double dX2 = editScatX2->text().toDouble();
-		ublas::vector<double> vecPlaneX = dX0*recip_unrot.GetVec(0) +
-										dX1*recip_unrot.GetVec(1) +
-										dX2*recip_unrot.GetVec(2);
-
-		double dY0 = editScatY0->text().toDouble();
-		double dY1 = editScatY1->text().toDouble();
-		double dY2 = editScatY2->text().toDouble();
-		ublas::vector<double> vecPlaneY = dY0*recip_unrot.GetVec(0) +
-										dY1*recip_unrot.GetVec(1) +
-										dY2*recip_unrot.GetVec(2);
-
-		//----------------------------------------------------------------------
-		// show integer up vector
-		unsigned int iMaxDec = 4;	// TODO: determine max. # of entered decimals
-		ublas::vector<int> ivecUp = ::cross_3(
-			::make_vec<ublas::vector<int>>({int(dX0*std::pow(10, iMaxDec)),
-											int(dX1*std::pow(10, iMaxDec)),
-											int(dX2*std::pow(10, iMaxDec))}),
-			::make_vec<ublas::vector<int>>({int(dY0*std::pow(10, iMaxDec)),
-											int(dY1*std::pow(10, iMaxDec)),
-											int(dY2*std::pow(10, iMaxDec))}));
-		ivecUp = get_gcd_vec(ivecUp);
-		editScatZ0->setText(std::to_string(ivecUp[0]).c_str());
-		editScatZ1->setText(std::to_string(ivecUp[1]).c_str());
-		editScatZ2->setText(std::to_string(ivecUp[2]).c_str());
-		//----------------------------------------------------------------------
-
-		ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
-		Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
-		if(!plane.IsValid())
-		{
-			log_err("Invalid scattering plane.");
-			return;
-		}
-
-
-		if(m_pGotoDlg)
-		{
-			m_pGotoDlg->SetLattice(lattice);
-			m_pGotoDlg->SetScatteringPlane(make_vec({dX0, dX1, dX2}), make_vec({dY0, dY1, dY2}));
-			m_pGotoDlg->CalcSample();
-		}
-
-
-		/*// rotated lattice
-		double dPhi = spinRotPhi->value() / 180. * M_PI;
-		double dTheta = spinRotTheta->value() / 180. * M_PI;
-		double dPsi = spinRotPsi->value() / 180. * M_PI;
-		//lattice.RotateEuler(dPhi, dTheta, dPsi);*/
-
-		ublas::vector<double> dir0 = plane.GetDir0();
-		ublas::vector<double> dirup = plane.GetNorm();
-		ublas::vector<double> dir1 = cross_3(dirup, dir0);
-
-		double dDir0Len = ublas::norm_2(dir0);
-		double dDir1Len = ublas::norm_2(dir1);
-		double dDirUpLen = ublas::norm_2(dirup);
-
-		if(float_equal(dDir0Len, 0.) || float_equal(dDir1Len, 0.) || float_equal(dDirUpLen, 0.)
-			|| ::is_nan_or_inf<double>(dDir0Len) || ::is_nan_or_inf<double>(dDir1Len) || ::is_nan_or_inf<double>(dDirUpLen))
-		{
-			log_err("Invalid scattering plane.");
-			return;
-		}
-
-		dir0 /= dDir0Len;
-		dir1 /= dDir1Len;
-		//dirup /= dDirUpLen;
-
-		//lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
-		Lattice<double> recip = lattice.GetRecip();
-
-
-
-		if(m_bUpdateRecipEdits)
-		{
-			editARecip->setText(dtoqstr(recip.GetA()));
-			editBRecip->setText(dtoqstr(recip.GetB()));
-			editCRecip->setText(dtoqstr(recip.GetC()));
-			editAlphaRecip->setText(dtoqstr(recip.GetAlpha()/M_PI*180.));
-			editBetaRecip->setText(dtoqstr(recip.GetBeta()/M_PI*180.));
-			editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
-		}
-
-		const std::wstring& strAA = ::get_spec_char_utf16("AA");
-		const std::wstring& strMinus = ::get_spec_char_utf16("sup-");
-		const std::wstring& strThree = ::get_spec_char_utf16("sup3");
-
-		double dVol = lattice.GetVol();
-		double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
-
-		std::wostringstream ostrSample;
-		ostrSample.precision(8);
-		ostrSample << "Sample";
-		ostrSample << " - ";
-		ostrSample << "Unit Cell Vol.: ";
-		ostrSample << "Real: " << dVol << " " << strAA << strThree;
-		ostrSample << ", Recip.: " << dVol_recip << " " << strAA << strMinus << strThree;
-		groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
-
-
-		const char* pcCryTy = "<not set>";
-		SpaceGroup *pSpaceGroup = 0;
-		int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
-		if(iSpaceGroupIdx != 0)
-			pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
-			
-		if(pSpaceGroup)
-			pcCryTy = pSpaceGroup->GetCrystalSystemName();
-
-		editCrystalSystem->setText(pcCryTy);
-
-		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
-		if(m_sceneRecip.getSnapq())
-			m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
-		m_sceneRecip.emitUpdate();
-
-		if(m_pRecip3d)
-			m_pRecip3d->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
-	}
-	catch(const std::exception& ex)
-	{
-		m_sceneRecip.GetTriangle()->ClearPeaks();
-		log_err(ex.what());
-	}
 }
 
 void TazDlg::UpdateSampleSense()
@@ -1050,34 +686,6 @@ void TazDlg::EnableRealQDir(bool bEnable)
 	m_sceneReal.GetTasLayout()->SetRealQVisible(bEnable);
 }
 
-
-void TazDlg::RepopulateSpaceGroups()
-{
-	if(!m_pmapSpaceGroups)
-		return;
-
-	for(int iCnt=comboSpaceGroups->count()-1; iCnt>0; --iCnt)
-		comboSpaceGroups->removeItem(iCnt);
-
-	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
-
-	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
-	{
-		const std::string& strName = pair.second.GetName();
-
-		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
-		if(strFilter!="" &&
-				!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
-									t_striterrange(strFilter.begin(), strFilter.end())))
-			continue;
-
-		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
-									strName.c_str(),
-									QVariant::fromValue((void*)&pair.second));
-	}
-}
-
-
 void TazDlg::RecipCoordsChanged(double dh, double dk, double dl)
 {
 	std::ostringstream ostrPos;
@@ -1085,6 +693,9 @@ void TazDlg::RecipCoordsChanged(double dh, double dk, double dl)
 
 	m_pCoordStatusMsg->setText(ostrPos.str().c_str());
 }
+
+
+
 
 //--------------------------------------------------------------------------------
 // loading/saving
@@ -1147,7 +758,7 @@ bool TazDlg::Load(const char* pcFile)
 
 		++iIdxEdit;
 	}
-	
+
 	std::string strDescr = xml.QueryString((strXmlRoot+"sample/descr").c_str(), "", &bOk);
 	if(bOk)
 		this->editDescr->setPlainText(strDescr.c_str());
@@ -1384,89 +995,9 @@ bool TazDlg::SaveAs()
 
 	return false;
 }
-//--------------------------------------------------------------------------------
 
-void TazDlg::ShowSpurions()
-{
-	if(!m_pSpuri)
-	{
-		m_pSpuri = new SpurionDlg(this, &m_settings);
 
-		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-						m_pSpuri, SLOT(paramsChanged(const RecipParams&)));
 
-		m_sceneRecip.emitAllParams();
-	}
-
-	m_pSpuri->show();
-	m_pSpuri->activateWindow();
-}
-
-void TazDlg::spurionInfo(const ElasticSpurion& spuri,
-					const std::vector<InelasticSpurion>& vecInelCKI,
-					const std::vector<InelasticSpurion>& vecInelCKF)
-{
-	std::ostringstream ostrMsg;
-	if(spuri.bAType || spuri.bMType || vecInelCKI.size() || vecInelCKF.size())
-		ostrMsg << "Warning: ";
-
-	if(spuri.bAType || spuri.bMType)
-	{
-		ostrMsg << "Spurious elastic scattering of type ";
-		if(spuri.bAType && spuri.bMType)
-		{
-			ostrMsg << "A and M";
-			ostrMsg << (spuri.bAKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
-		}
-		else if(spuri.bAType)
-		{
-			ostrMsg << "A";
-			ostrMsg << (spuri.bAKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
-		}
-		else if(spuri.bMType)
-		{
-			ostrMsg << "M";
-			ostrMsg << (spuri.bMKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
-		}
-		ostrMsg << " detected.";
-
-		if(vecInelCKI.size() || vecInelCKF.size())
-			ostrMsg << " ";
-	}
-
-	const std::string& strDelta = ::get_spec_char_utf8("Delta");
-
-	if(vecInelCKI.size())
-	{
-		ostrMsg << "Spurious inelastic CKI scattering at "
-				<< strDelta << "E = ";
-		for(unsigned int iInel=0; iInel<vecInelCKI.size(); ++iInel)
-		{
-			ostrMsg << vecInelCKI[iInel].dE_meV << " meV";
-			if(iInel != vecInelCKI.size()-1)
-				ostrMsg << ", ";
-		}
-		ostrMsg << " detected.";
-
-		if(vecInelCKF.size())
-			ostrMsg << " ";
-	}
-
-	if(vecInelCKF.size())
-	{
-		ostrMsg << "Spurious inelastic CKF scattering at "
-				<< strDelta << "E = ";
-		for(unsigned int iInel=0; iInel<vecInelCKF.size(); ++iInel)
-		{
-			ostrMsg << vecInelCKF[iInel].dE_meV << " meV";
-			if(iInel != vecInelCKF.size()-1)
-				ostrMsg << ", ";
-		}
-		ostrMsg << " detected.";
-	}
-
-	m_pStatusMsg->setText(QString::fromUtf8(ostrMsg.str().c_str(), ostrMsg.str().size()));
-}
 
 //--------------------------------------------------------------------------------
 // parameter dialogs
@@ -1484,72 +1015,6 @@ void TazDlg::ShowRealParams()
 }
 
 
-//--------------------------------------------------------------------------------
-// reso stuff
-void TazDlg::InitReso()
-{
-	if(!m_pReso)
-	{
-		m_pReso = new ResoDlg(this, &m_settings);
-
-		QObject::connect(this, SIGNAL(ResoParamsChanged(const ResoParams&)),
-						m_pReso, SLOT(ResoParamsChanged(const ResoParams&)));
-		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-						m_pReso, SLOT(RecipParamsChanged(const RecipParams&)));
-		QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
-						m_pReso, SLOT(RealParamsChanged(const RealParams&)));
-
-		UpdateDs();
-		UpdateMonoSense();
-		UpdateSampleSense();
-		UpdateAnaSense();
-
-		m_sceneRecip.emitAllParams();
-		m_sceneReal.emitAllParams();
-	}
-}
-
-void TazDlg::ShowResoParams()
-{
-	InitReso();
-
-	m_pReso->show();
-	m_pReso->activateWindow();
-}
-
-void TazDlg::ShowResoEllipses()
-{
-	InitReso();
-
-	if(!m_pEllipseDlg)
-	{
-		m_pEllipseDlg = new EllipseDlg(this, &m_settings);
-		QObject::connect(m_pReso, SIGNAL(ResoResults(const ublas::matrix<double>&, const ublas::vector<double>&)),
-						 m_pEllipseDlg, SLOT(SetParams(const ublas::matrix<double>&, const ublas::vector<double>&)));
-
-		m_pReso->EmitResults();
-	}
-
-	m_pEllipseDlg->show();
-	m_pEllipseDlg->activateWindow();
-}
-
-void TazDlg::ShowResoEllipses3D()
-{
-	InitReso();
-
-	if(!m_pEllipseDlg3D)
-	{
-		m_pEllipseDlg3D = new EllipseDlg3D(this, &m_settings);
-		QObject::connect(m_pReso, SIGNAL(ResoResults(const ublas::matrix<double>&, const ublas::vector<double>&)),
-						 m_pEllipseDlg3D, SLOT(SetParams(const ublas::matrix<double>&, const ublas::vector<double>&)));
-
-		m_pReso->EmitResults();
-	}
-
-	m_pEllipseDlg3D->show();
-	m_pEllipseDlg3D->activateWindow();
-}
 
 
 
@@ -1574,8 +1039,10 @@ void TazDlg::RealContextMenu(const QPoint& _pt)
 
 
 
+
 //--------------------------------------------------------------------------------
 // svg export
+
 #include <QtSvg/QSvgGenerator>
 
 void TazDlg::ExportReal() { ExportSceneSVG(m_sceneReal); }
@@ -1613,191 +1080,10 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 
 
 
-//--------------------------------------------------------------------------------
-// server stuff
-
-void TazDlg::ShowConnectDlg()
-{
-	if(!m_pSrvDlg)
-	{
-		m_pSrvDlg = new SrvDlg(this, &m_settings);
-		QObject::connect(m_pSrvDlg, SIGNAL(ConnectTo(const QString&, const QString&)),
-						this, SLOT(ConnectTo(const QString&, const QString&)));
-	}
-
-	m_pSrvDlg->show();
-	m_pSrvDlg->activateWindow();
-}
-
-void TazDlg::ConnectTo(const QString& _strHost, const QString& _strPort)
-{
-	Disconnect();
-
-	std::string strHost =  _strHost.toStdString();
-	std::string strPort =  _strPort.toStdString();
-	
-	m_pNicosCache = new NicosCache();
-	QObject::connect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
-					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
-	QObject::connect(m_pNicosCache, SIGNAL(connected(const QString&, const QString&)),
-					this, SLOT(Connected(const QString&, const QString&)));
-	QObject::connect(m_pNicosCache, SIGNAL(disconnected()),
-					this, SLOT(Disconnected()));
-					
-	if(!m_pNetCacheDlg)
-		m_pNetCacheDlg = new NetCacheDlg(this, &m_settings);
-
-	m_pNetCacheDlg->ClearAll();
-	QObject::connect(m_pNicosCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)), 
-					m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
-
-	m_pNicosCache->connect(strHost, strPort);
-}
-
-void TazDlg::Disconnect()
-{
-	if(m_pNicosCache)
-	{
-		m_pNicosCache->disconnect();
-		
-		QObject::disconnect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
-						this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
-		QObject::disconnect(m_pNicosCache, SIGNAL(connected(const QString&, const QString&)),
-						this, SLOT(Connected(const QString&, const QString&)));
-		QObject::disconnect(m_pNicosCache, SIGNAL(disconnected()),
-						this, SLOT(Disconnected()));
-						
-		QObject::disconnect(m_pNicosCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)), 
-						m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
-		
-		delete m_pNicosCache;
-		m_pNicosCache = 0;
-	}
-
-	statusBar()->showMessage("Disconnected.", DEFAULT_MSG_TIMEOUT);
-}
-
-void TazDlg::ShowNetCache()
-{
-	if(!m_pNetCacheDlg)
-		m_pNetCacheDlg = new NetCacheDlg(this, &m_settings);
-
-	m_pNetCacheDlg->show();
-	m_pNetCacheDlg->activateWindow();
-}
-
-void TazDlg::NetRefresh()
-{
-	if(!m_pNicosCache)
-	{
-		QMessageBox::warning(this, "Warning", "Not connected to a server.");
-		return;
-	}
-
-	m_pNicosCache->RefreshKeys();
-}
-
-void TazDlg::Connected(const QString& strHost, const QString& strSrv)
-{
-	m_strCurFile = "";
-
-	setWindowTitle((s_strTitle + " - ").c_str() + strHost + ":" + strSrv);
-	statusBar()->showMessage("Connected to " + strHost + " on port " + strSrv + ".", DEFAULT_MSG_TIMEOUT);
-}
-
-void TazDlg::Disconnected()
-{
-	setWindowTitle((s_strTitle).c_str());
-}
-
-void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag)
-{
-	if(crys.strSampleName != "")
-	{
-		this->editDescr->setPlainText(crys.strSampleName.c_str());
-	}
-
-	if(crys.bChangedLattice)
-	{
-		this->editA->setText(QString::number(crys.dLattice[0]));
-		this->editB->setText(QString::number(crys.dLattice[1]));
-		this->editC->setText(QString::number(crys.dLattice[2]));
-
-		CalcPeaks();
-	}
-
-	if(crys.bChangedLatticeAngles)
-	{
-		this->editAlpha->setText(QString::number(crys.dLatticeAngles[0]));
-		this->editBeta->setText(QString::number(crys.dLatticeAngles[1]));
-		this->editGamma->setText(QString::number(crys.dLatticeAngles[2]));
-
-		CalcPeaks();
-	}
-
-	if(crys.bChangedSpacegroup)
-	{
-		editSpaceGroupsFilter->clear();
-		int iSGIdx = comboSpaceGroups->findText(crys.strSpacegroup.c_str());
-		if(iSGIdx >= 0)
-			comboSpaceGroups->setCurrentIndex(iSGIdx);
-
-		CalcPeaks();
-	}
-
-	if(crys.bChangedPlane1)
-	{
-		this->editScatX0->setText(QString::number(crys.dPlane1[0]));
-		this->editScatX1->setText(QString::number(crys.dPlane1[1]));
-		this->editScatX2->setText(QString::number(crys.dPlane1[2]));
-
-		CalcPeaks();
-	}
-	if(crys.bChangedPlane2)
-	{
-		this->editScatY0->setText(QString::number(crys.dPlane2[0]));
-		this->editScatY1->setText(QString::number(crys.dPlane2[1]));
-		this->editScatY2->setText(QString::number(crys.dPlane2[2]));
-
-		CalcPeaks();
-	}
-
-	if(triag.bChangedMonoD)
-	{
-		this->editMonoD->setText(QString::number(triag.dMonoD));
-		UpdateDs();
-	}
-	if(triag.bChangedAnaD)
-	{
-		this->editAnaD->setText(QString::number(triag.dAnaD));
-		UpdateDs();
-	}
-
-
-	// hack!
-	if(triag.bChangedTwoTheta && !checkSenseS->isChecked())
-		const_cast<TriangleOptions&>(triag).dTwoTheta = -triag.dTwoTheta;
-
-	m_sceneReal.triangleChanged(triag);
-	m_sceneReal.emitUpdate(triag);
-
-	UpdateMonoSense();
-	UpdateAnaSense();
-	UpdateSampleSense();
-	//m_sceneReal.emitAllParams();
-
-
-	if(triag.bChangedAngleKiVec0)
-	{
-		m_sceneRecip.tasChanged(triag);
-		m_sceneRecip.emitUpdate();
-		//m_sceneRecip.emitAllParams();
-	}
-}
-
 
 //--------------------------------------------------------------------------------
 // about dialog
+
 #include <boost/version.hpp>
 #include <qwt_global.h>
 
@@ -1813,10 +1099,10 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "Takin version 0.8\n";
+	strAbout += "Takin version 0.8.5\n";
 	strAbout += "Written by Tobias Weber, 2014";
 	strAbout += "\n\n";
-	
+
 	strAbout += "Takin is free software: you can redistribute it and/or modify ";
 	strAbout += "it under the terms of the GNU General Public License as published by ";
 	strAbout += "the Free Software Foundation, either version 3 of the License, or ";

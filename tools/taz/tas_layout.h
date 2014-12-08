@@ -64,7 +64,7 @@ class TasLayout : public QGraphicsItem
 		double m_dLenAnaDet = 50.;
 		double m_dLenSample = 25.;
 
-		double m_dScaleFactor = 1.; // pixels per cm for zoom == 1
+		double m_dScaleFactor = 1.25; // pixels per cm for zoom == 1
 		double m_dZoom = 1.;
 
 		bool m_bRealQVisible = 1;

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Project Name="montereso" InternalType="Console">
   <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
+    </Plugin>
     <Plugin Name="CMakePlugin">
       <![CDATA[[{
   "name": "Debug",
@@ -21,9 +24,6 @@
   "arguments": [],
   "parentProject": ""
  }]]]>
-    </Plugin>
-    <Plugin Name="qmake">
-      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
     </Plugin>
   </Plugins>
   <VirtualDirectory Name="tools">
@@ -53,7 +53,6 @@
     <File Name="helper/string.h"/>
     <File Name="helper/log.h"/>
     <File Name="helper/flags.cpp" ExcludeProjConfig="Debug"/>
-    <File Name="helper/lattice.cpp" ExcludeProjConfig="Debug"/>
     <File Name="helper/linalg.h"/>
     <File Name="helper/lattice.h" ExcludeProjConfig="Debug"/>
     <File Name="helper/flags.h" ExcludeProjConfig="Debug"/>

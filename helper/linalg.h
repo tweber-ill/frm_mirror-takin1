@@ -931,8 +931,10 @@ struct vec_angle_unsigned_impl<T, LinalgType::VECTOR>
 template<class T>
 typename T::value_type vec_angle_unsigned(const T& q1, const T& q2)
 {
-	return vec_angle_unsigned_impl<T>(q1, q2);
+	return vec_angle_unsigned_impl<T>()(q1, q2);
 }
+
+// -----------------------------------------------------------------------------
 
 
 // see: http://run.usc.edu/cs520-s12/assign2/p245-shoemake.pdf
@@ -980,7 +982,7 @@ ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 
 		t_innervec vec = vecVals[i] - vecMean;
 		ublas::matrix<T> matOuter = ublas::outer_prod(vec, vec);
-		
+
 		if(pProb)
 		{
 			tprob = (*pProb)[i];
