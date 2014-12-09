@@ -173,8 +173,7 @@ int main(int argc, char **argv)
 	if(argc <= 1)
 	{
 		log_err("No input file given.");
-
-		std::cout << "Usage: " << argv[0] << " [-m] <file>" << std::endl;
+		std::cout << "Usage: " << argv[0] << " <file>" << std::endl;
 		return -1;
 	}
 
