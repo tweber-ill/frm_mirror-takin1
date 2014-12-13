@@ -243,8 +243,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 	bAllowUpdate = 1;
 
-	m_scene.emitAllParams();
 	this->update();
+	m_scene.emitAllParams();
 }
 
 QRectF TasLayout::boundingRect() const
@@ -470,6 +470,7 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 	vecKf *= dLenKf;
 
 	m_pAna->setPos(vec_to_qpoint(vecSample + vecKf));
+	
 	nodeMoved(m_pSample);
 	nodeMoved(m_pAna);
 }
@@ -477,7 +478,7 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 void TasLayout::SetSampleTheta(double dAngle)
 {
 	m_dTheta = dAngle;
-	this->update();
+	nodeMoved();
 }
 
 void TasLayout::SetMonoTwoTheta(double dAngle)
@@ -495,7 +496,7 @@ void TasLayout::SetAnaTwoTheta(double dAngle)
 void TasLayout::SetAngleKiQ(double dAngle)
 {
 	m_dAngleKiQ = dAngle;
-	this->update();
+	nodeMoved();
 }
 
 void TasLayout::SetRealQVisible(bool bVisible)
@@ -538,7 +539,7 @@ TasLayoutScene::~TasLayoutScene()
 
 void TasLayoutScene::emitAllParams()
 {
-	if(!m_pTas || !m_pTas->IsReady())
+	if(!m_pTas || !m_pTas->IsReady() || m_bDontEmitChange)
 		return;
 
 	RealParams parms;
@@ -568,19 +569,15 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 
 	if(opts.bChangedMonoTwoTheta)
 		m_pTas->SetMonoTwoTheta(opts.dMonoTwoTheta);
-	if(opts.bChangedTwoTheta)
-		m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
 	if(opts.bChangedAnaTwoTheta)
 		m_pTas->SetAnaTwoTheta(opts.dAnaTwoTheta);
 	if(opts.bChangedTheta)
-	{
 		m_pTas->SetSampleTheta(opts.dTheta);
-		m_pTas->nodeMoved();	// no node moved, but force this call to update the theta angle
-	}
+	if(opts.bChangedTwoTheta)
+		m_pTas->SetSampleTwoTheta(opts.dTwoTheta);
+
 	//if(opts.bChangedAngleKiQ)
 	//	m_pTas->SetAngleKiQ(opts.dAngleKiQ);
-
-	update();
 
 	m_pTas->AllowChanges(1);
 	m_bDontEmitChange = 0;

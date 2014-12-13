@@ -144,9 +144,9 @@ void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 	if(m_scene.getSnapq() && pNode==GetNodeKfQ())
 		m_scene.SnapToNearestPeak(GetNodeGq(), GetNodeKfQ());
 
+	update();
 	m_scene.emitUpdate();
 	m_scene.emitAllParams();
-	this->update();
 }
 
 QRectF ScatteringTriangle::boundingRect() const
@@ -547,10 +547,10 @@ void ScatteringTriangle::SetAnaTwoTheta(double dTT, double dAnaD)
 	double dKf  = M_PI / std::sin(dTT/2.) / dAnaD;
 	dKf *= m_dScaleFactor;
 
-	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
-	ublas::vector<double> vecNodeKfQ = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+	const ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	const ublas::vector<double> vecNodeKfQ = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
-								- vecNodeKiKf;
+									- vecNodeKiKf;
 
 	vecKf /= ublas::norm_2(vecKf);
 	ublas::vector<double> vecKf_new = vecKf * dKf;
@@ -562,30 +562,35 @@ void ScatteringTriangle::SetAnaTwoTheta(double dTT, double dAnaD)
 
 void ScatteringTriangle::SetMonoTwoTheta(double dTT, double dMonoD)
 {
+	const double dSampleTT = GetTwoTheta(1);
+
 	dTT = std::fabs(dTT);
 	double dKi  = M_PI / std::sin(dTT/2.) / dMonoD;
 	dKi *= m_dScaleFactor;
 
-	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
-	ublas::vector<double> vecNodeKiQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0));
-	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
-									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+	const ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	const ublas::vector<double> vecNodeKiQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0));
+	const ublas::vector<double> vecKi_old = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
+											- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 
+	ublas::vector<double> vecKi = vecKi_old;
 	vecKi /= ublas::norm_2(vecKi);
 	ublas::vector<double> vecKi_new = vecKi * dKi;
 
 	m_pNodeKiKf->setPos(vec_to_qpoint(vecNodeKiQ - vecKi_new));
 	nodeMoved(m_pNodeKiKf);
+	
+	SetTwoTheta(dSampleTT);		// m_pNodeKfQ also moved!
 }
 
 void ScatteringTriangle::SetTwoTheta(double dTT)
 {
-	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	const ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 
-	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
-	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
-								- vecNodeKiKf;
+	const ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
+										- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+	const ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
+										- vecNodeKiKf;
 
 	ublas::vector<double> vecKf_new = ublas::prod(rotation_matrix_2d(-dTT), vecKi);
 
@@ -892,7 +897,7 @@ void ScatteringTriangleScene::emitUpdate()
 
 void ScatteringTriangleScene::emitAllParams()
 {
-	if(!m_pTri || !m_pTri->IsReady())
+	if(!m_pTri || !m_pTri->IsReady() || m_bDontEmitChange)
 		return;
 
 	RecipParams parms;
@@ -973,13 +978,27 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 		return;
 
 	m_bDontEmitChange = 1;
-
+	
 	if(opts.bChangedMonoTwoTheta)
+	{
 		m_pTri->SetMonoTwoTheta(opts.dMonoTwoTheta, m_dMonoD);
+		
+		//log_info("triag, changed mono: ", opts.dMonoTwoTheta/M_PI*180.);
+		//log_info("triag, mono now: ", m_pTri->GetMonoTwoTheta(3.355, 1)/M_PI*180.);
+	}
 	if(opts.bChangedAnaTwoTheta)
+	{
 		m_pTri->SetAnaTwoTheta(opts.dAnaTwoTheta, m_dAnaD);
+		//log_info("triag, changed ana: ", opts.dAnaTwoTheta/M_PI*180.);
+		//log_info("triag, ana now: ", m_pTri->GetAnaTwoTheta(3.355, 1)/M_PI*180.);
+	}
+	
 	if(opts.bChangedTwoTheta)
+	{
 		m_pTri->SetTwoTheta(m_bSamplePosSense?opts.dTwoTheta:-opts.dTwoTheta);
+		//log_info("triag, changed sample tt: ", opts.dTwoTheta/M_PI*180.);
+		//log_info("triag, tt now: ", m_pTri->GetTwoTheta(1)/M_PI*180.);
+	}
 	if(opts.bChangedAngleKiVec0)
 		m_pTri->RotateKiVec0To(m_bSamplePosSense, opts.dAngleKiVec0);
 
