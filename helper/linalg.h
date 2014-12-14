@@ -354,6 +354,22 @@ typename matrix_type::value_type trace(const matrix_type& mat)
 	return tr;
 }
 
+// see: https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
+template<class matrix_type=ublas::matrix<double>, class T = typename matrix_type::value_type>
+matrix_type perspective_matrix(T yfov, T asp, T n, T f)
+{
+	T y = cot(0.5*yfov);
+	T x = y/asp;
+	double dsgn = -1.;
+
+	return make_mat<matrix_type>
+	({
+		{     x,        0.,                0.,              0. },
+		{    0.,         y,                0.,              0. },
+		{    0.,        0.,  dsgn*(f+n)/(f-n), (-2.*f*n)/(f-n) },
+		{    0.,        0.,           dsgn*1.,              0. }
+	});
+}
 
 // -----------------------------------------------------------------------------
 template<typename T, class FKT, const int iDim=get_type_dim<T>::value>

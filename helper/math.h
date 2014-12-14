@@ -26,6 +26,7 @@ T sign(T t)
 	return T(1);
 }
 
+template<typename T> T cot(T t) { return T(1)/std::tan(t); }
 
 template<class vec_type>
 typename vec_type::value_type mean_value(const vec_type& vec)
