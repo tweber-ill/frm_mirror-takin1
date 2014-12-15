@@ -1,6 +1,7 @@
-// gcc -DUSE_LAPACK -o tst_qr tst_qr.cpp ../helper/linalg.cpp -std=c++11 -lstdc++ -lm -I/usr/include/lapacke -llapacke -llapack
+// gcc -DUSE_LAPACK -o tst_qr tst_qr.cpp ../helper/linalg2.cpp ../helper/log.cpp -std=c++11 -lstdc++ -lm -I/usr/include/lapacke -llapacke -llapack
 
 #include "../helper/linalg.h"
+#include "../helper/linalg2.h"
 
 typedef ublas::vector<double> vec;
 typedef ublas::matrix<double> mat;

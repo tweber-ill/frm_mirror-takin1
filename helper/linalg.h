@@ -308,19 +308,23 @@ matrix_type skew(const vector_type& vec)
 		throw Err("Skew only defined for three dimensions.");
 }
 
-template<typename T=double>
-ublas::matrix<T> unit_matrix(unsigned int N)
+template<class matrix_type = ublas::matrix<double>>
+matrix_type unit_matrix(unsigned int N)
 {
-	ublas::matrix<T> mat = ublas::zero_matrix<T>(N,N);
-	for(unsigned int i=0; i<N; ++i)
-		mat(i,i) = 1;
+	matrix_type mat(N,N);
+
+	for(std::size_t i=0; i<N; ++i)
+		for(std::size_t j=0; j<N; ++j)
+			mat(i,j) = (i==j ? 1 : 0);
 	return mat;
 }
 
 
 // Euler-Rodrigues formula
-template<typename T=double>
-ublas::matrix<T> rotation_matrix(const ublas::vector<T>& vec, T angle)
+template<class mat_type=ublas::matrix<double>,
+	class vec_type=ublas::vector<double>,
+	typename T = typename mat_type::value_type>
+mat_type rotation_matrix(const vec_type& vec, T angle)
 {
 	T s, c;
 	if(angle==0.)
@@ -355,12 +359,13 @@ typename matrix_type::value_type trace(const matrix_type& mat)
 }
 
 // see: https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
-template<class matrix_type=ublas::matrix<double>, class T = typename matrix_type::value_type>
+template<class matrix_type=ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,4*4>>, 
+	class T=typename matrix_type::value_type>
 matrix_type perspective_matrix(T yfov, T asp, T n, T f)
 {
-	T y = cot(0.5*yfov);
-	T x = y/asp;
-	double dsgn = -1.;
+	const T y = cot(0.5*yfov);
+	const T x = y/asp;
+	const T dsgn = -1.;
 
 	return make_mat<matrix_type>
 	({
@@ -454,10 +459,11 @@ bool is_nan_or_inf(const T& mat)
 
 
 // code for inverse based on boost/libs/numeric/ublas/test/test_lu.cpp
-template<typename T=double>
-bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
+template<class mat_type=ublas::matrix<double>>
+bool inverse(const mat_type& mat, mat_type& inv)
 {
-	const typename ublas::matrix<T>::size_type N = mat.size1();
+	using T = typename mat_type::value_type;
+	const typename mat_type::size_type N = mat.size1();
 	if(N != mat.size2())
 		return false;
 	//if(isnan(mat) || isinf(mat))
@@ -465,7 +471,7 @@ bool inverse(const ublas::matrix<T>& mat, ublas::matrix<T>& inv)
 
 	try
 	{
-		ublas::matrix<T> lu = mat;
+		mat_type lu = mat;
 		ublas::permutation_matrix<> perm(N);
 
 		if(ublas::lu_factorize(lu, perm) != 0)
@@ -975,7 +981,7 @@ T slerp(const T& q1, const T& q2, typename T::value_type t)
 // see e.g.: http://www.itl.nist.gov/div898/handbook/pmc/section5/pmc541.htm
 template<typename T=double>
 ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
-							const std::vector<T>* pProb = 0)
+			const std::vector<T>* pProb = 0)
 {
 	if(vecVals.size() == 0) return ublas::matrix<T>();
 
@@ -1012,6 +1018,31 @@ ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 
 	return matCov;
 }
+
+
+
+// --------------------------------------------------------------------------------
+
+
+template<typename T=double, typename... Args>
+void to_gl_array(const ublas::matrix<T, Args...>& mat, T* glmat)
+{
+	glmat[0]=mat(0,0);  glmat[1]=mat(1,0);  glmat[2]=mat(2,0);
+	glmat[4]=mat(0,1);  glmat[5]=mat(1,1);  glmat[6]=mat(2,1);
+	glmat[8]=mat(0,2);  glmat[9]=mat(1,2);  glmat[10]=mat(2,2);
+
+	if(mat.size1()>=4 && mat.size2()>=4)
+	{
+		glmat[3]=mat(3,0); glmat[7]=mat(3,1); glmat[11]=mat(3,2);
+		glmat[12]=mat(0,3); glmat[13]=mat(1,3); glmat[14]=mat(2,3); glmat[15]=mat(3,3);
+	}
+	else
+	{
+		glmat[3]=0; glmat[7]=0; glmat[11]=0;
+		glmat[12]=0; glmat[13]=0; glmat[14]=0; glmat[15]=1;
+	}
+}
+
 
 
 // --------------------------------------------------------------------------------

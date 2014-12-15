@@ -46,7 +46,7 @@ template<typename t_int=int> static inline t_int pymod(t_int a, t_int b)
 static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
 {
 	/*00, P*/ [] (int, int, int) -> bool { return 1; },
-	
+
 	/*01*/ [] (int h, int, int) -> bool { return h%2 == 0; },
 	/*02*/ [] (int, int k, int) -> bool { return k%2 == 0; },
 	/*03*/ [] (int, int, int l) -> bool { return l%2 == 0; },

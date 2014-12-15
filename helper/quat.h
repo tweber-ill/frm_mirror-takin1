@@ -15,9 +15,11 @@ namespace math = boost::math;
 
 // algo from:
 // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q55
-template<typename T=double>
-math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
+template<class mat_type=ublas::matrix<double>, class quat_type=math::quaternion<double>>
+quat_type rot3_to_quat(const mat_type& rot)
 {
+	using T = typename quat_type::value_type;
+
 	T tr = trace(rot) + 1.;
 	T x,y,z,w;
 
@@ -62,22 +64,22 @@ math::quaternion<T> rot3_to_quat(const ublas::matrix<T>& rot)
 	}
 
 	T norm_eucl = std::sqrt(w*w + x*x + y*y + z*z);
-	math::quaternion<T> quatRet(w,x,y,z);
+	quat_type quatRet(w,x,y,z);
 	return quatRet /*/ math::norm(quatRet)*/ / norm_eucl;
 }
 
 
-template<typename T=double>
-ublas::matrix<T> quat_to_rot3(const math::quaternion<T>& quat)
+template<class mat_type=ublas::matrix<double>, class quat_type=math::quaternion<double>>
+mat_type quat_to_rot3(const quat_type& quat)
 {
-	const math::quaternion<T> cquat = math::conj(quat);
-	const math::quaternion<T> i(0,1,0,0), j(0,0,1,0), k(0,0,0,1);
+	const quat_type cquat = math::conj(quat);
+	const quat_type i(0,1,0,0), j(0,0,1,0), k(0,0,0,1);
 
-	const math::quaternion<T> cols[] = {quat*i*cquat,
+	const quat_type cols[] = {quat*i*cquat,
 										quat*j*cquat,
 										quat*k*cquat};
 
-	ublas::matrix<T> mat(3,3);
+	mat_type mat(3,3);
 	for(unsigned int icol=0; icol<3; ++icol)
 	{
 		mat(0, icol) = cols[icol].R_component_2();
@@ -89,8 +91,8 @@ ublas::matrix<T> quat_to_rot3(const math::quaternion<T>& quat)
 }
 
 
-template<typename T=double>
-std::vector<T> quat_to_euler(const math::quaternion<T>& quat)
+template<class quat_type=math::quaternion<double>, typename T=typename quat_type::value_type>
+std::vector<T> quat_to_euler(const quat_type& quat)
 {
 	T q[] = {quat.R_component_1(),
 			quat.R_component_2(),
@@ -107,8 +109,8 @@ std::vector<T> quat_to_euler(const math::quaternion<T>& quat)
 	return vec;
 }
 
-template<typename T=double>
-std::vector<T> rotation_angle(const ublas::matrix<T>& rot)
+template<typename T=double, class... Args>
+std::vector<T> rotation_angle(const ublas::matrix<T, Args...>& rot)
 {
 	std::vector<T> vecResult;
 
@@ -135,12 +137,12 @@ std::vector<T> rotation_angle(const ublas::matrix<T>& rot)
 }
 
 
-template<typename T=double>
-math::quaternion<T> stereo_proj(const math::quaternion<T>& quat)
+template<class quat_type=math::quaternion<double>>
+quat_type stereo_proj(const quat_type& quat)
 { return (1.+quat)/(1.-quat); }
 
-template<typename T=double>
-math::quaternion<T> stereo_proj_inv(const math::quaternion<T>& quat)
+template<class quat_type=math::quaternion<double>>
+quat_type stereo_proj_inv(const quat_type& quat)
 { return (1.-quat)/(1.+quat); }
 
 

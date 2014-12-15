@@ -13,23 +13,8 @@
 #include <QtCore/QTimer>
 
 
-static inline void to_array(const ublas::matrix<double>& mat, GLdouble* glmat)
-{
-	glmat[0]=mat(0,0);  glmat[1]=mat(1,0);  glmat[2]=mat(2,0);
-	glmat[4]=mat(0,1);  glmat[5]=mat(1,1);  glmat[6]=mat(2,1);
-	glmat[8]=mat(0,2);  glmat[9]=mat(1,2);  glmat[10]=mat(2,2);
-
-	if(mat.size1()>=4 && mat.size2()>=4)
-	{
-		glmat[3]=mat(3,0); glmat[7]=mat(3,1); glmat[11]=mat(3,2);
-		glmat[12]=mat(0,3); glmat[13]=mat(1,3); glmat[14]=mat(2,3); glmat[15]=mat(3,3);
-	}
-	else
-	{
-		glmat[3]=0; glmat[7]=0; glmat[11]=0;
-		glmat[12]=0; glmat[13]=0; glmat[14]=0; glmat[15]=1;
-	}
-}
+typedef ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,4*4>> t_mat4;
+typedef ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,3*3>> t_mat3;
 
 class GlWidget : public QGLWidget /*QOpenGLWidget*/
 { Q_OBJECT
@@ -76,8 +61,8 @@ class GlWidget : public QGLWidget /*QOpenGLWidget*/
 
 			m_pGL->glMatrixMode(GL_PROJECTION);
 
-			ublas::matrix<double> mat = perspective_matrix(45./180.*M_PI, double(w)/double(h), 0.1, 100.);
-			GLdouble glmat[16]; to_array(mat, glmat);
+			t_mat4 mat = perspective_matrix(45./180.*M_PI, double(w)/double(h), 0.1, 100.);
+			GLdouble glmat[16]; to_gl_array(mat, glmat);
 			m_pGL->glLoadMatrixd(glmat);
 
 			m_pGL->glMatrixMode(GL_MODELVIEW);
@@ -91,16 +76,16 @@ class GlWidget : public QGLWidget /*QOpenGLWidget*/
 
 			m_pGL->glTranslated(0., 0., -50.);
 
-			ublas::matrix<double> mat0 = rotation_matrix_3d_z(0.);
-			ublas::matrix<double> mat1 = rotation_matrix_3d_z(M_PI/2.);
+			t_mat3 mat0 = rotation_matrix_3d_z(0.);
+			t_mat3 mat1 = rotation_matrix_3d_z(M_PI/2.);
 
 			math::quaternion<double> quat0 = rot3_to_quat(mat0);
 			math::quaternion<double> quat1 = rot3_to_quat(mat1);
 			math::quaternion<double> quat = slerp(quat0, quat1, m_dTick);
 			//math::quaternion<double> quat = lerp(quat0, quat1, m_dTick);
 
-			ublas::matrix<double> mat = quat_to_rot3(quat);
-			GLdouble glmat[16]; to_array(mat, glmat);
+			t_mat3 mat = quat_to_rot3(quat);
+			GLdouble glmat[16]; to_gl_array(mat, glmat);
 			m_pGL->glMultMatrixd(glmat);
 
 			m_pGL->glColor3f(0.,0.,0.);

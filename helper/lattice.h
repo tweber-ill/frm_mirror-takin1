@@ -17,7 +17,7 @@ template<typename T=double>
 bool reciprocal(const ublas::matrix<T>& matReal, ublas::matrix<T>& matRecip)
 {
 	ublas::matrix<T> matInv;
-	if(!inverse<T>(ublas::trans(matReal), matInv))
+	if(!inverse<ublas::matrix<T>>(ublas::trans(matReal), matInv))
 		return false;
 
 	matRecip = 2.*M_PI*matInv;
@@ -205,7 +205,7 @@ ublas::vector<T> Lattice<T>::GetHKL(const ublas::vector<T>& vec) const
 	ublas::matrix<T> mat = column_matrix({m_vecs[0], m_vecs[1], m_vecs[2]});
 
 	ublas::matrix<T> matInv;
-	if(!inverse<T>(mat, matInv))
+	if(!inverse(mat, matInv))
 		throw Err("Miller indices could not be calculated.");
 
 	return ublas::prod(matInv, vec);
@@ -367,7 +367,7 @@ void get_hkl_from_tas_angles(const Lattice<T>& lattice_real,
 	t_mat rot = ::rotation_matrix_3d_z(Qvec1);
 	t_vec vecQ = ublas::prod(rot, make_vec({Q,0.,0.}));
 	t_vec vechkl = ublas::prod(matUBinv, vecQ);
-	
+
 	if(pVecQ) *pVecQ = vecQ;
 
 	if(vechkl.size() != 3)
