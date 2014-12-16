@@ -393,19 +393,19 @@ void NeutronDlg::EnableRealEdits()
 	//void (QLineEdit::*pFunc)(bool) = &QLineEdit::setEnabled;
 	void (QLineEdit::*pFunc)(bool) = &QLineEdit::setReadOnly;
 
-	(editBraggDirLam->*pFunc)(1);
-	(editBraggDirD->*pFunc)(1);
-	(editBraggDirT->*pFunc)(1);
-	(editBraggDirTT->*pFunc)(1);
+	(editBraggDirLam->*pFunc)(0);
+	(editBraggDirD->*pFunc)(0);
+	(editBraggDirT->*pFunc)(0);
+	(editBraggDirTT->*pFunc)(0);
 
 	if(radioBraggDirLam->isChecked())
-		(editBraggDirLam->*pFunc)(0);
+		(editBraggDirLam->*pFunc)(1);
 	else if(radioBraggDirD->isChecked())
-		(editBraggDirD->*pFunc)(0);
+		(editBraggDirD->*pFunc)(1);
 	else if(radioBraggDirTT->isChecked())
 	{
-		(editBraggDirT->*pFunc)(0);
-		(editBraggDirTT->*pFunc)(0);
+		(editBraggDirT->*pFunc)(1);
+		(editBraggDirTT->*pFunc)(1);
 	}
 }
 
@@ -414,19 +414,19 @@ void NeutronDlg::EnableRecipEdits()
 	//void (QLineEdit::*pFunc)(bool) = &QLineEdit::setEnabled;
 	void (QLineEdit::*pFunc)(bool) = &QLineEdit::setReadOnly;
 
-	(editBraggReciLam->*pFunc)(1);
-	(editBraggReciQ->*pFunc)(1);
-	(editBraggReciT->*pFunc)(1);
-	(editBraggReciTT->*pFunc)(1);
+	(editBraggReciLam->*pFunc)(0);
+	(editBraggReciQ->*pFunc)(0);
+	(editBraggReciT->*pFunc)(0);
+	(editBraggReciTT->*pFunc)(0);
 
 	if(radioBraggReciLam->isChecked())
-		(editBraggReciLam->*pFunc)(0);
+		(editBraggReciLam->*pFunc)(1);
 	else if(radioBraggReciQ->isChecked())
-		(editBraggReciQ->*pFunc)(0);
+		(editBraggReciQ->*pFunc)(1);
 	else if(radioBraggReciTT->isChecked())
 	{
-		(editBraggReciT->*pFunc)(0);
-		(editBraggReciTT->*pFunc)(0);
+		(editBraggReciT->*pFunc)(1);
+		(editBraggReciTT->*pFunc)(1);
 	}
 }
 
