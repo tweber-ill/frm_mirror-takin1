@@ -32,6 +32,9 @@ class NeutronDlg : public QDialog, Ui::NeutronDlg
 		void CalcNeutronOm();
 		void CalcNeutronF();
 		void CalcNeutronT();
+		
+		void CalcBraggReal();
+		void CalcBraggRecip();		
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);

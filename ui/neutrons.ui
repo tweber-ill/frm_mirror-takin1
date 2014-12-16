@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Neutron Properties</string>
+   <string>Basic Neutron Properties</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -21,7 +21,7 @@
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Properties</string>
+       <string>Neutron Properties</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
        <item row="6" column="0">
@@ -176,6 +176,141 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Bragg Scattering</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Real</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="editBraggDirN">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="editBraggDirLam">
+            <property name="text">
+             <string>5</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="editBraggDirD">
+            <property name="text">
+             <string>3</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="editBraggDirTT"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="radioBraggDirLam">
+            <property name="text">
+             <string>λ (Å):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QRadioButton" name="radioBraggDirD">
+            <property name="text">
+             <string>d (Å):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="radioBraggDirTT">
+            <property name="text">
+             <string>2θ (deg):</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_18">
+            <property name="text">
+             <string>n:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Reciprocal</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_3">
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="editBraggReciN">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="editBraggReciLam">
+            <property name="text">
+             <string>5</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="editBraggReciQ">
+            <property name="text">
+             <string>0.5</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="editBraggReciTT"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="radioBraggReciLam">
+            <property name="text">
+             <string>λ (Å):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QRadioButton" name="radioBraggReciQ">
+            <property name="text">
+             <string>Q (Å⁻¹):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="radioBraggReciTT">
+            <property name="text">
+             <string>2θ (deg):</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_19">
+            <property name="text">
+             <string>n:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
        <string>Constants</string>
@@ -219,6 +354,20 @@
   <tabstop>editF</tabstop>
   <tabstop>editT</tabstop>
   <tabstop>editV</tabstop>
+  <tabstop>radioBraggDirLam</tabstop>
+  <tabstop>radioBraggDirD</tabstop>
+  <tabstop>radioBraggDirTT</tabstop>
+  <tabstop>editBraggDirN</tabstop>
+  <tabstop>editBraggDirLam</tabstop>
+  <tabstop>editBraggDirD</tabstop>
+  <tabstop>editBraggDirTT</tabstop>
+  <tabstop>radioBraggReciLam</tabstop>
+  <tabstop>radioBraggReciQ</tabstop>
+  <tabstop>radioBraggReciTT</tabstop>
+  <tabstop>editBraggReciN</tabstop>
+  <tabstop>editBraggReciLam</tabstop>
+  <tabstop>editBraggReciQ</tabstop>
+  <tabstop>editBraggReciTT</tabstop>
   <tabstop>tableConst</tabstop>
   <tabstop>buttonBox</tabstop>
   <tabstop>tabWidget</tabstop>

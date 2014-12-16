@@ -33,10 +33,32 @@ NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
 	QObject::connect(editT, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronT()));
 
 	CalcNeutronLam();
+	
+	
+	
+	std::vector<QLineEdit*> editsDir = {editBraggDirN, editBraggDirLam, editBraggDirD, editBraggDirTT};
+	std::vector<QLineEdit*> editsReci = {editBraggReciN, editBraggReciLam, editBraggReciQ, editBraggReciTT};
+	std::vector<QRadioButton*> radioDir = {/*radioBraggDirN,*/ radioBraggDirLam, radioBraggDirD, radioBraggDirTT};
+	std::vector<QRadioButton*> radioReci = {/*radioBraggReciN,*/ radioBraggReciLam, radioBraggReciQ, radioBraggReciTT};
+
+	for(QLineEdit* pEdit : editsDir)
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcBraggReal()));
+	for(QLineEdit* pEdit : editsReci)
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcBraggRecip()));
+	for(QRadioButton* pRadio : radioDir)
+		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(CalcBraggReal()));
+	for(QRadioButton* pRadio : radioReci)
+		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(CalcBraggRecip()));
+		
+	CalcBraggReal();
+	CalcBraggRecip();
 }
 
 NeutronDlg::~NeutronDlg()
 {}
+
+
+// -----------------------------------------------------------------------------
 
 
 void NeutronDlg::CalcNeutronLam()
@@ -171,6 +193,9 @@ void NeutronDlg::CalcNeutronT()
 	editOm->setText(var_to_str<double>(E_n / co::hbar * units::si::second / 1e12).c_str());
 	editF->setText(var_to_str<double>(E_n / co::h * units::si::second / 1e12).c_str());
 }
+
+
+// -----------------------------------------------------------------------------
 
 
 void NeutronDlg::setupConstants()
@@ -345,6 +370,77 @@ void NeutronDlg::setupConstants()
 		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
 	}
 }
+
+
+// -----------------------------------------------------------------------------
+
+
+void NeutronDlg::CalcBraggReal()
+{
+	std::string strN = editBraggDirN->text().toStdString();
+	std::string strLam = editBraggDirLam->text().toStdString();
+	std::string strD = editBraggDirD->text().toStdString();
+	std::string strTT = editBraggDirTT->text().toStdString();
+
+	int iOrder = str_to_var<int>(strN);
+	units::quantity<units::si::length> lam = str_to_var<double>(strLam)*angstrom;
+	units::quantity<units::si::length> d = str_to_var<double>(strD)*angstrom;
+	units::quantity<units::si::plane_angle> tt = str_to_var<double>(strTT)/180.*M_PI*units::si::radians;
+
+	if(radioBraggDirLam->isChecked())
+	{
+		lam = ::bragg_real_lam(d, tt, double(iOrder));
+		std::string strLam = var_to_str(lam/angstrom);
+		editBraggDirLam->setText(strLam.c_str());
+	}
+	else if(radioBraggDirD->isChecked())
+	{
+		d = ::bragg_real_d(lam, tt, double(iOrder));
+		std::string strD = var_to_str(d/angstrom);
+		editBraggDirD->setText(strD.c_str());
+	}
+	else if(radioBraggDirTT->isChecked())
+	{
+		tt = ::bragg_real_twotheta(d, lam, double(iOrder));
+		std::string strTT = var_to_str(double(tt/units::si::radian) /M_PI*180.);
+		editBraggDirTT->setText(strTT.c_str());
+	}
+}
+
+void NeutronDlg::CalcBraggRecip()
+{
+	std::string strN = editBraggReciN->text().toStdString();
+	std::string strLam = editBraggReciLam->text().toStdString();
+	std::string strQ = editBraggReciQ->text().toStdString();
+	std::string strTT = editBraggReciTT->text().toStdString();
+
+	int iOrder = str_to_var<int>(strN);
+	units::quantity<units::si::length> lam = str_to_var<double>(strLam)*angstrom;
+	units::quantity<units::si::wavenumber> Q = str_to_var<double>(strQ)/angstrom;
+	units::quantity<units::si::plane_angle> tt = str_to_var<double>(strTT)/180.*M_PI*units::si::radians;
+
+	if(radioBraggReciLam->isChecked())
+	{
+		lam = ::bragg_recip_lam(Q, tt, double(iOrder));
+		std::string strLam = var_to_str(lam/angstrom);
+		editBraggReciLam->setText(strLam.c_str());
+	}
+	else if(radioBraggReciQ->isChecked())
+	{
+		Q = ::bragg_recip_Q(lam, tt, double(iOrder));
+		std::string strQ = var_to_str(Q*angstrom);
+		editBraggReciQ->setText(strQ.c_str());
+	}
+	else if(radioBraggReciTT->isChecked())
+	{
+		tt = ::bragg_recip_twotheta(Q, lam, double(iOrder));
+		std::string strTT = var_to_str(double(tt/units::si::radian) /M_PI*180.);
+		editBraggReciTT->setText(strTT.c_str());
+	}
+}
+
+
+// -----------------------------------------------------------------------------
 
 
 void NeutronDlg::accept()
