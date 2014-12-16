@@ -98,14 +98,18 @@ void NicosCache::ClearKeys()
 
 void NicosCache::RefreshKeys()
 {
+	std::string strMsg;
 	for(const std::string& strKey : m_vecKeys)
-		m_tcp.write("@"+strKey+"?\n");
+		strMsg += "@"+strKey+"?\n";
+	m_tcp.write(strMsg);
 }
 
 void NicosCache::RegisterKeys()
 {
+	std::string strMsg;
 	for(const std::string& strKey : m_vecKeys)
-		m_tcp.write("@"+strKey+":\n");
+		strMsg += "@"+strKey+":\n";
+	m_tcp.write(strMsg);
 }
 
 
@@ -160,9 +164,19 @@ static std::string get_py_string(const std::string& str)
 
 void NicosCache::slot_receive(const std::string& str)
 {
-	//std::cout << "received:" << str << std::endl;
+	//log_debug("Received: ", str);
+
 	std::pair<std::string, std::string> pairTimeVal = ::split_first<std::string>(str, "@", 1);
 	std::pair<std::string, std::string> pairKeyVal = ::split_first<std::string>(pairTimeVal.second, "=", 1);
+	if(pairKeyVal.second == "")
+	{
+		pairKeyVal = ::split_first<std::string>(pairTimeVal.second, "!", 1);
+		if(pairKeyVal.second != "")
+			log_warn("Value \"", pairKeyVal.second, "\" for \"", pairKeyVal.first, "\" is marked as invalid.");
+		else
+			log_err("Invalid net reply: \"", str, "\"");
+	}
+
 
 	const std::string& strKey = pairKeyVal.first;
 	const std::string& strVal = pairKeyVal.second;
