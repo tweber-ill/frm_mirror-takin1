@@ -8,7 +8,7 @@
 #define __SPEC_CHAR_H__
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
 struct SpecChar
 {
@@ -21,7 +21,7 @@ struct SpecChar
 	{}
 };
 
-typedef std::map<std::string, SpecChar> t_mapSpecChars;
+typedef std::unordered_map<std::string, SpecChar> t_mapSpecChars;
 
 
 extern void init_spec_chars();
