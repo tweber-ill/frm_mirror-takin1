@@ -354,6 +354,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	// Q vector direction visible?
 	if(this->m_bRealQVisible)
 	{
+		//log_info("angle kiQ: ", m_dAngleKiQ/M_PI*180.);
 		const double &dAngleKiQ = m_dAngleKiQ;
 		ublas::matrix<double> matRotQ = rotation_matrix_2d(dAngleKiQ);
 		ublas::vector<double> vecKi = vecSample-vecMono;

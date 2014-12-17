@@ -897,7 +897,7 @@ void ScatteringTriangleScene::emitUpdate()
 
 void ScatteringTriangleScene::emitAllParams()
 {
-	if(!m_pTri || !m_pTri->IsReady() || m_bDontEmitChange)
+	if(!m_pTri || !m_pTri->IsReady() /*|| m_bDontEmitChange*/) // emit even with m_bDontEmitChange because of Q vector in real space
 		return;
 
 	RecipParams parms;

@@ -390,7 +390,7 @@ void NeutronDlg::setupConstants()
 
 void NeutronDlg::EnableRealEdits()
 {
-	//void (QLineEdit::*pFunc)(bool) = &QLineEdit::setEnabled;
+	//void (QLineEdit::*pFunc)(bool) = &QLineEdit::setDisabled;
 	void (QLineEdit::*pFunc)(bool) = &QLineEdit::setReadOnly;
 
 	(editBraggDirLam->*pFunc)(0);
@@ -411,7 +411,7 @@ void NeutronDlg::EnableRealEdits()
 
 void NeutronDlg::EnableRecipEdits()
 {
-	//void (QLineEdit::*pFunc)(bool) = &QLineEdit::setEnabled;
+	//void (QLineEdit::*pFunc)(bool) = &QLineEdit::setDisabled;
 	void (QLineEdit::*pFunc)(bool) = &QLineEdit::setReadOnly;
 
 	(editBraggReciLam->*pFunc)(0);
@@ -536,7 +536,6 @@ void NeutronDlg::accept()
 	if(m_pSettings)
 	{
 		m_pSettings->setValue("neutron_props/geo", saveGeometry());
-
 		m_pSettings->setValue("neutron_props/lam", editLam->text());
 	}
 

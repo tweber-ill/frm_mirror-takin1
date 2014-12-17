@@ -14,6 +14,7 @@
 #include "log.h"
 #include "traits.h"
 
+#include <initializer_list>
 #include <cmath>
 
 #include <boost/algorithm/minmax_element.hpp>
@@ -26,9 +27,6 @@ namespace ublas = boost::numeric::ublas;
 
 //#include <boost/math/quaternion.hpp>
 //namespace math = boost::math;
-
-#include <initializer_list>
-
 
 
 template<class matrix_type=ublas::matrix<double> >
