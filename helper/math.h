@@ -131,4 +131,39 @@ T lerp(const T& a, const T& b, REAL val)
 	return a + T((b-a)*val);
 }
 
+// solve a*x^2 + b*x + c for x
+template<class T=double>
+std::vector<T> quadratic_solve(T a, T b, T c)
+{
+	std::vector<T> vec;
+
+	if(float_equal(a, 0.))
+	{
+		// b*x + c = 0
+		T t = -c/b;
+		if(!std::isnan(t) && !std::isinf(t))
+			vec.push_back(t);
+	}
+	else
+	{
+		T D = b*b - 4.*a*c;
+		if(float_equal(D, 0.))
+		{
+			T t = -b/(2.*a);
+			if(!std::isnan(t) && !std::isinf(t))
+				vec.push_back(t);
+		}
+		else if(D > 0.)
+		{
+			T r = std::sqrt(D);
+			T t0 = (-b + r) / (2.*a);
+			T t1 = (-b - r) / (2.*a);
+			if(!std::isnan(t0) && !std::isinf(t0)) vec.push_back(t0);
+			if(!std::isnan(t1) && !std::isinf(t1)) vec.push_back(t1);
+		}
+	}
+
+	return vec;
+}
+
 #endif

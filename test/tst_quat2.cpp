@@ -6,7 +6,7 @@
 #include "../helper/quat.h"
 
 #include <QtOpenGL/QGLWidget>
-#include <QtGui/QOpenGLFunctions_2_0>
+#include <QtGui/QOpenGLFunctions_2_1>
 #include <QtGui/QApplication>
 #include <QtGui/QDialog>
 #include <QtGui/QGridLayout>
@@ -19,7 +19,7 @@ typedef ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,3*3>
 class GlWidget : public QGLWidget /*QOpenGLWidget*/
 { Q_OBJECT
 	protected:
-		QOpenGLFunctions_2_0 *m_pGL = 0;
+		QOpenGLFunctions_2_1 *m_pGL = 0;
 		double m_dTick = 0.;
 		QTimer m_timer;
 
@@ -44,7 +44,7 @@ class GlWidget : public QGLWidget /*QOpenGLWidget*/
 	protected:
 		virtual void initializeGL() override
 		{
-			m_pGL = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_2_0>();
+			m_pGL = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_2_1>();
 			m_pGL->initializeOpenGLFunctions();
 
 			m_pGL->glClearColor(1.,1.,1.,0.);
@@ -56,14 +56,14 @@ class GlWidget : public QGLWidget /*QOpenGLWidget*/
 
 		virtual void resizeGL(int w, int h) override
 		{
-			if(w<0) w=1; if(h<0) h=1;
+			if(w<=0) w=1; if(h<=0) h=1;
 			m_pGL->glViewport(0,0,w,h);
 
 			m_pGL->glMatrixMode(GL_PROJECTION);
-
-			t_mat4 mat = perspective_matrix(45./180.*M_PI, double(w)/double(h), 0.1, 100.);
-			GLdouble glmat[16]; to_gl_array(mat, glmat);
-			m_pGL->glLoadMatrixd(glmat);
+			//t_mat4 mat = perspective_matrix(45./180.*M_PI, double(w)/double(h), 0.1, 100.);
+			//GLdouble glmat[16]; to_gl_array(mat, glmat);
+			//m_pGL->glLoadMatrixd(glmat);
+			m_pGL->glLoadIdentity();
 
 			m_pGL->glMatrixMode(GL_MODELVIEW);
 			m_pGL->glLoadIdentity();
@@ -74,7 +74,7 @@ class GlWidget : public QGLWidget /*QOpenGLWidget*/
 			m_pGL->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			m_pGL->glPushMatrix();
 
-			m_pGL->glTranslated(0., 0., -50.);
+			m_pGL->glTranslated(0., 0., -0.5);
 
 			t_mat3 mat0 = rotation_matrix_3d_z(0.);
 			t_mat3 mat1 = rotation_matrix_3d_z(M_PI/2.);
@@ -90,14 +90,13 @@ class GlWidget : public QGLWidget /*QOpenGLWidget*/
 
 			m_pGL->glColor3f(0.,0.,0.);
 			m_pGL->glBegin(GL_LINE_STRIP);
-				m_pGL->glVertex3f(-10., 0., 0.);
-				m_pGL->glVertex3f(10., 0., 0.);
-				m_pGL->glVertex3f(0., 10., 0.);
-				m_pGL->glVertex3f(-10., 0., 0.);
+				m_pGL->glVertex3f(-0.5, 0., 0.);
+				m_pGL->glVertex3f(0.5, 0., 0.);
+				m_pGL->glVertex3f(0., 0.5, 0.);
+				m_pGL->glVertex3f(-0.5, 0., 0.);
 			m_pGL->glEnd();
 
 			m_pGL->glPopMatrix();
-			swapBuffers();
 		}
 };
 

@@ -258,4 +258,11 @@ void merge_map(std::map<T1, T2>& mapThis, const std::map<T1, T2>& mapOther)
 		mapThis.insert(thepair);
 }
 
+
+template<typename T>
+T nextpow2(T val)
+{
+	return std::pow(2., std::ceil(std::log2(val)));
+}
+
 #endif

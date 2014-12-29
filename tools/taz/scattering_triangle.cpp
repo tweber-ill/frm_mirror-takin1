@@ -251,9 +251,9 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	const std::wstring& strDelta = ::get_spec_char_utf16("Delta");
 
 	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE, ostrq, ostrG;
-	ostrQ.precision(3); ostrE.precision(3);
-	ostrKi.precision(3); ostrKf.precision(3);
-	ostrG.precision(3); ostrq.precision(3);
+	ostrQ.precision(4); ostrE.precision(4);
+	ostrKi.precision(4); ostrKf.precision(4);
+	ostrG.precision(4); ostrq.precision(4);
 
 	ostrQ << L"Q = " << GetQ() << " " << strAA;
 	ostrKi << L"ki = " << GetKi() << " " << strAA;
@@ -369,7 +369,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 			const std::wstring& strDEG = ::get_spec_char_utf16("deg");
 			std::wostringstream ostrAngle;
-			ostrAngle.precision(4);
+			ostrAngle.precision(6);
 			ostrAngle << std::fabs(dArcAngle) << strDEG;
 
 			QPointF ptDirOut = *vecPoints[i] - ptMid;
@@ -579,7 +579,7 @@ void ScatteringTriangle::SetMonoTwoTheta(double dTT, double dMonoD)
 
 	m_pNodeKiKf->setPos(vec_to_qpoint(vecNodeKiQ - vecKi_new));
 	nodeMoved(m_pNodeKiKf);
-	
+
 	SetTwoTheta(dSampleTT);		// m_pNodeKfQ also moved!
 }
 
@@ -978,11 +978,11 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 		return;
 
 	m_bDontEmitChange = 1;
-	
+
 	if(opts.bChangedMonoTwoTheta)
 	{
 		m_pTri->SetMonoTwoTheta(opts.dMonoTwoTheta, m_dMonoD);
-		
+
 		//log_info("triag, changed mono: ", opts.dMonoTwoTheta/M_PI*180.);
 		//log_info("triag, mono now: ", m_pTri->GetMonoTwoTheta(3.355, 1)/M_PI*180.);
 	}
@@ -992,7 +992,7 @@ void ScatteringTriangleScene::tasChanged(const TriangleOptions& opts)
 		//log_info("triag, changed ana: ", opts.dAnaTwoTheta/M_PI*180.);
 		//log_info("triag, ana now: ", m_pTri->GetAnaTwoTheta(3.355, 1)/M_PI*180.);
 	}
-	
+
 	if(opts.bChangedTwoTheta)
 	{
 		m_pTri->SetTwoTheta(m_bSamplePosSense?opts.dTwoTheta:-opts.dTwoTheta);
@@ -1182,7 +1182,10 @@ void ScatteringTriangleScene::keyReleaseEvent(QKeyEvent *pEvt)
 ScatteringTriangleView::ScatteringTriangleView(QWidget* pParent)
 						: QGraphicsView(pParent)
 {
-	setRenderHints(QPainter::Antialiasing);
+	setRenderHints(QPainter::Antialiasing |
+				QPainter::TextAntialiasing |
+				QPainter::SmoothPixmapTransform |
+				QPainter::HighQualityAntialiasing);
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
 	setMouseTracking(1);
@@ -1193,7 +1196,6 @@ ScatteringTriangleView::~ScatteringTriangleView()
 
 void ScatteringTriangleView::wheelEvent(QWheelEvent *pEvt)
 {
-	//this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
 	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
 	double dDelta = pEvt->delta()/100.;
@@ -1203,9 +1205,9 @@ void ScatteringTriangleView::wheelEvent(QWheelEvent *pEvt)
 
 	this->scale(dScale, dScale);
 
-
 	m_dTotalScale *= dScale;
 	emit scaleChanged(m_dTotalScale);
 }
+
 
 #include "scattering_triangle.moc"

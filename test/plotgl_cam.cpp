@@ -16,16 +16,12 @@
 #include <sstream>
 
 
-//QMutex PlotGl::s_mutexShared(QMutex::Recursive);
-
-
 PlotGl::PlotGl(QWidget* pParent)
 		: QGLWidget(pParent), m_mutex(QMutex::Recursive),
-			m_matProj(unit_matrix<t_mat4>(4)), m_matView(unit_matrix<t_mat4>(4))
+			m_matProj(unit_matrix<t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
-	m_dMouseScale = 25.;
-	updateViewMatrix();
+	m_dMouseMove[0] = m_dMouseMove[1] = 0.;
 
 	setAutoBufferSwap(false);
 	//setUpdatesEnabled(0);
@@ -38,9 +34,6 @@ PlotGl::~PlotGl()
 	m_bRenderThreadActive = 0;
 	wait(250);
 	terminate();
-
-	//if(m_pfont) { delete m_pfont; m_pfont = 0; }
-	//if(m_pfontsmall) { delete m_pfontsmall; m_pfontsmall = 0; }
 }
 
 void PlotGl::SetColor(double r, double g, double b, double a)
@@ -64,9 +57,6 @@ void PlotGl::SetColor(unsigned int iIdx)
 
 void PlotGl::initializeGLThread()
 {
-	//m_pfont = new QFont("Nimbus Sans L", 12);
-	//m_pfontsmall = new QFont("Nimbus Sans L", 8);
-
 	glClearColor(1.,1.,1.,0.);
 	glShadeModel(GL_SMOOTH);
 
@@ -142,6 +132,7 @@ void PlotGl::resizeGLThread(int w, int h)
 
 void PlotGl::tickThread(double dTime)
 {
+
 }
 
 void PlotGl::paintGLThread()
@@ -149,10 +140,12 @@ void PlotGl::paintGLThread()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
-	GLdouble glmat[16];
+
 	m_mutex.lock();
-	to_gl_array(m_matView, glmat);
+	t_mat4 matView = m_cam.GetHomMatrix<t_mat4>();
 	m_mutex.unlock();
+	GLdouble glmat[16];
+	to_gl_array(matView, glmat);
 	glLoadMatrixd(glmat);
 
 
@@ -250,7 +243,6 @@ void PlotGl::paintGLThread()
 	m_mutex.unlock();
 
 	glPushMatrix();
-		//s_mutexShared.lock();
 		m_mutex.lock();
 
 		if(m_pFont && m_pFont->IsOk())
@@ -271,27 +263,10 @@ void PlotGl::paintGLThread()
 			m_pFont->DrawText(0., 0., m_dZMax, var_to_str(m_dZMax+m_dZMinMaxOffs));
 		}
 
-		/*if(m_pfont)
-		{
-			renderText(m_dXMax*dAxisScale, 0., 0., m_strLabels[0], *m_pfont);
-			renderText(0., m_dYMax*dAxisScale , 0., m_strLabels[1], *m_pfont);
-			renderText(0., 0., m_dZMax*dAxisScale , m_strLabels[2], *m_pfont);
-		}
-		if(m_pfontsmall)
-		{
-			renderText(m_dXMin, 0., 0., var_to_str(m_dXMin+m_dXMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(m_dXMax, 0., 0., var_to_str(m_dXMax+m_dXMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(0., m_dYMin, 0., var_to_str(m_dYMin+m_dYMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(0., m_dYMax, 0., var_to_str(m_dYMax+m_dYMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(0., 0., m_dZMin, var_to_str(m_dZMin+m_dZMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(0., 0., m_dZMax, var_to_str(m_dZMax+m_dZMinMaxOffs).c_str(), *m_pfontsmall);
-		}*/
-		//s_mutexShared.unlock();
 		m_mutex.unlock();
 	glPopMatrix();
 
 	swapBuffers();
-	//glFlush();
 }
 
 void PlotGl::run()
@@ -350,18 +325,24 @@ void PlotGl::clear()
 void PlotGl::SetObjectColor(int iObjIdx, const std::vector<double>& vecCol)
 {
 	m_mutex.lock();
+
 	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
 		return;
+
 	m_vecObjs[iObjIdx].vecColor = vecCol;
+
 	m_mutex.unlock();
 }
 
 void PlotGl::SetObjectLabel(int iObjIdx, const std::string& strLab)
 {
 	m_mutex.lock();
+
 	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
 		return;
+
 	m_vecObjs[iObjIdx].strLabel = strLab;
+
 	m_mutex.unlock();
 }
 
@@ -439,18 +420,26 @@ void PlotGl::mousePressEvent(QMouseEvent *event)
 
 	if(event->buttons() & Qt::LeftButton)
 	{
-		m_bMouseScaleActive = 1;
-		m_dMouseScaleBegin = event->posF().y();
+		m_bMouseMoveActive = 1;
+
+		m_dMouseMoveBegin[0] = event->posF().x();
+		m_dMouseMoveBegin[1] = event->posF().y();
 	}
 }
 
 void PlotGl::mouseReleaseEvent(QMouseEvent *event)
 {
 	if((event->buttons() & Qt::RightButton) == 0)
+	{
 		m_bMouseRotateActive = 0;
+		m_dMouseRot[0] = m_dMouseRot[1] = 0.;
+	}
 
 	if((event->buttons() & Qt::LeftButton) == 0)
-		m_bMouseScaleActive = 0;
+	{
+		m_bMouseMoveActive = 0;
+		m_dMouseMove[0] = m_dMouseMove[1] = 0.;
+	}
 }
 
 void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
@@ -461,8 +450,8 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		double dNewX = pEvt->posF().x();
 		double dNewY = pEvt->posF().y();
 
-		m_dMouseRot[0] += dNewX - m_dMouseBegin[0];
-		m_dMouseRot[1] += dNewY - m_dMouseBegin[1];
+		m_dMouseRot[0] = dNewX - m_dMouseBegin[0];
+		m_dMouseRot[1] = dNewY - m_dMouseBegin[1];
 
 		m_dMouseBegin[0] = dNewX;
 		m_dMouseBegin[1] = dNewY;
@@ -470,60 +459,43 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		bUpdateView = 1;
 	}
 
-	if(m_bMouseScaleActive)
+	if(m_bMouseMoveActive)
 	{
+		double dNewX = pEvt->posF().x();
 		double dNewY = pEvt->posF().y();
 
-		m_dMouseScale *= 1.-(dNewY - m_dMouseScaleBegin)/double(height()) * 2.;
-		m_dMouseScaleBegin = dNewY;
+		m_dMouseMove[0] = dNewX - m_dMouseMoveBegin[0];
+		m_dMouseMove[1] = dNewY - m_dMouseMoveBegin[1];
+
+		m_dMouseMoveBegin[0] = dNewX;
+		m_dMouseMoveBegin[1] = dNewY;
 
 		bUpdateView = 1;
 	}
 
-	if(bUpdateView)
-		updateViewMatrix();
 
+	m_mutex.lock();
+
+	if(bUpdateView)
+	{
+		m_cam.RotateAroundRight(-m_dMouseRot[1]*0.005);
+		m_cam.RotateAroundUp(-m_dMouseRot[0]*0.005);
+		m_cam.MoveForward(-m_dMouseMove[1]*0.01);
+	}
 
 
 	m_dMouseX = 2.*pEvt->posF().x()/double(m_iW) - 1.;
 	m_dMouseY = -(2.*pEvt->posF().y()/double(m_iH) - 1.);
 	//std::cout << m_dMouseX << ", " << m_dMouseY << std::endl;
+	m_mutex.unlock();
 
 	mouseSelectObj(m_dMouseX, m_dMouseY);
-}
-
-void PlotGl::updateViewMatrix()
-{
-	t_mat4 matScale = make_mat<t_mat4>(
-			{{m_dMouseScale,              0,             0, 0},
-			{            0,   m_dMouseScale,             0, 0},
-			{            0,               0, m_dMouseScale, 0},
-			{            0,               0,             0, 1}});
-
-	t_mat4 matR0 = rotation_matrix_3d_z(m_dMouseRot[0]/180.*M_PI);
-	t_mat4 matR1 = rotation_matrix_3d_x((-90. + m_dMouseRot[1])/180.*M_PI);
-	matR0.resize(4,4,1); matR1.resize(4,4,1);
-	matR0(3,3) = matR1(3,3) = 1.;
-	for(short i=0; i<3; ++i) matR0(i,3)=matR0(3,i)=matR1(i,3)=matR1(3,i)=0.;
-	t_mat4 matRot0 = matR0, matRot1 = matR1;
-
-	t_mat4 matTrans = make_mat<t_mat4>(
-			{{ 1, 0, 0,  0},
-			{  0, 1, 0,  0},
-			{  0, 0, 1, -2},
-			{  0, 0, 0,  1}});
-
-	m_mutex.lock();
-	m_matView = ublas::prod(matTrans, matRot1);
-	m_matView = ublas::prod(m_matView, matRot0);
-	m_matView = ublas::prod(m_matView, matScale);
-	m_mutex.unlock();
 }
 
 void PlotGl::mouseSelectObj(double dX, double dY)
 {
 	m_mutex.lock();
-	Line<double> ray = screen_ray(dX, dY, m_matProj, m_matView);
+	Line<double> ray = screen_ray(dX, dY, m_matProj, m_cam.GetHomMatrix<t_mat4>());
 
 	for(PlotObjGl& obj : m_vecObjs)
 	{
@@ -575,53 +547,3 @@ void PlotGl::SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLab
 	m_strLabels[2] = pcLabZ;
 	m_mutex.unlock();
 }
-
-
-
-/*
-// gcc -std=c++11 -I/usr/include/freetype2 -o tst_gl helper/plotgl.cpp helper/log.cpp helper/gl.cpp -lm -lstdc++ -lQtGui -lQtCore -lQtOpenGL -lGL -lGLU -lX11 -lfreetype
-
-#include <QtGui/QApplication>
-#include <QtGui/QDialog>
-#include <QtGui/QGridLayout>
-
-extern "C" int XInitThreads();
-int main(int argc, char **argv)
-{
-	//QuadSphere<double> sph(1.23);
-	//sph.SetOffset(make_vec({0.,0.,0.}));
-	//Line<double> line(make_vec({0.,0.,0.0}), make_vec({0.,0.,1.}));
-	//std::vector<double> vec = sph.intersect(line);
-	//for(double d : vec)
-	//	std::cout << d << ", ";
-	//std::cout << std::endl;
-
-	XInitThreads();
-	QApplication a(argc, argv);
-
-	QDialog dlg;
-	PlotGl *pGl = new PlotGl(&dlg);
-
-	pGl->SetObjectCount(3);
-	pGl->PlotSphere(make_vec({0., 0.5, -0.5}), 0.2, 0);
-	pGl->SetObjectColor(0, {1., 0., 0., 0.5});
-
-	pGl->PlotSphere(make_vec({0., 0., -2.}), 0.4, 1);
-	pGl->SetObjectColor(1, {0., 0., 1., 0.5});
-
-	pGl->PlotEllipsoid(make_vec({0.1, 0.2, 0.3}),
-						make_vec({0., 0.5, 0.}),
-						make_mat({{1.,0.,0.},{0.,1.,0.},{0.,0.,1.}}), 2);
-	pGl->SetObjectColor(2, {0., 1., 0., 0.5});
-
-	pGl->SetMinMax(make_vec({-1.,-1.,-1.}), make_vec({1.,1.,1.}));
-
-	dlg.resize(640,480);
-	QGridLayout *pGrid = new QGridLayout(&dlg);
-	pGrid->addWidget(pGl, 0,0,1,1);
-	dlg.exec();
-
-	delete pGl;
-	return 0;
-}
-*/

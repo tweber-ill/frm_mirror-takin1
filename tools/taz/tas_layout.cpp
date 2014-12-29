@@ -403,7 +403,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 
 		const std::wstring& strDEG = ::get_spec_char_utf16("deg");
 		std::wostringstream ostrAngle;
-		ostrAngle.precision(4);
+		ostrAngle.precision(6);
 		if(!is_nan_or_inf<double>(dArcAngle))
 			ostrAngle << std::fabs(dArcAngle) << strDEG;
 		else
@@ -471,7 +471,7 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 	vecKf *= dLenKf;
 
 	m_pAna->setPos(vec_to_qpoint(vecSample + vecKf));
-	
+
 	nodeMoved(m_pSample);
 	nodeMoved(m_pAna);
 }
@@ -612,19 +612,19 @@ void TasLayoutScene::scaleChanged(double dTotalScale)
 TasLayoutView::TasLayoutView(QWidget* pParent)
 						: QGraphicsView(pParent)
 {
-	setRenderHints(QPainter::Antialiasing);
+	setRenderHints(QPainter::Antialiasing |
+				QPainter::TextAntialiasing |
+				QPainter::SmoothPixmapTransform |
+				QPainter::HighQualityAntialiasing);
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
 }
 
 TasLayoutView::~TasLayoutView()
-{
-
-}
+{}
 
 void TasLayoutView::wheelEvent(QWheelEvent *pEvt)
 {
-	//this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
 	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
 	double dDelta = pEvt->delta()/100.;
@@ -633,7 +633,6 @@ void TasLayoutView::wheelEvent(QWheelEvent *pEvt)
 		dScale = -1./dDelta;
 
 	this->scale(dScale, dScale);
-
 
 	m_dTotalScale *= dScale;
 	emit scaleChanged(m_dTotalScale);

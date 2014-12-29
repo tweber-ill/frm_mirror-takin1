@@ -42,10 +42,10 @@ class PlotGl : public QGLWidget, QThread
 {
 protected:
 	QMutex m_mutex;
-	//static QMutex s_mutexShared;
 
+	Cam<t_mat3, t_vec3> m_cam;
 	static constexpr double m_dFOV = 45./180.*M_PI;
-	t_mat4 m_matProj, m_matView;
+	t_mat4 m_matProj;
 
 	GlFontMap *m_pFont = nullptr;
 
@@ -72,9 +72,9 @@ protected:
 	double m_dMouseRot[2];
 	double m_dMouseBegin[2];
 
-	bool m_bMouseScaleActive = 0;
-	double m_dMouseScale;
-	double m_dMouseScaleBegin;
+	bool m_bMouseMoveActive = 0;
+	double m_dMouseMove[2];
+	double m_dMouseMoveBegin[2];
 
 	double m_dMouseX = 0., m_dMouseY = 0.;
 
@@ -82,7 +82,6 @@ protected:
 	void mouseReleaseEvent(QMouseEvent*);
 	void mouseMoveEvent(QMouseEvent*);
 
-	void updateViewMatrix();
 	void mouseSelectObj(double dX, double dY);
 
 	// ------------------------------------------------------------------------

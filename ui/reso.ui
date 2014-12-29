@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>810</width>
-    <height>460</height>
+    <height>478</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,6 +18,9 @@
     <widget class="QPushButton" name="btnSave">
      <property name="text">
       <string>Save...</string>
+     </property>
+     <property name="icon">
+      <iconset theme="document-save"/>
      </property>
     </widget>
    </item>
@@ -1454,6 +1457,9 @@ Resolution Matrix:
     <widget class="QPushButton" name="btnLoad">
      <property name="text">
       <string>Load...</string>
+     </property>
+     <property name="icon">
+      <iconset theme="document-open"/>
      </property>
     </widget>
    </item>

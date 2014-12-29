@@ -51,10 +51,9 @@ void Recip3DDlg::CalcPeaks(const Lattice<double>& lattice,
 		for(double k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
 			for(double l=-m_dMaxPeaks; l<=m_dMaxPeaks; l+=1.)
 			{
+				int ih = int(h), ik = int(k), il = int(l);
 				if(pSpaceGroup)
 				{
-					int ih = int(h), ik = int(k), il = int(l);
-
 					if(!pSpaceGroup->HasReflection(ih, ik, il))
 						continue;
 				}
@@ -87,6 +86,10 @@ void Recip3DDlg::CalcPeaks(const Lattice<double>& lattice,
 
 				m_pPlot->PlotSphere(vecPeak, 0.1, iPeakIdx);
 				m_pPlot->SetObjectColor(iPeakIdx, vecColor);
+
+				std::ostringstream ostrLab;
+				ostrLab << "(" << ih << " " << ik << " " << il << ")";
+				m_pPlot->SetObjectLabel(iPeakIdx, ostrLab.str());
 
 				++iPeakIdx;
 			}

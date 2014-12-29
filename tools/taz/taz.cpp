@@ -226,6 +226,14 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	pMenuFile->addSeparator();
 
+	QAction *pSequences = new QAction(this);
+	pSequences->setText("Scan Sequences...");
+	pSequences->setIcon(QIcon::fromTheme("document-properties"));
+	// TODO:
+	//pMenuFile->addAction(pSequences);
+
+	pMenuFile->addSeparator();
+
 	QAction *pSettings = new QAction(this);
 	pSettings->setText("Settings...");
 	pSettings->setIcon(QIcon::fromTheme("preferences-system"));
@@ -421,6 +429,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
+	QObject::connect(pSequences, SIGNAL(triggered()), this, SLOT(ShowSequenceDlg()));
 	QObject::connect(pSettings, SIGNAL(triggered()), this, SLOT(ShowSettingsDlg()));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
@@ -477,6 +486,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	pFileTools->addAction(pLoad);
 	pFileTools->addAction(pSave);
 	pFileTools->addAction(pSaveAs);
+	pFileTools->addSeparator();
+	// TODO:
+	//pFileTools->addAction(pSequences);
 	addToolBar(pFileTools);
 
 	QToolBar *pRecipTools = new QToolBar(this);
@@ -516,6 +528,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_sceneRecip.GetTriangle()->SetBZVisible(bBZVisible);
 	m_sceneRecip.emitUpdate();
 	//m_sceneRecip.emitAllParams();
+
+	m_pviewReal->centerOn(m_sceneReal.GetTasLayout());
+	m_pviewRecip->centerOn(m_sceneRecip.GetTriangle());
 }
 
 TazDlg::~TazDlg()
@@ -539,6 +554,7 @@ TazDlg::~TazDlg()
 	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
 	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
 	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
+	if(m_pSequenceDlg) { delete m_pSequenceDlg; m_pSequenceDlg = 0; }
 }
 
 
@@ -567,6 +583,15 @@ void TazDlg::ShowPowderDlg()
 
 	m_pPowderDlg->show();
 	m_pPowderDlg->activateWindow();
+}
+
+void TazDlg::ShowSequenceDlg()
+{
+	if(!m_pSequenceDlg)
+		m_pSequenceDlg = new SequenceDlg(this, &m_settings);
+
+	m_pSequenceDlg->show();
+	m_pSequenceDlg->activateWindow();
 }
 
 void TazDlg::ShowSettingsDlg()
@@ -1084,6 +1109,7 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 //--------------------------------------------------------------------------------
 // about dialog
 
+#include <boost/config.hpp>
 #include <boost/version.hpp>
 #include <qwt_global.h>
 
@@ -1099,8 +1125,8 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "Takin version 0.8.5\n";
-	strAbout += "Written by Tobias Weber, 2014";
+	strAbout += "Takin version 0.8.9\n";
+	strAbout += "Written by Tobias Weber, 2014.";
 	strAbout += "\n\n";
 
 	strAbout += "Takin is free software: you can redistribute it and/or modify ";
@@ -1114,15 +1140,15 @@ void TazDlg::ShowAbout()
 	strAbout += "You should have received a copy of the GNU General Public License ";
 	strAbout += "along with Takin.  If not, see <http://www.gnu.org/licenses/>.\n\n";
 
-	strAbout += "Built with CC version ";
-	strAbout += QString(__VERSION__);
-	strAbout += "\n";
+	strAbout += "Built with ";
+	strAbout += QString(BOOST_COMPILER);
+	strAbout += ".\n";
 
 	strAbout += "Build date: ";
 	strAbout += QString(__DATE__);
 	strAbout += ", ";
 	strAbout += QString(__TIME__);
-	strAbout += "\n\n";
+	strAbout += ".\n\n";
 
 	strAbout += strBullet + " ";
 	strAbout += "Uses Qt version ";
@@ -1148,8 +1174,7 @@ void TazDlg::ShowAbout()
 	strAbout += strBullet + " ";
 	strAbout += "Uses space group calculations ported from Nicos version 2";
 	strAbout += "\n\t " + strArrow + " https://forge.frm2.tum.de/redmine/projects/nicos\n";
-	strAbout += strBullet + " ";
-	strAbout += "Uses space group data from PowderCell version 2.3";
+	strAbout += "   which uses space group data adapted from PowderCell version 2.3";
 	strAbout += "\n\t " + strArrow
 			+ " www.bam.de/de/service/publikationen/" + strRet
 			+ "\n\t\tpowder_cell_a.htm\n";

@@ -63,9 +63,9 @@ quat_type rot3_to_quat(const mat_type& rot)
 		}
 	}
 
-	T norm_eucl = std::sqrt(w*w + x*x + y*y + z*z);
 	quat_type quatRet(w,x,y,z);
-	return quatRet /*/ math::norm(quatRet)*/ / norm_eucl;
+	T norm_eucl = math::abs(quatRet); //std::sqrt(w*w + x*x + y*y + z*z);
+	return quatRet/norm_eucl;
 }
 
 
@@ -137,6 +137,59 @@ std::vector<T> rotation_angle(const ublas::matrix<T, Args...>& rot)
 }
 
 
+
+// see: https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
+template<typename T=double>
+T rotation_angle(const math::quaternion<T>& quat)
+{
+	//return 2.*std::asin(math::abs(math::unreal(quat)));
+	return 2.*std::acos(quat.R_component_1());
+}
+
+template<class t_vec=ublas::vector<double>>
+t_vec rotation_axis(const math::quaternion<typename t_vec::value_type>& quat)
+{
+	t_vec vec(3);
+	vec[0] = quat.R_component_2();
+	vec[1] = quat.R_component_3();
+	vec[2] = quat.R_component_4();
+
+	typename t_vec::value_type angle = rotation_angle(quat);
+	vec /= std::sin(0.5*angle);
+
+	return vec;
+}
+
+template<class quat_type=math::quaternion<double>,
+	class vec_type=ublas::vector<double>,
+	typename T = typename quat_type::value_type>
+quat_type rotation_quat(const vec_type& vec, const T angle)
+{
+	const T s = std::sin(0.5*angle);
+	const T c = std::cos(0.5*angle);
+	const T n = std::sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+
+	const T x = s * vec[0] / n;
+	const T y = s * vec[1] / n;
+	const T z = s * vec[2] / n;
+	const T r = c;
+
+	return quat_type(r, x,y,z);
+}
+
+template<class quat_type=math::quaternion<double>>
+quat_type rotation_quat_x(typename quat_type::value_type angle)
+{ return quat_type(std::cos(0.5*angle), std::sin(0.5*angle), 0., 0.); }
+template<class quat_type=math::quaternion<double>>
+quat_type rotation_quat_y(typename quat_type::value_type angle)
+{ return quat_type(std::cos(0.5*angle), 0., std::sin(0.5*angle), 0.); }
+template<class quat_type=math::quaternion<double>>
+quat_type rotation_quat_z(typename quat_type::value_type angle)
+{ return quat_type(std::cos(0.5*angle), 0., 0., std::sin(0.5*angle)); }
+
+
+
+
 template<class quat_type=math::quaternion<double>>
 quat_type stereo_proj(const quat_type& quat)
 { return (1.+quat)/(1.-quat); }
@@ -157,8 +210,8 @@ struct vec_angle_unsigned_impl<QUAT, LinalgType::QUATERNION>
 					q1.R_component_3()*q2.R_component_3() +
 					q1.R_component_4()*q2.R_component_4();
 
-		dot /= math::norm(q1);
-		dot /= math::norm(q2);
+		dot /= math::abs(q1);
+		dot /= math::abs(q2);
 
 		return std::acos(dot);
 	}

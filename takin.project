@@ -79,6 +79,8 @@
     <File Name="dialogs/PowderDlg.h"/>
     <File Name="dialogs/SettingsDlg.h"/>
     <File Name="dialogs/SettingsDlg.cpp"/>
+    <File Name="dialogs/SequenceDlg.cpp"/>
+    <File Name="dialogs/SequenceDlg.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
     <File Name="helper/spec_char.cpp"/>
@@ -111,6 +113,8 @@
     <File Name="helper/xml.h"/>
     <File Name="helper/traits.h"/>
     <File Name="helper/quat.h"/>
+    <File Name="helper/gl.h"/>
+    <File Name="helper/gl.cpp"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
@@ -137,6 +141,7 @@
         <IncludePath Value="/usr/include/qwt"/>
         <IncludePath Value="/usr/include/qwt-qt4"/>
         <IncludePath Value="/usr/include/lapacke"/>
+        <IncludePath Value="/usr/include/freetype2"/>
         <Preprocessor Value="USE_QWT6"/>
         <Preprocessor Value="USE_LAPACK"/>
         <Preprocessor Value="DEBUG"/>
@@ -164,6 +169,7 @@
         <Library Value="lapack"/>
         <Library Value="blas"/>
         <Library Value="gfortran"/>
+        <Library Value="freetype"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(IntermediateDirectory)/$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)/.." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
@@ -213,6 +219,7 @@
         <IncludePath Value="/usr/include/qwt"/>
         <IncludePath Value="/usr/include/qwt-qt4"/>
         <IncludePath Value="/usr/include/lapacke"/>
+        <IncludePath Value="/usr/include/freetype2"/>
         <Preprocessor Value="USE_QWT6"/>
         <Preprocessor Value="USE_LAPACK"/>
         <Preprocessor Value="NDEBUG"/>
@@ -240,6 +247,7 @@
         <Library Value="lapack"/>
         <Library Value="blas"/>
         <Library Value="gfortran"/>
+        <Library Value="freetype"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Release" Command="./$(IntermediateDirectory)/$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)/.." PauseExecWhenProcTerminates="no" IsGUIProgram="yes" IsEnabled="yes"/>

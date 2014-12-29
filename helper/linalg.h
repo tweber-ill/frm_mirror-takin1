@@ -322,8 +322,10 @@ matrix_type unit_matrix(unsigned int N)
 template<class mat_type=ublas::matrix<double>,
 	class vec_type=ublas::vector<double>,
 	typename T = typename mat_type::value_type>
-mat_type rotation_matrix(const vec_type& vec, T angle)
+mat_type rotation_matrix(const vec_type& _vec, T angle)
 {
+	const vec_type vec = _vec/ublas::norm_2(_vec);
+
 	T s, c;
 	if(angle==0.)
 	{
@@ -341,7 +343,6 @@ mat_type rotation_matrix(const vec_type& vec, T angle)
 				s * skew(vec);
 }
 
-
 template<class matrix_type=ublas::matrix<double> >
 typename matrix_type::value_type trace(const matrix_type& mat)
 {
@@ -357,7 +358,7 @@ typename matrix_type::value_type trace(const matrix_type& mat)
 }
 
 // see: https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
-template<class matrix_type=ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,4*4>>, 
+template<class matrix_type=ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,4*4>>,
 	class T=typename matrix_type::value_type>
 matrix_type perspective_matrix(T yfov, T asp, T n, T f)
 {
@@ -371,6 +372,20 @@ matrix_type perspective_matrix(T yfov, T asp, T n, T f)
 		{    0.,         y,                0.,              0. },
 		{    0.,        0.,  dsgn*(f+n)/(f-n), (-2.*f*n)/(f-n) },
 		{    0.,        0.,           dsgn*1.,              0. }
+	});
+}
+
+// see: https://www.opengl.org/sdk/docs/man2/xhtml/glOrtho.xml
+template<class matrix_type=ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,4*4>>,
+	class T=typename matrix_type::value_type>
+matrix_type ortho_matrix(T l, T r, T b, T t, T n, T f)
+{
+	return make_mat<matrix_type>
+	({
+		{ 2./(r-l),       0.,       0., (l+r)/(l-r) },
+		{       0., 2./(t-b),       0., (b+t)/(b-t) },
+		{       0.,       0., 2./(n-f), (n+f)/(n-f) },
+		{       0.,       0.,       0., 1.          }
 	});
 }
 
@@ -1017,29 +1032,6 @@ ublas::matrix<T> covariance(const std::vector<ublas::vector<T>>& vecVals,
 	return matCov;
 }
 
-
-
-// --------------------------------------------------------------------------------
-
-
-template<typename T=double, typename... Args>
-void to_gl_array(const ublas::matrix<T, Args...>& mat, T* glmat)
-{
-	glmat[0]=mat(0,0);  glmat[1]=mat(1,0);  glmat[2]=mat(2,0);
-	glmat[4]=mat(0,1);  glmat[5]=mat(1,1);  glmat[6]=mat(2,1);
-	glmat[8]=mat(0,2);  glmat[9]=mat(1,2);  glmat[10]=mat(2,2);
-
-	if(mat.size1()>=4 && mat.size2()>=4)
-	{
-		glmat[3]=mat(3,0); glmat[7]=mat(3,1); glmat[11]=mat(3,2);
-		glmat[12]=mat(0,3); glmat[13]=mat(1,3); glmat[14]=mat(2,3); glmat[15]=mat(3,3);
-	}
-	else
-	{
-		glmat[3]=0; glmat[7]=0; glmat[11]=0;
-		glmat[12]=0; glmat[13]=0; glmat[14]=0; glmat[15]=1;
-	}
-}
 
 
 

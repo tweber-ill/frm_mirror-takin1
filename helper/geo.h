@@ -24,6 +24,8 @@ namespace ublas = boost::numeric::ublas;
 namespace math = boost::math;
 
 
+//------------------------------------------------------------------------------
+
 template<typename T> class Line;
 
 template<typename T> class Plane
@@ -115,6 +117,9 @@ public:
 };
 
 
+//------------------------------------------------------------------------------
+
+
 template<typename T> class Line
 {
 protected:
@@ -199,7 +204,7 @@ public:
 
 
 	// http://mathworld.wolfram.com/Line-PlaneIntersection.html
-	bool intersect(const Plane<T>& plane, T& t)
+	bool intersect(const Plane<T>& plane, T& t) const
 	{
 		const unsigned int N = m_vecDir.size();
 		if(N != 3)
@@ -307,6 +312,128 @@ std::ostream& operator<<(std::ostream& ostr, const Line<T>& line)
 	ostr << line.GetX0() << " + t*" << line.GetDir();
 	return ostr;
 }
+
+
+//------------------------------------------------------------------------------
+
+template<class T=double>
+class Quadric
+{
+protected:
+	// general: x^T Q x  +  r x  +  s  =  0
+	// here: x^T Q x + s=  0
+	ublas::matrix<T> m_Q = ublas::zero_matrix<T>(3,3);
+	//ublas::vector<T> m_r = ublas::zero_vector<T>(3);
+	T m_s = 0;
+
+	ublas::vector<T> m_vecOffs = ublas::zero_vector<T>(3);
+
+public:
+	Quadric() {}
+	Quadric(const ublas::matrix<T>& Q) : m_Q(Q) {}
+	Quadric(const ublas::matrix<T>& Q, /*const ublas::vector<T>& r,*/ T s)
+			: m_Q(Q), /*m_r(r),*/ m_s(s) {}
+	virtual ~Quadric() {}
+
+	void SetOffset(const ublas::vector<T>& vec) { m_vecOffs = vec; }
+	const ublas::vector<T>& GetOffset() const { return m_vecOffs; }
+
+	const ublas::matrix<T>& GetQ() const { return m_Q; }
+	//const ublas::vector<T>& GetR() const { return m_r; }
+	T GetS() const { return m_s; }
+
+	T operator()(const ublas::vector<T>& _x) const
+	{
+		ublas::vector<T> x = x-m_vecOffs;
+
+		ublas::vector<T> vecQ = ublas::prod(m_Q, x);
+		T dQ = ublas::inner_prod(x, vecQ);
+		//T dR = ublas::inner_prod(m_r, x);
+
+		return dQ /*+ dR*/ + m_s;
+	}
+
+	void transform(const ublas::matrix<T>& S)
+	{
+		ublas::matrix<T> TS = ublas::trans(S);
+		ublas::matrix<T> QS = ublas::prod(m_Q, S);
+		m_Q = ublas::prod(TS, QS);
+	}
+
+	// quad: x^T Q x + s = 0; line: x = x0 + t d
+	// (x0 + t d)^T Q (x0 + t d) + s = 0
+	// (x0 + t d)^T Q x0 + (x0 + t d)^T Q t d + s = 0
+	// (x0^T + t d^T) Q x0 + (x0^T + t d^T) Q t d + s = 0
+	// x0^T Q x0 + s  +  (d^T Q x0 + x0^T Q d) t  +  d^T Q d t^2 = 0
+	std::vector<T> intersect(const Line<T>& line) const
+	{
+		const ublas::matrix<T>& Q = GetQ();
+		const T& s = m_s;
+		const ublas::vector<T>& d = line.GetDir();
+		const ublas::vector<T> x0 = line.GetX0() - m_vecOffs;;
+
+		// solving at^2 + bt + c = 0 for t
+		ublas::vector<T> vecQd = ublas::prod(Q, d);
+		T a = ublas::inner_prod(d, vecQd);
+
+		ublas::vector<T> vecQx0 = ublas::prod(Q, x0);
+		T c = ublas::inner_prod(x0, vecQx0) + s;
+
+		T b = ublas::inner_prod(x0, vecQd);
+		b += ublas::inner_prod(d, vecQx0);
+
+		//std::cout << "a=" << a << ", b=" << b << ", c=" << c << std::endl;
+		return quadratic_solve(a,b,c);
+	}
+};
+
+template<class T=double>
+std::ostream& operator<<(std::ostream& ostr, const Quadric<T>& quad)
+{
+	ostr << "Q = " << quad.GetQ() /*<< ", "*/;
+	//ostr << "r = " << quad.GetR() << ", ";
+	ostr << "s = " << quad.GetS();
+	return ostr;
+}
+
+
+template<class T=double>
+class QuadSphere : public Quadric<T>
+{
+protected:
+
+public:
+	QuadSphere(T r)
+	{
+		this->m_Q(0,0) =
+		this->m_Q(1,1) =
+		this->m_Q(2,2) = 1./(r*r);
+
+		this->m_s = -1.;
+	}
+
+	virtual ~QuadSphere() {}
+};
+
+template<class T=double>
+class QuadEllipsoid : public Quadric<T>
+{
+protected:
+
+public:
+	QuadEllipsoid(T a, T b, T c)
+	{
+		this->m_Q(0,0) = 1./(a*a);
+		this->m_Q(1,1) = 1./(b*b);
+		this->m_Q(2,2) = 1./(c*c);
+
+		this->m_s = -1.;
+	}
+
+	virtual ~QuadEllipsoid() {}
+};
+
+//------------------------------------------------------------------------------
 
 
 template<typename T=double>
