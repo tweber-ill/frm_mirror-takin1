@@ -23,6 +23,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
+#include <qwt_plot_zoomer.h>
 
 class EllipseDlg : public QDialog, Ui::EllipseDlg
 { Q_OBJECT
@@ -31,6 +32,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		std::vector<QwtPlotCurve*> m_vecPlotCurves;
 		std::vector<QwtPlotGrid*> m_vecGrid;
 		std::vector<QwtPlotPicker*> m_vecPickers;
+		std::vector<QwtPlotZoomer*> m_vecZoomers;
 
 		std::vector<Ellipse> m_elliProj;
 		std::vector<Ellipse> m_elliSlice;

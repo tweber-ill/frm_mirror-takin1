@@ -16,11 +16,9 @@
 #include <sstream>
 
 
-//QMutex PlotGl::s_mutexShared(QMutex::Recursive);
-
-
-PlotGl::PlotGl(QWidget* pParent)
-		: QGLWidget(pParent), m_mutex(QMutex::Recursive),
+PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings)
+		: QGLWidget(pParent), m_pSettings(pSettings),
+			m_mutex(QMutex::Recursive),
 			m_matProj(unit_matrix<t_mat4>(4)), m_matView(unit_matrix<t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
@@ -38,9 +36,13 @@ PlotGl::~PlotGl()
 	m_bRenderThreadActive = 0;
 	wait(250);
 	terminate();
+}
 
-	//if(m_pfont) { delete m_pfont; m_pfont = 0; }
-	//if(m_pfontsmall) { delete m_pfontsmall; m_pfontsmall = 0; }
+void PlotGl::SetEnabled(bool b)
+{
+	m_mutex.lock();
+	m_bEnabled = b;
+	m_mutex.unlock();
 }
 
 void PlotGl::SetColor(double r, double g, double b, double a)
@@ -64,9 +66,6 @@ void PlotGl::SetColor(unsigned int iIdx)
 
 void PlotGl::initializeGLThread()
 {
-	//m_pfont = new QFont("Nimbus Sans L", 12);
-	//m_pfontsmall = new QFont("Nimbus Sans L", 8);
-
 	glClearColor(1.,1.,1.,0.);
 	glShadeModel(GL_SMOOTH);
 
@@ -110,7 +109,14 @@ void PlotGl::initializeGLThread()
 	}
 
 	glActiveTexture(GL_TEXTURE0);
-	m_pFont = new GlFontMap(DEF_FONT, 12);
+
+	std::string strFont = DEF_FONT;
+	if(m_pSettings)
+	{
+		if(m_pSettings->contains("gl/font"))
+			strFont = m_pSettings->value("gl/font").toString().toStdString();
+	}
+	m_pFont = new GlFontMap(strFont.c_str(), 12);
 
 	this->setMouseTracking(1);
 }
@@ -147,6 +153,11 @@ void PlotGl::tickThread(double dTime)
 void PlotGl::paintGLThread()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	m_mutex.lock();
+	bool bEnabled = m_bEnabled;
+	m_mutex.unlock();
+	if(!bEnabled) return;
 
 	glMatrixMode(GL_MODELVIEW);
 	GLdouble glmat[16];
@@ -197,9 +208,6 @@ void PlotGl::paintGLThread()
 		{
 			glTranslated(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
 			glScaled(obj.vecParams[3], obj.vecParams[3], obj.vecParams[3]);
-
-			//double dLenDist0 = gl_proj_sphere_size(m_dFOV, /*obj.vecParams[3]*/1.);
-			double dLenDist = gl_proj_sphere_size(/*obj.vecParams[3]*/1.);
 		}
 		else if(obj.plttype == PLOT_ELLIPSOID)
 		{
@@ -211,19 +219,21 @@ void PlotGl::paintGLThread()
 								0., 0., 0., 1. };
 			glMultMatrixd(dMatRot);
 			glScaled(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
-
-			//double dRadius = std::max(std::max(obj.vecParams[0], obj.vecParams[1]), obj.vecParams[2]);
 		}
 		else
 			log_warn("Unknown plot object.");
 
-		double dLenDist = gl_proj_sphere_size(/*dRadius*/1.);
-		iLOD = dLenDist * 50.;
-		if(iLOD >= int(sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)))
-			iLOD = sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)-1;
-		if(iLOD < 0) iLOD = 0;
-		iLOD = sizeof(m_iLstSphere)/sizeof(*m_iLstSphere) - iLOD - 1;
-		//std::cout << "dist: " << dLenDist << ", lod: " << iLOD << std::endl;
+		if(obj.bUseLOD)
+		{
+			double dLenDist = gl_proj_sphere_size(/*dRadius*/1.);
+			//std::cout << "proj sphere size: " << dLenDist << std::endl;
+			iLOD = dLenDist * 50.;
+			if(iLOD >= int(sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)))
+				iLOD = sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)-1;
+			if(iLOD < 0) iLOD = 0;
+			iLOD = sizeof(m_iLstSphere)/sizeof(*m_iLstSphere) - iLOD - 1;
+			//std::cout << "dist: " << dLenDist << ", lod: " << iLOD << std::endl;
+		}
 
 		if(!bColorSet)
 		{
@@ -250,9 +260,6 @@ void PlotGl::paintGLThread()
 	m_mutex.unlock();
 
 	glPushMatrix();
-		//s_mutexShared.lock();
-		m_mutex.lock();
-
 		if(m_pFont && m_pFont->IsOk())
 		{
 			m_pFont->BindTexture();
@@ -270,28 +277,9 @@ void PlotGl::paintGLThread()
 			m_pFont->DrawText(0., 0., m_dZMin, var_to_str(m_dZMin+m_dZMinMaxOffs));
 			m_pFont->DrawText(0., 0., m_dZMax, var_to_str(m_dZMax+m_dZMinMaxOffs));
 		}
-
-		/*if(m_pfont)
-		{
-			renderText(m_dXMax*dAxisScale, 0., 0., m_strLabels[0], *m_pfont);
-			renderText(0., m_dYMax*dAxisScale , 0., m_strLabels[1], *m_pfont);
-			renderText(0., 0., m_dZMax*dAxisScale , m_strLabels[2], *m_pfont);
-		}
-		if(m_pfontsmall)
-		{
-			renderText(m_dXMin, 0., 0., var_to_str(m_dXMin+m_dXMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(m_dXMax, 0., 0., var_to_str(m_dXMax+m_dXMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(0., m_dYMin, 0., var_to_str(m_dYMin+m_dYMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(0., m_dYMax, 0., var_to_str(m_dYMax+m_dYMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(0., 0., m_dZMin, var_to_str(m_dZMin+m_dZMinMaxOffs).c_str(), *m_pfontsmall);
-			renderText(0., 0., m_dZMax, var_to_str(m_dZMax+m_dZMinMaxOffs).c_str(), *m_pfontsmall);
-		}*/
-		//s_mutexShared.unlock();
-		m_mutex.unlock();
 	glPopMatrix();
 
 	swapBuffers();
-	//glFlush();
 }
 
 void PlotGl::run()
@@ -365,16 +353,25 @@ void PlotGl::SetObjectLabel(int iObjIdx, const std::string& strLab)
 	m_mutex.unlock();
 }
 
+void PlotGl::SetObjectUseLOD(int iObjIdx, bool bLOD)
+{
+	m_mutex.lock();
+	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
+		return;
+	m_vecObjs[iObjIdx].bUseLOD = bLOD;
+	m_mutex.unlock();
+}
+
 void PlotGl::PlotSphere(const ublas::vector<double>& vecPos,
 						double dRadius, int iObjIdx)
 {
-	m_mutex.lock();
-
 	if(iObjIdx < 0)
 	{
 		clear();
 		iObjIdx = 0;
 	}
+
+	m_mutex.lock();
 
 	if(iObjIdx >= int(m_vecObjs.size()))
 		m_vecObjs.resize(iObjIdx+1);
@@ -393,17 +390,17 @@ void PlotGl::PlotSphere(const ublas::vector<double>& vecPos,
 }
 
 void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
-							const ublas::vector<double>& offsets,
-							const ublas::matrix<double>& rot,
-							int iObjIdx)
+				const ublas::vector<double>& offsets,
+				const ublas::matrix<double>& rot,
+				int iObjIdx)
 {
-	m_mutex.lock();
-
 	if(iObjIdx < 0)
 	{
 		clear();
 		iObjIdx = 0;
 	}
+
+	m_mutex.lock();
 
 	if(iObjIdx >= int(m_vecObjs.size()))
 		m_vecObjs.resize(iObjIdx+1);
@@ -419,6 +416,7 @@ void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
 	obj.vecParams[3] = offsets[0];
 	obj.vecParams[4] = offsets[1];
 	obj.vecParams[5] = offsets[2];
+
 	unsigned int iNum = 6;
 	for(unsigned int i=0; i<3; ++i)
 		for(unsigned int j=0; j<3; ++j)
@@ -489,7 +487,12 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	m_dMouseY = -(2.*pEvt->posF().y()/double(m_iH) - 1.);
 	//std::cout << m_dMouseX << ", " << m_dMouseY << std::endl;
 
-	mouseSelectObj(m_dMouseX, m_dMouseY);
+	m_mutex.lock();
+	bool bEnabled = m_bEnabled;
+	m_mutex.unlock();
+
+	if(bEnabled)
+		mouseSelectObj(m_dMouseX, m_dMouseY);
 }
 
 void PlotGl::updateViewMatrix()

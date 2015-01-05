@@ -30,9 +30,9 @@ struct Ellipse
 	std::string x_lab, y_lab;
 
 	ublas::vector<double> operator()(double t) const;
-	const char* GetModelName() const { return "ellipse"; };
-
-	void GetCurvePoints(std::vector<double>& x, std::vector<double>& y, unsigned int iPoints=512);
+	void GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
+						unsigned int iPoints=512,
+						double *pLRTB=0);
 };
 
 struct Ellipsoid
@@ -65,8 +65,5 @@ extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const
 
 extern void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 						std::vector<ublas::vector<double>>& vecResult);
-
-
-extern ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx);
 
 #endif

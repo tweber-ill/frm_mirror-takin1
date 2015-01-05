@@ -20,7 +20,9 @@
       <string>Save...</string>
      </property>
      <property name="icon">
-      <iconset theme="document-save"/>
+      <iconset theme="document-save">
+       <normaloff/>
+      </iconset>
      </property>
     </widget>
    </item>
@@ -1257,25 +1259,8 @@ Resolution Matrix:
           <property name="fieldGrowthPolicy">
            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
           </property>
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="radioCN">
-            <property name="text">
-             <string>Cooper-Nathans</string>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioPop">
-            <property name="text">
-             <string>Popovici</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
+          <item row="0" column="0" colspan="2">
+           <widget class="QComboBox" name="comboAlgo"/>
           </item>
          </layout>
         </widget>
@@ -1459,7 +1444,9 @@ Resolution Matrix:
       <string>Load...</string>
      </property>
      <property name="icon">
-      <iconset theme="document-open"/>
+      <iconset theme="document-open">
+       <normaloff/>
+      </iconset>
      </property>
     </widget>
    </item>
@@ -1487,14 +1474,6 @@ Resolution Matrix:
   <tabstop>spinVCollBSample</tabstop>
   <tabstop>spinVCollASample</tabstop>
   <tabstop>spinVCollAna</tabstop>
-  <tabstop>radioSrcRect</tabstop>
-  <tabstop>radioSrcCirc</tabstop>
-  <tabstop>spinSrcW</tabstop>
-  <tabstop>spinSrcH</tabstop>
-  <tabstop>spinDistSrcMono</tabstop>
-  <tabstop>groupGuide</tabstop>
-  <tabstop>spinGuideDivH</tabstop>
-  <tabstop>spinGuideDivV</tabstop>
   <tabstop>spinMonoW</tabstop>
   <tabstop>spinMonoH</tabstop>
   <tabstop>spinMonoThick</tabstop>
@@ -1503,6 +1482,12 @@ Resolution Matrix:
   <tabstop>checkMonoCurvV</tabstop>
   <tabstop>spinMonoCurvV</tabstop>
   <tabstop>spinDistMonoSample</tabstop>
+  <tabstop>radioSampleCub</tabstop>
+  <tabstop>radioSampleCyl</tabstop>
+  <tabstop>spinSampleW_Q</tabstop>
+  <tabstop>spinSampleW_perpQ</tabstop>
+  <tabstop>spinSampleH</tabstop>
+  <tabstop>spinDistSampleAna</tabstop>
   <tabstop>spinAnaW</tabstop>
   <tabstop>spinAnaH</tabstop>
   <tabstop>spinAnaThick</tabstop>
@@ -1511,18 +1496,36 @@ Resolution Matrix:
   <tabstop>checkAnaCurvV</tabstop>
   <tabstop>spinAnaCurvV</tabstop>
   <tabstop>spinDistAnaDet</tabstop>
-  <tabstop>radioSampleCub</tabstop>
-  <tabstop>radioSampleCyl</tabstop>
-  <tabstop>spinSampleW_Q</tabstop>
-  <tabstop>spinSampleW_perpQ</tabstop>
-  <tabstop>spinSampleH</tabstop>
-  <tabstop>spinDistSampleAna</tabstop>
+  <tabstop>radioSrcRect</tabstop>
+  <tabstop>radioSrcCirc</tabstop>
+  <tabstop>spinSrcW</tabstop>
+  <tabstop>spinSrcH</tabstop>
+  <tabstop>spinDistSrcMono</tabstop>
+  <tabstop>groupGuide</tabstop>
+  <tabstop>spinGuideDivH</tabstop>
+  <tabstop>spinGuideDivV</tabstop>
   <tabstop>radioDetRect</tabstop>
   <tabstop>radioDetCirc</tabstop>
   <tabstop>spinDetW</tabstop>
   <tabstop>spinDetH</tabstop>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>editKi</tabstop>
+  <tabstop>editKf</tabstop>
+  <tabstop>editQ</tabstop>
+  <tabstop>editE</tabstop>
+  <tabstop>comboAlgo</tabstop>
+  <tabstop>radioConstMon</tabstop>
+  <tabstop>radioConstTime</tabstop>
+  <tabstop>checkElli4dAutoCalc</tabstop>
+  <tabstop>btnCalcElli4d</tabstop>
+  <tabstop>spinMCNeutrons</tabstop>
+  <tabstop>checkMCCenter</tabstop>
+  <tabstop>btnMCGenerate</tabstop>
+  <tabstop>groupSim</tabstop>
+  <tabstop>editSim</tabstop>
+  <tabstop>btnSave</tabstop>
+  <tabstop>btnLoad</tabstop>
   <tabstop>buttonBox</tabstop>
+  <tabstop>tabWidget</tabstop>
  </tabstops>
  <resources/>
  <connections>

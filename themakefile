@@ -38,8 +38,9 @@ FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall ${DEFINES}
 
 STD_LIBS = -lstdc++ -lm -lboost_system
 STD_LIBS += -lpthread
-LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack -lblas -lgfortran
-QT_LIBS = ${QT_LIB} -lGL -lGLU -lX11 -lfreetype
+LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack
+#LAPACK_LIBS += -lblas -lgfortran
+QT_LIBS = ${QT_LIB} -lGL -lGLU -lX11 -lfreetype -lfontconfig
 LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
 LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 
@@ -50,7 +51,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
 	obj/recip3d.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
-	obj/SettingsDlg.o obj/SequenceDlg.o \
+	obj/SettingsDlg.o obj/SequenceDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
 	obj/xml.o obj/tcp.o obj/spacegroup.o obj/gl.o \
 	obj/plotgl.o obj/cn.o obj/pop.o obj/ResoDlg.o obj/EllipseDlg3D.o \
@@ -97,6 +98,10 @@ obj/SequenceDlg.o: dialogs/SequenceDlg.cpp dialogs/SequenceDlg.h
 obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h helper/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/DWDlg.o: dialogs/DWDlg.cpp dialogs/DWDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/DynPlaneDlg.o: dialogs/DynPlaneDlg.cpp dialogs/DynPlaneDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/NeutronDlg.o: dialogs/NeutronDlg.cpp dialogs/NeutronDlg.h
 	${CC} ${FLAGS} -c -o $@ $<

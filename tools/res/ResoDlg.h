@@ -51,6 +51,9 @@ protected:
 	std::vector<QRadioButton*> m_vecRadioMinus;
 	std::vector<std::string> m_vecRadioNames;
 
+	std::vector<QComboBox*> m_vecComboBoxes;
+	std::vector<std::string> m_vecComboNames;
+
 	void WriteLastConfig();
 	void ReadLastConfig();
 
@@ -84,6 +87,7 @@ protected slots:
 	void MCGenerate();
 
 protected:
+	void setupAlgos();
 	void RefreshSimCmd();
 
 public slots:

@@ -11,6 +11,7 @@
 #include "ellipse.h"
 #include "helper/linalg.h"
 #include "helper/linalg2.h"
+#include "helper/geo.h"
 #include "helper/quat.h"
 #include "helper/math.h"
 #include "helper/rand.h"
@@ -68,7 +69,7 @@ ublas::vector<double> Ellipse::operator()(double t) const
 }
 
 void Ellipse::GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
-							unsigned int iPoints)
+							unsigned int iPoints, double *pLRTB)
 {
 	x.resize(iPoints);
 	y.resize(iPoints);
@@ -80,6 +81,17 @@ void Ellipse::GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
 
 		x[i] = vec[0];
 		y[i] = vec[1];
+	}
+
+	if(pLRTB)	// bounding rect
+	{
+		auto pairX = std::minmax_element(x.begin(), x.end());
+		auto pairY = std::minmax_element(y.begin(), y.end());
+
+		*(pLRTB+0) = *pairX.first;	// left
+		*(pLRTB+1) = *pairX.second;	// right
+		*(pLRTB+2) = *pairY.second;	// top
+		*(pLRTB+3) = *pairY.first;	// bottom
 	}
 }
 
@@ -97,6 +109,9 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 									const ublas::vector<double>& Q_avg,
 									int iX, int iY, int iInt, int iRem1, int iRem2)
 {
+	QuadEllipsoid<double> quad(4);
+	quad.SetQ(reso);
+
 	Ellipse ell;
 	ell.x_offs = ell.y_offs = 0.;
 
@@ -105,12 +120,11 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	ell.y_lab = g_strLabels[iY];
 
 
-	ublas::matrix<double> res_mat = reso;
 	ublas::vector<double> Q_offs = Q_avg;
 
 	if(iRem1>-1)
 	{
-		res_mat = remove_elems(res_mat, iRem1);
+		quad.RemoveElems(iRem1);
 		Q_offs = remove_elem(Q_offs, iRem1);
 
 		if(iInt>=iRem1) --iInt;
@@ -121,7 +135,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 	if(iRem2>-1)
 	{
-		res_mat = remove_elems(res_mat, iRem2);
+		quad.RemoveElems(iRem2);
 		Q_offs = remove_elem(Q_offs, iRem2);
 
 		if(iInt>=iRem2) --iInt;
@@ -131,56 +145,58 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 	if(iInt>-1)
 	{
-		res_mat = gauss_int(res_mat, iInt);
+		quad.GaussInt(iInt);
 		Q_offs = remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
 	}
 
-	std::vector<ublas::vector<double> > evecs;
+	ublas::matrix<double> res_mat0 = quad.GetQ();
+
 	std::vector<double> evals;
-	::eigenvec_sym(res_mat, evecs, evals);
+	ublas::matrix<double> matRot;
+	quad.GetPrincipalAxes(matRot, evals);
+	quad.SetQ(diag_matrix(evals));
 
-	// sort by axis length: long axis is first axis
-	::sort_eigenvecs<double>(evecs, evals, 1, [](double d) -> double { return 1./d; });
-
-	/*std::cout << "Eigenvalues: ";
-	for(double dEv : evals)
-		std::cout << dEv << " ";
-	std::cout << std::endl;*/
-
-	ublas::matrix<double> evecs_rot = column_matrix(evecs);
-	ell.phi = rotation_angle(evecs_rot)[0];
+	ell.phi = rotation_angle(matRot)[0];
 
 	// if rotation angle >= 90° -> choose other axis as first axis
-	if(std::fabs(ell.phi) >= M_PI/2.)
+	/*if(std::fabs(ell.phi) >= M_PI/2.)
 	{
 		std::swap(evecs[0], evecs[1]);
 		std::swap(evals[0], evals[1]);
+		evecs[0] = -evecs[0];
 
-		if(ell.phi > 0.)
+		if(ell.phi < 0.)
 			evecs[0] = -evecs[0];
 
 		evecs_rot = column_matrix(evecs);
 		ell.phi = rotation_angle(evecs_rot)[0];
-	}
+	}*/
+
+	/*if(std::fabs(ell.phi) > std::fabs(M_PI-std::fabs(ell.phi)))
+	{
+		evecs[0] = -evecs[0];
+		evecs_rot = column_matrix(evecs);
+		ell.phi = rotation_angle(evecs_rot)[0];
+	}*/
 
 
-	ell.x_hwhm = SIGMA2HWHM/sqrt(evals[0]);
-	ell.y_hwhm = SIGMA2HWHM/sqrt(evals[1]);
-	
+	ell.x_hwhm = SIGMA2HWHM * quad.GetRadius(0);
+	ell.y_hwhm = SIGMA2HWHM * quad.GetRadius(1);
+
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
 
-	ell.area = get_ellipsoid_volume(res_mat);
+	ell.area = quad.GetVolume();
 	ell.slope = std::tan(ell.phi);
 
 
 #ifndef NDEBUG
 	// sanity check, see Shirane p. 267
 	double dMyPhi = ell.phi/M_PI*180.;
-	double dPhiShirane = 0.5*atan(2.*res_mat(0,1) / (res_mat(0,0)-res_mat(1,1))) / M_PI*180.;
+	double dPhiShirane = 0.5*atan(2.*res_mat0(0,1) / (res_mat0(0,0)-res_mat0(1,1))) / M_PI*180.;
 	if(!::float_equal(dMyPhi, dPhiShirane, 0.01)
 		&& !::float_equal(dMyPhi-90., dPhiShirane, 0.01))
 	{
@@ -196,9 +212,12 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 // --------------------------------------------------------------------------------
 
 Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
-										const ublas::vector<double>& Q_avg,
-										int iX, int iY, int iZ, int iInt, int iRem)
+							const ublas::vector<double>& Q_avg,
+							int iX, int iY, int iZ, int iInt, int iRem)
 {
+	QuadEllipsoid<double> quad(4);
+	quad.SetQ(reso);
+
 	Ellipsoid ell;
 	ell.x_offs = ell.y_offs = ell.z_offs = 0.;
 
@@ -208,73 +227,42 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	ell.z_lab = g_strLabels[iZ];
 
 
-	ublas::matrix<double> res_mat = reso;
 	ublas::vector<double> Q_offs = Q_avg;
 
 	if(iRem>-1)
 	{
-		res_mat = remove_elems(res_mat, iRem);
+		quad.RemoveElems(iRem);
 		Q_offs = remove_elem(Q_offs, iRem);
 
 		if(iInt>=iRem) --iInt;
 		if(iX>=iRem) --iX;
 		if(iY>=iRem) --iY;
 		if(iZ>=iRem) --iZ;
-
-		//std::cout << "rem: " << res_mat << std::endl;
 	}
 
 	if(iInt>-1)
 	{
-		res_mat = gauss_int(res_mat, iInt);
+		quad.GaussInt(iInt);
 		Q_offs = remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
 		if(iZ>=iInt) --iZ;
-
-		//std::cout << "int: " << res_mat << std::endl;
 	}
 
-	std::vector<ublas::vector<double> > evecs;
 	std::vector<double> evals;
-	::eigenvec_sym(res_mat, evecs, evals);
-	::sort_eigenvecs<double>(evecs, evals, 1, [](double d) -> double { return 1./d; });
+	quad.GetPrincipalAxes(ell.rot, evals);
+	quad.SetQ(diag_matrix(evals));
 
-	ell.rot = column_matrix(evecs);
-	//std::vector<double> vecRot = rotation_angle(ell.rot);
-	//ell.alpha = vecRot[0];
-	//ell.beta = vecRot[1];
-	//ell.gamma = vecRot[2];
-
-	/*ublas::matrix<double> res_rot;
-	res_rot = prod(res_mat, ell.rot);
-	res_rot = prod(trans(ell.rot), res_rot);*/
-
-	ell.x_hwhm = SIGMA2HWHM/sqrt(evals[0]);
-	ell.y_hwhm = SIGMA2HWHM/sqrt(evals[1]);
-	ell.z_hwhm = SIGMA2HWHM/sqrt(evals[2]);
+	ell.x_hwhm = SIGMA2HWHM * quad.GetRadius(0);
+	ell.y_hwhm = SIGMA2HWHM * quad.GetRadius(1);
+	ell.z_hwhm = SIGMA2HWHM * quad.GetRadius(2);
 
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
 	ell.z_offs = Q_offs[iZ];
 
-	ell.vol = get_ellipsoid_volume(res_mat);
-
-	//std::cout << ell.rot << std::endl;
-	//std::cout << quat_to_rot3(rot3_to_quat(ell.rot)) << std::endl;
-	//std::cout << "alpha=" << ell.alpha/M_PI*180. << ", beta=" << ell.beta/M_PI*180. << ", gamma="<<ell.gamma/M_PI*180. << std::endl;
-
-	/*
-	std::cout << "rot0: " << ell.rot << std::endl;
-	ublas::matrix<double> rot_x = rotation_matrix_3d_z(ell.gamma);
-	ublas::matrix<double> rot_y = rotation_matrix_3d_y(ell.beta);
-	ublas::matrix<double> rot_z = rotation_matrix_3d_x(ell.alpha);
-	ublas::matrix<double> rot_0 = ublas::prod(rot_x, rot_y);
-	ublas::matrix<double> rot_1 = ublas::prod(rot_0, rot_z);
-	std::cout << "rot1: " << rot_1 << std::endl;
-	 */
-
+	ell.vol = quad.GetVolume();
 	return ell;
 }
 
@@ -283,22 +271,17 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg)
 {
 	Ellipsoid4d ell;
+	QuadEllipsoid<double> quad(4);
+	quad.SetQ(reso);
 
-	std::vector<ublas::vector<double> > evecs;
 	std::vector<double> evals;
-	::eigenvec_sym(reso, evecs, evals);
-	::sort_eigenvecs<double>(evecs, evals, 1, [](double d) -> double { return 1./d; });
+	quad.GetPrincipalAxes(ell.rot, evals);
+	quad.SetQ(diag_matrix(evals));
 
-	ell.rot = column_matrix(evecs);
-
-	/*ublas::matrix<double> res_rot;
-	res_rot = prod(reso, ell.rot);
-	res_rot = prod(trans(ell.rot), res_rot);*/
-
-	ell.x_hwhm = SIGMA2HWHM/sqrt(evals[0]);
-	ell.y_hwhm = SIGMA2HWHM/sqrt(evals[1]);
-	ell.z_hwhm = SIGMA2HWHM/sqrt(evals[2]);
-	ell.w_hwhm = SIGMA2HWHM/sqrt(evals[3]);
+	ell.x_hwhm = SIGMA2HWHM * quad.GetRadius(0);
+	ell.y_hwhm = SIGMA2HWHM * quad.GetRadius(1);
+	ell.z_hwhm = SIGMA2HWHM * quad.GetRadius(2);
+	ell.w_hwhm = SIGMA2HWHM * quad.GetRadius(3);
 
 	ell.x_offs = Q_avg[0];
 	ell.y_offs = Q_avg[1];
@@ -311,7 +294,7 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 	ell.z_lab = g_strLabels[2];
 	ell.w_lab = g_strLabels[3];
 
-	ell.vol = get_ellipsoid_volume(reso);
+	ell.vol = quad.GetVolume();
 
 	//std::cout << ell << std::endl;
 	return ell;
@@ -346,29 +329,4 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 
 		vecResult.push_back(std::move(vecMC));
 	}
-}
-
-
-// --------------------------------------------------------------------------------
-
-
-/*
- * this is a 1:1 C++ reimplementation of 'rc_int' from 'mcresplot' and 'rescal5'
- * integrate over row/column iIdx
- */
-ublas::matrix<double> gauss_int(const ublas::matrix<double>& mat, unsigned int iIdx)
-{
-	unsigned int iSize = mat.size1();
-	ublas::vector<double> b(iSize);
-
-	for(unsigned int i=0; i<iSize; ++i)
-		b[i] = mat(i,iIdx) + mat(iIdx,i);
-
-	b = remove_elem(b, iIdx);
-	ublas::matrix<double> m = remove_elems(mat, iIdx);
-	ublas::matrix<double> bb = outer_prod(b,b);
-
-	double d = mat(iIdx, iIdx);
-	m = m - 0.25/d * bb;
-	return m;
 }

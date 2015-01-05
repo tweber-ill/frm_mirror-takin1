@@ -34,6 +34,8 @@
 #include "dialogs/NetCacheDlg.h"
 #include "dialogs/SettingsDlg.h"
 #include "dialogs/SequenceDlg.h"
+#include "dialogs/DWDlg.h"
+#include "dialogs/DynPlaneDlg.h"
 
 #include "nicos.h"
 #include "helper/spacegroup.h"
@@ -106,6 +108,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		GotoDlg *m_pGotoDlg = 0;
 		PowderDlg *m_pPowderDlg = 0;
 		SequenceDlg *m_pSequenceDlg = 0;
+		DWDlg *m_pDWDlg = 0;
+		DynPlaneDlg* m_pDynPlaneDlg = 0;
 
 		SrvDlg *m_pSrvDlg = 0;
 		NicosCache *m_pNicosCache = 0;
@@ -163,6 +167,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowPowderDlg();
 		void ShowSettingsDlg();
 		void ShowSequenceDlg();
+		void ShowDWDlg();
+		void ShowDynPlaneDlg();
 
 		void ShowSpurions();
 		void spurionInfo(const ElasticSpurion& spuris,

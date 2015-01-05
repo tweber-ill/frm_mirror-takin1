@@ -4,8 +4,8 @@
  * @date 08-may-2013
  *
  * @desc This is a reimplementation in C++ of the file rc_popma.m of the
- *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
- *    			http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
+ *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
+ *		http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
  */
 
 #include "pop.h"
@@ -216,7 +216,7 @@ CNResults calc_pop(PopParams& pop)
 	}
 
 	ublas::matrix<double> M0iD = ublas::prod(M0i, ublas::trans(D));
-	ublas::matrix<double> M1 =ublas::prod(D, M0iD);
+	ublas::matrix<double> M1 = ublas::prod(D, M0iD);
 	ublas::matrix<double> M1i;
 	if(!::inverse(M1, M1i))
 	{

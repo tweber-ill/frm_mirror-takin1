@@ -22,7 +22,7 @@ protected:
 	double m_dPlaneDistTolerance = 0.01;
 
 public:
-	Recip3DDlg(QWidget* pParent);
+	Recip3DDlg(QWidget* pParent, QSettings* = 0);
 	virtual ~Recip3DDlg();
 
 	void CalcPeaks(const Lattice<double>& lattice,
@@ -33,7 +33,9 @@ public:
 	void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 	void SetMaxPeaks(double dMax) { m_dMaxPeaks = dMax; }
 
-protected slots:
+protected:
+	void hideEvent(QHideEvent*);
+	void showEvent(QShowEvent*);
 };
 
 

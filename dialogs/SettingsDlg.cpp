@@ -5,13 +5,31 @@
  */
 
 #include "SettingsDlg.h"
+#include "../helper/string.h"
+#include "../helper/log.h"
+#include "../helper/gl.h"
+
+#include <QtGui/QFileDialog>
 #include <iostream>
+
+
+// -----------------------------------------------------------------------------
+
 
 SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
+	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectFont()));
+
+
+	std::string strDefFont = FontMap::get_font_file("dejavusansmono.ttf");
+	if(strDefFont == "")
+	{
+		log_warn("Default gl font not available.");
+		strDefFont = "/usr/share/fonts/dejavu/DejaVuSansMono.ttf";
+	}
 
 	m_vecEdits =
 	{
@@ -35,7 +53,10 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupEdit("net/ana_d", "nicos/ana/dvalue", editAnaD),
 
 		t_tupEdit("net/stheta_aux", "nicos/sth/value", editRotTheta),
-		t_tupEdit("net/stheta_aux_alias", "nicos/sth/alias", editRotAlias)
+		t_tupEdit("net/stheta_aux_alias", "nicos/sth/alias", editRotAlias),
+
+
+		t_tupEdit("gl/font", strDefFont, editGLFont)
 	};
 
 	SetDefaults(0);
@@ -89,6 +110,24 @@ void SettingsDlg::SaveSettings()
 	}
 }
 
+void SettingsDlg::SelectFont()
+{
+	if(!m_pSettings) return;
+
+	QString strDirLast = m_pSettings->value("gl/last_font_dir", ".").toString();
+	QString strFile = QFileDialog::getOpenFileName(this,
+							"Select Font...",
+							strDirLast,
+							"TTF files (*.ttf *.TTF)");
+	if(strFile != "")
+	{
+		//m_pSettings->setValue("gl/font", strFile);
+		editGLFont->setText(strFile);
+
+		std::string strDir = get_dir(strFile.toStdString());
+		m_pSettings->setValue("gl/last_font_dir", QString(strDir.c_str()));
+	}
+}
 
 void SettingsDlg::showEvent(QShowEvent *pEvt)
 {

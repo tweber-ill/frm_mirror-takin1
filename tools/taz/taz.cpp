@@ -229,10 +229,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pSequences = new QAction(this);
 	pSequences->setText("Scan Sequences...");
 	pSequences->setIcon(QIcon::fromTheme("document-properties"));
-	// TODO:
+	// TODO
 	//pMenuFile->addAction(pSequences);
 
-	pMenuFile->addSeparator();
+	//pMenuFile->addSeparator();
 
 	QAction *pSettings = new QAction(this);
 	pSettings->setText("Settings...");
@@ -361,6 +361,16 @@ TazDlg::TazDlg(QWidget* pParent)
 	pPowder->setText("Powder Lines...");
 	pMenuCalc->addAction(pPowder);
 
+	QAction *pDW = new QAction(this);
+	pDW->setText("Debye-Waller Factor...");
+	pMenuCalc->addAction(pDW);
+
+	pMenuCalc->addSeparator();
+
+	QAction *pDynPlane = new QAction(this);
+	pDynPlane->setText("Kinematic Plane...");
+	pMenuCalc->addAction(pDynPlane);
+
 	QAction *pSpuri = new QAction(this);
 	pSpuri->setText("Spurious Scattering...");
 	pMenuCalc->addAction(pSpuri);
@@ -454,6 +464,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(m_pGoto, SIGNAL(triggered()), this, SLOT(ShowGotoDlg()));
 	QObject::connect(pPowder, SIGNAL(triggered()), this, SLOT(ShowPowderDlg()));
 	QObject::connect(pSpuri, SIGNAL(triggered()), this, SLOT(ShowSpurions()));
+	QObject::connect(pDW, SIGNAL(triggered()), this, SLOT(ShowDWDlg()));
+	QObject::connect(pDynPlane, SIGNAL(triggered()), this, SLOT(ShowDynPlaneDlg()));
 
 	QObject::connect(pConn, SIGNAL(triggered()), this, SLOT(ShowConnectDlg()));
 	QObject::connect(pDisconn, SIGNAL(triggered()), this, SLOT(Disconnect()));
@@ -486,8 +498,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	pFileTools->addAction(pLoad);
 	pFileTools->addAction(pSave);
 	pFileTools->addAction(pSaveAs);
-	pFileTools->addSeparator();
 	// TODO:
+	//pFileTools->addSeparator();
 	//pFileTools->addAction(pSequences);
 	addToolBar(pFileTools);
 
@@ -555,6 +567,8 @@ TazDlg::~TazDlg()
 	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
 	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
 	if(m_pSequenceDlg) { delete m_pSequenceDlg; m_pSequenceDlg = 0; }
+	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
+	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
 }
 
 
@@ -601,6 +615,29 @@ void TazDlg::ShowSettingsDlg()
 
 	m_pSettingsDlg->show();
 	m_pSettingsDlg->activateWindow();
+}
+
+void TazDlg::ShowDWDlg()
+{
+	if(!m_pDWDlg)
+		m_pDWDlg = new DWDlg(this, &m_settings);
+
+	m_pDWDlg->show();
+	m_pDWDlg->activateWindow();
+}
+
+void TazDlg::ShowDynPlaneDlg()
+{
+	if(!m_pDynPlaneDlg)
+	{
+		m_pDynPlaneDlg = new DynPlaneDlg(this, &m_settings);
+		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+						m_pDynPlaneDlg, SLOT(RecipParamsChanged(const RecipParams&)));
+		m_sceneRecip.emitAllParams();
+	}
+
+	m_pDynPlaneDlg->show();
+	m_pDynPlaneDlg->activateWindow();
 }
 
 void TazDlg::UpdateDs()
@@ -683,7 +720,7 @@ void TazDlg::Show3D()
 {
 	if(!m_pRecip3d)
 	{
-		m_pRecip3d = new Recip3DDlg(this);
+		m_pRecip3d = new Recip3DDlg(this, &m_settings);
 
 		double dTol = s_dPlaneDistTolerance;
 		m_pRecip3d->SetPlaneDistTolerance(dTol);
@@ -1126,7 +1163,7 @@ void TazDlg::ShowAbout()
 
 	QString strAbout;
 	strAbout += "Takin version 0.8.9\n";
-	strAbout += "Written by Tobias Weber, 2014.";
+	strAbout += "Written by Tobias Weber, 2014-2015.";
 	strAbout += "\n\n";
 
 	strAbout += "Takin is free software: you can redistribute it and/or modify ";

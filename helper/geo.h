@@ -11,6 +11,7 @@
 #include "flags.h"
 #include "exception.h"
 #include "linalg.h"
+#include "linalg2.h"
 #include "log.h"
 
 #include <iostream>
@@ -321,7 +322,7 @@ class Quadric
 {
 protected:
 	// general: x^T Q x  +  r x  +  s  =  0
-	// here: x^T Q x + s=  0
+	// here: x^T Q x + s  =  0
 	ublas::matrix<T> m_Q = ublas::zero_matrix<T>(3,3);
 	//ublas::vector<T> m_r = ublas::zero_vector<T>(3);
 	T m_s = 0;
@@ -329,11 +330,36 @@ protected:
 	ublas::vector<T> m_vecOffs = ublas::zero_vector<T>(3);
 
 public:
-	Quadric() {}
+	Quadric(unsigned int iDim)
+		: m_Q(ublas::zero_matrix<T>(iDim,iDim))/*, m_r(ublas::zero_vector<T>(iDim))*/
+	{}
 	Quadric(const ublas::matrix<T>& Q) : m_Q(Q) {}
 	Quadric(const ublas::matrix<T>& Q, /*const ublas::vector<T>& r,*/ T s)
 			: m_Q(Q), /*m_r(r),*/ m_s(s) {}
 	virtual ~Quadric() {}
+
+	const Quadric<T>& operator=(const Quadric<T>& quad)
+	{
+		this->m_Q = quad.m_Q;
+		//this->m_r = quad.m_r;
+		this->m_s = quad.m_s;
+		this->m_vecOffs = quad.m_vecOffs;
+
+		return *this;
+	}
+
+	Quadric<T>& operator=(Quadric<T>&& quad)
+	{
+		this->m_Q = std::move(quad.m_Q);
+		//this->m_r = std::move(quad.m_r);
+		this->m_s = std::move(quad.m_s);
+		this->m_vecOffs = std::move(quad.m_vecOffs);
+
+		return *this;
+	}
+
+	Quadric(const Quadric<T>& quad) { *this = quad; }
+	Quadric(Quadric<T>&& quad) { *this = quad; }
 
 	void SetOffset(const ublas::vector<T>& vec) { m_vecOffs = vec; }
 	const ublas::vector<T>& GetOffset() const { return m_vecOffs; }
@@ -341,6 +367,10 @@ public:
 	const ublas::matrix<T>& GetQ() const { return m_Q; }
 	//const ublas::vector<T>& GetR() const { return m_r; }
 	T GetS() const { return m_s; }
+
+	void SetQ(const ublas::matrix<T>& Q) { m_Q = Q; }
+	//void SetR(const ublas::vector<T>& r) { m_r = r; }
+	void SetS(T s) { m_s = s; }
 
 	T operator()(const ublas::vector<T>& _x) const
 	{
@@ -353,11 +383,37 @@ public:
 		return dQ /*+ dR*/ + m_s;
 	}
 
+	// remove column and row iIdx
+	void RemoveElems(unsigned int iIdx)
+	{
+		m_Q = remove_elems(m_Q, iIdx);
+		//m_r = remove_elem(m_r, iIdx);
+		m_vecOffs = remove_elem(m_vecOffs, iIdx);
+	}
+
 	void transform(const ublas::matrix<T>& S)
 	{
 		ublas::matrix<T> TS = ublas::trans(S);
 		ublas::matrix<T> QS = ublas::prod(m_Q, S);
 		m_Q = ublas::prod(TS, QS);
+	}
+
+	// Q = O D O^T
+	// O: eigenvecs, D: eigenvals
+	bool GetPrincipalAxes(ublas::matrix<T>& matEvecs, std::vector<T>& vecEvals) const
+	{
+		std::vector<ublas::vector<T> > evecs;
+		if(!eigenvec_sym(m_Q, evecs, vecEvals))
+		{
+			log_err("Cannot determine eigenvectors.");
+			return false;
+		}
+
+		sort_eigenvecs<double>(evecs, vecEvals, 1,
+			[](double d) -> double { return 1./std::sqrt(d); });
+
+		matEvecs = column_matrix(evecs);
+		return true;
 	}
 
 	// quad: x^T Q x + s = 0; line: x = x0 + t d
@@ -390,7 +446,7 @@ public:
 template<class T=double>
 std::ostream& operator<<(std::ostream& ostr, const Quadric<T>& quad)
 {
-	ostr << "Q = " << quad.GetQ() /*<< ", "*/;
+	ostr << "Q = " << quad.GetQ() << ", ";
 	//ostr << "r = " << quad.GetR() << ", ";
 	ostr << "s = " << quad.GetS();
 	return ostr;
@@ -403,7 +459,9 @@ class QuadSphere : public Quadric<T>
 protected:
 
 public:
-	QuadSphere(T r)
+	QuadSphere(unsigned int iDim) : Quadric<T>(iDim) {}
+
+	QuadSphere(T r) : Quadric<T>(3)
 	{
 		this->m_Q(0,0) =
 		this->m_Q(1,1) =
@@ -412,8 +470,39 @@ public:
 		this->m_s = -1.;
 	}
 
+	QuadSphere(unsigned int iDim, T r) : Quadric<T>(iDim)
+	{
+		for(unsigned int i=0; i<iDim; ++i)
+			this->m_Q(i,i) = 1./(r*r);
+
+		this->m_s = -1.;
+	}
+
+	// only valid in principal axis system
+	T GetRadius() const { return 1./std::sqrt(this->m_Q(0,0)); }
+	T GetVolume() const { return get_ellipsoid_volume(this->m_Q); }
+
 	virtual ~QuadSphere() {}
 };
+
+
+/*
+ * this is a 1:1 C++ reimplementation of 'rc_int' from 'mcresplot' and 'rescal5'
+ * integrate over row/column iIdx
+ */
+template<class T = double>
+ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, unsigned int iIdx)
+{
+	ublas::vector<T> b(mat.size1());
+	for(unsigned int i=0; i<mat.size1(); ++i)
+		b[i] = 2.*mat(i,iIdx);
+	b = remove_elem(b, iIdx);
+	ublas::matrix<T> bb = outer_prod(b,b)/4.;
+
+	ublas::matrix<T> m = remove_elems(mat, iIdx);
+	m -= bb/mat(iIdx, iIdx);
+	return m;
+}
 
 template<class T=double>
 class QuadEllipsoid : public Quadric<T>
@@ -421,7 +510,17 @@ class QuadEllipsoid : public Quadric<T>
 protected:
 
 public:
-	QuadEllipsoid(T a, T b, T c)
+	QuadEllipsoid(unsigned int iDim) : Quadric<T>(iDim) {}
+
+	QuadEllipsoid(T a, T b) : Quadric<T>(2)
+	{
+		this->m_Q(0,0) = 1./(a*a);
+		this->m_Q(1,1) = 1./(b*b);
+
+		this->m_s = -1.;
+	}
+
+	QuadEllipsoid(T a, T b, T c) : Quadric<T>(3)
 	{
 		this->m_Q(0,0) = 1./(a*a);
 		this->m_Q(1,1) = 1./(b*b);
@@ -430,8 +529,30 @@ public:
 		this->m_s = -1.;
 	}
 
+	QuadEllipsoid(T a, T b, T c, T d) : Quadric<T>(4)
+	{
+		this->m_Q(0,0) = 1./(a*a);
+		this->m_Q(1,1) = 1./(b*b);
+		this->m_Q(2,2) = 1./(c*c);
+		this->m_Q(3,3) = 1./(d*d);
+
+		this->m_s = -1.;
+	}
+
 	virtual ~QuadEllipsoid() {}
+
+	// only valid in principal axis system
+	T GetRadius(unsigned int i) const { return 1./std::sqrt(this->m_Q(i,i)); }
+	T GetVolume() const { return get_ellipsoid_volume(this->m_Q); }
+
+	void GaussInt(unsigned int iIdx)
+	{
+		ublas::matrix<T> m_Qint = ellipsoid_gauss_int(this->m_Q, iIdx);
+		this->RemoveElems(iIdx);
+		this->m_Q = m_Qint;
+	}
 };
+
 
 //------------------------------------------------------------------------------
 

@@ -7,6 +7,7 @@
 #include "gl.h"
 #include "log.h"
 #include "misc.h"
+#include "string.h"
 
 #include <iomanip>
 #include <GL/glu.h>
@@ -75,9 +76,10 @@ FontMap::FontMap(const char* pcFont, int iSize) : m_bOk(0)
 		return;
 	}
 
+	//log_info("Using font \"", pcFont, "\".");
 	if(!LoadFont(pcFont, iSize))
 	{
-		log_err("Cannot load font.");
+		log_err("Cannot load font \"", pcFont, "\".");
 		return;
 	}
 
@@ -415,6 +417,45 @@ GlFontMap::~GlFontMap()
 	glDeleteTextures(GL_TEXTURE_2D, &m_tex);
 	m_tex = 0;
 }
+
+
+
+// -----------------------------------------------------------------------------
+
+#include <fontconfig/fontconfig.h>
+
+std::string FontMap::get_font_file(const std::string& strFind)
+{
+	if(!FcInit())
+	{
+		log_err("Cannot init fontconfig.");
+		return "";
+	}
+
+	FcPattern *pPattern = FcPatternCreate();
+	FcObjectSet* pSet = FcObjectSetBuild(FC_FILE, (void*)0);
+	FcFontSet* pFSet = FcFontList(FcConfigGetCurrent(), pPattern, pSet);
+
+	std::string strFile;
+	for(int i=0; i<pFSet->nfont; ++i)
+	{
+		FcChar8 *pcFile;
+		FcPatternGetString(pFSet->fonts[i], FC_FILE, 0, &pcFile);
+
+		strFile = (char*)pcFile;
+		FcStrFree(pcFile);
+
+		if(str_contains<std::string>(strFile, strFind, 0))
+			break;
+	}
+
+	FcObjectSetDestroy(pSet);
+	FcPatternDestroy(pPattern);
+	//FcFini();
+
+	return strFile;
+}
+
 
 
 

@@ -79,7 +79,7 @@ t_str get_file(const t_str& str)
 
 
 template<class t_str=std::string>
-bool is_equal(const t_str& str0, const t_str& str1, bool bCase=0)
+bool str_is_equal(const t_str& str0, const t_str& str1, bool bCase=0)
 {
 	if(str0.size() != str1.size())
 		return false;
@@ -94,6 +94,29 @@ bool is_equal(const t_str& str0, const t_str& str1, bool bCase=0)
 	return true;
 }
 
+template<class t_str=std::string>
+t_str str_tolower(const t_str& str)
+{
+	t_str strLower;
+	strLower.reserve(str.length());
+
+	for(typename t_str::value_type ch : str)
+		strLower.push_back(std::tolower(ch));
+
+	return strLower;
+}
+
+template<class t_str=std::string>
+bool str_contains(const t_str& str, const t_str& strSub, bool bCase=0)
+{
+	if(bCase)
+		return str.find(strSub) != t_str::npos;
+
+	t_str strLower = str_tolower(str);
+	t_str strSubLower = str_tolower(strSub);
+
+	return strLower.find(strSubLower) != t_str::npos;
+}
 
 template<class t_str=std::string> const t_str& get_trim_chars();
 template<> const std::string& get_trim_chars();

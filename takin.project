@@ -81,6 +81,10 @@
     <File Name="dialogs/SettingsDlg.cpp"/>
     <File Name="dialogs/SequenceDlg.cpp"/>
     <File Name="dialogs/SequenceDlg.h"/>
+    <File Name="dialogs/DWDlg.cpp"/>
+    <File Name="dialogs/DWDlg.h"/>
+    <File Name="dialogs/DynPlaneDlg.cpp"/>
+    <File Name="dialogs/DynPlaneDlg.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
     <File Name="helper/spec_char.cpp"/>
@@ -170,6 +174,7 @@
         <Library Value="blas"/>
         <Library Value="gfortran"/>
         <Library Value="freetype"/>
+        <Library Value="fontconfig"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(IntermediateDirectory)/$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)/.." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
@@ -248,6 +253,7 @@
         <Library Value="blas"/>
         <Library Value="gfortran"/>
         <Library Value="freetype"/>
+        <Library Value="fontconfig"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Release" Command="./$(IntermediateDirectory)/$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)/.." PauseExecWhenProcTerminates="no" IsGUIProgram="yes" IsEnabled="yes"/>

@@ -4,13 +4,14 @@
  * @date 01-may-2013
  *
  * @desc This is a reimplementation in C++ of the file rc_cnmat.m of the
- *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
- *    			http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
+ *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
+ *		http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
  */
 
 #include "cn.h"
 #include "ellipse.h"
 #include "helper/linalg.h"
+#include "helper/geo.h"
 #include "helper/math.h"
 #include "helper/neutrons.hpp"
 #include "helper/log.h"
@@ -131,14 +132,14 @@ CNResults calc_cn(CNParams& cn)
 	ublas::matrix<double> M1 = ublas::prod(M, V);
 	ublas::matrix<double> N = ublas::prod(ublas::trans(V), M1);
 
-	N = ::gauss_int(N, 5);
-	N = ::gauss_int(N, 4);
+	N = ::ellipsoid_gauss_int(N, 5);
+	N = ::ellipsoid_gauss_int(N, 4);
 
 	ublas::vector<double> vec1 = ::get_column<ublas::vector<double> >(N, 1);
 	ublas::matrix<double> NP = N - ublas::outer_prod(vec1,vec1)
-													/(1./((cn.sample_mosaic/units::si::radians * cn.Q*angstrom)
-													*(cn.sample_mosaic/units::si::radians * cn.Q*angstrom))
-														+ N(1,1));
+										/(1./((cn.sample_mosaic/units::si::radians * cn.Q*angstrom)
+										*(cn.sample_mosaic/units::si::radians * cn.Q*angstrom))
+											+ N(1,1));
 	NP(2,2) = N(2,2);
 	NP *= SIGMA2FWHM*SIGMA2FWHM;
 

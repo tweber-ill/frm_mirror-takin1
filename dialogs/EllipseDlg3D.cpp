@@ -6,6 +6,7 @@
 
 #include "EllipseDlg3D.h"
 #include <QtGui/QGridLayout>
+//#include <QtGui/QSplitter>
 
 EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 		: QDialog(pParent), m_pSettings(pSett)
@@ -13,18 +14,24 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Resolution Ellipsoids");
 
+	PlotGl* pPlotLeft = new PlotGl(this, m_pSettings);
+	pPlotLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	m_pPlots.push_back(pPlotLeft);
+
+	PlotGl* pPlotRight = new PlotGl(this, m_pSettings);
+	pPlotRight->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	m_pPlots.push_back(pPlotRight);
+
 	QGridLayout *gridLayout = new QGridLayout(this);
+	gridLayout->addWidget(pPlotLeft, 0, 0, 1, 1);
+	gridLayout->addWidget(pPlotRight, 0, 1, 1, 1);
 
-	unsigned int iPos0[] = {0,0,1,1};
-	unsigned int iPos1[] = {0,1,0,1};
-	for(unsigned int i=0; i<2; ++i)
-	{
-		PlotGl* pPlot = new PlotGl(this);
-		pPlot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-		gridLayout->addWidget(pPlot, iPos0[i], iPos1[i], 1, 1);
+	/*QSplitter *pSplitter = new QSplitter(this);
+	pSplitter->setOrientation(Qt::Horizontal);
+	pSplitter->addWidget(pPlotLeft);
+	pSplitter->addWidget(pPlotRight);
+	gridLayout->addWidget(pSplitter, 0, 0, 1, 1);*/
 
-		m_pPlots.push_back(pPlot);
-	}
 	m_elliProj.resize(2);
 	m_elliSlice.resize(2);
 
@@ -38,8 +45,11 @@ EllipseDlg3D::~EllipseDlg3D()
 	m_pPlots.clear();
 }
 
-void EllipseDlg3D::hideEvent (QHideEvent *event)
+void EllipseDlg3D::hideEvent(QHideEvent *event)
 {
+	for(unsigned int i=0; i<m_pPlots.size(); ++i)
+		m_pPlots[i]->SetEnabled(0);
+
 	if(m_pSettings)
 		m_pSettings->setValue("reso/ellipsoid3d_geo", saveGeometry());
 }
@@ -47,6 +57,9 @@ void EllipseDlg3D::showEvent(QShowEvent *event)
 {
 	if(m_pSettings && m_pSettings->contains("reso/ellipsoid3d_geo"))
 		restoreGeometry(m_pSettings->value("reso/ellipsoid3d_geo").toByteArray());
+
+	for(unsigned int i=0; i<m_pPlots.size(); ++i)
+		m_pPlots[i]->SetEnabled(1);
 }
 
 
@@ -115,6 +128,9 @@ void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vec
 
 		m_pPlots[i]->PlotEllipsoid(vecWProj, vecOffsProj, m_elliProj[i].rot, 1);
 		m_pPlots[i]->PlotEllipsoid(vecWSlice, vecOffsSlice, m_elliSlice[i].rot, 0);
+
+		m_pPlots[i]->SetObjectUseLOD(1, 0);
+		m_pPlots[i]->SetObjectUseLOD(0, 0);
 
 		m_pPlots[i]->SetMinMax(ProjRotatedVec(m_elliProj[i].rot, vecWProj), &vecOffsProj);
 		m_pPlots[i]->SetLabels(m_elliProj[i].x_lab.c_str(), m_elliProj[i].y_lab.c_str(), m_elliProj[i].z_lab.c_str());

@@ -34,7 +34,7 @@ class EllipseDlg3D : public QDialog
 		EllipseDlg3D(QWidget* pParent, QSettings *pSett=0);
 		virtual ~EllipseDlg3D();
 
-	protected slots:
+	protected:
 		void hideEvent(QHideEvent *event);
 		void showEvent(QShowEvent *event);
 

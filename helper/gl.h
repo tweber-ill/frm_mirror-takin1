@@ -84,13 +84,13 @@ void gl_proj_pt(T dX, T dY, T dZ, T& dXProj, T& dYProj)
 
 template<typename t_mat = t_mat4, typename t_vec = t_vec4,
 		typename T = typename t_mat::value_type>
-void gl_mv_pt(const t_vec& vec, t_vec& vecOut, bool bInv=0)
+void gl_mv_pt(const t_vec& vec, t_vec& vecOut)
 {
 	GLdouble dMatMV[16];
 	glGetDoublev(GL_MODELVIEW_MATRIX, dMatMV);
 	t_mat matMV = from_gl_array<t_mat>(dMatMV);
 	t_mat matMV_inv;
-	if(bInv) ::inverse(matMV, matMV_inv);
+	::inverse(matMV, matMV_inv);
 
 	vecOut = ublas::prod(matMV_inv, vec);
 }
@@ -101,7 +101,7 @@ template<typename t_mat = t_mat4, typename t_vec = t_vec4,
 T gl_dist_mv()
 {
 	t_vec vecPos;
-	gl_mv_pt(make_vec<t_vec>({0.,0.,0.,1.}), vecPos, 1);
+	gl_mv_pt(make_vec<t_vec>({0.,0.,0.,1.}), vecPos);
 	vecPos /= vecPos[3];
 	vecPos[3] = 0.;
 	T dDist = ublas::norm_2(vecPos);
@@ -310,6 +310,9 @@ class FontMap
 
 		const unsigned char* GetBuffer() const { return m_pcLarge; }
 		std::pair<int, int> GetOffset(char ch) const;
+
+
+		static std::string get_font_file(const std::string& strFind);
 };
 
 

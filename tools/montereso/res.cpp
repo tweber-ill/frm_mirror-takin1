@@ -12,6 +12,7 @@
 #include "../res/cn.h"
 
 #include "helper/neutrons.hpp"
+#include "helper/linalg.h"
 #include "helper/log.h"
 
 #include <algorithm>

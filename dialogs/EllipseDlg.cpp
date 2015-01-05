@@ -11,7 +11,6 @@
 #include <qwt_picker_machine.h>
 #include <future>
 
-
 EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 			: QDialog(pParent), m_pSettings(pSett)
 {
@@ -22,6 +21,7 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 	m_elliSlice.resize(4);
 	m_vecGrid.resize(4);
 	m_vecPickers.resize(4);
+	m_vecZoomers.resize(4);
 
 	m_vecPlotCurves.resize(8);
 
@@ -83,6 +83,11 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 				this, SLOT(cursorMoved(const QPointF&)));
 #endif
 		m_vecPickers[i]->setEnabled(1);
+
+
+		m_vecZoomers[i] = new QwtPlotZoomer(m_vecPlots[i]->canvas());
+		m_vecZoomers[i]->setMaxStackDepth(-1);
+		m_vecZoomers[i]->setEnabled(1);
 	}
 }
 
@@ -98,6 +103,13 @@ EllipseDlg::~EllipseDlg()
 		delete pPicker;
 	}
 	m_vecPickers.clear();
+
+	for(QwtPlotZoomer* pZoomer : m_vecZoomers)
+	{
+		pZoomer->setEnabled(0);
+		delete pZoomer;
+	}
+	m_vecZoomers.clear();
 
 #ifndef USE_QWT6
 	for(QwtPlot* pPlot : m_vecPlots)
@@ -224,8 +236,9 @@ void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vecto
 		std::vector<double>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
 		std::vector<double>& vecYSlice = m_vecYCurvePoints[iEll*2+1];
 
-		m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512);
-		m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512);
+		double dBBProj[4], dBBSlice[4];
+		m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512, dBBProj);
+		m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512, dBBSlice);
 
 #ifdef USE_QWT6
 		pCurveProj->setRawSamples(vecXProj.data(), vecYProj.data(), vecXProj.size());
@@ -254,6 +267,13 @@ void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vecto
 		pPlot->setAxisTitle(QwtPlot::yLeft, m_elliProj[iEll].y_lab.c_str());
 
 		pPlot->replot();
+
+		QRectF rect;
+		rect.setLeft(std::min(dBBProj[0], dBBSlice[0]));
+		rect.setRight(std::max(dBBProj[1], dBBSlice[1]));
+		rect.setTop(std::max(dBBProj[2], dBBSlice[2]));
+		rect.setBottom(std::min(dBBProj[3], dBBSlice[3]));
+		m_vecZoomers[iEll]->setZoomBase(rect);
 	}
 }
 

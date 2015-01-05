@@ -317,6 +317,23 @@ matrix_type unit_matrix(unsigned int N)
 	return mat;
 }
 
+template<class matrix_type = ublas::matrix<double>,
+		class cont_type = std::initializer_list<typename matrix_type::value_type>>
+matrix_type diag_matrix(const cont_type& lst)
+{
+	matrix_type mat(lst.size(), lst.size());
+
+	for(unsigned int i=0; i<lst.size(); ++i)
+		for(unsigned int j=0; j<lst.size(); ++j)
+			mat(i,j) = 0.;
+
+	unsigned int i = 0;
+	for(typename cont_type::const_iterator iter=lst.begin(); iter!=lst.end(); ++iter, ++i)
+		mat(i,i) = *iter;
+
+	return mat;
+}
+
 
 // Euler-Rodrigues formula
 template<class mat_type=ublas::matrix<double>,

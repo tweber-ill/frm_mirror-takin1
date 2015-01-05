@@ -93,6 +93,8 @@
     <File Name="dialogs/EllipseDlg.cpp"/>
     <File Name="dialogs/NeutronDlg.cpp" ExcludeProjConfig="Debug"/>
     <File Name="dialogs/RealParamDlg.cpp" ExcludeProjConfig="Debug"/>
+    <File Name="dialogs/DWDlg.cpp" ExcludeProjConfig="Debug"/>
+    <File Name="dialogs/DWDlg.h" ExcludeProjConfig="Debug"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

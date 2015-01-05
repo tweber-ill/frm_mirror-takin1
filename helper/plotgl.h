@@ -11,6 +11,7 @@
 #include <QtGui/QMouseEvent>
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
+#include <QtCore/QSettings>
 #include <vector>
 
 #include "gl.h"
@@ -34,15 +35,17 @@ struct PlotObjGl
 	std::vector<double> vecParams;
 	std::vector<double> vecColor;
 
-	bool bSelected;
+	bool bSelected = 0;
+	bool bUseLOD = 1;
 	std::string strLabel;
 };
 
 class PlotGl : public QGLWidget, QThread
 {
 protected:
+	QSettings *m_pSettings = 0;
+	bool m_bEnabled = 1;
 	QMutex m_mutex;
-	//static QMutex s_mutexShared;
 
 	static constexpr double m_dFOV = 45./180.*M_PI;
 	t_mat4 m_matProj, m_matView;
@@ -52,7 +55,6 @@ protected:
 	std::vector<PlotObjGl> m_vecObjs;
 	GLuint m_iLstSphere[8];
 	QString m_strLabels[3];
-	//QFont *m_pfont=0, *m_pfontsmall=0;
 
 	double m_dXMin=-10., m_dXMax=10.;
 	double m_dYMin=-10., m_dYMax=10.;
@@ -102,7 +104,7 @@ protected:
 	// ------------------------------------------------------------------------
 
 public:
-	PlotGl(QWidget* pParent);
+	PlotGl(QWidget* pParent, QSettings *pSettings=0);
 	virtual ~PlotGl();
 
 	void PlotSphere(const ublas::vector<double>& vecPos, double dRadius, int iObjIdx=-1);
@@ -113,6 +115,7 @@ public:
 	void SetObjectCount(unsigned int iSize) { m_vecObjs.resize(iSize); }
 	void SetObjectColor(int iObjIdx, const std::vector<double>& vecCol);
 	void SetObjectLabel(int iObjIdx, const std::string& strLab);
+	void SetObjectUseLOD(int iObjIdx, bool bLOD);
 	void clear();
 
 	void SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ);
@@ -141,7 +144,7 @@ public:
 		m_dZMinMaxOffs =  pOffs ? (*pOffs)[2] : 0.;
 	}
 
+	void SetEnabled(bool b);
 };
-
 
 #endif

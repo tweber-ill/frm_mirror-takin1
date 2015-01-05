@@ -10,7 +10,6 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <map>
 
 #include "helper/string.h"
 #include "helper/flags.h"
@@ -30,6 +29,10 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 			: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
 	setupUi(this);
+
+	setupAlgos();
+	comboAlgo->setCurrentIndex(1);
+
 	groupGuide->setChecked(false);
 
 	m_vecSpinBoxes = {spinMonod, spinMonoMosaic, spinAnad,
@@ -71,15 +74,17 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
-						radioSampleScatterPlus, radioConstMon, radioCN,
+						radioSampleScatterPlus, radioConstMon,
 						radioSampleCub, radioSrcRect, radioDetRect};
 	m_vecRadioMinus = {radioMonoScatterMinus, radioAnaScatterMinus,
-						radioSampleScatterMinus, radioConstTime, radioPop,
+						radioSampleScatterMinus, radioConstTime,
 						radioSampleCyl, radioSrcCirc, radioDetCirc};
 	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense",
 						"reso/sample_scatter_sense", "reso/meas_const_mon",
-						"reso/algo",
 						"reso/pop_sample_cuboid", "reso/pop_source_rect", "reso/pop_det_rect"};
+
+	m_vecComboBoxes = {comboAlgo};
+	m_vecComboNames = {"reso/algo"};
 
 	ReadLastConfig();
 
@@ -95,6 +100,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		QObject::connect(pEditBox, SIGNAL(textEdited(const QString&)), this, SLOT(Calc()));
 	for(QRadioButton* pRadio : m_vecRadioPlus)
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(Calc()));
+	for(QComboBox* pCombo : m_vecComboBoxes)
+		QObject::connect(pCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
 
 
 	connect(checkElli4dAutoCalc, SIGNAL(stateChanged(int)), this, SLOT(checkAutoCalcElli4dChanged()));
@@ -110,6 +117,12 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 ResoDlg::~ResoDlg()
 {}
+
+void ResoDlg::setupAlgos()
+{
+	comboAlgo->addItem("Cooper-Nathans");
+	comboAlgo->addItem("Popovici");
+}
 
 void ResoDlg::SaveRes()
 {
@@ -261,7 +274,7 @@ void ResoDlg::Calc()
 	cn.ana_numtiles_v = 1;
 
 
-	const bool bUseCN = radioCN->isChecked();
+	const bool bUseCN = (comboAlgo->currentIndex()==0);
 	res = (bUseCN ? calc_cn(cn) : calc_pop(cn));
 
 	editE->setText(std::to_string(cn.E / one_meV).c_str());
@@ -315,8 +328,8 @@ void ResoDlg::Calc()
 #ifndef NDEBUG
 		// check against ELASTIC approximation for perp. slope from Shirane p. 268
 		// valid for small mosaicities
-		double dEoverQperp = co::hbar*co::hbar*cn.ki / co::m_n 
-								* units::cos(cn.twotheta/2.) 
+		double dEoverQperp = co::hbar*co::hbar*cn.ki / co::m_n
+								* units::cos(cn.twotheta/2.)
 								* (1. + units::tan(units::abs(cn.twotheta/2.))
 									* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam))
 								  )
@@ -324,7 +337,7 @@ void ResoDlg::Calc()
 
 		log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
 		log_info("E/Q_perp (2nd approximation for ki=kf) = ", double(4.*cn.ki * angstrom), " meV*A");
-		
+
 		//std::cout << "thetas = " << m_pop.thetas/units::si::radians/M_PI*180. << std::endl;
 		//std::cout << "2thetam = " << 2.*m_pop.thetam/units::si::radians/M_PI*180. << std::endl;
 		//std::cout << "2thetaa = " << 2.*m_pop.thetaa/units::si::radians/M_PI*180. << std::endl;
@@ -422,6 +435,8 @@ void ResoDlg::WriteLastConfig()
 		m_pSettings->setValue(m_vecRadioNames[iRadio].c_str(), m_vecRadioPlus[iRadio]->isChecked());
 	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 		m_pSettings->setValue(m_vecCheckNames[iCheck].c_str(), m_vecCheckBoxes[iCheck]->isChecked());
+	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+		m_pSettings->setValue(m_vecComboNames[iCombo].c_str(), m_vecComboBoxes[iCombo]->currentIndex());
 
 	m_pSettings->setValue("reso/use_guide", groupGuide->isChecked());
 }
@@ -473,6 +488,13 @@ void ResoDlg::ReadLastConfig()
 		}
 	}
 
+	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	{
+		if(!m_pSettings->contains(m_vecComboNames[iCombo].c_str()))
+			continue;
+		m_vecComboBoxes[iCombo]->setCurrentIndex(m_pSettings->value(m_vecComboNames[iCombo].c_str()).value<int>());
+	}
+
 	groupGuide->setChecked(m_pSettings->value("reso/use_guide").value<bool>());
 
 	m_bDontCalc = bOldDontCalc;
@@ -502,6 +524,9 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 		mapConf[strXmlRoot + m_vecRadioNames[iRadio]] = (m_vecRadioPlus[iRadio]->isChecked() ? "1" : "0");
 
+	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+		mapConf[strXmlRoot + m_vecComboNames[iCombo]] = var_to_str<int>(m_vecComboBoxes[iCombo]->currentIndex());
+
 	mapConf[strXmlRoot + "reso/use_guide"] = groupGuide->isChecked() ? "1" : "0";
 }
 
@@ -530,6 +555,12 @@ void ResoDlg::Load(Xml& xml, const std::string& strXmlRoot)
 			m_vecRadioPlus[iRadio]->setChecked(1);
 		else
 			m_vecRadioMinus[iRadio]->setChecked(1);;
+	}
+
+	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	{
+		int iComboIdx = xml.Query<int>((strXmlRoot+m_vecComboNames[iCombo]).c_str(), 0, &bOk);
+		m_vecComboBoxes[iCombo]->setCurrentIndex(iComboIdx);
 	}
 
 	groupGuide->setChecked(xml.Query<int>((strXmlRoot+"reso/use_guide").c_str(), 0, &bOk));
@@ -600,7 +631,7 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.vec0 = make_vec({parms.orient_0[0], parms.orient_0[1], parms.orient_0[2]});
 	m_pop.vec1 = make_vec({parms.orient_1[0], parms.orient_1[1], parms.orient_1[2]});
 	m_pop.vecUp = make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
-	
+
 	m_pop.bCalcSampleAngles = 0;
 	m_pop.thetas = parms.dTheta * units::si::radians;
 	m_pop.twotheta = parms.d2Theta * units::si::radians;
@@ -625,7 +656,7 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	m_pop.bCalcSampleAngles = 0;
 	m_pop.thetas = parms.dSampleT * units::si::radians;
 	m_pop.twotheta = parms.dSampleTT * units::si::radians;
-	
+
 	m_bDontCalc = bOldDontCalc;
 	Calc();
 }

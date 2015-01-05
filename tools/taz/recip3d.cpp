@@ -8,8 +8,8 @@
 #include "helper/geo.h"
 #include <QtGui/QGridLayout>
 
-Recip3DDlg::Recip3DDlg(QWidget* pParent)
-			: QDialog(pParent), m_pPlot(new PlotGl(this))
+Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
+			: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings))
 {
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Reciprocal Space");
@@ -39,6 +39,10 @@ void Recip3DDlg::CalcPeaks(const Lattice<double>& lattice,
 	const unsigned int iObjCnt = (unsigned int)((m_dMaxPeaks*2 + 1)*
 												(m_dMaxPeaks*2 + 1)*
 												(m_dMaxPeaks*2 + 1));
+	//log_info("Number of objects: ", iObjCnt);
+
+	m_pPlot->SetEnabled(0);
+	m_pPlot->clear();
 	m_pPlot->SetObjectCount(iObjCnt);
 
 	unsigned int iPeakIdx = 0;
@@ -91,10 +95,29 @@ void Recip3DDlg::CalcPeaks(const Lattice<double>& lattice,
 				ostrLab << "(" << ih << " " << ik << " " << il << ")";
 				m_pPlot->SetObjectLabel(iPeakIdx, ostrLab.str());
 
+				//log_info("Index: ", iPeakIdx);
 				++iPeakIdx;
 			}
 
+	m_pPlot->SetObjectCount(iPeakIdx);	// actual count (some peaks forbidden by sg)
 	m_pPlot->SetMinMax(vecMin, vecMax);
+	m_pPlot->SetEnabled(1);
+}
+
+
+void Recip3DDlg::hideEvent(QHideEvent *event)
+{
+	if(m_pPlot) m_pPlot->SetEnabled(0);
+
+	//if(m_pSettings)
+	//	m_pSettings->setValue("recip3d/geo", saveGeometry());
+}
+void Recip3DDlg::showEvent(QShowEvent *event)
+{
+	//if(m_pSettings && m_pSettings->contains("recip3d/geo"))
+	//	restoreGeometry(m_pSettings->value("recip3d/geo").toByteArray());
+
+	if(m_pPlot) m_pPlot->SetEnabled(1);
 }
 
 

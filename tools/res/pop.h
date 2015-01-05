@@ -4,8 +4,8 @@
  * @date 08-may-2013
  *
  * @desc This is a reimplementation in C++ of the file rc_popma.m of the
- *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
- *    			http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
+ *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
+ *		http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
  */
 
 #ifndef __POP_H__

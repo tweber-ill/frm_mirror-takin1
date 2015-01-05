@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <string>
 
+using namespace ublas;
+
 static void add_param(std::unordered_map<std::string, std::string>& map, const std::string& strLine)
 {
 	std::string str = strLine.substr(1);
@@ -41,8 +43,65 @@ enum class FileType
 	NEUTRON_Q_LIST,
 	NEUTRON_KIKF_LIST,
 
+	RESOLUTION_MATRIX,
+	COVARIANCE_MATRIX,
+
 	UNKNOWN
 };
+
+static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
+{
+	std::ifstream ifstr(pcFile);
+	if(!ifstr.is_open())
+	{
+		log_err("Cannot open \"", pcFile, "\".");
+		return 0;
+	}
+
+	matrix<double>& res = reso.res;
+	matrix<double>& cov = reso.cov;
+	res.resize(4,4,0);
+	cov.resize(4,4,0);
+
+	if(ft == FileType::COVARIANCE_MATRIX)
+	{
+		for(unsigned int i=0; i<4; ++i)
+			for(unsigned int j=0; j<4; ++j)
+				ifstr >> cov(i,j);
+
+		reso.bHasRes = inverse(cov, res);
+	}
+	else if(ft == FileType::RESOLUTION_MATRIX)
+	{
+		for(unsigned int i=0; i<4; ++i)
+			for(unsigned int j=0; j<4; ++j)
+				ifstr >> res(i,j);
+
+		reso.bHasRes = inverse(res, cov);
+	}
+
+	log_info("Covariance matrix: ", cov);
+	log_info("Resolution matrix: ", res);
+	log_info("Matrix valid: ", reso.bHasRes);
+
+	if(reso.bHasRes)
+	{
+		vector<double>& dQ = reso.dQ;
+
+		dQ.resize(4, 0);
+		reso.Q_avg.resize(4, 0);
+		for(int iQ=0; iQ<4; ++iQ)
+			dQ[iQ] = SIGMA2HWHM/sqrt(res(iQ,iQ));
+
+		std::ostringstream ostrVals;
+		ostrVals << "Gaussian HWHM values: ";
+		std::copy(dQ.begin(), dQ.end(), std::ostream_iterator<double>(ostrVals, ", "));
+
+		log_info(ostrVals.str());
+        }
+
+	return reso.bHasRes;
+}
 
 static bool load_mc_list(const char* pcFile, Resolution& res)
 {
@@ -173,23 +232,40 @@ int main(int argc, char **argv)
 	if(argc <= 1)
 	{
 		log_err("No input file given.");
-		std::cout << "Usage: " << argv[0] << " <file>" << std::endl;
+		std::cout << "Usage: " << argv[0] << " [-r,-c] <file>\n" 
+			<< "\t-r\t<file> contains resolution matrix\n"
+			<< "\t-c\t<file> contains covariance matrix\n"
+			<< "\t<n/a>\t<file> contains Q or ki,kf list\n"
+			<< std::endl;
 		return -1;
 	}
 
 	const char* pcFile = argv[argc-1];
 
-	/*for(int iArg=1; iArg<argc; ++iArg)
+	FileType ft = FileType::UNKNOWN;
+	for(int iArg=1; iArg<argc; ++iArg)
 	{
-		if(strcmp(argv[iArg], "-m") == 0)
-			ft = FileType::NEUTRON_KIKF_LIST;
-	}*/
+		if(strcmp(argv[iArg], "-r") == 0)
+			ft = FileType::RESOLUTION_MATRIX;
+		else if(strcmp(argv[iArg], "-c") == 0)
+			ft = FileType::COVARIANCE_MATRIX;
+	}
+
 
 	Resolution res;
 
-	log_info("Loading neutron list from \"", pcFile, "\".");
-	if(!load_mc_list(pcFile, res))
-		return -1;
+	if(ft==FileType::RESOLUTION_MATRIX || ft==FileType::COVARIANCE_MATRIX)
+	{
+		log_info("Loading covariance/resolution matrix from \"", pcFile, "\".");
+		if(!load_mat(pcFile, res, ft))
+			return -1;
+	}
+	else
+	{
+		log_info("Loading neutron list from \"", pcFile, "\".");
+		if(!load_mc_list(pcFile, res))
+			return -1;
+	}
 
 
 	QLocale::setDefault(QLocale::English);
