@@ -4,16 +4,19 @@
  * @date feb-2014
  */
 
-#include "helper/flags.h"
-#include "helper/neutrons.hpp"
-#include "helper/spec_char.h"
-#include "helper/log.h"
+#include "tlibs/helper/flags.h"
+#include "tlibs/math/neutrons.hpp"
+#include "tlibs/string/spec_char.h"
+#include "tlibs/helper/log.h"
 #include "scattering_triangle.h"
 
 #include <QtGui/QToolTip>
 #include <iostream>
 #include <cmath>
 #include <sstream>
+
+namespace units = boost::units;
+namespace co = boost::units::si::constants::codata;
 
 
 ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem)
@@ -188,8 +191,8 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			QPointF peakPos = pPeak->pos();
 			peakPos *= m_dZoom;
 
-			const Brillouin2D<double>::t_vertices<double>& verts = m_bz.GetVertices();
-			for(const Brillouin2D<double>::t_vecpair<double>& vertpair : verts)
+			const tl::Brillouin2D<double>::t_vertices<double>& verts = m_bz.GetVertices();
+			for(const tl::Brillouin2D<double>::t_vecpair<double>& vertpair : verts)
 			{
 				const ublas::vector<double>& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
 				const ublas::vector<double>& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
@@ -247,8 +250,8 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 	const double dG = lineG.length()/m_dScaleFactor/m_dZoom;
 
-	const std::wstring& strAA = ::get_spec_char_utf16("AA") + ::get_spec_char_utf16("sup-") + ::get_spec_char_utf16("sup1");
-	const std::wstring& strDelta = ::get_spec_char_utf16("Delta");
+	const std::wstring& strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
+	const std::wstring& strDelta = tl::get_spec_char_utf16("Delta");
 
 	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE, ostrq, ostrG;
 	ostrQ.precision(4); ostrE.precision(4);
@@ -367,7 +370,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			painter->drawArc(QRectF(vecPoints[i]->x()-dArcSize/2., vecPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
 							dBeginArcAngle*16., dArcAngle*16.);
 
-			const std::wstring& strDEG = ::get_spec_char_utf16("deg");
+			const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
 			std::wostringstream ostrAngle;
 			ostrAngle.precision(6);
 			ostrAngle << std::fabs(dArcAngle) << strDEG;
@@ -406,7 +409,7 @@ double ScatteringTriangle::GetE() const
 {
 	const double dKi = GetKi();
 	double dKf = GetKf();
-	const double dE = get_energy_transfer(dKi/angstrom, dKf/angstrom) / one_eV * 1000.;
+	const double dE = tl::get_energy_transfer(dKi/tl::angstrom, dKf/tl::angstrom) / tl::one_eV * 1000.;
 	return dE;
 }
 
@@ -435,7 +438,7 @@ double ScatteringTriangle::GetAngleQVec0() const
 	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
 								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 	vecQ /= ublas::norm_2(vecQ);
-	return vec_angle(vecQ);
+	return tl::vec_angle(vecQ);
 }
 
 double ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
@@ -449,7 +452,7 @@ double ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 	try
 	{
 		double dTT = GetTwoTheta(bPosSense);
-		double dAngle = get_angle_ki_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom, bPosSense) / units::si::radians;
+		double dAngle = tl::get_angle_ki_Q(GetKi()/tl::angstrom, GetKf()/tl::angstrom, GetQ()/tl::angstrom, bPosSense) / units::si::radians;
 		//std::cout << "tt=" << dTT << ", kiQ="<<dAngle << std::endl;
 
 		if(std::fabs(dTT) > M_PI)
@@ -459,7 +462,7 @@ double ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 	}
 	catch(const std::exception& ex)
 	{
-		log_err(ex.what());
+		tl::log_err(ex.what());
 		return 0.;
 	}
 }
@@ -475,7 +478,7 @@ double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 	try
 	{
 		double dTT = GetTwoTheta(bPosSense);
-		double dAngle = M_PI-get_angle_kf_Q(GetKi()/angstrom, GetKf()/angstrom, GetQ()/angstrom, bPosSense) / units::si::radians;
+		double dAngle = M_PI-tl::get_angle_kf_Q(GetKi()/tl::angstrom, GetKf()/tl::angstrom, GetQ()/tl::angstrom, bPosSense) / units::si::radians;
 
 		if(std::fabs(dTT) > M_PI)
 			dAngle = -dAngle;
@@ -484,7 +487,7 @@ double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 	}
 	catch(const std::exception& ex)
 	{
-		log_err(ex.what());
+		tl::log_err(ex.what());
 		return 0.;
 	}
 }
@@ -495,12 +498,12 @@ double ScatteringTriangle::GetTheta(bool bPosSense) const
 						- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	vecKi /= ublas::norm_2(vecKi);
 
-	double dTh = vec_angle(vecKi) - M_PI/2.;
+	double dTh = tl::vec_angle(vecKi) - M_PI/2.;
 	dTh += m_dAngleRot;
 	if(!bPosSense)
 		dTh = -dTh;
 
-	//log_info("theta: ", dTh/M_PI*180.);
+	//tl::log_info("theta: ", dTh/M_PI*180.);
 	return dTh;
 }
 
@@ -514,7 +517,7 @@ double ScatteringTriangle::GetTwoTheta(bool bPosSense) const
 	vecKi /= ublas::norm_2(vecKi);
 	vecKf /= ublas::norm_2(vecKf);
 
-	double dTT = vec_angle(vecKi) - vec_angle(vecKf);
+	double dTT = tl::vec_angle(vecKi) - tl::vec_angle(vecKf);
 	if(dTT < 0.)
 		dTT += 2.*M_PI;
 	dTT = std::fmod(dTT, 2.*M_PI);
@@ -530,7 +533,7 @@ double ScatteringTriangle::GetMonoTwoTheta(double dMonoD, bool bPosSense) const
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKi = ublas::norm_2(vecKi) / m_dScaleFactor;
-	return get_mono_twotheta(dKi/angstrom, dMonoD*angstrom, bPosSense) / units::si::radians;
+	return tl::get_mono_twotheta(dKi/tl::angstrom, dMonoD*tl::angstrom, bPosSense) / units::si::radians;
 }
 
 double ScatteringTriangle::GetAnaTwoTheta(double dAnaD, bool bPosSense) const
@@ -538,7 +541,7 @@ double ScatteringTriangle::GetAnaTwoTheta(double dAnaD, bool bPosSense) const
 	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0))
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKf = ublas::norm_2(vecKf) / m_dScaleFactor;
-	return get_mono_twotheta(dKf/angstrom, dAnaD*angstrom, bPosSense) / units::si::radians;
+	return tl::get_mono_twotheta(dKf/tl::angstrom, dAnaD*tl::angstrom, bPosSense) / units::si::radians;
 }
 
 void ScatteringTriangle::SetAnaTwoTheta(double dTT, double dAnaD)
@@ -592,7 +595,7 @@ void ScatteringTriangle::SetTwoTheta(double dTT)
 	const ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
 										- vecNodeKiKf;
 
-	ublas::vector<double> vecKf_new = ublas::prod(rotation_matrix_2d(-dTT), vecKi);
+	ublas::vector<double> vecKf_new = ublas::prod(tl::rotation_matrix_2d(-dTT), vecKi);
 
 	vecKf_new /= ublas::norm_2(vecKf_new);
 	vecKf_new *= ublas::norm_2(vecKf);
@@ -611,7 +614,7 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
 	ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	ublas::vector<double> vecNodeKfQ = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 
-	ublas::matrix<double> matRot = ::rotation_matrix_2d(dCurAngle - dAngle);
+	ublas::matrix<double> matRot = tl::rotation_matrix_2d(dCurAngle - dAngle);
 	vecNodeKiKf = ublas::prod(matRot, vecNodeKiKf);
 	vecNodeKfQ = ublas::prod(matRot, vecNodeKfQ);
 
@@ -622,9 +625,9 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
 	nodeMoved(m_pNodeKfQ);
 }
 
-void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
-								const Lattice<double>& recip, const Lattice<double>& recip_unrot,
-								const Plane<double>& plane,
+void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
+								const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
+								const tl::Plane<double>& plane,
 								const SpaceGroup* pSpaceGroup)
 {
 	ClearPeaks();
@@ -635,7 +638,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
 
 	ublas::vector<double> dir0 = plane.GetDir0();
 	//ublas::vector<double> dir1 = plane.GetDir1();
-	ublas::vector<double> dir1 = cross_3(plane.GetNorm(), dir0);
+	ublas::vector<double> dir1 = tl::cross_3(plane.GetNorm(), dir0);
 
 	double dDir0Len = ublas::norm_2(dir0);
 	double dDir1Len = ublas::norm_2(dir1);
@@ -643,21 +646,21 @@ void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
 	//std::cout << "dir 0 len: " << dDir0Len << std::endl;
 	//std::cout << "dir 1 len: " << dDir1Len << std::endl;
 
-	if(float_equal(dDir0Len, 0.) || float_equal(dDir1Len, 0.)
-		|| ::is_nan_or_inf<double>(dDir0Len) || ::is_nan_or_inf<double>(dDir1Len))
+	if(tl::float_equal(dDir0Len, 0.) || tl::float_equal(dDir1Len, 0.)
+		|| tl::is_nan_or_inf<double>(dDir0Len) || tl::is_nan_or_inf<double>(dDir1Len))
 	{
-		log_err("Invalid scattering plane.");
+		tl::log_err("Invalid scattering plane.");
 		return;
 	}
 
 	dir0 /= dDir0Len;
 	dir1 /= dDir1Len;
 
-	m_matPlane = column_matrix({dir0, dir1, plane.GetNorm()});
-	bool bInv = ::inverse(m_matPlane, m_matPlane_inv);
+	m_matPlane = tl::column_matrix({dir0, dir1, plane.GetNorm()});
+	bool bInv = tl::inverse(m_matPlane, m_matPlane_inv);
 	if(!bInv)
 	{
-		log_err("Cannot invert scattering plane metric.");
+		tl::log_err("Cannot invert scattering plane metric.");
 		return;
 	}
 
@@ -669,13 +672,13 @@ void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
 		ublas::vector<double> vecRotX = plane.GetDroppedPerp(m_recip.GetVec(0));
 
 		const ublas::vector<double> &vecNorm = plane.GetNorm();
-		m_dAngleRot = -vec_angle(vecRotX, vecUnrotX, &vecNorm);
+		m_dAngleRot = -tl::vec_angle(vecRotX, vecUnrotX, &vecNorm);
 
 		//std::cout << "rotation angle: " << m_dAngleRot/M_PI*180. << std::endl;
 	}
 	catch(const std::exception& ex)
 	{
-		log_err(ex.what());
+		tl::log_err(ex.what());
 		return;
 	}
 
@@ -698,7 +701,7 @@ void ScatteringTriangle::CalcPeaks(const Lattice<double>& lattice,
 				double dDist = 0.;
 				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
-				if(::float_equal(dDist, 0., m_dPlaneDistTolerance))
+				if(tl::float_equal(dDist, 0., m_dPlaneDistTolerance))
 				{
 					ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
 					double dX = vecCoord[0];
@@ -772,8 +775,8 @@ ublas::vector<double> ScatteringTriangle::GetHKLFromPlanePos(double x, double y)
 	if(!HasPeaks())
 		return ublas::vector<double>();
 
-	ublas::vector<double> vec = x*::get_column(m_matPlane, 0)
-								+ y*::get_column(m_matPlane, 1);
+	ublas::vector<double> vec = x*tl::get_column(m_matPlane, 0)
+								+ y*tl::get_column(m_matPlane, 1);
 	return m_recip.GetHKL(vec);
 }
 
@@ -802,8 +805,8 @@ ublas::vector<double> ScatteringTriangle::GetQVec(bool bSmallQ, bool bRLU) const
 	if(bRLU)
 		vecQ = GetHKLFromPlanePos(vecQPlane[0], vecQPlane[1]);
 	else
-		vecQ = vecQPlane[0]*::get_column(m_matPlane, 0)
-				+ vecQPlane[1]*::get_column(m_matPlane, 1);
+		vecQ = vecQPlane[0]*tl::get_column(m_matPlane, 0)
+				+ vecQPlane[1]*tl::get_column(m_matPlane, 1);
 
 	return vecQ;
 }
@@ -920,13 +923,13 @@ void ScatteringTriangleScene::emitAllParams()
 	ublas::vector<double> vecGrlu = vecQrlu - vecqrlu;
 
 	const ublas::matrix<double>& matPlane = m_pTri->GetPlane();
-	ublas::vector<double> vec0 = ::get_column(matPlane, 0);
-	ublas::vector<double> vec1 = ::get_column(matPlane, 1);
-	ublas::vector<double> vecUp = ::get_column(matPlane, 2);
+	ublas::vector<double> vec0 = tl::get_column(matPlane, 0);
+	ublas::vector<double> vec1 = tl::get_column(matPlane, 1);
+	ublas::vector<double> vecUp = tl::get_column(matPlane, 2);
 
-	set_eps_0(vecQ); set_eps_0(vecQrlu);
-	set_eps_0(vecq); set_eps_0(vecqrlu);
-	set_eps_0(vecG); set_eps_0(vecGrlu);
+	tl::set_eps_0(vecQ); tl::set_eps_0(vecQrlu);
+	tl::set_eps_0(vecq); tl::set_eps_0(vecqrlu);
+	tl::set_eps_0(vecG); tl::set_eps_0(vecGrlu);
 
 	for(unsigned int i=0; i<3; ++i)
 	{
@@ -958,16 +961,16 @@ void ScatteringTriangleScene::CheckForSpurions()
 	const ublas::vector<double> vecq = m_pTri->GetQVecPlane(1);
 	const ublas::vector<double> vecKi = m_pTri->GetKiVecPlane();
 	const ublas::vector<double> vecKf = m_pTri->GetKfVecPlane();
-	energy E = m_pTri->GetE() * one_meV;
-	energy Ei = k2E(m_pTri->GetKi()/angstrom);
-	energy Ef = k2E(m_pTri->GetKf()/angstrom);
+	energy E = m_pTri->GetE() * tl::one_meV;
+	energy Ei = tl::k2E(m_pTri->GetKi()/tl::angstrom);
+	energy Ef = tl::k2E(m_pTri->GetKf()/tl::angstrom);
 
 	// elastic ones
-	ElasticSpurion spuris = check_elastic_spurion(vecKi, vecKf, vecq);
+	tl::ElasticSpurion spuris = tl::check_elastic_spurion(vecKi, vecKf, vecq);
 
 	// inelastic ones
-	std::vector<InelasticSpurion> vecInelCKI = check_inelastic_spurions(1, Ei, Ef, E, 5);
-	std::vector<InelasticSpurion> vecInelCKF = check_inelastic_spurions(0, Ei, Ef, E, 5);
+	std::vector<tl::InelasticSpurion> vecInelCKI = tl::check_inelastic_spurions(1, Ei, Ef, E, 5);
+	std::vector<tl::InelasticSpurion> vecInelCKF = tl::check_inelastic_spurions(0, Ei, Ef, E, 5);
 
 	emit spurionInfo(spuris, vecInelCKI, vecInelCKF);
 }
@@ -1113,7 +1116,7 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		const double dY = -pEvt->scenePos().y()/m_pTri->GetScaleFactor();
 
 		ublas::vector<double> vecHKL = m_pTri->GetHKLFromPlanePos(dX, dY);
-		set_eps_0(vecHKL);
+		tl::set_eps_0(vecHKL);
 
 		if(vecHKL.size()==3)
 		{

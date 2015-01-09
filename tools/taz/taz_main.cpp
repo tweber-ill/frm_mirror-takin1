@@ -4,8 +4,8 @@
  * @date feb-2014
  */
 #include "taz.h"
-#include "helper/spec_char.h"
-#include "helper/log.h"
+#include "tlibs/string/spec_char.h"
+#include "tlibs/helper/log.h"
 #include "dialogs/NetCacheDlg.h"
 
 #include <QMetaType>
@@ -19,13 +19,13 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		log_info("Starting up Takin.");
+		tl::log_info("Starting up Takin.");
 
 		#ifdef Q_WS_X11
 			XInitThreads();
 		#endif
 
-		init_spec_chars();
+		tl::init_spec_chars();
 
 		// qt needs to be able to copy these structs when emitting signals from a different thread
 		qRegisterMetaType<TriangleOptions>("TriangleOptions");
@@ -46,14 +46,14 @@ int main(int argc, char** argv)
 		dlg.show();
 		int iRet = app.exec();
 
-		deinit_spec_chars();
+		tl::deinit_spec_chars();
 
-		log_info("Shutting down Takin.");
+		tl::log_info("Shutting down Takin.");
 		return iRet;
 	}
 	catch(const std::exception& ex)
 	{
-		log_crit(ex.what());
+		tl::log_crit(ex.what());
 	}
 
 	return -1;

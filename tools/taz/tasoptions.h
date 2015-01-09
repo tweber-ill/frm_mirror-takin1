@@ -7,8 +7,11 @@
 #ifndef __TASOPTIONS_H__
 #define __TASOPTIONS_H__
 
-#include "helper/linalg.h"
+#include "tlibs/math/linalg.h"
 #include <QtCore/QPointF>
+
+namespace ublas = boost::numeric::ublas;
+
 
 static inline ublas::vector<double> qpoint_to_vec(const QPointF& pt)
 {

@@ -5,9 +5,12 @@
  */
 
 #include "RealParamDlg.h"
-#include "../helper/string.h"
-#include "../helper/math.h"
-#include "../helper/neutrons.hpp"
+#include "../tlibs/string/string.h"
+#include "../tlibs/math/math.h"
+#include "../tlibs/math/neutrons.hpp"
+
+namespace units = boost::units;
+namespace co = boost::units::si::constants::codata;
 
 
 RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
@@ -21,19 +24,19 @@ RealParamDlg::~RealParamDlg()
 
 void RealParamDlg::paramsChanged(const RealParams& parms)
 {
-	this->edit2ThetaM->setText(var_to_str<double>(parms.dMonoTT / M_PI * 180.).c_str());
-	this->editThetaM->setText(var_to_str<double>(parms.dMonoT / M_PI * 180.).c_str());
+	this->edit2ThetaM->setText(tl::var_to_str<double>(parms.dMonoTT / M_PI * 180.).c_str());
+	this->editThetaM->setText(tl::var_to_str<double>(parms.dMonoT / M_PI * 180.).c_str());
 
-	this->edit2ThetaS->setText(var_to_str<double>(parms.dSampleTT / M_PI * 180.).c_str());
-	this->editThetaS->setText(var_to_str<double>(parms.dSampleT / M_PI * 180.).c_str());
+	this->edit2ThetaS->setText(tl::var_to_str<double>(parms.dSampleTT / M_PI * 180.).c_str());
+	this->editThetaS->setText(tl::var_to_str<double>(parms.dSampleT / M_PI * 180.).c_str());
 
-	this->edit2ThetaA->setText(var_to_str<double>(parms.dAnaTT / M_PI * 180.).c_str());
-	this->editThetaA->setText(var_to_str<double>(parms.dAnaT / M_PI * 180.).c_str());
+	this->edit2ThetaA->setText(tl::var_to_str<double>(parms.dAnaTT / M_PI * 180.).c_str());
+	this->editThetaA->setText(tl::var_to_str<double>(parms.dAnaT / M_PI * 180.).c_str());
 
 
-	this->editLenMonoSample->setText(var_to_str<double>(parms.dLenMonoSample).c_str());
-	this->editLenSampleAna->setText(var_to_str<double>(parms.dLenSampleAna).c_str());
-	this->editLenAnaDet->setText(var_to_str<double>(parms.dLenAnaDet).c_str());
+	this->editLenMonoSample->setText(tl::var_to_str<double>(parms.dLenMonoSample).c_str());
+	this->editLenSampleAna->setText(tl::var_to_str<double>(parms.dLenSampleAna).c_str());
+	this->editLenAnaDet->setText(tl::var_to_str<double>(parms.dLenAnaDet).c_str());
 }
 
 

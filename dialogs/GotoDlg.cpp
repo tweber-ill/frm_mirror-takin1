@@ -5,9 +5,11 @@
  */
 
 #include "GotoDlg.h"
-#include "../helper/neutrons.hpp"
-#include "../helper/string.h"
+#include "../tlibs/math/neutrons.hpp"
+#include "../tlibs/string/string.h"
 
+namespace units = boost::units;
+namespace co = boost::units::si::constants::codata;
 
 using energy = units::quantity<units::si::energy>;
 using wavenumber = units::quantity<units::si::wavenumber>;
@@ -59,7 +61,7 @@ void GotoDlg::CalcSample()
 	bool bFailed = 0;
 	try
 	{
-		::get_tas_angles(m_lattice,
+		tl::get_tas_angles(m_lattice,
 					m_vec1, m_vec2,
 					dKi, dKf,
 					dH, dK, dL,
@@ -67,10 +69,10 @@ void GotoDlg::CalcSample()
 					&m_dSampleTheta, &m_dSample2Theta,
 					&vecQ);
 
-		if(::is_nan_or_inf<double>(m_dSample2Theta))
-			throw Err("Invalid sample 2theta.");
-		if(::is_nan_or_inf<double>(m_dSampleTheta))
-			throw Err("Invalid sample theta.");
+		if(tl::is_nan_or_inf<double>(m_dSample2Theta))
+			throw tl::Err("Invalid sample 2theta.");
+		if(tl::is_nan_or_inf<double>(m_dSampleTheta))
+			throw tl::Err("Invalid sample theta.");
 	}
 	catch(const std::exception& ex)
 	{
@@ -82,9 +84,9 @@ void GotoDlg::CalcSample()
 		bFailed = 1;
 	}
 
-	::set_eps_0(vecQ);
-	::set_eps_0(m_dSample2Theta);
-	::set_eps_0(m_dSampleTheta);
+	tl::set_eps_0(vecQ);
+	tl::set_eps_0(m_dSample2Theta);
+	tl::set_eps_0(m_dSampleTheta);
 
 	std::ostringstream ostrStatus;
 	ostrStatus << "Q = " << vecQ;
@@ -92,8 +94,8 @@ void GotoDlg::CalcSample()
 
 	if(bFailed) return;
 
-	editThetaS->setText(var_to_str(m_dSampleTheta/M_PI*180.).c_str());
-	edit2ThetaS->setText(var_to_str(m_dSample2Theta/M_PI*180.).c_str());
+	editThetaS->setText(tl::var_to_str(m_dSampleTheta/M_PI*180.).c_str());
+	edit2ThetaS->setText(tl::var_to_str(m_dSample2Theta/M_PI*180.).c_str());
 
 	m_bSampleOk = 1;
 
@@ -114,19 +116,19 @@ void GotoDlg::CalcMonoAna()
 	double dKf = editKf->text().toDouble(&bKfOk);
 	if(!bKiOk || !bKfOk) return;
 
-	wavenumber ki = dKi / angstrom;
-	wavenumber kf = dKf / angstrom;
+	wavenumber ki = dKi / tl::angstrom;
+	wavenumber kf = dKf / tl::angstrom;
 
 	bool bMonoOk = 0;
 	bool bAnaOk = 0;
 
 	try
 	{
-		m_dMono2Theta = get_mono_twotheta(ki, m_dMono*angstrom, m_bSenseM) / units::si::radians;
-		if(::is_nan_or_inf<double>(m_dMono2Theta))
-			throw Err("Invalid monochromator angle.");
+		m_dMono2Theta = tl::get_mono_twotheta(ki, m_dMono*tl::angstrom, m_bSenseM) / units::si::radians;
+		if(tl::is_nan_or_inf<double>(m_dMono2Theta))
+			throw tl::Err("Invalid monochromator angle.");
 
-		::set_eps_0(m_dMono2Theta);
+		tl::set_eps_0(m_dMono2Theta);
 		bMonoOk = 1;
 	}
 	catch(const std::exception& ex)
@@ -140,11 +142,11 @@ void GotoDlg::CalcMonoAna()
 
 	try
 	{
-		m_dAna2Theta = get_mono_twotheta(kf, m_dAna*angstrom, m_bSenseA) / units::si::radians;
-		if(::is_nan_or_inf<double>(m_dAna2Theta))
-			throw Err("Invalid analysator angle.");
+		m_dAna2Theta = tl::get_mono_twotheta(kf, m_dAna*tl::angstrom, m_bSenseA) / units::si::radians;
+		if(tl::is_nan_or_inf<double>(m_dAna2Theta))
+			throw tl::Err("Invalid analysator angle.");
 
-		::set_eps_0(m_dAna2Theta);
+		tl::set_eps_0(m_dAna2Theta);
 		bAnaOk = 1;
 	}
 	catch(const std::exception& ex)
@@ -163,10 +165,10 @@ void GotoDlg::CalcMonoAna()
 	double dTMono = m_dMono2Theta / 2.;
 	double dTAna = m_dAna2Theta / 2.;
 
-	edit2ThetaM->setText(var_to_str(m_dMono2Theta/M_PI*180.).c_str());
-	editThetaM->setText(var_to_str(dTMono/M_PI*180.).c_str());
-	edit2ThetaA->setText(var_to_str(m_dAna2Theta/M_PI*180.).c_str());
-	editThetaA->setText(var_to_str(dTAna/M_PI*180.).c_str());
+	edit2ThetaM->setText(tl::var_to_str(m_dMono2Theta/M_PI*180.).c_str());
+	editThetaM->setText(tl::var_to_str(dTMono/M_PI*180.).c_str());
+	edit2ThetaA->setText(tl::var_to_str(m_dAna2Theta/M_PI*180.).c_str());
+	editThetaA->setText(tl::var_to_str(dTAna/M_PI*180.).c_str());
 
 	m_bMonoAnaOk = 1;
 
@@ -181,14 +183,14 @@ void GotoDlg::EditedKiKf()
 	double dKf = editKf->text().toDouble(&bKfOk);
 	if(!bKiOk || !bKfOk) return;
 
-	energy Ei = k2E(dKi / angstrom);
-	energy Ef = k2E(dKf / angstrom);
+	energy Ei = tl::k2E(dKi / tl::angstrom);
+	energy Ef = tl::k2E(dKf / tl::angstrom);
 
 	energy E = Ei-Ef;
-	double dE = E/one_meV;
-	::set_eps_0(dE);
+	double dE = E/tl::one_meV;
+	tl::set_eps_0(dE);
 
-	std::string strE = var_to_str<double>(dE);
+	std::string strE = tl::var_to_str<double>(dE);
 	editE->setText(strE.c_str());
 
 	CalcMonoAna();
@@ -200,10 +202,10 @@ void GotoDlg::EditedE()
 	bool bOk = 0;
 	double dE = editE->text().toDouble(&bOk);
 	if(!bOk) return;
-	energy E = dE * one_meV;
+	energy E = dE * tl::one_meV;
 
 	bool bImag=0;
-	wavenumber k_E = E2k(E, bImag);
+	wavenumber k_E = tl::E2k(E, bImag);
 	double dSign = 1.;
 	if(bImag) dSign = -1.;
 
@@ -213,13 +215,13 @@ void GotoDlg::EditedE()
 		double dKi = editKi->text().toDouble(&bKOk);
 		if(!bKOk) return;
 
-		wavenumber ki = dKi / angstrom;
+		wavenumber ki = dKi / tl::angstrom;
 		wavenumber kf = units::sqrt(ki*ki - dSign*k_E*k_E);
 
-		double dKf = kf*angstrom;
-		::set_eps_0(dKf);
+		double dKf = kf*tl::angstrom;
+		tl::set_eps_0(dKf);
 
-		std::string strKf = var_to_str<double>(dKf);
+		std::string strKf = tl::var_to_str<double>(dKf);
 		editKf->setText(strKf.c_str());
 	}
 	else
@@ -228,13 +230,13 @@ void GotoDlg::EditedE()
 		double dKf = editKf->text().toDouble(&bKOk);
 		if(!bKOk) return;
 
-		wavenumber kf = dKf / angstrom;
+		wavenumber kf = dKf / tl::angstrom;
 		wavenumber ki = units::sqrt(kf*kf + dSign*k_E*k_E);
 
-		double dKi = ki*angstrom;
-		::set_eps_0(dKi);
+		double dKi = ki*tl::angstrom;
+		tl::set_eps_0(dKi);
 
-		std::string strKi = var_to_str<double>(dKi);
+		std::string strKi = tl::var_to_str<double>(dKi);
 		editKi->setText(strKi.c_str());
 	}
 
@@ -247,15 +249,15 @@ void GotoDlg::EditedAngles()
 {
 	bool bthmOk;
 	double th_m = edit2ThetaM->text().toDouble(&bthmOk)/2. / 180.*M_PI;
-	::set_eps_0(th_m);
+	tl::set_eps_0(th_m);
 	if(bthmOk)
-		editThetaM->setText(var_to_str<double>(th_m/M_PI*180.).c_str());
+		editThetaM->setText(tl::var_to_str<double>(th_m/M_PI*180.).c_str());
 
 	bool bthaOk;
 	double th_a = edit2ThetaA->text().toDouble(&bthaOk)/2. / 180.*M_PI;
-	::set_eps_0(th_a);
+	tl::set_eps_0(th_a);
 	if(bthaOk)
-		editThetaA->setText(var_to_str<double>(th_a/M_PI*180.).c_str());
+		editThetaA->setText(tl::var_to_str<double>(th_a/M_PI*180.).c_str());
 
 	bool bthsOk, bttsOk;
 	double th_s = editThetaS->text().toDouble(&bthsOk) / 180.*M_PI;
@@ -271,7 +273,7 @@ void GotoDlg::EditedAngles()
 	bool bFailed = 0;
 	try
 	{
-		::get_hkl_from_tas_angles<double>(m_lattice,
+		tl::get_hkl_from_tas_angles<double>(m_lattice,
 								m_vec1, m_vec2,
 								m_dMono, m_dAna,
 								th_m, th_a, th_s, tt_s,
@@ -280,8 +282,8 @@ void GotoDlg::EditedAngles()
 								&dKi, &dKf, &dE, 0,
 								&vecQ);
 
-		if(::is_nan_or_inf<double>(h) || ::is_nan_or_inf<double>(k) || ::is_nan_or_inf<double>(l))
-			throw Err("Invalid hkl.");
+		if(tl::is_nan_or_inf<double>(h) || tl::is_nan_or_inf<double>(k) || tl::is_nan_or_inf<double>(l))
+			throw tl::Err("Invalid hkl.");
 	}
 	catch(const std::exception& ex)
 	{
@@ -297,15 +299,15 @@ void GotoDlg::EditedAngles()
 	if(bFailed) return;
 
 	for(double* d : {&h,&k,&l, &dKi,&dKf,&dE})
-		::set_eps_0(*d);
+		tl::set_eps_0(*d);
 
-	editH->setText(var_to_str<double>(h).c_str());
-	editK->setText(var_to_str<double>(k).c_str());
-	editL->setText(var_to_str<double>(l).c_str());
+	editH->setText(tl::var_to_str<double>(h).c_str());
+	editK->setText(tl::var_to_str<double>(k).c_str());
+	editL->setText(tl::var_to_str<double>(l).c_str());
 
-	editKi->setText(var_to_str<double>(dKi).c_str());
-	editKf->setText(var_to_str<double>(dKf).c_str());
-	editE->setText(var_to_str<double>(dE).c_str());
+	editKi->setText(tl::var_to_str<double>(dKi).c_str());
+	editKf->setText(tl::var_to_str<double>(dKf).c_str());
+	editE->setText(tl::var_to_str<double>(dE).c_str());
 
 	m_dMono2Theta = th_m*2.;
 	m_dAna2Theta = th_a*2.;
@@ -323,18 +325,18 @@ void GotoDlg::GetCurPos()
 	if(!m_bHasParamsRecip)
 		return;
 
-	::set_eps_0(m_paramsRecip.dki);
-	::set_eps_0(m_paramsRecip.dkf);
-	::set_eps_0(m_paramsRecip.Q_rlu[0]);
-	::set_eps_0(m_paramsRecip.Q_rlu[1]);
-	::set_eps_0(m_paramsRecip.Q_rlu[2]);
+	tl::set_eps_0(m_paramsRecip.dki);
+	tl::set_eps_0(m_paramsRecip.dkf);
+	tl::set_eps_0(m_paramsRecip.Q_rlu[0]);
+	tl::set_eps_0(m_paramsRecip.Q_rlu[1]);
+	tl::set_eps_0(m_paramsRecip.Q_rlu[2]);
 
-	editKi->setText(var_to_str(m_paramsRecip.dki).c_str());
-	editKf->setText(var_to_str(m_paramsRecip.dkf).c_str());
+	editKi->setText(tl::var_to_str(m_paramsRecip.dki).c_str());
+	editKf->setText(tl::var_to_str(m_paramsRecip.dkf).c_str());
 
-	editH->setText(var_to_str(-m_paramsRecip.Q_rlu[0]).c_str());
-	editK->setText(var_to_str(-m_paramsRecip.Q_rlu[1]).c_str());
-	editL->setText(var_to_str(-m_paramsRecip.Q_rlu[2]).c_str());
+	editH->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[0]).c_str());
+	editK->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[1]).c_str());
+	editL->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[2]).c_str());
 
 	EditedKiKf();
 	CalcMonoAna();

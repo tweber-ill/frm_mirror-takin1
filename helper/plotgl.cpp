@@ -5,10 +5,10 @@
  */
 
 #include "plotgl.h"
-#include "linalg.h"
-#include "math.h"
-#include "string.h"
-#include "flags.h"
+#include "../tlibs/math/linalg.h"
+#include "../tlibs/math/math.h"
+#include "../tlibs/string/string.h"
+#include "../tlibs/helper/flags.h"
 
 #include <GL/glu.h>
 #include <time.h>
@@ -19,7 +19,7 @@
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings)
 		: QGLWidget(pParent), m_pSettings(pSettings),
 			m_mutex(QMutex::Recursive),
-			m_matProj(unit_matrix<t_mat4>(4)), m_matView(unit_matrix<t_mat4>(4))
+			m_matProj(tl::unit_matrix<tl::t_mat4>(4)), m_matView(tl::unit_matrix<tl::t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
 	m_dMouseScale = 25.;
@@ -116,7 +116,7 @@ void PlotGl::initializeGLThread()
 		if(m_pSettings->contains("gl/font"))
 			strFont = m_pSettings->value("gl/font").toString().toStdString();
 	}
-	m_pFont = new GlFontMap(strFont.c_str(), 12);
+	m_pFont = new tl::GlFontMap(strFont.c_str(), 12);
 
 	this->setMouseTracking(1);
 }
@@ -137,9 +137,9 @@ void PlotGl::resizeGLThread(int w, int h)
 	glViewport(0, 0, w, h);
 
 	glMatrixMode(GL_PROJECTION);
-	m_matProj = perspective_matrix(m_dFOV, double(w)/double(h), 0.1, 100.);
+	m_matProj = tl::perspective_matrix(m_dFOV, double(w)/double(h), 0.1, 100.);
 	//m_matProj = ortho_matrix(-1.,1.,-1.,1.,0.1,100.);
-	GLdouble glmat[16]; to_gl_array(m_matProj, glmat);
+	GLdouble glmat[16]; tl::to_gl_array(m_matProj, glmat);
 	glLoadMatrixd(glmat);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -162,7 +162,7 @@ void PlotGl::paintGLThread()
 	glMatrixMode(GL_MODELVIEW);
 	GLdouble glmat[16];
 	m_mutex.lock();
-	to_gl_array(m_matView, glmat);
+	tl::to_gl_array(m_matView, glmat);
 	m_mutex.unlock();
 	glLoadMatrixd(glmat);
 
@@ -221,11 +221,11 @@ void PlotGl::paintGLThread()
 			glScaled(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
 		}
 		else
-			log_warn("Unknown plot object.");
+			tl::log_warn("Unknown plot object.");
 
 		if(obj.bUseLOD)
 		{
-			double dLenDist = gl_proj_sphere_size(/*dRadius*/1.);
+			double dLenDist = tl::gl_proj_sphere_size(/*dRadius*/1.);
 			//std::cout << "proj sphere size: " << dLenDist << std::endl;
 			iLOD = dLenDist * 50.;
 			if(iLOD >= int(sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)))
@@ -270,12 +270,12 @@ void PlotGl::paintGLThread()
 			m_pFont->DrawText(0., 0., m_dZMax*dAxisScale , m_strLabels[2].toStdString());
 
 			glColor4d(0., 0., 0., 1.);
-			m_pFont->DrawText(m_dXMin, 0., 0., var_to_str(m_dXMin+m_dXMinMaxOffs));
-			m_pFont->DrawText(m_dXMax, 0., 0., var_to_str(m_dXMax+m_dXMinMaxOffs));
-			m_pFont->DrawText(0., m_dYMin, 0., var_to_str(m_dYMin+m_dYMinMaxOffs));
-			m_pFont->DrawText(0., m_dYMax, 0., var_to_str(m_dYMax+m_dYMinMaxOffs));
-			m_pFont->DrawText(0., 0., m_dZMin, var_to_str(m_dZMin+m_dZMinMaxOffs));
-			m_pFont->DrawText(0., 0., m_dZMax, var_to_str(m_dZMax+m_dZMinMaxOffs));
+			m_pFont->DrawText(m_dXMin, 0., 0., tl::var_to_str(m_dXMin+m_dXMinMaxOffs));
+			m_pFont->DrawText(m_dXMax, 0., 0., tl::var_to_str(m_dXMax+m_dXMinMaxOffs));
+			m_pFont->DrawText(0., m_dYMin, 0., tl::var_to_str(m_dYMin+m_dYMinMaxOffs));
+			m_pFont->DrawText(0., m_dYMax, 0., tl::var_to_str(m_dYMax+m_dYMinMaxOffs));
+			m_pFont->DrawText(0., 0., m_dZMin, tl::var_to_str(m_dZMin+m_dZMinMaxOffs));
+			m_pFont->DrawText(0., 0., m_dZMax, tl::var_to_str(m_dZMax+m_dZMinMaxOffs));
 		}
 	glPopMatrix();
 
@@ -497,20 +497,20 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 
 void PlotGl::updateViewMatrix()
 {
-	t_mat4 matScale = make_mat<t_mat4>(
+	tl::t_mat4 matScale = tl::make_mat<tl::t_mat4>(
 			{{m_dMouseScale,              0,             0, 0},
 			{            0,   m_dMouseScale,             0, 0},
 			{            0,               0, m_dMouseScale, 0},
 			{            0,               0,             0, 1}});
 
-	t_mat4 matR0 = rotation_matrix_3d_z(m_dMouseRot[0]/180.*M_PI);
-	t_mat4 matR1 = rotation_matrix_3d_x((-90. + m_dMouseRot[1])/180.*M_PI);
+	tl::t_mat4 matR0 = tl::rotation_matrix_3d_z(m_dMouseRot[0]/180.*M_PI);
+	tl::t_mat4 matR1 = tl::rotation_matrix_3d_x((-90. + m_dMouseRot[1])/180.*M_PI);
 	matR0.resize(4,4,1); matR1.resize(4,4,1);
 	matR0(3,3) = matR1(3,3) = 1.;
 	for(short i=0; i<3; ++i) matR0(i,3)=matR0(3,i)=matR1(i,3)=matR1(3,i)=0.;
-	t_mat4 matRot0 = matR0, matRot1 = matR1;
+	tl::t_mat4 matRot0 = matR0, matRot1 = matR1;
 
-	t_mat4 matTrans = make_mat<t_mat4>(
+	tl::t_mat4 matTrans = tl::make_mat<tl::t_mat4>(
 			{{ 1, 0, 0,  0},
 			{  0, 1, 0,  0},
 			{  0, 0, 1, -2},
@@ -526,26 +526,26 @@ void PlotGl::updateViewMatrix()
 void PlotGl::mouseSelectObj(double dX, double dY)
 {
 	m_mutex.lock();
-	Line<double> ray = screen_ray(dX, dY, m_matProj, m_matView);
+	tl::Line<double> ray = tl::screen_ray(dX, dY, m_matProj, m_matView);
 
 	for(PlotObjGl& obj : m_vecObjs)
 	{
 		obj.bSelected = 0;
 
-		Quadric<double> *pQuad = nullptr;
-		t_vec3 vecOffs = ublas::zero_vector<double>(3);
+		tl::Quadric<double> *pQuad = nullptr;
+		tl::t_vec3 vecOffs = ublas::zero_vector<double>(3);
 
 		if(obj.plttype == PLOT_SPHERE)
 		{
-			pQuad = new QuadSphere<double>(obj.vecParams[3]);
-			vecOffs = make_vec<t_vec3>({obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]});
+			pQuad = new tl::QuadSphere<double>(obj.vecParams[3]);
+			vecOffs = tl::make_vec<tl::t_vec3>({obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]});
 		}
 		else if(obj.plttype == PLOT_ELLIPSOID)
 		{
-			pQuad = new QuadEllipsoid<double>(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
+			pQuad = new tl::QuadEllipsoid<double>(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
 
-			vecOffs = make_vec<t_vec3>({obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]});
-			t_mat3 matRot = make_mat<t_mat3>(
+			vecOffs = tl::make_vec<tl::t_vec3>({obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]});
+			tl::t_mat3 matRot = tl::make_mat<tl::t_mat3>(
 					{{obj.vecParams[6],  obj.vecParams[7],  obj.vecParams[8]},
 					 {obj.vecParams[9],  obj.vecParams[10], obj.vecParams[11]},
 					 {obj.vecParams[12], obj.vecParams[13], obj.vecParams[14]}});

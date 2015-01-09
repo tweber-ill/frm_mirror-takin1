@@ -39,7 +39,7 @@
 
 #include "nicos.h"
 #include "helper/spacegroup.h"
-#include "helper/lattice.h"
+#include "tlibs/math/lattice.h"
 
 
 class TazDlg : public QMainWindow, Ui::TazDlg
@@ -71,7 +71,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 	protected:
 		static constexpr unsigned int s_iMaxPeaks = 10;
-		static constexpr double s_dPlaneDistTolerance = get_plane_dist_tolerance<double>();
+		static constexpr double s_dPlaneDistTolerance = tl::get_plane_dist_tolerance<double>();
 
 		QSettings m_settings;
 		SettingsDlg *m_pSettingsDlg = 0;
@@ -171,9 +171,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowDynPlaneDlg();
 
 		void ShowSpurions();
-		void spurionInfo(const ElasticSpurion& spuris,
-				const std::vector<InelasticSpurion>& vecInelCKI,
-				const std::vector<InelasticSpurion>& vecInelCKF);
+		void spurionInfo(const tl::ElasticSpurion& spuris,
+				const std::vector<tl::InelasticSpurion>& vecInelCKI,
+				const std::vector<tl::InelasticSpurion>& vecInelCKF);
 		//void paramsChanged(const RecipParams& parms);
 
 		void ShowConnectDlg();

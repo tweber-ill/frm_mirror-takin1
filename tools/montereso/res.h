@@ -11,17 +11,18 @@
 #ifndef __MONTERES_H__
 #define __MONTERES_H__
 
-#include "helper/linalg.h"
+#include "tlibs/math/linalg.h"
+namespace ublas = boost::numeric::ublas;
 
 struct Resolution
 {
 	// covariance matrix
 	ublas::matrix<double> cov;
-	
+
 	// resolution matrix
 	bool bHasRes;
 	ublas::matrix<double> res;
-	
+
 	// half-widths
 	ublas::vector<double> dQ;	// in 1/A and meV
 

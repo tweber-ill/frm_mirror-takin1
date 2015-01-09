@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="takin" Database="">
-  <Project Name="takin" Path="takin.project" Active="Yes"/>
   <Environment>
     <![CDATA[]]>
   </Environment>
   <Project Name="montereso" Path="montereso.project" Active="No"/>
+  <Project Name="takin" Path="takin.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
-      <Project Name="takin" ConfigName="Debug"/>
       <Project Name="montereso" ConfigName="Debug"/>
+      <Project Name="takin" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="no">
-      <Project Name="takin" ConfigName="Release"/>
       <Project Name="montereso" ConfigName="Release"/>
+      <Project Name="takin" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>

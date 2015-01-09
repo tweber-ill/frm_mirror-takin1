@@ -19,12 +19,12 @@
 #include <QtGui/QMessageBox>
 #include <QtGui/QFileDialog>
 
-#include "helper/lattice.h"
-#include "helper/spec_char.h"
-#include "helper/string.h"
-#include "helper/flags.h"
-#include "helper/xml.h"
-#include "helper/log.h"
+#include "tlibs/math/lattice.h"
+#include "tlibs/string/spec_char.h"
+#include "tlibs/string/string.h"
+#include "tlibs/helper/flags.h"
+#include "tlibs/file/xml.h"
+#include "tlibs/helper/log.h"
 
 const std::string TazDlg::s_strTitle = "Takin";
 
@@ -155,8 +155,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(double, double, double)),
 					this, SLOT(RecipCoordsChanged(double, double, double)));
 
-	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const ElasticSpurion&, const std::vector<InelasticSpurion>&, const std::vector<InelasticSpurion>&)),
-					this, SLOT(spurionInfo(const ElasticSpurion&, const std::vector<InelasticSpurion>&, const std::vector<InelasticSpurion>&)));
+	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion>&, const std::vector<tl::InelasticSpurion>&)),
+					this, SLOT(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion>&, const std::vector<tl::InelasticSpurion>&)));
 
 	QObject::connect(m_pGotoDlg, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
@@ -783,10 +783,10 @@ bool TazDlg::Load(const char* pcFile)
 	const std::string strXmlRoot("taz/");
 
 	std::string strFile1 = pcFile;
-	std::string strDir = get_dir(strFile1);
+	std::string strDir = tl::get_dir(strFile1);
 
 
-	Xml xml;
+	tl::Xml xml;
 	if(!xml.Load(strFile1.c_str()))
 	{
 		QMessageBox::critical(this, "Error", "Could not load configuration file.");
@@ -813,7 +813,7 @@ bool TazDlg::Load(const char* pcFile)
 		for(unsigned int iEditBox=0; iEditBox<pVec->size(); ++iEditBox)
 		{
 			std::string str = xml.QueryString((strXmlRoot+(*pvecName)[iEditBox]).c_str(), "0", &bOk);
-			trim(str);
+			tl::trim(str);
 			if(bOk)
 				(*pVec)[iEditBox]->setText(str.c_str());
 		}
@@ -899,7 +899,7 @@ bool TazDlg::Load(const char* pcFile)
 		m_pShowRealQDir->setChecked(bRealQEnabled!=0);
 
 	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
-	trim(strSpaceGroup);
+	tl::trim(strSpaceGroup);
 	if(bOk)
 	{
 		editSpaceGroupsFilter->clear();
@@ -974,8 +974,8 @@ bool TazDlg::Save()
 	for(const TasLayoutNode *pNode : m_sceneReal.GetTasLayout()->GetNodes())
 	{
 		std::string strNode = m_sceneReal.GetTasLayout()->GetNodeNames()[iNodeReal];
-		std::string strValX = var_to_str(pNode->pos().x());
-		std::string strValY = var_to_str(pNode->pos().y());
+		std::string strValX = tl::var_to_str(pNode->pos().x());
+		std::string strValY = tl::var_to_str(pNode->pos().y());
 
 		mapConf[strXmlRoot + "real/" + strNode + "_x"] = strValX;
 		mapConf[strXmlRoot + "real/" + strNode + "_y"] = strValY;
@@ -983,7 +983,7 @@ bool TazDlg::Save()
 		++iNodeReal;
 	}
 	double dRealScale = m_sceneReal.GetTasLayout()->GetScaleFactor();
-	mapConf[strXmlRoot + "real/pixels_per_cm"] = var_to_str(dRealScale);
+	mapConf[strXmlRoot + "real/pixels_per_cm"] = tl::var_to_str(dRealScale);
 
 
 	// scattering triangle
@@ -991,8 +991,8 @@ bool TazDlg::Save()
 	for(const ScatteringTriangleNode *pNode : m_sceneRecip.GetTriangle()->GetNodes())
 	{
 		std::string strNode = m_sceneRecip.GetTriangle()->GetNodeNames()[iNodeRecip];
-		std::string strValX = var_to_str(pNode->pos().x());
-		std::string strValY = var_to_str(pNode->pos().y());
+		std::string strValX = tl::var_to_str(pNode->pos().x());
+		std::string strValY = tl::var_to_str(pNode->pos().y());
 
 		mapConf[strXmlRoot + "recip/" + strNode + "_x"] = strValX;
 		mapConf[strXmlRoot + "recip/" + strNode + "_y"] = strValY;
@@ -1000,7 +1000,7 @@ bool TazDlg::Save()
 		++iNodeRecip;
 	}
 	double dRecipScale = m_sceneRecip.GetTriangle()->GetScaleFactor();
-	mapConf[strXmlRoot + "recip/pixels_per_A-1"] = var_to_str(dRecipScale);
+	mapConf[strXmlRoot + "recip/pixels_per_A-1"] = tl::var_to_str(dRecipScale);
 
 
 	bool bSmallqEnabled = m_pSmallq->isChecked();
@@ -1023,7 +1023,7 @@ bool TazDlg::Save()
 		m_pReso->Save(mapConf, strXmlRoot);
 
 
-	if(!Xml::SaveMap(m_strCurFile.c_str(), mapConf))
+	if(!tl::Xml::SaveMap(m_strCurFile.c_str(), mapConf))
 	{
 		QMessageBox::critical(this, "Error", "Could not save configuration file.");
 		return false;
@@ -1043,7 +1043,7 @@ bool TazDlg::SaveAs()
 	if(strFile != "")
 	{
 		std::string strFile1 = strFile.toStdString();
-		std::string strDir = get_dir(strFile1);
+		std::string strDir = tl::get_dir(strFile1);
 
 		m_strCurFile = strFile1;
 		setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
@@ -1136,7 +1136,7 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 	painter.end();
 
 
-	std::string strDir = get_dir(strFile.toStdString());
+	std::string strDir = tl::get_dir(strFile.toStdString());
 	m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
 }
 
@@ -1149,12 +1149,13 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 #include <boost/config.hpp>
 #include <boost/version.hpp>
 #include <qwt_global.h>
+#include "tlibs/version.h"
 
 void TazDlg::ShowAbout()
 {
-	const std::wstring& _strRet = get_spec_char_utf16("return");
-	const std::wstring& _strBullet = get_spec_char_utf16("bullet");
-	const std::wstring& _strArrow = get_spec_char_utf16("rightarrow");
+	const std::wstring& _strRet = tl::get_spec_char_utf16("return");
+	const std::wstring& _strBullet = tl::get_spec_char_utf16("bullet");
+	const std::wstring& _strArrow = tl::get_spec_char_utf16("rightarrow");
 
 	const QString strRet = QString::fromUtf16((ushort*)_strRet.c_str(), _strRet.length());
 	const QString strBullet = QString::fromUtf16((ushort*)_strBullet.c_str(), _strBullet.length());
@@ -1199,13 +1200,17 @@ void TazDlg::ShowAbout()
 	strAbout += strBullet + " ";
 	strAbout += "Uses Boost version ";
 	std::string strBoost = BOOST_LIB_VERSION;
-	find_all_and_replace<std::string>(strBoost, "_", ".");
+	tl::find_all_and_replace<std::string>(strBoost, "_", ".");
 	strAbout += strBoost.c_str();
 	strAbout += "    \t" + strArrow + " http://www.boost.org\n";
 
 	strAbout += strBullet + " ";
 	strAbout += "Uses Lapack/e version 3";
 	strAbout += "    \t" + strArrow + " http://www.netlib.org/lapack\n";
+
+	strAbout += strBullet + " ";
+	strAbout += "Uses TLIBS version " + QString(TLIBS_VERSION);
+	strAbout += "\n";
 
 	strAbout += "\n";
 	strAbout += strBullet + " ";

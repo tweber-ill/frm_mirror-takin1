@@ -6,11 +6,14 @@
 
 #include "DynPlaneDlg.h"
 
-#include "../helper/string.h"
-#include "../helper/neutrons.hpp"
+#include "../tlibs/string/string.h"
+#include "../tlibs/math/neutrons.hpp"
 
 #include <boost/units/io.hpp>
 #include <qwt_picker_machine.h>
+
+namespace units = boost::units;
+namespace co = boost::units::si::constants::codata;
 
 
 DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
@@ -106,7 +109,7 @@ void DynPlaneDlg::Calc()
 	if(btnSync->isChecked())
 		spinEiEf->setValue(bFixedKi ? m_dEi : m_dEf);
 
-	units::quantity<units::si::energy> EiEf = spinEiEf->value() * one_meV;
+	units::quantity<units::si::energy> EiEf = spinEiEf->value() * tl::one_meV;
 
 
 	//m_pPlanePlot->clear();
@@ -120,16 +123,16 @@ void DynPlaneDlg::Calc()
 	{
 		for(unsigned int iSign=0; iSign<=1; ++iSign)
 		{
-			units::quantity<units::si::wavenumber> Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) /angstrom;
-			units::quantity<units::si::energy> dE = ::kinematic_plane(bFixedKi, iSign, EiEf, Q, twotheta);
+			units::quantity<units::si::wavenumber> Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
+			units::quantity<units::si::energy> dE = tl::kinematic_plane(bFixedKi, iSign, EiEf, Q, twotheta);
 
-			double _dQ = Q * angstrom;
-			double _dE = dE / one_meV;
+			double _dQ = Q * tl::angstrom;
+			double _dE = dE / tl::one_meV;
 
 			if(!std::isnan(_dQ) && !std::isnan(_dE) && !std::isinf(_dQ) && !std::isinf(_dE))
 			{
-				vecQ[iSign].push_back(Q * angstrom);
-				vecE[iSign].push_back(dE / one_meV);
+				vecQ[iSign].push_back(Q * tl::angstrom);
+				vecE[iSign].push_back(dE / tl::one_meV);
 			}
 		}
 	}
@@ -156,8 +159,8 @@ void DynPlaneDlg::Calc()
 void DynPlaneDlg::RecipParamsChanged(const RecipParams& params)
 {
 	m_d2Theta = params.d2Theta;
-	m_dEi = k2E(params.dki/angstrom)/one_meV;
-	m_dEf = k2E(params.dkf/angstrom)/one_meV;
+	m_dEi = tl::k2E(params.dki/tl::angstrom)/tl::one_meV;
+	m_dEf = tl::k2E(params.dkf/tl::angstrom)/tl::one_meV;
 
 	Calc();
 }

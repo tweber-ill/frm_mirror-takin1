@@ -7,7 +7,7 @@
 #ifndef __TAS_LAYOUT_H__
 #define __TAS_LAYOUT_H__
 
-#include "helper/flags.h"
+#include "tlibs/helper/flags.h"
 #include <cmath>
 
 #include <QtGui/QGraphicsScene>

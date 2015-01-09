@@ -5,7 +5,7 @@
  */
 
 #include "taz.h"
-#include "helper/spec_char.h"
+#include "tlibs/string/spec_char.h"
 #include <boost/algorithm/string.hpp>
 
 
@@ -17,7 +17,7 @@ static QString dtoqstr(double dVal, unsigned int iPrec=8)
 	return QString(ostr.str().c_str());
 }
 
-std::ostream& operator<<(std::ostream& ostr, const Lattice<double>& lat)
+std::ostream& operator<<(std::ostream& ostr, const tl::Lattice<double>& lat)
 {
 	ostr << "a = " << lat.GetA();
 	ostr << ", b = " << lat.GetB();
@@ -223,8 +223,8 @@ void TazDlg::CalcPeaksRecip()
 	double beta = editBetaRecip->text().toDouble()/180.*M_PI;
 	double gamma = editGammaRecip->text().toDouble()/180.*M_PI;
 
-	Lattice<double> lattice(a,b,c, alpha,beta,gamma);
-	Lattice<double> recip = lattice.GetRecip();
+	tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
+	tl::Lattice<double> recip = lattice.GetRecip();
 
 	editA->setText(dtoqstr(recip.GetA()));
 	editB->setText(dtoqstr(recip.GetB()));
@@ -254,8 +254,8 @@ void TazDlg::CalcPeaks()
 		double beta = editBeta->text().toDouble()/180.*M_PI;
 		double gamma = editGamma->text().toDouble()/180.*M_PI;
 
-		Lattice<double> lattice(a,b,c, alpha,beta,gamma);
-		Lattice<double> recip_unrot = lattice.GetRecip();
+		tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
+		tl::Lattice<double> recip_unrot = lattice.GetRecip();
 
 
 
@@ -278,24 +278,24 @@ void TazDlg::CalcPeaks()
 		//----------------------------------------------------------------------
 		// show integer up vector
 		unsigned int iMaxDec = 4;	// TODO: determine max. # of entered decimals
-		ublas::vector<int> ivecUp = ::cross_3(
-			::make_vec<ublas::vector<int>>({int(dX0*std::pow(10, iMaxDec)),
+		ublas::vector<int> ivecUp = tl::cross_3(
+			tl::make_vec<ublas::vector<int>>({int(dX0*std::pow(10, iMaxDec)),
 											int(dX1*std::pow(10, iMaxDec)),
 											int(dX2*std::pow(10, iMaxDec))}),
-			::make_vec<ublas::vector<int>>({int(dY0*std::pow(10, iMaxDec)),
+			tl::make_vec<ublas::vector<int>>({int(dY0*std::pow(10, iMaxDec)),
 											int(dY1*std::pow(10, iMaxDec)),
 											int(dY2*std::pow(10, iMaxDec))}));
-		ivecUp = get_gcd_vec(ivecUp);
+		ivecUp = tl::get_gcd_vec(ivecUp);
 		editScatZ0->setText(std::to_string(ivecUp[0]).c_str());
 		editScatZ1->setText(std::to_string(ivecUp[1]).c_str());
 		editScatZ2->setText(std::to_string(ivecUp[2]).c_str());
 		//----------------------------------------------------------------------
 
 		ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
-		Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
+		tl::Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
 		if(!plane.IsValid())
 		{
-			log_err("Invalid scattering plane.");
+			tl::log_err("Invalid scattering plane.");
 			return;
 		}
 
@@ -303,7 +303,7 @@ void TazDlg::CalcPeaks()
 		if(m_pGotoDlg)
 		{
 			m_pGotoDlg->SetLattice(lattice);
-			m_pGotoDlg->SetScatteringPlane(make_vec({dX0, dX1, dX2}), make_vec({dY0, dY1, dY2}));
+			m_pGotoDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
 			m_pGotoDlg->CalcSample();
 		}
 
@@ -316,16 +316,16 @@ void TazDlg::CalcPeaks()
 
 		ublas::vector<double> dir0 = plane.GetDir0();
 		ublas::vector<double> dirup = plane.GetNorm();
-		ublas::vector<double> dir1 = cross_3(dirup, dir0);
+		ublas::vector<double> dir1 = tl::cross_3(dirup, dir0);
 
 		double dDir0Len = ublas::norm_2(dir0);
 		double dDir1Len = ublas::norm_2(dir1);
 		double dDirUpLen = ublas::norm_2(dirup);
 
-		if(float_equal(dDir0Len, 0.) || float_equal(dDir1Len, 0.) || float_equal(dDirUpLen, 0.)
-			|| ::is_nan_or_inf<double>(dDir0Len) || ::is_nan_or_inf<double>(dDir1Len) || ::is_nan_or_inf<double>(dDirUpLen))
+		if(tl::float_equal(dDir0Len, 0.) || tl::float_equal(dDir1Len, 0.) || tl::float_equal(dDirUpLen, 0.)
+			|| tl::is_nan_or_inf<double>(dDir0Len) || tl::is_nan_or_inf<double>(dDir1Len) || tl::is_nan_or_inf<double>(dDirUpLen))
 		{
-			log_err("Invalid scattering plane.");
+			tl::log_err("Invalid scattering plane.");
 			return;
 		}
 
@@ -334,7 +334,7 @@ void TazDlg::CalcPeaks()
 		//dirup /= dDirUpLen;
 
 		//lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
-		Lattice<double> recip = lattice.GetRecip();
+		tl::Lattice<double> recip = lattice.GetRecip();
 
 
 
@@ -348,9 +348,9 @@ void TazDlg::CalcPeaks()
 			editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
 		}
 
-		const std::wstring& strAA = ::get_spec_char_utf16("AA");
-		const std::wstring& strMinus = ::get_spec_char_utf16("sup-");
-		const std::wstring& strThree = ::get_spec_char_utf16("sup3");
+		const std::wstring& strAA = tl::get_spec_char_utf16("AA");
+		const std::wstring& strMinus = tl::get_spec_char_utf16("sup-");
+		const std::wstring& strThree = tl::get_spec_char_utf16("sup3");
 
 		double dVol = lattice.GetVol();
 		double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
@@ -387,7 +387,7 @@ void TazDlg::CalcPeaks()
 	catch(const std::exception& ex)
 	{
 		m_sceneRecip.GetTriangle()->ClearPeaks();
-		log_err(ex.what());
+		tl::log_err(ex.what());
 	}
 }
 
@@ -437,9 +437,9 @@ void TazDlg::ShowSpurions()
 	m_pSpuri->activateWindow();
 }
 
-void TazDlg::spurionInfo(const ElasticSpurion& spuri,
-					const std::vector<InelasticSpurion>& vecInelCKI,
-					const std::vector<InelasticSpurion>& vecInelCKF)
+void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
+					const std::vector<tl::InelasticSpurion>& vecInelCKI,
+					const std::vector<tl::InelasticSpurion>& vecInelCKF)
 {
 	std::ostringstream ostrMsg;
 	if(spuri.bAType || spuri.bMType || vecInelCKI.size() || vecInelCKF.size())
@@ -469,7 +469,7 @@ void TazDlg::spurionInfo(const ElasticSpurion& spuri,
 			ostrMsg << " ";
 	}
 
-	const std::string& strDelta = ::get_spec_char_utf8("Delta");
+	const std::string& strDelta = tl::get_spec_char_utf8("Delta");
 
 	if(vecInelCKI.size())
 	{

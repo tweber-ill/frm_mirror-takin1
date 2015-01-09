@@ -14,7 +14,7 @@
 #include <map>
 #include <string>
 #include "../helper/spacegroup.h"
-#include "../helper/xml.h"
+#include "../tlibs/file/xml.h"
 
 
 class PowderDlg : public QDialog, Ui::PowderDlg
@@ -47,7 +47,7 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		const SpaceGroup* GetCurSpaceGroup() const;
 		
 		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
-		void Load(Xml& xml, const std::string& strXmlRoot);
+		void Load(tl::Xml& xml, const std::string& strXmlRoot);
 };
 
 #endif

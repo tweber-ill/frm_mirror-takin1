@@ -14,7 +14,7 @@
 #include <QtCore/QSettings>
 #include <vector>
 
-#include "gl.h"
+#include "../tlibs/gfx/gl.h"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -48,9 +48,9 @@ protected:
 	QMutex m_mutex;
 
 	static constexpr double m_dFOV = 45./180.*M_PI;
-	t_mat4 m_matProj, m_matView;
+	tl::t_mat4 m_matProj, m_matView;
 
-	GlFontMap *m_pFont = nullptr;
+	tl::GlFontMap *m_pFont = nullptr;
 
 	std::vector<PlotObjGl> m_vecObjs;
 	GLuint m_iLstSphere[8];

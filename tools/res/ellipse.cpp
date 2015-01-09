@@ -9,12 +9,12 @@
  */
 
 #include "ellipse.h"
-#include "helper/linalg.h"
-#include "helper/linalg2.h"
-#include "helper/geo.h"
-#include "helper/quat.h"
-#include "helper/math.h"
-#include "helper/rand.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/linalg2.h"
+#include "tlibs/math/geo.h"
+#include "tlibs/math/quat.h"
+#include "tlibs/math/math.h"
+#include "tlibs/math/rand.h"
 
 #include "cn.h"
 
@@ -109,7 +109,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 									const ublas::vector<double>& Q_avg,
 									int iX, int iY, int iInt, int iRem1, int iRem2)
 {
-	QuadEllipsoid<double> quad(4);
+	tl::QuadEllipsoid<double> quad(4);
 	quad.SetQ(reso);
 
 	Ellipse ell;
@@ -125,7 +125,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	if(iRem1>-1)
 	{
 		quad.RemoveElems(iRem1);
-		Q_offs = remove_elem(Q_offs, iRem1);
+		Q_offs = tl::remove_elem(Q_offs, iRem1);
 
 		if(iInt>=iRem1) --iInt;
 		if(iRem2>=iRem1) --iRem2;
@@ -136,7 +136,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	if(iRem2>-1)
 	{
 		quad.RemoveElems(iRem2);
-		Q_offs = remove_elem(Q_offs, iRem2);
+		Q_offs = tl::remove_elem(Q_offs, iRem2);
 
 		if(iInt>=iRem2) --iInt;
 		if(iX>=iRem2) --iX;
@@ -146,7 +146,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	if(iInt>-1)
 	{
 		quad.GaussInt(iInt);
-		Q_offs = remove_elem(Q_offs, iInt);
+		Q_offs = tl::remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
@@ -157,9 +157,9 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	std::vector<double> evals;
 	ublas::matrix<double> matRot;
 	quad.GetPrincipalAxes(matRot, evals);
-	quad.SetQ(diag_matrix(evals));
+	quad.SetQ(tl::diag_matrix(evals));
 
-	ell.phi = rotation_angle(matRot)[0];
+	ell.phi = tl::rotation_angle(matRot)[0];
 
 	// if rotation angle >= 90° -> choose other axis as first axis
 	/*if(std::fabs(ell.phi) >= M_PI/2.)
@@ -183,8 +183,8 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	}*/
 
 
-	ell.x_hwhm = SIGMA2HWHM * quad.GetRadius(0);
-	ell.y_hwhm = SIGMA2HWHM * quad.GetRadius(1);
+	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
+	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
 
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
@@ -197,10 +197,10 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	// sanity check, see Shirane p. 267
 	double dMyPhi = ell.phi/M_PI*180.;
 	double dPhiShirane = 0.5*atan(2.*res_mat0(0,1) / (res_mat0(0,0)-res_mat0(1,1))) / M_PI*180.;
-	if(!::float_equal(dMyPhi, dPhiShirane, 0.01)
-		&& !::float_equal(dMyPhi-90., dPhiShirane, 0.01))
+	if(!tl::float_equal(dMyPhi, dPhiShirane, 0.01)
+		&& !tl::float_equal(dMyPhi-90., dPhiShirane, 0.01))
 	{
-		log_warn("Calculated ellipse phi = ", dMyPhi, " deg",
+		tl::log_warn("Calculated ellipse phi = ", dMyPhi, " deg",
 				" deviates from theoretical phi = ", dPhiShirane,
 				" deg.");
 	}
@@ -215,7 +215,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 							const ublas::vector<double>& Q_avg,
 							int iX, int iY, int iZ, int iInt, int iRem)
 {
-	QuadEllipsoid<double> quad(4);
+	tl::QuadEllipsoid<double> quad(4);
 	quad.SetQ(reso);
 
 	Ellipsoid ell;
@@ -232,7 +232,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	if(iRem>-1)
 	{
 		quad.RemoveElems(iRem);
-		Q_offs = remove_elem(Q_offs, iRem);
+		Q_offs = tl::remove_elem(Q_offs, iRem);
 
 		if(iInt>=iRem) --iInt;
 		if(iX>=iRem) --iX;
@@ -243,7 +243,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	if(iInt>-1)
 	{
 		quad.GaussInt(iInt);
-		Q_offs = remove_elem(Q_offs, iInt);
+		Q_offs = tl::remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
@@ -252,11 +252,11 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 
 	std::vector<double> evals;
 	quad.GetPrincipalAxes(ell.rot, evals);
-	quad.SetQ(diag_matrix(evals));
+	quad.SetQ(tl::diag_matrix(evals));
 
-	ell.x_hwhm = SIGMA2HWHM * quad.GetRadius(0);
-	ell.y_hwhm = SIGMA2HWHM * quad.GetRadius(1);
-	ell.z_hwhm = SIGMA2HWHM * quad.GetRadius(2);
+	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
+	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
+	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
 
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
@@ -271,17 +271,17 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg)
 {
 	Ellipsoid4d ell;
-	QuadEllipsoid<double> quad(4);
+	tl::QuadEllipsoid<double> quad(4);
 	quad.SetQ(reso);
 
 	std::vector<double> evals;
 	quad.GetPrincipalAxes(ell.rot, evals);
-	quad.SetQ(diag_matrix(evals));
+	quad.SetQ(tl::diag_matrix(evals));
 
-	ell.x_hwhm = SIGMA2HWHM * quad.GetRadius(0);
-	ell.y_hwhm = SIGMA2HWHM * quad.GetRadius(1);
-	ell.z_hwhm = SIGMA2HWHM * quad.GetRadius(2);
-	ell.w_hwhm = SIGMA2HWHM * quad.GetRadius(3);
+	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
+	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
+	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
+	ell.w_hwhm = tl::SIGMA2HWHM * quad.GetRadius(3);
 
 	ell.x_offs = Q_avg[0];
 	ell.y_offs = Q_avg[1];
@@ -304,7 +304,7 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 				std::vector<ublas::vector<double>>& vecResult)
 {
-	init_rand();
+	tl::init_rand();
 
 	ublas::vector<double> vecTrans(4);
 	vecTrans[0] = ell4d.x_offs;
@@ -317,11 +317,11 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 
 	for(unsigned int iCur=0; iCur<iNum; ++iCur)
 	{
-		ublas::vector<double> vecMC = rand_norm_nd<ublas::vector<double>>({0.,0.,0.,0.},
-														{ell4d.x_hwhm*HWHM2SIGMA,
-														ell4d.y_hwhm*HWHM2SIGMA,
-														ell4d.z_hwhm*HWHM2SIGMA,
-														ell4d.w_hwhm*HWHM2SIGMA});
+		ublas::vector<double> vecMC = tl::rand_norm_nd<ublas::vector<double>>({0.,0.,0.,0.},
+														{ell4d.x_hwhm*tl::HWHM2SIGMA,
+														ell4d.y_hwhm*tl::HWHM2SIGMA,
+														ell4d.z_hwhm*tl::HWHM2SIGMA,
+														ell4d.w_hwhm*tl::HWHM2SIGMA});
 
 		vecMC = ublas::prod(rot, vecMC);
 		if(!bCenter)

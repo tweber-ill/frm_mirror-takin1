@@ -81,7 +81,7 @@ obj/taz_net.o: tools/taz/taz_net.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/recip3d.o: tools/taz/recip3d.cpp tools/taz/recip3d.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scattering_triangle.h helper/lattice.h
+obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scattering_triangle.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tas_layout.o: tools/taz/tas_layout.cpp tools/taz/tas_layout.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -89,13 +89,13 @@ obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/GotoDlg.o: dialogs/GotoDlg.cpp dialogs/GotoDlg.h helper/lattice.h
+obj/GotoDlg.o: dialogs/GotoDlg.cpp dialogs/GotoDlg.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SettingsDlg.o: dialogs/SettingsDlg.cpp dialogs/SettingsDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SequenceDlg.o: dialogs/SequenceDlg.cpp dialogs/SequenceDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h helper/lattice.h
+obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -112,25 +112,25 @@ obj/NetCacheDlg.o: dialogs/NetCacheDlg.cpp dialogs/NetCacheDlg.h
 obj/nicos.o: tools/taz/nicos.cpp tools/taz/nicos.h
 	${CC} ${FLAGS} -c -o $@ $<
 
-obj/string.o: helper/string.cpp helper/string.h
+obj/string.o: tlibs/string/string.cpp tlibs/string/string.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/spec_char.o: helper/spec_char.cpp helper/spec_char.h
+obj/spec_char.o: tlibs/string/spec_char.cpp tlibs/string/spec_char.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/xml.o: helper/xml.cpp helper/xml.h
+obj/xml.o: tlibs/file/xml.cpp tlibs/file/xml.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/log.o: helper/log.cpp helper/log.h
+obj/log.o: tlibs/helper/log.cpp tlibs/helper/log.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/tcp.o: helper/tcp.cpp helper/tcp.h
+obj/tcp.o: tlibs/net/tcp.cpp tlibs/net/tcp.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/linalg2.o: helper/linalg2.cpp helper/linalg2.h helper/geo.h
+obj/linalg2.o: tlibs/math/linalg2.cpp tlibs/math/linalg2.h tlibs/math/geo.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/rand.o: helper/rand.cpp helper/rand.h
+obj/rand.o: tlibs/math/rand.cpp tlibs/math/rand.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/plotgl.o: helper/plotgl.cpp helper/plotgl.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/gl.o: helper/gl.cpp helper/gl.h
+obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/cn.o: tools/res/cn.cpp tools/res/cn.h

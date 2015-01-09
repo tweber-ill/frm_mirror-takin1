@@ -5,7 +5,7 @@
  */
 
 #include "recip3d.h"
-#include "helper/geo.h"
+#include "tlibs/math/geo.h"
 #include <QtGui/QGridLayout>
 
 Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
@@ -31,9 +31,9 @@ Recip3DDlg::~Recip3DDlg()
 }
 
 
-void Recip3DDlg::CalcPeaks(const Lattice<double>& lattice,
-							const Lattice<double>& recip, const Lattice<double>& recip_unrot,
-							const Plane<double>& plane,
+void Recip3DDlg::CalcPeaks(const tl::Lattice<double>& lattice,
+							const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
+							const tl::Plane<double>& plane,
 							const SpaceGroup* pSpaceGroup)
 {
 	const unsigned int iObjCnt = (unsigned int)((m_dMaxPeaks*2 + 1)*
@@ -74,10 +74,10 @@ void Recip3DDlg::CalcPeaks(const Lattice<double>& lattice,
 				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
 				std::vector<double> vecColor{0., 0., 1., 0.7};
-				if(::float_equal(dDist, 0., m_dPlaneDistTolerance))
+				if(tl::float_equal(dDist, 0., m_dPlaneDistTolerance))
 				{
 					bool bIsDirectBeam = 0;
-					if(float_equal(h, 0.) && float_equal(k, 0.) && float_equal(l, 0.))
+					if(tl::float_equal(h, 0.) && tl::float_equal(k, 0.) && tl::float_equal(l, 0.))
 						bIsDirectBeam = 1;
 
 					if(bIsDirectBeam)

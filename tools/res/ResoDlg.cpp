@@ -11,11 +11,11 @@
 #include <fstream>
 #include <iomanip>
 
-#include "helper/string.h"
-#include "helper/flags.h"
-#include "helper/spec_char.h"
-#include "helper/misc.h"
-#include "helper/math.h"
+#include "tlibs/string/string.h"
+#include "tlibs/helper/flags.h"
+#include "tlibs/string/spec_char.h"
+#include "tlibs/helper/misc.h"
+#include "tlibs/math/math.h"
 
 //#include <boost/units/io.hpp>
 
@@ -140,12 +140,12 @@ void ResoDlg::SaveRes()
 		return;
 
 	std::string strFile = qstrFile.toStdString();
-	std::string strDir = get_dir(strFile);
+	std::string strDir = tl::get_dir(strFile);
 
 	std::map<std::string, std::string> mapConf;
 	Save(mapConf, strXmlRoot);
 
-	bool bOk = Xml::SaveMap(strFile.c_str(), mapConf);
+	bool bOk = tl::Xml::SaveMap(strFile.c_str(), mapConf);
 	if(!bOk)
 		QMessageBox::critical(this, "Error", "Could not save resolution file.");
 
@@ -169,9 +169,9 @@ void ResoDlg::LoadRes()
 
 
 	std::string strFile = qstrFile.toStdString();
-	std::string strDir = get_dir(strFile);
+	std::string strDir = tl::get_dir(strFile);
 
-	Xml xml;
+	tl::Xml xml;
 	if(!xml.Load(strFile.c_str()))
 	{
 		QMessageBox::critical(this, "Error", "Could not load resolution file.");
@@ -201,9 +201,9 @@ void ResoDlg::Calc()
 	cn.ana_mosaic = spinAnaMosaic->value() / (180.*60.) * M_PI * units::si::radians;
 	cn.sample_mosaic = spinSampleMosaic->value() / (180.*60.) * M_PI * units::si::radians;
 
-	cn.ki = editKi->text().toDouble() / angstrom;
-	cn.kf = editKf->text().toDouble() / angstrom;
-	cn.E = editE->text().toDouble() * one_meV;
+	cn.ki = editKi->text().toDouble() / tl::angstrom;
+	cn.kf = editKf->text().toDouble() / tl::angstrom;
+	cn.E = editE->text().toDouble() * tl::one_meV;
 	cn.bCalcE = 0;
 	//std::cout << "E = " << editE->text().toStdString() << std::endl;
 	cn.Q = editQ->text().toDouble() / angstrom;
@@ -277,7 +277,7 @@ void ResoDlg::Calc()
 	const bool bUseCN = (comboAlgo->currentIndex()==0);
 	res = (bUseCN ? calc_cn(cn) : calc_pop(cn));
 
-	editE->setText(std::to_string(cn.E / one_meV).c_str());
+	editE->setText(std::to_string(cn.E / tl::one_meV).c_str());
 	//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
 	//if(m_pScatterDlg) m_pScatterDlg->SetParams(cn, res);
 
@@ -292,12 +292,12 @@ void ResoDlg::Calc()
 			dVanadiumFWHM = ellVa.x_hwhm*2.;
 		// --------------------------------------------------------------------------------
 
-		const std::string& strAA_1 = get_spec_char_utf8("AA")
-						+ get_spec_char_utf8("sup-")
-						+ get_spec_char_utf8("sup1");
-		const std::string& strAA_3 = get_spec_char_utf8("AA")
-						+ get_spec_char_utf8("sup-")
-						+ get_spec_char_utf8("sup3");
+		const std::string& strAA_1 = tl::get_spec_char_utf8("AA")
+						+ tl::get_spec_char_utf8("sup-")
+						+ tl::get_spec_char_utf8("sup1");
+		const std::string& strAA_3 = tl::get_spec_char_utf8("AA")
+						+ tl::get_spec_char_utf8("sup-")
+						+ tl::get_spec_char_utf8("sup3");
 
 		std::ostringstream ostrRes;
 
@@ -369,10 +369,10 @@ void ResoDlg::RefreshSimCmd()
 
 	ostrCmd << "./templateTAS -n 1e6 verbose=1 ";
 
-	ostrCmd << "KI=" << (m_pop.ki * angstrom) << " ";
-	ostrCmd << "KF=" << (m_pop.kf * angstrom) << " ";
-	ostrCmd << "QM=" << (m_pop.Q * angstrom) << " ";
-	ostrCmd << "EN=" << (m_pop.E / one_meV) << " ";
+	ostrCmd << "KI=" << (m_pop.ki * tl::angstrom) << " ";
+	ostrCmd << "KF=" << (m_pop.kf * tl::angstrom) << " ";
+	ostrCmd << "QM=" << (m_pop.Q * tl::angstrom) << " ";
+	ostrCmd << "EN=" << (m_pop.E / tl::one_meV) << " ";
 	//ostrCmt << "FX=" << (m_pop.bki_fix ? "1" : "2") << " ";
 
 	ostrCmd << "L1=" << (m_pop.dist_src_mono / units::si::meters) << " ";
@@ -384,8 +384,8 @@ void ResoDlg::RefreshSimCmd()
 	ostrCmd << "SS=" << m_pop.dsample_sense << " ";
 	ostrCmd << "SA=" << m_pop.dana_sense << " ";
 
-	ostrCmd << "DM=" << (m_pop.mono_d / angstrom) << " ";
-	ostrCmd << "DA=" << (m_pop.ana_d / angstrom) << " ";
+	ostrCmd << "DM=" << (m_pop.mono_d / tl::angstrom) << " ";
+	ostrCmd << "DA=" << (m_pop.ana_d / tl::angstrom) << " ";
 
 	ostrCmd << "RMV=" << (m_pop.mono_curvv / units::si::meters) << " ";
 	ostrCmd << "RMH=" << (m_pop.mono_curvh / units::si::meters) << " ";
@@ -525,12 +525,12 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 		mapConf[strXmlRoot + m_vecRadioNames[iRadio]] = (m_vecRadioPlus[iRadio]->isChecked() ? "1" : "0");
 
 	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
-		mapConf[strXmlRoot + m_vecComboNames[iCombo]] = var_to_str<int>(m_vecComboBoxes[iCombo]->currentIndex());
+		mapConf[strXmlRoot + m_vecComboNames[iCombo]] = tl::var_to_str<int>(m_vecComboBoxes[iCombo]->currentIndex());
 
 	mapConf[strXmlRoot + "reso/use_guide"] = groupGuide->isChecked() ? "1" : "0";
 }
 
-void ResoDlg::Load(Xml& xml, const std::string& strXmlRoot)
+void ResoDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 {
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
@@ -628,9 +628,9 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	editKi->setText(std::to_string(parms.dki).c_str());
 	editKf->setText(std::to_string(parms.dkf).c_str());
 
-	m_pop.vec0 = make_vec({parms.orient_0[0], parms.orient_0[1], parms.orient_0[2]});
-	m_pop.vec1 = make_vec({parms.orient_1[0], parms.orient_1[1], parms.orient_1[2]});
-	m_pop.vecUp = make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
+	m_pop.vec0 = tl::make_vec({parms.orient_0[0], parms.orient_0[1], parms.orient_0[2]});
+	m_pop.vec1 = tl::make_vec({parms.orient_1[0], parms.orient_1[1], parms.orient_1[2]});
+	m_pop.vecUp = tl::make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
 
 	m_pop.bCalcSampleAngles = 0;
 	m_pop.thetas = parms.dTheta * units::si::radians;
@@ -732,7 +732,7 @@ void ResoDlg::MCGenerate()
 	}
 
 	if(m_pSettings)
-		m_pSettings->setValue("reso/mc_dir", QString(::get_dir(strFile).c_str()));
+		m_pSettings->setValue("reso/mc_dir", QString(tl::get_dir(strFile).c_str()));
 }
 // --------------------------------------------------------------------------------
 

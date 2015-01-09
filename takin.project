@@ -26,6 +26,64 @@
  }]]]>
     </Plugin>
   </Plugins>
+  <VirtualDirectory Name="tlibs">
+    <VirtualDirectory Name="file">
+      <File Name="tlibs/file/comp.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/file/xml.cpp"/>
+      <File Name="tlibs/file/file.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/file/loadtxt.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/file/file.h" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/file/loadtxt.h" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/file/comp.h" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/file/xml.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="gfx">
+      <File Name="tlibs/gfx/gl.cpp"/>
+      <File Name="tlibs/gfx/gl.h"/>
+      <File Name="tlibs/gfx/gnuplot.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/gfx/gnuplot.h" ExcludeProjConfig="Debug;Release"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="helper">
+      <File Name="tlibs/helper/log.h"/>
+      <File Name="tlibs/helper/flags.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/helper/flags.h" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/helper/misc.h"/>
+      <File Name="tlibs/helper/exception.h"/>
+      <File Name="tlibs/helper/log.cpp"/>
+      <File Name="tlibs/helper/traits.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="math">
+      <File Name="tlibs/math/fourier.h" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/rand.h"/>
+      <File Name="tlibs/math/linalg2.h"/>
+      <File Name="tlibs/math/fourier.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/linalg2.cpp"/>
+      <File Name="tlibs/math/linalg.h"/>
+      <File Name="tlibs/math/lattice.h"/>
+      <File Name="tlibs/math/minuit.h" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/rand.cpp"/>
+      <File Name="tlibs/math/interpolation.h" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/bz.h"/>
+      <File Name="tlibs/math/quat.h"/>
+      <File Name="tlibs/math/geo.h"/>
+      <File Name="tlibs/math/neutrons.hpp"/>
+      <File Name="tlibs/math/mieze.hpp"/>
+      <File Name="tlibs/math/funcmod.h"/>
+      <File Name="tlibs/math/math.h"/>
+      <File Name="tlibs/math/minuit.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/interpolation.cpp" ExcludeProjConfig="Debug;Release"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="net">
+      <File Name="tlibs/net/tcp.h"/>
+      <File Name="tlibs/net/tcp.cpp"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="string">
+      <File Name="tlibs/string/spec_char.cpp"/>
+      <File Name="tlibs/string/string.h"/>
+      <File Name="tlibs/string/spec_char.h"/>
+      <File Name="tlibs/string/string.cpp"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
   <VirtualDirectory Name="tools">
     <VirtualDirectory Name="res">
       <File Name="tools/res/ResoDlg.h"/>
@@ -87,38 +145,10 @@
     <File Name="dialogs/DynPlaneDlg.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
-    <File Name="helper/spec_char.cpp"/>
-    <File Name="helper/rand.h"/>
-    <File Name="helper/linalg2.h"/>
-    <File Name="helper/linalg2.cpp"/>
-    <File Name="helper/string.h"/>
-    <File Name="helper/log.h"/>
-    <File Name="helper/flags.cpp"/>
-    <File Name="helper/linalg.h"/>
-    <File Name="helper/lattice.h"/>
-    <File Name="helper/flags.h"/>
-    <File Name="helper/tcp.h"/>
-    <File Name="helper/tcp.cpp"/>
-    <File Name="helper/rand.cpp"/>
     <File Name="helper/plotgl.cpp"/>
-    <File Name="helper/spec_char.h"/>
-    <File Name="helper/xml.cpp"/>
-    <File Name="helper/misc.h"/>
-    <File Name="helper/bz.h"/>
     <File Name="helper/plotgl.h"/>
     <File Name="helper/spacegroup.cpp"/>
     <File Name="helper/spacegroup.h"/>
-    <File Name="helper/string.cpp"/>
-    <File Name="helper/geo.h"/>
-    <File Name="helper/neutrons.hpp"/>
-    <File Name="helper/math.h"/>
-    <File Name="helper/exception.h"/>
-    <File Name="helper/log.cpp"/>
-    <File Name="helper/xml.h"/>
-    <File Name="helper/traits.h"/>
-    <File Name="helper/quat.h"/>
-    <File Name="helper/gl.h"/>
-    <File Name="helper/gl.cpp"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>

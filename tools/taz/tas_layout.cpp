@@ -5,7 +5,7 @@
  */
 
 #include "tas_layout.h"
-#include "helper/spec_char.h"
+#include "tlibs/string/spec_char.h"
 #include <iostream>
 
 
@@ -123,7 +123,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		if(m_bAllowChanges)
 		{
-			m_dMonoTwoTheta = -(vec_angle(vecMonoSample) - vec_angle(vecSrcMono));
+			m_dMonoTwoTheta = -(tl::vec_angle(vecMonoSample) - tl::vec_angle(vecSrcMono));
 			if(m_dMonoTwoTheta < -M_PI) m_dMonoTwoTheta += 2.*M_PI;
 			if(m_dMonoTwoTheta > M_PI) m_dMonoTwoTheta -= 2.*M_PI;
 		}
@@ -131,7 +131,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		//std::cout << m_dMonoTwoTheta/M_PI*180. << std::endl;
 
 
-		ublas::vector<double> vecSampleAna = ublas::prod(rotation_matrix_2d(-dTwoTheta), vecMonoSample);
+		ublas::vector<double> vecSampleAna = ublas::prod(tl::rotation_matrix_2d(-dTwoTheta), vecMonoSample);
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 		vecSampleAna *= m_dLenSampleAna*m_dScaleFactor;
 
@@ -141,7 +141,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 
-		ublas::vector<double> vecAnaDet = ublas::prod(rotation_matrix_2d(-dAnaTwoTheta), vecSampleAna);
+		ublas::vector<double> vecAnaDet = ublas::prod(tl::rotation_matrix_2d(-dAnaTwoTheta), vecSampleAna);
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 		vecAnaDet *= m_dLenAnaDet*m_dScaleFactor;
 
@@ -162,7 +162,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		ublas::vector<double> vecSrcMono = vecMono-vecSrc;
 		vecSrcMono /= ublas::norm_2(vecSrcMono);
 
-		ublas::vector<double> vecMonoSample = ublas::prod(rotation_matrix_2d(-m_dMonoTwoTheta), vecSrcMono);
+		ublas::vector<double> vecMonoSample = ublas::prod(tl::rotation_matrix_2d(-m_dMonoTwoTheta), vecSrcMono);
 		vecMonoSample /= ublas::norm_2(vecMonoSample);
 		vecMonoSample *= m_dLenMonoSample*m_dScaleFactor;
 
@@ -170,7 +170,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		m_pSample->setPos(vec_to_qpoint(vecSampleNew));
 
 
-		ublas::vector<double> vecSampleAna = ublas::prod(rotation_matrix_2d(-m_dTwoTheta), vecMonoSample);
+		ublas::vector<double> vecSampleAna = ublas::prod(tl::rotation_matrix_2d(-m_dTwoTheta), vecMonoSample);
 		//ublas::vector<double> vecSampleAna = vecAna - vecSample;
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 		vecSampleAna *= m_dLenSampleAna*m_dScaleFactor;
@@ -179,7 +179,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		m_pAna->setPos(vec_to_qpoint(vecAnaNew));
 
 
-		ublas::vector<double> vecAnaDet = ublas::prod(rotation_matrix_2d(-m_dAnaTwoTheta), vecSampleAna);
+		ublas::vector<double> vecAnaDet = ublas::prod(tl::rotation_matrix_2d(-m_dAnaTwoTheta), vecSampleAna);
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 		vecAnaDet *= m_dLenAnaDet*m_dScaleFactor;
 
@@ -197,7 +197,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		if(m_bAllowChanges)
 		{
-			m_dAnaTwoTheta = -(vec_angle(vecAnaDet) - vec_angle(vecSampleAna));
+			m_dAnaTwoTheta = -(tl::vec_angle(vecAnaDet) - tl::vec_angle(vecSampleAna));
 			if(m_dAnaTwoTheta < -M_PI) m_dAnaTwoTheta += 2.*M_PI;
 			if(m_dAnaTwoTheta > M_PI) m_dAnaTwoTheta -= 2.*M_PI;
 		}
@@ -217,7 +217,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 			m_dLenSampleAna = ublas::norm_2(vecSampleAna)/m_dScaleFactor;
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 
-		ublas::vector<double> vecAnaDet = ublas::prod(rotation_matrix_2d(-m_dAnaTwoTheta), vecSampleAna);
+		ublas::vector<double> vecAnaDet = ublas::prod(tl::rotation_matrix_2d(-m_dAnaTwoTheta), vecSampleAna);
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 		vecAnaDet *= m_dLenAnaDet*m_dScaleFactor;
 
@@ -228,7 +228,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 		if(m_bAllowChanges)
 		{
-			m_dTwoTheta = -(vec_angle(vecSampleAna) - vec_angle(vecMonoSample));
+			m_dTwoTheta = -(tl::vec_angle(vecSampleAna) - tl::vec_angle(vecMonoSample));
 			if(m_dTwoTheta < -M_PI) m_dTwoTheta += 2.*M_PI;
 			if(m_dTwoTheta > M_PI) m_dTwoTheta -= 2.*M_PI;
 		}
@@ -319,7 +319,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	// mono/ana/sample theta rotation
 	for(unsigned int iTh=0; iTh<sizeof(dThetas)/sizeof(*dThetas); ++iTh)
 	{
-		ublas::vector<double> vecRotDir = ublas::prod(rotation_matrix_2d(dThetas[iTh]), *vecDirs[iTh]);
+		ublas::vector<double> vecRotDir = ublas::prod(tl::rotation_matrix_2d(dThetas[iTh]), *vecDirs[iTh]);
 		vecRotDir /= ublas::norm_2(vecRotDir);
 		vecRotDir *= m_dLenSample*m_dScaleFactor;
 
@@ -356,7 +356,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	{
 		//log_info("angle kiQ: ", m_dAngleKiQ/M_PI*180.);
 		const double &dAngleKiQ = m_dAngleKiQ;
-		ublas::matrix<double> matRotQ = rotation_matrix_2d(dAngleKiQ);
+		ublas::matrix<double> matRotQ = tl::rotation_matrix_2d(dAngleKiQ);
 		ublas::vector<double> vecKi = vecSample-vecMono;
 		ublas::vector<double> vecQ = ublas::prod(matRotQ, vecKi);
 		vecQ /= ublas::norm_2(vecQ);
@@ -401,10 +401,10 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 								dBeginArcAngle*16., dArcAngle*16.);
 
 
-		const std::wstring& strDEG = ::get_spec_char_utf16("deg");
+		const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
 		std::wostringstream ostrAngle;
 		ostrAngle.precision(6);
-		if(!is_nan_or_inf<double>(dArcAngle))
+		if(!tl::is_nan_or_inf<double>(dArcAngle))
 			ostrAngle << std::fabs(dArcAngle) << strDEG;
 		else
 			ostrAngle << "invalid";
@@ -466,7 +466,7 @@ void TasLayout::SetSampleTwoTheta(double dAngle)
 	double dLenKf = ublas::norm_2(vecAna-vecSample);
 
 	//std::cout << dAngle/M_PI*180. << std::endl;
-	ublas::vector<double> vecKf = ublas::prod(rotation_matrix_2d(-dAngle), vecKi);
+	ublas::vector<double> vecKf = ublas::prod(tl::rotation_matrix_2d(-dAngle), vecKi);
 	vecKf /= ublas::norm_2(vecKf);
 	vecKf *= dLenKf;
 

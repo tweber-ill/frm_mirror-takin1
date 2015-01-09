@@ -9,9 +9,8 @@
  */
 
 #include "pop.h"
-#include "helper/linalg.h"
-#include "helper/math.h"
-#include "helper/neutrons.hpp"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/math.h"
 
 #include <string>
 #include <iostream>
@@ -35,13 +34,13 @@ CNResults calc_pop(PopParams& pop)
 	if(!calc_tas_angles(pop, res))
 		return res;
 
-	length lam = k2lam(pop.ki);
+	length lam = tl::k2lam(pop.ki);
 	angle phi = units::atan2(-pop.kf * units::sin(2.*pop.thetas), pop.ki-pop.kf*units::cos(2.*pop.thetas));
 
 	if(pop.bGuide)
 	{
-		pop.coll_h_pre_mono = lam*(pop.guide_div_h/angstrom);
-		pop.coll_v_pre_mono = lam*(pop.guide_div_v/angstrom);
+		pop.coll_h_pre_mono = lam*(pop.guide_div_h/tl::angstrom);
+		pop.coll_v_pre_mono = lam*(pop.guide_div_v/tl::angstrom);
 	}
 
 	ublas::matrix<double> G = ublas::zero_matrix<double>(8,8);
@@ -69,12 +68,12 @@ CNResults calc_pop(PopParams& pop)
 	C(3,7) = -0.5/units::sin(pop.thetaa);
 
 	ublas::matrix<double> A = ublas::zero_matrix<double>(6,8);
-	A(0,0) = 0.5 * pop.ki*angstrom * units::cos(pop.thetam)/units::sin(pop.thetam);
-	A(0,1) = -0.5 * pop.ki*angstrom * units::cos(pop.thetam)/units::sin(pop.thetam);
-	A(2,3) = A(1,1) = pop.ki * angstrom;
-	A(3,4) = 0.5 * pop.kf*angstrom * units::cos(pop.thetaa)/units::sin(pop.thetaa);
-	A(3,5) = -0.5 * pop.kf*angstrom * units::cos(pop.thetaa)/units::sin(pop.thetaa);
-	A(5,6) = A(4,4) = pop.kf * angstrom;
+	A(0,0) = 0.5 * pop.ki*tl::angstrom * units::cos(pop.thetam)/units::sin(pop.thetam);
+	A(0,1) = -0.5 * pop.ki*tl::angstrom * units::cos(pop.thetam)/units::sin(pop.thetam);
+	A(2,3) = A(1,1) = pop.ki * tl::angstrom;
+	A(3,4) = 0.5 * pop.kf*tl::angstrom * units::cos(pop.thetaa)/units::sin(pop.thetaa);
+	A(3,5) = -0.5 * pop.kf*tl::angstrom * units::cos(pop.thetaa)/units::sin(pop.thetaa);
+	A(5,6) = A(4,4) = pop.kf * tl::angstrom;
 
 	ublas::matrix<double> B = ublas::zero_matrix<double>(4,6);
 	B(0,0) = units::cos(phi);
@@ -87,8 +86,8 @@ CNResults calc_pop(PopParams& pop)
 	B(1,4) = -units::cos(phi - 2.*pop.thetas);
 	B(2,2) = 1.;
 	B(2,5) = -1.;
-	B(3,0) = 2.*pop.ki*angstrom * KSQ2E;
-	B(3,3) = -2.*pop.kf*angstrom * KSQ2E;
+	B(3,0) = 2.*pop.ki*tl::angstrom * tl::KSQ2E;
+	B(3,3) = -2.*pop.kf*tl::angstrom * tl::KSQ2E;
 
 
 
@@ -118,9 +117,9 @@ CNResults calc_pop(PopParams& pop)
 	ublas::matrix<double> SI = ublas::zero_matrix<double>(13,13);
 	SI(0,0) = dMult * pop.src_w*pop.src_w /cm/cm;
 	SI(1,1) = dMult * pop.src_h*pop.src_h /cm/cm;
-	submatrix_copy(SI, S1I, 2, 2);
-	submatrix_copy(SI, S2I, 5, 5);
-	submatrix_copy(SI, S3I, 8, 8);
+	tl::submatrix_copy(SI, S1I, 2, 2);
+	tl::submatrix_copy(SI, S2I, 5, 5);
+	tl::submatrix_copy(SI, S3I, 8, 8);
 
 
 	dMult = 1./12.;
@@ -129,10 +128,10 @@ CNResults calc_pop(PopParams& pop)
 	SI(11,11) = dMult * pop.det_w*pop.det_w /cm/cm;
 	SI(12,12) = dMult * pop.det_h*pop.det_h /cm/cm;
 
-	SI *= SIGMA2FWHM*SIGMA2FWHM;
+	SI *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
 	ublas::matrix<double> S;
-	if(!::inverse(SI, S))
+	if(!tl::inverse(SI, S))
 	{
 		res.bOk = false;
 		res.strErr = "Matrix cannot be inverted.";
@@ -208,7 +207,7 @@ CNResults calc_pop(PopParams& pop)
 	ublas::matrix<double> FT = ublas::prod(F,T);
 	ublas::matrix<double> M0 = S + ublas::prod(ublas::trans(T),FT);
 	ublas::matrix<double> M0i;
-	if(!::inverse(M0, M0i))
+	if(!tl::inverse(M0, M0i))
 	{
 		res.bOk = false;
 		res.strErr = "Matrix M0 cannot be inverted.";
@@ -218,7 +217,7 @@ CNResults calc_pop(PopParams& pop)
 	ublas::matrix<double> M0iD = ublas::prod(M0i, ublas::trans(D));
 	ublas::matrix<double> M1 = ublas::prod(D, M0iD);
 	ublas::matrix<double> M1i;
-	if(!::inverse(M1, M1i))
+	if(!tl::inverse(M1, M1i))
 	{
 		res.bOk = false;
 		res.strErr = "Matrix M1 cannot be inverted.";
@@ -227,7 +226,7 @@ CNResults calc_pop(PopParams& pop)
 
 	ublas::matrix<double> M2 = M1i + G;
 	ublas::matrix<double> M2i;
-	if(!::inverse(M2, M2i))
+	if(!tl::inverse(M2, M2i))
 	{
 		res.bOk = false;
 		res.strErr = "Matrix M2 cannot be inverted.";
@@ -239,22 +238,22 @@ CNResults calc_pop(PopParams& pop)
 	ublas::matrix<double> M2iABt = ublas::prod(M2i, ABt);
 	ublas::matrix<double> MI = ublas::prod(BA, M2iABt);
 
-	MI(1,1) += pop.Q*pop.Q*angstrom*angstrom * pop.sample_mosaic*pop.sample_mosaic /units::si::radians/units::si::radians;
-	MI(2,2) += pop.Q*pop.Q*angstrom*angstrom * sample_mosaic_spread*sample_mosaic_spread /units::si::radians/units::si::radians;
+	MI(1,1) += pop.Q*pop.Q*tl::angstrom*tl::angstrom * pop.sample_mosaic*pop.sample_mosaic /units::si::radians/units::si::radians;
+	MI(2,2) += pop.Q*pop.Q*tl::angstrom*tl::angstrom * sample_mosaic_spread*sample_mosaic_spread /units::si::radians/units::si::radians;
 
 	ublas::matrix<double> M;
-	if(!::inverse(MI, M))
+	if(!tl::inverse(MI, M))
 	{
 		res.bOk = false;
 		res.strErr = "Covariance matrix cannot be inverted.";
 		return res;
 	}
-	res.reso = M*SIGMA2FWHM*SIGMA2FWHM;
+	res.reso = M*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
 	calc_bragg_widths(pop, res);
 	calc_pop_vol(pop, res);
 
-	if(is_nan_or_inf(res.dR0) || is_nan_or_inf(res.reso))
+	if(tl::is_nan_or_inf(res.dR0) || tl::is_nan_or_inf(res.reso))
 	{
 		res.strErr = "Invalid result.";
 		res.bOk = false;

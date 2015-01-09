@@ -18,8 +18,8 @@
 #include "ui/ui_reso.h"
 #include "cn.h"
 #include "pop.h"
-#include "helper/linalg.h"
-#include "helper/xml.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/file/xml.h"
 #include "helper/plotgl.h"
 #include "ellipse.h"
 #include "dialogs/RecipParamDlg.h"
@@ -96,7 +96,7 @@ public slots:
 	void RealParamsChanged(const RealParams& parms);
 
 public:
-	void Load(Xml& xml, const std::string& strXmlRoot);
+	void Load(tl::Xml& xml, const std::string& strXmlRoot);
 	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 
 signals:

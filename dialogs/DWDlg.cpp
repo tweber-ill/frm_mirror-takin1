@@ -5,11 +5,15 @@
  */
 
 #include "DWDlg.h"
-#include "../helper/string.h"
-#include "../helper/neutrons.hpp"
+
+#include "../tlibs/string/string.h"
+#include "../tlibs/math/neutrons.hpp"
 
 #include <boost/units/io.hpp>
 #include <qwt_picker_machine.h>
+
+namespace units = boost::units;
+namespace co = boost::units::si::constants::codata;
 
 
 DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
@@ -117,20 +121,20 @@ void DWDlg::Calc()
 	bool bHasZetaSq = 0;
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
-		units::quantity<units::si::wavenumber> Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / angstrom;
+		units::quantity<units::si::wavenumber> Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
 		double dDWF = 0.;
-		auto zetasq = 1.*angstrom*angstrom;
+		auto zetasq = 1.*tl::angstrom*tl::angstrom;
 
 		if(T <= T_D)
-			dDWF = ::debye_waller_low_T(T_D, T, M, Q, &zetasq);
+			dDWF = tl::debye_waller_low_T(T_D, T, M, Q, &zetasq);
 		else
-			dDWF = ::debye_waller_high_T(T_D, T, M, Q, &zetasq);
+			dDWF = tl::debye_waller_high_T(T_D, T, M, Q, &zetasq);
 
-		m_vecQ.push_back(Q * angstrom);
+		m_vecQ.push_back(Q * tl::angstrom);
 
 		if(!bHasZetaSq)
 		{
-			std::string strZetaSq = var_to_str(double(units::sqrt(zetasq) / angstrom));
+			std::string strZetaSq = tl::var_to_str(double(units::sqrt(zetasq) / tl::angstrom));
 			editZetaSq->setText(strZetaSq.c_str());
 
 			bHasZetaSq = 1;

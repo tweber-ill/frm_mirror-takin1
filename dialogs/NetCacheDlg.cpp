@@ -5,8 +5,8 @@
  */
 
 #include "NetCacheDlg.h"
-#include "../helper/string.h"
-#include "../helper/flags.h"
+#include "../tlibs/string/string.h"
+#include "../tlibs/helper/flags.h"
 #include <chrono>
 #include <iostream>
 
@@ -120,7 +120,7 @@ void NetCacheDlg::UpdateAge(int iRow)
 	QTableWidgetItem *pItem = tableCache->item(iRow, 2);
 	if(!pItemTimestamp || !pItem) return;
 
-	double dTimestamp = str_to_var<double, std::string>(pItemTimestamp->text().toStdString());
+	double dTimestamp = tl::str_to_var<double, std::string>(pItemTimestamp->text().toStdString());
 	double dNow = std::chrono::system_clock::now().time_since_epoch().count();
 	dNow *= double(std::chrono::system_clock::period::num) / double(std::chrono::system_clock::period::den);
 	double dAgeS = dNow - dTimestamp;

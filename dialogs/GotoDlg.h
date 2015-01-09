@@ -11,8 +11,8 @@
 #include <QtCore/QSettings>
 #include "../ui/ui_goto.h"
 
-#include "../helper/lattice.h"
-#include "../helper/linalg.h"
+#include "../tlibs/math/lattice.h"
+#include "../tlibs/math/linalg.h"
 #include "../tools/taz/tasoptions.h"
 #include "RecipParamDlg.h"
 
@@ -30,7 +30,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		QSettings *m_pSettings = 0;
 
 		ublas::vector<double> m_vec1, m_vec2;
-		Lattice<double> m_lattice;
+		tl::Lattice<double> m_lattice;
 		RecipParams m_paramsRecip;
 		bool m_bHasParamsRecip = 0;
 
@@ -56,7 +56,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		void CalcSample();
 
 	public:
-		void SetLattice(const Lattice<double>& lattice) { m_lattice = lattice; }
+		void SetLattice(const tl::Lattice<double>& lattice) { m_lattice = lattice; }
 		void SetScatteringPlane(const ublas::vector<double>& vec1, const ublas::vector<double>& vec2)
 		{ m_vec1 = vec1; m_vec2 = vec2; }
 

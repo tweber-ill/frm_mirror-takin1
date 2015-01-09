@@ -7,11 +7,11 @@
 #ifndef __TAZ_SCATT_TRIAG_H__
 #define __TAZ_SCATT_TRIAG_H__
 
-#include "helper/linalg.h"
-#include "helper/lattice.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/lattice.h"
 #include "helper/spacegroup.h"
-#include "helper/bz.h"
-#include "helper/neutrons.hpp"
+#include "tlibs/math/bz.h"
+#include "tlibs/math/neutrons.hpp"
 
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsView>
@@ -92,12 +92,12 @@ class ScatteringTriangle : public QGraphicsItem
 		double m_dPlaneDistTolerance = 0.01;
 		int m_iMaxPeaks = 7;
 
-		Lattice<double> m_lattice, m_recip, m_recip_unrot;
+		tl::Lattice<double> m_lattice, m_recip, m_recip_unrot;
 		ublas::matrix<double> m_matPlane, m_matPlane_inv;
 		std::vector<RecipPeak*> m_vecPeaks;
 
 		bool m_bShowBZ = 1;
-		Brillouin2D<double> m_bz;
+		tl::Brillouin2D<double> m_bz;
 
 		double m_dAngleRot = 0.;
 
@@ -138,9 +138,9 @@ class ScatteringTriangle : public QGraphicsItem
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_recip.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const Lattice<double>& lattice,
-						const Lattice<double>& recip, const Lattice<double>& recip_unrot,
-						const Plane<double>& plane,
+		void CalcPeaks(const tl::Lattice<double>& lattice,
+						const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
+						const tl::Plane<double>& plane,
 						const SpaceGroup* pSpaceGroup=0);
 
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
@@ -222,9 +222,9 @@ class ScatteringTriangleScene : public QGraphicsScene
 		// all parameters
 		void paramsChanged(const RecipParams& parms);
 
-		void spurionInfo(const ElasticSpurion& spuris,
-					const std::vector<InelasticSpurion>& vecInelCKI,
-					const std::vector<InelasticSpurion>& vecInelCKF);
+		void spurionInfo(const tl::ElasticSpurion& spuris,
+					const std::vector<tl::InelasticSpurion>& vecInelCKI,
+					const std::vector<tl::InelasticSpurion>& vecInelCKF);
 
 		void coordsChanged(double dh, double dk, double dl);
 

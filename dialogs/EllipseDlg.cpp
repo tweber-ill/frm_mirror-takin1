@@ -5,8 +5,8 @@
  */
 
 #include "EllipseDlg.h"
-#include "../helper/spec_char.h"
-#include "../helper/flags.h"
+#include "../tlibs/string/spec_char.h"
+#include "../tlibs/helper/flags.h"
 
 #include <qwt_picker_machine.h>
 #include <future>
@@ -154,7 +154,7 @@ void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vecto
 		}
 	};
 
-	static const std::string strDeg = get_spec_char_utf8("deg");
+	static const std::string strDeg = tl::get_spec_char_utf8("deg");
 
 
 	//Xml xmlparams;

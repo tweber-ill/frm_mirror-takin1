@@ -5,8 +5,8 @@
  */
 
 #include "nicos.h"
-#include "helper/string.h"
-#include "helper/log.h"
+#include "tlibs/string/string.h"
+#include "tlibs/helper/log.h"
 
 
 NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
@@ -115,7 +115,7 @@ void NicosCache::RegisterKeys()
 
 void NicosCache::slot_connected(const std::string& strHost, const std::string& strSrv)
 {
-	log_info("Connected to ", strHost, " on port ", strSrv, ".");
+	tl::log_info("Connected to ", strHost, " on port ", strSrv, ".");
 
 	QString qstrHost = strHost.c_str();
 	QString qstrSrv = strSrv.c_str();
@@ -127,7 +127,7 @@ void NicosCache::slot_connected(const std::string& strHost, const std::string& s
 
 void NicosCache::slot_disconnected(const std::string& strHost, const std::string& strSrv)
 {
-	log_info("Disconnected from ", strHost, " on port ", strSrv, ".");
+	tl::log_info("Disconnected from ", strHost, " on port ", strSrv, ".");
 
 	emit disconnected();
 }
@@ -145,7 +145,7 @@ static std::vector<double> get_py_array(const std::string& str)
 		return vecArr;
 
 	std::string strArr = str.substr(iStart+1, iEnd-iStart-1);
-	::get_tokens<double, std::string>(strArr, ",", vecArr);
+	tl::get_tokens<double, std::string>(strArr, ",", vecArr);
 
 	return vecArr;
 }
@@ -166,15 +166,15 @@ void NicosCache::slot_receive(const std::string& str)
 {
 	//log_debug("Received: ", str);
 
-	std::pair<std::string, std::string> pairTimeVal = ::split_first<std::string>(str, "@", 1);
-	std::pair<std::string, std::string> pairKeyVal = ::split_first<std::string>(pairTimeVal.second, "=", 1);
+	std::pair<std::string, std::string> pairTimeVal = tl::split_first<std::string>(str, "@", 1);
+	std::pair<std::string, std::string> pairKeyVal = tl::split_first<std::string>(pairTimeVal.second, "=", 1);
 	if(pairKeyVal.second == "")
 	{
-		pairKeyVal = ::split_first<std::string>(pairTimeVal.second, "!", 1);
+		pairKeyVal = tl::split_first<std::string>(pairTimeVal.second, "!", 1);
 		if(pairKeyVal.second != "")
-			log_warn("Value \"", pairKeyVal.second, "\" for \"", pairKeyVal.first, "\" is marked as invalid.");
+			tl::log_warn("Value \"", pairKeyVal.second, "\" for \"", pairKeyVal.first, "\" is marked as invalid.");
 		else
-			log_err("Invalid net reply: \"", str, "\"");
+			tl::log_err("Invalid net reply: \"", str, "\"");
 	}
 
 
@@ -183,7 +183,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 
 	const std::string& strTime = pairTimeVal.first;
-	double dTimestamp = str_to_var<double>(strTime);
+	double dTimestamp = tl::str_to_var<double>(strTime);
 
 	if(strVal.length() == 0)
 		return;
@@ -248,27 +248,27 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strMono2Theta)
 	{
-		triag.dMonoTwoTheta = str_to_var<double>(strVal) /180.*M_PI;
+		triag.dMonoTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
 		triag.bChangedMonoTwoTheta = 1;
 	}
 	else if(strKey == m_strAna2Theta)
 	{
-		triag.dAnaTwoTheta = str_to_var<double>(strVal) /180.*M_PI;
+		triag.dAnaTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
 		triag.bChangedAnaTwoTheta = 1;
 	}
 	else if(strKey == m_strSample2Theta)
 	{
-		triag.dTwoTheta = str_to_var<double>(strVal) /180.*M_PI;
+		triag.dTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
 		triag.bChangedTwoTheta = 1;
 	}
 	else if(strKey == m_strMonoD)
 	{
-		triag.dMonoD = str_to_var<double>(strVal);
+		triag.dMonoD = tl::str_to_var<double>(strVal);
 		triag.bChangedMonoD = 1;
 	}
 	else if(strKey == m_strAnaD)
 	{
-		triag.dAnaD = str_to_var<double>(strVal);
+		triag.dAnaD = tl::str_to_var<double>(strVal);
 		triag.bChangedAnaD = 1;
 	}
 	else if(strKey == m_strSampleName)
@@ -284,9 +284,9 @@ void NicosCache::slot_receive(const std::string& str)
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 
-		double dOm = str_to_var<double>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
-		double dTh_aux = str_to_var<double>(m_mapCache[m_strSampleTheta_aux].strVal) /180.*M_PI;
-		double dPsi = str_to_var<double>(m_mapCache[m_strSamplePsi0].strVal) /180.*M_PI;
+		double dOm = tl::str_to_var<double>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
+		double dTh_aux = tl::str_to_var<double>(m_mapCache[m_strSampleTheta_aux].strVal) /180.*M_PI;
+		double dPsi = tl::str_to_var<double>(m_mapCache[m_strSamplePsi0].strVal) /180.*M_PI;
 
 		const std::string& strSthAlias = m_mapCache[m_strSampleTheta_aux_alias].strVal;
 

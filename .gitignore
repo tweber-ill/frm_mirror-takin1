@@ -23,3 +23,6 @@ takin.mk
 montereso.txt
 montereso.mk
 Makefile
+tlibs-master.tar.bz2
+tlibs/*
+tlibs

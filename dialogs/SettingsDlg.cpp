@@ -5,9 +5,9 @@
  */
 
 #include "SettingsDlg.h"
-#include "../helper/string.h"
-#include "../helper/log.h"
-#include "../helper/gl.h"
+#include "../tlibs/string/string.h"
+#include "../tlibs/helper/log.h"
+#include "../tlibs/gfx/gl.h"
 
 #include <QtGui/QFileDialog>
 #include <iostream>
@@ -24,10 +24,10 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectFont()));
 
 
-	std::string strDefFont = FontMap::get_font_file("dejavusansmono.ttf");
+	std::string strDefFont = tl::FontMap::get_font_file("dejavusansmono.ttf");
 	if(strDefFont == "")
 	{
-		log_warn("Default gl font not available.");
+		tl::log_warn("Default gl font not available.");
 		strDefFont = "/usr/share/fonts/dejavu/DejaVuSansMono.ttf";
 	}
 
@@ -124,7 +124,7 @@ void SettingsDlg::SelectFont()
 		//m_pSettings->setValue("gl/font", strFile);
 		editGLFont->setText(strFile);
 
-		std::string strDir = get_dir(strFile.toStdString());
+		std::string strDir = tl::get_dir(strFile.toStdString());
 		m_pSettings->setValue("gl/last_font_dir", QString(strDir.c_str()));
 	}
 }

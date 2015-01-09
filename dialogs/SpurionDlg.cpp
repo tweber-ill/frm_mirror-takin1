@@ -5,12 +5,15 @@
  */
 
 #include "SpurionDlg.h"
-#include "../helper/neutrons.hpp"
-#include "../helper/string.h"
-#include "../helper/spec_char.h"
+#include "../tlibs/math/neutrons.hpp"
+#include "../tlibs/string/string.h"
+#include "../tlibs/string/spec_char.h"
 
 #include <sstream>
 #include <iostream>
+
+namespace units = boost::units;
+namespace co = boost::units::si::constants::codata;
 
 
 SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
@@ -70,8 +73,8 @@ void SpurionDlg::Calc()
 			else
 				iOrderMono = iOrder;
 
-			double dE_sp = get_inelastic_spurion(bFixedEi, dE*one_meV,
-										iOrderMono, iOrderAna) / one_meV;
+			double dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*tl::one_meV,
+										iOrderMono, iOrderAna) / tl::one_meV;
 
 			if(dE_sp != 0.)
 			{
@@ -89,8 +92,8 @@ void SpurionDlg::Calc()
 		for(unsigned int iOrderMono=1; iOrderMono<=iMaxOrder; ++iOrderMono)
 		for(unsigned int iOrderAna=1; iOrderAna<=iMaxOrder; ++iOrderAna)
 		{
-			double dE_sp = get_inelastic_spurion(bFixedEi, dE*one_meV,
-										iOrderMono, iOrderAna) / one_meV;
+			double dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*tl::one_meV,
+										iOrderMono, iOrderAna) / tl::one_meV;
 
 			if(dE_sp != 0.)
 			{
@@ -104,8 +107,8 @@ void SpurionDlg::Calc()
 		}
 	}
 
-	const std::string& strDelta = get_spec_char_utf8("Delta");
-	const std::string& strBullet = get_spec_char_utf8("bullet");
+	const std::string& strDelta = tl::get_spec_char_utf8("Delta");
+	const std::string& strBullet = tl::get_spec_char_utf8("bullet");
 
 	std::ostringstream ostr;
 	ostr << "Spurious inelastic signals for " + strDelta + "E = \n\n";
@@ -115,7 +118,7 @@ void SpurionDlg::Calc()
 		const std::string& strInfo = vecInfo[i];
 
 		ostr << "  " << strBullet << " ";
-		ostr << ::var_to_str(dE_Sp, 4) << " meV";
+		ostr << tl::var_to_str(dE_Sp, 4) << " meV";
 		ostr << " (" << strInfo << ")\n";
 	}
 
@@ -127,13 +130,13 @@ void SpurionDlg::paramsChanged(const RecipParams& parms)
 	typedef units::quantity<units::si::wavenumber> wavenumber;
 	typedef units::quantity<units::si::energy> energy;
 
-	wavenumber ki = parms.dki / angstrom;
-	wavenumber kf = parms.dkf / angstrom;
-	energy Ei = k2E(ki);
-	energy Ef = k2E(kf);
+	wavenumber ki = parms.dki / tl::angstrom;
+	wavenumber kf = parms.dkf / tl::angstrom;
+	energy Ei = tl::k2E(ki);
+	energy Ef = tl::k2E(kf);
 
-	m_dEi = Ei / one_meV;
-	m_dEf = Ef / one_meV;
+	m_dEi = Ei / tl::one_meV;
+	m_dEf = Ef / tl::one_meV;
 
 	Calc();
 }

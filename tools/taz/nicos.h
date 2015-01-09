@@ -7,7 +7,7 @@
 #ifndef __NICOS_H__
 #define __NICOS_H__
 
-#include "helper/tcp.h"
+#include "tlibs/net/tcp.h"
 #include "tasoptions.h"
 
 #include "../../dialogs/NetCacheDlg.h"
@@ -25,7 +25,7 @@ class NicosCache : public QObject
 	protected:
 		QSettings* m_pSettings = 0;
 
-		TcpClient m_tcp;
+		tl::TcpClient m_tcp;
 		std::vector<std::string> m_vecKeys;
 		t_mapCacheVal m_mapCache;
 

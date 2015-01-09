@@ -5,8 +5,8 @@
  */
 
 #include "res.h"
-#include "helper/log.h"
-#include "helper/string.h"
+#include "tlibs/helper/log.h"
+#include "tlibs/string/string.h"
 #include "dialogs/EllipseDlg.h"
 
 #include <fstream>
@@ -20,10 +20,10 @@ static void add_param(std::unordered_map<std::string, std::string>& map, const s
 {
 	std::string str = strLine.substr(1);
 
-	std::pair<std::string, std::string> pair = split_first<std::string>(str, ":", true);
+	std::pair<std::string, std::string> pair = tl::split_first<std::string>(str, ":", true);
 	if(pair.first == "Param")
 	{
-		std::pair<std::string, std::string> pairParam = split_first<std::string>(pair.second, "=", true);
+		std::pair<std::string, std::string> pairParam = tl::split_first<std::string>(pair.second, "=", true);
 		pair.first = pair.first + "_" + pairParam.first;
 		pair.second = pairParam.second;
 	}
@@ -54,7 +54,7 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 	std::ifstream ifstr(pcFile);
 	if(!ifstr.is_open())
 	{
-		log_err("Cannot open \"", pcFile, "\".");
+		tl::log_err("Cannot open \"", pcFile, "\".");
 		return 0;
 	}
 
@@ -69,7 +69,7 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 			for(unsigned int j=0; j<4; ++j)
 				ifstr >> cov(i,j);
 
-		reso.bHasRes = inverse(cov, res);
+		reso.bHasRes = tl::inverse(cov, res);
 	}
 	else if(ft == FileType::RESOLUTION_MATRIX)
 	{
@@ -77,12 +77,12 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 			for(unsigned int j=0; j<4; ++j)
 				ifstr >> res(i,j);
 
-		reso.bHasRes = inverse(res, cov);
+		reso.bHasRes = tl::inverse(res, cov);
 	}
 
-	log_info("Covariance matrix: ", cov);
-	log_info("Resolution matrix: ", res);
-	log_info("Matrix valid: ", reso.bHasRes);
+	tl::log_info("Covariance matrix: ", cov);
+	tl::log_info("Resolution matrix: ", res);
+	tl::log_info("Matrix valid: ", reso.bHasRes);
 
 	if(reso.bHasRes)
 	{
@@ -91,14 +91,14 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 		dQ.resize(4, 0);
 		reso.Q_avg.resize(4, 0);
 		for(int iQ=0; iQ<4; ++iQ)
-			dQ[iQ] = SIGMA2HWHM/sqrt(res(iQ,iQ));
+			dQ[iQ] = tl::SIGMA2HWHM/sqrt(res(iQ,iQ));
 
 		std::ostringstream ostrVals;
 		ostrVals << "Gaussian HWHM values: ";
 		std::copy(dQ.begin(), dQ.end(), std::ostream_iterator<double>(ostrVals, ", "));
 
-		log_info(ostrVals.str());
-        }
+		tl::log_info(ostrVals.str());
+	}
 
 	return reso.bHasRes;
 }
@@ -110,7 +110,7 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 	std::ifstream ifstr(pcFile);
 	if(!ifstr.is_open())
 	{
-		log_err("Cannot open \"", pcFile, "\".");
+		tl::log_err("Cannot open \"", pcFile, "\".");
 		return 0;
 	}
 
@@ -129,7 +129,7 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 	unsigned int uiNumNeutr = 0;
 	while(std::getline(ifstr, strLine))
 	{
-		trim(strLine);
+		tl::trim(strLine);
 		if(strLine.length()==0)
 			continue;
 		else if(strLine[0]=='#')
@@ -146,13 +146,13 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 			{
 				if(mapParams.at("variables") == "ki_x ki_y ki_z kf_x kf_y kf_z x y z p_i p_f")
 				{
-					log_info("File is a ki, kf list.");
+					tl::log_info("File is a ki, kf list.");
 					ft = FileType::NEUTRON_KIKF_LIST;
 				}
 			}
 			catch(const std::out_of_range& ex)
 			{
-				log_info("File is a Q list.");
+				tl::log_info("File is a Q list.");
 				ft = FileType::NEUTRON_Q_LIST;
 			}
 		}
@@ -196,7 +196,7 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 		++uiNumNeutr;
 	}
 
-	log_info("Number of neutrons in file: ", uiNumNeutr);
+	tl::log_info("Number of neutrons in file: ", uiNumNeutr);
 	//print_map(std::cout, mapParams);
 
 	if(ft == FileType::NEUTRON_Q_LIST)
@@ -209,7 +209,7 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 
 	if(!res.bHasRes)
 	{
-		log_err("Cannot calculate resolution matrix.");
+		tl::log_err("Cannot calculate resolution matrix.");
 		return 0;
 	}
 
@@ -231,7 +231,7 @@ int main(int argc, char **argv)
 	::setlocale(LC_ALL, "C");
 	if(argc <= 1)
 	{
-		log_err("No input file given.");
+		tl::log_err("No input file given.");
 		std::cout << "Usage: " << argv[0] << " [-r,-c] <file>\n" 
 			<< "\t-r\t<file> contains resolution matrix\n"
 			<< "\t-c\t<file> contains covariance matrix\n"
@@ -256,13 +256,13 @@ int main(int argc, char **argv)
 
 	if(ft==FileType::RESOLUTION_MATRIX || ft==FileType::COVARIANCE_MATRIX)
 	{
-		log_info("Loading covariance/resolution matrix from \"", pcFile, "\".");
+		tl::log_info("Loading covariance/resolution matrix from \"", pcFile, "\".");
 		if(!load_mat(pcFile, res, ft))
 			return -1;
 	}
 	else
 	{
-		log_info("Loading neutron list from \"", pcFile, "\".");
+		tl::log_info("Loading neutron list from \"", pcFile, "\".");
 		if(!load_mc_list(pcFile, res))
 			return -1;
 	}

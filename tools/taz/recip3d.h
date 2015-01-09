@@ -9,9 +9,9 @@
 
 #include <QtGui/QDialog>
 #include "helper/plotgl.h"
-#include "helper/linalg.h"
-#include "helper/geo.h"
-#include "helper/lattice.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/geo.h"
+#include "tlibs/math/lattice.h"
 #include "helper/spacegroup.h"
 
 class Recip3DDlg : public QDialog
@@ -25,9 +25,9 @@ public:
 	Recip3DDlg(QWidget* pParent, QSettings* = 0);
 	virtual ~Recip3DDlg();
 
-	void CalcPeaks(const Lattice<double>& lattice,
-					const Lattice<double>& recip, const Lattice<double>& recip_unrot,
-					const Plane<double>& plane,
+	void CalcPeaks(const tl::Lattice<double>& lattice,
+					const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
+					const tl::Plane<double>& plane,
 					const SpaceGroup* pSpaceGroup=0);
 
 	void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }

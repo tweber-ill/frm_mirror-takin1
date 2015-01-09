@@ -5,10 +5,10 @@
  */
  
 #include "PowderDlg.h"
-#include "../helper/lattice.h"
-#include "../helper/neutrons.hpp"
-#include "../helper/linalg.h"
-#include "../helper/string.h"
+#include "../tlibs/math/lattice.h"
+#include "../tlibs/math/neutrons.hpp"
+#include "../tlibs/math/linalg.h"
+#include "../tlibs/string/string.h"
 
 #include <vector>
 #include <string>
@@ -18,6 +18,9 @@
 #include <QtGui/QFileDialog>
 #include <QtGui/QMessageBox>
 
+namespace ublas = boost::numeric::ublas;
+namespace units = boost::units;
+namespace co = boost::units::si::constants::codata;
 
 struct PowderLine
 {
@@ -81,8 +84,8 @@ void PowderDlg::CalcPeaks()
 	const double dLam = editLam->text().toDouble();
 	const int iOrder = spinOrder->value();
 	
-	Lattice<double> lattice(dA, dB, dC, dAlpha, dBeta, dGamma);
-	Lattice<double> recip = lattice.GetRecip();
+	tl::Lattice<double> lattice(dA, dB, dC, dAlpha, dBeta, dGamma);
+	tl::Lattice<double> recip = lattice.GetRecip();
 	
 	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 	
@@ -97,10 +100,10 @@ void PowderDlg::CalcPeaks()
 
 				ublas::vector<double> vecBragg = recip.GetPos(ih, ik, il);
 				double dQ = ublas::norm_2(vecBragg);
-				if(is_nan_or_inf<double>(dQ)) continue;
+				if(tl::is_nan_or_inf<double>(dQ)) continue;
 				
-				double dAngle = bragg_recip_twotheta(dQ/angstrom, dLam*angstrom, 1.) / units::si::radians;
-				if(is_nan_or_inf<double>(dAngle)) continue;
+				double dAngle = tl::bragg_recip_twotheta(dQ/tl::angstrom, dLam*tl::angstrom, 1.) / units::si::radians;
+				if(tl::is_nan_or_inf<double>(dAngle)) continue;
 				
 				//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;
 
@@ -123,7 +126,7 @@ void PowderDlg::CalcPeaks()
 	for(auto& pair : mapPeaks)
 	{
 		pair.second.strAngle = pair.first;
-		pair.second.strQ = var_to_str<double>(pair.second.dQ, iPrec);
+		pair.second.strQ = tl::var_to_str<double>(pair.second.dQ, iPrec);
 		
 		vecPowderLines.push_back(&pair.second);
 	}
@@ -320,12 +323,12 @@ void PowderDlg::SavePowder()
 		return;
 
 	std::string strFile = qstrFile.toStdString();
-	std::string strDir = get_dir(strFile);
+	std::string strDir = tl::get_dir(strFile);
 
 	std::map<std::string, std::string> mapConf;
 	Save(mapConf, strXmlRoot);
 
-	bool bOk = Xml::SaveMap(strFile.c_str(), mapConf);
+	bool bOk = tl::Xml::SaveMap(strFile.c_str(), mapConf);
 	if(!bOk)
 		QMessageBox::critical(this, "Error", "Could not save powder file.");
 
@@ -349,9 +352,9 @@ void PowderDlg::LoadPowder()
 
 
 	std::string strFile = qstrFile.toStdString();
-	std::string strDir = get_dir(strFile);
+	std::string strDir = tl::get_dir(strFile);
 
-	Xml xml;
+	tl::Xml xml;
 	if(!xml.Load(strFile.c_str()))
 	{
 		QMessageBox::critical(this, "Error", "Could not load powder file.");
@@ -374,13 +377,13 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 	mapConf[strXmlRoot + "sample/beta"] = editBeta->text().toStdString();
 	mapConf[strXmlRoot + "sample/gamma"] = editGamma->text().toStdString();
 	
-	mapConf[strXmlRoot + "powder/maxhkl"] = var_to_str<int>(spinOrder->value());
+	mapConf[strXmlRoot + "powder/maxhkl"] = tl::var_to_str<int>(spinOrder->value());
 	mapConf[strXmlRoot + "powder/lambda"] = editLam->text().toStdString();
 
 	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
 }
 
-void PowderDlg::Load(Xml& xml, const std::string& strXmlRoot)
+void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 {
 	m_bDontCalc = 1;
 	bool bOk=0;
@@ -397,7 +400,7 @@ void PowderDlg::Load(Xml& xml, const std::string& strXmlRoot)
 	editC->setText(std::to_string(xml.Query<double>((strXmlRoot + "powder/lambda").c_str(), 5., &bOk)).c_str());
 	
 	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
-	trim(strSpaceGroup);
+	tl::trim(strSpaceGroup);
 	if(bOk)
 	{
 		editSpaceGroupsFilter->clear();
