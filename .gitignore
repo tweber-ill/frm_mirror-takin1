@@ -8,6 +8,7 @@
 ui/*.h
 bin/reso
 bin/montereso
+bin/reso
 bin/taz
 bin/takin
 perf.data

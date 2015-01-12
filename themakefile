@@ -57,6 +57,10 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
 	obj/plotgl.o obj/cn.o obj/pop.o obj/ResoDlg.o obj/EllipseDlg3D.o \
 	obj/NetCacheDlg.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
+OBJ_RESO = obj/log.o obj/linalg2.o obj/string.o obj/rand.o \
+       	obj/spec_char.o obj/reso_res_main.o \
+	obj/xml.o obj/cn.o obj/pop.o obj/ResoDlg.o \
+	obj/ellipse.o
 
 
 all: takin montereso
@@ -69,6 +73,10 @@ takin: ${OBJ_COMMON} ${OBJ_TAZ}
 montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
 	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${QT_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
 	strip montereso
+
+reso: ${OBJ_RESO}
+	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
+	strip reso
 
 
 obj/taz_main.o: tools/taz/taz_main.cpp tools/taz/taz.h
@@ -149,6 +157,8 @@ obj/EllipseDlg3D.o: dialogs/EllipseDlg3D.cpp dialogs/EllipseDlg3D.h
 obj/montereso_res.o: tools/montereso/res.cpp tools/montereso/res.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/montereso_res_main.o: tools/montereso/res_main.cpp
+	${CC} ${FLAGS} -c -o $@ $<
+obj/reso_res_main.o: tools/res/res_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 

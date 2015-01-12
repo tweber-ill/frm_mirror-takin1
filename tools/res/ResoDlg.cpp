@@ -590,12 +590,14 @@ void ResoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 
 void ResoDlg::hideEvent(QHideEvent *event)
 {
-	m_pSettings->setValue("reso/wnd_geo", saveGeometry());
+	if(m_pSettings)
+		m_pSettings->setValue("reso/wnd_geo", saveGeometry());
 }
 
 void ResoDlg::showEvent(QShowEvent *event)
 {
-	restoreGeometry(m_pSettings->value("reso/wnd_geo").toByteArray());
+	if(m_pSettings)
+		restoreGeometry(m_pSettings->value("reso/wnd_geo").toByteArray());
 }
 
 void ResoDlg::ResoParamsChanged(const ResoParams& params)
