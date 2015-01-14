@@ -2,6 +2,7 @@
  * Settings
  * @author tweber
  * @date 5-dec-2014
+ * @copyright GPLv2
  */
 
 #ifndef __TAZ_SETTINGS_H__

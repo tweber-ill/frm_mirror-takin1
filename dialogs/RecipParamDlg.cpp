@@ -2,6 +2,7 @@
  * Reciprocal Space Parameters
  * @author tweber
  * @date 26-mar-2014
+ * @copyright GPLv2
  */
 
 #include "RecipParamDlg.h"

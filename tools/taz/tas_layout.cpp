@@ -2,6 +2,7 @@
  * TAS layout
  * @author tweber
  * @date feb-2014
+ * @copyright GPLv2
  */
 
 #include "tas_layout.h"

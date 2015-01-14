@@ -1,8 +1,9 @@
 /*
  * Monte-Carlo resolution calculation
  *
- * Author: Tobias Weber
- * Date: July 2012, Sep. 2014
+ * @author Tobias Weber
+ * @date July 2012, Sep. 2014
+ * @copyright GPLv2
  *
  * (based on the Mcstas' mcresplot perl program (www.mcstas.org)
  * 	and the rescal5 matlab program)

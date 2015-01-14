@@ -2,6 +2,7 @@
  * Cache dialog
  * @author Tobias Weber
  * @date 21-oct-2014
+ * @copyright GPLv2
  */
 
 #ifndef __NET_CACHE_DLG_H__

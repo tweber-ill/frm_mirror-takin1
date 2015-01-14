@@ -2,6 +2,7 @@
  * Connection to Nicos
  * @author tweber
  * @date 27-aug-2014
+ * @copyright GPLv2
  */
 
 #ifndef __NICOS_H__

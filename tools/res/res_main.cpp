@@ -2,6 +2,7 @@
  * reso tool
  * @author tweber
  * @date 2013, 2014
+ * @copyright GPLv2
  */
 #include "ResoDlg.h"
 #include "tlibs/string/spec_char.h"

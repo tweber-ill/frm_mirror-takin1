@@ -162,7 +162,9 @@ int main()
 				qu.enqueueTask(kern, 0, &evtKern);
 			else
 				qu.enqueueNDRangeKernel(kern, ranOffs, ranGlob, ranLoc, 0, &evtKern);
-			qu.enqueueReadBuffer(bufVecOut, 0, 0, sizeof dOut, dOut, 0, &evtOut);
+
+			std::vector<cl::Event> vecEvts = {evtKern};
+			qu.enqueueReadBuffer(bufVecOut, 0, 0, sizeof dOut, dOut, &vecEvts, &evtOut);
 			evtKern.wait(); evtOut.wait();
 
 			std::cout << "Result: 2 * (1 2 3 4) = ";

@@ -2,6 +2,7 @@
  * Neutron Properties Dialog
  * @author Tobias Weber
  * @date jul-2013, 28-may-2014
+ * @copyright GPLv2
  */
 
 #include "NeutronDlg.h"

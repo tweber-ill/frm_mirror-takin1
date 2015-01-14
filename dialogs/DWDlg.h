@@ -2,6 +2,7 @@
  * Debye-Waller Dialog
  * @author tweber
  * @date 2013, jan-2015
+ * @copyright GPLv2
  */
 
 #ifndef __DWDLG_H__

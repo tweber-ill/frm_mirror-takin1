@@ -2,6 +2,7 @@
  * Montereso
  * @author tweber
  * @date 2012, 22-sep-2014
+ * @copyright GPLv2
  */
 
 #include "res.h"

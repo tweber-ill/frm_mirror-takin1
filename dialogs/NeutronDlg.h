@@ -2,6 +2,7 @@
  * Neutron Properties Dialog (was: old formula dialog)
  * @author Tobias Weber
  * @date jul-2013, 28-may-2014
+ * @copyright GPLv2
  */
 
 #ifndef __NEUTRON_DLG_H__

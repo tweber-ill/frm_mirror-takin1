@@ -2,6 +2,7 @@
  * Spurion Dialog
  * @author Tobias Weber
  * @date 26-may-2014
+ * @copyright GPLv2
  */
 
 #ifndef __SPURION_DLG_H__

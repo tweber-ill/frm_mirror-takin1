@@ -2,6 +2,7 @@
  * Scan sequences
  * @author tweber
  * @date 24-dec-2014
+ * @copyright GPLv2
  */
 
 #ifndef __SEQ_DLG_H__

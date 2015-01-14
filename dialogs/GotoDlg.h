@@ -2,6 +2,7 @@
  * Goto Dialog
  * @author Tobias Weber
  * @date 15-oct-2014
+ * @copyright GPLv2
  */
 
 #ifndef __GOTO_DLG_H__

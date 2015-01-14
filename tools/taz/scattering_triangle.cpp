@@ -2,6 +2,7 @@
  * Scattering Triangle
  * @author tweber
  * @date feb-2014
+ * @copyright GPLv2
  */
 
 #include "tlibs/helper/flags.h"

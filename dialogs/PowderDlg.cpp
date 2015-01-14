@@ -2,6 +2,7 @@
  * Powder Line Dialog
  * @author Tobias Weber
  * @date 2013, 2-dec-2014
+ * @copyright GPLv2
  */
  
 #include "PowderDlg.h"

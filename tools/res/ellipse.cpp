@@ -2,6 +2,7 @@
  * resolution ellipse calculation
  * @author tweber
  * @date 14-may-2013
+ * @copyright GPLv2
  *
  * @desc This is a reimplementation in C++ of the file rc_projs.m of the
  *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
@@ -9,7 +10,6 @@
  */
 
 #include "ellipse.h"
-#include "tlibs/math/linalg.h"
 #include "tlibs/math/linalg2.h"
 #include "tlibs/math/geo.h"
 #include "tlibs/math/quat.h"
@@ -97,6 +97,15 @@ void Ellipse::GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
 
 // --------------------------------------------------------------------------------
 
+template<class T = double>
+static void elli_gauss_int(tl::QuadEllipsoid<T>& quad, unsigned int iIdx)
+{
+	ublas::matrix<T> m_Qint = ellipsoid_gauss_int(quad.GetQ(), iIdx);
+	quad.RemoveElems(iIdx);
+	quad.SetQ(m_Qint);
+}
+
+
 static const std::string g_strLabels[] = {"Q_{para} (1/A)", "Q_{ortho} (1/A)", "Q_z (1/A)", "E (meV)"};
 
 /*
@@ -145,7 +154,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 	if(iInt>-1)
 	{
-		quad.GaussInt(iInt);
+		elli_gauss_int(quad, iInt);
 		Q_offs = tl::remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
@@ -242,7 +251,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 
 	if(iInt>-1)
 	{
-		quad.GaussInt(iInt);
+		elli_gauss_int(quad, iInt);
 		Q_offs = tl::remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;

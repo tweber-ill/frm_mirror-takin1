@@ -2,6 +2,7 @@
  * resolution calculation
  * @author tweber
  * @date may-2013, apr-2014
+ * @copyright GPLv2
  */
 
 // TODO: send locally changed params back to taz

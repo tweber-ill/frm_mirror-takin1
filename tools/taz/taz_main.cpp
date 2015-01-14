@@ -2,6 +2,7 @@
  * TAS tool
  * @author tweber
  * @date feb-2014
+ * @copyright GPLv2
  */
 #include "taz.h"
 #include "tlibs/string/spec_char.h"

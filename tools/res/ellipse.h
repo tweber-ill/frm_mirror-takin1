@@ -2,6 +2,7 @@
  * resolution ellipse calculation
  * @author tweber
  * @date 14-may-2013
+ * @copyright GPLv2
  *
  * @desc This is a reimplementation in C++ of the file rc_projs.m of the
  *    			rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
@@ -19,6 +20,9 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 namespace ublas = boost::numeric::ublas;
+
+#include "tlibs/math/linalg.h"
+
 
 struct Ellipse
 {
@@ -65,5 +69,24 @@ extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const
 
 extern void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 						std::vector<ublas::vector<double>>& vecResult);
+
+
+/*
+ * this is a 1:1 C++ reimplementation of 'rc_int' from 'mcresplot' and 'rescal5'
+ * integrate over row/column iIdx
+ */
+template<class T = double>
+ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, unsigned int iIdx)
+{
+	ublas::vector<T> b(mat.size1());
+	for(std::size_t i=0; i<mat.size1(); ++i)
+		b[i] = 2.*mat(i,iIdx);
+	b = tl::remove_elem(b, iIdx);
+	ublas::matrix<T> bb = ublas::outer_prod(b,b)/4.;
+
+	ublas::matrix<T> m = tl::remove_elems(mat, iIdx);
+	m -= bb/mat(iIdx, iIdx);
+	return m;
+}
 
 #endif

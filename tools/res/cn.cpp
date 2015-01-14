@@ -2,6 +2,7 @@
  * cooper-nathans calculation
  * @author tweber
  * @date 01-may-2013
+ * @copyright GPLv2
  *
  * @desc This is a reimplementation in C++ of the file rc_cnmat.m of the
  *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
@@ -131,8 +132,8 @@ CNResults calc_cn(CNParams& cn)
 	ublas::matrix<double> M1 = ublas::prod(M, V);
 	ublas::matrix<double> N = ublas::prod(ublas::trans(V), M1);
 
-	N = tl::ellipsoid_gauss_int(N, 5);
-	N = tl::ellipsoid_gauss_int(N, 4);
+	N = ellipsoid_gauss_int(N, 5);
+	N = ellipsoid_gauss_int(N, 4);
 
 	ublas::vector<double> vec1 = tl::get_column<ublas::vector<double> >(N, 1);
 	ublas::matrix<double> NP = N - ublas::outer_prod(vec1,vec1)

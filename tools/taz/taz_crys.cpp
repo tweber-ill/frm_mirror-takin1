@@ -2,6 +2,7 @@
  * TAS tool (crystal stuff)
  * @author tweber
  * @date feb-2014
+ * @copyright GPLv2
  */
 
 #include "taz.h"
