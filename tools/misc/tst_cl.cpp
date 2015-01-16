@@ -16,6 +16,7 @@
 static const std::string strAux =
 R"RAW(
 #ifdef USE_DOUBLE
+	#pragma OPENCL EXTENSION cl_khr_fp64: enable
 	typedef double t_real;
 #else
 	typedef float t_real;
@@ -79,7 +80,7 @@ int main()
 					<< vecDevGPU.size() << " GPUs." << std::endl;
 
 		std::vector<cl::Device> vecDevs = vecDevCPU;
-		vecDevCPU.insert(vecDevCPU.end(), vecDevGPU.begin(), vecDevGPU.end());
+		vecDevs.insert(vecDevCPU.end(), vecDevGPU.begin(), vecDevGPU.end());
 
 		for(cl::Device& dev : vecDevs)
 		{
