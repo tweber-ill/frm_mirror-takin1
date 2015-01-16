@@ -28,7 +28,7 @@ else
 #	QWT_LIB = -lqwt-qt4
 endif
 
-INC = 	${QT_INC} ${QWT_INC} -I/usr/local/include -I/usr/include/freetype2 -I/usr/include/lapacke
+INC = ${QT_INC} ${QWT_INC} -I . -I/usr/local/include -I/usr/include/freetype2 -I/usr/include/lapacke
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
 DEFINES += -DUSE_LAPACK
