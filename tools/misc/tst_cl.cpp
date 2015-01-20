@@ -72,27 +72,45 @@ int main()
 					<< strVer << ", " << strProf << std::endl;
 		std::cout << "Extensions: " << strExt << std::endl;
 
-		std::vector<cl::Device> vecDevCPU, vecDevGPU;
+		std::vector<cl::Device> vecDevCPU, vecDevGPU, vecDevAccel;
 		plat.getDevices(CL_DEVICE_TYPE_CPU, &vecDevCPU);
 		plat.getDevices(CL_DEVICE_TYPE_GPU, &vecDevGPU);
+		plat.getDevices(CL_DEVICE_TYPE_ACCELERATOR, &vecDevAccel);
 
-		std::cout << "Found " << vecDevCPU.size() << " CPUs and "
-					<< vecDevGPU.size() << " GPUs." << std::endl;
+		std::cout << "Found " << vecDevCPU.size() << " CPUs, "
+					<< vecDevGPU.size() << " GPUs and " 
+					<< vecDevAccel.size() << " accelerators."
+				<< std::endl;
 
 		std::vector<cl::Device> vecDevs = vecDevCPU;
-		vecDevs.insert(vecDevCPU.end(), vecDevGPU.begin(), vecDevGPU.end());
+		vecDevs.insert(vecDevs.end(), vecDevGPU.begin(), vecDevGPU.end());
+		vecDevs.insert(vecDevs.end(), vecDevAccel.begin(), vecDevAccel.end());
 
 		for(cl::Device& dev : vecDevs)
 		{
-			std::string strDevName;
-			cl_uint iUnits;
+			std::string strDevName, strExtens;
+			cl_uint iUnits, iWIDims;
+			cl_ulong lGlobMem, lLocMem;
+			std::size_t iWGSize;
 			dev.getInfo(CL_DEVICE_NAME, &strDevName);
 			dev.getInfo(CL_DEVICE_MAX_COMPUTE_UNITS, &iUnits);
+			dev.getInfo(CL_DEVICE_EXTENSIONS, &strExtens);
+			dev.getInfo(CL_DEVICE_GLOBAL_MEM_SIZE, &lGlobMem);
+			dev.getInfo(CL_DEVICE_LOCAL_MEM_SIZE, &lLocMem);
+			dev.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &iWGSize);
+			dev.getInfo(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, &iWIDims);
+
+			std::cout << "\n";
 			std::cout << "Device: " << strDevName << std::endl;
+			std::cout << "Extensions: " << strExtens << std::endl;
 			std::cout << "Number of computation units: " << iUnits << std::endl;
+			std::cout << "Global memory: " << lGlobMem << " bytes" << std::endl;
+			std::cout << "Local memory: " << lLocMem << " bytes" << std::endl;
+			std::cout << "Maximum workgroup size: " << iWGSize << std::endl;
+			std::cout << "Maximum workitem dim: " << iWIDims << std::endl;
 
 
-			std::cout << "Executing test kernel." << std::endl;
+			std::cout << "\nExecuting test kernel." << std::endl;
 
 			std::vector<cl::Device> vecDevsCont = {dev};
 			cl::Context cont(vecDevsCont);
