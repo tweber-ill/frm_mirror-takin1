@@ -22,10 +22,13 @@
 namespace ublas = boost::numeric::ublas;
 
 #include "tlibs/math/linalg.h"
+#include "tlibs/math/geo.h"
 
 
 struct Ellipse
-{
+{	
+	tl::QuadEllipsoid<double> quad;
+
 	double phi, slope;
 	double x_hwhm, y_hwhm;
 	double x_offs, y_offs;
@@ -41,6 +44,8 @@ struct Ellipse
 
 struct Ellipsoid
 {
+	tl::QuadEllipsoid<double> quad;
+	
 	//double alpha, beta, gamma;
 	ublas::matrix<double> rot;
 
@@ -53,6 +58,8 @@ struct Ellipsoid
 
 struct Ellipsoid4d
 {
+	tl::QuadEllipsoid<double> quad;
+	
 	ublas::matrix<double> rot;
 
 	double x_hwhm, y_hwhm, z_hwhm, w_hwhm;

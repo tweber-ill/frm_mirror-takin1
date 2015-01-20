@@ -11,7 +11,6 @@
 
 #include "ellipse.h"
 #include "tlibs/math/linalg2.h"
-#include "tlibs/math/geo.h"
 #include "tlibs/math/quat.h"
 #include "tlibs/math/math.h"
 #include "tlibs/math/rand.h"
@@ -118,10 +117,10 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 									const ublas::vector<double>& Q_avg,
 									int iX, int iY, int iInt, int iRem1, int iRem2)
 {
-	tl::QuadEllipsoid<double> quad(4);
-	quad.SetQ(reso);
-
 	Ellipse ell;
+	ell.quad.SetDim(4);
+	ell.quad.SetQ(reso);
+
 	ell.x_offs = ell.y_offs = 0.;
 
 	// labels only valid for non-rotated system
@@ -133,7 +132,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 	if(iRem1>-1)
 	{
-		quad.RemoveElems(iRem1);
+		ell.quad.RemoveElems(iRem1);
 		Q_offs = tl::remove_elem(Q_offs, iRem1);
 
 		if(iInt>=iRem1) --iInt;
@@ -144,7 +143,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 	if(iRem2>-1)
 	{
-		quad.RemoveElems(iRem2);
+		ell.quad.RemoveElems(iRem2);
 		Q_offs = tl::remove_elem(Q_offs, iRem2);
 
 		if(iInt>=iRem2) --iInt;
@@ -154,19 +153,18 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 	if(iInt>-1)
 	{
-		elli_gauss_int(quad, iInt);
+		elli_gauss_int(ell.quad, iInt);
 		Q_offs = tl::remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
 		if(iY>=iInt) --iY;
 	}
 
-	ublas::matrix<double> res_mat0 = quad.GetQ();
-
 	std::vector<double> evals;
 	ublas::matrix<double> matRot;
-	quad.GetPrincipalAxes(matRot, evals);
-	quad.SetQ(tl::diag_matrix(evals));
+	
+	tl::QuadEllipsoid<double> quad(2);
+	ell.quad.GetPrincipalAxes(matRot, evals, &quad);
 
 	ell.phi = tl::rotation_angle(matRot)[0];
 
@@ -204,6 +202,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 #ifndef NDEBUG
 	// sanity check, see Shirane p. 267
+	ublas::matrix<double> res_mat0 = ell.quad.GetQ();
 	double dMyPhi = ell.phi/M_PI*180.;
 	double dPhiShirane = 0.5*atan(2.*res_mat0(0,1) / (res_mat0(0,0)-res_mat0(1,1))) / M_PI*180.;
 	if(!tl::float_equal(dMyPhi, dPhiShirane, 0.01)
@@ -224,10 +223,11 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 							const ublas::vector<double>& Q_avg,
 							int iX, int iY, int iZ, int iInt, int iRem)
 {
-	tl::QuadEllipsoid<double> quad(4);
-	quad.SetQ(reso);
-
 	Ellipsoid ell;
+	
+	ell.quad.SetDim(4);
+	ell.quad.SetQ(reso);
+
 	ell.x_offs = ell.y_offs = ell.z_offs = 0.;
 
 	// labels only valid for non-rotated system
@@ -240,7 +240,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 
 	if(iRem>-1)
 	{
-		quad.RemoveElems(iRem);
+		ell.quad.RemoveElems(iRem);
 		Q_offs = tl::remove_elem(Q_offs, iRem);
 
 		if(iInt>=iRem) --iInt;
@@ -251,7 +251,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 
 	if(iInt>-1)
 	{
-		elli_gauss_int(quad, iInt);
+		elli_gauss_int(ell.quad, iInt);
 		Q_offs = tl::remove_elem(Q_offs, iInt);
 
 		if(iX>=iInt) --iX;
@@ -260,9 +260,9 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	}
 
 	std::vector<double> evals;
-	quad.GetPrincipalAxes(ell.rot, evals);
-	quad.SetQ(tl::diag_matrix(evals));
-
+	tl::QuadEllipsoid<double> quad(3);
+	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
+	
 	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
 	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
 	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
@@ -280,13 +280,13 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg)
 {
 	Ellipsoid4d ell;
-	tl::QuadEllipsoid<double> quad(4);
-	quad.SetQ(reso);
+	ell.quad.SetDim(4);
+	ell.quad.SetQ(reso);
 
 	std::vector<double> evals;
-	quad.GetPrincipalAxes(ell.rot, evals);
-	quad.SetQ(tl::diag_matrix(evals));
-
+	tl::QuadEllipsoid<double> quad(4);
+	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
+	
 	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
 	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
 	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
