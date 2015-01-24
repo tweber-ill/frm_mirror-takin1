@@ -1204,9 +1204,11 @@ void TazDlg::ShowAbout()
 	strAbout += strBoost.c_str();
 	strAbout += "    \t" + strArrow + " http://www.boost.org\n";
 
+#ifndef NO_LAPACK
 	strAbout += strBullet + " ";
 	strAbout += "Uses Lapack/e version 3";
 	strAbout += "    \t" + strArrow + " http://www.netlib.org/lapack\n";
+#endif
 
 	strAbout += strBullet + " ";
 	strAbout += "Uses TLIBS version " + QString(TLIBS_VERSION);

@@ -162,9 +162,14 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 	std::vector<double> evals;
 	ublas::matrix<double> matRot;
-	
+
 	tl::QuadEllipsoid<double> quad(2);
 	ell.quad.GetPrincipalAxes(matRot, evals, &quad);
+
+	/*std::cout << "matrix: " << ell.quad.GetQ() << std::endl;
+	for(double dEval : evals)
+		std::cout << "Evals: " << dEval << ", ";
+	std::cout << std::endl;*/
 
 	ell.phi = tl::rotation_angle(matRot)[0];
 
