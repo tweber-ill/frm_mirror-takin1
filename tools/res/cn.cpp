@@ -145,8 +145,11 @@ CNResults calc_cn(CNParams& cn)
 
 	res.reso = NP;
 
+
+	// placeholder: volume of ellipsoid
+	res.dR0 = tl::get_ellipsoid_volume(res.reso);
+
 	calc_bragg_widths(cn, res);
-	calc_cn_vol(cn, res);
 
 	if(tl::is_nan_or_inf(res.dR0) || tl::is_nan_or_inf(res.reso))
 	{
@@ -214,12 +217,4 @@ bool calc_tas_angles(CNParams& cn, CNResults& res)
 	}
 
 	return true;
-}
-
-
-// TODO: implement one of the more modern algos
-void calc_cn_vol(CNParams& cn, CNResults& res)
-{
-	// placeholder: volume of ellipsoid
-	res.dR0 = tl::get_ellipsoid_volume(res.reso);
 }

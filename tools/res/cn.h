@@ -90,6 +90,5 @@ struct CNResults
 extern CNResults calc_cn(CNParams& cn);
 extern bool calc_tas_angles(CNParams& cn, CNResults& res);
 extern void calc_bragg_widths(CNParams& cn, CNResults& res);
-extern void calc_cn_vol(CNParams& cn, CNResults& res);
 
 #endif
