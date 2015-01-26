@@ -1,0 +1,70 @@
+Licenses for external libraries
+===============================
+
+
+-------------------------------------------------------------------------------- 
+Boost
+
+Copyright Beman Dawes, David Abrahams, 1998-2005.
+Copyright Rene Rivera 2004-2007.
+
+License: Boost Software License version 1.0
+URL: http://www.boost.org
+--------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------- 
+Rescal
+
+Copyright (C) 1998 Zinkin, McMorrow, Tennant, Farhi, and Wildes.
+
+License: GNU GPL version 2 
+URL: https://www.ill.eu/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/#c4703 
+--------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------- 
+Qt
+
+Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+
+License: GNU LGPL version 2.1 or GNU GPL version 3.0
+URL: http://www.qt.io
+--------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------- 
+Qwt
+
+Copyright (C) 1997 Josef Wilgen
+Copyright (C) 2002 Uwe Rathmann
+
+License: Qwt License Version 1.0
+URL: http://qwt.sourceforge.net
+--------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------- 
+Lapack & Lapacke
+
+Copyright (c) 1992-2013 The University of Tennessee and The University
+                        of Tennessee Research Foundation.  All rights
+                        reserved.
+Copyright (c) 2000-2013 The University of California Berkeley. All
+                        rights reserved.
+Copyright (c) 2006-2013 The University of Colorado Denver.  All rights
+                        reserved.
+
+License: modified BSD license (http://www.netlib.org/lapack/LICENSE.txt)
+URL: http://www.netlib.org/lapack
+--------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------- 
+NICOS
+
+Copyright (c) 2009-2015 by the NICOS contributors
+
+License: GNU GPL version 2
+URL: http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos-core.git/
+--------------------------------------------------------------------------------
