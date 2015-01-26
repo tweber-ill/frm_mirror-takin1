@@ -69,7 +69,7 @@ CNResults calc_pop(PopParams& pop)
 	ublas::matrix<double> C = ublas::zero_matrix<double>(4,8);
 	C(2,5) = C(2,4) = C(0,1) = C(0,0) = 0.5;
 	C(1,2) = 0.5/units::sin(pop.thetam);
-	/*C(1,3)*/C(2,2) = -0.5/units::sin(pop.thetam);
+	/*C(1,3)*/C(2,2) = -0.5/units::sin(pop.thetam);		// seems to be wrong in rescal5, Popovici says C(2,2), not C(1,3)
 	C(3,6) = 0.5/units::sin(pop.thetaa);
 	C(3,7) = -0.5/units::sin(pop.thetaa);
 
@@ -98,12 +98,14 @@ CNResults calc_pop(PopParams& pop)
 	B(3,3) = -2.*pop.kf*tl::angstrom * tl::KSQ2E;
 
 
-
+	// S matrix, [pop75], Appendix 2
+	// mono
 	ublas::matrix<double> S1I = ublas::zero_matrix<double>(3,3);
 	S1I(0,0) = 1./12. * pop.mono_thick*pop.mono_thick /cm/cm;
 	S1I(1,1) = 1./12. * pop.mono_w*pop.mono_w /cm/cm;
 	S1I(2,2) = 1./12. * pop.mono_h*pop.mono_h /cm/cm;
 
+	// ana
 	ublas::matrix<double> S3I = ublas::zero_matrix<double>(3,3);
 	S3I(0,0) = 1./12. * pop.ana_thick*pop.ana_thick /cm/cm;
 	S3I(1,1) = 1./12. * pop.ana_w*pop.ana_w /cm/cm;
@@ -113,6 +115,7 @@ CNResults calc_pop(PopParams& pop)
 	double dMult = 1./12.;
 	if(!pop.bSampleCub) dMult = 1./16.;
 
+	// sample
 	ublas::matrix<double> S2I = ublas::zero_matrix<double>(3,3);
 	S2I(0,0) = dMult * pop.sample_w_perpq *pop.sample_w_perpq /cm/cm;
 	S2I(1,1) = dMult * pop.sample_w_q*pop.sample_w_q /cm/cm;
@@ -164,16 +167,16 @@ CNResults calc_pop(PopParams& pop)
 				(1./(pop.dist_src_mono/cm) +
 				 1./(pop.dist_mono_sample/cm) -
 				 2.*dCurvMonoH/(units::sin(pop.thetam)));
-	T(0,5) = 0.5 * units::sin(pop.thetas) / (pop.dist_mono_sample/cm);
-	T(0,6) = 0.5 * units::cos(pop.thetas)/(pop.dist_mono_sample/cm);
+	T(0,5) = 0.5 * units::sin(0.5*pop.twotheta) / (pop.dist_mono_sample/cm);
+	T(0,6) = 0.5 * units::cos(0.5*pop.twotheta) / (pop.dist_mono_sample/cm);
 	T(1,1) = -0.5/(pop.dist_src_mono/cm * units::sin(pop.thetam));
 	T(1,4) = 0.5 * (1./(pop.dist_src_mono/cm) +
 						1./(pop.dist_mono_sample/cm) -
 						2.*units::sin(pop.thetam)*dCurvMonoV)
 					/ (units::sin(pop.thetam));
 	T(1,7) = -0.5/(pop.dist_mono_sample/cm * units::sin(pop.thetam));
-	T(2,5) = 0.5*units::sin(pop.thetas) / (pop.dist_sample_ana/cm);
-	T(2,6) = -0.5*units::cos(pop.thetas) / (pop.dist_sample_ana/cm);
+	T(2,5) = 0.5*units::sin(0.5*pop.twotheta) / (pop.dist_sample_ana/cm);
+	T(2,6) = -0.5*units::cos(0.5*pop.twotheta) / (pop.dist_sample_ana/cm);
 	T(2,8) = 0.5*units::cos(pop.thetaa) * (1./(pop.dist_ana_det/cm) -
 						1/(pop.dist_sample_ana/cm));
 	T(2,9) = 0.5*units::sin(pop.thetaa) * (
@@ -196,14 +199,14 @@ CNResults calc_pop(PopParams& pop)
 	D(0,3) = sin(pop.thetam) / (pop.dist_src_mono/cm);
 	D(1,2) = cos(pop.thetam) / (pop.dist_mono_sample/cm);
 	D(1,3) = sin(pop.thetam) / (pop.dist_mono_sample/cm);
-	D(1,5) = sin(pop.thetas) / (pop.dist_mono_sample/cm);
-	D(1,6) = cos(pop.thetas) / (pop.dist_mono_sample/cm);
+	D(1,5) = sin(0.5*pop.twotheta) / (pop.dist_mono_sample/cm);
+	D(1,6) = cos(0.5*pop.twotheta) / (pop.dist_mono_sample/cm);
 	D(2,1) = -1. / (pop.dist_src_mono/cm);
 	D(2,4) = 1. / (pop.dist_src_mono/cm);
 	D(3,4) = -1. / (pop.dist_mono_sample/cm);
 	D(3,7) = 1. / (pop.dist_mono_sample/cm);
-	D(4,5) = sin(pop.thetas) / (pop.dist_sample_ana/cm);
-	D(4,6) = -cos(pop.thetas) / (pop.dist_sample_ana/cm);
+	D(4,5) = sin(0.5*pop.twotheta) / (pop.dist_sample_ana/cm);
+	D(4,6) = -cos(0.5*pop.twotheta) / (pop.dist_sample_ana/cm);
 	D(4,8) = -cos(pop.thetaa) / (pop.dist_sample_ana/cm);
 	D(4,9) = sin(pop.thetaa) / (pop.dist_sample_ana/cm);
 	D(5,8) = cos(pop.thetaa) / (pop.dist_ana_det/cm);
@@ -290,7 +293,7 @@ CNResults calc_pop(PopParams& pop)
 
 	res.dR0 = dP0 / (64. * M_PI*M_PI * units::sin(pop.thetam)*units::sin(pop.thetaa));
 	res.dR0 *= std::sqrt(dDetS*dDetF/dDetK);*/
-	
+
 	// placeholder: volume of ellipsoid
 	res.dR0 = tl::get_ellipsoid_volume(res.reso);
 
