@@ -7,6 +7,7 @@
  * @desc This is a reimplementation in C++ of the file rc_cnmat.m of the
  *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
  *		http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
+ * @desc see: [cn67] M. J. Cooper and R. Nathans, Acta Cryst. 23, 357 (1967)
  */
 
 #include "cn.h"
@@ -146,8 +147,8 @@ CNResults calc_cn(CNParams& cn)
 	res.reso = NP;
 
 
-	// placeholder: volume of ellipsoid
-	res.dR0 = tl::get_ellipsoid_volume(res.reso);
+	res.dR0 = 0.;	// TODO
+	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 
 	calc_bragg_widths(cn, res);
 
@@ -178,8 +179,13 @@ bool calc_tas_angles(CNParams& cn, CNResults& res)
 			cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
 		//std::cout << "E = " << (cn.E/one_meV) << std::endl;
 
-		cn.angle_ki_Q = tl::get_angle_ki_Q(cn.ki, cn.kf, cn.Q);
-		cn.angle_kf_Q = tl::get_angle_kf_Q(cn.ki, cn.kf, cn.Q);
+		// TODO: check angles and scattering senses!
+		cn.angle_ki_Q = tl::get_angle_ki_Q(cn.ki, cn.kf, cn.Q, cn.dsample_sense > 0.);
+		cn.angle_kf_Q = /*M_PI*units::si::radians -*/ tl::get_angle_kf_Q(cn.ki, cn.kf, cn.Q, cn.dsample_sense > 0.);
+		
+		cn.angle_ki_Q = units::abs(cn.angle_ki_Q);
+		cn.angle_kf_Q = units::abs(cn.angle_kf_Q);
+
 
 		if(cn.bCalcMonoAnaAngles)
 		{
@@ -199,6 +205,20 @@ bool calc_tas_angles(CNParams& cn, CNResults& res)
 			cn.thetas -= M_PI/2. * units::si::radians;
 			if(!cn.dsample_sense) cn.thetas = -cn.thetas;
 		}
+		
+		
+		/*if(std::fabs(cn.twotheta/units::si::radians) > M_PI)
+		{
+			cn.angle_ki_Q = -cn.angle_ki_Q;
+			cn.angle_kf_Q = -cn.angle_kf_Q;
+			cn.twotheta = -(2.*M_PI*units::si::radians - cn.twotheta);
+		}*/
+		cn.twotheta = units::abs(cn.twotheta);
+
+		/*tl::log_info("twotheta = ", cn.twotheta/units::si::radians / M_PI*180.);
+		tl::log_info("kiQ = ", cn.angle_ki_Q/units::si::radians / M_PI*180.);
+		tl::log_info("kfQ = ", cn.angle_kf_Q/units::si::radians / M_PI*180.);*/
+
 
 		res.Q_avg.resize(4);
 		res.Q_avg[0] = cn.Q*tl::angstrom;

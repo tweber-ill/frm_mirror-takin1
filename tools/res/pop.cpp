@@ -38,7 +38,8 @@ CNResults calc_pop(PopParams& pop)
 
 	length lam = tl::k2lam(pop.ki);
 	// angle between ki and resolution x axis (which is parallel to Q)
-	angle phi = units::atan2(-pop.kf * units::sin(pop.twotheta), pop.ki-pop.kf*units::cos(pop.twotheta));
+	angle phi = -pop.angle_ki_Q;
+	if(pop.dsample_sense < 0) phi = -phi;
 	//tl::log_info("phi = ", phi/units::si::radians / M_PI*180.);
 
 	if(pop.bGuide)
@@ -265,37 +266,44 @@ CNResults calc_pop(PopParams& pop)
 	}
 	res.reso = M*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
-
-	/*
-	// resolution volume, [pop75], equ. 13a & 16
-	ublas::matrix<double> DSi = ublas::prod(D, SI);
-	ublas::matrix<double> DSiDt = ublas::prod(DSi, ublas::trans(D));
-	ublas::matrix<double> DSiDti;
-	if(!tl::inverse(DSiDt, DSiDti))
+	res.dR0 = 0.;
+	if(pop.bCalcR0)
 	{
-		res.bOk = false;
-		res.strErr = "Resolution volume cannot be calculated.";
-		return res;
+		// resolution volume, [pop75], equ. 13a & 16
+		// [D] = 1/cm, [SI] = cm^2
+		ublas::matrix<double> DSi = ublas::prod(D, SI);
+		ublas::matrix<double> DSiDt = ublas::prod(DSi, ublas::trans(D));
+		ublas::matrix<double> DSiDti;
+		if(!tl::inverse(DSiDt, DSiDti))
+		{
+			res.bOk = false;
+			res.strErr = "Resolution volume cannot be calculated.";
+			return res;
+		}
+		DSiDti += G;
+		double dDetDSiDti = tl::determinant(DSiDti);
+		double dP0 = pop.dmono_refl*pop.dana_effic * (2.*M_PI)*(2.*M_PI)*(2.*M_PI)*(2.*M_PI);
+		dP0 /= std::sqrt(dDetDSiDti);
+
+		// [T] = 1/cm, [F] = 1/rad^2
+		ublas::matrix<double> TtF = ublas::prod(ublas::trans(T), F);
+		ublas::matrix<double> TtFT = ublas::prod(TtF, T);
+		ublas::matrix<double> K = S + TtFT;
+
+		double dDetS = tl::determinant(S);
+		double dDetF = tl::determinant(F);
+		double dDetK = tl::determinant(K);
+
+		res.dR0 = dP0 / (64. * M_PI*M_PI * units::sin(pop.thetam)*units::sin(pop.thetaa));
+		res.dR0 *= std::sqrt(dDetS*dDetF/dDetK);
+		
+		// rest of the prefactors, equ. 1 in [pop75]
+		res.dR0 /= (2.*M_PI*2.*M_PI);
+		res.dR0 *= std::sqrt(tl::determinant(res.reso));
 	}
-	DSiDti += G;
-	double dDetDSiDti = tl::determinant(DSiDti);
-	double dP0 = pop.dmono_refl*pop.dana_effic * (2.*M_PI)*(2.*M_PI)*(2.*M_PI)*(2.*M_PI);
-	dP0 /= std::sqrt(dDetDSiDti);
-
-	ublas::matrix<double> TtF = ublas::prod(ublas::trans(T), F);
-	ublas::matrix<double> TtFT = ublas::prod(TtF, T);
-	ublas::matrix<double> K = S + TtFT;
-
-	// determinants of 13x13 matrices too expensive !!
-	double dDetS = tl::determinant(S);
-	double dDetF = tl::determinant(F);
-	double dDetK = tl::determinant(K);
-
-	res.dR0 = dP0 / (64. * M_PI*M_PI * units::sin(pop.thetam)*units::sin(pop.thetaa));
-	res.dR0 *= std::sqrt(dDetS*dDetF/dDetK);*/
 
 	// placeholder: volume of ellipsoid
-	res.dR0 = tl::get_ellipsoid_volume(res.reso);
+	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 
 
 	calc_bragg_widths(pop, res);

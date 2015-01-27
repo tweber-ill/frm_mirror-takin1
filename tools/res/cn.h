@@ -71,6 +71,8 @@ struct CNParams
 	bool bConstMon;			// constant monitor or time?
 	double dmono_refl;
 	double dana_effic;
+	
+	bool bCalcR0 = 0;
 };
 
 struct CNResults
@@ -80,8 +82,8 @@ struct CNResults
 
 	ublas::matrix<double> reso;
 	ublas::vector<double> Q_avg;
-	double dR0;				// resolution volume in 1/A^3 * meV
-	double dR0_vi, dR0_vf;
+	double dR0;				// resolution prefactors
+	double dResVol;			// resolution volume in 1/A^3 * meV
 
 	double dBraggFWHMs[4];
 };

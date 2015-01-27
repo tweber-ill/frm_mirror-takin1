@@ -304,7 +304,7 @@ void ResoDlg::Calc()
 
 		//ostrRes << std::scientific;
 		ostrRes.precision(8);
-		ostrRes << "Resolution Volume: " << res.dR0 << " meV " << strAA_3 << "\n\n";
+		ostrRes << "Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "\n\n";
 		ostrRes << "Bragg FWHMs:\n";
 		ostrRes << "\tQ_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "\n";
 		ostrRes << "\tQ_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "\n";

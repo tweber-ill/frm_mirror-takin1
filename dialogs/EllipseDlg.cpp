@@ -139,142 +139,149 @@ void EllipseDlg::cursorMoved(const QPointF& pt)
 
 void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg)
 {
-	static const int iParams[2][4][5] =
+	try
 	{
+		static const int iParams[2][4][5] =
 		{
-			{0, 3, 1, 2, -1},
-			{1, 3, 0, 2, -1},
-			{2, 3, 0, 1, -1},
-			{0, 1, 3, 2, -1}
-		},
-		{
-			{0, 3, -1, 2, 1},
-			{1, 3, -1, 2, 0},
-			{2, 3, -1, 1, 0},
-			{0, 1, -1, 2, 3}
-		}
-	};
-
-	static const std::string strDeg = tl::get_spec_char_utf8("deg");
-
-
-	//Xml xmlparams;
-	bool bXMLLoaded = 0; //xmlparams.Load("res/res.conf");
-	bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
-
-	ublas::vector<double> Q_avg = _Q_avg;
-	if(bCenterOn0)
-		Q_avg = ublas::zero_vector<double>(Q_avg.size());
-
-
-	std::vector<std::future<Ellipse>> tasks_ell_proj, tasks_ell_slice;
-
-	for(unsigned int iEll=0; iEll<4; ++iEll)
-	{/*
-		if(bXMLLoaded)
-		{
-			std::ostringstream ostrCfg;
-			ostrCfg << "/res/ellipse_2d_" << iEll;
-
-			std::string strProjPath = ostrCfg.str() + "_proj";
-			std::string strSlicePath = ostrCfg.str() + "_slice";
-
-			std::string strProj = xmlparams.QueryString(strProjPath.c_str(), "");
-			std::string strSlice = xmlparams.QueryString(strSlicePath.c_str(), "");
-
-			const std::string* strEllis[] = {&strProj, &strSlice};
-
-			for(unsigned int iWhichEll=0; iWhichEll<2; ++iWhichEll)
 			{
-				if(*strEllis[iWhichEll] != "")
-				{
-					std::vector<int> vecIdx;
-					::get_tokens(*strEllis[iWhichEll], std::string(","), vecIdx);
+				{0, 3, 1, 2, -1},
+				{1, 3, 0, 2, -1},
+				{2, 3, 0, 1, -1},
+				{0, 1, 3, 2, -1}
+			},
+			{
+				{0, 3, -1, 2, 1},
+				{1, 3, -1, 2, 0},
+				{2, 3, -1, 1, 0},
+				{0, 1, -1, 2, 3}
+			}
+		};
 
-					if(vecIdx.size() == 5)
+		static const std::string strDeg = tl::get_spec_char_utf8("deg");
+
+
+		//Xml xmlparams;
+		bool bXMLLoaded = 0; //xmlparams.Load("res/res.conf");
+		bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
+
+		ublas::vector<double> Q_avg = _Q_avg;
+		if(bCenterOn0)
+			Q_avg = ublas::zero_vector<double>(Q_avg.size());
+
+
+		std::vector<std::future<Ellipse>> tasks_ell_proj, tasks_ell_slice;
+
+		for(unsigned int iEll=0; iEll<4; ++iEll)
+		{/*
+			if(bXMLLoaded)
+			{
+				std::ostringstream ostrCfg;
+				ostrCfg << "/res/ellipse_2d_" << iEll;
+
+				std::string strProjPath = ostrCfg.str() + "_proj";
+				std::string strSlicePath = ostrCfg.str() + "_slice";
+
+				std::string strProj = xmlparams.QueryString(strProjPath.c_str(), "");
+				std::string strSlice = xmlparams.QueryString(strSlicePath.c_str(), "");
+
+				const std::string* strEllis[] = {&strProj, &strSlice};
+
+				for(unsigned int iWhichEll=0; iWhichEll<2; ++iWhichEll)
+				{
+					if(*strEllis[iWhichEll] != "")
 					{
-						for(unsigned int iParam=0; iParam<5; ++iParam)
-							iParams[iWhichEll][iEll][iParam] = vecIdx[iParam];
-					}
-					else
-					{
-						std::cerr << "Error in res.conf: Wrong size of parameters for "
-								 << strProj << "." << std::endl;
+						std::vector<int> vecIdx;
+						::get_tokens(*strEllis[iWhichEll], std::string(","), vecIdx);
+
+						if(vecIdx.size() == 5)
+						{
+							for(unsigned int iParam=0; iParam<5; ++iParam)
+								iParams[iWhichEll][iEll][iParam] = vecIdx[iParam];
+						}
+						else
+						{
+							std::cerr << "Error in res.conf: Wrong size of parameters for "
+									 << strProj << "." << std::endl;
+						}
 					}
 				}
-			}
-		}*/
+			}*/
 
-		const int *iP = iParams[0][iEll];
-		const int *iS = iParams[1][iEll];
+			const int *iP = iParams[0][iEll];
+			const int *iS = iParams[1][iEll];
 
-		std::future<Ellipse> ell_proj = std::async(std::launch::deferred|std::launch::async,
-					[=, &reso, &Q_avg]()
-					{ return ::calc_res_ellipse(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
-		std::future<Ellipse> ell_slice = std::async(std::launch::deferred|std::launch::async,
-					[=, &reso, &Q_avg]()
-					{ return ::calc_res_ellipse(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+			std::future<Ellipse> ell_proj = std::async(std::launch::deferred|std::launch::async,
+						[=, &reso, &Q_avg]()
+						{ return ::calc_res_ellipse(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+			std::future<Ellipse> ell_slice = std::async(std::launch::deferred|std::launch::async,
+						[=, &reso, &Q_avg]()
+						{ return ::calc_res_ellipse(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
 
-		tasks_ell_proj.push_back(std::move(ell_proj));
-		tasks_ell_slice.push_back(std::move(ell_slice));
+			tasks_ell_proj.push_back(std::move(ell_proj));
+			tasks_ell_slice.push_back(std::move(ell_slice));
+		}
+
+		for(unsigned int iEll=0; iEll<4; ++iEll)
+		{
+			m_elliProj[iEll] = tasks_ell_proj[iEll].get();
+			m_elliSlice[iEll] = tasks_ell_slice[iEll].get();
+
+			/*m_elliProj[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[0][iEll][0], iParams[0][iEll][1],
+											iParams[0][iEll][2], iParams[0][iEll][3], iParams[0][iEll][4]);
+			m_elliSlice[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[1][iEll][0], iParams[1][iEll][1],
+											iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);*/
+
+			QwtPlot* pPlot = m_vecPlots[iEll];
+			QwtPlotCurve* pCurveProj = m_vecPlotCurves[iEll*2+0];
+			QwtPlotCurve* pCurveSlice = m_vecPlotCurves[iEll*2+1];
+			std::vector<double>& vecXProj = m_vecXCurvePoints[iEll*2+0];
+			std::vector<double>& vecYProj = m_vecYCurvePoints[iEll*2+0];
+			std::vector<double>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
+			std::vector<double>& vecYSlice = m_vecYCurvePoints[iEll*2+1];
+
+			double dBBProj[4], dBBSlice[4];
+			m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512, dBBProj);
+			m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512, dBBSlice);
+
+	#ifdef USE_QWT6
+			pCurveProj->setRawSamples(vecXProj.data(), vecYProj.data(), vecXProj.size());
+			pCurveSlice->setRawSamples(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
+	#else
+			pCurveProj->setRawData(vecXProj.data(), vecYProj.data(), vecXProj.size());
+			pCurveSlice->setRawData(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
+	#endif
+
+
+			std::ostringstream ostrSlope;
+			ostrSlope.precision(4);
+			ostrSlope << "Projected ellipse (green):\n";
+			ostrSlope << "\tSlope: " << m_elliProj[iEll].slope << "\n";
+			ostrSlope << "\tAngle: " << m_elliProj[iEll].phi/M_PI*180. << strDeg << "\n";
+			ostrSlope << "\tArea " << m_elliProj[iEll].area << "\n";
+			ostrSlope << "Sliced ellipse (blue):\n";
+			ostrSlope << "\tSlope: " << m_elliSlice[iEll].slope << "\n";
+			ostrSlope << "\tAngle: " << m_elliSlice[iEll].phi/M_PI*180. << strDeg << "\n";
+			ostrSlope << "\tArea " << m_elliSlice[iEll].area;
+			//pPlot->setTitle(ostrSlope.str().c_str());
+			//std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
+			m_vecPlots[iEll]->setToolTip(QString::fromUtf8(ostrSlope.str().c_str()));
+
+			pPlot->setAxisTitle(QwtPlot::xBottom, m_elliProj[iEll].x_lab.c_str());
+			pPlot->setAxisTitle(QwtPlot::yLeft, m_elliProj[iEll].y_lab.c_str());
+
+			pPlot->replot();
+
+			QRectF rect;
+			rect.setLeft(std::min(dBBProj[0], dBBSlice[0]));
+			rect.setRight(std::max(dBBProj[1], dBBSlice[1]));
+			rect.setTop(std::max(dBBProj[2], dBBSlice[2]));
+			rect.setBottom(std::min(dBBProj[3], dBBSlice[3]));
+			m_vecZoomers[iEll]->setZoomBase(rect);
+		}
 	}
-
-	for(unsigned int iEll=0; iEll<4; ++iEll)
+	catch(const std::exception& ex)
 	{
-		m_elliProj[iEll] = tasks_ell_proj[iEll].get();
-		m_elliSlice[iEll] = tasks_ell_slice[iEll].get();
-
-		/*m_elliProj[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[0][iEll][0], iParams[0][iEll][1],
-										iParams[0][iEll][2], iParams[0][iEll][3], iParams[0][iEll][4]);
-		m_elliSlice[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[1][iEll][0], iParams[1][iEll][1],
-										iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);*/
-
-		QwtPlot* pPlot = m_vecPlots[iEll];
-		QwtPlotCurve* pCurveProj = m_vecPlotCurves[iEll*2+0];
-		QwtPlotCurve* pCurveSlice = m_vecPlotCurves[iEll*2+1];
-		std::vector<double>& vecXProj = m_vecXCurvePoints[iEll*2+0];
-		std::vector<double>& vecYProj = m_vecYCurvePoints[iEll*2+0];
-		std::vector<double>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
-		std::vector<double>& vecYSlice = m_vecYCurvePoints[iEll*2+1];
-
-		double dBBProj[4], dBBSlice[4];
-		m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512, dBBProj);
-		m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512, dBBSlice);
-
-#ifdef USE_QWT6
-		pCurveProj->setRawSamples(vecXProj.data(), vecYProj.data(), vecXProj.size());
-		pCurveSlice->setRawSamples(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
-#else
-		pCurveProj->setRawData(vecXProj.data(), vecYProj.data(), vecXProj.size());
-		pCurveSlice->setRawData(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
-#endif
-
-
-		std::ostringstream ostrSlope;
-		ostrSlope.precision(4);
-		ostrSlope << "Projected ellipse (green):\n";
-		ostrSlope << "\tSlope: " << m_elliProj[iEll].slope << "\n";
-		ostrSlope << "\tAngle: " << m_elliProj[iEll].phi/M_PI*180. << strDeg << "\n";
-		ostrSlope << "\tArea " << m_elliProj[iEll].area << "\n";
-		ostrSlope << "Sliced ellipse (blue):\n";
-		ostrSlope << "\tSlope: " << m_elliSlice[iEll].slope << "\n";
-		ostrSlope << "\tAngle: " << m_elliSlice[iEll].phi/M_PI*180. << strDeg << "\n";
-		ostrSlope << "\tArea " << m_elliSlice[iEll].area;
-		//pPlot->setTitle(ostrSlope.str().c_str());
-		//std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
-		m_vecPlots[iEll]->setToolTip(QString::fromUtf8(ostrSlope.str().c_str()));
-
-		pPlot->setAxisTitle(QwtPlot::xBottom, m_elliProj[iEll].x_lab.c_str());
-		pPlot->setAxisTitle(QwtPlot::yLeft, m_elliProj[iEll].y_lab.c_str());
-
-		pPlot->replot();
-
-		QRectF rect;
-		rect.setLeft(std::min(dBBProj[0], dBBSlice[0]));
-		rect.setRight(std::max(dBBProj[1], dBBSlice[1]));
-		rect.setTop(std::max(dBBProj[2], dBBSlice[2]));
-		rect.setBottom(std::min(dBBProj[3], dBBSlice[3]));
-		m_vecZoomers[iEll]->setZoomBase(rect);
+		tl::log_err("Cannot calculate ellipses.");
 	}
 }
 
