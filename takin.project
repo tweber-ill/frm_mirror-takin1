@@ -72,6 +72,7 @@
       <File Name="tlibs/math/math.h"/>
       <File Name="tlibs/math/minuit.cpp" ExcludeProjConfig="Debug;Release"/>
       <File Name="tlibs/math/interpolation.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/dft.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="net">
       <File Name="tlibs/net/tcp.h"/>

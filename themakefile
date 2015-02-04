@@ -70,6 +70,9 @@ OBJ_RESO = obj/log.o obj/string.o obj/rand.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
 
+
+.PHONY: all clean
+
 all: takin montereso
 
 
