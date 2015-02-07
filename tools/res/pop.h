@@ -55,6 +55,7 @@ struct PopParams : public CNParams
 	units::quantity<units::si::length> dist_src_mono;
 };
 
+
 extern CNResults calc_pop(PopParams& pop);
 
 #endif

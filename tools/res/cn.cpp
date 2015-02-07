@@ -22,19 +22,22 @@
 
 #include <boost/units/io.hpp>
 
-
-typedef units::quantity<units::si::plane_angle> angle;
-typedef units::quantity<units::si::wavenumber> wavenumber;
-typedef units::quantity<units::si::energy> energy;
-typedef units::quantity<units::si::length> length;
+using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
+static const auto angs = tl::angstrom;
+static const auto rads = tl::radians;
+static const auto meV = tl::one_meV;
 
 
 CNResults calc_cn(CNParams& cn)
 {
 	CNResults res;
 
-	if(!calc_tas_angles(cn, res))
-		return res;
+	res.Q_avg.resize(4);
+	res.Q_avg[0] = cn.Q * angs;
+	res.Q_avg[1] = 0.;
+	res.Q_avg[2] = 0.;
+	res.Q_avg[3] = cn.E / meV;
+
 
 	// ------------------------------------------------------------------------------------------------
 	// transformation matrix
@@ -59,14 +62,13 @@ CNResults calc_cn(CNParams& cn)
 	tl::submatrix_copy(U, Ti, 0, 0);
 	tl::submatrix_copy(U, Tfm, 0, 3);
 	U(2,2)=1.; U(2,5)=-1.;
-	U(3,0)=2.*cn.ki*tl::angstrom*tl::KSQ2E;
-	U(3,3)=-2.*cn.kf*tl::angstrom*tl::KSQ2E;
+	U(3,0)=2.*cn.ki * angs * tl::KSQ2E;
+	U(3,3)=-2.*cn.kf * angs * tl::KSQ2E;
 	U(4,0)=1.; U(5,2)=1.;
 
 	ublas::matrix<double> V(6,6);
 	if(!tl::inverse(U, V))
 	{
-		using namespace ublas;
 		res.bOk = false;
 		res.strErr = "Transformation matrix cannot be inverted.";
 		return res;
@@ -75,59 +77,64 @@ CNResults calc_cn(CNParams& cn)
 	// ------------------------------------------------------------------------------------------------
 
 
-
 	// ------------------------------------------------------------------------------------------------
 	// resolution matrix
 
 	ublas::vector<double> pm(2);
 	pm[0] = units::tan(cn.thetam);
 	pm[1] = 1.;
-	pm /= cn.ki*tl::angstrom * cn.mono_mosaic/units::si::radians;
+	pm /= cn.ki * angs * cn.mono_mosaic/rads;
 
 	ublas::vector<double> pa(2);
 	pa[0] = -units::tan(cn.thetaa);
 	pa[1] = 1.;
-	pa /= cn.kf*tl::angstrom * cn.ana_mosaic/units::si::radians;
+	pa /= cn.kf * angs * cn.ana_mosaic/rads;
 
 	ublas::vector<double> palf0(2);
 	palf0[0] = 2.*units::tan(cn.thetam);
 	palf0[1] = 1.;
-	palf0 /= (cn.ki*tl::angstrom * cn.coll_h_pre_mono/units::si::radians);
+	palf0 /= (cn.ki*angs * cn.coll_h_pre_mono/rads);
 
 	ublas::vector<double> palf1(2);
 	palf1[0] = 0;
 	palf1[1] = 1.;
-	palf1 /= (cn.ki*tl::angstrom * cn.coll_h_pre_sample/units::si::radians);
+	palf1 /= (cn.ki*angs * cn.coll_h_pre_sample/rads);
 
 	ublas::vector<double> palf2(2);
 	palf2[0] = -2.*units::tan(cn.thetaa);
 	palf2[1] = 1.;
-	palf2 /= (cn.kf*tl::angstrom * cn.coll_h_post_ana/units::si::radians);
+	palf2 /= (cn.kf*angs * cn.coll_h_post_ana/rads);
 
 	ublas::vector<double> palf3(2);
 	palf3[0] = 0;
 	palf3[1] = 1.;
-	palf3 /= (cn.kf*tl::angstrom * cn.coll_h_post_sample/units::si::radians);
+	palf3 /= (cn.kf*angs * cn.coll_h_post_sample/rads);
 
 	ublas::matrix<double> m01(2,2);
-	m01 = ublas::outer_prod(pm,pm) + ublas::outer_prod(palf0,palf0) + ublas::outer_prod(palf1,palf1);
+	m01 = ublas::outer_prod(pm,pm) +
+			ublas::outer_prod(palf0,palf0) +
+			ublas::outer_prod(palf1,palf1);
 	ublas::matrix<double> m34(2,2);
-	m34 = ublas::outer_prod(pa,pa) + ublas::outer_prod(palf2,palf2) + ublas::outer_prod(palf3,palf3);
+	m34 = ublas::outer_prod(pa,pa) +
+			ublas::outer_prod(palf2,palf2) +
+			ublas::outer_prod(palf3,palf3);
 
 	ublas::matrix<double> M = ublas::zero_matrix<double>(6,6);
 	tl::submatrix_copy(M, m01, 0, 0);
 	tl::submatrix_copy(M, m34, 3, 3);
 
-	M(2,2) = 1./(cn.ki*cn.ki * tl::angstrom*tl::angstrom) *
-					(
-							1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/units::si::radians/units::si::radians) +
-							1./((2.*units::sin(cn.thetam)*cn.mono_mosaic/units::si::radians)*(2.*units::sin(cn.thetam)*cn.mono_mosaic/units::si::radians) + cn.coll_v_pre_mono*cn.coll_v_pre_mono/units::si::radians/units::si::radians)
-					);
-	M(5,5) = 1./(cn.kf*cn.kf * tl::angstrom*tl::angstrom) *
-					(
-							1./(cn.coll_v_post_sample*cn.coll_v_post_sample/units::si::radians/units::si::radians) +
-							1./((2.*units::sin(cn.thetaa)*cn.ana_mosaic/units::si::radians)*(2.*units::sin(cn.thetaa)*cn.ana_mosaic/units::si::radians) + cn.coll_v_post_ana*cn.coll_v_post_ana/units::si::radians/units::si::radians)
-					);
+	M(2,2) = 1./(cn.ki*cn.ki * angs*angs) *
+		(
+			1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/rads/rads) +
+			1./((2.*units::sin(cn.thetam)*cn.mono_mosaic/rads)*(2.*units::sin(cn.thetam)*cn.mono_mosaic/rads) +
+				cn.coll_v_pre_mono*cn.coll_v_pre_mono/rads/rads)
+		);
+	M(5,5) = 1./(cn.kf*cn.kf * angs*angs) *
+		(
+			1./(cn.coll_v_post_sample*cn.coll_v_post_sample/rads/rads) +
+			1./((2.*units::sin(cn.thetaa)*cn.ana_mosaic/rads)*(2.*units::sin(cn.thetaa)*cn.ana_mosaic/rads) +
+				cn.coll_v_post_ana*cn.coll_v_post_ana/rads/rads)
+		);
 	// ------------------------------------------------------------------------------------------------
 
 	ublas::matrix<double> M1 = ublas::prod(M, V);
@@ -138,8 +145,8 @@ CNResults calc_cn(CNParams& cn)
 
 	ublas::vector<double> vec1 = tl::get_column<ublas::vector<double> >(N, 1);
 	ublas::matrix<double> NP = N - ublas::outer_prod(vec1,vec1)
-										/(1./((cn.sample_mosaic/units::si::radians * cn.Q*tl::angstrom)
-										*(cn.sample_mosaic/units::si::radians * cn.Q*tl::angstrom))
+										/(1./((cn.sample_mosaic/rads * cn.Q*angs)
+										*(cn.sample_mosaic/rads * cn.Q*angs))
 											+ N(1,1));
 	NP(2,2) = N(2,2);
 	NP *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
@@ -150,7 +157,9 @@ CNResults calc_cn(CNParams& cn)
 	res.dR0 = 0.;	// TODO
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 
-	calc_bragg_widths(cn, res);
+	// Bragg widths
+	for(unsigned int i=0; i<4; ++i)
+		res.dBraggFWHMs[i] = tl::SIGMA2FWHM/sqrt(res.reso(i,i));
 
 	if(tl::is_nan_or_inf(res.dR0) || tl::is_nan_or_inf(res.reso))
 	{
@@ -161,80 +170,4 @@ CNResults calc_cn(CNParams& cn)
 
 	res.bOk = true;
 	return res;
-}
-
-
-void calc_bragg_widths(CNParams& cn, CNResults& res)
-{
-	for(unsigned int i=0; i<4; ++i)
-		res.dBraggFWHMs[i] = tl::SIGMA2FWHM/sqrt(res.reso(i,i));
-}
-
-
-bool calc_tas_angles(CNParams& cn, CNResults& res)
-{
-	try
-	{
-		if(cn.bCalcE)
-			cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
-		//std::cout << "E = " << (cn.E/one_meV) << std::endl;
-
-		// TODO: check angles and scattering senses!
-		cn.angle_ki_Q = tl::get_angle_ki_Q(cn.ki, cn.kf, cn.Q, cn.dsample_sense > 0.);
-		cn.angle_kf_Q = /*M_PI*units::si::radians -*/ tl::get_angle_kf_Q(cn.ki, cn.kf, cn.Q, cn.dsample_sense > 0.);
-		
-		cn.angle_ki_Q = units::abs(cn.angle_ki_Q);
-		cn.angle_kf_Q = units::abs(cn.angle_kf_Q);
-
-
-		if(cn.bCalcMonoAnaAngles)
-		{
-			cn.thetaa = 0.5*tl::get_mono_twotheta(cn.kf, cn.ana_d, cn.dana_sense > 0.);
-			cn.thetam = 0.5*tl::get_mono_twotheta(cn.ki, cn.mono_d, cn.dmono_sense > 0.);
-		}
-		//std::cout << double(cn.thetaa/units::si::radians)/M_PI*180. << ", " << double(cn.thetam/units::si::radians)/M_PI*180. << std::endl;
-
-		if(cn.bCalcSampleAngles)
-			cn.twotheta = tl::get_sample_twotheta(cn.ki, cn.kf, cn.Q, cn.dsample_sense>0.);
-		//std::cout << double(cn.twotheta/units::si::radians)/M_PI*180. << std::endl;
-
-		//if(cn.bCalcSampleAngles)
-		{
-			angle angleKiOrient1 = -cn.angle_ki_Q /*- vec_angle(vecQ)*/;	// only valid for Q along orient1
-			cn.thetas = angleKiOrient1 + M_PI*units::si::radians;
-			cn.thetas -= M_PI/2. * units::si::radians;
-			if(!cn.dsample_sense) cn.thetas = -cn.thetas;
-		}
-		
-		
-		/*if(std::fabs(cn.twotheta/units::si::radians) > M_PI)
-		{
-			cn.angle_ki_Q = -cn.angle_ki_Q;
-			cn.angle_kf_Q = -cn.angle_kf_Q;
-			cn.twotheta = -(2.*M_PI*units::si::radians - cn.twotheta);
-		}*/
-		cn.twotheta = units::abs(cn.twotheta);
-
-		/*tl::log_info("twotheta = ", cn.twotheta/units::si::radians / M_PI*180.);
-		tl::log_info("kiQ = ", cn.angle_ki_Q/units::si::radians / M_PI*180.);
-		tl::log_info("kfQ = ", cn.angle_kf_Q/units::si::radians / M_PI*180.);*/
-
-
-		res.Q_avg.resize(4);
-		res.Q_avg[0] = cn.Q*tl::angstrom;
-		res.Q_avg[1] = 0.;
-		res.Q_avg[2] = 0.;
-		res.Q_avg[3] = cn.E / tl::one_meV;
-
-		//std::copy(vecQ.begin(), vecQ.end(), std::ostream_iterator<double>(std::cout, " "));
-		//std::cout << std::endl;
-	}
-	catch(const std::exception& ex)
-	{
-		res.bOk = false;
-		res.strErr = ex.what();
-		return false;
-	}
-
-	return true;
 }

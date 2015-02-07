@@ -95,6 +95,8 @@
       <File Name="tools/res/ellipse.h"/>
       <File Name="tools/res/ResoDlg.cpp"/>
       <File Name="tools/res/cn.h"/>
+      <File Name="tools/res/eck.cpp"/>
+      <File Name="tools/res/eck.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="taz">
       <File Name="tools/taz/taz.h"/>

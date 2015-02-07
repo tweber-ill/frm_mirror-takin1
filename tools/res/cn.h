@@ -53,12 +53,8 @@ struct CNParams
 	units::quantity<units::si::plane_angle> coll_v_post_ana;
 
 	units::quantity<units::si::wavenumber> ki, kf, Q;
-
-	bool bCalcE = 1;
 	units::quantity<units::si::energy> E;
 
-	bool bCalcMonoAnaAngles = 1;
-	bool bCalcSampleAngles = 1;
 	units::quantity<units::si::plane_angle> thetaa, thetam, thetas;
 
 	units::quantity<units::si::plane_angle> twotheta;
@@ -68,10 +64,9 @@ struct CNParams
 	ublas::vector<double> vec0, vec1, vecUp;
 
 	// resolution volume stuff
-	bool bConstMon;			// constant monitor or time?
 	double dmono_refl;
 	double dana_effic;
-	
+
 	bool bCalcR0 = 0;
 };
 
@@ -90,7 +85,5 @@ struct CNResults
 
 
 extern CNResults calc_cn(CNParams& cn);
-extern bool calc_tas_angles(CNParams& cn, CNResults& res);
-extern void calc_bragg_widths(CNParams& cn, CNResults& res);
 
 #endif

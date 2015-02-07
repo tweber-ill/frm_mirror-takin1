@@ -18,53 +18,58 @@
 #include <iostream>
 #include <boost/units/io.hpp>
 
-typedef units::quantity<units::si::plane_angle> angle;
-typedef units::quantity<units::si::wavenumber> wavenumber;
-typedef units::quantity<units::si::energy> energy;
-typedef units::quantity<units::si::length> length;
-
-static const units::quantity<units::si::length> cm = 0.01 * units::si::meter;
+using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
+static const auto cm = tl::cm;
+static const auto angs = tl::angstrom;
+static const auto rads = tl::radians;
+static const auto meV = tl::one_meV;
 
 
 CNResults calc_pop(PopParams& pop)
 {
-	const units::quantity<units::si::plane_angle> mono_mosaic_spread = pop.mono_mosaic;
-	const units::quantity<units::si::plane_angle> ana_mosaic_spread = pop.ana_mosaic;
-	const units::quantity<units::si::plane_angle> sample_mosaic_spread = pop.sample_mosaic;
-
 	CNResults res;
-	if(!calc_tas_angles(pop, res))
-		return res;
+
+	res.Q_avg.resize(4);
+	res.Q_avg[0] = pop.Q*angs;
+	res.Q_avg[1] = 0.;
+	res.Q_avg[2] = 0.;
+	res.Q_avg[3] = pop.E / meV;
+
 
 	length lam = tl::k2lam(pop.ki);
 	// angle between ki and resolution x axis (which is parallel to Q)
 	angle phi = -pop.angle_ki_Q;
 	if(pop.dsample_sense < 0) phi = -phi;
-	//tl::log_info("phi = ", phi/units::si::radians / M_PI*180.);
+	//tl::log_info("phi = ", phi/rads / M_PI*180.);
 
 	if(pop.bGuide)
 	{
-		pop.coll_h_pre_mono = lam*(pop.guide_div_h/tl::angstrom);
-		pop.coll_v_pre_mono = lam*(pop.guide_div_v/tl::angstrom);
+		pop.coll_h_pre_mono = lam*(pop.guide_div_h/angs);
+		pop.coll_v_pre_mono = lam*(pop.guide_div_v/angs);
 	}
 
 	// collimator covariance matrix G, [pop75], Appendix 1
 	ublas::matrix<double> G = ublas::zero_matrix<double>(8,8);
-	G(0,0) = 1./(pop.coll_h_pre_mono*pop.coll_h_pre_mono /units::si::radians/units::si::radians);
-	G(1,1) = 1./(pop.coll_h_pre_sample*pop.coll_h_pre_sample /units::si::radians/units::si::radians);
-	G(2,2) = 1./(pop.coll_v_pre_mono*pop.coll_v_pre_mono /units::si::radians/units::si::radians);
-	G(3,3) = 1./(pop.coll_v_pre_sample*pop.coll_v_pre_sample /units::si::radians/units::si::radians);
-	G(4,4) = 1./(pop.coll_h_post_sample*pop.coll_h_post_sample /units::si::radians/units::si::radians);
-	G(5,5) = 1./(pop.coll_h_post_ana*pop.coll_h_post_ana /units::si::radians/units::si::radians);
-	G(6,6) = 1./(pop.coll_v_post_sample*pop.coll_v_post_sample /units::si::radians/units::si::radians);
-	G(7,7) = 1./(pop.coll_v_post_ana*pop.coll_v_post_ana /units::si::radians/units::si::radians);
+	G(0,0) = 1./(pop.coll_h_pre_mono*pop.coll_h_pre_mono /rads/rads);
+	G(1,1) = 1./(pop.coll_h_pre_sample*pop.coll_h_pre_sample /rads/rads);
+	G(2,2) = 1./(pop.coll_v_pre_mono*pop.coll_v_pre_mono /rads/rads);
+	G(3,3) = 1./(pop.coll_v_pre_sample*pop.coll_v_pre_sample /rads/rads);
+	G(4,4) = 1./(pop.coll_h_post_sample*pop.coll_h_post_sample /rads/rads);
+	G(5,5) = 1./(pop.coll_h_post_ana*pop.coll_h_post_ana /rads/rads);
+	G(6,6) = 1./(pop.coll_v_post_sample*pop.coll_v_post_sample /rads/rads);
+	G(7,7) = 1./(pop.coll_v_post_ana*pop.coll_v_post_ana /rads/rads);
+
+
+	const units::quantity<units::si::plane_angle> mono_mosaic_spread = pop.mono_mosaic;
+	const units::quantity<units::si::plane_angle> ana_mosaic_spread = pop.ana_mosaic;
+	const units::quantity<units::si::plane_angle> sample_mosaic_spread = pop.sample_mosaic;
 
 	// crystal mosaic covariance matrix F, [pop75], Appendix 1
 	ublas::matrix<double> F = ublas::zero_matrix<double>(4,4);
-	F(0,0) = 1./(pop.mono_mosaic*pop.mono_mosaic /units::si::radians/units::si::radians);
-	F(1,1) = 1./(mono_mosaic_spread*mono_mosaic_spread /units::si::radians/units::si::radians);
-	F(2,2) = 1./(pop.ana_mosaic*pop.ana_mosaic /units::si::radians/units::si::radians);
-	F(3,3) = 1./(ana_mosaic_spread*ana_mosaic_spread /units::si::radians/units::si::radians);
+	F(0,0) = 1./(pop.mono_mosaic*pop.mono_mosaic /rads/rads);
+	F(1,1) = 1./(mono_mosaic_spread*mono_mosaic_spread /rads/rads);
+	F(2,2) = 1./(pop.ana_mosaic*pop.ana_mosaic /rads/rads);
+	F(3,3) = 1./(ana_mosaic_spread*ana_mosaic_spread /rads/rads);
 
 	// C matrix, [pop75], Appendix 1
 	ublas::matrix<double> C = ublas::zero_matrix<double>(4,8);
@@ -76,12 +81,12 @@ CNResults calc_pop(PopParams& pop)
 
 	// A matrix, [pop75], Appendix 1
 	ublas::matrix<double> A = ublas::zero_matrix<double>(6,8);
-	A(0,0) = 0.5 * pop.ki*tl::angstrom * units::cos(pop.thetam)/units::sin(pop.thetam);
-	A(0,1) = -0.5 * pop.ki*tl::angstrom * units::cos(pop.thetam)/units::sin(pop.thetam);
-	A(2,3) = A(1,1) = pop.ki * tl::angstrom;
-	A(3,4) = 0.5 * pop.kf*tl::angstrom * units::cos(pop.thetaa)/units::sin(pop.thetaa);
-	A(3,5) = -0.5 * pop.kf*tl::angstrom * units::cos(pop.thetaa)/units::sin(pop.thetaa);
-	A(5,6) = A(4,4) = pop.kf * tl::angstrom;
+	A(0,0) = 0.5 * pop.ki*angs * units::cos(pop.thetam)/units::sin(pop.thetam);
+	A(0,1) = -0.5 * pop.ki*angs * units::cos(pop.thetam)/units::sin(pop.thetam);
+	A(2,3) = A(1,1) = pop.ki * angs;
+	A(3,4) = 0.5 * pop.kf*angs * units::cos(pop.thetaa)/units::sin(pop.thetaa);
+	A(3,5) = -0.5 * pop.kf*angs * units::cos(pop.thetaa)/units::sin(pop.thetaa);
+	A(5,6) = A(4,4) = pop.kf * angs;
 
 	// B matrix, [pop75], Appendix 1
 	ublas::matrix<double> B = ublas::zero_matrix<double>(4,6);
@@ -95,8 +100,8 @@ CNResults calc_pop(PopParams& pop)
 	B(1,4) = -units::cos(phi - pop.twotheta);
 	B(2,2) = 1.;
 	B(2,5) = -1.;
-	B(3,0) = 2.*pop.ki*tl::angstrom * tl::KSQ2E;
-	B(3,3) = -2.*pop.kf*tl::angstrom * tl::KSQ2E;
+	B(3,0) = 2.*pop.ki*angs * tl::KSQ2E;
+	B(3,3) = -2.*pop.kf*angs * tl::KSQ2E;
 
 
 	// S matrix, [pop75], Appendix 2
@@ -254,8 +259,8 @@ CNResults calc_pop(PopParams& pop)
 	ublas::matrix<double> M2iABt = ublas::prod(M2i, ABt);
 	ublas::matrix<double> MI = ublas::prod(BA, M2iABt);
 
-	MI(1,1) += pop.Q*pop.Q*tl::angstrom*tl::angstrom * pop.sample_mosaic*pop.sample_mosaic /units::si::radians/units::si::radians;
-	MI(2,2) += pop.Q*pop.Q*tl::angstrom*tl::angstrom * sample_mosaic_spread*sample_mosaic_spread /units::si::radians/units::si::radians;
+	MI(1,1) += pop.Q*pop.Q*angs*angs * pop.sample_mosaic*pop.sample_mosaic /rads/rads;
+	MI(2,2) += pop.Q*pop.Q*angs*angs * sample_mosaic_spread*sample_mosaic_spread /rads/rads;
 
 	ublas::matrix<double> M;
 	if(!tl::inverse(MI, M))
@@ -296,7 +301,7 @@ CNResults calc_pop(PopParams& pop)
 
 		res.dR0 = dP0 / (64. * M_PI*M_PI * units::sin(pop.thetam)*units::sin(pop.thetaa));
 		res.dR0 *= std::sqrt(dDetS*dDetF/dDetK);
-		
+
 		// rest of the prefactors, equ. 1 in [pop75]
 		res.dR0 /= (2.*M_PI*2.*M_PI);
 		res.dR0 *= std::sqrt(tl::determinant(res.reso));
@@ -305,8 +310,9 @@ CNResults calc_pop(PopParams& pop)
 	// placeholder: volume of ellipsoid
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 
-
-	calc_bragg_widths(pop, res);
+	// Bragg widths
+	for(unsigned int i=0; i<4; ++i)
+		res.dBraggFWHMs[i] = tl::SIGMA2FWHM/sqrt(res.reso(i,i));
 
 	if(tl::is_nan_or_inf(res.dR0) || tl::is_nan_or_inf(res.reso))
 	{
@@ -315,6 +321,6 @@ CNResults calc_pop(PopParams& pop)
 		return res;
 	}
 
-	res.bOk = 1;
+	res.bOk = true;
 	return res;
 }

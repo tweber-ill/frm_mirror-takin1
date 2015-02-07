@@ -19,6 +19,7 @@
 #include "ui/ui_reso.h"
 #include "cn.h"
 #include "pop.h"
+#include "eck.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/xml.h"
 #include "helper/plotgl.h"
@@ -58,7 +59,7 @@ protected:
 	void WriteLastConfig();
 	void ReadLastConfig();
 
-	PopParams m_pop;
+	EckParams m_pop;
 	CNResults m_res;
 	bool m_bDontCalc;
 

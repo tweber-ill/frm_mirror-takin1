@@ -41,6 +41,8 @@
       <File Name="tools/res/ellipse.h"/>
       <File Name="tools/res/ResoDlg.cpp" ExcludeProjConfig="Debug"/>
       <File Name="tools/res/cn.h" ExcludeProjConfig="Debug"/>
+      <File Name="tools/res/eck.cpp" ExcludeProjConfig="Debug"/>
+      <File Name="tools/res/eck.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Description/>

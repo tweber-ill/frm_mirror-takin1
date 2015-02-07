@@ -62,12 +62,12 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
 	obj/SettingsDlg.o obj/SequenceDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
 	obj/xml.o obj/tcp.o obj/spacegroup.o obj/gl.o \
-	obj/plotgl.o obj/cn.o obj/pop.o obj/ResoDlg.o obj/EllipseDlg3D.o \
-	obj/NetCacheDlg.o
+	obj/plotgl.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
+	obj/EllipseDlg3D.o obj/NetCacheDlg.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 OBJ_RESO = obj/log.o obj/string.o obj/rand.o \
        	obj/spec_char.o obj/reso_res_main.o \
-	obj/xml.o obj/cn.o obj/pop.o obj/ResoDlg.o \
+	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
 
 
@@ -154,6 +154,8 @@ obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 obj/cn.o: tools/res/cn.cpp tools/res/cn.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/pop.o: tools/res/pop.cpp tools/res/pop.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/eck.o: tools/res/eck.cpp tools/res/eck.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
 	${CC} ${FLAGS} -c -o $@ $<

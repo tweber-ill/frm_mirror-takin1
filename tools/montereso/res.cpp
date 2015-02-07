@@ -62,8 +62,7 @@ Resolution calc_res(const std::vector<vector<double>>& Q_vec,
 	cov.resize(4,4,0);
 
 	cov = tl::covariance(Q_vec, pp_vec);
-	cov = prod(cov, trafo);
-	cov = prod(trans(trafo), cov);
+	cov = tl::transform<matrix<double>>(cov, trans(trafo), true);
 
 	tl::log_info("Covariance matrix: ", cov);
 	reso.bHasRes = tl::inverse(cov, res);

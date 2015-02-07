@@ -1265,41 +1265,6 @@ Resolution Matrix:
          </layout>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBox_7">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Measurement</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_7">
-          <property name="fieldGrowthPolicy">
-           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-          </property>
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="radioConstMon">
-            <property name="text">
-             <string>Constant monitor</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioConstTime">
-            <property name="text">
-             <string>Constant time</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tabMC">
@@ -1513,8 +1478,6 @@ Resolution Matrix:
   <tabstop>editQ</tabstop>
   <tabstop>editE</tabstop>
   <tabstop>comboAlgo</tabstop>
-  <tabstop>radioConstMon</tabstop>
-  <tabstop>radioConstTime</tabstop>
   <tabstop>checkElli4dAutoCalc</tabstop>
   <tabstop>btnCalcElli4d</tabstop>
   <tabstop>spinMCNeutrons</tabstop>

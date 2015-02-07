@@ -75,14 +75,14 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
-						radioSampleScatterPlus, radioConstMon,
+						radioSampleScatterPlus,
 						radioSampleCub, radioSrcRect, radioDetRect};
 	m_vecRadioMinus = {radioMonoScatterMinus, radioAnaScatterMinus,
-						radioSampleScatterMinus, radioConstTime,
-						radioSampleCyl, radioSrcCirc, radioDetCirc};
+						radioSampleScatterMinus, radioSampleCyl,
+						radioSrcCirc, radioDetCirc};
 	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense",
-						"reso/sample_scatter_sense", "reso/meas_const_mon",
-						"reso/pop_sample_cuboid", "reso/pop_source_rect", "reso/pop_det_rect"};
+						"reso/sample_scatter_sense", "reso/pop_sample_cuboid",
+						"reso/pop_source_rect", "reso/pop_det_rect"};
 
 	m_vecComboBoxes = {comboAlgo};
 	m_vecComboNames = {"reso/algo"};
@@ -123,6 +123,7 @@ void ResoDlg::setupAlgos()
 {
 	comboAlgo->addItem("Cooper-Nathans");
 	comboAlgo->addItem("Popovici");
+	//comboAlgo->addItem("Eckold-Sobolev");
 }
 
 void ResoDlg::SaveRes()
@@ -192,7 +193,7 @@ void ResoDlg::Calc()
 
 	const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
 
-	PopParams& cn = m_pop;
+	EckParams& cn = m_pop;
 	CNResults &res = m_res;
 
 	// CN
@@ -205,7 +206,7 @@ void ResoDlg::Calc()
 	cn.ki = editKi->text().toDouble() / tl::angstrom;
 	cn.kf = editKf->text().toDouble() / tl::angstrom;
 	cn.E = editE->text().toDouble() * tl::one_meV;
-	cn.bCalcE = 0;
+	//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
 	//std::cout << "E = " << editE->text().toStdString() << std::endl;
 	cn.Q = editQ->text().toDouble() / angstrom;
 
@@ -227,7 +228,6 @@ void ResoDlg::Calc()
 
 	cn.dmono_refl = spinMonoRefl->value();
 	cn.dana_effic = spinAnaEffic->value();
-	cn.bConstMon = radioConstMon->isChecked();
 
 	// Pop
 	cn.mono_w = spinMonoW->value()*0.01*units::si::meter;
@@ -275,8 +275,13 @@ void ResoDlg::Calc()
 	cn.ana_numtiles_v = 1;
 
 
-	const bool bUseCN = (comboAlgo->currentIndex()==0);
-	res = (bUseCN ? calc_cn(cn) : calc_pop(cn));
+	switch(comboAlgo->currentIndex())
+	{
+		case 0: res = calc_cn(cn); break;
+		case 1: res = calc_pop(cn); break;
+		case 2: res = calc_eck(cn); break;
+		default: tl::log_err("Unknown resolution algorithm selected."); return;
+	}
 
 	editE->setText(std::to_string(cn.E / tl::one_meV).c_str());
 	//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
@@ -635,11 +640,19 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.vec1 = tl::make_vec({parms.orient_1[0], parms.orient_1[1], parms.orient_1[2]});
 	m_pop.vecUp = tl::make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
 
-	m_pop.bCalcSampleAngles = 0;
 	m_pop.thetas = parms.dTheta * units::si::radians;
 	m_pop.twotheta = parms.d2Theta * units::si::radians;
 
 	//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
+
+
+	// TODO: check angles and scattering senses!
+	m_pop.angle_ki_Q = tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, m_pop.dsample_sense > 0.);
+	m_pop.angle_kf_Q = /*M_PI*units::si::radians -*/ tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, m_pop.dsample_sense > 0.);
+
+	m_pop.angle_ki_Q = units::abs(m_pop.angle_ki_Q);
+	m_pop.angle_kf_Q = units::abs(m_pop.angle_kf_Q);
+
 
 	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
 	m_bDontCalc = bOldDontCalc;
@@ -651,14 +664,27 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	m_pop.bCalcMonoAnaAngles = 0;
 	m_pop.thetam = parms.dMonoT * units::si::radians;
 	m_pop.thetaa = parms.dAnaT * units::si::radians;
 	//std::cout << parms.dMonoT/M_PI*180. << ", " << parms.dAnaT/M_PI*180. << std::endl;
 
-	m_pop.bCalcSampleAngles = 0;
 	m_pop.thetas = parms.dSampleT * units::si::radians;
 	m_pop.twotheta = parms.dSampleTT * units::si::radians;
+
+	m_pop.twotheta = units::abs(m_pop.twotheta);
+
+
+	/*
+	m_pop.thetaa = 0.5*tl::get_mono_twotheta(m_pop.kf, m_pop.ana_d, m_pop.dana_sense > 0.);
+	m_pop.thetam = 0.5*tl::get_mono_twotheta(m_pop.ki, m_pop.mono_d, m_pop.dmono_sense > 0.);
+
+	m_pop.twotheta = tl::get_sample_twotheta(m_pop.ki, m_pop.kf, m_pop.Q, m_pop.dsample_sense>0.);
+
+	angle angleKiOrient1 = -m_pop.angle_ki_Q; // - vec_angle(vecQ);	// only valid for Q along orient1
+	m_pop.thetas = angleKiOrient1 + M_PI*units::si::radians;
+	m_pop.thetas -= M_PI/2. * units::si::radians;
+	if(!m_pop.dsample_sense) m_pop.thetas = -m_pop.thetas;
+	*/
 
 	m_bDontCalc = bOldDontCalc;
 	Calc();
