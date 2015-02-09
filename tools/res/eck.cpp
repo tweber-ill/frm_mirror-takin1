@@ -25,6 +25,23 @@ static const auto meV = tl::one_meV;
 
 CNResults calc_eck(EckParams& eck)
 {
+	eck.mono_mosaic_v = 9999./(180.*60.) * rads;
+	eck.ana_mosaic_v = 9999./(180.*60.) * rads;
+	eck.pos_x = 0.*cm;
+	eck.pos_y = 0.*cm;
+	eck.pos_z = 0.*cm;
+	
+	if(!eck.bMonoIsCurvedH) eck.mono_curvh = 9999. * cm;
+	if(!eck.bMonoIsCurvedV) eck.mono_curvv = 9999. * cm;
+	if(!eck.bAnaIsCurvedH) eck.ana_curvh = 9999. * cm;
+	if(!eck.bAnaIsCurvedV) eck.ana_curvv = 9999. * cm;
+	
+	
+	//std::cout << "2theta = " << double(eck.twotheta/rads/M_PI*180.) << " deg"<< std::endl;
+	//std::cout << "kiQ = " << double(eck.angle_ki_Q/rads/M_PI*180.) << " deg"<< std::endl;
+	
+	
+	
 	CNResults res;
 
 	res.Q_avg.resize(4);
@@ -36,7 +53,7 @@ CNResults calc_eck(EckParams& eck)
 
 	//--------------------------------------------------------------------------
 	// mono part
-
+	
 	// A matrix: formula 26 in [eck14]
 	ublas::matrix<double> A = ublas::identity_matrix<double>(3);
 	A(0,0) = 4.*std::log(2.)/(eck.ki*angs*eck.ki*angs) * units::tan(eck.thetam)*units::tan(eck.thetam) *
@@ -127,6 +144,15 @@ CNResults calc_eck(EckParams& eck)
 	A(2,2) = Av(0,0) - Av(0,1)*Av(0,1)/Av(1,1);
 	B[2] = Bv[0] - Bv[1]*Av(0,1)/Av(1,1);
 	double D = Cv - 0.25*Bv[1]/Av(1,1);
+	
+	
+	/*std::cout << "A = " << A << std::endl;
+	std::cout << "Av = " << Av << std::endl;
+	std::cout << "B = " << B << std::endl;
+	std::cout << "Bv = " << Bv << std::endl;
+	std::cout << "C = " << C << std::endl;
+	std::cout << "Cv = " << Cv << std::endl;
+	std::cout << "D = " << D << std::endl;*/
 	//--------------------------------------------------------------------------
 
 
@@ -226,23 +252,36 @@ CNResults calc_eck(EckParams& eck)
 	E(2,2) = Ev(0,0) - Ev(0,1)*Ev(0,1)/Ev(1,1);
 	F[2] = Fv[0] - Fv[1]*Ev(0,1)/Ev(1,1);
 	double H = Gv - 0.25*Fv[1]/Ev(1,1);
+	
+	
+	/*std::cout << "E = " << E << std::endl;
+	std::cout << "Ev = " << Ev << std::endl;
+	std::cout << "F = " << F << std::endl;
+	std::cout << "Fv = " << Fv << std::endl;
+	std::cout << "G = " << G << std::endl;
+	std::cout << "Gv = " << Gv << std::endl;
+	std::cout << "H = " << H << std::endl;*/
 	//--------------------------------------------------------------------------
 
 
-	// trafo, equ 53 in [eck14]
-	double s0 = codata::m_n/(codata::hbar*codata::hbar*eck.Q*eck.Q)*eck.E;
-	wavenumber kperp = units::sqrt(eck.Q*eck.Q*(0.5 + s0)*(0.5 + s0) -
-									eck.ki*eck.ki);
+	// equ 4 & equ 53 in [eck14]
+	double s0 = (eck.ki*eck.ki - eck.kf*eck.kf) / (2. * eck.Q*eck.Q);
+	wavenumber kperp = units::sqrt(units::abs(eck.Q*eck.Q*(0.5 + s0)*(0.5 + s0) -
+												eck.ki*eck.ki));
+	if(eck.twotheta/rads >= 0.)
+		kperp = -kperp;
+									
+	//std::cout << "s0 = " << s0 << std::endl;
+	//std::cout << "kperp = " << kperp << std::endl;
 
 	// trafo, equ 52 in [eck14]
 	ublas::matrix<double> T = ublas::identity_matrix<double>(6);
 	T(0,3) = T(1,4) = T(2,5) = -1;
-	T(3,0) = codata::hbar*eck.Q/codata::m_n * (0.5 + s0)	/ angs*secs;
-	T(3,3) = codata::hbar*eck.Q/codata::m_n * (0.5 - s0)	/ angs*secs;
-	T(3,1) = codata::hbar*kperp/codata::m_n		/ angs*secs;
-	T(3,4) = -1. * codata::hbar*kperp/codata::m_n	/ angs*secs;
+	T(3,0) = codata::hbar*codata::hbar*eck.Q/codata::m_n * (0.5 + s0)	/ meV / angs;
+	T(3,3) = codata::hbar*codata::hbar*eck.Q/codata::m_n * (0.5 - s0)	/ meV / angs;
+	T(3,1) = codata::hbar*codata::hbar*kperp/codata::m_n				/ meV / angs;
+	T(3,4) = -1. * codata::hbar*codata::hbar*kperp/codata::m_n			/ meV / angs;
 	T(4,1) = T(5,2) = 0.5 - s0;
-	T(4,4) = 0.5 + s0;
 	T(4,4) = T(5,5) = 0.5 + s0;
 
 	ublas::matrix<double> Tinv;
@@ -252,6 +291,9 @@ CNResults calc_eck(EckParams& eck)
 		res.strErr = "Matrix T cannot be inverted.";
 		return res;
 	}
+	
+	//std::cout << "T = " << T << std::endl;
+	//std::cout << "Tinv = " << Tinv << std::endl;
 
 	// equ 54 in [eck14]
 	ublas::matrix<double> Dalph = tl::rotation_matrix_3d_z(eck.angle_ki_Q/rads);
@@ -306,12 +348,30 @@ CNResults calc_eck(EckParams& eck)
 
 		V[i] = V2[i] - V2[4]*U2(i,4)/U2(4,4);
 	}
+	
+	/*std::cerr << "U = " << U << std::endl;
+	std::cerr << "V = " << V << std::endl;
+	std::cerr << "W = " << W << std::endl;*/
 	//--------------------------------------------------------------------------
 
 
-	//
-	// TODO
-	//
 
+	res.reso = 0.5*U;
+
+	res.dR0 = 0.;	// TODO
+	res.dResVol = tl::get_ellipsoid_volume(res.reso);
+
+	// Bragg widths
+	for(unsigned int i=0; i<4; ++i)
+		res.dBraggFWHMs[i] = tl::SIGMA2FWHM/sqrt(res.reso(i,i));
+
+	if(tl::is_nan_or_inf(res.dR0) || tl::is_nan_or_inf(res.reso))
+	{
+		res.strErr = "Invalid result.";
+		res.bOk = false;
+		return res;
+	}
+
+	res.bOk = true;
 	return res;
 }
