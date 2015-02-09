@@ -22,13 +22,16 @@
 
 #include <boost/units/io.hpp>
 
+typedef ublas::matrix<double> t_mat;
+typedef ublas::vector<double> t_vec;
+
 using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
 static const auto angs = tl::angstrom;
 static const auto rads = tl::radians;
 static const auto meV = tl::one_meV;
 
 
-CNResults calc_cn(CNParams& cn)
+CNResults calc_cn(const CNParams& cn)
 {
 	CNResults res;
 
@@ -45,7 +48,7 @@ CNResults calc_cn(CNParams& cn)
 	double dSi = cn.dsample_sense*units::sin(cn.angle_ki_Q);
 	double dCi = units::cos(cn.angle_ki_Q);
 
-	ublas::matrix<double> Ti(2,2);
+	t_mat Ti(2,2);
 	Ti(0,0)=dCi; Ti(0,1)=-dSi;
 	Ti(1,0)=dSi; Ti(1,1)=dCi;
 
@@ -53,12 +56,12 @@ CNResults calc_cn(CNParams& cn)
 	double dSf = cn.dsample_sense*units::sin(cn.angle_kf_Q);
 	double dCf = units::cos(cn.angle_kf_Q);
 
-	ublas::matrix<double> Tf(2,2);
+	t_mat Tf(2,2);
 	Tf(0,0)=dCf; Tf(0,1)=-dSf;
 	Tf(1,0)=dSf; Tf(1,1)=dCf;
-	ublas::matrix<double> Tfm = -Tf;
+	t_mat Tfm = -Tf;
 
-	ublas::matrix<double> U = ublas::zero_matrix<double>(6,6);
+	t_mat U = ublas::zero_matrix<double>(6,6);
 	tl::submatrix_copy(U, Ti, 0, 0);
 	tl::submatrix_copy(U, Tfm, 0, 3);
 	U(2,2)=1.; U(2,5)=-1.;
@@ -66,7 +69,7 @@ CNResults calc_cn(CNParams& cn)
 	U(3,3)=-2.*cn.kf * angs * tl::KSQ2E;
 	U(4,0)=1.; U(5,2)=1.;
 
-	ublas::matrix<double> V(6,6);
+	t_mat V(6,6);
 	if(!tl::inverse(U, V))
 	{
 		res.bOk = false;
@@ -80,46 +83,46 @@ CNResults calc_cn(CNParams& cn)
 	// ------------------------------------------------------------------------------------------------
 	// resolution matrix
 
-	ublas::vector<double> pm(2);
+	t_vec pm(2);
 	pm[0] = units::tan(cn.thetam);
 	pm[1] = 1.;
 	pm /= cn.ki * angs * cn.mono_mosaic/rads;
 
-	ublas::vector<double> pa(2);
+	t_vec pa(2);
 	pa[0] = -units::tan(cn.thetaa);
 	pa[1] = 1.;
 	pa /= cn.kf * angs * cn.ana_mosaic/rads;
 
-	ublas::vector<double> palf0(2);
+	t_vec palf0(2);
 	palf0[0] = 2.*units::tan(cn.thetam);
 	palf0[1] = 1.;
 	palf0 /= (cn.ki*angs * cn.coll_h_pre_mono/rads);
 
-	ublas::vector<double> palf1(2);
+	t_vec palf1(2);
 	palf1[0] = 0;
 	palf1[1] = 1.;
 	palf1 /= (cn.ki*angs * cn.coll_h_pre_sample/rads);
 
-	ublas::vector<double> palf2(2);
+	t_vec palf2(2);
 	palf2[0] = -2.*units::tan(cn.thetaa);
 	palf2[1] = 1.;
 	palf2 /= (cn.kf*angs * cn.coll_h_post_ana/rads);
 
-	ublas::vector<double> palf3(2);
+	t_vec palf3(2);
 	palf3[0] = 0;
 	palf3[1] = 1.;
 	palf3 /= (cn.kf*angs * cn.coll_h_post_sample/rads);
 
-	ublas::matrix<double> m01(2,2);
+	t_mat m01(2,2);
 	m01 = ublas::outer_prod(pm,pm) +
 			ublas::outer_prod(palf0,palf0) +
 			ublas::outer_prod(palf1,palf1);
-	ublas::matrix<double> m34(2,2);
+	t_mat m34(2,2);
 	m34 = ublas::outer_prod(pa,pa) +
 			ublas::outer_prod(palf2,palf2) +
 			ublas::outer_prod(palf3,palf3);
 
-	ublas::matrix<double> M = ublas::zero_matrix<double>(6,6);
+	t_mat M = ublas::zero_matrix<double>(6,6);
 	tl::submatrix_copy(M, m01, 0, 0);
 	tl::submatrix_copy(M, m34, 3, 3);
 
@@ -137,14 +140,14 @@ CNResults calc_cn(CNParams& cn)
 		);
 	// ------------------------------------------------------------------------------------------------
 
-	ublas::matrix<double> M1 = ublas::prod(M, V);
-	ublas::matrix<double> N = ublas::prod(ublas::trans(V), M1);
+	t_mat M1 = ublas::prod(M, V);
+	t_mat N = ublas::prod(ublas::trans(V), M1);
 
 	N = ellipsoid_gauss_int(N, 5);
 	N = ellipsoid_gauss_int(N, 4);
 
-	ublas::vector<double> vec1 = tl::get_column<ublas::vector<double> >(N, 1);
-	ublas::matrix<double> NP = N - ublas::outer_prod(vec1,vec1)
+	t_vec vec1 = tl::get_column<t_vec >(N, 1);
+	t_mat NP = N - ublas::outer_prod(vec1,vec1)
 										/(1./((cn.sample_mosaic/rads * cn.Q*angs)
 										*(cn.sample_mosaic/rads * cn.Q*angs))
 											+ N(1,1));

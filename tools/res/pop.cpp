@@ -18,6 +18,9 @@
 #include <iostream>
 #include <boost/units/io.hpp>
 
+typedef ublas::matrix<double> t_mat;
+typedef ublas::vector<double> t_vec;
+
 using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
 static const auto cm = tl::cm;
 static const auto angs = tl::angstrom;
@@ -49,7 +52,7 @@ CNResults calc_pop(PopParams& pop)
 	}
 
 	// collimator covariance matrix G, [pop75], Appendix 1
-	ublas::matrix<double> G = ublas::zero_matrix<double>(8,8);
+	t_mat G = ublas::zero_matrix<double>(8,8);
 	G(0,0) = 1./(pop.coll_h_pre_mono*pop.coll_h_pre_mono /rads/rads);
 	G(1,1) = 1./(pop.coll_h_pre_sample*pop.coll_h_pre_sample /rads/rads);
 	G(2,2) = 1./(pop.coll_v_pre_mono*pop.coll_v_pre_mono /rads/rads);
@@ -65,14 +68,14 @@ CNResults calc_pop(PopParams& pop)
 	const units::quantity<units::si::plane_angle> sample_mosaic_spread = pop.sample_mosaic;
 
 	// crystal mosaic covariance matrix F, [pop75], Appendix 1
-	ublas::matrix<double> F = ublas::zero_matrix<double>(4,4);
+	t_mat F = ublas::zero_matrix<double>(4,4);
 	F(0,0) = 1./(pop.mono_mosaic*pop.mono_mosaic /rads/rads);
 	F(1,1) = 1./(mono_mosaic_spread*mono_mosaic_spread /rads/rads);
 	F(2,2) = 1./(pop.ana_mosaic*pop.ana_mosaic /rads/rads);
 	F(3,3) = 1./(ana_mosaic_spread*ana_mosaic_spread /rads/rads);
 
 	// C matrix, [pop75], Appendix 1
-	ublas::matrix<double> C = ublas::zero_matrix<double>(4,8);
+	t_mat C = ublas::zero_matrix<double>(4,8);
 	C(2,5) = C(2,4) = C(0,1) = C(0,0) = 0.5;
 	C(1,2) = 0.5/units::sin(pop.thetam);
 	/*C(1,3)*/C(2,2) = -0.5/units::sin(pop.thetam);		// seems to be wrong in rescal5, Popovici says C(2,2), not C(1,3)
@@ -80,7 +83,7 @@ CNResults calc_pop(PopParams& pop)
 	C(3,7) = -0.5/units::sin(pop.thetaa);
 
 	// A matrix, [pop75], Appendix 1
-	ublas::matrix<double> A = ublas::zero_matrix<double>(6,8);
+	t_mat A = ublas::zero_matrix<double>(6,8);
 	A(0,0) = 0.5 * pop.ki*angs * units::cos(pop.thetam)/units::sin(pop.thetam);
 	A(0,1) = -0.5 * pop.ki*angs * units::cos(pop.thetam)/units::sin(pop.thetam);
 	A(2,3) = A(1,1) = pop.ki * angs;
@@ -89,7 +92,7 @@ CNResults calc_pop(PopParams& pop)
 	A(5,6) = A(4,4) = pop.kf * angs;
 
 	// B matrix, [pop75], Appendix 1
-	ublas::matrix<double> B = ublas::zero_matrix<double>(4,6);
+	t_mat B = ublas::zero_matrix<double>(4,6);
 	B(0,0) = units::cos(phi);
 	B(0,1) = units::sin(phi);
 	B(0,3) = -units::cos(phi - pop.twotheta);
@@ -106,13 +109,13 @@ CNResults calc_pop(PopParams& pop)
 
 	// S matrix, [pop75], Appendix 2
 	// mono
-	ublas::matrix<double> S1I = ublas::zero_matrix<double>(3,3);
+	t_mat S1I = ublas::zero_matrix<double>(3,3);
 	S1I(0,0) = 1./12. * pop.mono_thick*pop.mono_thick /cm/cm;
 	S1I(1,1) = 1./12. * pop.mono_w*pop.mono_w /cm/cm;
 	S1I(2,2) = 1./12. * pop.mono_h*pop.mono_h /cm/cm;
 
 	// ana
-	ublas::matrix<double> S3I = ublas::zero_matrix<double>(3,3);
+	t_mat S3I = ublas::zero_matrix<double>(3,3);
 	S3I(0,0) = 1./12. * pop.ana_thick*pop.ana_thick /cm/cm;
 	S3I(1,1) = 1./12. * pop.ana_w*pop.ana_w /cm/cm;
 	S3I(2,2) = 1./12. * pop.ana_h*pop.ana_h /cm/cm;
@@ -122,7 +125,7 @@ CNResults calc_pop(PopParams& pop)
 	if(!pop.bSampleCub) dMult = 1./16.;
 
 	// sample
-	ublas::matrix<double> S2I = ublas::zero_matrix<double>(3,3);
+	t_mat S2I = ublas::zero_matrix<double>(3,3);
 	S2I(0,0) = dMult * pop.sample_w_perpq *pop.sample_w_perpq /cm/cm;
 	S2I(1,1) = dMult * pop.sample_w_q*pop.sample_w_q /cm/cm;
 	S2I(2,2) = 1./12. * pop.sample_h*pop.sample_h /cm/cm;
@@ -131,7 +134,7 @@ CNResults calc_pop(PopParams& pop)
 	dMult = 1./12.;
 	if(!pop.bSrcRect) dMult = 1./16.;
 
-	ublas::matrix<double> SI = ublas::zero_matrix<double>(13,13);
+	t_mat SI = ublas::zero_matrix<double>(13,13);
 	SI(0,0) = dMult * pop.src_w*pop.src_w /cm/cm;
 	SI(1,1) = dMult * pop.src_h*pop.src_h /cm/cm;
 	tl::submatrix_copy(SI, S1I, 2, 2);
@@ -147,7 +150,7 @@ CNResults calc_pop(PopParams& pop)
 
 	SI *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
-	ublas::matrix<double> S;
+	t_mat S;
 	if(!tl::inverse(SI, S))
 	{
 		res.bOk = false;
@@ -164,7 +167,7 @@ CNResults calc_pop(PopParams& pop)
 
 
 	// T matrix, [pop75], Appendix 2
-	ublas::matrix<double> T = ublas::zero_matrix<double>(4,13);
+	t_mat T = ublas::zero_matrix<double>(4,13);
 	T(0,0) = -0.5 / (pop.dist_src_mono / cm);
 	T(0,2) = 0.5 * units::cos(pop.thetam) *
 				(1./(pop.dist_mono_sample/cm) -
@@ -199,7 +202,7 @@ CNResults calc_pop(PopParams& pop)
 
 
 	// D matrix, [pop75], Appendix 2
-	ublas::matrix<double> D = ublas::zero_matrix<double>(8,13);
+	t_mat D = ublas::zero_matrix<double>(8,13);
 	D(0,0) = -1. / (pop.dist_src_mono/cm);
 	D(0,2) = -cos(pop.thetam) / (pop.dist_src_mono/cm);
 	D(0,3) = sin(pop.thetam) / (pop.dist_src_mono/cm);
@@ -225,9 +228,9 @@ CNResults calc_pop(PopParams& pop)
 
 
 	// [pop75], equ. 20
-	ublas::matrix<double> FT = ublas::prod(F,T);
-	ublas::matrix<double> M0 = S + ublas::prod(ublas::trans(T),FT);
-	ublas::matrix<double> M0i;
+	t_mat FT = ublas::prod(F,T);
+	t_mat M0 = S + ublas::prod(ublas::trans(T),FT);
+	t_mat M0i;
 	if(!tl::inverse(M0, M0i))
 	{
 		res.bOk = false;
@@ -235,9 +238,9 @@ CNResults calc_pop(PopParams& pop)
 		return res;
 	}
 
-	ublas::matrix<double> M0iD = ublas::prod(M0i, ublas::trans(D));
-	ublas::matrix<double> M1 = ublas::prod(D, M0iD);
-	ublas::matrix<double> M1i;
+	t_mat M0iD = ublas::prod(M0i, ublas::trans(D));
+	t_mat M1 = ublas::prod(D, M0iD);
+	t_mat M1i;
 	if(!tl::inverse(M1, M1i))
 	{
 		res.bOk = false;
@@ -245,8 +248,8 @@ CNResults calc_pop(PopParams& pop)
 		return res;
 	}
 
-	ublas::matrix<double> M2 = M1i + G;
-	ublas::matrix<double> M2i;
+	t_mat M2 = M1i + G;
+	t_mat M2i;
 	if(!tl::inverse(M2, M2i))
 	{
 		res.bOk = false;
@@ -254,15 +257,15 @@ CNResults calc_pop(PopParams& pop)
 		return res;
 	}
 
-	ublas::matrix<double> BA = ublas::prod(B,A);
-	ublas::matrix<double> ABt = ublas::prod(ublas::trans(A), ublas::trans(B));
-	ublas::matrix<double> M2iABt = ublas::prod(M2i, ABt);
-	ublas::matrix<double> MI = ublas::prod(BA, M2iABt);
+	t_mat BA = ublas::prod(B,A);
+	t_mat ABt = ublas::prod(ublas::trans(A), ublas::trans(B));
+	t_mat M2iABt = ublas::prod(M2i, ABt);
+	t_mat MI = ublas::prod(BA, M2iABt);
 
 	MI(1,1) += pop.Q*pop.Q*angs*angs * pop.sample_mosaic*pop.sample_mosaic /rads/rads;
 	MI(2,2) += pop.Q*pop.Q*angs*angs * sample_mosaic_spread*sample_mosaic_spread /rads/rads;
 
-	ublas::matrix<double> M;
+	t_mat M;
 	if(!tl::inverse(MI, M))
 	{
 		res.bOk = false;
@@ -276,9 +279,9 @@ CNResults calc_pop(PopParams& pop)
 	{
 		// resolution volume, [pop75], equ. 13a & 16
 		// [D] = 1/cm, [SI] = cm^2
-		ublas::matrix<double> DSi = ublas::prod(D, SI);
-		ublas::matrix<double> DSiDt = ublas::prod(DSi, ublas::trans(D));
-		ublas::matrix<double> DSiDti;
+		t_mat DSi = ublas::prod(D, SI);
+		t_mat DSiDt = ublas::prod(DSi, ublas::trans(D));
+		t_mat DSiDti;
 		if(!tl::inverse(DSiDt, DSiDti))
 		{
 			res.bOk = false;
@@ -291,9 +294,9 @@ CNResults calc_pop(PopParams& pop)
 		dP0 /= std::sqrt(dDetDSiDti);
 
 		// [T] = 1/cm, [F] = 1/rad^2
-		ublas::matrix<double> TtF = ublas::prod(ublas::trans(T), F);
-		ublas::matrix<double> TtFT = ublas::prod(TtF, T);
-		ublas::matrix<double> K = S + TtFT;
+		t_mat TtF = ublas::prod(ublas::trans(T), F);
+		t_mat TtFT = ublas::prod(TtF, T);
+		t_mat K = S + TtFT;
 
 		double dDetS = tl::determinant(S);
 		double dDetF = tl::determinant(F);

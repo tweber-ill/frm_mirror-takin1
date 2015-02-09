@@ -84,6 +84,6 @@ struct CNResults
 };
 
 
-extern CNResults calc_cn(CNParams& cn);
+extern CNResults calc_cn(const CNParams& cn);
 
 #endif
