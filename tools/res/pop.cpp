@@ -44,19 +44,20 @@ CNResults calc_pop(PopParams& pop)
 	angle thetaa = pop.thetaa;
 	angle thetam = pop.thetam;
 	// angle between ki and resolution x axis (which is parallel to Q)
-	angle phi = -pop.angle_ki_Q;
+	angle ki_Q = pop.angle_ki_Q;
+	angle kf_Q = pop.angle_kf_Q;
+	//kf_Q = twotheta + ki_Q;
 	
 	if(pop.dsample_sense < 0) 
 	{ 
 		twotheta = -twotheta; 
-		phi = -phi; 
+		ki_Q = -ki_Q; 
+		kf_Q = -kf_Q; 
 	}
 	if(pop.dana_sense < 0) thetaa = -thetaa;
 	if(pop.dmono_sense < 0) thetam = -thetam;
 
 	
-	//tl::log_info("phi = ", phi/rads / M_PI*180.);
-
 	if(pop.bGuide)
 	{
 		pop.coll_h_pre_mono = lam*(pop.guide_div_h/angs);
@@ -103,18 +104,15 @@ CNResults calc_pop(PopParams& pop)
 	A(3,5) = -0.5 * pop.kf*angs * units::cos(thetaa)/units::sin(thetaa);
 	A(5,6) = A(4,4) = pop.kf * angs;
 
-	// B matrix, [pop75], Appendix 1
+
+	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
+	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
+
+	// B matrix, [pop75], Appendix 1 -> U matrix in CN
 	t_mat B = ublas::zero_matrix<double>(4,6);
-	B(0,0) = units::cos(phi);
-	B(0,1) = units::sin(phi);
-	B(0,3) = -units::cos(phi - twotheta);
-	B(0,4) = -units::sin(phi - twotheta);
-	B(1,0) = -units::sin(phi);
-	B(1,1) = units::cos(phi);
-	B(1,3) = units::sin(phi - twotheta);
-	B(1,4) = -units::cos(phi - twotheta);
-	B(2,2) = 1.;
-	B(2,5) = -1.;
+	tl::submatrix_copy(B, Ti, 0, 0);
+	tl::submatrix_copy(B, Tf, 0, 3);
+	B(2,2) = 1.; B(2,5) = -1.;
 	B(3,0) = 2.*pop.ki*angs * tl::KSQ2E;
 	B(3,3) = -2.*pop.kf*angs * tl::KSQ2E;
 
@@ -284,6 +282,11 @@ CNResults calc_pop(PopParams& pop)
 		res.strErr = "Covariance matrix cannot be inverted.";
 		return res;
 	}
+
+	
+	// -------------------------------------------------------------------------
+	
+
 	res.reso = M*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
 	res.dR0 = 0.;

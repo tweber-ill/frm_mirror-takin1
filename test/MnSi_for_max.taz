@@ -38,7 +38,7 @@
 	<reso>
 		<E> -2.635000e-02 </E>
 		<Q> 1.949380e+00 </Q>
-		<algo> 0 </algo>
+		<algo> 1 </algo>
 		<ana_d> 3.355000e+00 </ana_d>
 		<ana_effic> 1.000000e+00 </ana_effic>
 		<ana_mosaic> 4.500000e+01 </ana_mosaic>

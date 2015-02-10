@@ -466,7 +466,8 @@ void ResoDlg::ReadLastConfig()
 	{
 		if(!m_pSettings->contains(m_vecEditNames[iEditBox].c_str()))
 			continue;
-		m_vecEditBoxes[iEditBox]->setText(std::to_string(m_pSettings->value(m_vecEditNames[iEditBox].c_str()).value<double>()).c_str());
+		double dEditVal = m_pSettings->value(m_vecEditNames[iEditBox].c_str()).value<double>();
+		m_vecEditBoxes[iEditBox]->setText(std::to_string(dEditVal).c_str());
 	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
@@ -546,7 +547,10 @@ void ResoDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 		m_vecSpinBoxes[iSpinBox]->setValue(xml.Query<double>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str(), 0., &bOk));
 
 	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
-		m_vecEditBoxes[iEditBox]->setText(std::to_string(xml.Query<double>((strXmlRoot+m_vecEditNames[iEditBox]).c_str(), 0., &bOk)).c_str());
+	{
+		double dEditVal = xml.Query<double>((strXmlRoot+m_vecEditNames[iEditBox]).c_str(), 0., &bOk);
+		if(bOk) m_vecEditBoxes[iEditBox]->setText(std::to_string(dEditVal).c_str());
+	}
 
 	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
@@ -646,8 +650,10 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
 
-	// TODO: check angles and scattering senses!
+	// ki_Q angle "inside" of triangle
 	m_pop.angle_ki_Q = tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, m_pop.dsample_sense > 0.);
+	
+	// kf_Q angle "outside" of triangle
 	m_pop.angle_kf_Q = /*M_PI*units::si::radians -*/ tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, m_pop.dsample_sense > 0.);
 
 	m_pop.angle_ki_Q = units::abs(m_pop.angle_ki_Q);

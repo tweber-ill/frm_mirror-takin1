@@ -42,7 +42,7 @@ CNResults calc_cn(const CNParams& cn)
 	res.Q_avg[3] = cn.E / meV;
 
 
-	// ------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	// transformation matrix
 	
 	angle twotheta = cn.twotheta;
@@ -50,6 +50,7 @@ CNResults calc_cn(const CNParams& cn)
 	angle thetam = cn.thetam;
 	angle ki_Q = cn.angle_ki_Q;
 	angle kf_Q = cn.angle_kf_Q;
+	//kf_Q = twotheta + ki_Q;
 
 	if(cn.dsample_sense < 0) 
 	{ 
@@ -60,29 +61,17 @@ CNResults calc_cn(const CNParams& cn)
 	if(cn.dana_sense < 0) thetaa = -thetaa;
 	if(cn.dmono_sense < 0) thetam = -thetam;
 	
-	double dSi = units::sin(ki_Q);
-	double dCi = units::cos(ki_Q);
 
-	t_mat Ti(2,2);
-	Ti(0,0)=dCi; Ti(0,1)=-dSi;
-	Ti(1,0)=dSi; Ti(1,1)=dCi;
-
-
-	double dSf = units::sin(kf_Q);
-	double dCf = units::cos(kf_Q);
-
-	t_mat Tf(2,2);
-	Tf(0,0)=dCf; Tf(0,1)=-dSf;
-	Tf(1,0)=dSf; Tf(1,1)=dCf;
-	t_mat Tfm = -Tf;
+	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
+	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
 
 	t_mat U = ublas::zero_matrix<double>(6,6);
 	tl::submatrix_copy(U, Ti, 0, 0);
-	tl::submatrix_copy(U, Tfm, 0, 3);
-	U(2,2)=1.; U(2,5)=-1.;
-	U(3,0)=2.*cn.ki * angs * tl::KSQ2E;
-	U(3,3)=-2.*cn.kf * angs * tl::KSQ2E;
-	U(4,0)=1.; U(5,2)=1.;
+	tl::submatrix_copy(U, Tf, 0, 3);
+	U(2,2) = 1.; U(2,5) = -1.;
+	U(3,0) = 2.*cn.ki * angs * tl::KSQ2E;
+	U(3,3) = -2.*cn.kf * angs * tl::KSQ2E;
+	U(4,0) = 1.; U(5,2) = 1.;
 
 	t_mat V(6,6);
 	if(!tl::inverse(U, V))
@@ -92,10 +81,10 @@ CNResults calc_cn(const CNParams& cn)
 		return res;
 	}
 
-	// ------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 
-	// ------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	// resolution matrix
 
 	t_vec pm(2);
@@ -153,7 +142,7 @@ CNResults calc_cn(const CNParams& cn)
 			1./((2.*units::sin(thetaa)*cn.ana_mosaic/rads)*(2.*units::sin(thetaa)*cn.ana_mosaic/rads) +
 				cn.coll_v_post_ana*cn.coll_v_post_ana/rads/rads)
 		);
-	// ------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	t_mat M1 = ublas::prod(M, V);
 	t_mat N = ublas::prod(ublas::trans(V), M1);
@@ -161,7 +150,7 @@ CNResults calc_cn(const CNParams& cn)
 	N = ellipsoid_gauss_int(N, 5);
 	N = ellipsoid_gauss_int(N, 4);
 
-	t_vec vec1 = tl::get_column<t_vec >(N, 1);
+	t_vec vec1 = tl::get_column<t_vec>(N, 1);
 	t_mat NP = N - ublas::outer_prod(vec1,vec1)
 										/(1./((cn.sample_mosaic/rads * cn.Q*angs)
 										*(cn.sample_mosaic/rads * cn.Q*angs))
@@ -170,6 +159,8 @@ CNResults calc_cn(const CNParams& cn)
 	NP *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
 	res.reso = NP;
+	
+	// -------------------------------------------------------------------------
 
 
 	res.dR0 = 0.;	// TODO

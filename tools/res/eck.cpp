@@ -143,25 +143,26 @@ CNResults calc_eck(EckParams& eck)
 	eck.pos_y = 0.*cm;
 	eck.pos_z = 0.*cm;
 
-	if(!eck.bMonoIsCurvedH) eck.mono_curvh = 99999. * cm;
-	if(!eck.bMonoIsCurvedV) eck.mono_curvv = 99999. * cm;
-	if(!eck.bAnaIsCurvedH) eck.ana_curvh = 99999. * cm;
-	if(!eck.bAnaIsCurvedV) eck.ana_curvv = 99999. * cm;
+	if(!eck.bMonoIsCurvedH) eck.mono_curvh = 99999. * cm * eck.dmono_sense;
+	if(!eck.bMonoIsCurvedV) eck.mono_curvv = 99999. * cm * eck.dmono_sense;
+	if(!eck.bAnaIsCurvedH) eck.ana_curvh = 99999. * cm * eck.dana_sense;
+	if(!eck.bAnaIsCurvedV) eck.ana_curvv = 99999. * cm * eck.dana_sense;
 
 	angle twotheta = eck.twotheta;
 	angle thetaa = eck.thetaa;
 	angle thetam = eck.thetam;
 	angle ki_Q = eck.angle_ki_Q;
 	angle kf_Q = eck.angle_kf_Q;
+	//kf_Q = ki_Q + twotheta;
 
 	if(eck.dsample_sense < 0) { twotheta = -twotheta; ki_Q = -ki_Q; kf_Q = -kf_Q; }
 	if(eck.dana_sense < 0) { thetaa = -thetaa; /*kf_Q = -kf_Q;*/ }
 	if(eck.dmono_sense < 0) { thetam = -thetam; /*ki_Q = -ki_Q;*/ }
 	
-	//angle kf_Q = ki_Q + twotheta;
-
-	//std::cout << "2theta = " << double(twotheta/rads/M_PI*180.) << " deg"<< std::endl;
-	//std::cout << "kiQ = " << double(ki_Q/rads/M_PI*180.) << " deg"<< std::endl;
+	
+	/*std::cout << "kiQ = " << double(ki_Q/rads/M_PI*180.) << " deg"<< std::endl;
+	std::cout << "kfQ = " << double(kf_Q/rads/M_PI*180.) << " deg"<< std::endl;
+	std::cout << "2theta = " << double(twotheta/rads/M_PI*180.) << " deg"<< std::endl;*/
 
 
 	CNResults res;
@@ -215,7 +216,7 @@ CNResults calc_eck(EckParams& eck)
 					eck.coll_v_post_ana, eck.coll_v_post_sample,
 					eck.ana_mosaic, eck.ana_mosaic_v,
 					eck.ana_curvh, eck.ana_curvv,
-					eck.pos_x , pos_y2, eck.pos_z);
+					eck.pos_x, pos_y2, eck.pos_z);
 	const t_mat& E = std::get<0>(tupAna);
 	const t_vec& F = std::get<1>(tupAna);
 	const double& G = std::get<2>(tupAna);
@@ -235,13 +236,13 @@ CNResults calc_eck(EckParams& eck)
 												eck.ki*eck.ki));
 	if(twotheta/rads >= 0.)
 		kperp = -kperp;
-									
-	//std::cout << "s0 = " << s0 << std::endl;
-	//std::cout << "kperp = " << kperp << std::endl;
+
+	std::cout << "s0 = " << s0 << std::endl;
+	std::cout << "kperp = " << double(kperp*angs) << " / A" << std::endl;
 
 	// trafo, equ 52 in [eck14]
 	t_mat T = ublas::identity_matrix<double>(6);
-	T(0,3) = T(1,4) = T(2,5) = -1;
+	T(0,3) = T(1,4) = T(2,5) = -1.;
 	T(3,0) = codata::hbar*codata::hbar*eck.Q/codata::m_n * (0.5 + s0)	/ meV / angs;
 	T(3,3) = codata::hbar*codata::hbar*eck.Q/codata::m_n * (0.5 - s0)	/ meV / angs;
 	T(3,1) = codata::hbar*codata::hbar*kperp/codata::m_n				/ meV / angs;
@@ -319,7 +320,7 @@ CNResults calc_eck(EckParams& eck)
 
 		V[i] = V2[i] - V2[4]*U2(i,4)/U2(4,4);
 	}
-	
+
 	/*std::cerr << "U = " << U << std::endl;
 	std::cerr << "V = " << V << std::endl;
 	std::cerr << "W = " << W << std::endl;*/
