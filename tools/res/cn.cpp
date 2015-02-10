@@ -22,8 +22,9 @@
 
 #include <boost/units/io.hpp>
 
-typedef ublas::matrix<double> t_mat;
-typedef ublas::vector<double> t_vec;
+typedef double t_real;
+typedef ublas::matrix<t_real> t_mat;
+typedef ublas::vector<t_real> t_vec;
 
 using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
 static const auto angs = tl::angstrom;
@@ -65,7 +66,7 @@ CNResults calc_cn(const CNParams& cn)
 	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
 	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
 
-	t_mat U = ublas::zero_matrix<double>(6,6);
+	t_mat U = ublas::zero_matrix<t_real>(6,6);
 	tl::submatrix_copy(U, Ti, 0, 0);
 	tl::submatrix_copy(U, Tf, 0, 3);
 	U(2,2) = 1.; U(2,5) = -1.;
@@ -126,7 +127,7 @@ CNResults calc_cn(const CNParams& cn)
 			ublas::outer_prod(palf2,palf2) +
 			ublas::outer_prod(palf3,palf3);
 
-	t_mat M = ublas::zero_matrix<double>(6,6);
+	t_mat M = ublas::zero_matrix<t_real>(6,6);
 	tl::submatrix_copy(M, m01, 0, 0);
 	tl::submatrix_copy(M, m34, 3, 3);
 

@@ -1,10 +1,10 @@
 /*
- * eckold calculation
+ * implementation of the eckold algo
  * @author tweber
  * @date feb-2015
  * @copyright GPLv2
  *
- * @desc see: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
+ * @desc algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
  */
 
 #ifndef __RESO_ECK_H__

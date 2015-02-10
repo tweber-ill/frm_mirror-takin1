@@ -18,8 +18,9 @@
 #include <iostream>
 #include <boost/units/io.hpp>
 
-typedef ublas::matrix<double> t_mat;
-typedef ublas::vector<double> t_vec;
+typedef double t_real;
+typedef ublas::matrix<t_real> t_mat;
+typedef ublas::vector<t_real> t_vec;
 
 using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
 static const auto cm = tl::cm;
@@ -65,7 +66,7 @@ CNResults calc_pop(PopParams& pop)
 	}
 
 	// collimator covariance matrix G, [pop75], Appendix 1
-	t_mat G = ublas::zero_matrix<double>(8,8);
+	t_mat G = ublas::zero_matrix<t_real>(8,8);
 	G(0,0) = 1./(pop.coll_h_pre_mono*pop.coll_h_pre_mono /rads/rads);
 	G(1,1) = 1./(pop.coll_h_pre_sample*pop.coll_h_pre_sample /rads/rads);
 	G(2,2) = 1./(pop.coll_v_pre_mono*pop.coll_v_pre_mono /rads/rads);
@@ -81,14 +82,14 @@ CNResults calc_pop(PopParams& pop)
 	const units::quantity<units::si::plane_angle> sample_mosaic_spread = pop.sample_mosaic;
 
 	// crystal mosaic covariance matrix F, [pop75], Appendix 1
-	t_mat F = ublas::zero_matrix<double>(4,4);
+	t_mat F = ublas::zero_matrix<t_real>(4,4);
 	F(0,0) = 1./(pop.mono_mosaic*pop.mono_mosaic /rads/rads);
 	F(1,1) = 1./(mono_mosaic_spread*mono_mosaic_spread /rads/rads);
 	F(2,2) = 1./(pop.ana_mosaic*pop.ana_mosaic /rads/rads);
 	F(3,3) = 1./(ana_mosaic_spread*ana_mosaic_spread /rads/rads);
 
 	// C matrix, [pop75], Appendix 1
-	t_mat C = ublas::zero_matrix<double>(4,8);
+	t_mat C = ublas::zero_matrix<t_real>(4,8);
 	C(2,5) = C(2,4) = C(0,1) = C(0,0) = 0.5;
 	C(1,2) = 0.5/units::sin(thetam);
 	/*C(1,3)*/C(2,2) = -0.5/units::sin(thetam);		// seems to be wrong in rescal5, Popovici says C(2,2), not C(1,3)
@@ -96,7 +97,7 @@ CNResults calc_pop(PopParams& pop)
 	C(3,7) = -0.5/units::sin(thetaa);
 
 	// A matrix, [pop75], Appendix 1
-	t_mat A = ublas::zero_matrix<double>(6,8);
+	t_mat A = ublas::zero_matrix<t_real>(6,8);
 	A(0,0) = 0.5 * pop.ki*angs * units::cos(thetam)/units::sin(thetam);
 	A(0,1) = -0.5 * pop.ki*angs * units::cos(thetam)/units::sin(thetam);
 	A(2,3) = A(1,1) = pop.ki * angs;
@@ -109,7 +110,7 @@ CNResults calc_pop(PopParams& pop)
 	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
 
 	// B matrix, [pop75], Appendix 1 -> U matrix in CN
-	t_mat B = ublas::zero_matrix<double>(4,6);
+	t_mat B = ublas::zero_matrix<t_real>(4,6);
 	tl::submatrix_copy(B, Ti, 0, 0);
 	tl::submatrix_copy(B, Tf, 0, 3);
 	B(2,2) = 1.; B(2,5) = -1.;
@@ -119,23 +120,23 @@ CNResults calc_pop(PopParams& pop)
 
 	// S matrix, [pop75], Appendix 2
 	// mono
-	t_mat S1I = ublas::zero_matrix<double>(3,3);
+	t_mat S1I = ublas::zero_matrix<t_real>(3,3);
 	S1I(0,0) = 1./12. * pop.mono_thick*pop.mono_thick /cm/cm;
 	S1I(1,1) = 1./12. * pop.mono_w*pop.mono_w /cm/cm;
 	S1I(2,2) = 1./12. * pop.mono_h*pop.mono_h /cm/cm;
 
 	// ana
-	t_mat S3I = ublas::zero_matrix<double>(3,3);
+	t_mat S3I = ublas::zero_matrix<t_real>(3,3);
 	S3I(0,0) = 1./12. * pop.ana_thick*pop.ana_thick /cm/cm;
 	S3I(1,1) = 1./12. * pop.ana_w*pop.ana_w /cm/cm;
 	S3I(2,2) = 1./12. * pop.ana_h*pop.ana_h /cm/cm;
 
 
-	double dMult = 1./12.;
+	t_real dMult = 1./12.;
 	if(!pop.bSampleCub) dMult = 1./16.;
 
 	// sample
-	t_mat S2I = ublas::zero_matrix<double>(3,3);
+	t_mat S2I = ublas::zero_matrix<t_real>(3,3);
 	S2I(0,0) = dMult * pop.sample_w_perpq *pop.sample_w_perpq /cm/cm;
 	S2I(1,1) = dMult * pop.sample_w_q*pop.sample_w_q /cm/cm;
 	S2I(2,2) = 1./12. * pop.sample_h*pop.sample_h /cm/cm;
@@ -144,7 +145,7 @@ CNResults calc_pop(PopParams& pop)
 	dMult = 1./12.;
 	if(!pop.bSrcRect) dMult = 1./16.;
 
-	t_mat SI = ublas::zero_matrix<double>(13,13);
+	t_mat SI = ublas::zero_matrix<t_real>(13,13);
 	SI(0,0) = dMult * pop.src_w*pop.src_w /cm/cm;
 	SI(1,1) = dMult * pop.src_h*pop.src_h /cm/cm;
 	tl::submatrix_copy(SI, S1I, 2, 2);
@@ -169,7 +170,7 @@ CNResults calc_pop(PopParams& pop)
 	}
 
 
-	double dCurvMonoH=0., dCurvMonoV=0., dCurvAnaH=0., dCurvAnaV=0.;
+	t_real dCurvMonoH=0., dCurvMonoV=0., dCurvAnaH=0., dCurvAnaV=0.;
 	if(pop.bMonoIsCurvedH) dCurvMonoH = 1./(pop.mono_curvh/cm) * pop.dmono_sense;
 	if(pop.bMonoIsCurvedV) dCurvMonoV = 1./(pop.mono_curvv/cm) * pop.dmono_sense;
 	if(pop.bAnaIsCurvedH) dCurvAnaH = 1./(pop.ana_curvh/cm) * pop.dana_sense;
@@ -177,7 +178,7 @@ CNResults calc_pop(PopParams& pop)
 
 
 	// T matrix, [pop75], Appendix 2
-	t_mat T = ublas::zero_matrix<double>(4,13);
+	t_mat T = ublas::zero_matrix<t_real>(4,13);
 	T(0,0) = -0.5 / (pop.dist_src_mono / cm);
 	T(0,2) = 0.5 * units::cos(thetam) *
 				(1./(pop.dist_mono_sample/cm) -
@@ -212,7 +213,7 @@ CNResults calc_pop(PopParams& pop)
 
 
 	// D matrix, [pop75], Appendix 2
-	t_mat D = ublas::zero_matrix<double>(8,13);
+	t_mat D = ublas::zero_matrix<t_real>(8,13);
 	D(0,0) = -1. / (pop.dist_src_mono/cm);
 	D(0,2) = -cos(thetam) / (pop.dist_src_mono/cm);
 	D(0,3) = sin(thetam) / (pop.dist_src_mono/cm);
@@ -304,8 +305,8 @@ CNResults calc_pop(PopParams& pop)
 			return res;
 		}
 		DSiDti += G;
-		double dDetDSiDti = tl::determinant(DSiDti);
-		double dP0 = pop.dmono_refl*pop.dana_effic * (2.*M_PI)*(2.*M_PI)*(2.*M_PI)*(2.*M_PI);
+		t_real dDetDSiDti = tl::determinant(DSiDti);
+		t_real dP0 = pop.dmono_refl*pop.dana_effic * (2.*M_PI)*(2.*M_PI)*(2.*M_PI)*(2.*M_PI);
 		dP0 /= std::sqrt(dDetDSiDti);
 
 		// [T] = 1/cm, [F] = 1/rad^2
@@ -313,9 +314,9 @@ CNResults calc_pop(PopParams& pop)
 		t_mat TtFT = ublas::prod(TtF, T);
 		t_mat K = S + TtFT;
 
-		double dDetS = tl::determinant(S);
-		double dDetF = tl::determinant(F);
-		double dDetK = tl::determinant(K);
+		t_real dDetS = tl::determinant(S);
+		t_real dDetF = tl::determinant(F);
+		t_real dDetK = tl::determinant(K);
 
 		res.dR0 = dP0 / (64. * M_PI*M_PI * units::sin(thetam)*units::sin(thetaa));
 		res.dR0 *= std::sqrt(dDetS*dDetF/dDetK);
