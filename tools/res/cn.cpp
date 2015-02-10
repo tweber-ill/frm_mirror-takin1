@@ -44,17 +44,32 @@ CNResults calc_cn(const CNParams& cn)
 
 	// ------------------------------------------------------------------------------------------------
 	// transformation matrix
+	
+	angle twotheta = cn.twotheta;
+	angle thetaa = cn.thetaa;
+	angle thetam = cn.thetam;
+	angle ki_Q = cn.angle_ki_Q;
+	angle kf_Q = cn.angle_kf_Q;
 
-	double dSi = cn.dsample_sense*units::sin(cn.angle_ki_Q);
-	double dCi = units::cos(cn.angle_ki_Q);
+	if(cn.dsample_sense < 0) 
+	{ 
+		twotheta = -twotheta; 
+		ki_Q = -ki_Q; 
+		kf_Q = -kf_Q; 
+	}
+	if(cn.dana_sense < 0) thetaa = -thetaa;
+	if(cn.dmono_sense < 0) thetam = -thetam;
+	
+	double dSi = units::sin(ki_Q);
+	double dCi = units::cos(ki_Q);
 
 	t_mat Ti(2,2);
 	Ti(0,0)=dCi; Ti(0,1)=-dSi;
 	Ti(1,0)=dSi; Ti(1,1)=dCi;
 
 
-	double dSf = cn.dsample_sense*units::sin(cn.angle_kf_Q);
-	double dCf = units::cos(cn.angle_kf_Q);
+	double dSf = units::sin(kf_Q);
+	double dCf = units::cos(kf_Q);
 
 	t_mat Tf(2,2);
 	Tf(0,0)=dCf; Tf(0,1)=-dSf;
@@ -84,17 +99,17 @@ CNResults calc_cn(const CNParams& cn)
 	// resolution matrix
 
 	t_vec pm(2);
-	pm[0] = units::tan(cn.thetam);
+	pm[0] = units::tan(thetam);
 	pm[1] = 1.;
 	pm /= cn.ki * angs * cn.mono_mosaic/rads;
 
 	t_vec pa(2);
-	pa[0] = -units::tan(cn.thetaa);
+	pa[0] = -units::tan(thetaa);
 	pa[1] = 1.;
 	pa /= cn.kf * angs * cn.ana_mosaic/rads;
 
 	t_vec palf0(2);
-	palf0[0] = 2.*units::tan(cn.thetam);
+	palf0[0] = 2.*units::tan(thetam);
 	palf0[1] = 1.;
 	palf0 /= (cn.ki*angs * cn.coll_h_pre_mono/rads);
 
@@ -104,7 +119,7 @@ CNResults calc_cn(const CNParams& cn)
 	palf1 /= (cn.ki*angs * cn.coll_h_pre_sample/rads);
 
 	t_vec palf2(2);
-	palf2[0] = -2.*units::tan(cn.thetaa);
+	palf2[0] = -2.*units::tan(thetaa);
 	palf2[1] = 1.;
 	palf2 /= (cn.kf*angs * cn.coll_h_post_ana/rads);
 
@@ -129,13 +144,13 @@ CNResults calc_cn(const CNParams& cn)
 	M(2,2) = 1./(cn.ki*cn.ki * angs*angs) *
 		(
 			1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/rads/rads) +
-			1./((2.*units::sin(cn.thetam)*cn.mono_mosaic/rads)*(2.*units::sin(cn.thetam)*cn.mono_mosaic/rads) +
+			1./((2.*units::sin(thetam)*cn.mono_mosaic/rads)*(2.*units::sin(thetam)*cn.mono_mosaic/rads) +
 				cn.coll_v_pre_mono*cn.coll_v_pre_mono/rads/rads)
 		);
 	M(5,5) = 1./(cn.kf*cn.kf * angs*angs) *
 		(
 			1./(cn.coll_v_post_sample*cn.coll_v_post_sample/rads/rads) +
-			1./((2.*units::sin(cn.thetaa)*cn.ana_mosaic/rads)*(2.*units::sin(cn.thetaa)*cn.ana_mosaic/rads) +
+			1./((2.*units::sin(thetaa)*cn.ana_mosaic/rads)*(2.*units::sin(thetaa)*cn.ana_mosaic/rads) +
 				cn.coll_v_post_ana*cn.coll_v_post_ana/rads/rads)
 		);
 	// ------------------------------------------------------------------------------------------------

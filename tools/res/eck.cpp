@@ -13,6 +13,7 @@
 #include "tlibs/math/math.h"
 #include "ellipse.h"
 
+#include <tuple>
 #include <string>
 #include <iostream>
 #include <boost/units/io.hpp>
@@ -26,6 +27,113 @@ static const auto secs = tl::seconds;
 static const auto angs = tl::angstrom;
 static const auto rads = tl::radians;
 static const auto meV = tl::one_meV;
+
+
+static std::tuple<t_mat, t_vec, double, double> 
+get_mono_vals(const length& src_w, const length& src_h, 
+			const length& mono_w, const length& mono_h,
+			const length& dist_src_mono, const length& dist_mono_sample,
+			const wavenumber& ki, const angle& thetam,
+			const angle& coll_h_pre_mono, const angle& coll_h_pre_sample,
+			const angle& coll_v_pre_mono, const angle& coll_v_pre_sample,
+			const angle& mono_mosaic, const angle& mono_mosaic_v,
+			const length& mono_curvh, const length& mono_curvv,
+			const length& pos_x , const length& pos_y, const length& pos_z)
+{
+	// A matrix: formula 26 in [eck14]
+	t_mat A = ublas::identity_matrix<double>(3);
+	A(0,0) = 4.*std::log(2.)/(ki*angs*ki*angs) * units::tan(thetam)*units::tan(thetam) *
+		( (2./(coll_h_pre_mono/rads))*(2./(coll_h_pre_mono/rads)) +
+		  (2.*dist_src_mono/src_w)*(2.*dist_src_mono/src_w) +
+		  (1./(mono_mosaic/rads))*(1./(mono_mosaic/rads))
+		);
+	A(0,1) = A(1,0) = 4.*std::log(2.)/(ki*angs*ki*angs) * units::tan(thetam) *
+		( 2.*(1./(coll_h_pre_mono/rads))*(1./(coll_h_pre_mono/rads)) +
+		  2.*dist_src_mono*(dist_src_mono-dist_mono_sample)/(src_w*src_w) +
+		  (1./(mono_mosaic/rads))*(1./(mono_mosaic/rads)) *
+			(1. - dist_mono_sample/(mono_curvh*std::fabs(units::sin(thetam))))
+		);
+	A(1,1) = 4.*std::log(2.)/(ki*angs*ki*angs) *
+		( (1./(coll_h_pre_mono/rads))*(1./(coll_h_pre_mono/rads)) +
+		  (1./(coll_h_pre_sample/rads))*(1./(coll_h_pre_sample/rads)) +
+		  ((dist_src_mono-dist_mono_sample)/src_w)*((dist_src_mono-dist_mono_sample)/src_w) +
+		  (dist_mono_sample/(mono_w*std::fabs(units::sin(thetam))))*(dist_mono_sample/(mono_w*std::fabs(units::sin(thetam)))) +
+		  (1./(mono_mosaic/rads))*(1./(mono_mosaic/rads)) *
+			(1. - dist_mono_sample/(mono_curvh*std::fabs(units::sin(thetam)))) *
+			(1. - dist_mono_sample/(mono_curvh*std::fabs(units::sin(thetam))))
+		);
+
+	// Av matrix: formula 38 in [eck14]
+	t_mat Av(2,2);
+	Av(0,0) = 4.*std::log(2.)/(ki*angs*ki*angs) *
+		( (1./(coll_v_pre_sample/rads))*(1./(coll_v_pre_sample/rads)) +
+		  (dist_mono_sample/src_h)*(dist_mono_sample/src_h) +
+		  (dist_mono_sample/mono_h)*(dist_mono_sample/mono_h) +
+		  (1./(2.*mono_mosaic_v/rads*units::sin(thetam)))*(1./(2.*mono_mosaic_v/rads*units::sin(thetam))) +
+		  dist_mono_sample/(mono_mosaic_v/rads*mono_mosaic_v/rads*mono_curvv*std::fabs(units::sin(thetam)))
+		);
+	Av(0,1) = Av(1,0) = 4.*std::log(2.)/(ki*angs*ki*angs) *
+		( dist_src_mono*dist_mono_sample/(src_h*src_h) -
+		  (1./(2.*mono_mosaic_v/rads*units::sin(thetam)))*(1./(2.*mono_mosaic_v/rads*units::sin(thetam))) +
+		  dist_mono_sample/(2.*mono_mosaic_v/rads*mono_mosaic_v/rads*mono_curvv*std::fabs(units::sin(thetam)))
+		);
+	Av(1,1) = 4.*std::log(2.)/(ki*angs*ki*angs) *
+		( (1./(coll_v_pre_mono/rads))*(1./(coll_v_pre_mono/rads)) +
+		  (dist_src_mono/src_h)*(dist_src_mono/src_h) +
+		  (1./(2.*mono_mosaic_v/rads*units::sin(thetam)))*(1./(2.*mono_mosaic_v/rads*units::sin(thetam)))
+		);
+
+
+	// B vector: formula 27 in [eck14]
+	t_vec B(3);
+	B(0) = 8.*std::log(2.)*pos_y/(ki*angs) * units::tan(thetam) *
+		( 2.*dist_src_mono/(src_w*src_w) +
+		  1./((mono_mosaic/rads)*(mono_mosaic/rads) * mono_curvh*std::fabs(units::sin(thetam)))
+		);
+	B(1) = 8.*std::log(2.)*pos_y/(ki*angs) *
+		( -dist_mono_sample/(mono_w*std::fabs(units::sin(thetam)) * mono_w*std::fabs(units::sin(thetam))) +
+		  (1./((mono_mosaic/rads)*(mono_mosaic/rads) * mono_curvh*std::fabs(units::sin(thetam)))) *
+			(1. - dist_mono_sample/(mono_curvh*std::fabs(units::sin(thetam)))) +
+		  (dist_src_mono-dist_mono_sample)/(src_w*src_w)
+		);
+
+	// Bv vector: formula 39 in [eck14]
+	t_vec Bv(2);
+	Bv(0) = 4.*std::log(2.)*pos_z / (ki*angs) *
+		( -2.*dist_mono_sample / (src_h*src_h) +		// typo in paper?
+		  1./(mono_mosaic_v/rads*mono_mosaic_v/rads*mono_curvv*std::fabs(units::sin(thetam))) -
+		  2.*dist_mono_sample/(mono_mosaic_v/rads*mono_mosaic_v/rads*mono_curvv*mono_curvv) -
+		  2.*dist_mono_sample / (mono_h*mono_h)			// typo in paper?
+		);
+	Bv(1) = 4.*std::log(2.)*pos_z / (ki*angs) *
+		( -2.*dist_mono_sample / (src_h*src_h) -		// typo in paper?
+		  1./(mono_mosaic_v/rads*mono_mosaic_v/rads*mono_curvv*std::fabs(units::sin(thetam)))
+		);
+
+
+	// C scalar: formula 28 in [eck14]
+	double C = 4.*std::log(2.)*pos_y*pos_y *
+		( 1./(src_w*src_w) +
+		  1./(mono_w*std::fabs(units::sin(thetam)) * mono_w*std::fabs(units::sin(thetam))) +
+		  1./(mono_mosaic/rads * mono_curvh*std::fabs(units::sin(thetam)) * mono_mosaic/rads * mono_curvh*std::fabs(units::sin(thetam)))
+		);
+
+	// Cv scalar: formula 40 in [eck14]
+	double Cv = 4.*std::log(2.)*pos_z*pos_z *
+		( 1./(src_h*src_h) +
+		  1./(mono_h*mono_h) +
+		  1./((mono_mosaic_v/rads * mono_curvv) * (mono_mosaic_v/rads * mono_curvv))
+		);
+
+
+	// z components, [eck14], equ. 42
+	A(2,2) = Av(0,0) - Av(0,1)*Av(0,1)/Av(1,1);
+	B[2] = Bv[0] - Bv[1]*Av(0,1)/Av(1,1);
+	double D = Cv - 0.25*Bv[1]/Av(1,1);
+	
+	return std::make_tuple(A, B, C, D);
+}
+
 
 CNResults calc_eck(EckParams& eck)
 {
@@ -46,14 +154,14 @@ CNResults calc_eck(EckParams& eck)
 	angle ki_Q = eck.angle_ki_Q;
 	angle kf_Q = eck.angle_kf_Q;
 
-	if(eck.dsample_sense < 0) { twotheta = -twotheta; /*ki_Q = -ki_Q; kf_Q = -kf_Q;*/ }
-	if(eck.dana_sense < 0) thetaa = -thetaa;
-	if(eck.dmono_sense < 0) thetam = -thetam;
-
+	if(eck.dsample_sense < 0) { twotheta = -twotheta; ki_Q = -ki_Q; kf_Q = -kf_Q; }
+	if(eck.dana_sense < 0) { thetaa = -thetaa; /*kf_Q = -kf_Q;*/ }
+	if(eck.dmono_sense < 0) { thetam = -thetam; /*ki_Q = -ki_Q;*/ }
+	
+	//angle kf_Q = ki_Q + twotheta;
 
 	//std::cout << "2theta = " << double(twotheta/rads/M_PI*180.) << " deg"<< std::endl;
 	//std::cout << "kiQ = " << double(ki_Q/rads/M_PI*180.) << " deg"<< std::endl;
-
 
 
 	CNResults res;
@@ -68,104 +176,24 @@ CNResults calc_eck(EckParams& eck)
 	//--------------------------------------------------------------------------
 	// mono part
 	
-	// A matrix: formula 26 in [eck14]
-	t_mat A = ublas::identity_matrix<double>(3);
-	A(0,0) = 4.*std::log(2.)/(eck.ki*angs*eck.ki*angs) * units::tan(thetam)*units::tan(thetam) *
-		( (2./(eck.coll_h_pre_mono/rads))*(2./(eck.coll_h_pre_mono/rads)) +
-		  (2.*eck.dist_src_mono/eck.src_w)*(2.*eck.dist_src_mono/eck.src_w) +
-		  (1./(eck.mono_mosaic/rads))*(1./(eck.mono_mosaic/rads))
-		);
-	A(0,1) = A(1,0) = 4.*std::log(2.)/(eck.ki*angs*eck.ki*angs) * units::tan(thetam) *
-		( 2.*(1./(eck.coll_h_pre_mono/rads))*(1./(eck.coll_h_pre_mono/rads)) +
-		  2.*eck.dist_src_mono*(eck.dist_src_mono-eck.dist_mono_sample)/(eck.src_w*eck.src_w) +
-		  (1./(eck.mono_mosaic/rads))*(1./(eck.mono_mosaic/rads)) *
-			(1. - eck.dist_mono_sample/(eck.mono_curvh*std::fabs(units::sin(thetam))))
-		);
-	A(1,1) = 4.*std::log(2.)/(eck.ki*angs*eck.ki*angs) *
-		( (1./(eck.coll_h_pre_mono/rads))*(1./(eck.coll_h_pre_mono/rads)) +
-		  (1./(eck.coll_h_pre_sample/rads))*(1./(eck.coll_h_pre_sample/rads)) +
-		  ((eck.dist_src_mono-eck.dist_mono_sample)/eck.src_w)*((eck.dist_src_mono-eck.dist_mono_sample)/eck.src_w) +
-		  (eck.dist_mono_sample/(eck.mono_w*std::fabs(units::sin(thetam))))*(eck.dist_mono_sample/(eck.mono_w*std::fabs(units::sin(thetam)))) +
-		  (1./(eck.mono_mosaic/rads))*(1./(eck.mono_mosaic/rads)) *
-			(1. - eck.dist_mono_sample/(eck.mono_curvh*std::fabs(units::sin(thetam)))) *
-			(1. - eck.dist_mono_sample/(eck.mono_curvh*std::fabs(units::sin(thetam))))
-		);
+	std::tuple<t_mat, t_vec, double, double> tupMono = 
+			get_mono_vals(eck.src_w, eck.src_h, 
+					eck.mono_w, eck.mono_h,
+					eck.dist_src_mono, eck.dist_mono_sample,
+					eck.ki, thetam,
+					eck.coll_h_pre_mono, eck.coll_h_pre_sample,
+					eck.coll_v_pre_mono, eck.coll_v_pre_sample,
+					eck.mono_mosaic, eck.mono_mosaic_v,
+					eck.mono_curvh, eck.mono_curvv,
+					eck.pos_x , eck.pos_y, eck.pos_z);
+	const t_mat& A = std::get<0>(tupMono);
+	const t_vec& B = std::get<1>(tupMono);
+	const double& C = std::get<2>(tupMono);
+	const double& D = std::get<3>(tupMono);
 
-	// Av matrix: formula 38 in [eck14]
-	t_mat Av(2,2);
-	Av(0,0) = 4.*std::log(2.)/(eck.ki*angs*eck.ki*angs) *
-		( (1./(eck.coll_v_pre_sample/rads))*(1./(eck.coll_v_pre_sample/rads)) +
-		  (eck.dist_mono_sample/eck.src_h)*(eck.dist_mono_sample/eck.src_h) +
-		  (eck.dist_mono_sample/eck.mono_h)*(eck.dist_mono_sample/eck.mono_h) +
-		  (1./(2.*eck.mono_mosaic_v/rads*units::sin(thetam)))*(1./(2.*eck.mono_mosaic_v/rads*units::sin(thetam))) +
-		  eck.dist_mono_sample/(eck.mono_mosaic_v/rads*eck.mono_mosaic_v/rads*eck.mono_curvv*std::fabs(units::sin(thetam)))
-		);
-	Av(0,1) = Av(1,0) = 4.*std::log(2.)/(eck.ki*angs*eck.ki*angs) *
-		( eck.dist_src_mono*eck.dist_mono_sample/(eck.src_h*eck.src_h) -
-		  (1./(2.*eck.mono_mosaic_v/rads*units::sin(thetam)))*(1./(2.*eck.mono_mosaic_v/rads*units::sin(thetam))) +
-		  eck.dist_mono_sample/(2.*eck.mono_mosaic_v/rads*eck.mono_mosaic_v/rads*eck.mono_curvv*std::fabs(units::sin(thetam)))
-		);
-	Av(1,1) = 4.*std::log(2.)/(eck.ki*angs*eck.ki*angs) *
-		( (1./(eck.coll_v_pre_mono/rads))*(1./(eck.coll_v_pre_mono/rads)) +
-		  (eck.dist_src_mono/eck.src_h)*(eck.dist_src_mono/eck.src_h) +
-		  (1./(2.*eck.mono_mosaic_v/rads*units::sin(thetam)))*(1./(2.*eck.mono_mosaic_v/rads*units::sin(thetam)))
-		);
-
-
-	// B vector: formula 27 in [eck14]
-	t_vec B(3);
-	B(0) = 8.*std::log(2.)*eck.pos_y/(eck.ki*angs) * units::tan(thetam) *
-		( 2.*eck.dist_src_mono/(eck.src_w*eck.src_w) +
-		  1./((eck.mono_mosaic/rads)*(eck.mono_mosaic/rads) * eck.mono_curvh*std::fabs(units::sin(thetam)))
-		);
-	B(1) = 8.*std::log(2.)*eck.pos_y/(eck.ki*angs) *
-		( -eck.dist_mono_sample/(eck.mono_w*std::fabs(units::sin(thetam)) * eck.mono_w*std::fabs(units::sin(thetam))) +
-		  (1./((eck.mono_mosaic/rads)*(eck.mono_mosaic/rads) * eck.mono_curvh*std::fabs(units::sin(thetam)))) *
-			(1. - eck.dist_mono_sample/(eck.mono_curvh*std::fabs(units::sin(thetam)))) +
-		  (eck.dist_src_mono-eck.dist_mono_sample)/(eck.src_w*eck.src_w)
-		);
-
-	// Bv vector: formula 39 in [eck14]
-	t_vec Bv(2);
-	Bv(0) = 4.*std::log(2.)*eck.pos_z / (eck.ki*angs) *
-		( -2.*eck.dist_mono_sample / (eck.src_h*eck.src_h) +		// typo in paper?
-		  1./(eck.mono_mosaic_v/rads*eck.mono_mosaic_v/rads*eck.mono_curvv*std::fabs(units::sin(thetam))) -
-		  2.*eck.dist_mono_sample/(eck.mono_mosaic_v/rads*eck.mono_mosaic_v/rads*eck.mono_curvv*eck.mono_curvv) -
-		  2.*eck.dist_mono_sample / (eck.mono_h*eck.mono_h)			// typo in paper?
-		);
-	Bv(1) = 4.*std::log(2.)*eck.pos_z / (eck.ki*angs) *
-		( -2.*eck.dist_mono_sample / (eck.src_h*eck.src_h) -		// typo in paper?
-		  1./(eck.mono_mosaic_v/rads*eck.mono_mosaic_v/rads*eck.mono_curvv*std::fabs(units::sin(thetam)))
-		);
-
-
-	// C scalar: formula 28 in [eck14]
-	double C = 4.*std::log(2.)*eck.pos_y*eck.pos_y *
-		( 1./(eck.src_w*eck.src_w) +
-		  1./(eck.mono_w*std::fabs(units::sin(thetam)) * eck.mono_w*std::fabs(units::sin(thetam))) +
-		  1./(eck.mono_mosaic/rads * eck.mono_curvh*std::fabs(units::sin(thetam)) * eck.mono_mosaic/rads * eck.mono_curvh*std::fabs(units::sin(thetam)))
-		);
-
-	// Cv scalar: formula 40 in [eck14]
-	double Cv = 4.*std::log(2.)*eck.pos_z*eck.pos_z *
-		( 1./(eck.src_h*eck.src_h) +
-		  1./(eck.mono_h*eck.mono_h) +
-		  1./((eck.mono_mosaic_v/rads * eck.mono_curvv) * (eck.mono_mosaic_v/rads * eck.mono_curvv))
-		);
-
-
-	// z components, [eck14], equ. 42
-	A(2,2) = Av(0,0) - Av(0,1)*Av(0,1)/Av(1,1);
-	B[2] = Bv[0] - Bv[1]*Av(0,1)/Av(1,1);
-	double D = Cv - 0.25*Bv[1]/Av(1,1);
-	
-	
 	/*std::cout << "A = " << A << std::endl;
-	std::cout << "Av = " << Av << std::endl;
 	std::cout << "B = " << B << std::endl;
-	std::cout << "Bv = " << Bv << std::endl;
 	std::cout << "C = " << C << std::endl;
-	std::cout << "Cv = " << Cv << std::endl;
 	std::cout << "D = " << D << std::endl;*/
 	//--------------------------------------------------------------------------
 
@@ -173,109 +201,32 @@ CNResults calc_eck(EckParams& eck)
 
 	//--------------------------------------------------------------------------
 	// ana part
-
-	// E matrix: formula 45 in [eck14]
-	t_mat E = ublas::identity_matrix<double>(3);
-	E(0,0) = 4.*std::log(2.)/(eck.kf*angs*eck.kf*angs) * units::tan(thetaa)*units::tan(thetaa) *
-		( (2./(eck.coll_h_post_ana/rads))*(2./(eck.coll_h_post_ana/rads)) +
-		  (2.*eck.dist_ana_det/eck.det_w)*(2.*eck.dist_ana_det/eck.det_w) +
-		  (1./(eck.ana_mosaic/rads))*(1./(eck.ana_mosaic/rads))
-		);
-	E(0,1) = E(1,0) = 4.*std::log(2.)/(eck.kf*angs*eck.kf*angs) * units::tan(-thetaa) *
-		( 2.*(1./(eck.coll_h_post_ana/rads))*(1./(eck.coll_h_post_ana/rads)) +
-		  2.*eck.dist_ana_det*(eck.dist_ana_det-eck.dist_sample_ana)/(eck.det_w*eck.det_w) +
-		  (1./(eck.ana_mosaic/rads))*(1./(eck.ana_mosaic/rads)) *
-			(1. - eck.dist_sample_ana/(eck.ana_curvh*std::fabs(units::sin(-thetaa))))
-		);
-	E(1,1) = 4.*std::log(2.)/(eck.kf*angs*eck.kf*angs) *
-		( (1./(eck.coll_h_post_ana/rads))*(1./(eck.coll_h_post_ana/rads)) +
-		  (1./(eck.coll_h_post_sample/rads))*(1./(eck.coll_h_post_sample/rads)) +
-		  ((eck.dist_ana_det-eck.dist_sample_ana)/eck.det_w)*((eck.dist_ana_det-eck.dist_sample_ana)/eck.det_w) +
-		  (eck.dist_sample_ana/(eck.ana_w*std::fabs(units::sin(-thetaa))))*(eck.dist_sample_ana/(eck.ana_w*std::fabs(units::sin(-thetaa)))) +
-		  (1./(eck.ana_mosaic/rads))*(1./(eck.ana_mosaic/rads)) *
-			(1. - eck.dist_sample_ana/(eck.ana_curvh*std::fabs(units::sin(-thetaa)))) *
-			(1. - eck.dist_sample_ana/(eck.ana_curvh*std::fabs(units::sin(-thetaa))))
-		);
-
-	// Ev matrix
-	t_mat Ev(2,2);
-	Ev(0,0) = 4.*std::log(2.)/(eck.kf*angs*eck.kf*angs) *
-		( (1./(eck.coll_v_post_sample/rads))*(1./(eck.coll_v_post_sample/rads)) +
-		  (eck.dist_sample_ana/eck.det_h)*(eck.dist_sample_ana/eck.det_h) +
-		  (eck.dist_sample_ana/eck.ana_h)*(eck.dist_sample_ana/eck.ana_h) +
-		  (1./(2.*eck.ana_mosaic_v/rads*units::sin(-thetaa)))*(1./(2.*eck.ana_mosaic_v/rads*units::sin(-thetaa))) +
-		  eck.dist_sample_ana/(eck.ana_mosaic_v/rads*eck.ana_mosaic_v/rads*eck.ana_curvv*std::fabs(units::sin(-thetaa)))
-		);
-	Ev(0,1) = Ev(1,0) = 4.*std::log(2.)/(eck.kf*angs*eck.kf*angs) *
-		( eck.dist_ana_det*eck.dist_sample_ana/(eck.det_h*eck.det_h) -
-		  (1./(2.*eck.ana_mosaic_v/rads*units::sin(-thetaa)))*(1./(2.*eck.ana_mosaic_v/rads*units::sin(-thetaa))) +
-		  eck.dist_sample_ana/(2.*eck.ana_mosaic_v/rads*eck.ana_mosaic_v/rads*eck.ana_curvv*std::fabs(units::sin(-thetaa)))
-		);
-	Ev(1,1) = 4.*std::log(2.)/(eck.kf*angs*eck.kf*angs) *
-		( (1./(eck.coll_v_post_ana/rads))*(1./(eck.coll_v_post_ana/rads)) +
-		  (eck.dist_ana_det/eck.det_h)*(eck.dist_ana_det/eck.det_h) +
-		  (1./(2.*eck.ana_mosaic_v/rads*units::sin(-thetaa)))*(1./(2.*eck.ana_mosaic_v/rads*units::sin(-thetaa)))
-		);
-
+	
 	// equ 43 in [eck14]
 	length pos_y2 = -eck.pos_x*units::sin(twotheta)
-					+eck.pos_y*units::sin(twotheta);
+					+eck.pos_y*units::cos(twotheta);
 
-	// F vector: formula 46 in [eck14]		-> signs in paper correct?
-	t_vec F(3);
-	F(0) = 8.*std::log(2.)*pos_y2/(eck.kf*angs) * units::tan(-thetaa) *
-		( 2.*eck.dist_ana_det/(eck.det_w*eck.det_w) +
-		  1./((eck.ana_mosaic/rads)*(eck.ana_mosaic/rads) * eck.ana_curvh*std::fabs(units::sin(-thetaa)))
-		);
-	F(1) = 8.*std::log(2.)*pos_y2/(eck.kf*angs) *
-		( -eck.dist_sample_ana/(eck.ana_w*std::fabs(units::sin(-thetaa)) * eck.ana_w*std::fabs(units::sin(-thetaa))) +
-		  (1./((eck.ana_mosaic/rads)*(eck.ana_mosaic/rads) * eck.ana_curvh*std::fabs(units::sin(-thetaa)))) *
-			(1. - eck.dist_sample_ana/(eck.ana_curvh*std::fabs(units::sin(-thetaa)))) +
-		  (eck.dist_ana_det-eck.dist_sample_ana)/(eck.det_w*eck.det_w)
-		);
+	std::tuple<t_mat, t_vec, double, double> tupAna = 
+			get_mono_vals(eck.det_w, eck.det_h, 
+					eck.ana_w, eck.ana_h,
+					eck.dist_ana_det, eck.dist_sample_ana,
+					eck.kf, -thetaa,
+					eck.coll_h_post_ana, eck.coll_h_post_sample,
+					eck.coll_v_post_ana, eck.coll_v_post_sample,
+					eck.ana_mosaic, eck.ana_mosaic_v,
+					eck.ana_curvh, eck.ana_curvv,
+					eck.pos_x , pos_y2, eck.pos_z);
+	const t_mat& E = std::get<0>(tupAna);
+	const t_vec& F = std::get<1>(tupAna);
+	const double& G = std::get<2>(tupAna);
+	const double& H = std::get<3>(tupAna);
 
-	// Fv vector
-	t_vec Fv(2);
-	Fv(0) = 4.*std::log(2.)*eck.pos_z / (eck.kf*angs) *
-		( -2.*eck.dist_sample_ana / (eck.det_h*eck.det_h) +			// typo in paper?
-		  1./(eck.ana_mosaic_v/rads*eck.ana_mosaic_v/rads*eck.ana_curvv*std::fabs(units::sin(-thetaa))) -
-		  2.*eck.dist_sample_ana/(eck.ana_mosaic_v/rads*eck.ana_mosaic_v/rads*eck.ana_curvv*eck.ana_curvv) -
-		  2.*eck.dist_sample_ana / (eck.ana_h*eck.ana_h)			// typo in paper?
-		);
-	Fv(1) = 4.*std::log(2.)*eck.pos_z / (eck.kf*angs) *
-		( -2.*eck.dist_sample_ana / (eck.det_h*eck.det_h) -			// typo in paper?
-		  1./(eck.ana_mosaic_v/rads*eck.ana_mosaic_v/rads*eck.ana_curvv*std::fabs(units::sin(-thetaa)))
-		);
-
-
-	// G scalar: formula 47 in [eck14]
-	double G = 4.*std::log(2.)*pos_y2*pos_y2 *
-		( 1./(eck.det_w*eck.det_w) +
-		  1./(eck.ana_w*std::fabs(units::sin(-thetaa)) * eck.ana_w*std::fabs(units::sin(-thetaa))) +
-		  1./(eck.ana_mosaic/rads * eck.ana_curvh*std::fabs(units::sin(-thetaa)) * eck.ana_mosaic/rads * eck.ana_curvh*std::fabs(units::sin(-thetaa)))
-		);
-
-	// Gv scalar
-	double Gv = 4.*std::log(2.)*eck.pos_z*eck.pos_z *
-		( 1./(eck.det_h*eck.det_h) +
-		  1./(eck.ana_h*eck.ana_h) +
-		  1./((eck.ana_mosaic_v/rads * eck.ana_curvv) * (eck.ana_mosaic_v/rads * eck.ana_curvv))
-		);
-
-	// z components
-	E(2,2) = Ev(0,0) - Ev(0,1)*Ev(0,1)/Ev(1,1);
-	F[2] = Fv[0] - Fv[1]*Ev(0,1)/Ev(1,1);
-	double H = Gv - 0.25*Fv[1]/Ev(1,1);
-	
-	
 	/*std::cout << "E = " << E << std::endl;
-	std::cout << "Ev = " << Ev << std::endl;
 	std::cout << "F = " << F << std::endl;
-	std::cout << "Fv = " << Fv << std::endl;
 	std::cout << "G = " << G << std::endl;
-	std::cout << "Gv = " << Gv << std::endl;
 	std::cout << "H = " << H << std::endl;*/
 	//--------------------------------------------------------------------------
+
 
 
 	// equ 4 & equ 53 in [eck14]
@@ -310,11 +261,10 @@ CNResults calc_eck(EckParams& eck)
 	//std::cout << "Tinv = " << Tinv << std::endl;
 
 	// equ 54 in [eck14]
-	t_mat Dalph = tl::rotation_matrix_3d_z(ki_Q/rads);
-	//t_mat Dalphphi = tl::rotation_matrix_3d_z((ki_Q + twotheta)/rads);
-	t_mat Dalphphi = tl::rotation_matrix_3d_z(kf_Q/rads);
-	t_mat Arot = tl::transform(A, Dalph, 1);
-	t_mat Erot = tl::transform(E, Dalphphi, 1);
+	t_mat Dalph_i = tl::rotation_matrix_3d_z(ki_Q/rads);
+	t_mat Dalph_f = tl::rotation_matrix_3d_z(kf_Q/rads);
+	t_mat Arot = tl::transform(A, Dalph_i, 1);
+	t_mat Erot = tl::transform(E, Dalph_f, 1);
 
 	t_mat matAE = ublas::zero_matrix<double>(6,6);
 	tl::submatrix_copy(matAE, Arot, 0,0);
@@ -328,8 +278,8 @@ CNResults calc_eck(EckParams& eck)
 
 
 	t_vec vecBF = ublas::zero_vector<double>(6);
-	t_vec vecBrot = ublas::prod(Dalph, B);
-	t_vec vecFrot = ublas::prod(Dalphphi, B);
+	t_vec vecBrot = ublas::prod(Dalph_i, B);
+	t_vec vecFrot = ublas::prod(Dalph_f, F);
 	tl::subvector_copy(vecBF, vecBrot, 0);
 	tl::subvector_copy(vecBF, vecFrot, 3);
 	t_vec V1 = ublas::prod(vecBF, Tinv);
