@@ -96,4 +96,22 @@ ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, unsigned int i
 	return m;
 }
 
+template<class T = double>
+ublas::vector<T> ellipsoid_gauss_int(const ublas::vector<T>& vec, 
+									const ublas::matrix<T>& mat, 
+									unsigned int iIdx)
+{
+	ublas::vector<T> vecInt(vec.size()-1);
+	
+	for(std::size_t i=0, j=0; i<vec.size(); ++i)
+	{
+		if(i==iIdx) continue;
+
+		vecInt[j] = vec[i] - vec[iIdx]*mat(i,iIdx)/mat(iIdx, iIdx);
+		++j;
+	}
+	
+	return vecInt;
+}
+
 #endif

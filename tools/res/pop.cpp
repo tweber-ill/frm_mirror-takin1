@@ -29,7 +29,7 @@ static const auto rads = tl::radians;
 static const auto meV = tl::one_meV;
 
 
-CNResults calc_pop(PopParams& pop)
+CNResults calc_pop(const PopParams& pop)
 {
 	CNResults res;
 
@@ -58,18 +58,20 @@ CNResults calc_pop(PopParams& pop)
 	if(pop.dana_sense < 0) thetaa = -thetaa;
 	if(pop.dmono_sense < 0) thetam = -thetam;
 
+	angle coll_h_pre_mono = pop.coll_h_pre_mono;
+	angle coll_v_pre_mono = pop.coll_v_pre_mono;
 	
 	if(pop.bGuide)
 	{
-		pop.coll_h_pre_mono = lam*(pop.guide_div_h/angs);
-		pop.coll_v_pre_mono = lam*(pop.guide_div_v/angs);
+		coll_h_pre_mono = lam*(pop.guide_div_h/angs);
+		coll_v_pre_mono = lam*(pop.guide_div_v/angs);
 	}
 
 	// collimator covariance matrix G, [pop75], Appendix 1
 	t_mat G = ublas::zero_matrix<t_real>(8,8);
-	G(0,0) = 1./(pop.coll_h_pre_mono*pop.coll_h_pre_mono /rads/rads);
+	G(0,0) = 1./(coll_h_pre_mono*coll_h_pre_mono /rads/rads);
 	G(1,1) = 1./(pop.coll_h_pre_sample*pop.coll_h_pre_sample /rads/rads);
-	G(2,2) = 1./(pop.coll_v_pre_mono*pop.coll_v_pre_mono /rads/rads);
+	G(2,2) = 1./(coll_v_pre_mono*coll_v_pre_mono /rads/rads);
 	G(3,3) = 1./(pop.coll_v_pre_sample*pop.coll_v_pre_sample /rads/rads);
 	G(4,4) = 1./(pop.coll_h_post_sample*pop.coll_h_post_sample /rads/rads);
 	G(5,5) = 1./(pop.coll_h_post_ana*pop.coll_h_post_ana /rads/rads);

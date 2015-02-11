@@ -76,6 +76,7 @@ public:
 
 protected slots:
 	void Calc();
+	void AlgoChanged();
 
 	void SaveRes();
 	void LoadRes();

@@ -91,6 +91,12 @@
 		<v_coll_ana> 9.999000e+03 </v_coll_ana>
 		<v_coll_before_sample> 9.999000e+03 </v_coll_before_sample>
 		<v_coll_mono> 9.999000e+03 </v_coll_mono>
+		<eck_ana_mosaic_v> 4.500000e+01 </eck_ana_mosaic_v>
+		<eck_mono_mosaic_v> 7.000000e+01 </eck_mono_mosaic_v>
+		<eck_sample_pos_x> 0.000000e+00 </eck_sample_pos_x>
+		<eck_sample_pos_y> 0.000000e+00 </eck_sample_pos_y>
+		<eck_sample_pos_z> 0.000000e+00 </eck_sample_pos_z>
+
 	</reso>
 	<sample>
 		<a> 4.56 </a>

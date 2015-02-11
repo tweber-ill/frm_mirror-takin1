@@ -138,18 +138,17 @@ get_mono_vals(const length& src_w, const length& src_h,
 }
 
 
-CNResults calc_eck(EckParams& eck)
+CNResults calc_eck(const EckParams& eck)
 {
-	eck.mono_mosaic_v = 9999./(180.*60.) * rads;
-	eck.ana_mosaic_v = 9999./(180.*60.) * rads;
-	eck.pos_x = 0.*cm;
-	eck.pos_y = 0.*cm;
-	eck.pos_z = 0.*cm;
-
-	if(!eck.bMonoIsCurvedH) eck.mono_curvh = 99999. * cm * eck.dmono_sense;
-	if(!eck.bMonoIsCurvedV) eck.mono_curvv = 99999. * cm * eck.dmono_sense;
-	if(!eck.bAnaIsCurvedH) eck.ana_curvh = 99999. * cm * eck.dana_sense;
-	if(!eck.bAnaIsCurvedV) eck.ana_curvv = 99999. * cm * eck.dana_sense;
+	length mono_curvh = eck.mono_curvh * eck.dmono_sense;
+	length mono_curvv = eck.mono_curvv * eck.dmono_sense;
+	length ana_curvh = eck.ana_curvh * eck.dana_sense;
+	length ana_curvv = eck.ana_curvv * eck.dana_sense;
+	
+	if(!eck.bMonoIsCurvedH) mono_curvh = 99999. * cm * eck.dmono_sense;
+	if(!eck.bMonoIsCurvedV) mono_curvv = 99999. * cm * eck.dmono_sense;
+	if(!eck.bAnaIsCurvedH) ana_curvh = 99999. * cm * eck.dana_sense;
+	if(!eck.bAnaIsCurvedV) ana_curvv = 99999. * cm * eck.dana_sense;
 
 	angle twotheta = eck.twotheta;
 	angle thetaa = eck.thetaa;
@@ -188,7 +187,7 @@ CNResults calc_eck(EckParams& eck)
 					eck.coll_h_pre_mono, eck.coll_h_pre_sample,
 					eck.coll_v_pre_mono, eck.coll_v_pre_sample,
 					eck.mono_mosaic, eck.mono_mosaic_v,
-					eck.mono_curvh, eck.mono_curvv,
+					mono_curvh, mono_curvv,
 					eck.pos_x , eck.pos_y, eck.pos_z);
 	const t_mat& A = std::get<0>(tupMono);
 	const t_vec& B = std::get<1>(tupMono);
@@ -218,7 +217,7 @@ CNResults calc_eck(EckParams& eck)
 					eck.coll_h_post_ana, eck.coll_h_post_sample,
 					eck.coll_v_post_ana, eck.coll_v_post_sample,
 					eck.ana_mosaic, eck.ana_mosaic_v,
-					eck.ana_curvh, eck.ana_curvv,
+					ana_curvh, ana_curvv,
 					eck.pos_x, pos_y2, eck.pos_z);
 	const t_mat& E = std::get<0>(tupAna);
 	const t_vec& F = std::get<1>(tupAna);
@@ -296,34 +295,14 @@ CNResults calc_eck(EckParams& eck)
 	//--------------------------------------------------------------------------
 	// integrate last 2 vars -> equs 57 & 58 in [eck14]
 	
-	//t_mat U = ellipsoid_gauss_int(U1, 5);
-	//U = ellipsoid_gauss_int(U, 4);
+	t_mat U2 = ellipsoid_gauss_int(U1, 5);
+	t_mat U = ellipsoid_gauss_int(U2, 4);
+	
+	t_vec V2 = ellipsoid_gauss_int(V1, U1, 5);
+	t_vec V = ellipsoid_gauss_int(V2, U2, 4);
 
-
-	t_mat U2(U1.size1()-1, U1.size2()-1);
-	t_vec V2(V1.size()-1);
 	t_real W2 = W1 - 0.25*V1[5]/U1(5,5);
-
-	for(int i=0; i<5; ++i)
-	{
-		for(int j=0; j<5; ++j)
-			U2(i,j) = U1(i,j) - U1(i,5)*U1(j,5)/U1(5,5);
-
-		V2[i] = V1[i] - V1[5]*U1(i,5)/U1(5,5);
-	}
-
-
-	t_mat U(U2.size1()-1, U2.size2()-1);
-	t_vec V(V2.size()-1);
 	t_real W = W2 - 0.25*V2[4]/U2(4,4);
-
-	for(int i=0; i<4; ++i)
-	{
-		for(int j=0; j<4; ++j)
-			U(i,j) = U2(i,j) - U2(i,4)*U2(j,4)/U2(4,4);
-
-		V[i] = V2[i] - V2[4]*U2(i,4)/U2(4,4);
-	}
 
 	/*std::cerr << "U = " << U << std::endl;
 	std::cerr << "V = " << V << std::endl;
@@ -331,8 +310,10 @@ CNResults calc_eck(EckParams& eck)
 	//--------------------------------------------------------------------------
 
 
-
+	// quadratic part of quadric (matrix U)
 	res.reso = 0.5*U*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
+	// TODO: consider linear (vector V) and constant (scalar W) part of quadric
+
 
 	res.dR0 = 0.;	// TODO
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);

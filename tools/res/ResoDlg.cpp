@@ -32,6 +32,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	setupUi(this);
 
 	setupAlgos();
+	QObject::connect(comboAlgo, SIGNAL(currentIndexChanged(int)), this, SLOT(AlgoChanged()));
 	comboAlgo->setCurrentIndex(1);
 
 	groupGuide->setChecked(false);
@@ -49,7 +50,10 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 						spinSrcW, spinSrcH,
 						spinGuideDivH, spinGuideDivV,
 						spinDetW, spinDetH,
-						spinDistMonoSample, spinDistSampleAna, spinDistAnaDet, spinDistSrcMono};
+						spinDistMonoSample, spinDistSampleAna, spinDistAnaDet, spinDistSrcMono,
+						
+						spinMonoMosaicV, spinAnaMosaicV,
+						spinSamplePosX, spinSamplePosY, spinSamplePosZ};
 
 	m_vecSpinNames = {"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
 					"reso/ana_mosaic", "reso/sample_mosaic",
@@ -65,7 +69,10 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 					"reso/pop_src_w", "reso/pop_src_h",
 					"reso/pop_guide_divh", "reso/pop_guide_divv",
 					"reso/pop_det_w", "reso/pop_det_h",
-					"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det", "reso/pop_dist_src_mono"};
+					"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det", "reso/pop_dist_src_mono",
+					
+					"reso/eck_mono_mosaic_v", "reso/eck_ana_mosaic_v",
+					"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z"};
 
 	m_vecEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
@@ -267,12 +274,20 @@ void ResoDlg::Calc()
 	cn.dist_sample_ana = spinDistSampleAna->value()*0.01*units::si::meter;
 	cn.dist_ana_det = spinDistAnaDet->value()*0.01*units::si::meter;
 	cn.dist_src_mono = spinDistSrcMono->value()*0.01*units::si::meter;
+	
+	// eck
+	cn.mono_mosaic_v = spinMonoMosaicV->value() / (180.*60.) * M_PI * units::si::radians;
+	cn.ana_mosaic_v = spinAnaMosaicV->value() / (180.*60.) * M_PI * units::si::radians;
+	cn.pos_x = spinSamplePosX->value()*0.01*units::si::meter;
+	cn.pos_y = spinSamplePosY->value()*0.01*units::si::meter;
+	cn.pos_z = spinSamplePosZ->value()*0.01*units::si::meter;
 
 	// TODO
 	cn.mono_numtiles_h = 1;
 	cn.mono_numtiles_v = 1;
 	cn.ana_numtiles_h = 1;
 	cn.ana_numtiles_v = 1;
+
 
 
 	switch(comboAlgo->currentIndex())
@@ -770,6 +785,22 @@ void ResoDlg::MCGenerate()
 		m_pSettings->setValue("reso/mc_dir", QString(tl::get_dir(strFile).c_str()));
 }
 // --------------------------------------------------------------------------------
+
+
+void ResoDlg::AlgoChanged()
+{
+	std::string strAlgo;
+	
+	switch(comboAlgo->currentIndex())
+	{
+		case 0: strAlgo = "M. J. Cooper and R. Nathans\nActa Cryst. 23, 357\n1967"; break;
+		case 1: strAlgo = "M. Popovici\nActa Cryst. A 31, 507\n1975"; break;
+		case 2: strAlgo = "G. Eckold and O. Sobolev\nNIM A 752, pp. 54-64\n2014"; break;
+		default: strAlgo = "unknown"; break;
+	}
+	
+	labelAlgoRef->setText(strAlgo.c_str());
+}
 
 
 #include "ResoDlg.moc"
