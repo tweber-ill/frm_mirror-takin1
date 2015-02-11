@@ -1,5 +1,6 @@
 /*
- * implementation of the eckold algo
+ * implementation of the eckold-sobolev algo
+ * 
  * @author tweber
  * @date feb-2015
  * @copyright GPLv2

@@ -123,7 +123,7 @@ void ResoDlg::setupAlgos()
 {
 	comboAlgo->addItem("Cooper-Nathans");
 	comboAlgo->addItem("Popovici");
-	//comboAlgo->addItem("Eckold-Sobolev");
+	comboAlgo->addItem("Eckold-Sobolev");
 }
 
 void ResoDlg::SaveRes()

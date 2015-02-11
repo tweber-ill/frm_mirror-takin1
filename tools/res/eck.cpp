@@ -1,5 +1,6 @@
 /*
- * implementation of the eckold algo
+ * implementation of the eckold-sobolev algo
+ * 
  * @author tweber
  * @date feb-2015
  * @copyright GPLv2
@@ -236,11 +237,11 @@ CNResults calc_eck(EckParams& eck)
 	t_real s0 = (eck.ki*eck.ki - eck.kf*eck.kf) / (2. * eck.Q*eck.Q);
 	wavenumber kperp = units::sqrt(units::abs(eck.Q*eck.Q*(0.5 + s0)*(0.5 + s0) -
 												eck.ki*eck.ki));
-	if(twotheta/rads >= 0.)
+	if(twotheta/rads < 0.)
 		kperp = -kperp;
 
-	std::cout << "s0 = " << s0 << std::endl;
-	std::cout << "kperp = " << t_real(kperp*angs) << " / A" << std::endl;
+	//std::cout << "s0 = " << s0 << std::endl;
+	//std::cout << "kperp = " << t_real(kperp*angs) << " / A" << std::endl;
 
 	// trafo, equ 52 in [eck14]
 	t_mat T = ublas::identity_matrix<t_real>(6);
@@ -264,8 +265,8 @@ CNResults calc_eck(EckParams& eck)
 	//std::cout << "Tinv = " << Tinv << std::endl;
 
 	// equ 54 in [eck14]
-	t_mat Dalph_i = tl::rotation_matrix_3d_z(ki_Q/rads);
-	t_mat Dalph_f = tl::rotation_matrix_3d_z(kf_Q/rads);
+	t_mat Dalph_i = tl::rotation_matrix_3d_z(-ki_Q/rads);
+	t_mat Dalph_f = tl::rotation_matrix_3d_z(-kf_Q/rads);
 	t_mat Arot = tl::transform(A, Dalph_i, 1);
 	t_mat Erot = tl::transform(E, Dalph_f, 1);
 
@@ -275,15 +276,15 @@ CNResults calc_eck(EckParams& eck)
 	//std::cout << "AE = " << matAE << std::endl;
 
 	// U1 matrix
-	//t_mat U1 = tl::transform(matAE, T, 0);
-	t_mat matTAE = ublas::prod(T, matAE);
-	t_mat U1 = ublas::prod(matTAE, Tinv);
+	t_mat U1 = tl::transform(matAE, Tinv, 1);
+	//t_mat matTAE = ublas::prod(T, matAE);
+	//t_mat U1 = ublas::prod(matTAE, Tinv);
 	//std::cout << "U1 = " << U1 << std::endl;
 
 	// V1 vector
 	t_vec vecBF = ublas::zero_vector<t_real>(6);
-	t_vec vecBrot = ublas::prod(Dalph_i, B);
-	t_vec vecFrot = ublas::prod(Dalph_f, F);
+	t_vec vecBrot = ublas::prod(ublas::trans(Dalph_i), B);
+	t_vec vecFrot = ublas::prod(ublas::trans(Dalph_f), F);
 	tl::subvector_copy(vecBF, vecBrot, 0);
 	tl::subvector_copy(vecBF, vecFrot, 3);
 	t_vec V1 = ublas::prod(vecBF, Tinv);
