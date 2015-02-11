@@ -311,7 +311,7 @@ CNResults calc_eck(const EckParams& eck)
 
 
 	// quadratic part of quadric (matrix U)
-	res.reso = 0.5*U*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
+	res.reso = 0.5*0.5*U*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 	// TODO: consider linear (vector V) and constant (scalar W) part of quadric
 
 
