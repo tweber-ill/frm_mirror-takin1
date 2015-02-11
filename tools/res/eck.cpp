@@ -275,9 +275,7 @@ CNResults calc_eck(const EckParams& eck)
 	//std::cout << "AE = " << matAE << std::endl;
 
 	// U1 matrix
-	t_mat U1 = tl::transform(matAE, Tinv, 1);
-	//t_mat matTAE = ublas::prod(T, matAE);
-	//t_mat U1 = ublas::prod(matTAE, Tinv);
+	t_mat U1 = tl::transform(matAE, Tinv, 1);	// typo in paper in quadric trafo in equ 54 (top)?
 	//std::cout << "U1 = " << U1 << std::endl;
 
 	// V1 vector
