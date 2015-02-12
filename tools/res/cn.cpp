@@ -160,6 +160,8 @@ CNResults calc_cn(const CNParams& cn)
 	NP *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
 	res.reso = NP;
+	res.reso_v = ublas::zero_vector<t_real>(4);
+	res.reso_s = 0.;
 	
 	// -------------------------------------------------------------------------
 

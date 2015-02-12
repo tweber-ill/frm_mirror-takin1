@@ -33,7 +33,7 @@ static const auto rads = tl::radians;
 static const auto meV = tl::one_meV;
 
 
-static std::tuple<t_mat, t_vec, t_real, t_real> 
+static std::tuple<t_mat, t_vec, t_real, t_real, t_real> 
 get_mono_vals(const length& src_w, const length& src_h, 
 			const length& mono_w, const length& mono_h,
 			const length& dist_src_mono, const length& dist_mono_sample,
@@ -42,7 +42,8 @@ get_mono_vals(const length& src_w, const length& src_h,
 			const angle& coll_v_pre_mono, const angle& coll_v_pre_sample,
 			const angle& mono_mosaic, const angle& mono_mosaic_v,
 			const length& mono_curvh, const length& mono_curvv,
-			const length& pos_x , const length& pos_y, const length& pos_z)
+			const length& pos_x , const length& pos_y, const length& pos_z,
+			t_real dRefl)
 {
 	// A matrix: formula 26 in [eck14]
 	t_mat A = ublas::identity_matrix<t_real>(3);
@@ -135,7 +136,11 @@ get_mono_vals(const length& src_w, const length& src_h,
 	t_real D = Cv - 0.25*Bv[1]/Av(1,1);
 
 
-	return std::make_tuple(A, B, C, D);
+	// [eck14], equ. 54
+	t_real refl = dRefl * std::sqrt(M_PI/Av(1,1));
+
+
+	return std::make_tuple(A, B, C, D, refl);
 }
 
 
@@ -180,7 +185,7 @@ CNResults calc_eck(const EckParams& eck)
 	//--------------------------------------------------------------------------
 	// mono part
 	
-	std::future<std::tuple<t_mat, t_vec, t_real, t_real>> futMono
+	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futMono
 		= std::async(std::launch::deferred | std::launch::async, get_mono_vals, 
 					eck.src_w, eck.src_h, 
 					eck.mono_w, eck.mono_h,
@@ -190,7 +195,8 @@ CNResults calc_eck(const EckParams& eck)
 					eck.coll_v_pre_mono, eck.coll_v_pre_sample,
 					eck.mono_mosaic, eck.mono_mosaic_v,
 					mono_curvh, mono_curvv,
-					eck.pos_x , eck.pos_y, eck.pos_z);
+					eck.pos_x , eck.pos_y, eck.pos_z,
+					eck.dmono_refl);
 					
 	//--------------------------------------------------------------------------
 
@@ -202,7 +208,7 @@ CNResults calc_eck(const EckParams& eck)
 	length pos_y2 = -eck.pos_x*units::sin(twotheta)
 					+eck.pos_y*units::cos(twotheta);
 
-	std::future<std::tuple<t_mat, t_vec, t_real, t_real>> futAna
+	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futAna
 		= std::async(std::launch::deferred | std::launch::async, get_mono_vals,
 					eck.det_w, eck.det_h, 
 					eck.ana_w, eck.ana_h,
@@ -212,32 +218,37 @@ CNResults calc_eck(const EckParams& eck)
 					eck.coll_v_post_ana, eck.coll_v_post_sample,
 					eck.ana_mosaic, eck.ana_mosaic_v,
 					ana_curvh, ana_curvv,
-					eck.pos_x, pos_y2, eck.pos_z);
+					eck.pos_x, pos_y2, eck.pos_z,
+					eck.dana_effic);
 					
 	//--------------------------------------------------------------------------
 	// get mono & ana results
 
-	std::tuple<t_mat, t_vec, t_real, t_real> tupMono = futMono.get();
+	std::tuple<t_mat, t_vec, t_real, t_real, t_real> tupMono = futMono.get();
 	const t_mat& A = std::get<0>(tupMono);
 	const t_vec& B = std::get<1>(tupMono);
 	const t_real& C = std::get<2>(tupMono);
 	const t_real& D = std::get<3>(tupMono);
+	const t_real& dReflM = std::get<4>(tupMono);
 
-	std::tuple<t_mat, t_vec, t_real, t_real> tupAna = futAna.get();
+	std::tuple<t_mat, t_vec, t_real, t_real, t_real> tupAna = futAna.get();
 	const t_mat& E = std::get<0>(tupAna);
 	const t_vec& F = std::get<1>(tupAna);
 	const t_real& G = std::get<2>(tupAna);
 	const t_real& H = std::get<3>(tupAna);
+	const t_real& dReflA = std::get<4>(tupAna);
 	
 	/*std::cout << "A = " << A << std::endl;
 	std::cout << "B = " << B << std::endl;
 	std::cout << "C = " << C << std::endl;
 	std::cout << "D = " << D << std::endl;
+	std::cout << "RM = " << dReflM << std::endl;
 
 	std::cout << "E = " << E << std::endl;
 	std::cout << "F = " << F << std::endl;
 	std::cout << "G = " << G << std::endl;
-	std::cout << "H = " << H << std::endl;*/
+	std::cout << "H = " << H << std::endl;
+	std::cout << "RA = " << dReflA << std::endl;*/
 
 	//--------------------------------------------------------------------------
 
@@ -298,6 +309,7 @@ CNResults calc_eck(const EckParams& eck)
 
 
 	t_real W1 = C+D+G+H;
+	t_real Z1 = dReflM*dReflA;
 
 
 	//--------------------------------------------------------------------------
@@ -311,19 +323,25 @@ CNResults calc_eck(const EckParams& eck)
 
 	t_real W2 = W1 - 0.25*V1[5]/U1(5,5);
 	t_real W = W2 - 0.25*V2[4]/U2(4,4);
+	
+	t_real Z2 = Z1*std::sqrt(M_PI/std::fabs(U1(5,5)));
+	t_real Z = Z2*std::sqrt(M_PI/std::fabs(U2(4,4)));
 
-	/*std::cerr << "U = " << U << std::endl;
-	std::cerr << "V = " << V << std::endl;
-	std::cerr << "W = " << W << std::endl;*/
+	/*std::cout << "U = " << U << std::endl;
+	std::cout << "V = " << V << std::endl;
+	std::cout << "W = " << W << std::endl;
+	std::cout << "Z = " << Z << std::endl;*/
 	//--------------------------------------------------------------------------
 
 
 	// quadratic part of quadric (matrix U)
 	res.reso = 0.5*0.5*U*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
-	// TODO: consider linear (vector V) and constant (scalar W) part of quadric
+	// linear (vector V) and constant (scalar W) part of quadric
+	res.reso_v = V;
+	res.reso_s = W;
 
-
-	res.dR0 = 0.;	// TODO
+	// prefactor and volume
+	res.dR0 = Z;
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 
 	// Bragg widths

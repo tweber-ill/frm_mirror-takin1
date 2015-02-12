@@ -75,10 +75,13 @@ struct CNResults
 	bool bOk;
 	std::string strErr;
 
-	ublas::matrix<double> reso;
+	ublas::matrix<double> reso;		// quadratic part of quadric
+	ublas::vector<double> reso_v;	// linear part of quadric
+	double reso_s;					// constant part of quadric
+
 	ublas::vector<double> Q_avg;
-	double dR0;				// resolution prefactors
-	double dResVol;			// resolution volume in 1/A^3 * meV
+	double dR0;						// resolution prefactor
+	double dResVol;					// resolution volume in 1/A^3 * meV
 
 	double dBraggFWHMs[4];
 };

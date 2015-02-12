@@ -290,6 +290,9 @@ CNResults calc_pop(const PopParams& pop)
 	
 
 	res.reso = M*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
+	res.reso_v = ublas::zero_vector<t_real>(4);
+	res.reso_s = 0.;
+
 
 	res.dR0 = 0.;
 	if(pop.bCalcR0)
