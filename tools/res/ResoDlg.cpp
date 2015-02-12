@@ -644,6 +644,8 @@ void ResoDlg::ResoParamsChanged(const ResoParams& params)
 
 void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 {
+	//std::cout << "recip params changed" << std::endl;
+	
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
@@ -665,16 +667,23 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 
 	//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
+	m_pop.ki = parms.dki / tl::angstrom;
+	m_pop.kf = parms.dkf / tl::angstrom;
+	m_pop.Q = dQ / tl::angstrom;
+	m_pop.E = parms.dE * tl::one_meV;
 
-	// ki_Q angle "inside" of triangle
-	m_pop.angle_ki_Q = tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, m_pop.dsample_sense > 0.);
-	
-	// kf_Q angle "outside" of triangle
-	m_pop.angle_kf_Q = /*M_PI*units::si::radians -*/ tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, m_pop.dsample_sense > 0.);
+	m_pop.angle_ki_Q = /*M_PI*units::si::radians - */tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
+	m_pop.angle_kf_Q = /*M_PI*units::si::radians - */tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
 
 	m_pop.angle_ki_Q = units::abs(m_pop.angle_ki_Q);
 	m_pop.angle_kf_Q = units::abs(m_pop.angle_kf_Q);
 
+	/*std::cout << "ki = " << double(m_pop.ki*tl::angstrom) << std::endl;
+	std::cout << "kf = " << double(m_pop.kf*tl::angstrom) << std::endl;
+	std::cout << "Q = " << double(m_pop.Q*tl::angstrom) << std::endl;
+	
+	std::cout << "kiQ = " << double(m_pop.angle_ki_Q/M_PI/units::si::radians * 180.) << std::endl;
+	std::cout << "kfQ = " << double(m_pop.angle_kf_Q/M_PI/units::si::radians * 180.) << std::endl;*/
 
 	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
 	m_bDontCalc = bOldDontCalc;
@@ -683,6 +692,8 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 
 void ResoDlg::RealParamsChanged(const RealParams& parms)
 {
+	//std::cout << "real params changed" << std::endl;
+	
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
@@ -694,19 +705,6 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	m_pop.twotheta = parms.dSampleTT * units::si::radians;
 
 	m_pop.twotheta = units::abs(m_pop.twotheta);
-
-
-	/*
-	m_pop.thetaa = 0.5*tl::get_mono_twotheta(m_pop.kf, m_pop.ana_d, m_pop.dana_sense > 0.);
-	m_pop.thetam = 0.5*tl::get_mono_twotheta(m_pop.ki, m_pop.mono_d, m_pop.dmono_sense > 0.);
-
-	m_pop.twotheta = tl::get_sample_twotheta(m_pop.ki, m_pop.kf, m_pop.Q, m_pop.dsample_sense>0.);
-
-	angle angleKiOrient1 = -m_pop.angle_ki_Q; // - vec_angle(vecQ);	// only valid for Q along orient1
-	m_pop.thetas = angleKiOrient1 + M_PI*units::si::radians;
-	m_pop.thetas -= M_PI/2. * units::si::radians;
-	if(!m_pop.dsample_sense) m_pop.thetas = -m_pop.thetas;
-	*/
 
 	m_bDontCalc = bOldDontCalc;
 	Calc();

@@ -164,13 +164,16 @@ CNResults calc_eck(const EckParams& eck)
 	//kf_Q = ki_Q + twotheta;
 
 	if(eck.dsample_sense < 0) { twotheta = -twotheta; ki_Q = -ki_Q; kf_Q = -kf_Q; }
-	if(eck.dana_sense < 0) { thetaa = -thetaa; /*kf_Q = -kf_Q;*/ }
-	if(eck.dmono_sense < 0) { thetam = -thetam; /*ki_Q = -ki_Q;*/ }
 	
+	//std::cout << "thetaM = " << t_real(thetam/rads/M_PI*180.) << " deg"<< std::endl;
+	//std::cout << "thetaA = " << t_real(thetaa/rads/M_PI*180.) << " deg"<< std::endl;
 	
-	/*std::cout << "kiQ = " << t_real(ki_Q/rads/M_PI*180.) << " deg"<< std::endl;
-	std::cout << "kfQ = " << t_real(kf_Q/rads/M_PI*180.) << " deg"<< std::endl;
-	std::cout << "2theta = " << t_real(twotheta/rads/M_PI*180.) << " deg"<< std::endl;*/
+	//std::cout << "ki = " << double(eck.ki*angs) << ", kf = " << double(eck.kf*angs) << std::endl;
+	//std::cout << "Q = " << double(eck.Q*angs) << ", E = " << double(eck.E/meV) << std::endl;
+	
+	//std::cout << "kiQ = " << t_real(ki_Q/rads/M_PI*180.) << " deg"<< std::endl;
+	//std::cout << "kfQ = " << t_real(kf_Q/rads/M_PI*180.) << " deg"<< std::endl;
+	//std::cout << "2theta = " << t_real(twotheta/rads/M_PI*180.) << " deg"<< std::endl;
 
 
 	CNResults res;
@@ -257,7 +260,7 @@ CNResults calc_eck(const EckParams& eck)
 	t_real s0 = (eck.ki*eck.ki - eck.kf*eck.kf) / (2. * eck.Q*eck.Q);
 	wavenumber kperp = units::sqrt(units::abs(eck.Q*eck.Q*(0.5 + s0)*(0.5 + s0) -
 												eck.ki*eck.ki));
-	if(twotheta/rads < 0.)
+	if(eck.dsample_sense*twotheta/rads < 0.)
 		kperp = -kperp;
 
 	//std::cout << "s0 = " << s0 << std::endl;

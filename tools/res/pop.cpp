@@ -46,7 +46,7 @@ CNResults calc_pop(const PopParams& pop)
 	angle thetam = pop.thetam;
 	angle ki_Q = pop.angle_ki_Q;
 	angle kf_Q = pop.angle_kf_Q;
-	//kf_Q = twotheta + ki_Q;
+	//kf_Q = ki_Q + twotheta;
 	
 	if(pop.dsample_sense < 0) 
 	{ 
@@ -54,8 +54,21 @@ CNResults calc_pop(const PopParams& pop)
 		ki_Q = -ki_Q; 
 		kf_Q = -kf_Q; 
 	}
-	if(pop.dana_sense < 0) thetaa = -thetaa;
-	if(pop.dmono_sense < 0) thetam = -thetam;
+	
+
+	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
+	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
+
+	// B matrix, [pop75], Appendix 1 -> U matrix in CN
+	t_mat B = ublas::zero_matrix<t_real>(4,6);
+	tl::submatrix_copy(B, Ti, 0, 0);
+	tl::submatrix_copy(B, Tf, 0, 3);
+	B(2,2) = 1.; B(2,5) = -1.;
+	B(3,0) = 2.*pop.ki*angs * tl::KSQ2E;
+	B(3,3) = -2.*pop.kf*angs * tl::KSQ2E;
+
+	//std::cout << "B = " << B << std::endl;
+
 
 	angle coll_h_pre_mono = pop.coll_h_pre_mono;
 	angle coll_v_pre_mono = pop.coll_v_pre_mono;
@@ -106,17 +119,6 @@ CNResults calc_pop(const PopParams& pop)
 	A(3,5) = -0.5 * pop.kf*angs * units::cos(thetaa)/units::sin(thetaa);
 	A(5,6) = A(4,4) = pop.kf * angs;
 
-
-	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
-	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
-
-	// B matrix, [pop75], Appendix 1 -> U matrix in CN
-	t_mat B = ublas::zero_matrix<t_real>(4,6);
-	tl::submatrix_copy(B, Ti, 0, 0);
-	tl::submatrix_copy(B, Tf, 0, 3);
-	B(2,2) = 1.; B(2,5) = -1.;
-	B(3,0) = 2.*pop.ki*angs * tl::KSQ2E;
-	B(3,3) = -2.*pop.kf*angs * tl::KSQ2E;
 
 
 	// S matrix, [pop75], Appendix 2

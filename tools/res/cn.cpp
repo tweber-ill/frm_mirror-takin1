@@ -59,8 +59,6 @@ CNResults calc_cn(const CNParams& cn)
 		ki_Q = -ki_Q; 
 		kf_Q = -kf_Q; 
 	}
-	if(cn.dana_sense < 0) thetaa = -thetaa;
-	if(cn.dmono_sense < 0) thetam = -thetam;
 	
 
 	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
