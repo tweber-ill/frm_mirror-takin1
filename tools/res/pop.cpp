@@ -44,7 +44,6 @@ CNResults calc_pop(const PopParams& pop)
 	angle twotheta = pop.twotheta;
 	angle thetaa = pop.thetaa;
 	angle thetam = pop.thetam;
-	// angle between ki and resolution x axis (which is parallel to Q)
 	angle ki_Q = pop.angle_ki_Q;
 	angle kf_Q = pop.angle_kf_Q;
 	//kf_Q = twotheta + ki_Q;

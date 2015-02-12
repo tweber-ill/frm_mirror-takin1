@@ -34,7 +34,7 @@ LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
 FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall ${DEFINES}
 #FLAGS += -fexpensive-optimizations
-#FLAGS = ${INC} -std=c++11 -ggdb -Wall ${DEFINES}
+#FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall ${DEFINES}
 
 STD_LIBS = -lstdc++ -lm -lboost_system
 STD_LIBS += -lpthread

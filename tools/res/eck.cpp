@@ -15,6 +15,7 @@
 #include "ellipse.h"
 
 #include <tuple>
+#include <future>
 #include <string>
 #include <iostream>
 #include <boost/units/pow.hpp>
@@ -179,8 +180,9 @@ CNResults calc_eck(const EckParams& eck)
 	//--------------------------------------------------------------------------
 	// mono part
 	
-	std::tuple<t_mat, t_vec, t_real, t_real> tupMono = 
-			get_mono_vals(eck.src_w, eck.src_h, 
+	std::future<std::tuple<t_mat, t_vec, t_real, t_real>> futMono
+		= std::async(std::launch::deferred | std::launch::async, get_mono_vals, 
+					eck.src_w, eck.src_h, 
 					eck.mono_w, eck.mono_h,
 					eck.dist_src_mono, eck.dist_mono_sample,
 					eck.ki, thetam,
@@ -189,17 +191,8 @@ CNResults calc_eck(const EckParams& eck)
 					eck.mono_mosaic, eck.mono_mosaic_v,
 					mono_curvh, mono_curvv,
 					eck.pos_x , eck.pos_y, eck.pos_z);
-	const t_mat& A = std::get<0>(tupMono);
-	const t_vec& B = std::get<1>(tupMono);
-	const t_real& C = std::get<2>(tupMono);
-	const t_real& D = std::get<3>(tupMono);
-
-	/*std::cout << "A = " << A << std::endl;
-	std::cout << "B = " << B << std::endl;
-	std::cout << "C = " << C << std::endl;
-	std::cout << "D = " << D << std::endl;*/
+					
 	//--------------------------------------------------------------------------
-
 
 
 	//--------------------------------------------------------------------------
@@ -209,8 +202,9 @@ CNResults calc_eck(const EckParams& eck)
 	length pos_y2 = -eck.pos_x*units::sin(twotheta)
 					+eck.pos_y*units::cos(twotheta);
 
-	std::tuple<t_mat, t_vec, t_real, t_real> tupAna = 
-			get_mono_vals(eck.det_w, eck.det_h, 
+	std::future<std::tuple<t_mat, t_vec, t_real, t_real>> futAna
+		= std::async(std::launch::deferred | std::launch::async, get_mono_vals,
+					eck.det_w, eck.det_h, 
 					eck.ana_w, eck.ana_h,
 					eck.dist_ana_det, eck.dist_sample_ana,
 					eck.kf, -thetaa,
@@ -219,17 +213,33 @@ CNResults calc_eck(const EckParams& eck)
 					eck.ana_mosaic, eck.ana_mosaic_v,
 					ana_curvh, ana_curvv,
 					eck.pos_x, pos_y2, eck.pos_z);
+					
+	//--------------------------------------------------------------------------
+	// get mono & ana results
+
+	std::tuple<t_mat, t_vec, t_real, t_real> tupMono = futMono.get();
+	const t_mat& A = std::get<0>(tupMono);
+	const t_vec& B = std::get<1>(tupMono);
+	const t_real& C = std::get<2>(tupMono);
+	const t_real& D = std::get<3>(tupMono);
+
+	std::tuple<t_mat, t_vec, t_real, t_real> tupAna = futAna.get();
 	const t_mat& E = std::get<0>(tupAna);
 	const t_vec& F = std::get<1>(tupAna);
 	const t_real& G = std::get<2>(tupAna);
 	const t_real& H = std::get<3>(tupAna);
+	
+	/*std::cout << "A = " << A << std::endl;
+	std::cout << "B = " << B << std::endl;
+	std::cout << "C = " << C << std::endl;
+	std::cout << "D = " << D << std::endl;
 
-	/*std::cout << "E = " << E << std::endl;
+	std::cout << "E = " << E << std::endl;
 	std::cout << "F = " << F << std::endl;
 	std::cout << "G = " << G << std::endl;
 	std::cout << "H = " << H << std::endl;*/
-	//--------------------------------------------------------------------------
 
+	//--------------------------------------------------------------------------
 
 
 	// equ 4 & equ 53 in [eck14]
