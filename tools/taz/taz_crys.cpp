@@ -439,8 +439,8 @@ void TazDlg::ShowSpurions()
 }
 
 void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
-					const std::vector<tl::InelasticSpurion>& vecInelCKI,
-					const std::vector<tl::InelasticSpurion>& vecInelCKF)
+					const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
+					const std::vector<tl::InelasticSpurion<double>>& vecInelCKF)
 {
 	std::ostringstream ostrMsg;
 	if(spuri.bAType || spuri.bMType || vecInelCKI.size() || vecInelCKF.size())

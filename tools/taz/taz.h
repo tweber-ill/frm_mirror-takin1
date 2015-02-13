@@ -173,8 +173,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowSpurions();
 		void spurionInfo(const tl::ElasticSpurion& spuris,
-				const std::vector<tl::InelasticSpurion>& vecInelCKI,
-				const std::vector<tl::InelasticSpurion>& vecInelCKF);
+				const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
+				const std::vector<tl::InelasticSpurion<double>>& vecInelCKF);
 		//void paramsChanged(const RecipParams& parms);
 
 		void ShowConnectDlg();

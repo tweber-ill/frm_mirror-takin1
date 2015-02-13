@@ -224,8 +224,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void paramsChanged(const RecipParams& parms);
 
 		void spurionInfo(const tl::ElasticSpurion& spuris,
-					const std::vector<tl::InelasticSpurion>& vecInelCKI,
-					const std::vector<tl::InelasticSpurion>& vecInelCKF);
+					const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
+					const std::vector<tl::InelasticSpurion<double>>& vecInelCKF);
 
 		void coordsChanged(double dh, double dk, double dl);
 
