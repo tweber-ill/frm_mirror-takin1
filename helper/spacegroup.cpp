@@ -45,7 +45,7 @@ template<typename t_int=int> static inline t_int pymod(t_int a, t_int b)
 // -> function "check_refcond" in Georg's Python code
 // -> http://www.ccp14.ac.uk/ccp/web-mirrors/powdcell/a_v/v_1/powder/details/extinct.htm
 static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
-{
+{{
 	/*00, P*/ [] (int, int, int) -> bool { return 1; },
 
 	/*01*/ [] (int h, int, int) -> bool { return h%2 == 0; },
@@ -64,7 +64,7 @@ static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
 
 	/*11*/ nullptr,
 	/*12*/ [] (int h, int, int l) -> bool { return (2*h+l)%4 == 0; },
-	
+
 	/*13, I*/ [] (int h, int k, int l) -> bool { return (h+k+l)%2 == 0; },
 	/*14, R*/ [] (int h, int k, int l) -> bool { return (-h+k+l)%3 == 0; },
 	/*15, R*/ nullptr,
@@ -88,7 +88,7 @@ static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
 	/*29*/ [] (int, int k, int l) -> bool { return (k+l)%4 == 0 && k%2 == 0 && l%2 == 0; },
 	/*30*/ [] (int h, int, int l) -> bool { return (h+l)%4 == 0 && h%2 == 0 && l%2 == 0; },
 	/*31*/ [] (int h, int k, int) -> bool { return (h+k)%4 == 0 && h%2 == 0 && k%2 == 0; },
-};
+}};
 
 // -> function "can_reflect" in Georg's Python code
 bool SpaceGroup::HasReflection(int h, int k, int l) const
