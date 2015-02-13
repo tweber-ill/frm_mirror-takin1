@@ -632,8 +632,7 @@ void TazDlg::ShowDynPlaneDlg()
 	if(!m_pDynPlaneDlg)
 	{
 		m_pDynPlaneDlg = new DynPlaneDlg(this, &m_settings);
-		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-						m_pDynPlaneDlg, SLOT(RecipParamsChanged(const RecipParams&)));
+		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),						m_pDynPlaneDlg, SLOT(RecipParamsChanged(const RecipParams&)));
 		m_sceneRecip.emitAllParams();
 	}
 

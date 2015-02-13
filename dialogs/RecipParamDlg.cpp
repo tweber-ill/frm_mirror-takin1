@@ -10,9 +10,6 @@
 #include "../tlibs/math/math.h"
 #include "../tlibs/math/neutrons.hpp"
 
-namespace units = boost::units;
-namespace co = boost::units::si::constants::codata;
-
 
 RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
@@ -65,33 +62,28 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 }
 
 
-typedef units::quantity<units::si::wavenumber> wavenumber;
-typedef units::quantity<units::si::energy> energy;
-typedef units::quantity<units::si::length> length;
-typedef units::quantity<units::si::velocity> velocity;
-
 void RecipParamDlg::KiChanged()
 {
-	wavenumber ki = tl::str_to_var<double>(editKi->text().toStdString()) / tl::angstrom;
-	energy Ei = tl::k2E(ki);
-	length lami = tl::k2lam(ki);
-	velocity vi = tl::k2v(ki);
+	tl::wavenumber ki = tl::str_to_var<double>(editKi->text().toStdString()) / tl::angstrom;
+	tl::energy Ei = tl::k2E(ki);
+	tl::length lami = tl::k2lam(ki);
+	tl::velocity vi = tl::k2v(ki);
 
 	editEi->setText(tl::var_to_str<double>(Ei / tl::one_meV).c_str());
 	editLami->setText(tl::var_to_str<double>(lami / tl::angstrom).c_str());
-	editVi->setText(tl::var_to_str<double>(vi*units::si::seconds/units::si::meters).c_str());
+	editVi->setText(tl::var_to_str<double>(vi*tl::seconds/tl::meters).c_str());
 }
 
 void RecipParamDlg::KfChanged()
 {
-	wavenumber kf = tl::str_to_var<double>(editKf->text().toStdString()) / tl::angstrom;
-	energy Ef = tl::k2E(kf);
-	length lamf = tl::k2lam(kf);
-	velocity vf = tl::k2v(kf);
+	tl::wavenumber kf = tl::str_to_var<double>(editKf->text().toStdString()) / tl::angstrom;
+	tl::energy Ef = tl::k2E(kf);
+	tl::length lamf = tl::k2lam(kf);
+	tl::velocity vf = tl::k2v(kf);
 
 	editEf->setText(tl::var_to_str<double>(Ef / tl::one_meV).c_str());
 	editLamf->setText(tl::var_to_str<double>(lamf / tl::angstrom).c_str());
-	editVf->setText(tl::var_to_str<double>(vf*units::si::seconds/units::si::meters).c_str());
+	editVf->setText(tl::var_to_str<double>(vf*tl::seconds/tl::meters).c_str());
 }
 
 

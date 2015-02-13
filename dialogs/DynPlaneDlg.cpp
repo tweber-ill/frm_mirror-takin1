@@ -13,9 +13,6 @@
 #include <boost/units/io.hpp>
 #include <qwt_picker_machine.h>
 
-namespace units = boost::units;
-namespace co = boost::units::si::constants::codata;
-
 
 DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 		: QDialog(pParent), m_pSettings(pSettings)
@@ -110,7 +107,7 @@ void DynPlaneDlg::Calc()
 	if(btnSync->isChecked())
 		spinEiEf->setValue(bFixedKi ? m_dEi : m_dEf);
 
-	units::quantity<units::si::energy> EiEf = spinEiEf->value() * tl::one_meV;
+	tl::energy EiEf = spinEiEf->value() * tl::one_meV;
 
 
 	//m_pPlanePlot->clear();
@@ -118,14 +115,14 @@ void DynPlaneDlg::Calc()
 	vecQ[0].reserve(NUM_POINTS); vecE[0].reserve(NUM_POINTS);
 	vecQ[1].reserve(NUM_POINTS); vecE[1].reserve(NUM_POINTS);
 
-	units::quantity<units::si::plane_angle> twotheta = dAngle * units::si::radians;
+	tl::angle twotheta = dAngle * tl::radians;
 
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
 		for(unsigned int iSign=0; iSign<=1; ++iSign)
 		{
-			units::quantity<units::si::wavenumber> Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
-			units::quantity<units::si::energy> dE = tl::kinematic_plane(bFixedKi, iSign, EiEf, Q, twotheta);
+			tl::wavenumber Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
+			tl::energy dE = tl::kinematic_plane(bFixedKi, iSign, EiEf, Q, twotheta);
 
 			double _dQ = Q * tl::angstrom;
 			double _dE = dE / tl::one_meV;

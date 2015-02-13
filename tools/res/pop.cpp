@@ -26,7 +26,7 @@ using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
 static const auto cm = tl::cm;
 static const auto angs = tl::angstrom;
 static const auto rads = tl::radians;
-static const auto meV = tl::one_meV;
+static const auto meV = tl::meV;
 
 
 CNResults calc_pop(const PopParams& pop)
@@ -91,9 +91,9 @@ CNResults calc_pop(const PopParams& pop)
 	G(7,7) = 1./(pop.coll_v_post_ana*pop.coll_v_post_ana /rads/rads);
 
 
-	const units::quantity<units::si::plane_angle> mono_mosaic_spread = pop.mono_mosaic;
-	const units::quantity<units::si::plane_angle> ana_mosaic_spread = pop.ana_mosaic;
-	const units::quantity<units::si::plane_angle> sample_mosaic_spread = pop.sample_mosaic;
+	const angle mono_mosaic_spread = pop.mono_mosaic;
+	const angle ana_mosaic_spread = pop.ana_mosaic;
+	const angle sample_mosaic_spread = pop.sample_mosaic;
 
 	// crystal mosaic covariance matrix F, [pop75], Appendix 1
 	t_mat F = ublas::zero_matrix<t_real>(4,4);

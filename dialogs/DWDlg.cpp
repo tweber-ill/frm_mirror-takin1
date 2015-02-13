@@ -13,9 +13,6 @@
 #include <boost/units/io.hpp>
 #include <qwt_picker_machine.h>
 
-namespace units = boost::units;
-namespace co = boost::units::si::constants::codata;
-
 
 DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 		: QDialog(pParent), m_pSettings(pSettings)
@@ -96,22 +93,14 @@ void DWDlg::cursorMoved(const QPointF& pt)
 
 void DWDlg::Calc()
 {
-	typedef units::quantity<units::si::length> length;
-	typedef units::quantity<units::si::temperature> temp;
-	typedef units::quantity<units::si::mass> mass;
-	typedef units::quantity<units::si::wavenumber> wavenum;
-
-	const temp kelvin = 1. * units::si::kelvin;
-	const mass amu = co::m_u;
-
 	const unsigned int NUM_POINTS = 512;
 
 	double dMinQ = spinMinQ_deb->value();
 	double dMaxQ = spinMaxQ_deb->value();
 
-	temp T = spinT_deb->value() * kelvin;
-	temp T_D = spinTD_deb->value() * kelvin;
-	mass M = spinAMU_deb->value() * amu;
+	tl::temp T = spinT_deb->value() * tl::kelvin;
+	tl::temp T_D = spinTD_deb->value() * tl::kelvin;
+	tl::mass M = spinAMU_deb->value() * tl::amu;
 
 	m_vecQ.clear();
 	m_vecDeb.clear();
@@ -122,7 +111,7 @@ void DWDlg::Calc()
 	bool bHasZetaSq = 0;
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
-		units::quantity<units::si::wavenumber> Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
+		tl::wavenumber Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
 		double dDWF = 0.;
 		auto zetasq = 1.*tl::angstrom*tl::angstrom;
 
@@ -135,7 +124,7 @@ void DWDlg::Calc()
 
 		if(!bHasZetaSq)
 		{
-			std::string strZetaSq = tl::var_to_str(double(units::sqrt(zetasq) / tl::angstrom));
+			std::string strZetaSq = tl::var_to_str(double(tl::units::sqrt(zetasq) / tl::angstrom));
 			editZetaSq->setText(strZetaSq.c_str());
 
 			bHasZetaSq = 1;

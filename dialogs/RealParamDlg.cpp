@@ -10,9 +10,6 @@
 #include "../tlibs/math/math.h"
 #include "../tlibs/math/neutrons.hpp"
 
-namespace units = boost::units;
-namespace co = boost::units::si::constants::codata;
-
 
 RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
@@ -40,11 +37,6 @@ void RealParamDlg::paramsChanged(const RealParams& parms)
 	this->editLenAnaDet->setText(tl::var_to_str<double>(parms.dLenAnaDet).c_str());
 }
 
-
-typedef units::quantity<units::si::wavenumber> wavenumber;
-typedef units::quantity<units::si::energy> energy;
-typedef units::quantity<units::si::length> length;
-typedef units::quantity<units::si::velocity> velocity;
 
 void RealParamDlg::closeEvent(QCloseEvent *pEvt)
 {

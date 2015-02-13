@@ -198,17 +198,17 @@ void ResoDlg::Calc()
 	m_bEll4dCurrent = 0;
 	if(m_bDontCalc) return;
 
-	const units::quantity<units::si::length> angstrom = 1e-10 * units::si::meter;
+	tl::length angstrom = 1e-10 * tl::meters;
 
 	EckParams& cn = m_pop;
 	CNResults &res = m_res;
 
 	// CN
 	cn.mono_d = spinMonod->value() * angstrom;
-	cn.mono_mosaic = spinMonoMosaic->value() / (180.*60.) * M_PI * units::si::radians;
+	cn.mono_mosaic = spinMonoMosaic->value() / (180.*60.) * M_PI * tl::radians;
 	cn.ana_d = spinAnad->value() * angstrom;
-	cn.ana_mosaic = spinAnaMosaic->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.sample_mosaic = spinSampleMosaic->value() / (180.*60.) * M_PI * units::si::radians;
+	cn.ana_mosaic = spinAnaMosaic->value() / (180.*60.) * M_PI * tl::radians;
+	cn.sample_mosaic = spinSampleMosaic->value() / (180.*60.) * M_PI * tl::radians;
 
 	cn.ki = editKi->text().toDouble() / tl::angstrom;
 	cn.kf = editKf->text().toDouble() / tl::angstrom;
@@ -223,64 +223,64 @@ void ResoDlg::Calc()
 	//if(spinQ->value() < 0.)
 	//	cn.dsample_sense = -cn.dsample_sense;
 
-	cn.coll_h_pre_mono = spinHCollMono->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.coll_h_pre_sample = spinHCollBSample->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.coll_h_post_sample = spinHCollASample->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.coll_h_post_ana = spinHCollAna->value() / (180.*60.) * M_PI * units::si::radians;
+	cn.coll_h_pre_mono = spinHCollMono->value() / (180.*60.) * M_PI * tl::radians;
+	cn.coll_h_pre_sample = spinHCollBSample->value() / (180.*60.) * M_PI * tl::radians;
+	cn.coll_h_post_sample = spinHCollASample->value() / (180.*60.) * M_PI * tl::radians;
+	cn.coll_h_post_ana = spinHCollAna->value() / (180.*60.) * M_PI * tl::radians;
 
-	cn.coll_v_pre_mono = spinVCollMono->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.coll_v_pre_sample = spinVCollBSample->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.coll_v_post_sample = spinVCollASample->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.coll_v_post_ana = spinVCollAna->value() / (180.*60.) * M_PI * units::si::radians;
+	cn.coll_v_pre_mono = spinVCollMono->value() / (180.*60.) * M_PI * tl::radians;
+	cn.coll_v_pre_sample = spinVCollBSample->value() / (180.*60.) * M_PI * tl::radians;
+	cn.coll_v_post_sample = spinVCollASample->value() / (180.*60.) * M_PI * tl::radians;
+	cn.coll_v_post_ana = spinVCollAna->value() / (180.*60.) * M_PI * tl::radians;
 
 	cn.dmono_refl = spinMonoRefl->value();
 	cn.dana_effic = spinAnaEffic->value();
 
 	// Pop
-	cn.mono_w = spinMonoW->value()*0.01*units::si::meter;
-	cn.mono_h = spinMonoH->value()*0.01*units::si::meter;
-	cn.mono_thick = spinMonoThick->value()*0.01*units::si::meter;
-	cn.mono_curvh = spinMonoCurvH->value()*0.01*units::si::meter;
-	cn.mono_curvv = spinMonoCurvV->value()*0.01*units::si::meter;
+	cn.mono_w = spinMonoW->value()*0.01*tl::meters;
+	cn.mono_h = spinMonoH->value()*0.01*tl::meters;
+	cn.mono_thick = spinMonoThick->value()*0.01*tl::meters;
+	cn.mono_curvh = spinMonoCurvH->value()*0.01*tl::meters;
+	cn.mono_curvv = spinMonoCurvV->value()*0.01*tl::meters;
 	cn.bMonoIsCurvedH = checkMonoCurvH->isChecked();
 	cn.bMonoIsCurvedV = checkMonoCurvV->isChecked();
 
-	cn.ana_w = spinAnaW->value()*0.01*units::si::meter;
-	cn.ana_h = spinAnaH->value()*0.01*units::si::meter;
-	cn.ana_thick = spinAnaThick->value()*0.01*units::si::meter;
-	cn.ana_curvh = spinAnaCurvH->value()*0.01*units::si::meter;
-	cn.ana_curvv = spinAnaCurvV->value()*0.01*units::si::meter;
+	cn.ana_w = spinAnaW->value()*0.01*tl::meters;
+	cn.ana_h = spinAnaH->value()*0.01*tl::meters;
+	cn.ana_thick = spinAnaThick->value()*0.01*tl::meters;
+	cn.ana_curvh = spinAnaCurvH->value()*0.01*tl::meters;
+	cn.ana_curvv = spinAnaCurvV->value()*0.01*tl::meters;
 	cn.bAnaIsCurvedH = checkAnaCurvH->isChecked();
 	cn.bAnaIsCurvedV = checkAnaCurvV->isChecked();
 
 	cn.bSampleCub = radioSampleCub->isChecked();
-	cn.sample_w_q = spinSampleW_Q->value()*0.01*units::si::meter;
-	cn.sample_w_perpq = spinSampleW_perpQ->value()*0.01*units::si::meter;
-	cn.sample_h = spinSampleH->value()*0.01*units::si::meter;
+	cn.sample_w_q = spinSampleW_Q->value()*0.01*tl::meters;
+	cn.sample_w_perpq = spinSampleW_perpQ->value()*0.01*tl::meters;
+	cn.sample_h = spinSampleH->value()*0.01*tl::meters;
 
 	cn.bSrcRect = radioSrcRect->isChecked();
-	cn.src_w = spinSrcW->value()*0.01*units::si::meter;
-	cn.src_h = spinSrcH->value()*0.01*units::si::meter;
+	cn.src_w = spinSrcW->value()*0.01*tl::meters;
+	cn.src_h = spinSrcH->value()*0.01*tl::meters;
 
 	cn.bDetRect = radioDetRect->isChecked();
-	cn.det_w = spinDetW->value()*0.01*units::si::meter;
-	cn.det_h = spinDetH->value()*0.01*units::si::meter;
+	cn.det_w = spinDetW->value()*0.01*tl::meters;
+	cn.det_h = spinDetH->value()*0.01*tl::meters;
 
 	cn.bGuide = groupGuide->isChecked();
-	cn.guide_div_h = spinGuideDivH->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.guide_div_v = spinGuideDivV->value() / (180.*60.) * M_PI * units::si::radians;
+	cn.guide_div_h = spinGuideDivH->value() / (180.*60.) * M_PI * tl::radians;
+	cn.guide_div_v = spinGuideDivV->value() / (180.*60.) * M_PI * tl::radians;
 
-	cn.dist_mono_sample = spinDistMonoSample->value()*0.01*units::si::meter;
-	cn.dist_sample_ana = spinDistSampleAna->value()*0.01*units::si::meter;
-	cn.dist_ana_det = spinDistAnaDet->value()*0.01*units::si::meter;
-	cn.dist_src_mono = spinDistSrcMono->value()*0.01*units::si::meter;
+	cn.dist_mono_sample = spinDistMonoSample->value()*0.01*tl::meters;
+	cn.dist_sample_ana = spinDistSampleAna->value()*0.01*tl::meters;
+	cn.dist_ana_det = spinDistAnaDet->value()*0.01*tl::meters;
+	cn.dist_src_mono = spinDistSrcMono->value()*0.01*tl::meters;
 	
 	// eck
-	cn.mono_mosaic_v = spinMonoMosaicV->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.ana_mosaic_v = spinAnaMosaicV->value() / (180.*60.) * M_PI * units::si::radians;
-	cn.pos_x = spinSamplePosX->value()*0.01*units::si::meter;
-	cn.pos_y = spinSamplePosY->value()*0.01*units::si::meter;
-	cn.pos_z = spinSamplePosZ->value()*0.01*units::si::meter;
+	cn.mono_mosaic_v = spinMonoMosaicV->value() / (180.*60.) * M_PI * tl::radians;
+	cn.ana_mosaic_v = spinAnaMosaicV->value() / (180.*60.) * M_PI * tl::radians;
+	cn.pos_x = spinSamplePosX->value()*0.01*tl::meters;
+	cn.pos_y = spinSamplePosY->value()*0.01*tl::meters;
+	cn.pos_z = spinSamplePosZ->value()*0.01*tl::meters;
 
 	// TODO
 	cn.mono_numtiles_h = 1;
@@ -360,9 +360,9 @@ void ResoDlg::Calc()
 		log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
 		log_info("E/Q_perp (2nd approximation for ki=kf) = ", double(4.*cn.ki * angstrom), " meV*A");
 
-		//std::cout << "thetas = " << m_pop.thetas/units::si::radians/M_PI*180. << std::endl;
-		//std::cout << "2thetam = " << 2.*m_pop.thetam/units::si::radians/M_PI*180. << std::endl;
-		//std::cout << "2thetaa = " << 2.*m_pop.thetaa/units::si::radians/M_PI*180. << std::endl;
+		//std::cout << "thetas = " << m_pop.thetas/tl::radians/M_PI*180. << std::endl;
+		//std::cout << "2thetam = " << 2.*m_pop.thetam/tl::radians/M_PI*180. << std::endl;
+		//std::cout << "2thetaa = " << 2.*m_pop.thetaa/tl::radians/M_PI*180. << std::endl;
 #endif
 */
 		if(checkElli4dAutoCalc->isChecked())
@@ -397,10 +397,10 @@ void ResoDlg::RefreshSimCmd()
 	ostrCmd << "EN=" << (m_pop.E / tl::one_meV) << " ";
 	//ostrCmt << "FX=" << (m_pop.bki_fix ? "1" : "2") << " ";
 
-	ostrCmd << "L1=" << (m_pop.dist_src_mono / units::si::meters) << " ";
-	ostrCmd << "L2=" << (m_pop.dist_mono_sample / units::si::meters) << " ";
-	ostrCmd << "L3=" << (m_pop.dist_sample_ana / units::si::meters) << " ";
-	ostrCmd << "L4=" << (m_pop.dist_ana_det / units::si::meters) << " ";
+	ostrCmd << "L1=" << (m_pop.dist_src_mono / tl::meters) << " ";
+	ostrCmd << "L2=" << (m_pop.dist_mono_sample / tl::meters) << " ";
+	ostrCmd << "L3=" << (m_pop.dist_sample_ana / tl::meters) << " ";
+	ostrCmd << "L4=" << (m_pop.dist_ana_det / tl::meters) << " ";
 
 	ostrCmd << "SM=" << m_pop.dmono_sense << " ";
 	ostrCmd << "SS=" << m_pop.dsample_sense << " ";
@@ -409,27 +409,27 @@ void ResoDlg::RefreshSimCmd()
 	ostrCmd << "DM=" << (m_pop.mono_d / tl::angstrom) << " ";
 	ostrCmd << "DA=" << (m_pop.ana_d / tl::angstrom) << " ";
 
-	ostrCmd << "RMV=" << (m_pop.mono_curvv / units::si::meters) << " ";
-	ostrCmd << "RMH=" << (m_pop.mono_curvh / units::si::meters) << " ";
-	ostrCmd << "RAV=" << (m_pop.ana_curvv / units::si::meters) << " ";
-	ostrCmd << "RAH=" << (m_pop.ana_curvh / units::si::meters) << " ";
+	ostrCmd << "RMV=" << (m_pop.mono_curvv / tl::meters) << " ";
+	ostrCmd << "RMH=" << (m_pop.mono_curvh / tl::meters) << " ";
+	ostrCmd << "RAV=" << (m_pop.ana_curvv / tl::meters) << " ";
+	ostrCmd << "RAH=" << (m_pop.ana_curvh / tl::meters) << " ";
 
-	ostrCmd << "ETAM=" << (m_pop.mono_mosaic/units::si::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "ETAA=" << (m_pop.ana_mosaic/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ETAM=" << (m_pop.mono_mosaic/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ETAA=" << (m_pop.ana_mosaic/tl::radians/M_PI*180.*60.) << " ";
 
-	ostrCmd << "ALF1=" << (m_pop.coll_h_pre_mono/units::si::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "ALF2=" << (m_pop.coll_h_pre_sample/units::si::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "ALF3=" << (m_pop.coll_h_post_sample/units::si::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "ALF4=" << (m_pop.coll_h_post_ana/units::si::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "BET1=" << (m_pop.coll_v_pre_mono/units::si::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "BET2=" << (m_pop.coll_v_pre_sample/units::si::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "BET3=" << (m_pop.coll_v_post_sample/units::si::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "BET4=" << (m_pop.coll_v_post_ana/units::si::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ALF1=" << (m_pop.coll_h_pre_mono/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ALF2=" << (m_pop.coll_h_pre_sample/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ALF3=" << (m_pop.coll_h_post_sample/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ALF4=" << (m_pop.coll_h_post_ana/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "BET1=" << (m_pop.coll_v_pre_mono/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "BET2=" << (m_pop.coll_v_pre_sample/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "BET3=" << (m_pop.coll_v_post_sample/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "BET4=" << (m_pop.coll_v_post_ana/tl::radians/M_PI*180.*60.) << " ";
 
-	ostrCmd << "WM=" << (m_pop.mono_w / units::si::meters) << " ";
-	ostrCmd << "HM=" << (m_pop.mono_h / units::si::meters) << " ";
-	ostrCmd << "WA=" << (m_pop.ana_w / units::si::meters) << " ";
-	ostrCmd << "HA=" << (m_pop.ana_h / units::si::meters) << " ";
+	ostrCmd << "WM=" << (m_pop.mono_w / tl::meters) << " ";
+	ostrCmd << "HM=" << (m_pop.mono_h / tl::meters) << " ";
+	ostrCmd << "WA=" << (m_pop.ana_w / tl::meters) << " ";
+	ostrCmd << "HA=" << (m_pop.ana_h / tl::meters) << " ";
 
 	ostrCmd << "NVM=" << m_pop.mono_numtiles_v << " ";
 	ostrCmd << "NHM=" << m_pop.mono_numtiles_h << " ";
@@ -662,8 +662,8 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.vec1 = tl::make_vec({parms.orient_1[0], parms.orient_1[1], parms.orient_1[2]});
 	m_pop.vecUp = tl::make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
 
-	m_pop.thetas = parms.dTheta * units::si::radians;
-	m_pop.twotheta = parms.d2Theta * units::si::radians;
+	m_pop.thetas = parms.dTheta * tl::radians;
+	m_pop.twotheta = parms.d2Theta * tl::radians;
 
 	//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
@@ -672,8 +672,8 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.Q = dQ / tl::angstrom;
 	m_pop.E = parms.dE * tl::one_meV;
 
-	m_pop.angle_ki_Q = /*M_PI*units::si::radians - */tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
-	m_pop.angle_kf_Q = /*M_PI*units::si::radians - */tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
+	m_pop.angle_ki_Q = /*M_PI*tl::radians - */tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
+	m_pop.angle_kf_Q = /*M_PI*tl::radians - */tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
 
 	m_pop.angle_ki_Q = units::abs(m_pop.angle_ki_Q);
 	m_pop.angle_kf_Q = units::abs(m_pop.angle_kf_Q);
@@ -682,8 +682,8 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	std::cout << "kf = " << double(m_pop.kf*tl::angstrom) << std::endl;
 	std::cout << "Q = " << double(m_pop.Q*tl::angstrom) << std::endl;
 	
-	std::cout << "kiQ = " << double(m_pop.angle_ki_Q/M_PI/units::si::radians * 180.) << std::endl;
-	std::cout << "kfQ = " << double(m_pop.angle_kf_Q/M_PI/units::si::radians * 180.) << std::endl;*/
+	std::cout << "kiQ = " << double(m_pop.angle_ki_Q/M_PI/tl::radians * 180.) << std::endl;
+	std::cout << "kfQ = " << double(m_pop.angle_kf_Q/M_PI/tl::radians * 180.) << std::endl;*/
 
 	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
 	m_bDontCalc = bOldDontCalc;
@@ -697,12 +697,12 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	m_pop.thetam = parms.dMonoT * units::si::radians;
-	m_pop.thetaa = parms.dAnaT * units::si::radians;
+	m_pop.thetam = parms.dMonoT * tl::radians;
+	m_pop.thetaa = parms.dAnaT * tl::radians;
 	//std::cout << parms.dMonoT/M_PI*180. << ", " << parms.dAnaT/M_PI*180. << std::endl;
 
-	m_pop.thetas = parms.dSampleT * units::si::radians;
-	m_pop.twotheta = parms.dSampleTT * units::si::radians;
+	m_pop.thetas = parms.dSampleT * tl::radians;
+	m_pop.twotheta = parms.dSampleTT * tl::radians;
 
 	m_pop.twotheta = units::abs(m_pop.twotheta);
 

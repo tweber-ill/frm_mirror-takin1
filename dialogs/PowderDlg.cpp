@@ -20,7 +20,6 @@
 #include <QtGui/QMessageBox>
 
 namespace ublas = boost::numeric::ublas;
-namespace units = boost::units;
 namespace co = boost::units::si::constants::codata;
 
 struct PowderLine
@@ -103,7 +102,7 @@ void PowderDlg::CalcPeaks()
 				double dQ = ublas::norm_2(vecBragg);
 				if(tl::is_nan_or_inf<double>(dQ)) continue;
 				
-				double dAngle = tl::bragg_recip_twotheta(dQ/tl::angstrom, dLam*tl::angstrom, 1.) / units::si::radians;
+				double dAngle = tl::bragg_recip_twotheta(dQ/tl::angstrom, dLam*tl::angstrom, 1.) / tl::radians;
 				if(tl::is_nan_or_inf<double>(dAngle)) continue;
 				
 				//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;

@@ -29,7 +29,7 @@ typedef ublas::vector<t_real> t_vec;
 using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
 static const auto angs = tl::angstrom;
 static const auto rads = tl::radians;
-static const auto meV = tl::one_meV;
+static const auto meV = tl::meV;
 
 
 CNResults calc_cn(const CNParams& cn)

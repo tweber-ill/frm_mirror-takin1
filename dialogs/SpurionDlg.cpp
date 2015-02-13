@@ -13,9 +13,6 @@
 #include <sstream>
 #include <iostream>
 
-namespace units = boost::units;
-namespace co = boost::units::si::constants::codata;
-
 
 SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 		: QDialog(pParent), m_pSettings(pSett)
@@ -128,13 +125,10 @@ void SpurionDlg::Calc()
 
 void SpurionDlg::paramsChanged(const RecipParams& parms)
 {
-	typedef units::quantity<units::si::wavenumber> wavenumber;
-	typedef units::quantity<units::si::energy> energy;
-
-	wavenumber ki = parms.dki / tl::angstrom;
-	wavenumber kf = parms.dkf / tl::angstrom;
-	energy Ei = tl::k2E(ki);
-	energy Ef = tl::k2E(kf);
+	tl::wavenumber ki = parms.dki / tl::angstrom;
+	tl::wavenumber kf = parms.dkf / tl::angstrom;
+	tl::energy Ei = tl::k2E(ki);
+	tl::energy Ef = tl::k2E(kf);
 
 	m_dEi = Ei / tl::one_meV;
 	m_dEf = Ef / tl::one_meV;

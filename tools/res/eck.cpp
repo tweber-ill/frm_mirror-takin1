@@ -30,7 +30,7 @@ static const auto cm = tl::cm;
 static const auto secs = tl::seconds;
 static const auto angs = tl::angstrom;
 static const auto rads = tl::radians;
-static const auto meV = tl::one_meV;
+static const auto meV = tl::meV;
 
 
 static std::tuple<t_mat, t_vec, t_real, t_real, t_real> 
