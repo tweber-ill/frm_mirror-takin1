@@ -227,14 +227,6 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	pMenuFile->addSeparator();
 
-	QAction *pSequences = new QAction(this);
-	pSequences->setText("Scan Sequences...");
-	pSequences->setIcon(QIcon::fromTheme("document-properties"));
-	// TODO
-	//pMenuFile->addAction(pSequences);
-
-	//pMenuFile->addSeparator();
-
 	QAction *pSettings = new QAction(this);
 	pSettings->setText("Settings...");
 	pSettings->setIcon(QIcon::fromTheme("preferences-system"));
@@ -440,7 +432,6 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
-	QObject::connect(pSequences, SIGNAL(triggered()), this, SLOT(ShowSequenceDlg()));
 	QObject::connect(pSettings, SIGNAL(triggered()), this, SLOT(ShowSettingsDlg()));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
@@ -499,9 +490,6 @@ TazDlg::TazDlg(QWidget* pParent)
 	pFileTools->addAction(pLoad);
 	pFileTools->addAction(pSave);
 	pFileTools->addAction(pSaveAs);
-	// TODO:
-	//pFileTools->addSeparator();
-	//pFileTools->addAction(pSequences);
 	addToolBar(pFileTools);
 
 	QToolBar *pRecipTools = new QToolBar(this);
@@ -567,7 +555,6 @@ TazDlg::~TazDlg()
 	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
 	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
 	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
-	if(m_pSequenceDlg) { delete m_pSequenceDlg; m_pSequenceDlg = 0; }
 	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
 }
@@ -598,15 +585,6 @@ void TazDlg::ShowPowderDlg()
 
 	m_pPowderDlg->show();
 	m_pPowderDlg->activateWindow();
-}
-
-void TazDlg::ShowSequenceDlg()
-{
-	if(!m_pSequenceDlg)
-		m_pSequenceDlg = new SequenceDlg(this, &m_settings);
-
-	m_pSequenceDlg->show();
-	m_pSequenceDlg->activateWindow();
 }
 
 void TazDlg::ShowSettingsDlg()

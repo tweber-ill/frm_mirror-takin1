@@ -59,7 +59,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
 	obj/recip3d.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
-	obj/SettingsDlg.o obj/SequenceDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
+	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
 	obj/xml.o obj/tcp.o obj/spacegroup.o obj/gl.o \
 	obj/plotgl.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
@@ -110,8 +110,6 @@ obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
 obj/GotoDlg.o: dialogs/GotoDlg.cpp dialogs/GotoDlg.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SettingsDlg.o: dialogs/SettingsDlg.cpp dialogs/SettingsDlg.h
-	${CC} ${FLAGS} -c -o $@ $<
-obj/SequenceDlg.o: dialogs/SequenceDlg.cpp dialogs/SequenceDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<

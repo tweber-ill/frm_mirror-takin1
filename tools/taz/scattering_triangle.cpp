@@ -251,7 +251,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 	const double dG = lineG.length()/m_dScaleFactor/m_dZoom;
 
-	const std::wstring& strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
+	const std::wstring strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
 	const std::wstring& strDelta = tl::get_spec_char_utf16("Delta");
 
 	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE, ostrq, ostrG;

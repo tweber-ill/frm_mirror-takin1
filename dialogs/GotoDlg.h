@@ -45,12 +45,21 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 
 		bool m_bSenseM=0, m_bSenseS=1, m_bSenseA=0;
 
+		void ClearList();
+
 	protected slots:
 		void EditedKiKf();
 		void EditedE();
 		void EditedAngles();
 
 		void GetCurPos();
+
+		// list
+		void AddPosToList();
+		void RemPosFromList();
+		void LoadList();
+		void SaveList();
+		void ListItemSelected();
 
 	public slots:
 		void CalcMonoAna();

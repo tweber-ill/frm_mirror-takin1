@@ -8,18 +8,22 @@
 #include "GotoDlg.h"
 #include "../tlibs/math/neutrons.hpp"
 #include "../tlibs/string/string.h"
+#include "../tlibs/string/spec_char.h"
 
 namespace units = boost::units;
 namespace co = boost::units::si::constants::codata;
-
-using energy = units::quantity<units::si::energy>;
-using wavenumber = units::quantity<units::si::wavenumber>;
 
 
 GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSettings(pSett)
 {
 	this->setupUi(this);
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
+
+	QObject::connect(btnAdd, SIGNAL(clicked()), this, SLOT(AddPosToList()));
+	QObject::connect(btnDel, SIGNAL(clicked()), this, SLOT(RemPosFromList()));
+	QObject::connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadList()));
+	QObject::connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveList()));
+	QObject::connect(listSeq, SIGNAL(itemSelectionChanged()), this, SLOT(ListItemSelected()));
 
 	QObject::connect(editKi, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
 	QObject::connect(editKf, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
@@ -36,7 +40,9 @@ GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSett
 }
 
 GotoDlg::~GotoDlg()
-{}
+{
+	ClearList();
+}
 
 
 void GotoDlg::CalcSample()
@@ -90,7 +96,7 @@ void GotoDlg::CalcSample()
 	tl::set_eps_0(m_dSampleTheta);
 
 	std::ostringstream ostrStatus;
-	ostrStatus << "Q = " << vecQ;
+	ostrStatus << "Q = " << vecQ << ", |Q| = " << ublas::norm_2(vecQ);
 	labelQ->setText(ostrStatus.str().c_str());
 
 	if(bFailed) return;
@@ -117,15 +123,15 @@ void GotoDlg::CalcMonoAna()
 	double dKf = editKf->text().toDouble(&bKfOk);
 	if(!bKiOk || !bKfOk) return;
 
-	wavenumber ki = dKi / tl::angstrom;
-	wavenumber kf = dKf / tl::angstrom;
+	tl::wavenumber ki = dKi / tl::angstrom;
+	tl::wavenumber kf = dKf / tl::angstrom;
 
 	bool bMonoOk = 0;
 	bool bAnaOk = 0;
 
 	try
 	{
-		m_dMono2Theta = tl::get_mono_twotheta(ki, m_dMono*tl::angstrom, m_bSenseM) / units::si::radians;
+		m_dMono2Theta = tl::get_mono_twotheta(ki, m_dMono*tl::angstrom, m_bSenseM) / tl::radians;
 		if(tl::is_nan_or_inf<double>(m_dMono2Theta))
 			throw tl::Err("Invalid monochromator angle.");
 
@@ -143,7 +149,7 @@ void GotoDlg::CalcMonoAna()
 
 	try
 	{
-		m_dAna2Theta = tl::get_mono_twotheta(kf, m_dAna*tl::angstrom, m_bSenseA) / units::si::radians;
+		m_dAna2Theta = tl::get_mono_twotheta(kf, m_dAna*tl::angstrom, m_bSenseA) / tl::radians;
 		if(tl::is_nan_or_inf<double>(m_dAna2Theta))
 			throw tl::Err("Invalid analysator angle.");
 
@@ -184,10 +190,10 @@ void GotoDlg::EditedKiKf()
 	double dKf = editKf->text().toDouble(&bKfOk);
 	if(!bKiOk || !bKfOk) return;
 
-	energy Ei = tl::k2E(dKi / tl::angstrom);
-	energy Ef = tl::k2E(dKf / tl::angstrom);
+	tl::energy Ei = tl::k2E(dKi / tl::angstrom);
+	tl::energy Ef = tl::k2E(dKf / tl::angstrom);
 
-	energy E = Ei-Ef;
+	tl::energy E = Ei-Ef;
 	double dE = E/tl::one_meV;
 	tl::set_eps_0(dE);
 
@@ -203,10 +209,10 @@ void GotoDlg::EditedE()
 	bool bOk = 0;
 	double dE = editE->text().toDouble(&bOk);
 	if(!bOk) return;
-	energy E = dE * tl::one_meV;
+	tl::energy E = dE * tl::one_meV;
 
 	bool bImag=0;
-	wavenumber k_E = tl::E2k(E, bImag);
+	tl::wavenumber k_E = tl::E2k(E, bImag);
 	double dSign = 1.;
 	if(bImag) dSign = -1.;
 
@@ -216,8 +222,8 @@ void GotoDlg::EditedE()
 		double dKi = editKi->text().toDouble(&bKOk);
 		if(!bKOk) return;
 
-		wavenumber ki = dKi / tl::angstrom;
-		wavenumber kf = units::sqrt(ki*ki - dSign*k_E*k_E);
+		tl::wavenumber ki = dKi / tl::angstrom;
+		tl::wavenumber kf = units::sqrt(ki*ki - dSign*k_E*k_E);
 
 		double dKf = kf*tl::angstrom;
 		tl::set_eps_0(dKf);
@@ -231,8 +237,8 @@ void GotoDlg::EditedE()
 		double dKf = editKf->text().toDouble(&bKOk);
 		if(!bKOk) return;
 
-		wavenumber kf = dKf / tl::angstrom;
-		wavenumber ki = units::sqrt(kf*kf + dSign*k_E*k_E);
+		tl::wavenumber kf = dKf / tl::angstrom;
+		tl::wavenumber ki = units::sqrt(kf*kf + dSign*k_E*k_E);
 
 		double dKi = ki*tl::angstrom;
 		tl::set_eps_0(dKi);
@@ -406,6 +412,99 @@ void GotoDlg::showEvent(QShowEvent *pEvt)
 
 	QDialog::showEvent(pEvt);
 }
+
+
+//------------------------------------------------------------------------------
+
+struct HklPos
+{
+	double dh, dk, dl;
+	double dki, dkf;
+	double dE;
+};
+
+void GotoDlg::ListItemSelected()
+{
+	QListWidgetItem *pItem = listSeq->currentItem();
+	if(!pItem) return;
+	HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
+	if(!pPos) return;
+
+	editH->setText(tl::var_to_str(pPos->dh).c_str());
+	editK->setText(tl::var_to_str(pPos->dk).c_str());
+	editL->setText(tl::var_to_str(pPos->dl).c_str());
+	editKi->setText(tl::var_to_str(pPos->dki).c_str());
+	editKf->setText(tl::var_to_str(pPos->dkf).c_str());
+
+	EditedKiKf();
+	CalcSample();
+}
+
+void GotoDlg::AddPosToList()
+{
+	HklPos *pPos = new HklPos;
+
+	pPos->dh = tl::str_to_var<double>(editH->text().toStdString());
+	pPos->dk = tl::str_to_var<double>(editK->text().toStdString());
+	pPos->dl = tl::str_to_var<double>(editL->text().toStdString());
+	pPos->dki = tl::str_to_var<double>(editKi->text().toStdString());
+	pPos->dkf = tl::str_to_var<double>(editKf->text().toStdString());
+	pPos->dE = (tl::k2E(pPos->dki/tl::angstrom) - tl::k2E(pPos->dkf/tl::angstrom))/tl::meV;
+
+	tl::set_eps_0(pPos->dh);
+	tl::set_eps_0(pPos->dk);
+	tl::set_eps_0(pPos->dl);
+	tl::set_eps_0(pPos->dki);
+	tl::set_eps_0(pPos->dkf);
+	tl::set_eps_0(pPos->dE);
+
+	const std::wstring strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
+
+	std::wostringstream ostrHKL;
+	ostrHKL.precision(4);
+	ostrHKL << "(" << pPos->dh << ", " << pPos->dk << ", " << pPos->dl << ") rlu\n";
+	ostrHKL << "ki = " << pPos->dki << " " << strAA;
+	ostrHKL << ", kf = " << pPos->dkf << " " << strAA << "\n";
+	ostrHKL << "E = " << pPos->dE << " meV";
+
+	QString qstr = QString::fromWCharArray(ostrHKL.str().c_str());
+	QListWidgetItem* pItem = new QListWidgetItem(qstr, listSeq);
+	pItem->setData(Qt::UserRole, QVariant::fromValue<void*>(pPos));
+}
+
+void GotoDlg::RemPosFromList()
+{
+	QListWidgetItem *pItem = listSeq->currentItem();
+	if(pItem)
+	{
+		HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
+		if(pPos) delete pPos;
+		delete pItem;
+	}
+}
+
+void GotoDlg::ClearList()
+{
+	while(listSeq->count())
+	{
+		QListWidgetItem *pItem = listSeq->item(0);
+		if(!pItem) break;
+
+		HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
+		if(pPos) delete pPos;
+		delete pItem;
+	}
+}
+
+
+void GotoDlg::LoadList()
+{
+}
+
+void GotoDlg::SaveList()
+{
+}
+
 
 
 #include "GotoDlg.moc"

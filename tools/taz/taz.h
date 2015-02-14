@@ -34,7 +34,6 @@
 #include "dialogs/PowderDlg.h"
 #include "dialogs/NetCacheDlg.h"
 #include "dialogs/SettingsDlg.h"
-#include "dialogs/SequenceDlg.h"
 #include "dialogs/DWDlg.h"
 #include "dialogs/DynPlaneDlg.h"
 
@@ -108,7 +107,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		NeutronDlg *m_pNeutronDlg = 0;
 		GotoDlg *m_pGotoDlg = 0;
 		PowderDlg *m_pPowderDlg = 0;
-		SequenceDlg *m_pSequenceDlg = 0;
 		DWDlg *m_pDWDlg = 0;
 		DynPlaneDlg* m_pDynPlaneDlg = 0;
 
@@ -167,7 +165,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowGotoDlg();
 		void ShowPowderDlg();
 		void ShowSettingsDlg();
-		void ShowSequenceDlg();
 		void ShowDWDlg();
 		void ShowDynPlaneDlg();
 

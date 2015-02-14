@@ -55,7 +55,6 @@ declare -a hfiles=(
         "dialogs/NetCacheDlg.h"
 	"dialogs/PowderDlg.h"
 	"dialogs/SettingsDlg.h"
-	"dialogs/SequenceDlg.h"
 	"dialogs/DWDlg.h"
 	"dialogs/DynPlaneDlg.h"
 )
