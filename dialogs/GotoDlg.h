@@ -14,6 +14,7 @@
 
 #include "../tlibs/math/lattice.h"
 #include "../tlibs/math/linalg.h"
+#include "../tlibs/file/xml.h"
 #include "../tools/taz/tasoptions.h"
 #include "RecipParamDlg.h"
 
@@ -56,6 +57,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 
 		// list
 		void AddPosToList();
+		void AddPosToList(double dh, double dk, double dl, double dki, double dkf);
 		void RemPosFromList();
 		void LoadList();
 		void SaveList();
@@ -88,6 +90,11 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);
+
+	public:
+		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
+		void Load(tl::Xml& xml, const std::string& strXmlRoot);
+
 };
 
 #endif

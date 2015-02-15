@@ -4,7 +4,7 @@
  * @date 2013, 2-dec-2014
  * @copyright GPLv2
  */
- 
+
 #include "PowderDlg.h"
 #include "../tlibs/math/lattice.h"
 #include "../tlibs/math/neutrons.hpp"
@@ -34,8 +34,8 @@ struct PowderLine
 };
 
 
-PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett) 
-			: QDialog(pParent), m_pSettings(pSett), 
+PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
+			: QDialog(pParent), m_pSettings(pSett),
 				m_pmapSpaceGroups(get_space_groups())
 {
 	this->setupUi(this);
@@ -44,7 +44,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	tablePowderLines->setColumnWidth(0, 75);
 	tablePowderLines->setColumnWidth(1, 75);
 	tablePowderLines->setColumnWidth(2, 250);
-	
+
 	std::vector<QLineEdit*> vecEditsUC = {editA, editB, editC, editAlpha, editBeta, editGamma};
 	for(QLineEdit* pEdit : vecEditsUC)
 	{
@@ -56,10 +56,10 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 
 	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SpaceGroupChanged()));
-	
+
 	connect(btnSave, SIGNAL(clicked()), this, SLOT(SavePowder()));
-	connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadPowder()));	
-	
+	connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadPowder()));
+
 	m_bDontCalc = 0;
 	RepopulateSpaceGroups();
 	CalcPeaks();
@@ -73,22 +73,22 @@ void PowderDlg::CalcPeaks()
 {
 	if(m_bDontCalc) return;
 	static const unsigned int iPrec = 8;
-	
+
 	const double dA = editA->text().toDouble();
 	const double dB = editB->text().toDouble();
 	const double dC = editC->text().toDouble();
 	const double dAlpha = editAlpha->text().toDouble()/180.*M_PI;
 	const double dBeta = editBeta->text().toDouble()/180.*M_PI;
 	const double dGamma = editGamma->text().toDouble()/180.*M_PI;
-	
+
 	const double dLam = editLam->text().toDouble();
 	const int iOrder = spinOrder->value();
-	
+
 	tl::Lattice<double> lattice(dA, dB, dC, dAlpha, dBeta, dGamma);
 	tl::Lattice<double> recip = lattice.GetRecip();
-	
+
 	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
-	
+
 	std::map<std::string, PowderLine> mapPeaks;
 
 	for(int ih=-iOrder; ih<iOrder; ++ih)
@@ -101,10 +101,10 @@ void PowderDlg::CalcPeaks()
 				ublas::vector<double> vecBragg = recip.GetPos(ih, ik, il);
 				double dQ = ublas::norm_2(vecBragg);
 				if(tl::is_nan_or_inf<double>(dQ)) continue;
-				
+
 				double dAngle = tl::bragg_recip_twotheta(dQ/tl::angstrom, dLam*tl::angstrom, 1.) / tl::radians;
 				if(tl::is_nan_or_inf<double>(dAngle)) continue;
-				
+
 				//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;
 
 				std::ostringstream ostrAngle;
@@ -127,15 +127,15 @@ void PowderDlg::CalcPeaks()
 	{
 		pair.second.strAngle = pair.first;
 		pair.second.strQ = tl::var_to_str<double>(pair.second.dQ, iPrec);
-		
+
 		vecPowderLines.push_back(&pair.second);
 	}
 
 
-	std::sort(vecPowderLines.begin(), vecPowderLines.end(), 
+	std::sort(vecPowderLines.begin(), vecPowderLines.end(),
 				[](const PowderLine* pLine1, const PowderLine* pLine2) -> bool
 					{ return pLine1->dAngle <= pLine2->dAngle; });
-					
+
 
 	const int iNumRows = vecPowderLines.size();
 	tablePowderLines->setRowCount(iNumRows);
@@ -168,7 +168,7 @@ void PowderDlg::SpaceGroupChanged()
 {
 	m_crystalsys = CrystalSystem::CRYS_NOT_SET;
 	const char* pcCryTy = "<not set>";
-	
+
 	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 	if(pSpaceGroup)
 	{
@@ -176,7 +176,7 @@ void PowderDlg::SpaceGroupChanged()
 		pcCryTy = pSpaceGroup->GetCrystalSystemName();
 	}
 	editCrystalSystem->setText(pcCryTy);
-	
+
 	CheckCrystalType();
 	CalcPeaks();
 }
@@ -225,7 +225,7 @@ void PowderDlg::CheckCrystalType()
 			editBeta->setText("90");
 			editGamma->setText("90");
 			break;
-			
+
 		case CRYS_HEXAGONAL:
 			editA->setEnabled(1);
 			editB->setEnabled(0);
@@ -239,7 +239,7 @@ void PowderDlg::CheckCrystalType()
 			editBeta->setText("90");
 			editGamma->setText("120");
 			break;
-			
+
 		case CRYS_MONOCLINIC:
 			editA->setEnabled(1);
 			editB->setEnabled(1);
@@ -251,7 +251,7 @@ void PowderDlg::CheckCrystalType()
 			editBeta->setText("90");
 			editGamma->setText("90");
 			break;
-			
+
 		case CRYS_ORTHORHOMBIC:
 			editA->setEnabled(1);
 			editB->setEnabled(1);
@@ -264,7 +264,7 @@ void PowderDlg::CheckCrystalType()
 			editBeta->setText("90");
 			editGamma->setText("90");
 			break;
-			
+
 		case CRYS_TETRAGONAL:
 			editA->setEnabled(1);
 			editB->setEnabled(0);
@@ -315,7 +315,7 @@ void PowderDlg::SavePowder()
 	if(m_pSettings)
 		m_pSettings->value("powder/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getSaveFileName(this,
-								"Save powder configuration",
+								"Save Powder Configuration",
 								strDirLast,
 								"TAZ files (*.taz *.TAZ)");
 
@@ -344,7 +344,7 @@ void PowderDlg::LoadPowder()
 	if(m_pSettings)
 		strDirLast = m_pSettings->value("powder/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getOpenFileName(this,
-							"Open powder configuration...",
+							"Open Powder Configuration",
 							strDirLast,
 							"TAZ files (*.taz *.TAZ)");
 	if(qstrFile == "")
@@ -364,7 +364,6 @@ void PowderDlg::LoadPowder()
 	Load(xml, strXmlRoot);
 	if(m_pSettings)
 		m_pSettings->setValue("powder/last_dir", QString(strDir.c_str()));
-
 }
 
 void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
@@ -372,11 +371,11 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 	mapConf[strXmlRoot + "sample/a"] = editA->text().toStdString();
 	mapConf[strXmlRoot + "sample/b"] = editB->text().toStdString();
 	mapConf[strXmlRoot + "sample/c"] = editC->text().toStdString();
-	
+
 	mapConf[strXmlRoot + "sample/alpha"] = editAlpha->text().toStdString();
 	mapConf[strXmlRoot + "sample/beta"] = editBeta->text().toStdString();
 	mapConf[strXmlRoot + "sample/gamma"] = editGamma->text().toStdString();
-	
+
 	mapConf[strXmlRoot + "powder/maxhkl"] = tl::var_to_str<int>(spinOrder->value());
 	mapConf[strXmlRoot + "powder/lambda"] = editLam->text().toStdString();
 
@@ -387,7 +386,7 @@ void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 {
 	m_bDontCalc = 1;
 	bool bOk=0;
-	
+
 	editA->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/a").c_str(), 5., &bOk)).c_str());
 	editB->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/b").c_str(), 5., &bOk)).c_str());
 	editC->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/c").c_str(), 5., &bOk)).c_str());
@@ -398,7 +397,7 @@ void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 
 	spinOrder->setValue(xml.Query<int>((strXmlRoot + "powder/maxhkl").c_str(), 10, &bOk));
 	editC->setText(std::to_string(xml.Query<double>((strXmlRoot + "powder/lambda").c_str(), 5., &bOk)).c_str());
-	
+
 	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
 	tl::trim(strSpaceGroup);
 	if(bOk)

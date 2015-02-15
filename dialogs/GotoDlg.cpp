@@ -10,6 +10,9 @@
 #include "../tlibs/string/string.h"
 #include "../tlibs/string/spec_char.h"
 
+#include <QtGui/QFileDialog>
+#include <QtGui/QMessageBox>
+
 namespace units = boost::units;
 namespace co = boost::units::si::constants::codata;
 
@@ -440,15 +443,15 @@ void GotoDlg::ListItemSelected()
 	CalcSample();
 }
 
-void GotoDlg::AddPosToList()
+void GotoDlg::AddPosToList(double dh, double dk, double dl, double dki, double dkf)
 {
 	HklPos *pPos = new HklPos;
 
-	pPos->dh = tl::str_to_var<double>(editH->text().toStdString());
-	pPos->dk = tl::str_to_var<double>(editK->text().toStdString());
-	pPos->dl = tl::str_to_var<double>(editL->text().toStdString());
-	pPos->dki = tl::str_to_var<double>(editKi->text().toStdString());
-	pPos->dkf = tl::str_to_var<double>(editKf->text().toStdString());
+	pPos->dh = dh;
+	pPos->dk = dk;
+	pPos->dl = dl;
+	pPos->dki = dki;
+	pPos->dkf = dkf;
 	pPos->dE = (tl::k2E(pPos->dki/tl::angstrom) - tl::k2E(pPos->dkf/tl::angstrom))/tl::meV;
 
 	tl::set_eps_0(pPos->dh);
@@ -470,6 +473,17 @@ void GotoDlg::AddPosToList()
 	QString qstr = QString::fromWCharArray(ostrHKL.str().c_str());
 	QListWidgetItem* pItem = new QListWidgetItem(qstr, listSeq);
 	pItem->setData(Qt::UserRole, QVariant::fromValue<void*>(pPos));
+}
+
+void GotoDlg::AddPosToList()
+{
+	double dh = tl::str_to_var<double>(editH->text().toStdString());
+	double dk = tl::str_to_var<double>(editK->text().toStdString());
+	double dl = tl::str_to_var<double>(editL->text().toStdString());
+	double dki = tl::str_to_var<double>(editKi->text().toStdString());
+	double dkf = tl::str_to_var<double>(editKf->text().toStdString());
+
+	AddPosToList(dh, dk, dl, dki, dkf);
 }
 
 void GotoDlg::RemPosFromList()
@@ -499,12 +513,128 @@ void GotoDlg::ClearList()
 
 void GotoDlg::LoadList()
 {
+	const std::string strXmlRoot("taz/");
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		strDirLast = m_pSettings->value("goto_pos/last_dir", ".").toString();
+	QString qstrFile = QFileDialog::getOpenFileName(this,
+							"Load Positions",
+							strDirLast,
+							"TAZ files (*.taz *.TAZ)");
+	if(qstrFile == "")
+		return;
+
+
+	std::string strFile = qstrFile.toStdString();
+	std::string strDir = tl::get_dir(strFile);
+
+	tl::Xml xml;
+	if(!xml.Load(strFile.c_str()))
+	{
+		QMessageBox::critical(this, "Error", "Could not load powder file.");
+		return;
+	}
+
+	Load(xml, strXmlRoot);
+	if(m_pSettings)
+		m_pSettings->setValue("goto_pos/last_dir", QString(strDir.c_str()));
 }
 
 void GotoDlg::SaveList()
 {
+	const std::string strXmlRoot("taz/");
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		m_pSettings->value("goto_pos/last_dir", ".").toString();
+	QString qstrFile = QFileDialog::getSaveFileName(this,
+								"Save Positions",
+								strDirLast,
+								"TAZ files (*.taz *.TAZ)");
+
+	if(qstrFile == "")
+		return;
+
+	std::string strFile = qstrFile.toStdString();
+	std::string strDir = tl::get_dir(strFile);
+
+	std::map<std::string, std::string> mapConf;
+	Save(mapConf, strXmlRoot);
+
+	bool bOk = tl::Xml::SaveMap(strFile.c_str(), mapConf);
+	if(!bOk)
+		QMessageBox::critical(this, "Error", "Could not save positions.");
+
+	if(bOk && m_pSettings)
+		m_pSettings->setValue("goto_pos/last_dir", QString(strDir.c_str()));
 }
 
+void GotoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
+{
+	mapConf[strXmlRoot + "goto_pos/h"] = editH->text().toStdString();
+	mapConf[strXmlRoot + "goto_pos/k"] = editK->text().toStdString();
+	mapConf[strXmlRoot + "goto_pos/l"] = editL->text().toStdString();
+	mapConf[strXmlRoot + "goto_pos/ki"] = editKi->text().toStdString();
+	mapConf[strXmlRoot + "goto_pos/kf"] = editKf->text().toStdString();
+	mapConf[strXmlRoot + "goto_pos/cki"] = radioFixedKi->isChecked()?"1":"0";
+
+	// favlist
+	for(int iItem=0; iItem<listSeq->count(); ++iItem)
+	{
+		const QListWidgetItem *pItem = listSeq->item(iItem);
+		if(!pItem) continue;
+		const HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
+		if(!pPos) continue;
+
+		std::ostringstream ostrItemBase;
+		ostrItemBase << "goto_favlist/pos_" << iItem << "/";
+		std::string strItemBase = ostrItemBase.str();
+
+		mapConf[strXmlRoot + strItemBase + "h"] = tl::var_to_str(pPos->dh);
+		mapConf[strXmlRoot + strItemBase + "k"] = tl::var_to_str(pPos->dk);
+		mapConf[strXmlRoot + strItemBase + "l"] = tl::var_to_str(pPos->dl);
+		mapConf[strXmlRoot + strItemBase + "ki"] = tl::var_to_str(pPos->dki);
+		mapConf[strXmlRoot + strItemBase + "kf"] = tl::var_to_str(pPos->dkf);
+	}
+}
+
+void GotoDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
+{
+	bool bOk=0;
+
+	editH->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/h").c_str(), 1., &bOk)).c_str());
+	editK->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/k").c_str(), 0., &bOk)).c_str());
+	editL->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/l").c_str(), 0., &bOk)).c_str());
+	editKi->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/ki").c_str(), 1.4, &bOk)).c_str());
+	editKf->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/kf").c_str(), 1.4, &bOk)).c_str());
+	radioFixedKi->setChecked(xml.Query<bool>((strXmlRoot + "goto_pos/cki").c_str(), 0, &bOk));
+
+	// favlist
+	ClearList();
+	unsigned int iItem=0;
+	while(1)
+	{
+		std::ostringstream ostrItemBase;
+		ostrItemBase << "goto_favlist/pos_" << iItem << "/";
+		std::string strItemBase = ostrItemBase.str();
+
+		if(!xml.Exists((strXmlRoot + strItemBase).c_str()))
+			break;
+
+		double dh = xml.Query<double>((strXmlRoot + strItemBase + "h").c_str(), 0., &bOk);
+		double dk = xml.Query<double>((strXmlRoot + strItemBase + "k").c_str(), 0., &bOk);
+		double dl = xml.Query<double>((strXmlRoot + strItemBase + "l").c_str(), 0., &bOk);
+		double dki = xml.Query<double>((strXmlRoot + strItemBase + "ki").c_str(), 0., &bOk);
+		double dkf = xml.Query<double>((strXmlRoot + strItemBase + "kf").c_str(), 0., &bOk);
+
+		AddPosToList(dh, dk, dl, dki, dkf);
+		++iItem;
+	}
+
+	EditedKiKf();
+	CalcSample();
+}
 
 
 #include "GotoDlg.moc"

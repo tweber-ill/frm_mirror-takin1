@@ -569,11 +569,15 @@ void TazDlg::ShowNeutronDlg()
 	m_pNeutronDlg->activateWindow();
 }
 
-void TazDlg::ShowGotoDlg()
+void TazDlg::InitGoto()
 {
 	if(!m_pGotoDlg)
 		m_pGotoDlg = new GotoDlg(this, &m_settings);
+}
 
+void TazDlg::ShowGotoDlg()
+{
+	InitGoto();
 	m_pGotoDlg->show();
 	m_pGotoDlg->activateWindow();
 }
@@ -884,13 +888,24 @@ bool TazDlg::Load(const char* pcFile)
 		int iSGIdx = comboSpaceGroups->findText(strSpaceGroup.c_str());
 		if(iSGIdx >= 0)
 			comboSpaceGroups->setCurrentIndex(iSGIdx);
+		else
+			comboSpaceGroups->setCurrentIndex(0);
 	}
+
 
 	if(xml.Exists((strXmlRoot + "reso").c_str()))
 	{
 		InitReso();
 		m_pReso->Load(xml, strXmlRoot);
 	}
+
+	if(xml.Exists((strXmlRoot + "goto_favlist").c_str()) ||
+		xml.Exists((strXmlRoot + "goto_pos").c_str()))
+	{
+		InitGoto();
+		m_pGotoDlg->Load(xml, strXmlRoot);
+	}
+
 
 	m_strCurFile = strFile1;
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
@@ -994,11 +1009,14 @@ bool TazDlg::Save()
 	mapConf[strXmlRoot + "real/enable_realQDir"] = (bRealQDir ? "1" : "0");
 
 
-	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
+	std::string strSG = comboSpaceGroups->currentText().toStdString();
+	if(strSG == "<not set>")
+		strSG = "-1";
+	mapConf[strXmlRoot + "sample/spacegroup"] = strSG;
 
 
-	if(m_pReso)
-		m_pReso->Save(mapConf, strXmlRoot);
+	if(m_pReso) m_pReso->Save(mapConf, strXmlRoot);
+	if(m_pGotoDlg) m_pGotoDlg->Save(mapConf, strXmlRoot);
 
 
 	if(!tl::Xml::SaveMap(m_strCurFile.c_str(), mapConf))

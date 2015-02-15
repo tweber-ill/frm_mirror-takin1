@@ -116,6 +116,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 	protected:
 		void InitReso();
+		void InitGoto();
 
 	public:
 		TazDlg(QWidget *pParent);
