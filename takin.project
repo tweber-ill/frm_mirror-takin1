@@ -28,7 +28,6 @@
   </Plugins>
   <VirtualDirectory Name="tlibs">
     <VirtualDirectory Name="file">
-      <File Name="tlibs/file/comp.cpp" ExcludeProjConfig="Debug;Release"/>
       <File Name="tlibs/file/xml.cpp"/>
       <File Name="tlibs/file/file.cpp" ExcludeProjConfig="Debug;Release"/>
       <File Name="tlibs/file/loadtxt.cpp" ExcludeProjConfig="Debug;Release"/>
@@ -82,7 +81,6 @@
       <File Name="tlibs/string/spec_char.cpp"/>
       <File Name="tlibs/string/string.h"/>
       <File Name="tlibs/string/spec_char.h"/>
-      <File Name="tlibs/string/string.cpp"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="tools">
