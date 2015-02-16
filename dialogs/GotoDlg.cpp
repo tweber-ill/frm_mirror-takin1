@@ -98,9 +98,11 @@ void GotoDlg::CalcSample()
 	tl::set_eps_0(m_dSample2Theta);
 	tl::set_eps_0(m_dSampleTheta);
 
-	std::ostringstream ostrStatus;
-	ostrStatus << "Q = " << vecQ << ", |Q| = " << ublas::norm_2(vecQ);
-	labelQ->setText(ostrStatus.str().c_str());
+	const std::wstring strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
+
+	std::wostringstream ostrStatus;
+	ostrStatus << "Q = " << vecQ << " " << strAA << ", |Q| = " << ublas::norm_2(vecQ) << " " << strAA;
+	labelQ->setText(QString::fromWCharArray(ostrStatus.str().c_str()));
 
 	if(bFailed) return;
 
