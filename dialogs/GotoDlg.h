@@ -46,18 +46,18 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 
 		bool m_bSenseM=0, m_bSenseS=1, m_bSenseA=0;
 
+	public:
+		//list
 		void ClearList();
 
 	protected slots:
 		void EditedKiKf();
 		void EditedE();
 		void EditedAngles();
-
 		void GetCurPos();
 
 		// list
 		void AddPosToList();
-		void AddPosToList(double dh, double dk, double dl, double dki, double dkf);
 		void RemPosFromList();
 		void LoadList();
 		void SaveList();
@@ -66,6 +66,9 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 	public slots:
 		void CalcMonoAna();
 		void CalcSample();
+		
+		// list
+		void AddPosToList(double dh, double dk, double dl, double dki, double dkf);
 
 	public:
 		void SetLattice(const tl::Lattice<double>& lattice) { m_lattice = lattice; }

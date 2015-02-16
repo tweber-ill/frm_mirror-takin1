@@ -124,6 +124,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		virtual ~TazDlg();
 
 		bool Load(const char* pcFile);
+		bool Import(const char* pcFile);
 
 	protected slots:
 		void CalcPeaks();
@@ -149,6 +150,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		bool Save();
 		bool SaveAs();
 		bool Load();
+		bool Import();
 
 		void ExportReal();
 		void ExportRecip();

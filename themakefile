@@ -56,14 +56,14 @@ LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
 OBJ_COMMON = obj/log.o obj/rand.o obj/linalg2.o \
 	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
-	obj/recip3d.o \
+	obj/taz_file.o obj/recip3d.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
 	obj/xml.o obj/tcp.o obj/spacegroup.o obj/gl.o \
 	obj/plotgl.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
-	obj/EllipseDlg3D.o obj/NetCacheDlg.o
+	obj/EllipseDlg3D.o obj/NetCacheDlg.o obj/loadinstr.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 OBJ_RESO = obj/log.o obj/rand.o \
        	obj/spec_char.o obj/reso_res_main.o \
@@ -96,6 +96,8 @@ obj/taz.o: tools/taz/taz.cpp tools/taz/taz.h
 obj/taz_crys.o: tools/taz/taz_crys.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/taz_net.o: tools/taz/taz_net.cpp tools/taz/taz.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/taz_file.o: tools/taz/taz_file.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/recip3d.o: tools/taz/recip3d.cpp tools/taz/recip3d.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -145,6 +147,8 @@ obj/rand.o: tlibs/math/rand.cpp tlibs/math/rand.h
 obj/plotgl.o: helper/plotgl.cpp helper/plotgl.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/cn.o: tools/res/cn.cpp tools/res/cn.h
