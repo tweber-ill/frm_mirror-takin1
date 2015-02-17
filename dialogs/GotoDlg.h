@@ -47,8 +47,11 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		bool m_bSenseM=0, m_bSenseS=1, m_bSenseA=0;
 
 	public:
-		//list
 		void ClearList();
+		
+	protected:
+		bool GotoPos(QListWidgetItem* pItem, bool bApply=0);
+		bool ApplyCurPos();
 
 	protected slots:
 		void EditedKiKf();
@@ -62,12 +65,12 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		void LoadList();
 		void SaveList();
 		void ListItemSelected();
+		void ListItemDoubleClicked(QListWidgetItem*);
 
 	public slots:
 		void CalcMonoAna();
 		void CalcSample();
 		
-		// list
 		void AddPosToList(double dh, double dk, double dl, double dki, double dkf);
 
 	public:

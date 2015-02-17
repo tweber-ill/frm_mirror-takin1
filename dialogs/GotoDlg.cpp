@@ -27,6 +27,8 @@ GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSett
 	QObject::connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadList()));
 	QObject::connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveList()));
 	QObject::connect(listSeq, SIGNAL(itemSelectionChanged()), this, SLOT(ListItemSelected()));
+	QObject::connect(listSeq, SIGNAL(itemDoubleClicked(QListWidgetItem*)), 
+					this, SLOT(ListItemDoubleClicked(QListWidgetItem*)));
 
 	QObject::connect(editKi, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
 	QObject::connect(editKf, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
@@ -366,35 +368,7 @@ void GotoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ApplyRole ||
 	   buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
-		if(m_bMonoAnaOk && m_bSampleOk)
-		{
-			CrystalOptions crys;
-			TriangleOptions triag;
-
-			triag.bChangedMonoTwoTheta = 1;
-			triag.dMonoTwoTheta = this->m_dMono2Theta;
-
-			triag.bChangedAnaTwoTheta = 1;
-			triag.dAnaTwoTheta = this->m_dAna2Theta;
-
-			triag.bChangedTheta = 1;
-			triag.dTheta = this->m_dSampleTheta;
-
-			triag.bChangedAngleKiVec0 = 1;
-
-			double dSampleTheta = m_dSampleTheta;
-			if(!m_bSenseS) dSampleTheta = -dSampleTheta;
-			triag.dAngleKiVec0 = M_PI/2. - dSampleTheta;
-			//log_info("kivec0 = ", triag.dAngleKiVec0/M_PI*180.);
-			//log_info("th = ", m_dSampleTheta/M_PI*180.);
-
-			triag.bChangedTwoTheta = 1;
-			triag.dTwoTheta = this->m_dSample2Theta;
-			// TODO: correct hack in taz.cpp
-			if(!m_bSenseS) triag.dTwoTheta = -triag.dTwoTheta;
-
-			emit vars_changed(crys, triag);
-		}
+		ApplyCurPos();
 	}
 	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::RejectRole)
 	{
@@ -428,12 +402,45 @@ struct HklPos
 	double dE;
 };
 
-void GotoDlg::ListItemSelected()
+bool GotoDlg::ApplyCurPos()
 {
-	QListWidgetItem *pItem = listSeq->currentItem();
-	if(!pItem) return;
+	if(!m_bMonoAnaOk || !m_bSampleOk)
+		return false;
+
+	CrystalOptions crys;
+	TriangleOptions triag;
+
+	triag.bChangedMonoTwoTheta = 1;
+	triag.dMonoTwoTheta = this->m_dMono2Theta;
+
+	triag.bChangedAnaTwoTheta = 1;
+	triag.dAnaTwoTheta = this->m_dAna2Theta;
+
+	triag.bChangedTheta = 1;
+	triag.dTheta = this->m_dSampleTheta;
+
+	triag.bChangedAngleKiVec0 = 1;
+
+	double dSampleTheta = m_dSampleTheta;
+	if(!m_bSenseS) dSampleTheta = -dSampleTheta;
+	triag.dAngleKiVec0 = M_PI/2. - dSampleTheta;
+	//log_info("kivec0 = ", triag.dAngleKiVec0/M_PI*180.);
+	//log_info("th = ", m_dSampleTheta/M_PI*180.);
+
+	triag.bChangedTwoTheta = 1;
+	triag.dTwoTheta = this->m_dSample2Theta;
+	// TODO: correct hack in taz.cpp
+	if(!m_bSenseS) triag.dTwoTheta = -triag.dTwoTheta;
+
+	emit vars_changed(crys, triag);
+	return true;
+}
+
+bool GotoDlg::GotoPos(QListWidgetItem* pItem, bool bApply)
+{
+	if(!pItem) return false;
 	HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
-	if(!pPos) return;
+	if(!pPos) return false;
 
 	editH->setText(tl::var_to_str(pPos->dh).c_str());
 	editK->setText(tl::var_to_str(pPos->dk).c_str());
@@ -443,6 +450,23 @@ void GotoDlg::ListItemSelected()
 
 	EditedKiKf();
 	CalcSample();
+	
+	if(bApply)
+		return ApplyCurPos();	
+	return m_bMonoAnaOk && m_bSampleOk;
+}
+
+void GotoDlg::ListItemSelected()
+{
+	QListWidgetItem *pItem = listSeq->currentItem();
+	GotoPos(pItem, 0);
+}
+
+void GotoDlg::ListItemDoubleClicked(QListWidgetItem* pItem)
+{
+	bool bOk = GotoPos(pItem, 1);
+	if(!bOk)
+		QMessageBox::critical(this, "Error", "Invalid position.");
 }
 
 void GotoDlg::AddPosToList(double dh, double dk, double dl, double dki, double dkf)
@@ -534,7 +558,7 @@ void GotoDlg::LoadList()
 	tl::Xml xml;
 	if(!xml.Load(strFile.c_str()))
 	{
-		QMessageBox::critical(this, "Error", "Could not load powder file.");
+		QMessageBox::critical(this, "Error", "Could not load positions.");
 		return;
 	}
 
