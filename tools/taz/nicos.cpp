@@ -8,6 +8,7 @@
 #include "nicos.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/log.h"
+#include "tlibs/helper/py.h"
 
 
 NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
@@ -133,36 +134,6 @@ void NicosCache::slot_disconnected(const std::string& strHost, const std::string
 	emit disconnected();
 }
 
-
-static std::vector<double> get_py_array(const std::string& str)
-{
-	std::vector<double> vecArr;
-
-	std::size_t iStart = str.find('[');
-	std::size_t iEnd = str.find(']');
-
-	// invalid array
-	if(iStart==std::string::npos || iEnd==std::string::npos || iEnd<iStart)
-		return vecArr;
-
-	std::string strArr = str.substr(iStart+1, iEnd-iStart-1);
-	tl::get_tokens<double, std::string>(strArr, ",", vecArr);
-
-	return vecArr;
-}
-
-static std::string get_py_string(const std::string& str)
-{
-	std::size_t iStart = str.find_first_of("\'\"");
-	std::size_t iEnd = str.find_last_of("\'\"");
-
-	// invalid string
-	if(iStart==std::string::npos || iEnd==std::string::npos || iEnd<iStart)
-		return "";
-
-	return str.substr(iStart+1, iEnd-iStart-1);
-}
-
 void NicosCache::slot_receive(const std::string& str)
 {
 	//log_debug("Received: ", str);
@@ -204,7 +175,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 	if(strKey == m_strSampleLattice)
 	{
-		std::vector<double> vecLattice = get_py_array(strVal);
+		std::vector<double> vecLattice = tl::get_py_array(strVal);
 		if(vecLattice.size() != 3)
 			return;
 
@@ -214,7 +185,7 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleAngles)
 	{
-		std::vector<double> vecAngles = get_py_array(strVal);
+		std::vector<double> vecAngles = tl::get_py_array(strVal);
 		if(vecAngles.size() != 3)
 			return;
 
@@ -224,7 +195,7 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleOrient1)
 	{
-		std::vector<double> vecOrient = get_py_array(strVal);
+		std::vector<double> vecOrient = tl::get_py_array(strVal);
 		if(vecOrient.size() != 3)
 			return;
 
@@ -234,7 +205,7 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleOrient2)
 	{
-		std::vector<double> vecOrient = get_py_array(strVal);
+		std::vector<double> vecOrient = tl::get_py_array(strVal);
 		if(vecOrient.size() != 3)
 			return;
 
@@ -244,7 +215,7 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleSpacegroup)
 	{
-		crys.strSpacegroup = get_py_string(strVal);
+		crys.strSpacegroup = tl::get_py_string(strVal);
 		crys.bChangedSpacegroup = 1;
 	}
 	else if(strKey == m_strMono2Theta)
@@ -274,7 +245,7 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleName)
 	{
-		crys.strSampleName = get_py_string(strVal);
+		crys.strSampleName = tl::get_py_string(strVal);
 	}
 
 
@@ -296,7 +267,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 		// if the rotation sample stick is used, sth is an additional angle,
 		// otherwise sth copies the om value.
-		if(get_py_string(strSthAlias) != "om")
+		if(tl::get_py_string(strSthAlias) != "om")
 			triag.dAngleKiVec0 -= dTh_aux;
 
 		triag.bChangedAngleKiVec0 = 1;

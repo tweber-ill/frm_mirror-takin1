@@ -52,6 +52,7 @@
       <File Name="tlibs/helper/exception.h"/>
       <File Name="tlibs/helper/log.cpp"/>
       <File Name="tlibs/helper/traits.h"/>
+      <File Name="tlibs/helper/py.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="math">
       <File Name="tlibs/math/fourier.h" ExcludeProjConfig="Debug;Release"/>

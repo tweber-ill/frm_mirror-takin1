@@ -354,16 +354,17 @@ bool TazDlg::Import(const char* pcFile)
 
 	try
 	{
-		tl::FilePsi dat;
-		if(!dat.Load(pcFile))
+		std::unique_ptr<tl::FileInstr> ptrDat(tl::FileInstr::LoadInstr(pcFile));
+		tl::FileInstr* pdat = ptrDat.get();
+		if(!pdat)
 			return false;
 			
-		std::array<double,3> arrLatt = dat.GetSampleLattice();
-		std::array<double,3> arrAng = dat.GetSampleAngles();
-		std::array<bool, 3> arrSenses = dat.GetScatterSenses();
-		std::array<double, 2> arrD = dat.GetMonoAnaD();
-		std::array<double, 3> arrPeak0 = dat.GetScatterPlane0();
-		std::array<double, 3> arrPeak1 = dat.GetScatterPlane1();
+		std::array<double,3> arrLatt = pdat->GetSampleLattice();
+		std::array<double,3> arrAng = pdat->GetSampleAngles();
+		std::array<bool, 3> arrSenses = pdat->GetScatterSenses();
+		std::array<double, 2> arrD = pdat->GetMonoAnaD();
+		std::array<double, 3> arrPeak0 = pdat->GetScatterPlane0();
+		std::array<double, 3> arrPeak1 = pdat->GetScatterPlane1();
 		
 		editA->setText(tl::var_to_str(arrLatt[0]).c_str());
 		editB->setText(tl::var_to_str(arrLatt[1]).c_str());
@@ -376,9 +377,9 @@ bool TazDlg::Import(const char* pcFile)
 		editMonoD->setText(tl::var_to_str(arrD[0]).c_str());
 		editAnaD->setText(tl::var_to_str(arrD[1]).c_str());
 		
-		checkSenseM->setChecked(!arrSenses[0]);
-		checkSenseS->setChecked(!arrSenses[1]);
-		checkSenseA->setChecked(!arrSenses[2]);
+		checkSenseM->setChecked(arrSenses[0]);
+		checkSenseS->setChecked(arrSenses[1]);
+		checkSenseA->setChecked(arrSenses[2]);
 		
 		editScatX0->setText(tl::var_to_str(arrPeak0[0]).c_str());
 		editScatX1->setText(tl::var_to_str(arrPeak0[1]).c_str());
@@ -388,7 +389,7 @@ bool TazDlg::Import(const char* pcFile)
 		editScatY1->setText(tl::var_to_str(arrPeak1[1]).c_str());
 		editScatY2->setText(tl::var_to_str(arrPeak1[2]).c_str());
 		
-		std::size_t iScanNum = dat.GetScanCount();
+		std::size_t iScanNum = pdat->GetScanCount();
 		if(iScanNum)
 		{
 			InitGoto();
@@ -396,8 +397,7 @@ bool TazDlg::Import(const char* pcFile)
 			
 			for(std::size_t iScan=0; iScan<iScanNum; ++iScan)
 			{
-				std::array<double,5> arrScan = dat.GetScanHKLKiKf(iScan);
-				
+				std::array<double,5> arrScan = pdat->GetScanHKLKiKf(iScan);
 				m_pGotoDlg->AddPosToList(arrScan[0],arrScan[1],arrScan[2],arrScan[3],arrScan[4]);
 			}
 		}
