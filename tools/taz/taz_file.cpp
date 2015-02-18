@@ -155,7 +155,7 @@ bool TazDlg::Load(const char* pcFile)
 	if(bOk)
 	{
 		editSpaceGroupsFilter->clear();
-		int iSGIdx = comboSpaceGroups->findText(strSpaceGroup.c_str());
+		int iSGIdx = comboSpaceGroups->findText(strSpaceGroup.c_str(), Qt::MatchFixedString);
 		if(iSGIdx >= 0)
 			comboSpaceGroups->setCurrentIndex(iSGIdx);
 		else
@@ -389,6 +389,23 @@ bool TazDlg::Import(const char* pcFile)
 		editScatY1->setText(tl::var_to_str(arrPeak1[1]).c_str());
 		editScatY2->setText(tl::var_to_str(arrPeak1[2]).c_str());
 		
+		// spacegroup
+		std::string strSpaceGroup = pdat->GetSpacegroup();
+		tl::trim(strSpaceGroup);
+		editSpaceGroupsFilter->clear();
+		int iSGIdx = comboSpaceGroups->findText(strSpaceGroup.c_str(), Qt::MatchFixedString);
+		if(iSGIdx >= 0)
+			comboSpaceGroups->setCurrentIndex(iSGIdx);
+		else
+			comboSpaceGroups->setCurrentIndex(0);
+
+		// descr
+		std::string strExp = pdat->GetTitle();
+		std::string strSample = pdat->GetSampleName();
+		if(strSample != "")
+			strExp += std::string(" - ") + strSample;
+		editDescr->setPlainText(strExp.c_str());
+		
 		std::size_t iScanNum = pdat->GetScanCount();
 		if(iScanNum)
 		{
@@ -408,11 +425,8 @@ bool TazDlg::Import(const char* pcFile)
 		return false;
 	}
 
+
 	m_settings.setValue("main/last_import_dir", QString(strDir.c_str()));
-
-
-	bool bOk = 0;
-
 	m_strCurFile = strFile1;
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
 
