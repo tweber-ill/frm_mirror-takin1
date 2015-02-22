@@ -10,6 +10,12 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
+#include <qwt_plot.h>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_grid.h>
+#include <qwt_plot_picker.h>
+#include <vector>
+
 #include "../ui/ui_spurions.h"
 #include "RecipParamDlg.h"
 
@@ -20,6 +26,12 @@ class SpurionDlg : public QDialog, Ui::SpurionDlg
 		QSettings *m_pSettings = 0;
 		double m_dEi=0., m_dEf=0.;
 
+		std::vector<double> m_vecQ, m_vecE;
+
+		QwtPlotCurve *m_pBraggCurve = nullptr;
+		QwtPlotGrid *m_pBraggGrid = nullptr;
+		QwtPlotPicker *m_pBraggPicker = nullptr;
+
 	public:
 		SpurionDlg(QWidget* pParent=0, QSettings *pSett=0);
 		virtual ~SpurionDlg();
@@ -28,6 +40,10 @@ class SpurionDlg : public QDialog, Ui::SpurionDlg
 		void ChangedKiKfMode();
 		void Calc();
 
+		void CalcInel();
+		void CalcBragg();
+
+		void cursorMoved(const QPointF& pt);
 		void paramsChanged(const RecipParams& parms);
 
 	protected:

@@ -142,8 +142,6 @@
     <File Name="dialogs/PowderDlg.h"/>
     <File Name="dialogs/SettingsDlg.h"/>
     <File Name="dialogs/SettingsDlg.cpp"/>
-    <File Name="dialogs/SequenceDlg.cpp"/>
-    <File Name="dialogs/SequenceDlg.h"/>
     <File Name="dialogs/DWDlg.cpp"/>
     <File Name="dialogs/DWDlg.h"/>
     <File Name="dialogs/DynPlaneDlg.cpp"/>
