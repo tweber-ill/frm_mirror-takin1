@@ -1,15 +1,12 @@
 /*
  * Determine allowed reflexes from space group
- * @author Georg Brandl (author of original Python version "spacegroups.py")
- * @author Tobias Weber (C++ port, i.e. author of this version)
+ * @author of original Python version "spacegroups.py": Georg Brandl
+ * @author of this C++ port: Tobias Weber
  * @date 19-mar-2014
  * @copyright GPLv2
  *
  * Georg's original Python version:
  * http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos-core.git/tree/nicos/devices/tas/spacegroups.py
- *
- * Data sets from "spacegroups.py" are from PowderCell by W. Kraus and G. Nolze:
- * http://www.bam.de/de/service/publikationen/powder_cell_a.htm
  */
 
 #include "spacegroup.h"
@@ -32,31 +29,21 @@ const char* get_crystal_system_name(CrystalSystem ty)
 	return "<unknown>";
 }
 
-// Python-like modulo
-// from: http://stackoverflow.com/questions/4003232/how-to-code-a-modulo-operator-in-c-c-obj-c-that-handles-negative-numbers
-template<typename t_int=int> static inline t_int pymod(t_int a, t_int b)
-{
-	t_int m = a%b;
-	if(m < 0)
-		m += b;
-	return m;
-}
-
 // -> function "check_refcond" in Georg's Python code
 // -> http://www.ccp14.ac.uk/ccp/web-mirrors/powdcell/a_v/v_1/powder/details/extinct.htm
 static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
 {{
-	/*00, P*/ [] (int, int, int) -> bool { return 1; },
+	/*00*/ [] (int, int, int) -> bool { return 1; },
 
 	/*01*/ [] (int h, int, int) -> bool { return h%2 == 0; },
 	/*02*/ [] (int, int k, int) -> bool { return k%2 == 0; },
 	/*03*/ [] (int, int, int l) -> bool { return l%2 == 0; },
 
-	/*04, A*/ [] (int, int k, int l) -> bool { return (k+l)%2 == 0; },
-	/*05, B*/ [] (int h, int, int l) -> bool { return (h+l)%2 == 0; },
-	/*06, C*/ [] (int h, int k, int) -> bool { return (h+k)%2 == 0; },
+	/*04*/ [] (int, int k, int l) -> bool { return (k+l)%2 == 0; },
+	/*05*/ [] (int h, int, int l) -> bool { return (h+l)%2 == 0; },
+	/*06*/ [] (int h, int k, int) -> bool { return (h+k)%2 == 0; },
 
-	/*07*/ [] (int h, int k, int l) -> bool { return (pymod(h,2)==pymod(k,2)) && (pymod(k,2)==pymod(l,2)); },
+	/*07*/ [] (int h, int k, int l) -> bool { return (h+k)%2 == 0 && (h+l)%2 == 0 && (k+l)%2 == 0; },
 
 	/*08*/ [] (int, int k, int l) -> bool { return (k+l)%4 == 0; },
 	/*09*/ [] (int h, int, int l) -> bool { return (h+l)%4 == 0; },
@@ -65,9 +52,9 @@ static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
 	/*11*/ nullptr,
 	/*12*/ [] (int h, int, int l) -> bool { return (2*h+l)%4 == 0; },
 
-	/*13, I*/ [] (int h, int k, int l) -> bool { return (h+k+l)%2 == 0; },
-	/*14, R*/ [] (int h, int k, int l) -> bool { return (-h+k+l)%3 == 0; },
-	/*15, R*/ nullptr,
+	/*13*/ [] (int h, int k, int l) -> bool { return (h+k+l)%2 == 0; },
+	/*14*/ [] (int h, int k, int l) -> bool { return (-h+k+l)%3 == 0; },
+	/*15*/ nullptr,
 
 	/*16*/ [] (int h, int, int) -> bool { return h%4 == 0; },
 	/*17*/ [] (int, int k, int) -> bool { return k%4 == 0; },
@@ -91,44 +78,47 @@ static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
 }};
 
 // -> function "can_reflect" in Georg's Python code
-bool SpaceGroup::HasReflection(int h, int k, int l) const
+bool SpaceGroup::HasReflection(int h, int k, int l, bool bGeneral) const
 {
-	bool bRef = g_vecConds[m_vecCond[REFL_HKL]](h,k,l);
+	const std::array<unsigned char, 14> *pCond = &m_vecCond;
+	//const std::array<unsigned char, 14> *pCond = bGeneral ? &m_vecCond : &m_vecCondSpec;
+
+	bool bRef = g_vecConds[(*pCond)[REFL_HKL]](h,k,l);
 
 	if(h == 0)
 	{
-		bRef = bRef && g_vecConds[m_vecCond[REFL_0KL]](h, k, l);
+		bRef = bRef && g_vecConds[(*pCond)[REFL_0KL]](h, k, l);
 		if(k == 0)
-			bRef = bRef && g_vecConds[m_vecCond[REFL_00L]](h, k, l);
+			bRef = bRef && g_vecConds[(*pCond)[REFL_00L]](h, k, l);
 		else if(l == 0)
-			bRef = bRef && g_vecConds[m_vecCond[REFL_0K0]](h, k, l);
+			bRef = bRef && g_vecConds[(*pCond)[REFL_0K0]](h, k, l);
 		else if(k == l)
-			bRef = bRef && g_vecConds[m_vecCond[REFL_0KK]](h, k, l);
+			bRef = bRef && g_vecConds[(*pCond)[REFL_0KK]](h, k, l);
 	}
 	if(k == 0)
 	{
-		bRef = bRef && g_vecConds[m_vecCond[REFL_H0L]](h, k, l);
+		bRef = bRef && g_vecConds[(*pCond)[REFL_H0L]](h, k, l);
 		if(l == 0)
-			bRef = bRef && g_vecConds[m_vecCond[REFL_H00]](h, k, l);
+			bRef = bRef && g_vecConds[(*pCond)[REFL_H00]](h, k, l);
 		else if(h == l)
-			bRef = bRef && g_vecConds[m_vecCond[REFL_H0H]](h, k, l);
+			bRef = bRef && g_vecConds[(*pCond)[REFL_H0H]](h, k, l);
 	}
 	if(l == 0)
 	{
-		bRef = bRef && g_vecConds[m_vecCond[REFL_HK0]](h, k, l);
+		bRef = bRef && g_vecConds[(*pCond)[REFL_HK0]](h, k, l);
 		if(h == k)
-			bRef = bRef && g_vecConds[m_vecCond[REFL_HH0]](h, k, l);
+			bRef = bRef && g_vecConds[(*pCond)[REFL_HH0]](h, k, l);
 	}
 	if(h == k)
 	{
-		bRef = bRef && g_vecConds[m_vecCond[REFL_HHL]](h, k, l);
+		bRef = bRef && g_vecConds[(*pCond)[REFL_HHL]](h, k, l);
 		if(h == l)
-			bRef = bRef && g_vecConds[m_vecCond[REFL_HHH]](h, k, l);
+			bRef = bRef && g_vecConds[(*pCond)[REFL_HHH]](h, k, l);
 	}
 	if(k == l)
-		bRef = bRef && g_vecConds[m_vecCond[REFL_HKK]](h, k, l);
+		bRef = bRef && g_vecConds[(*pCond)[REFL_HKK]](h, k, l);
 	if(h == l)
-		bRef = bRef && g_vecConds[m_vecCond[REFL_HKH]](h, k, l);
+		bRef = bRef && g_vecConds[(*pCond)[REFL_HKH]](h, k, l);
 
 	return bRef;
 }

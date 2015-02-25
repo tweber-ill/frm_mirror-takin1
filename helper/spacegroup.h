@@ -1,12 +1,12 @@
 /*
  * Determine allowed reflexes from space group
- * @author Georg Brandl (author of original Python version "spacegroups.py")
- * @author Tobias Weber (C++ port, i.e. author of this version)
+ * @author of original Python version "spacegroups.py": Georg Brandl
+ * @author of this C++ port: Tobias Weber
  * @date 19-mar-2014
  * @copyright GPLv2
  *
  * Georg's original Python version:
- * http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos-core.git/tree/lib/nicos/devices/tas/spacegroups.py
+ * http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos-core.git/tree/nicos/devices/tas/spacegroups.py
  */
 
 #ifndef __SPACEGROUP_H__
@@ -53,28 +53,35 @@ class SpaceGroup
 {
 	protected:
 		std::string m_strName;
-		std::array<unsigned char, 14> m_vecCond;		// conditions in the order as given in Refls
 		CrystalSystem m_crystalsys;
+		
+		// general conditions in the order as given in Refls
+		std::array<unsigned char, 14> m_vecCond = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+		
+		// TODO: special conditions (not relevant for BZ calculation) in the order as given in Refls
+		//std::array<unsigned char, 14> m_vecCondSpec = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 	public:
 		SpaceGroup(const std::array<unsigned char, 14>& vecCond, CrystalSystem ty=CRYS_NOT_SET)
-					: m_vecCond(vecCond), m_crystalsys(ty)
+					: m_crystalsys(ty), m_vecCond(vecCond)
 		{}
-		SpaceGroup(const std::string& strName, const std::array<unsigned char, 14>& vecCond, CrystalSystem ty=CRYS_NOT_SET)
-					: m_strName(strName), m_vecCond(vecCond), m_crystalsys(ty)
+		SpaceGroup(const std::string& strName,
+					const std::array<unsigned char, 14>& vecCond,
+					const std::array<unsigned char, 14>& vecCondSpec,
+					CrystalSystem ty=CRYS_NOT_SET)
+					: m_strName(strName), m_crystalsys(ty), 
+						m_vecCond(vecCond)/*, m_vecCondSpec(vecCondSpec)*/
 		{}
 		virtual ~SpaceGroup()
 		{}
 
-		bool HasReflection(int h, int k, int l) const;
+		bool HasReflection(int h, int k, int l, bool bGeneral=true) const;
 
 		void SetName(const std::string& str) { m_strName = str; }
 		const std::string& GetName() const { return m_strName; }
 
 		CrystalSystem GetCrystalSystem() const { return m_crystalsys; }
 		const char* GetCrystalSystemName() const { return get_crystal_system_name(m_crystalsys); }
-		
-		//const std::array<unsigned char, 14>& GetConds() const { return m_vecCond; }
 };
 
 
