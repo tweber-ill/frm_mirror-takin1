@@ -60,6 +60,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
+	obj/FilePreviewDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
 	obj/xml.o obj/tcp.o obj/spacegroup.o obj/gl.o \
 	obj/plotgl.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
@@ -118,6 +119,8 @@ obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h tlibs/math/lattice.h
 obj/SpurionDlg.o: dialogs/SpurionDlg.cpp dialogs/SpurionDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/DWDlg.o: dialogs/DWDlg.cpp dialogs/DWDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/FilePreviewDlg.o: dialogs/FilePreviewDlg.cpp dialogs/FilePreviewDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/DynPlaneDlg.o: dialogs/DynPlaneDlg.cpp dialogs/DynPlaneDlg.h
 	${CC} ${FLAGS} -c -o $@ $<

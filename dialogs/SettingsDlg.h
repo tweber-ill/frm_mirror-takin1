@@ -27,6 +27,10 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		typedef std::tuple<std::string, std::string, QLineEdit*> t_tupEdit;
 		std::vector<t_tupEdit> m_vecEdits;
 
+		// checkboxes
+		typedef std::tuple<std::string, bool, QCheckBox*> t_tupCheck;
+		std::vector<t_tupCheck> m_vecChecks;
+
 	public:
 		SettingsDlg(QWidget* pParent=0, QSettings* pSett=0);
 		virtual ~SettingsDlg();

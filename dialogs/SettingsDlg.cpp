@@ -60,6 +60,11 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupEdit("gl/font", strDefFont, editGLFont)
 	};
 
+	m_vecChecks =
+	{
+		t_tupCheck("main/dlg_previews", 1, checkPreview)
+	};
+
 	SetDefaults(0);
 }
 
@@ -81,7 +86,19 @@ void SettingsDlg::SetDefaults(bool bOverwrite)
 
 		m_pSettings->setValue(strKey.c_str(), strDef.c_str());
 	}
+
+	for(const t_tupCheck& tup : m_vecChecks)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		const bool bDef = std::get<1>(tup);
+
+		bool bKeyExists = m_pSettings->contains(strKey.c_str());
+		if(bKeyExists && !bOverwrite) continue;
+
+		m_pSettings->setValue(strKey.c_str(), bDef);
+	}
 }
+
 
 void SettingsDlg::LoadSettings()
 {
@@ -96,6 +113,16 @@ void SettingsDlg::LoadSettings()
 		QString strVal = m_pSettings->value(strKey.c_str(), strDef.c_str()).toString();
 		pEdit->setText(strVal);
 	}
+
+	for(const t_tupCheck& tup : m_vecChecks)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		bool bDef = std::get<1>(tup);
+		QCheckBox* pCheck = std::get<2>(tup);
+
+		bool bVal = m_pSettings->value(strKey.c_str(), bDef).toBool();
+		pCheck->setChecked(bVal);
+	}
 }
 
 void SettingsDlg::SaveSettings()
@@ -109,7 +136,16 @@ void SettingsDlg::SaveSettings()
 
 		m_pSettings->setValue(strKey.c_str(), pEdit->text());
 	}
+
+	for(const t_tupCheck& tup : m_vecChecks)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		QCheckBox* pCheck = std::get<2>(tup);
+
+		m_pSettings->setValue(strKey.c_str(), pCheck->isChecked());
+	}
 }
+
 
 void SettingsDlg::SelectFont()
 {
@@ -129,6 +165,7 @@ void SettingsDlg::SelectFont()
 		m_pSettings->setValue("gl/last_font_dir", QString(strDir.c_str()));
 	}
 }
+
 
 void SettingsDlg::showEvent(QShowEvent *pEvt)
 {

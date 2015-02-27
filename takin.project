@@ -146,6 +146,8 @@
     <File Name="dialogs/DWDlg.h"/>
     <File Name="dialogs/DynPlaneDlg.cpp"/>
     <File Name="dialogs/DynPlaneDlg.h"/>
+    <File Name="dialogs/FilePreviewDlg.cpp"/>
+    <File Name="dialogs/FilePreviewDlg.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
     <File Name="helper/plotgl.cpp"/>

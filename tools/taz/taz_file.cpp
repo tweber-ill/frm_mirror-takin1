@@ -4,9 +4,10 @@
  * @date feb-2015
  * @copyright GPLv2
  */
- 
+
 #include "taz.h"
 #include "tlibs/string/string.h"
+#include "../../dialogs/FilePreviewDlg.h"
 
 #include <QtGui/QMessageBox>
 #include <QtGui/QFileDialog>
@@ -334,15 +335,30 @@ bool TazDlg::SaveAs()
 
 bool TazDlg::Import()
 {
+	const bool bShowPreview = m_settings.value("main/dlg_previews", true).toBool();
 	QString strDirLast = m_settings.value("main/last_import_dir", ".").toString();
-	QString strFile = QFileDialog::getOpenFileName(this,
-							"Import Data File...",
-							strDirLast,
-							"Data files (*.dat *.scn *.DAT *.SCN);;All files (*.*)");
+
+	QFileDialog *pdlg = nullptr;
+	if(bShowPreview)
+		pdlg = new FilePreviewDlg(this, "Import Data File...");
+	else
+		pdlg = new QFileDialog(this, "Import Data File...");
+	std::unique_ptr<QFileDialog> ptrdlg(pdlg);
+
+	pdlg->setDirectory(strDirLast);
+	pdlg->setFileMode(QFileDialog::ExistingFile);
+	pdlg->setViewMode(QFileDialog::Detail);
+	pdlg->setNameFilter("Data files (*.dat *.scn *.DAT *.SCN);;All files (*.*)");
+	if(!pdlg->exec())
+		return false;
+	if(!pdlg->selectedFiles().size())
+		return false;
+
+	QString strFile = pdlg->selectedFiles()[0];
 	if(strFile == "")
 		return false;
 
-	return Import(strFile.toStdString().c_str());	
+	return Import(strFile.toStdString().c_str());
 }
 
 bool TazDlg::Import(const char* pcFile)
@@ -358,29 +374,29 @@ bool TazDlg::Import(const char* pcFile)
 		tl::FileInstr* pdat = ptrDat.get();
 		if(!pdat)
 			return false;
-			
+
 		std::array<double,3> arrLatt = pdat->GetSampleLattice();
 		std::array<double,3> arrAng = pdat->GetSampleAngles();
 		std::array<bool, 3> arrSenses = pdat->GetScatterSenses();
 		std::array<double, 2> arrD = pdat->GetMonoAnaD();
 		std::array<double, 3> arrPeak0 = pdat->GetScatterPlane0();
 		std::array<double, 3> arrPeak1 = pdat->GetScatterPlane1();
-		
+
 		editA->setText(tl::var_to_str(arrLatt[0]).c_str());
 		editB->setText(tl::var_to_str(arrLatt[1]).c_str());
 		editC->setText(tl::var_to_str(arrLatt[2]).c_str());
-		
+
 		editAlpha ->setText(tl::var_to_str(arrAng[0]/M_PI*180.).c_str());
 		editBeta->setText(tl::var_to_str(arrAng[1]/M_PI*180.).c_str());
 		editGamma->setText(tl::var_to_str(arrAng[2]/M_PI*180.).c_str());
-		
+
 		editMonoD->setText(tl::var_to_str(arrD[0]).c_str());
 		editAnaD->setText(tl::var_to_str(arrD[1]).c_str());
-		
+
 		checkSenseM->setChecked(arrSenses[0]);
 		checkSenseS->setChecked(arrSenses[1]);
 		checkSenseA->setChecked(arrSenses[2]);
-		
+
 		editScatX0->setText(tl::var_to_str(arrPeak0[0]).c_str());
 		editScatX1->setText(tl::var_to_str(arrPeak0[1]).c_str());
 		editScatX2->setText(tl::var_to_str(arrPeak0[2]).c_str());
@@ -388,7 +404,7 @@ bool TazDlg::Import(const char* pcFile)
 		editScatY0->setText(tl::var_to_str(arrPeak1[0]).c_str());
 		editScatY1->setText(tl::var_to_str(arrPeak1[1]).c_str());
 		editScatY2->setText(tl::var_to_str(arrPeak1[2]).c_str());
-		
+
 		// spacegroup
 		std::string strSpaceGroup = pdat->GetSpacegroup();
 		tl::trim(strSpaceGroup);
@@ -405,13 +421,13 @@ bool TazDlg::Import(const char* pcFile)
 		if(strSample != "")
 			strExp += std::string(" - ") + strSample;
 		editDescr->setPlainText(strExp.c_str());
-		
+
 		std::size_t iScanNum = pdat->GetScanCount();
 		if(iScanNum)
 		{
 			InitGoto();
 			m_pGotoDlg->ClearList();
-			
+
 			for(std::size_t iScan=0; iScan<iScanNum; ++iScan)
 			{
 				std::array<double,5> arrScan = pdat->GetScanHKLKiKf(iScan);

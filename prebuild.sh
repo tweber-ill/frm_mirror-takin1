@@ -57,6 +57,7 @@ declare -a hfiles=(
 	"dialogs/SettingsDlg.h"
 	"dialogs/DWDlg.h"
 	"dialogs/DynPlaneDlg.h"
+	"dialogs/FilePreviewDlg.h"
 )
 
 for hfile in ${hfiles[@]}
