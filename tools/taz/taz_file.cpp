@@ -8,6 +8,7 @@
 #include "taz.h"
 #include "tlibs/string/string.h"
 #include "../../dialogs/FilePreviewDlg.h"
+#include "tlibs/file/recent.h"
 
 #include <QtGui/QMessageBox>
 #include <QtGui/QFileDialog>
@@ -22,10 +23,15 @@ bool TazDlg::Load()
 	QString strFile = QFileDialog::getOpenFileName(this,
 							"Open TAS Configuration...",
 							strDirLast,
-							"TAZ files (*.taz *.TAZ)");
+							"Takin files (*.taz *.TAZ)");
 	if(strFile == "")
 		return false;
 
+	return Load(strFile.toStdString().c_str());
+}
+
+bool TazDlg::LoadFile(const QString& strFile)
+{
 	return Load(strFile.toStdString().c_str());
 }
 
@@ -170,6 +176,9 @@ bool TazDlg::Load(const char* pcFile)
 		m_pReso->Load(xml, strXmlRoot);
 	}
 
+	if(m_pGotoDlg)
+		m_pGotoDlg->ClearList();
+
 	if(xml.Exists((strXmlRoot + "goto_favlist").c_str()) ||
 		xml.Exists((strXmlRoot + "goto_pos").c_str()))
 	{
@@ -180,6 +189,11 @@ bool TazDlg::Load(const char* pcFile)
 
 	m_strCurFile = strFile1;
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
+
+	tl::RecentFiles recent(&m_settings, "main/recent");
+	recent.AddFile(strFile1.c_str());
+	recent.SaveList();
+	recent.FillMenu(m_pMenuRecent, m_pMapperRecent);
 
 	CalcPeaks();
 	return true;
@@ -296,6 +310,11 @@ bool TazDlg::Save()
 		return false;
 	}
 
+	tl::RecentFiles recent(&m_settings, "main/recent");
+	recent.AddFile(m_strCurFile.c_str());
+	recent.SaveList();
+	recent.FillMenu(m_pMenuRecent, m_pMapperRecent);
+
 	return true;
 }
 
@@ -305,7 +324,7 @@ bool TazDlg::SaveAs()
 	QString strFile = QFileDialog::getSaveFileName(this,
 								"Save TAS Configuration",
 								strDirLast,
-								"TAZ files (*.taz *.TAZ)");
+								"Takin files (*.taz *.TAZ)");
 
 	if(strFile != "")
 	{
@@ -358,6 +377,11 @@ bool TazDlg::Import()
 	if(strFile == "")
 		return false;
 
+	return Import(strFile.toStdString().c_str());
+}
+
+bool TazDlg::ImportFile(const QString& strFile)
+{
 	return Import(strFile.toStdString().c_str());
 }
 
@@ -445,6 +469,11 @@ bool TazDlg::Import(const char* pcFile)
 	m_settings.setValue("main/last_import_dir", QString(strDir.c_str()));
 	m_strCurFile = strFile1;
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
+
+	tl::RecentFiles recent(&m_settings, "main/recent_import");
+	recent.AddFile(strFile1.c_str());
+	recent.SaveList();
+	recent.FillMenu(m_pMenuRecentImport, m_pMapperRecentImport);
 
 	CalcPeaks();
 	return true;

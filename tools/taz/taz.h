@@ -13,6 +13,7 @@
 #include <QtGui/QMenu>
 #include <QtCore/QSettings>
 #include <QtCore/QVariant>
+#include <QtCore/QSignalMapper>
 
 #include <string>
 #include <vector>
@@ -47,11 +48,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 	private:
 		bool m_bUpdateRecipEdits = 1;
 
-		QAction *m_pSmallq = 0;
-		QAction *m_pSnapSmallq = 0;
-		QAction *m_pGoto = 0;
-		QAction *m_pBZ = 0;
-		QAction *m_pShowRealQDir = 0;
+		QAction *m_pSmallq = nullptr;
+		QAction *m_pSnapSmallq = nullptr;
+		QAction *m_pGoto = nullptr;
+		QAction *m_pBZ = nullptr;
+		QAction *m_pShowRealQDir = nullptr;
 
 		std::vector<QLineEdit*> m_vecEdits_real;
 		std::vector<QLineEdit*> m_vecEdits_recip;
@@ -74,21 +75,26 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		static constexpr double s_dPlaneDistTolerance = tl::get_plane_dist_tolerance<double>();
 
 		QSettings m_settings;
-		SettingsDlg *m_pSettingsDlg = 0;
+		SettingsDlg *m_pSettingsDlg = nullptr;
 
-		QLabel* m_pStatusMsg = 0;
-		QLabel* m_pCoordStatusMsg = 0;
+		QLabel* m_pStatusMsg = nullptr;
+		QLabel* m_pCoordStatusMsg = nullptr;
 
-		QMenu *m_pMenuViewRecip = 0;
-		QMenu *m_pMenuViewReal = 0;
+		QMenu *m_pMenuViewRecip = nullptr;
+		QMenu *m_pMenuViewReal = nullptr;
 
-		ScatteringTriangleView *m_pviewRecip = 0;
+		QSignalMapper *m_pMapperRecent = nullptr;
+		QSignalMapper *m_pMapperRecentImport = nullptr;
+		QMenu *m_pMenuRecent = nullptr;
+		QMenu *m_pMenuRecentImport = nullptr;
+
+		ScatteringTriangleView *m_pviewRecip = nullptr;
 		ScatteringTriangleScene m_sceneRecip;
 
-		TasLayoutView *m_pviewReal = 0;
+		TasLayoutView *m_pviewReal = nullptr;
 		TasLayoutScene m_sceneReal;
 
-		Recip3DDlg *m_pRecip3d = 0;
+		Recip3DDlg *m_pRecip3d = nullptr;
 
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
@@ -99,20 +105,20 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		RecipParamDlg m_dlgRecipParam;
 		RealParamDlg m_dlgRealParam;
 
-		ResoDlg *m_pReso = 0;
-		EllipseDlg *m_pEllipseDlg = 0;
-		EllipseDlg3D *m_pEllipseDlg3D = 0;
+		ResoDlg *m_pReso = nullptr;
+		EllipseDlg *m_pEllipseDlg = nullptr;
+		EllipseDlg3D *m_pEllipseDlg3D = nullptr;
 
-		SpurionDlg *m_pSpuri = 0;
-		NeutronDlg *m_pNeutronDlg = 0;
-		GotoDlg *m_pGotoDlg = 0;
-		PowderDlg *m_pPowderDlg = 0;
-		DWDlg *m_pDWDlg = 0;
-		DynPlaneDlg* m_pDynPlaneDlg = 0;
+		SpurionDlg *m_pSpuri = nullptr;
+		NeutronDlg *m_pNeutronDlg = nullptr;
+		GotoDlg *m_pGotoDlg = nullptr;
+		PowderDlg *m_pPowderDlg = nullptr;
+		DWDlg *m_pDWDlg = nullptr;
+		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
 
-		SrvDlg *m_pSrvDlg = 0;
-		NicosCache *m_pNicosCache = 0;
-		NetCacheDlg *m_pNetCacheDlg = 0;
+		SrvDlg *m_pSrvDlg = nullptr;
+		NicosCache *m_pNicosCache = nullptr;
+		NetCacheDlg *m_pNetCacheDlg = nullptr;
 
 	protected:
 		void InitReso();
@@ -151,6 +157,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		bool SaveAs();
 		bool Load();
 		bool Import();
+
+		bool LoadFile(const QString& strFile);
+		bool ImportFile(const QString& strFile);
 
 		void ExportReal();
 		void ExportRecip();

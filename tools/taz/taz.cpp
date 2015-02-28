@@ -25,6 +25,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/helper/flags.h"
 #include "tlibs/file/xml.h"
+#include "tlibs/file/recent.h"
 #include "tlibs/helper/log.h"
 
 const std::string TazDlg::s_strTitle = "Takin";
@@ -215,6 +216,15 @@ TazDlg::TazDlg(QWidget* pParent)
 	pLoad->setIcon(QIcon::fromTheme("document-open"));
 	pMenuFile->addAction(pLoad);
 
+	m_pMenuRecent = new QMenu(this);
+	m_pMenuRecent->setTitle("Recently Loaded");
+	tl::RecentFiles recent(&m_settings, "main/recent");
+	m_pMapperRecent = new QSignalMapper(m_pMenuRecent);
+	QObject::connect(m_pMapperRecent, SIGNAL(mapped(const QString&)),
+					this, SLOT(LoadFile(const QString&)));
+	recent.FillMenu(m_pMenuRecent, m_pMapperRecent);
+	pMenuFile->addMenu(m_pMenuRecent);
+
 	QAction *pSave = new QAction(this);
 	pSave->setText("Save");
 	pSave->setIcon(QIcon::fromTheme("document-save"));
@@ -226,12 +236,21 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuFile->addAction(pSaveAs);
 
 	pMenuFile->addSeparator();
-	
+
 	QAction *pImport = new QAction(this);
 	pImport->setText("Import...");
-	pImport->setIcon(QIcon::fromTheme("document-open"));
+	pImport->setIcon(QIcon::fromTheme(/*"text-x-generic-template"*/"emblem-documents"));
 	pMenuFile->addAction(pImport);
-	
+
+	m_pMenuRecentImport = new QMenu(this);
+	m_pMenuRecentImport->setTitle("Recently Imported");
+	tl::RecentFiles recentimport(&m_settings, "main/recent_import");
+	m_pMapperRecentImport = new QSignalMapper(m_pMenuRecentImport);
+	QObject::connect(m_pMapperRecentImport, SIGNAL(mapped(const QString&)),
+					this, SLOT(ImportFile(const QString&)));
+	recentimport.FillMenu(m_pMenuRecentImport, m_pMapperRecentImport);
+	pMenuFile->addMenu(m_pMenuRecentImport);
+
 	pMenuFile->addSeparator();
 
 	QAction *pSettings = new QAction(this);
@@ -496,6 +515,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QToolBar *pFileTools = new QToolBar(this);
 	pFileTools->setWindowTitle("File");
 	pFileTools->addAction(pLoad);
+	pFileTools->addAction(pImport);
 	pFileTools->addAction(pSave);
 	pFileTools->addAction(pSaveAs);
 	addToolBar(pFileTools);

@@ -36,17 +36,18 @@ FilePreviewDlg::FilePreviewDlg(QWidget* pParent, const char* pcTitle)
 	m_pPoints->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 	m_pPoints->attach(m_pPlot);
 
-	QGridLayout *pLayout = (QGridLayout*)this->layout();
 	QSizePolicy spol(QSizePolicy::Preferred, QSizePolicy::Preferred);
 	spol.setHorizontalStretch(1);
 	spol.setVerticalStretch(1);
 	m_pPlot->setSizePolicy(spol);
 
+	// depends on qt/src/gui/dialogs/qfiledialog.ui using QGridLayout
+	QGridLayout *pLayout((QGridLayout*)layout());
 	pLayout->addWidget(m_pPlot, pLayout->rowCount(), 0, 1, pLayout->columnCount());
-	//pLayout->addWidget(m_pPlot, 0, pLayout->columnCount(), pLayout->rowCount(), 1);
+	resize(size().width(), size().height()*1.25);
 
 	QObject::connect(this, SIGNAL(currentChanged(const QString&)),
-			this, SLOT(FileSelected(const QString&)));
+					this, SLOT(FileSelected(const QString&)));
 }
 
 FilePreviewDlg::~FilePreviewDlg()

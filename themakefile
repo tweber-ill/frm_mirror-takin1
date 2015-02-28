@@ -64,7 +64,8 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
 	obj/xml.o obj/tcp.o obj/spacegroup.o obj/gl.o \
 	obj/plotgl.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
-	obj/EllipseDlg3D.o obj/NetCacheDlg.o obj/loadinstr.o
+	obj/EllipseDlg3D.o obj/NetCacheDlg.o obj/loadinstr.o \
+	obj/recent.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 OBJ_RESO = obj/log.o obj/rand.o \
        	obj/spec_char.o obj/reso_res_main.o \
@@ -152,6 +153,8 @@ obj/plotgl.o: helper/plotgl.cpp helper/plotgl.h
 obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/recent.o: tlibs/file/recent.cpp tlibs/file/recent.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/cn.o: tools/res/cn.cpp tools/res/cn.h

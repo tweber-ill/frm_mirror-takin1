@@ -37,6 +37,8 @@
       <File Name="tlibs/file/xml.h"/>
       <File Name="tlibs/file/loadinstr.cpp"/>
       <File Name="tlibs/file/loadinstr.h"/>
+      <File Name="tlibs/file/recent.cpp"/>
+      <File Name="tlibs/file/recent.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="gfx">
       <File Name="tlibs/gfx/gl.cpp"/>
