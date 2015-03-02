@@ -51,7 +51,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 						spinGuideDivH, spinGuideDivV,
 						spinDetW, spinDetH,
 						spinDistMonoSample, spinDistSampleAna, spinDistAnaDet, spinDistSrcMono,
-						
+
 						spinMonoMosaicV, spinAnaMosaicV,
 						spinSamplePosX, spinSamplePosY, spinSamplePosZ};
 
@@ -70,7 +70,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 					"reso/pop_guide_divh", "reso/pop_guide_divv",
 					"reso/pop_det_w", "reso/pop_det_h",
 					"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det", "reso/pop_dist_src_mono",
-					
+
 					"reso/eck_mono_mosaic_v", "reso/eck_ana_mosaic_v",
 					"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z"};
 
@@ -350,15 +350,15 @@ void ResoDlg::Calc()
 #ifndef NDEBUG
 		// check against ELASTIC approximation for perp. slope from Shirane p. 268
 		// valid for small mosaicities
-		double dEoverQperp = co::hbar*co::hbar*cn.ki / co::m_n
+		double dEoverQperp = tl::co::hbar*tl::co::hbar*cn.ki / tl::co::m_n
 								* units::cos(cn.twotheta/2.)
 								* (1. + units::tan(units::abs(cn.twotheta/2.))
 									* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam))
 								  )
-								/ one_meV / angstrom;
+								/ tl::meV / tl::angstrom;
 
-		log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
-		log_info("E/Q_perp (2nd approximation for ki=kf) = ", double(4.*cn.ki * angstrom), " meV*A");
+		tl::log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
+		tl::log_info("E/Q_perp (2nd approximation for ki=kf) = ", double(4.*cn.ki * tl::angstrom), " meV*A");
 
 		//std::cout << "thetas = " << m_pop.thetas/tl::radians/M_PI*180. << std::endl;
 		//std::cout << "2thetam = " << 2.*m_pop.thetam/tl::radians/M_PI*180. << std::endl;
