@@ -1,5 +1,5 @@
 /*
- * Debye-Waller Dialog
+ * Scattering factors dialog (e.g. Debye-Waller factor)
  * @author tweber
  * @date 2013, jan-2015
  * @copyright GPLv2
@@ -19,9 +19,11 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 {
 	this->setupUi(this);
 
+	// -------------------------------------------------------------------------
+	// DW Factor stuff
 	std::vector<QDoubleSpinBox*> vecSpinBoxes = {spinAMU_deb, spinTD_deb, spinT_deb, spinMinQ_deb, spinMaxQ_deb};
 	for(QDoubleSpinBox* pSpin : vecSpinBoxes)
-		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(Calc()));
+		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcDW()));
 
 	m_pGrid = new QwtPlotGrid();
 	QPen penGrid;
@@ -60,23 +62,77 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 
 	plot->setAxisTitle(QwtPlot::xBottom, "Q (1/A)");
 	plot->setAxisTitle(QwtPlot::yLeft, "DW Factor");
+	
+	CalcDW();
 
-	Calc();
+	
+
+	// -------------------------------------------------------------------------
+	// Ana Factor stuff
+	std::vector<QDoubleSpinBox*> vecSpinBoxesAna = {spinAnad, spinMinkf, spinMaxkf};
+	for(QDoubleSpinBox* pSpin : vecSpinBoxesAna)
+		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcAna()));
+
+	m_pGridAna = new QwtPlotGrid();
+	QPen penGridAna;
+	penGridAna.setColor(QColor(0x99,0x99,0x99));
+	penGridAna.setStyle(Qt::DashLine);
+	m_pGridAna->setPen(penGridAna);
+	m_pGridAna->attach(plotAna);
+
+	m_pCurveAna = new QwtPlotCurve("Analyser Factor");
+	QPen penCurveAna;
+	penCurveAna.setColor(QColor(0,0,0x99));
+	penCurveAna.setWidth(2);
+	m_pCurveAna->setPen(penCurveAna);
+	m_pCurveAna->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pCurveAna->attach(plotAna);
+
+	plotAna->canvas()->setMouseTracking(1);
+	m_pPickerAna = new QwtPlotPicker(plotAna->xBottom, plotAna->yLeft,
+#ifndef USE_QWT6
+									QwtPlotPicker::PointSelection,
+#endif
+									QwtPlotPicker::NoRubberBand,
+#ifdef USE_QWT6
+									QwtPlotPicker::AlwaysOff,
+#else
+									QwtPlotPicker::AlwaysOn,
+#endif
+									plotAna->canvas());
+
+#ifdef USE_QWT6
+	m_pPickerAna->setStateMachine(new QwtPickerTrackerMachine());
+	connect(m_pPickerAna, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
+#endif
+	m_pPickerAna->setEnabled(1);
+
+
+	plotAna->setAxisTitle(QwtPlot::xBottom, "kf (1/A)");
+	plotAna->setAxisTitle(QwtPlot::yLeft, "Intensity (a.u.)");
+
+	CalcAna();
 }
 
 DWDlg::~DWDlg()
 {
-	if(m_pPicker)
+	for(QwtPlotPicker** pPicker : {&m_pPicker, &m_pPickerAna})
 	{
-		m_pPicker->setEnabled(0);
-		delete m_pPicker;
-		m_pPicker = nullptr;
+		if(*pPicker)
+		{
+			(*pPicker)->setEnabled(0);
+			delete *pPicker;
+			*pPicker = nullptr;
+		}
 	}
 
-	if(m_pGrid)
+	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridAna})
 	{
-		delete m_pGrid;
-		m_pGrid = nullptr;
+		if(*pGrid)
+		{
+			delete *pGrid;
+			*pGrid = nullptr;
+		}
 	}
 }
 
@@ -91,7 +147,7 @@ void DWDlg::cursorMoved(const QPointF& pt)
 	this->labelStatus->setText(ostr.str().c_str());
 }
 
-void DWDlg::Calc()
+void DWDlg::CalcDW()
 {
 	const unsigned int NUM_POINTS = 512;
 
@@ -140,6 +196,45 @@ void DWDlg::Calc()
 #endif
 
 	plot->replot();
+}
+
+
+void DWDlg::CalcAna()
+{
+	const unsigned int NUM_POINTS = 512;
+
+	const tl::length d = spinAnad->value()*tl::angstrom;
+	const double dMinKf = spinMinkf->value();
+	const double dMaxKf = spinMaxkf->value();
+	
+	double dAngMax = 0.5*tl::get_mono_twotheta(dMinKf/tl::angstrom, d, 1) / tl::radians / M_PI * 180.;
+	double dAngMin = 0.5*tl::get_mono_twotheta(dMaxKf/tl::angstrom, d, 1) / tl::radians / M_PI * 180.;
+	
+	editAngMin->setText(tl::var_to_str(dAngMin).c_str());
+	editAngMax->setText(tl::var_to_str(dAngMax).c_str());
+	
+	m_veckf.clear();
+	m_vecInt.clear();
+	
+	m_veckf.reserve(NUM_POINTS);
+	m_vecInt.reserve(NUM_POINTS);
+	
+	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
+	{
+		tl::wavenumber kf = (dMinKf + (dMaxKf - dMinKf)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
+		double dEffic = tl::ana_effic_factor(kf, d);
+		
+		m_veckf.push_back(kf * tl::angstrom);
+		m_vecInt.push_back(dEffic);
+	}
+
+#ifdef USE_QWT6
+	m_pCurveAna->setRawSamples(m_veckf.data(), m_vecInt.data(), m_veckf.size());
+#else
+	m_pCurveAna->setRawData(m_veckf.data(), m_vecInt.data(), m_veckf.size());
+#endif
+	
+	plotAna->replot();
 }
 
 

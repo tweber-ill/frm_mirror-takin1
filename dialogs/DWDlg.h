@@ -1,5 +1,5 @@
 /*
- * Debye-Waller Dialog
+ * Scattering factors dialog (e.g. Debye-Waller factor)
  * @author tweber
  * @date 2013, jan-2015
  * @copyright GPLv2
@@ -22,11 +22,22 @@ class DWDlg : public QDialog, Ui::DWDlg
 { Q_OBJECT
 protected:
 	QSettings *m_pSettings = nullptr;
+	
+	// dw stuff
 	std::vector<double> m_vecQ, m_vecDeb;
 
 	QwtPlotCurve *m_pCurve = nullptr;
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
+
+
+	// ana stuff
+	std::vector<double> m_veckf, m_vecInt;
+
+	QwtPlotCurve *m_pCurveAna = nullptr;
+	QwtPlotGrid *m_pGridAna = nullptr;
+	QwtPlotPicker *m_pPickerAna = nullptr;
+
 
 protected:
 	virtual void showEvent(QShowEvent *pEvt) override;
@@ -34,7 +45,8 @@ protected:
 
 protected slots:
 	void cursorMoved(const QPointF& pt);
-	void Calc();
+	void CalcDW();
+	void CalcAna();
 
 public:
 	DWDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr);

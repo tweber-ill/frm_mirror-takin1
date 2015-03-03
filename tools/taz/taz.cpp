@@ -381,7 +381,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuCalc->addAction(pPowder);
 
 	QAction *pDW = new QAction(this);
-	pDW->setText("Debye-Waller Factor...");
+	pDW->setText("Scattering Factors...");
 	pMenuCalc->addAction(pDW);
 
 	pMenuCalc->addSeparator();
