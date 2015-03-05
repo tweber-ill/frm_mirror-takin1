@@ -25,7 +25,11 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectFont()));
 
 
+#ifndef NO_3D
 	std::string strDefFont = tl::FontMap::get_font_file("dejavusansmono.ttf");
+#else
+	std::string strDefFont = "";
+#endif
 	if(strDefFont == "")
 	{
 		tl::log_warn("Default gl font not available.");

@@ -22,8 +22,9 @@ int main(int argc, char** argv)
 	{
 		tl::log_info("Starting up Takin.");
 
-		#ifdef Q_WS_X11
+		#if defined Q_WS_X11 && !defined NO_3D
 			XInitThreads();
+			QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
 		#endif
 
 		tl::init_spec_chars();
@@ -33,8 +34,6 @@ int main(int argc, char** argv)
 		qRegisterMetaType<CrystalOptions>("CrystalOptions");
 		qRegisterMetaType<std::string>("std::string");
 		qRegisterMetaType<CacheVal>("CacheVal");
-
-		QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
 
 		QApplication app(argc, argv);
 

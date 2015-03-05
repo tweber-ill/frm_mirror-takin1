@@ -21,12 +21,10 @@
 #include "ui/ui_taz.h"
 #include "scattering_triangle.h"
 #include "tas_layout.h"
-#include "recip3d.h"
 
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"
 #include "dialogs/EllipseDlg.h"
-#include "dialogs/EllipseDlg3D.h"
 #include "../res/ResoDlg.h"
 #include "dialogs/SpurionDlg.h"
 #include "dialogs/NeutronDlg.h"
@@ -37,6 +35,12 @@
 #include "dialogs/SettingsDlg.h"
 #include "dialogs/DWDlg.h"
 #include "dialogs/DynPlaneDlg.h"
+
+#if !defined NO_3D
+	#include "recip3d.h"
+	#include "dialogs/EllipseDlg3D.h"
+#endif
+
 
 #include "nicos.h"
 #include "helper/spacegroup.h"
@@ -94,8 +98,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		TasLayoutView *m_pviewReal = nullptr;
 		TasLayoutScene m_sceneReal;
 
-		Recip3DDlg *m_pRecip3d = nullptr;
-
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
 
@@ -107,7 +109,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		ResoDlg *m_pReso = nullptr;
 		EllipseDlg *m_pEllipseDlg = nullptr;
-		EllipseDlg3D *m_pEllipseDlg3D = nullptr;
 
 		SpurionDlg *m_pSpuri = nullptr;
 		NeutronDlg *m_pNeutronDlg = nullptr;
@@ -119,6 +120,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		SrvDlg *m_pSrvDlg = nullptr;
 		NicosCache *m_pNicosCache = nullptr;
 		NetCacheDlg *m_pNetCacheDlg = nullptr;
+
+#if !defined NO_3D
+		Recip3DDlg *m_pRecip3d = nullptr;
+		EllipseDlg3D *m_pEllipseDlg3D = nullptr;
+#endif
 
 	protected:
 		void InitReso();
@@ -150,7 +156,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void RecipContextMenu(const QPoint&);
 		void RealContextMenu(const QPoint&);
 
-		void Show3D();
 		void ShowAbout();
 
 		bool Save();
@@ -171,7 +176,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowResoParams();
 		void ShowResoEllipses();
-		void ShowResoEllipses3D();
 
 		void ShowNeutronDlg();
 		void ShowGotoDlg();
@@ -179,6 +183,10 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowSettingsDlg();
 		void ShowDWDlg();
 		void ShowDynPlaneDlg();
+
+		void Show3D();
+		void ShowResoEllipses3D();
+
 
 		void ShowSpurions();
 		void spurionInfo(const tl::ElasticSpurion& spuris,

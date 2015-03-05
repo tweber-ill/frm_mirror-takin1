@@ -5,18 +5,33 @@ DEFINES =
 QWT_VER = 6
 QT_VER = 4
 USE_LAPACK = 0
+USE_3D = 1
+
+ifeq ($(USE_3D), 1)
+	DEFINES += -DUSE_3D
+else
+	DEFINES += -DNO_3D
+endif
+
 
 ifeq ($(QT_VER), 5)
 	QT_INC = -I/usr/include/qt5 -I/usr/include/qt5/QtCore \
 		-I/usr/include/qt5/QtGui
 	QT_LIB = -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
-        	-lQt5Core -lQt5Gui -lQt5Xml -lQt5XmlPatterns -lQt5OpenGL -lQt5Svg		
+        	-lQt5Core -lQt5Gui -lQt5Xml -lQt5XmlPatterns -lQt5Svg
+	ifeq ($(USE_3D), 1)
+		QT_LIB += -lQt5OpenGL
+	endif
+
 	DEFINES += -DUSE_QT5 -fPIC
 else
 	QT_INC = -I/usr/include/qt4 -I/usr/include/qt4/QtCore \
         	-I/usr/include/qt4/QtGui -I/usr/include/QtCore -I/usr/include/QtGui
 	QT_LIB =  -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
-        	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtOpenGL -lQtSvg
+        	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtSvg
+        ifeq ($(USE_3D), 1)
+                QT_LIB += -lQtOpenGL
+        endif
 endif
 
 ifeq ($(QWT_VER), 6)
@@ -48,29 +63,37 @@ else
 	LAPACK_LIBS = 
 endif
 
-QT_LIBS = ${QT_LIB} -lGL -lGLU -lX11 -lfreetype -lfontconfig
-LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIBS}
-LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
+BASIC_LIBS = ${QT_LIB} -lX11
+ifeq ($(USE_3D), 1)
+	BASIC_LIBS += -lGL -lGLU -lfreetype -lfontconfig
+endif
+
+LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${BASIC_LIBS}
+LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
 
 
 OBJ_COMMON = obj/log.o obj/rand.o obj/linalg2.o \
 	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
-	obj/taz_file.o obj/recip3d.o \
+	obj/taz_file.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
 	obj/FilePreviewDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
-	obj/xml.o obj/tcp.o obj/spacegroup.o obj/gl.o \
-	obj/plotgl.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
-	obj/EllipseDlg3D.o obj/NetCacheDlg.o obj/loadinstr.o \
+	obj/xml.o obj/tcp.o obj/spacegroup.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
+	obj/NetCacheDlg.o obj/loadinstr.o \
 	obj/recent.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 OBJ_RESO = obj/log.o obj/rand.o \
        	obj/spec_char.o obj/reso_res_main.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
+
+ifeq ($(USE_3D), 1)
+	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/EllipseDlg3D.o
+endif
 
 
 .PHONY: all clean
@@ -83,11 +106,11 @@ takin: ${OBJ_COMMON} ${OBJ_TAZ}
 	strip bin/takin
 
 montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
-	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${QT_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
+	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
 	strip montereso
 
 reso: ${OBJ_RESO}
-	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${QT_LIBS} ${LAPACK_LIBS}
+	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
 	strip reso
 
 

@@ -382,8 +382,10 @@ void TazDlg::CalcPeaks()
 			m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();
 
+#ifndef NO_3D
 		if(m_pRecip3d)
 			m_pRecip3d->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
+#endif
 	}
 	catch(const std::exception& ex)
 	{
@@ -556,6 +558,7 @@ void TazDlg::ShowResoEllipses()
 	m_pEllipseDlg->activateWindow();
 }
 
+#ifndef NO_3D
 void TazDlg::ShowResoEllipses3D()
 {
 	InitReso();
@@ -572,3 +575,7 @@ void TazDlg::ShowResoEllipses3D()
 	m_pEllipseDlg3D->show();
 	m_pEllipseDlg3D->activateWindow();
 }
+
+#else
+void TazDlg::ShowResoEllipses3D() {}
+#endif

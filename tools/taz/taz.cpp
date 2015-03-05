@@ -303,12 +303,14 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pMenuViewRecip->addSeparator();
 
+#if !defined NO_3D
 	QAction *pView3D = new QAction(this);
 	pView3D->setText("3D View...");
 	pView3D->setIcon(QIcon::fromTheme("applications-graphics"));
 	m_pMenuViewRecip->addAction(pView3D);
 
 	m_pMenuViewRecip->addSeparator();
+#endif
 
 	QAction *pRecipExport = new QAction(this);
 	pRecipExport->setText("Export Image...");
@@ -362,9 +364,11 @@ TazDlg::TazDlg(QWidget* pParent)
 	pResoEllipses->setIcon(QIcon("res/ellipses.svg"));
 	pMenuReso->addAction(pResoEllipses);
 
+#if !defined NO_3D
 	QAction *pResoEllipses3D = new QAction(this);
 	pResoEllipses3D->setText("3D Ellipsoids...");
 	pMenuReso->addAction(pResoEllipses3D);
+#endif
 
 
 	// --------------------------------------------------------------------------------
@@ -470,14 +474,17 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pRecipParams, SIGNAL(triggered()), this, SLOT(ShowRecipParams()));
 	QObject::connect(pRealParams, SIGNAL(triggered()), this, SLOT(ShowRealParams()));
+
+#if !defined NO_3D
 	QObject::connect(pView3D, SIGNAL(triggered()), this, SLOT(Show3D()));
+	QObject::connect(pResoEllipses3D, SIGNAL(triggered()), this, SLOT(ShowResoEllipses3D()));
+#endif
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
 
 	QObject::connect(pResoParams, SIGNAL(triggered()), this, SLOT(ShowResoParams()));
 	QObject::connect(pResoEllipses, SIGNAL(triggered()), this, SLOT(ShowResoEllipses()));
-	QObject::connect(pResoEllipses3D, SIGNAL(triggered()), this, SLOT(ShowResoEllipses3D()));
 
 	QObject::connect(pNeutronProps, SIGNAL(triggered()), this, SLOT(ShowNeutronDlg()));
 	QObject::connect(m_pGoto, SIGNAL(triggered()), this, SLOT(ShowGotoDlg()));
@@ -547,8 +554,11 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_sceneRecip.GetTriangle()->SetMaxPeaks(s_iMaxPeaks);
 	m_sceneRecip.GetTriangle()->SetPlaneDistTolerance(s_dPlaneDistTolerance);
+
+#if !defined NO_3D
 	if(m_pRecip3d)
 		m_pRecip3d->SetPlaneDistTolerance(s_dPlaneDistTolerance);
+#endif
 
 	UpdateDs();
 	CalcPeaks();
@@ -570,10 +580,8 @@ TazDlg::~TazDlg()
 	//m_settings.setValue("main/height", this->height());
 	m_settings.setValue("main/geo", saveGeometry());
 
-	if(m_pRecip3d) { delete m_pRecip3d; m_pRecip3d = 0; }
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
 	if(m_pEllipseDlg) { delete m_pEllipseDlg; m_pEllipseDlg = 0; }
-	if(m_pEllipseDlg3D) { delete m_pEllipseDlg3D; m_pEllipseDlg3D = 0; }
 	if(m_pReso) { delete m_pReso; m_pReso = 0; }
 	if(m_pSpuri) { delete m_pSpuri; m_pSpuri = 0; }
 	if(m_pNeutronDlg) { delete m_pNeutronDlg; m_pNeutronDlg = 0; }
@@ -585,6 +593,11 @@ TazDlg::~TazDlg()
 	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
 	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
+
+#if !defined NO_3D
+	if(m_pRecip3d) { delete m_pRecip3d; m_pRecip3d = 0; }
+	if(m_pEllipseDlg3D) { delete m_pEllipseDlg3D; m_pEllipseDlg3D = 0; }
+#endif
 }
 
 
@@ -727,6 +740,7 @@ void TazDlg::UpdateAnaSense()
 	emit ResoParamsChanged(params);
 }
 
+#if !defined NO_3D
 void TazDlg::Show3D()
 {
 	if(!m_pRecip3d)
@@ -743,6 +757,9 @@ void TazDlg::Show3D()
 
 	CalcPeaks();
 }
+#else
+void TazDlg::Show3D() {}
+#endif
 
 void TazDlg::EnableSmallq(bool bEnable)
 {
