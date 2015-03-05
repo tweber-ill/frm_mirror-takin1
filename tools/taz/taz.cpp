@@ -937,7 +937,7 @@ void TazDlg::ShowAbout()
 			+ "\n\t\tcomputing-for-science/cs-software/" + strRet
 			+ "\n\t\tall-software/matlab-ill/rescal-for-matlab\n";
 
-	strAbout += "\nSee also the LICENSES file in the Takin root directory.";
+	strAbout += "\nSee the LICENSES file in the Takin root directory.";
 
 	QMessageBox::information(this, "About Takin", strAbout);
 }

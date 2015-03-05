@@ -2,7 +2,9 @@
 
 TLIBS=tlibs-master.tar.bz2
 TLIBS_DIR=tlibs
-DLG=/usr/bin/dialog
+DLG=$(which dialog 2>/dev/null)
+
+if [ "$DLG" == "" ]; then DLG="/usr/bin/dialog"; fi
 
 function dl_tlibs
 {
@@ -42,7 +44,7 @@ fi
 rm -rf ${TLIBS_DIR}
 
 
-if [ ! -e $DLG ]
+if [ ! -x $DLG ]
 then
 	dl_tlibs
 else
