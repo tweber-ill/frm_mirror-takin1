@@ -1,11 +1,17 @@
 #CC = gcc
 CC = clang
-DEFINES = 
 
+DO_DEBUG = 0
 QWT_VER = 6
 QT_VER = 4
 USE_LAPACK = 0
 USE_3D = 1
+USE_NET = 1
+
+# -----------------------------------------------------------------------------
+
+
+DEFINES = 
 
 ifeq ($(USE_3D), 1)
 	DEFINES += -DUSE_3D
@@ -13,12 +19,18 @@ else
 	DEFINES += -DNO_3D
 endif
 
+ifeq ($(USE_NET), 1)
+	DEFINES += -DUSE_NET
+else
+	DEFINES += -DNO_NET
+endif
+
 
 ifeq ($(QT_VER), 5)
 	QT_INC = -I/usr/include/qt5 -I/usr/include/qt5/QtCore \
 		-I/usr/include/qt5/QtGui
 	QT_LIB = -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
-        	-lQt5Core -lQt5Gui -lQt5Xml -lQt5XmlPatterns -lQt5Svg
+		-lQt5Core -lQt5Gui -lQt5Xml -lQt5XmlPatterns -lQt5Svg
 	ifeq ($(USE_3D), 1)
 		QT_LIB += -lQt5OpenGL
 	endif
@@ -26,9 +38,9 @@ ifeq ($(QT_VER), 5)
 	DEFINES += -DUSE_QT5 -fPIC
 else
 	QT_INC = -I/usr/include/qt4 -I/usr/include/qt4/QtCore \
-        	-I/usr/include/qt4/QtGui -I/usr/include/QtCore -I/usr/include/QtGui
+		-I/usr/include/qt4/QtGui -I/usr/include/QtCore -I/usr/include/QtGui
 	QT_LIB =  -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
-        	-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtSvg
+		-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtSvg
         ifeq ($(USE_3D), 1)
                 QT_LIB += -lQtOpenGL
         endif
@@ -44,14 +56,22 @@ else
 #	QWT_LIB = -lqwt-qt4
 endif
 
+
 INC = ${QT_INC} ${QWT_INC} -I . -I/usr/local/include -I/usr/include/freetype2 -I/usr/include/lapacke
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
-FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall ${DEFINES}
-#FLAGS += -fexpensive-optimizations
-#FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall ${DEFINES}
 
-STD_LIBS = -lstdc++ -lm -lboost_system
+ifeq ($(DO_DEBUG), 0)
+	FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall ${DEFINES}
+	#FLAGS += -fexpensive-optimizations
+	STRIP = strip
+else
+	FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall ${DEFINES}
+	STRIP = echo Retaining debug symbols of 
+endif
+
+
+STD_LIBS = -lstdc++ -lm
 STD_LIBS += -lpthread
 
 ifeq ($(USE_LAPACK), 1)
@@ -63,9 +83,13 @@ else
 	LAPACK_LIBS = 
 endif
 
-BASIC_LIBS = ${QT_LIB} -lX11
+BASIC_LIBS = ${QT_LIB}
 ifeq ($(USE_3D), 1)
-	BASIC_LIBS += -lGL -lGLU -lfreetype -lfontconfig
+	BASIC_LIBS += -lX11 -lGL -lGLU -lfreetype -lfontconfig
+endif
+
+ifeq ($(USE_NET), 1)
+	BASIC_LIBS += -lboost_system
 endif
 
 LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${BASIC_LIBS}
@@ -74,25 +98,31 @@ LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
 
 OBJ_COMMON = obj/log.o obj/rand.o obj/linalg2.o \
 	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
-OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o obj/taz_net.o \
+OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/taz_file.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
 	obj/FilePreviewDlg.o \
-	obj/SpurionDlg.o obj/NeutronDlg.o obj/SrvDlg.o obj/nicos.o \
-	obj/xml.o obj/tcp.o obj/spacegroup.o \
+	obj/SpurionDlg.o obj/NeutronDlg.o \
+	obj/xml.o obj/spacegroup.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
-	obj/NetCacheDlg.o obj/loadinstr.o \
-	obj/recent.o
+	obj/loadinstr.o obj/recent.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 OBJ_RESO = obj/log.o obj/rand.o \
-       	obj/spec_char.o obj/reso_res_main.o \
+	obj/spec_char.o obj/reso_res_main.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
 
 ifeq ($(USE_3D), 1)
 	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/EllipseDlg3D.o
+endif
+
+ifeq ($(USE_NET), 1)
+	OBJ_TAZ += obj/tcp.o obj/nicos.o obj/taz_net.o \
+	obj/SrvDlg.o obj/NetCacheDlg.o
+else
+	OBJ_TAZ += obj/taz_nonet.o
 endif
 
 
@@ -103,15 +133,15 @@ all: takin montereso
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
 	${CC} ${FLAGS} -o bin/takin $+ ${LIBS_TAZ} ${LIBS_RESO}
-	strip bin/takin
+	${STRIP} bin/takin
 
 montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
 	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
-	strip montereso
+	${STRIP} montereso
 
 reso: ${OBJ_RESO}
 	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
-	strip reso
+	${STRIP} reso
 
 
 obj/taz_main.o: tools/taz/taz_main.cpp tools/taz/taz.h
@@ -121,6 +151,8 @@ obj/taz.o: tools/taz/taz.cpp tools/taz/taz.h
 obj/taz_crys.o: tools/taz/taz_crys.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/taz_net.o: tools/taz/taz_net.cpp tools/taz/taz.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/taz_nonet.o: tools/taz/taz_nonet.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/taz_file.o: tools/taz/taz_file.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<

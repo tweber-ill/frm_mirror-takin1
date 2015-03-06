@@ -399,7 +399,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuCalc->addAction(pSpuri);
 
 
-
+#if !defined NO_NET
 	// --------------------------------------------------------------------------------
 	// network menu
 	QMenu *pMenuNet = new QMenu(this);
@@ -425,7 +425,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pNetRefresh->setIcon(QIcon::fromTheme("view-refresh"));
 	pMenuNet->addSeparator();
 	pMenuNet->addAction(pNetRefresh);
-
+#endif
 
 
 	// --------------------------------------------------------------------------------
@@ -454,7 +454,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuBar->addMenu(m_pMenuViewReal);
 	pMenuBar->addMenu(pMenuReso);
 	pMenuBar->addMenu(pMenuCalc);
+#if !defined NO_NET
 	pMenuBar->addMenu(pMenuNet);
+#endif
 	pMenuBar->addMenu(pMenuHelp);
 
 
@@ -493,10 +495,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pDW, SIGNAL(triggered()), this, SLOT(ShowDWDlg()));
 	QObject::connect(pDynPlane, SIGNAL(triggered()), this, SLOT(ShowDynPlaneDlg()));
 
+#if !defined NO_NET
 	QObject::connect(pConn, SIGNAL(triggered()), this, SLOT(ShowConnectDlg()));
 	QObject::connect(pDisconn, SIGNAL(triggered()), this, SLOT(Disconnect()));
 	QObject::connect(pNetRefresh, SIGNAL(triggered()), this, SLOT(NetRefresh()));
 	QObject::connect(pNetCache, SIGNAL(triggered()), this, SLOT(ShowNetCache()));
+#endif
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -540,12 +544,14 @@ TazDlg::TazDlg(QWidget* pParent)
 	pResoTools->addAction(pResoEllipses);
 	addToolBar(pResoTools);
 
+#if !defined NO_NET
 	QToolBar *pNetTools = new QToolBar(this);
 	pNetTools->setWindowTitle("Network");
 	pNetTools->addAction(pConn);
 	pNetTools->addAction(pDisconn);
 	pNetTools->addAction(pNetRefresh);
 	addToolBar(pNetTools);
+#endif
 
 	// --------------------------------------------------------------------------------
 
@@ -587,9 +593,6 @@ TazDlg::~TazDlg()
 	if(m_pNeutronDlg) { delete m_pNeutronDlg; m_pNeutronDlg = 0; }
 	if(m_pGotoDlg) { delete m_pGotoDlg; m_pGotoDlg = 0; }
 	if(m_pPowderDlg) { delete m_pPowderDlg; m_pPowderDlg = 0; }
-	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
-	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
-	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
 	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
 	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
@@ -597,6 +600,12 @@ TazDlg::~TazDlg()
 #if !defined NO_3D
 	if(m_pRecip3d) { delete m_pRecip3d; m_pRecip3d = 0; }
 	if(m_pEllipseDlg3D) { delete m_pEllipseDlg3D; m_pEllipseDlg3D = 0; }
+#endif
+
+#if !defined NO_NET
+	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
+	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
+	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
 #endif
 }
 

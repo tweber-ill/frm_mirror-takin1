@@ -28,13 +28,17 @@
 #include "../res/ResoDlg.h"
 #include "dialogs/SpurionDlg.h"
 #include "dialogs/NeutronDlg.h"
-#include "dialogs/SrvDlg.h"
 #include "dialogs/GotoDlg.h"
 #include "dialogs/PowderDlg.h"
-#include "dialogs/NetCacheDlg.h"
 #include "dialogs/SettingsDlg.h"
 #include "dialogs/DWDlg.h"
 #include "dialogs/DynPlaneDlg.h"
+
+#if !defined NO_NET
+	#include "dialogs/SrvDlg.h"
+	#include "dialogs/NetCacheDlg.h"
+	#include "nicos.h"
+#endif
 
 #if !defined NO_3D
 	#include "recip3d.h"
@@ -42,7 +46,6 @@
 #endif
 
 
-#include "nicos.h"
 #include "helper/spacegroup.h"
 #include "tlibs/math/lattice.h"
 
@@ -117,9 +120,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		DWDlg *m_pDWDlg = nullptr;
 		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
 
+#if !defined NO_NET
 		SrvDlg *m_pSrvDlg = nullptr;
 		NicosCache *m_pNicosCache = nullptr;
 		NetCacheDlg *m_pNetCacheDlg = nullptr;
+#endif
 
 #if !defined NO_3D
 		Recip3DDlg *m_pRecip3d = nullptr;
