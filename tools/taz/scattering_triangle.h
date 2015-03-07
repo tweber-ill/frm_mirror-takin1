@@ -77,10 +77,9 @@ class RecipPeak : public QGraphicsItem
 class ScatteringTriangleScene;
 class ScatteringTriangle : public QGraphicsItem
 {
-	private:
+	protected:
 		bool m_bReady = 0;
 
-	protected:
 		ScatteringTriangleScene &m_scene;
 
 		ScatteringTriangleNode *m_pNodeKiQ = 0;
@@ -112,6 +111,8 @@ class ScatteringTriangle : public QGraphicsItem
 		virtual ~ScatteringTriangle();
 
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+		void SetReady(bool bReady) { m_bReady = bReady; }
 		void nodeMoved(const ScatteringTriangleNode* pNode=0);
 
 		const ublas::matrix<double>& GetPlane() const { return m_matPlane; }
@@ -192,6 +193,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 		ScatteringTriangleScene();
 		virtual ~ScatteringTriangleScene();
 
+		void SetEmitChanges(bool bEmit) { m_bDontEmitChange = !bEmit; }
 		// emits triangleChanged
 		void emitUpdate();
 		// emits paramsChanged

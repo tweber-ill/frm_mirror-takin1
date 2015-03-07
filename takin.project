@@ -206,6 +206,7 @@
         <Library Value="X11"/>
         <Library Value="pthread"/>
         <Library Value="boost_system"/>
+        <Library Value="boost_iostreams"/>
         <Library Value="lapacke"/>
         <Library Value="lapack"/>
         <Library Value="blas"/>
@@ -285,6 +286,7 @@
         <Library Value="X11"/>
         <Library Value="pthread"/>
         <Library Value="boost_system"/>
+        <Library Value="boost_iostreams"/>
         <Library Value="lapacke"/>
         <Library Value="lapack"/>
         <Library Value="blas"/>

@@ -104,6 +104,8 @@ bool TazDlg::Load(const char* pcFile)
 
 
 	// TAS Layout
+	m_sceneReal.SetEmitChanges(false);
+	m_sceneReal.GetTasLayout()->SetReady(false);
 	double dRealScale = xml.Query<double>((strXmlRoot + "real/pixels_per_cm").c_str(), 0., &bOk);
 	if(bOk)
 		m_sceneReal.GetTasLayout()->SetScaleFactor(dRealScale);
@@ -120,9 +122,15 @@ bool TazDlg::Load(const char* pcFile)
 		pNode->setPos(dValX, dValY);
 		++iNodeReal;
 	}
+	m_sceneReal.GetTasLayout()->SetReady(true);
+	m_sceneReal.SetEmitChanges(true);
+	//m_sceneReal.emitUpdate();
+
 
 
 	// scattering triangle
+	m_sceneRecip.SetEmitChanges(false);
+	m_sceneRecip.GetTriangle()->SetReady(false);
 	double dRecipScale = xml.Query<double>((strXmlRoot + "recip/pixels_per_A-1").c_str(), 0., &bOk);
 	if(bOk)
 		m_sceneRecip.GetTriangle()->SetScaleFactor(dRecipScale);
@@ -139,6 +147,10 @@ bool TazDlg::Load(const char* pcFile)
 		pNode->setPos(dValX, dValY);
 		++iNodeRecip;
 	}
+	m_sceneRecip.GetTriangle()->SetReady(true);
+	m_sceneRecip.SetEmitChanges(true);
+	m_sceneRecip.emitUpdate();
+
 
 
 	int bSmallqEnabled = xml.Query<int>((strXmlRoot + "recip/enable_q").c_str(), 0, &bOk);

@@ -42,10 +42,9 @@ class TasLayoutNode : public QGraphicsItem
 class TasLayoutScene;
 class TasLayout : public QGraphicsItem
 {
-	private:
+	protected:
 		bool m_bReady = 0;
 
-	protected:
 		TasLayoutScene& m_scene;
 
 		TasLayoutNode *m_pSrc = 0;
@@ -69,7 +68,6 @@ class TasLayout : public QGraphicsItem
 		double m_dZoom = 1.;
 
 		bool m_bRealQVisible = 1;
-
 		bool m_bAllowChanges = 1;
 
 	public:
@@ -100,6 +98,7 @@ class TasLayout : public QGraphicsItem
 		void SetAnaTwoTheta(double dTT);
 		void SetAngleKiQ(double dKiQ);
 
+		void SetReady(bool bReady) { m_bReady = bReady; }
 		void nodeMoved(const TasLayoutNode* pNode=0);
 
 		void AllowChanges(bool bAllow) { m_bAllowChanges = bAllow; };
@@ -129,6 +128,7 @@ class TasLayoutScene : public QGraphicsScene
 		TasLayoutScene();
 		virtual ~TasLayoutScene();
 
+		void SetEmitChanges(bool bEmit) { m_bDontEmitChange = !bEmit; }
 		void emitUpdate(const TriangleOptions& opts);
 
 		TasLayout* GetTasLayout() { return m_pTas; }
