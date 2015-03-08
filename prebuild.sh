@@ -44,6 +44,7 @@ declare -a hfiles=(
         "tools/taz/recip3d.h"
         "tools/taz/nicos.h"
         "tools/res/ResoDlg.h"
+        "tools/scanviewer/scanviewer.h"
         "dialogs/EllipseDlg.h"
         "dialogs/EllipseDlg3D.h"
         "dialogs/RecipParamDlg.h"

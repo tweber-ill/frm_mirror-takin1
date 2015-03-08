@@ -10,6 +10,7 @@ bin/reso
 bin/montereso
 bin/taz
 bin/takin
+bin/scanviewer
 perf.data
 perf.data.old
 gmon.out

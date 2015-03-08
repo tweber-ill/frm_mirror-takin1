@@ -1,7 +1,7 @@
 #CC = gcc
 CC = clang
 
-DO_DEBUG = 1
+DO_DEBUG = 0
 QWT_VER = 6
 QT_VER = 4
 USE_LAPACK = 0
@@ -56,11 +56,12 @@ endif
 ifeq ($(QWT_VER), 6)
 	QWT_INC = -I/usr/include/qwt6 -I/usr/include/qwt -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
 	QWT_LIB = -L/usr/local/qwt/lib -lqwt
-	DEFINES += -DUSE_QWT6
+	DEFINES += -DUSE_QWT6 -DQWT_VER=6
 else
 	QWT_INC = -I/usr/include/qwt5 -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
 	QWT_LIB = -L/usr/local/qwt/lib -lqwt
 #	QWT_LIB = -lqwt-qt4
+	DEFINES += -DQWT_VER=5
 endif
 
 
@@ -125,6 +126,8 @@ OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
+OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
+	obj/loadinstr.o obj/log.o
 
 ifeq ($(USE_3D), 1)
 	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/EllipseDlg3D.o
@@ -140,7 +143,7 @@ endif
 
 .PHONY: all clean
 
-all: takin montereso
+all: takin montereso scanviewer
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -155,6 +158,10 @@ reso: ${OBJ_RESO}
 	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
 	${STRIP} reso
 
+scanviewer: ${OBJ_SCANVIEWER}
+	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${QT_LIB} ${QWT_LIB} \
+		-lboost_system -lboost_iostreams -lboost_filesystem
+	${STRIP} scanviewer
 
 obj/taz_main.o: tools/taz/taz_main.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -246,6 +253,10 @@ obj/montereso_res_main.o: tools/montereso/res_main.cpp
 obj/reso_res_main.o: tools/res/res_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
+obj/scanviewer_main.o: tools/scanviewer/main.cpp
+	${CC} ${FLAGS} -c -o $@ $<
+obj/scanviewer.o: tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer.h
+	${CC} ${FLAGS} -c -o $@ $<
 
 
 clean:

@@ -4,15 +4,18 @@
     <![CDATA[]]>
   </Environment>
   <Project Name="montereso" Path="montereso.project" Active="No"/>
-  <Project Name="takin" Path="takin.project" Active="Yes"/>
+  <Project Name="takin" Path="takin.project" Active="No"/>
+  <Project Name="scanviewer" Path="scanviewer.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="montereso" ConfigName="Debug"/>
       <Project Name="takin" ConfigName="Debug"/>
+      <Project Name="scanviewer" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="no">
       <Project Name="montereso" ConfigName="Release"/>
       <Project Name="takin" ConfigName="Release"/>
+      <Project Name="scanviewer" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
