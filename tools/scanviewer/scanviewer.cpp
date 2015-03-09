@@ -216,12 +216,12 @@ void ScanViewerDlg::PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pIte
 {
 	if(!pItem)
 		m_strSelectedKey = "";
-		
+
 	for(int iItem=0; iItem<tableProps->rowCount(); ++iItem)
 	{
 		const QTableWidgetItem *pKey = tableProps->item(iItem, 0);
 		const QTableWidgetItem *pVal = tableProps->item(iItem, 1);
-		
+
 		if(pKey==pItem || pVal==pItem)
 		{
 			m_strSelectedKey = pKey->text().toStdString();
@@ -259,7 +259,7 @@ void ScanViewerDlg::ShowProps()
 
 		++iItem;
 	}
-	
+
 	tableProps->sortItems(0, Qt::AscendingOrder);
 
 
@@ -269,7 +269,7 @@ void ScanViewerDlg::ShowProps()
 	{
 		const QTableWidgetItem *pItem = tableProps->item(iItem, 0);
 		if(!pItem) continue;
-		
+
 		if(pItem->text().toStdString() == m_strSelectedKey)
 		{
 			tableProps->selectRow(iItem);
@@ -277,7 +277,7 @@ void ScanViewerDlg::ShowProps()
 			break;
 		}
 	}
-	
+
 	if(!bHasSelection)
 		tableProps->selectRow(0);
 }
@@ -318,7 +318,7 @@ void ScanViewerDlg::UpdateFileList()
 				std::string strExt = p.extension().native();
 				if(strExt == ".bz2" || strExt == ".gz" || strExt == ".z")
 					strExt = "." + tl::get_fileext2(p.filename().native());
-				
+
 				if(this->m_vecExts.size() == 0)
 					return true;
 				return std::find(this->m_vecExts.begin(), this->m_vecExts.end(),

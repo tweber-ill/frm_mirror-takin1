@@ -4,8 +4,8 @@
     <![CDATA[]]>
   </Environment>
   <Project Name="montereso" Path="montereso.project" Active="No"/>
-  <Project Name="takin" Path="takin.project" Active="No"/>
-  <Project Name="scanviewer" Path="scanviewer.project" Active="Yes"/>
+  <Project Name="takin" Path="takin.project" Active="Yes"/>
+  <Project Name="scanviewer" Path="scanviewer.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="montereso" ConfigName="Debug"/>

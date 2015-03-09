@@ -17,6 +17,7 @@ int main(int argc, char** argv)
 	QLocale::setDefault(QLocale::English);
 
 	ScanViewerDlg dlg(0);
+	dlg.setWindowFlags(Qt::Window);
 	dlg.show();
 
 	int iRet = app.exec();
