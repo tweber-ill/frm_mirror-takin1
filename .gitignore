@@ -23,6 +23,8 @@ takin.txt
 takin.mk
 montereso.txt
 montereso.mk
+scanviewer.txt
+scanviewer.mk
 Makefile
 tlibs-master.tar.bz2
 tlibs/*

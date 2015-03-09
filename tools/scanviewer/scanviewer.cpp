@@ -24,10 +24,7 @@ namespace fs = boost::filesystem;
 
 ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	: QDialog(pParent), m_settings("tobis_stuff", "scanviewer"),
-		m_vecExts({	".dat", ".DAT", ".scn", ".SCN",
-					".dat.gz", ".DAT.GZ", ".scn.gz", ".SCN.GZ",
-					".dat.bz2", ".DAT.BZ2", ".scn.bz2", ".SCN.BZ2",
-				})
+		m_vecExts({	".dat", ".DAT", ".scn", ".SCN" })
 {
 	this->setupUi(this);
 	splitter->setStretchFactor(0, 1);
@@ -225,10 +222,14 @@ void ScanViewerDlg::UpdateFileList()
 		std::copy_if(dir_begin, dir_end, std::back_insert_iterator<decltype(lst)>(lst),
 			[this](const fs::path& p) -> bool
 			{
+				std::string strExt = p.extension().native();
+				if(strExt == ".bz2" || strExt == ".gz" || strExt == ".z")
+					strExt = "." + tl::get_fileext2(p.filename().native());
+				
 				if(this->m_vecExts.size() == 0)
 					return true;
 				return std::find(this->m_vecExts.begin(), this->m_vecExts.end(),
-					p.extension()) != this->m_vecExts.end();
+					strExt) != this->m_vecExts.end();
 			});
 
 		for(const fs::path& d : lst)
