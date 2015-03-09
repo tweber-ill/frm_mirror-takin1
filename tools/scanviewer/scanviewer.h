@@ -23,9 +23,9 @@ class ScanViewerDlg : public QDialog, Ui::ScanViewerDlg
 protected:
 	QSettings m_settings;
 	std::string m_strCurDir, m_strCurFile;
+	std::string m_strSelectedKey;
 	std::vector<std::string> m_vecExts;
 
-protected:
 	bool m_bDoUpdate = 0;
 	tl::FileInstr *m_pInstr = nullptr;
 	QwtPlotCurve *m_pCurve = nullptr, *m_pPoints = nullptr;
@@ -39,6 +39,7 @@ protected:
 protected slots:
 	void UpdateFileList();
 	void FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
+	void PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pItemPrev);
 	void SelectDir();
 	void ChangedPath();
 

@@ -83,6 +83,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 					this, SLOT(XAxisSelected(const QString&)));
 	QObject::connect(comboY, SIGNAL(currentIndexChanged(const QString&)),
 					this, SLOT(YAxisSelected(const QString&)));
+	QObject::connect(tableProps, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)),
+					this, SLOT(PropSelected(QTableWidgetItem*, QTableWidgetItem*)));
 
 	QString strDir = m_settings.value("last_dir", fs::current_path().native().c_str()).toString();
 	editPath->setText(strDir);
@@ -210,6 +212,24 @@ void ScanViewerDlg::PlotScan()
 	plot->replot();
 }
 
+void ScanViewerDlg::PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pItemPrev)
+{
+	if(!pItem)
+		m_strSelectedKey = "";
+		
+	for(int iItem=0; iItem<tableProps->rowCount(); ++iItem)
+	{
+		const QTableWidgetItem *pKey = tableProps->item(iItem, 0);
+		const QTableWidgetItem *pVal = tableProps->item(iItem, 1);
+		
+		if(pKey==pItem || pVal==pItem)
+		{
+			m_strSelectedKey = pKey->text().toStdString();
+			break;
+		}
+	}
+}
+
 void ScanViewerDlg::ShowProps()
 {
 	if(m_pInstr==nullptr || !m_bDoUpdate)
@@ -221,7 +241,7 @@ void ScanViewerDlg::ShowProps()
 	unsigned int iItem = 0;
 	for(const tl::FileInstr::t_mapParams::value_type& pair : params)
 	{
-		QTableWidgetItem* pItemKey = tableProps->item(iItem, 0);
+		QTableWidgetItem *pItemKey = tableProps->item(iItem, 0);
 		if(!pItemKey)
 		{
 			pItemKey = new QTableWidgetItem();
@@ -241,6 +261,25 @@ void ScanViewerDlg::ShowProps()
 	}
 	
 	tableProps->sortItems(0, Qt::AscendingOrder);
+
+
+	// retain previous selection
+	bool bHasSelection = 0;
+	for(int iItem=0; iItem<tableProps->rowCount(); ++iItem)
+	{
+		const QTableWidgetItem *pItem = tableProps->item(iItem, 0);
+		if(!pItem) continue;
+		
+		if(pItem->text().toStdString() == m_strSelectedKey)
+		{
+			tableProps->selectRow(iItem);
+			bHasSelection = 1;
+			break;
+		}
+	}
+	
+	if(!bHasSelection)
+		tableProps->selectRow(0);
 }
 
 void ScanViewerDlg::ChangedPath()
