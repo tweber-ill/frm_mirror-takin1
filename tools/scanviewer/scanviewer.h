@@ -34,6 +34,7 @@ protected:
 protected:
 	void ClearPlot();
 	void PlotScan();
+	void ShowProps();
 
 protected slots:
 	void UpdateFileList();

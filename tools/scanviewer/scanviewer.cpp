@@ -7,8 +7,10 @@
 
 #include "scanviewer.h"
 #include <QtGui/QFileDialog>
+#include <QtGui/QTableWidget>
+#include <QtGui/QTableWidgetItem>
 #include <iostream>
-#include <list>
+#include <set>
 #include <string>
 #include <algorithm>
 #include <iterator>
@@ -54,6 +56,21 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	// -------------------------------------------------------------------------
 
 
+	// -------------------------------------------------------------------------
+	// property map stuff
+	tableProps->setColumnCount(2);
+	tableProps->setColumnWidth(0, 150);
+	tableProps->setColumnWidth(1, 350);
+	//tableProps->sortByColumn(0);
+
+	tableProps->setHorizontalHeaderItem(0, new QTableWidgetItem("Property"));
+	tableProps->setHorizontalHeaderItem(1, new QTableWidgetItem("Value"));
+	
+	tableProps->verticalHeader()->setVisible(false);
+	tableProps->verticalHeader()->setDefaultSectionSize(tableProps->verticalHeader()->minimumSectionSize()+4);
+	// -------------------------------------------------------------------------
+
+
 	QObject::connect(editPath, SIGNAL(textEdited(const QString&)),
 					this, SLOT(ChangedPath()));
 	//QObject::connect(listFiles, SIGNAL(itemSelectionChanged()),
@@ -77,6 +94,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 ScanViewerDlg::~ScanViewerDlg()
 {
 	ClearPlot();
+	tableProps->setRowCount(0);
 }
 
 void ScanViewerDlg::ClearPlot()
@@ -160,6 +178,7 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 	comboY->setCurrentIndex(iIdxY);
 	m_bDoUpdate = 1;
 
+	ShowProps();
 	PlotScan();
 }
 
@@ -191,9 +210,44 @@ void ScanViewerDlg::PlotScan()
 	plot->replot();
 }
 
+void ScanViewerDlg::ShowProps()
+{
+	if(m_pInstr==nullptr || !m_bDoUpdate)
+		return;
+
+	const tl::FileInstr::t_mapParams& params = m_pInstr->GetAllParams();
+	tableProps->setRowCount(params.size());
+
+	unsigned int iItem = 0;
+	for(const tl::FileInstr::t_mapParams::value_type& pair : params)
+	{
+		QTableWidgetItem* pItemKey = tableProps->item(iItem, 0);
+		if(!pItemKey)
+		{
+			pItemKey = new QTableWidgetItem();
+			tableProps->setItem(iItem, 0, pItemKey);
+		}
+		pItemKey->setText(pair.first.c_str());
+
+		QTableWidgetItem* pItemVal = tableProps->item(iItem, 1);
+		if(!pItemVal)
+		{
+			pItemVal = new QTableWidgetItem();
+			tableProps->setItem(iItem, 1, pItemVal);
+		}
+		pItemVal->setText(pair.second.c_str());
+
+		++iItem;
+	}
+	
+	tableProps->sortItems(0, Qt::AscendingOrder);
+}
+
 void ScanViewerDlg::ChangedPath()
 {
 	listFiles->clear();
+	ClearPlot();
+	tableProps->setRowCount(0);
 
 	std::string strPath = editPath->text().toStdString();
 	fs::path dir(strPath);
@@ -218,8 +272,8 @@ void ScanViewerDlg::UpdateFileList()
 		fs::path dir(m_strCurDir);
 		fs::directory_iterator dir_begin(dir), dir_end;
 
-		std::list<fs::path> lst;
-		std::copy_if(dir_begin, dir_end, std::back_insert_iterator<decltype(lst)>(lst),
+		std::set<fs::path> lst;
+		std::copy_if(dir_begin, dir_end, std::insert_iterator<decltype(lst)>(lst, lst.end()),
 			[this](const fs::path& p) -> bool
 			{
 				std::string strExt = p.extension().native();
