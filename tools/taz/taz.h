@@ -214,9 +214,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);
+		void emitSampleParams();
 
 	signals:
 		void ResoParamsChanged(const ResoParams& resoparams);
+		void SampleParamsChanged(const SampleParams& parms);
 };
 
 #endif

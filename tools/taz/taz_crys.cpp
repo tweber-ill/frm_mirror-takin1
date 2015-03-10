@@ -29,6 +29,32 @@ std::ostream& operator<<(std::ostream& ostr, const tl::Lattice<double>& lat)
 	return ostr;
 }
 
+void TazDlg::emitSampleParams()
+{
+	double a = editARecip->text().toDouble();
+	double b = editBRecip->text().toDouble();
+	double c = editCRecip->text().toDouble();
+
+	double alpha = editAlphaRecip->text().toDouble()/180.*M_PI;
+	double beta = editBetaRecip->text().toDouble()/180.*M_PI;
+	double gamma = editGammaRecip->text().toDouble()/180.*M_PI;
+	
+	double dX0 = editScatX0->text().toDouble();
+	double dX1 = editScatX1->text().toDouble();
+	double dX2 = editScatX2->text().toDouble();
+
+	double dY0 = editScatY0->text().toDouble();
+	double dY1 = editScatY1->text().toDouble();
+	double dY2 = editScatY2->text().toDouble();
+	
+	SampleParams sampleparams;
+	sampleparams.dAngles[0] = alpha; sampleparams.dAngles[1] = beta; sampleparams.dAngles[2] = gamma;
+	sampleparams.dLattice[0] = a; sampleparams.dLattice[1] = b; sampleparams.dLattice[2] = c;
+	sampleparams.dPlane1[0] = dX0; sampleparams.dPlane1[1] = dX1; sampleparams.dPlane1[2] = dX2;
+	sampleparams.dPlane2[0] = dY0; sampleparams.dPlane2[1] = dY1; sampleparams.dPlane2[2] = dY2;
+	emit SampleParamsChanged(sampleparams);
+}
+
 void TazDlg::SetCrystalType()
 {
 	m_crystalsys = CrystalSystem::CRYS_NOT_SET;
@@ -301,13 +327,6 @@ void TazDlg::CalcPeaks()
 		}
 
 
-		if(m_pGotoDlg)
-		{
-			m_pGotoDlg->SetLattice(lattice);
-			m_pGotoDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
-			m_pGotoDlg->CalcSample();
-		}
-
 
 		/*// rotated lattice
 		double dPhi = spinRotPhi->value() / 180. * M_PI;
@@ -334,8 +353,19 @@ void TazDlg::CalcPeaks()
 		dir1 /= dDir1Len;
 		//dirup /= dDirUpLen;
 
+	
+		if(m_pGotoDlg)
+		{
+			m_pGotoDlg->SetLattice(lattice);
+			m_pGotoDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
+			m_pGotoDlg->CalcSample();
+		}
+		
+		emitSampleParams();
+
 		//lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
-		tl::Lattice<double> recip = lattice.GetRecip();
+		//tl::Lattice<double> recip = lattice.GetRecip();
+		const tl::Lattice<double>& recip = recip_unrot;		// anyway not rotated anymore
 
 
 
@@ -522,12 +552,15 @@ void TazDlg::InitReso()
 						m_pReso, SLOT(RecipParamsChanged(const RecipParams&)));
 		QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
 						m_pReso, SLOT(RealParamsChanged(const RealParams&)));
-
+		QObject::connect(this, SIGNAL(SampleParamsChanged(const SampleParams&)),
+						m_pReso, SLOT(SampleParamsChanged(const SampleParams&)));
+						
 		UpdateDs();
 		UpdateMonoSense();
 		UpdateSampleSense();
 		UpdateAnaSense();
 
+		emitSampleParams();
 		m_sceneRecip.emitAllParams();
 		m_sceneReal.emitAllParams();
 	}

@@ -37,6 +37,13 @@ struct ResoParams
 	bool bScatterSenses[3];
 };
 
+struct SampleParams
+{
+	double dLattice[3];
+	double dAngles[3];
+	double dPlane1[3], dPlane2[3];
+};
+
 class ResoDlg : public QDialog, Ui::ResoDlg
 {Q_OBJECT
 protected:
@@ -58,6 +65,9 @@ protected:
 
 	void WriteLastConfig();
 	void ReadLastConfig();
+	
+	ublas::matrix<double> m_matUB, m_matUBinv;
+	bool m_bHasUB = 0;
 
 	EckParams m_pop;
 	CNResults m_res;
@@ -97,6 +107,7 @@ public slots:
 	void ResoParamsChanged(const ResoParams& params);
 	void RecipParamsChanged(const RecipParams& parms);
 	void RealParamsChanged(const RealParams& parms);
+	void SampleParamsChanged(const SampleParams& parms);
 
 public:
 	void Load(tl::Xml& xml, const std::string& strXmlRoot);

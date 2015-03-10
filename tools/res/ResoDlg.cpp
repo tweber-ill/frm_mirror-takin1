@@ -17,6 +17,7 @@
 #include "tlibs/string/spec_char.h"
 #include "tlibs/helper/misc.h"
 #include "tlibs/math/math.h"
+#include "tlibs/math/lattice.h"
 
 //#include <boost/units/io.hpp>
 
@@ -596,36 +597,6 @@ void ResoDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 }
 
 
-void ResoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
-{
-	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ApplyRole ||
-	   buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
-	{
-		WriteLastConfig();
-	}
-	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::RejectRole)
-	{
-		reject();
-	}
-
-	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
-	{
-		QDialog::accept();
-	}
-}
-
-void ResoDlg::hideEvent(QHideEvent *event)
-{
-	if(m_pSettings)
-		m_pSettings->setValue("reso/wnd_geo", saveGeometry());
-}
-
-void ResoDlg::showEvent(QShowEvent *event)
-{
-	if(m_pSettings)
-		restoreGeometry(m_pSettings->value("reso/wnd_geo").toByteArray());
-}
-
 void ResoDlg::ResoParamsChanged(const ResoParams& params)
 {
 	bool bOldDontCalc = m_bDontCalc;
@@ -710,6 +681,19 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	Calc();
 }
 
+void ResoDlg::SampleParamsChanged(const SampleParams& parms)
+{
+	tl::Lattice<double> lattice(parms.dLattice[0],parms.dLattice[1],parms.dLattice[2],
+								parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
+								
+	ublas::vector<double> vec1 = 
+		tl::make_vec<ublas::vector<double>>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
+	ublas::vector<double> vec2 = 
+		tl::make_vec<ublas::vector<double>>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});
+		
+	m_matUB = tl::get_UB(lattice, vec1, vec2);
+	m_bHasUB = tl::inverse(m_matUB, m_matUBinv);
+}
 
 
 // --------------------------------------------------------------------------------
@@ -783,6 +767,8 @@ void ResoDlg::MCGenerate()
 	if(m_pSettings)
 		m_pSettings->setValue("reso/mc_dir", QString(tl::get_dir(strFile).c_str()));
 }
+
+
 // --------------------------------------------------------------------------------
 
 
@@ -801,5 +787,38 @@ void ResoDlg::AlgoChanged()
 	labelAlgoRef->setText(strAlgo.c_str());
 }
 
+
+// --------------------------------------------------------------------------------
+
+
+void ResoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
+{
+	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ApplyRole ||
+	   buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
+	{
+		WriteLastConfig();
+	}
+	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::RejectRole)
+	{
+		reject();
+	}
+
+	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
+	{
+		QDialog::accept();
+	}
+}
+
+void ResoDlg::hideEvent(QHideEvent *event)
+{
+	if(m_pSettings)
+		m_pSettings->setValue("reso/wnd_geo", saveGeometry());
+}
+
+void ResoDlg::showEvent(QShowEvent *event)
+{
+	if(m_pSettings)
+		restoreGeometry(m_pSettings->value("reso/wnd_geo").toByteArray());
+}
 
 #include "ResoDlg.moc"
