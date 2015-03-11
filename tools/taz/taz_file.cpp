@@ -484,7 +484,7 @@ bool TazDlg::Import(const char* pcFile)
 
 
 	m_settings.setValue("main/last_import_dir", QString(strDir.c_str()));
-	m_strCurFile = strFile1;
+	m_strCurFile = /*strFile1*/ "";		// prevent overwriting imported file on saving
 	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
 
 	tl::RecentFiles recent(&m_settings, "main/recent_import");
