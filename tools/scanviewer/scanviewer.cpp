@@ -53,7 +53,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	m_pPoints->setStyle(QwtPlotCurve::CurveStyle::Dots);
 	m_pPoints->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 	m_pPoints->attach(plot);
-	
+
 	m_pGrid = new QwtPlotGrid();
 	QPen penGrid;
 	penGrid.setColor(QColor(0x99,0x99,0x99));
@@ -64,7 +64,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	m_pZoomer = new QwtPlotZoomer(plot->canvas());
 	m_pZoomer->setMaxStackDepth(-1);
 	m_pZoomer->setEnabled(1);
-	
+
 	plot->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
 #if QWT_VER<6
@@ -85,7 +85,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 
 	tableProps->setHorizontalHeaderItem(0, new QTableWidgetItem("Property"));
 	tableProps->setHorizontalHeaderItem(1, new QTableWidgetItem("Value"));
-	
+
 	tableProps->verticalHeader()->setVisible(false);
 	tableProps->verticalHeader()->setDefaultSectionSize(tableProps->verticalHeader()->minimumSectionSize()+4);
 	// -------------------------------------------------------------------------
@@ -117,13 +117,19 @@ ScanViewerDlg::~ScanViewerDlg()
 {
 	ClearPlot();
 	tableProps->setRowCount(0);
-	
+
 	if(m_pGrid) delete m_pGrid;
-	
+
 	if(m_pZoomer)
 	{
 		m_pZoomer->setEnabled(0);
 		delete m_pZoomer;
+	}
+
+	if(m_pPicker)
+	{
+		m_pPicker->setEnabled(0);
+		delete m_pPicker;
 	}
 }
 
@@ -247,7 +253,7 @@ void ScanViewerDlg::PlotScan()
 	rect.setTop(*minmaxY.first);
 	m_pZoomer->setZoomBase(rect);
 	m_pZoomer->zoom(rect);
-	
+
 	plot->replot();
 }
 
