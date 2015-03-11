@@ -173,10 +173,8 @@ void ScanViewerDlg::SelectDir()
 	}
 }
 
-void ScanViewerDlg::XAxisSelected(const QString& strLab)
-{ PlotScan(); }
-void ScanViewerDlg::YAxisSelected(const QString& strLab)
-{ PlotScan(); }
+void ScanViewerDlg::XAxisSelected(const QString& strLab) { PlotScan(); }
+void ScanViewerDlg::YAxisSelected(const QString& strLab) { PlotScan(); }
 
 void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 {
@@ -251,8 +249,8 @@ void ScanViewerDlg::PlotScan()
 	rect.setRight(*minmaxX.second);
 	rect.setBottom(*minmaxY.second);
 	rect.setTop(*minmaxY.first);
-	m_pZoomer->setZoomBase(rect);
 	m_pZoomer->zoom(rect);
+	m_pZoomer->setZoomBase(rect);
 
 	plot->replot();
 }
