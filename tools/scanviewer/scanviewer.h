@@ -10,8 +10,13 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
+
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
+#include <qwt_plot_grid.h>
+#include <qwt_plot_picker.h>
+#include <qwt_plot_zoomer.h>
+
 #include <string>
 #include <vector>
 #include "tlibs/file/loadinstr.h"
@@ -28,8 +33,12 @@ protected:
 
 	bool m_bDoUpdate = 0;
 	tl::FileInstr *m_pInstr = nullptr;
-	QwtPlotCurve *m_pCurve = nullptr, *m_pPoints = nullptr;
 	std::vector<double> m_vecX, m_vecY;
+
+	QwtPlotCurve *m_pCurve = nullptr, *m_pPoints = nullptr;
+	QwtPlotGrid* m_pGrid = nullptr;
+	QwtPlotPicker* m_pPicker = nullptr;
+	QwtPlotZoomer* m_pZoomer = nullptr;
 
 protected:
 	void ClearPlot();

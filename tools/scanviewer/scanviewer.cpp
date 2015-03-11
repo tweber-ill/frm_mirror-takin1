@@ -53,6 +53,26 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	m_pPoints->setStyle(QwtPlotCurve::CurveStyle::Dots);
 	m_pPoints->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 	m_pPoints->attach(plot);
+	
+	m_pGrid = new QwtPlotGrid();
+	QPen penGrid;
+	penGrid.setColor(QColor(0x99,0x99,0x99));
+	penGrid.setStyle(Qt::DashLine);
+	m_pGrid->setPen(penGrid);
+	m_pGrid->attach(plot);
+
+	m_pZoomer = new QwtPlotZoomer(plot->canvas());
+	m_pZoomer->setMaxStackDepth(-1);
+	m_pZoomer->setEnabled(1);
+	
+	plot->canvas()->setMouseTracking(1);
+	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
+#if QWT_VER<6
+		QwtPlotPicker::PointSelection,
+#endif
+		QwtPlotPicker::NoRubberBand, QwtPlotPicker::AlwaysOn, plot->canvas());
+
+	m_pPicker->setEnabled(1);
 	// -------------------------------------------------------------------------
 
 
@@ -97,6 +117,14 @@ ScanViewerDlg::~ScanViewerDlg()
 {
 	ClearPlot();
 	tableProps->setRowCount(0);
+	
+	if(m_pGrid) delete m_pGrid;
+	
+	if(m_pZoomer)
+	{
+		m_pZoomer->setEnabled(0);
+		delete m_pZoomer;
+	}
 }
 
 void ScanViewerDlg::ClearPlot()
@@ -110,10 +138,10 @@ void ScanViewerDlg::ClearPlot()
 	m_vecX.clear();
 	m_vecY.clear();
 
-#if QWT_VER==6
+#if QWT_VER>=6
 	m_pCurve->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
 	m_pPoints->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
-#elif QWT_VER==5
+#elif QWT_VER<6
 	m_pCurve->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
 	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
 #endif
@@ -198,10 +226,10 @@ void ScanViewerDlg::PlotScan()
 	if(m_vecX.size()==0 || m_vecY.size()==0)
 		return;
 
-#if QWT_VER==6
+#if QWT_VER>=6
 	m_pCurve->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
 	m_pPoints->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
-#elif QWT_VER==5
+#elif QWT_VER<6
 	m_pCurve->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
 	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
 #endif
@@ -209,6 +237,17 @@ void ScanViewerDlg::PlotScan()
 	plot->setAxisTitle(QwtPlot::xBottom, strX.c_str());
 	plot->setAxisTitle(QwtPlot::yLeft, strY.c_str());
 
+	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+
+	QRectF rect;
+	rect.setLeft(*minmaxX.first);
+	rect.setRight(*minmaxX.second);
+	rect.setBottom(*minmaxY.second);
+	rect.setTop(*minmaxY.first);
+	m_pZoomer->setZoomBase(rect);
+	m_pZoomer->zoom(rect);
+	
 	plot->replot();
 }
 
