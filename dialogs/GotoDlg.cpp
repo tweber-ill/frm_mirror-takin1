@@ -459,6 +459,8 @@ bool GotoDlg::GotoPos(QListWidgetItem* pItem, bool bApply)
 
 bool GotoDlg::GotoPos(unsigned int iItem)
 {
+	if(int(iItem) >= listSeq->count())
+		return false;
 	return GotoPos(listSeq->item(int(iItem)), 1);
 }
 
