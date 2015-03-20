@@ -457,6 +457,11 @@ bool GotoDlg::GotoPos(QListWidgetItem* pItem, bool bApply)
 	return m_bMonoAnaOk && m_bSampleOk;
 }
 
+bool GotoDlg::GotoPos(unsigned int iItem)
+{
+	return GotoPos(listSeq->item(int(iItem)), 1);
+}
+
 void GotoDlg::ListItemSelected()
 {
 	QListWidgetItem *pItem = listSeq->currentItem();

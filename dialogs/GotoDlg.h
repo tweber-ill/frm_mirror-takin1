@@ -50,7 +50,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		void ClearList();
 		
 	protected:
-		bool GotoPos(QListWidgetItem* pItem, bool bApply=0);
+		bool GotoPos(QListWidgetItem* pItem, bool bApply);
 		bool ApplyCurPos();
 
 	protected slots:
@@ -85,6 +85,8 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		void SetMonoSense(bool bSense) { m_bSenseM = bSense; }
 		void SetSampleSense(bool bSense) { m_bSenseS = bSense; }
 		void SetAnaSense(bool bSense) { m_bSenseA = bSense; }
+		
+		bool GotoPos(unsigned int iItem);
 
 	protected slots:
 		void ButtonBoxClicked(QAbstractButton* pBtn);
@@ -100,7 +102,6 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 	public:
 		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 		void Load(tl::Xml& xml, const std::string& strXmlRoot);
-
 };
 
 #endif

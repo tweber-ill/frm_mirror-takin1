@@ -409,6 +409,7 @@ bool TazDlg::Import(const char* pcFile)
 	std::string strFile1 = pcFile;
 	std::string strDir = tl::get_dir(strFile1);
 
+	std::size_t iScanNum = 0;
 	try
 	{
 		std::unique_ptr<tl::FileInstr> ptrDat(tl::FileInstr::LoadInstr(pcFile));
@@ -463,7 +464,7 @@ bool TazDlg::Import(const char* pcFile)
 			strExp += std::string(" - ") + strSample;
 		editDescr->setPlainText(strExp.c_str());
 
-		std::size_t iScanNum = pdat->GetScanCount();
+		iScanNum = pdat->GetScanCount();
 		if(iScanNum)
 		{
 			InitGoto();
@@ -493,5 +494,15 @@ bool TazDlg::Import(const char* pcFile)
 	recent.FillMenu(m_pMenuRecentImport, m_pMapperRecentImport);
 
 	CalcPeaks();
+	
+	if(iScanNum && m_pGotoDlg)
+	{
+		if(m_pGotoDlg->GotoPos(0))
+		{
+			m_pGotoDlg->show();
+			m_pGotoDlg->activateWindow();
+		}
+	}
+
 	return true;
 }
