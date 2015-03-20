@@ -485,8 +485,8 @@ bool TazDlg::Import(const char* pcFile)
 
 
 	m_settings.setValue("main/last_import_dir", QString(strDir.c_str()));
-	m_strCurFile = /*strFile1*/ "";		// prevent overwriting imported file on saving
-	setWindowTitle((s_strTitle + " - " + m_strCurFile).c_str());
+	m_strCurFile = /*strFile1*/ "";		// prevents overwriting imported file on saving
+	setWindowTitle((s_strTitle + " - " + strFile1).c_str());
 
 	tl::RecentFiles recent(&m_settings, "main/recent_import");
 	recent.AddFile(strFile1.c_str());
@@ -494,7 +494,7 @@ bool TazDlg::Import(const char* pcFile)
 	recent.FillMenu(m_pMenuRecentImport, m_pMapperRecentImport);
 
 	CalcPeaks();
-	
+
 	if(iScanNum && m_pGotoDlg)
 	{
 		if(m_pGotoDlg->GotoPos(0))
