@@ -9,6 +9,7 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/helper/log.h"
+#include "helper/globals.h"
 #include "scattering_triangle.h"
 
 #include <QtGui/QToolTip>
@@ -255,9 +256,9 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	const std::wstring& strDelta = tl::get_spec_char_utf16("Delta");
 
 	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE, ostrq, ostrG;
-	ostrQ.precision(4); ostrE.precision(4);
-	ostrKi.precision(4); ostrKf.precision(4);
-	ostrG.precision(4); ostrq.precision(4);
+	ostrQ.precision(g_iPrecGfx); ostrE.precision(g_iPrecGfx);
+	ostrKi.precision(g_iPrecGfx); ostrKf.precision(g_iPrecGfx);
+	ostrG.precision(g_iPrecGfx); ostrq.precision(g_iPrecGfx);
 
 	ostrQ << L"Q = " << GetQ() << " " << strAA;
 	ostrKi << L"ki = " << GetKi() << " " << strAA;
@@ -373,7 +374,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 			const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
 			std::wostringstream ostrAngle;
-			ostrAngle.precision(6);
+			ostrAngle.precision(g_iPrecGfx);
 			ostrAngle << std::fabs(dArcAngle) << strDEG;
 
 			QPointF ptDirOut = *vecPoints[i] - ptMid;

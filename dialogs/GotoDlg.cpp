@@ -6,9 +6,10 @@
  */
 
 #include "GotoDlg.h"
-#include "../tlibs/math/neutrons.hpp"
-#include "../tlibs/string/string.h"
-#include "../tlibs/string/spec_char.h"
+#include "tlibs/math/neutrons.hpp"
+#include "tlibs/string/string.h"
+#include "tlibs/string/spec_char.h"
+#include "helper/globals.h"
 
 #include <QtGui/QFileDialog>
 #include <QtGui/QMessageBox>
@@ -108,8 +109,8 @@ void GotoDlg::CalcSample()
 
 	if(bFailed) return;
 
-	editThetaS->setText(tl::var_to_str(m_dSampleTheta/M_PI*180.).c_str());
-	edit2ThetaS->setText(tl::var_to_str(m_dSample2Theta/M_PI*180.).c_str());
+	editThetaS->setText(tl::var_to_str(m_dSampleTheta/M_PI*180., g_iPrec).c_str());
+	edit2ThetaS->setText(tl::var_to_str(m_dSample2Theta/M_PI*180., g_iPrec).c_str());
 
 	m_bSampleOk = 1;
 
@@ -179,10 +180,10 @@ void GotoDlg::CalcMonoAna()
 	double dTMono = m_dMono2Theta / 2.;
 	double dTAna = m_dAna2Theta / 2.;
 
-	edit2ThetaM->setText(tl::var_to_str(m_dMono2Theta/M_PI*180.).c_str());
-	editThetaM->setText(tl::var_to_str(dTMono/M_PI*180.).c_str());
-	edit2ThetaA->setText(tl::var_to_str(m_dAna2Theta/M_PI*180.).c_str());
-	editThetaA->setText(tl::var_to_str(dTAna/M_PI*180.).c_str());
+	edit2ThetaM->setText(tl::var_to_str(m_dMono2Theta/M_PI*180., g_iPrec).c_str());
+	editThetaM->setText(tl::var_to_str(dTMono/M_PI*180., g_iPrec).c_str());
+	edit2ThetaA->setText(tl::var_to_str(m_dAna2Theta/M_PI*180., g_iPrec).c_str());
+	editThetaA->setText(tl::var_to_str(dTAna/M_PI*180., g_iPrec).c_str());
 
 	m_bMonoAnaOk = 1;
 
@@ -204,7 +205,7 @@ void GotoDlg::EditedKiKf()
 	double dE = E/tl::one_meV;
 	tl::set_eps_0(dE);
 
-	std::string strE = tl::var_to_str<double>(dE);
+	std::string strE = tl::var_to_str<double>(dE, g_iPrec);
 	editE->setText(strE.c_str());
 
 	CalcMonoAna();
@@ -235,7 +236,7 @@ void GotoDlg::EditedE()
 		double dKf = kf*tl::angstrom;
 		tl::set_eps_0(dKf);
 
-		std::string strKf = tl::var_to_str<double>(dKf);
+		std::string strKf = tl::var_to_str<double>(dKf, g_iPrec);
 		editKf->setText(strKf.c_str());
 	}
 	else
@@ -250,7 +251,7 @@ void GotoDlg::EditedE()
 		double dKi = ki*tl::angstrom;
 		tl::set_eps_0(dKi);
 
-		std::string strKi = tl::var_to_str<double>(dKi);
+		std::string strKi = tl::var_to_str<double>(dKi, g_iPrec);
 		editKi->setText(strKi.c_str());
 	}
 
@@ -265,13 +266,13 @@ void GotoDlg::EditedAngles()
 	double th_m = edit2ThetaM->text().toDouble(&bthmOk)/2. / 180.*M_PI;
 	tl::set_eps_0(th_m);
 	if(bthmOk)
-		editThetaM->setText(tl::var_to_str<double>(th_m/M_PI*180.).c_str());
+		editThetaM->setText(tl::var_to_str<double>(th_m/M_PI*180., g_iPrec).c_str());
 
 	bool bthaOk;
 	double th_a = edit2ThetaA->text().toDouble(&bthaOk)/2. / 180.*M_PI;
 	tl::set_eps_0(th_a);
 	if(bthaOk)
-		editThetaA->setText(tl::var_to_str<double>(th_a/M_PI*180.).c_str());
+		editThetaA->setText(tl::var_to_str<double>(th_a/M_PI*180., g_iPrec).c_str());
 
 	bool bthsOk, bttsOk;
 	double th_s = editThetaS->text().toDouble(&bthsOk) / 180.*M_PI;
@@ -315,13 +316,13 @@ void GotoDlg::EditedAngles()
 	for(double* d : {&h,&k,&l, &dKi,&dKf,&dE})
 		tl::set_eps_0(*d);
 
-	editH->setText(tl::var_to_str<double>(h).c_str());
-	editK->setText(tl::var_to_str<double>(k).c_str());
-	editL->setText(tl::var_to_str<double>(l).c_str());
+	editH->setText(tl::var_to_str<double>(h, g_iPrec).c_str());
+	editK->setText(tl::var_to_str<double>(k, g_iPrec).c_str());
+	editL->setText(tl::var_to_str<double>(l, g_iPrec).c_str());
 
-	editKi->setText(tl::var_to_str<double>(dKi).c_str());
-	editKf->setText(tl::var_to_str<double>(dKf).c_str());
-	editE->setText(tl::var_to_str<double>(dE).c_str());
+	editKi->setText(tl::var_to_str<double>(dKi, g_iPrec).c_str());
+	editKf->setText(tl::var_to_str<double>(dKf, g_iPrec).c_str());
+	editE->setText(tl::var_to_str<double>(dE, g_iPrec).c_str());
 
 	m_dMono2Theta = th_m*2.;
 	m_dAna2Theta = th_a*2.;
@@ -345,12 +346,12 @@ void GotoDlg::GetCurPos()
 	tl::set_eps_0(m_paramsRecip.Q_rlu[1]);
 	tl::set_eps_0(m_paramsRecip.Q_rlu[2]);
 
-	editKi->setText(tl::var_to_str(m_paramsRecip.dki).c_str());
-	editKf->setText(tl::var_to_str(m_paramsRecip.dkf).c_str());
+	editKi->setText(tl::var_to_str(m_paramsRecip.dki, g_iPrec).c_str());
+	editKf->setText(tl::var_to_str(m_paramsRecip.dkf, g_iPrec).c_str());
 
-	editH->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[0]).c_str());
-	editK->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[1]).c_str());
-	editL->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[2]).c_str());
+	editH->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[0], g_iPrec).c_str());
+	editK->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[1], g_iPrec).c_str());
+	editL->setText(tl::var_to_str(-m_paramsRecip.Q_rlu[2], g_iPrec).c_str());
 
 	EditedKiKf();
 	CalcMonoAna();
@@ -442,11 +443,11 @@ bool GotoDlg::GotoPos(QListWidgetItem* pItem, bool bApply)
 	HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
 	if(!pPos) return false;
 
-	editH->setText(tl::var_to_str(pPos->dh).c_str());
-	editK->setText(tl::var_to_str(pPos->dk).c_str());
-	editL->setText(tl::var_to_str(pPos->dl).c_str());
-	editKi->setText(tl::var_to_str(pPos->dki).c_str());
-	editKf->setText(tl::var_to_str(pPos->dkf).c_str());
+	editH->setText(tl::var_to_str(pPos->dh, g_iPrec).c_str());
+	editK->setText(tl::var_to_str(pPos->dk, g_iPrec).c_str());
+	editL->setText(tl::var_to_str(pPos->dl, g_iPrec).c_str());
+	editKi->setText(tl::var_to_str(pPos->dki, g_iPrec).c_str());
+	editKf->setText(tl::var_to_str(pPos->dkf, g_iPrec).c_str());
 
 	EditedKiKf();
 	CalcSample();

@@ -30,6 +30,10 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		// checkboxes
 		typedef std::tuple<std::string, bool, QCheckBox*> t_tupCheck;
 		std::vector<t_tupCheck> m_vecChecks;
+		
+		// spins
+		typedef std::tuple<std::string, int, QSpinBox*> t_tupSpin;
+		std::vector<t_tupSpin> m_vecSpins;
 
 	public:
 		SettingsDlg(QWidget* pParent=0, QSettings* pSett=0);

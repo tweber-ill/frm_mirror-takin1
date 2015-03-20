@@ -156,6 +156,8 @@
     <File Name="helper/plotgl.h"/>
     <File Name="helper/spacegroup.cpp"/>
     <File Name="helper/spacegroup.h"/>
+    <File Name="helper/globals.cpp"/>
+    <File Name="helper/globals.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

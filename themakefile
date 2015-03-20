@@ -120,7 +120,8 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/xml.o obj/spacegroup.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
-	obj/loadinstr.o obj/recent.o
+	obj/loadinstr.o obj/recent.o \
+	obj/globals.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
@@ -188,6 +189,8 @@ obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
 obj/GotoDlg.o: dialogs/GotoDlg.cpp dialogs/GotoDlg.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SettingsDlg.o: dialogs/SettingsDlg.cpp dialogs/SettingsDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/globals.o: helper/globals.cpp helper/globals.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<

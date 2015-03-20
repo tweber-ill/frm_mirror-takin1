@@ -9,9 +9,11 @@
 #include "../tlibs/string/string.h"
 #include "../tlibs/helper/log.h"
 #include "../tlibs/gfx/gl.h"
+#include "../helper/globals.h"
 
 #include <QtGui/QFileDialog>
 #include <iostream>
+#include <limits>
 
 
 // -----------------------------------------------------------------------------
@@ -23,7 +25,6 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	setupUi(this);
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectFont()));
-
 
 #ifndef NO_3D
 	std::string strDefFont = tl::FontMap::get_font_file("dejavusansmono.ttf");
@@ -68,6 +69,15 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	{
 		t_tupCheck("main/dlg_previews", 1, checkPreview)
 	};
+	
+	m_vecSpins = 
+	{
+		t_tupSpin("main/prec", g_iPrec, spinPrecGen),
+		t_tupSpin("main/prec_gfx", g_iPrecGfx, spinPrecGfx)
+	};
+	
+	spinPrecGen->setMaximum(std::numeric_limits<double>::max_digits10);
+	spinPrecGfx->setMaximum(std::numeric_limits<double>::max_digits10);
 
 	SetDefaults(0);
 }
@@ -101,6 +111,17 @@ void SettingsDlg::SetDefaults(bool bOverwrite)
 
 		m_pSettings->setValue(strKey.c_str(), bDef);
 	}
+	
+	for(const t_tupSpin& tup : m_vecSpins)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		const int iDef = std::get<1>(tup);
+
+		bool bKeyExists = m_pSettings->contains(strKey.c_str());
+		if(bKeyExists && !bOverwrite) continue;
+
+		m_pSettings->setValue(strKey.c_str(), iDef);
+	}
 }
 
 
@@ -127,6 +148,16 @@ void SettingsDlg::LoadSettings()
 		bool bVal = m_pSettings->value(strKey.c_str(), bDef).toBool();
 		pCheck->setChecked(bVal);
 	}
+	
+	for(const t_tupSpin& tup : m_vecSpins)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		int iDef = std::get<1>(tup);
+		QSpinBox* pSpin = std::get<2>(tup);
+
+		int iVal = m_pSettings->value(strKey.c_str(), iDef).toInt();
+		pSpin->setValue(iVal);
+	}
 }
 
 void SettingsDlg::SaveSettings()
@@ -148,6 +179,18 @@ void SettingsDlg::SaveSettings()
 
 		m_pSettings->setValue(strKey.c_str(), pCheck->isChecked());
 	}
+	
+	for(const t_tupSpin& tup : m_vecSpins)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		QSpinBox* pSpin = std::get<2>(tup);
+
+		m_pSettings->setValue(strKey.c_str(), pSpin->value());
+	}
+	
+
+	g_iPrec = spinPrecGen->value();
+	g_iPrecGfx = spinPrecGfx->value();
 }
 
 

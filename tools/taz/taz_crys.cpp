@@ -6,16 +6,16 @@
  */
 
 #include "taz.h"
+#include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
+#include "helper/globals.h"
 #include <boost/algorithm/string.hpp>
 
 
-static QString dtoqstr(double dVal, unsigned int iPrec=8)
+static inline QString dtoqstr(double dVal, unsigned int iPrec=8)
 {
-	std::ostringstream ostr;
-	ostr.precision(iPrec);
-	ostr << dVal;
-	return QString(ostr.str().c_str());
+	std::string str = tl::var_to_str(dVal, iPrec);
+	return QString(str.c_str());
 }
 
 std::ostream& operator<<(std::ostream& ostr, const tl::Lattice<double>& lat)
@@ -253,12 +253,12 @@ void TazDlg::CalcPeaksRecip()
 	tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
 	tl::Lattice<double> recip = lattice.GetRecip();
 
-	editA->setText(dtoqstr(recip.GetA()));
-	editB->setText(dtoqstr(recip.GetB()));
-	editC->setText(dtoqstr(recip.GetC()));
-	editAlpha->setText(dtoqstr(recip.GetAlpha()/M_PI*180.));
-	editBeta->setText(dtoqstr(recip.GetBeta()/M_PI*180.));
-	editGamma->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
+	editA->setText(dtoqstr(recip.GetA(), g_iPrec));
+	editB->setText(dtoqstr(recip.GetB(), g_iPrec));
+	editC->setText(dtoqstr(recip.GetC(), g_iPrec));
+	editAlpha->setText(dtoqstr(recip.GetAlpha()/M_PI*180., g_iPrec));
+	editBeta->setText(dtoqstr(recip.GetBeta()/M_PI*180., g_iPrec));
+	editGamma->setText(dtoqstr(recip.GetGamma()/M_PI*180., g_iPrec));
 
 	m_bUpdateRecipEdits = 0;
 	CalcPeaks();
@@ -371,12 +371,12 @@ void TazDlg::CalcPeaks()
 
 		if(m_bUpdateRecipEdits)
 		{
-			editARecip->setText(dtoqstr(recip.GetA()));
-			editBRecip->setText(dtoqstr(recip.GetB()));
-			editCRecip->setText(dtoqstr(recip.GetC()));
-			editAlphaRecip->setText(dtoqstr(recip.GetAlpha()/M_PI*180.));
-			editBetaRecip->setText(dtoqstr(recip.GetBeta()/M_PI*180.));
-			editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180.));
+			editARecip->setText(dtoqstr(recip.GetA(), g_iPrec));
+			editBRecip->setText(dtoqstr(recip.GetB(), g_iPrec));
+			editCRecip->setText(dtoqstr(recip.GetC(), g_iPrec));
+			editAlphaRecip->setText(dtoqstr(recip.GetAlpha()/M_PI*180., g_iPrec));
+			editBetaRecip->setText(dtoqstr(recip.GetBeta()/M_PI*180., g_iPrec));
+			editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180., g_iPrec));
 		}
 
 		const std::wstring& strAA = tl::get_spec_char_utf16("AA");

@@ -7,6 +7,7 @@
 
 #include "tas_layout.h"
 #include "tlibs/string/spec_char.h"
+#include "helper/globals.h"
 #include <iostream>
 
 
@@ -285,7 +286,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	if(bDisplayLengths)
 	{
 		std::ostringstream ostrLenKi, ostrLenKf, ostrLenAnaDet;
-		ostrLenKi.precision(4); ostrLenKf.precision(4); ostrLenAnaDet.precision(4);
+		ostrLenKi.precision(g_iPrecGfx); ostrLenKf.precision(g_iPrecGfx); ostrLenAnaDet.precision(g_iPrecGfx);
 
 		ostrLenKi << m_dLenMonoSample << " cm";
 		ostrLenKf << m_dLenSampleAna << " cm";
@@ -404,7 +405,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 
 		const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
 		std::wostringstream ostrAngle;
-		ostrAngle.precision(6);
+		ostrAngle.precision(g_iPrecGfx);
 		if(!tl::is_nan_or_inf<double>(dArcAngle))
 			ostrAngle << std::fabs(dArcAngle) << strDEG;
 		else
