@@ -6,8 +6,8 @@
  */
 
 #include "EllipseDlg.h"
-#include "../tlibs/string/spec_char.h"
-#include "../tlibs/helper/flags.h"
+#include "tlibs/string/spec_char.h"
+#include "tlibs/helper/flags.h"
 
 #include <qwt_picker_machine.h>
 #include <future>

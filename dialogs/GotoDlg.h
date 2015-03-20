@@ -10,12 +10,12 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
-#include "../ui/ui_goto.h"
+#include "ui/ui_goto.h"
 
-#include "../tlibs/math/lattice.h"
-#include "../tlibs/math/linalg.h"
-#include "../tlibs/file/xml.h"
-#include "../tools/taz/tasoptions.h"
+#include "tlibs/math/lattice.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/file/xml.h"
+#include "tools/taz/tasoptions.h"
 #include "RecipParamDlg.h"
 
 class GotoDlg : public QDialog, Ui::GotoDlg

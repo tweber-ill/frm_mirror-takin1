@@ -12,7 +12,7 @@
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
 #include <QtCore/QTimer>
-#include "../ui/ui_netcache.h"
+#include "ui/ui_netcache.h"
 
 struct CacheVal
 {

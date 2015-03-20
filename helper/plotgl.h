@@ -15,7 +15,7 @@
 #include <QtCore/QSettings>
 #include <vector>
 
-#include "../tlibs/gfx/gl.h"
+#include "tlibs/gfx/gl.h"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>

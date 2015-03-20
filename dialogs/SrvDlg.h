@@ -10,7 +10,7 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
-#include "../ui/ui_connection.h"
+#include "ui/ui_connection.h"
 
 class SrvDlg : public QDialog, Ui::SrvDlg
 { Q_OBJECT

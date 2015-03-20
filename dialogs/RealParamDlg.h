@@ -10,7 +10,7 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
-#include "../ui/ui_real_params.h"
+#include "ui/ui_real_params.h"
 
 
 struct RealParams

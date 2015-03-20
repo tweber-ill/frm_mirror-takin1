@@ -16,7 +16,7 @@
 #include <qwt_plot_picker.h>
 #include <vector>
 
-#include "../ui/ui_spurions.h"
+#include "ui/ui_spurions.h"
 #include "RecipParamDlg.h"
 
 

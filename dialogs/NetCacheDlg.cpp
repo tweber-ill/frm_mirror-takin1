@@ -6,8 +6,8 @@
  */
 
 #include "NetCacheDlg.h"
-#include "../tlibs/string/string.h"
-#include "../tlibs/helper/flags.h"
+#include "tlibs/string/string.h"
+#include "tlibs/helper/flags.h"
 #include <chrono>
 #include <iostream>
 

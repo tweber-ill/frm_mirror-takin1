@@ -7,7 +7,7 @@
 
 #include "taz.h"
 #include "tlibs/string/string.h"
-#include "../../dialogs/FilePreviewDlg.h"
+#include "dialogs/FilePreviewDlg.h"
 #include "tlibs/file/recent.h"
 
 #include <QtGui/QMessageBox>

@@ -6,10 +6,10 @@
  */
 
 #include "PowderDlg.h"
-#include "../tlibs/math/lattice.h"
-#include "../tlibs/math/neutrons.hpp"
-#include "../tlibs/math/linalg.h"
-#include "../tlibs/string/string.h"
+#include "tlibs/math/lattice.h"
+#include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/linalg.h"
+#include "tlibs/string/string.h"
 
 #include <vector>
 #include <string>

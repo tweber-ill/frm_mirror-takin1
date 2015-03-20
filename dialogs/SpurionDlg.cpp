@@ -6,9 +6,9 @@
  */
 
 #include "SpurionDlg.h"
-#include "../tlibs/math/neutrons.hpp"
-#include "../tlibs/string/string.h"
-#include "../tlibs/string/spec_char.h"
+#include "tlibs/math/neutrons.hpp"
+#include "tlibs/string/string.h"
+#include "tlibs/string/spec_char.h"
 
 #include <sstream>
 #include <iostream>

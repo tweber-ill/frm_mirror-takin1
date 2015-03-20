@@ -10,12 +10,12 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
-#include "../ui/ui_powder.h"
+#include "ui/ui_powder.h"
 
 #include <map>
 #include <string>
-#include "../helper/spacegroup.h"
-#include "../tlibs/file/xml.h"
+#include "helper/spacegroup.h"
+#include "tlibs/file/xml.h"
 
 
 class PowderDlg : public QDialog, Ui::PowderDlg

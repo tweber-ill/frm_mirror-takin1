@@ -7,8 +7,8 @@
 
 #include "DynPlaneDlg.h"
 
-#include "../tlibs/string/string.h"
-#include "../tlibs/math/neutrons.hpp"
+#include "tlibs/string/string.h"
+#include "tlibs/math/neutrons.hpp"
 
 #include <boost/units/io.hpp>
 #include <qwt_picker_machine.h>

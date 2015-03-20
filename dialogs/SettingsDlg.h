@@ -15,7 +15,7 @@
 #include <vector>
 #include <string>
 
-#include "../ui/ui_settings.h"
+#include "ui/ui_settings.h"
 
 
 class SettingsDlg : public QDialog, Ui::SettingsDlg

@@ -10,7 +10,7 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
-#include "../ui/ui_dw.h"
+#include "ui/ui_dw.h"
 
 #include <vector>
 #include <qwt_plot.h>

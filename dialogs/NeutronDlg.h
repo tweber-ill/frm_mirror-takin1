@@ -10,7 +10,7 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
-#include "../ui/ui_neutrons.h"
+#include "ui/ui_neutrons.h"
 
 
 class NeutronDlg : public QDialog, Ui::NeutronDlg

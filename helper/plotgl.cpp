@@ -6,10 +6,10 @@
  */
 
 #include "plotgl.h"
-#include "../tlibs/math/linalg.h"
-#include "../tlibs/math/math.h"
-#include "../tlibs/string/string.h"
-#include "../tlibs/helper/flags.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/math.h"
+#include "tlibs/string/string.h"
+#include "tlibs/helper/flags.h"
 
 #include <GL/glu.h>
 #include <time.h>

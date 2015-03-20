@@ -11,7 +11,7 @@
 #include "tlibs/net/tcp.h"
 #include "tasoptions.h"
 
-#include "../../dialogs/NetCacheDlg.h"
+#include "dialogs/NetCacheDlg.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QString>

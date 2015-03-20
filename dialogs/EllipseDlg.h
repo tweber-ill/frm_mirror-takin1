@@ -13,12 +13,12 @@
 
 #include <vector>
 
-#include "../helper/plotgl.h"
-#include "../tlibs/math/linalg.h"
-#include "../tools/res/ellipse.h"
-#include "../tools/res/pop.h"
+#include "helper/plotgl.h"
+#include "tlibs/math/linalg.h"
+#include "tools/res/ellipse.h"
+#include "tools/res/pop.h"
 
-#include "../ui/ui_ellipses.h"
+#include "ui/ui_ellipses.h"
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>

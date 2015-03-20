@@ -10,7 +10,7 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
-#include "../ui/ui_dyn_plane.h"
+#include "ui/ui_dyn_plane.h"
 #include "RecipParamDlg.h"
 
 #include <vector>

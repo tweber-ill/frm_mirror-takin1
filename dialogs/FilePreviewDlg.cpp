@@ -8,7 +8,7 @@
 #include "FilePreviewDlg.h"
 #include <QtGui/QGridLayout>
 #include <QtGui/QLabel>
-#include "../tlibs/file/loadinstr.h"
+#include "tlibs/file/loadinstr.h"
 #include <iostream>
 #include <memory>
 

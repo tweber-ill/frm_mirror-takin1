@@ -6,10 +6,10 @@
  */
 
 #include "SettingsDlg.h"
-#include "../tlibs/string/string.h"
-#include "../tlibs/helper/log.h"
-#include "../tlibs/gfx/gl.h"
-#include "../helper/globals.h"
+#include "tlibs/string/string.h"
+#include "tlibs/helper/log.h"
+#include "tlibs/gfx/gl.h"
+#include "helper/globals.h"
 
 #include <QtGui/QFileDialog>
 #include <iostream>

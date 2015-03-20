@@ -10,7 +10,7 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QSettings>
-#include "../ui/ui_recip_params.h"
+#include "ui/ui_recip_params.h"
 
 
 struct RecipParams
