@@ -318,8 +318,8 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	std::vector<const QLineF*> vecLines2 = {&lineQ, &lineKf, &lineQ2};
 	std::vector<const QPointF*> vecPoints = {&ptKiQ, &ptKiKf, &ptKfQ};
 
-	std::vector<const QLineF*> vecLinesArrow = {&lineKi, &lineKf2, &lineQ};
-	std::vector<const QPointF*> vecPointsArrow = {&ptKiQ, &ptKfQ, &ptKiQ};
+	std::vector<const QLineF*> vecLinesArrow = {&lineKi2, &lineKf, &lineQ2};
+	std::vector<const QPointF*> vecPointsArrow = {&ptKiKf, &ptKiKf, &ptKfQ};
 
 	std::vector<bool> vecDrawAngles = {1,1,1};
 	std::vector<QColor> vecColor {Qt::black, Qt::black, Qt::red};
@@ -329,11 +329,11 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 	if(m_bqVisible)
 	{
-		vecLinesArrow.push_back(&lineq2);
-		vecLinesArrow.push_back(&lineG);
+		vecLinesArrow.push_back(&lineq);
+		vecLinesArrow.push_back(&lineG2);
 
+		vecPointsArrow.push_back(&ptKfQ);
 		vecPointsArrow.push_back(&ptGq);
-		vecPointsArrow.push_back(&ptKiQ);
 
 		vecDrawAngles.push_back(0);
 		vecDrawAngles.push_back(0);

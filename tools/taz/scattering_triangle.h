@@ -163,7 +163,7 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode* GetNodeKfQ() { return m_pNodeKfQ; }
 
 		ublas::vector<double> GetHKLFromPlanePos(double x, double y) const;
-		ublas::vector<double> GetQVec(bool bSmallQ=0, bool bRLU=1) const;
+		ublas::vector<double> GetQVec(bool bSmallQ=0, bool bRLU=1) const;	// careful: check sign
 
 		ublas::vector<double> GetQVecPlane(bool bSmallQ=0) const;
 		ublas::vector<double> GetKiVecPlane() const;

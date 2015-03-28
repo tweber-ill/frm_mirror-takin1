@@ -40,26 +40,26 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	this->editKiQ->setText(tl::var_to_str<double>(parms.dKiQ / M_PI * 180., g_iPrec).c_str());
 	this->editKfQ->setText(tl::var_to_str<double>(parms.dKfQ / M_PI * 180., g_iPrec).c_str());
 
-	this->editQx->setText(tl::var_to_str<double>(parms.Q[0], g_iPrec).c_str());
-	this->editQy->setText(tl::var_to_str<double>(parms.Q[1], g_iPrec).c_str());
-	this->editQz->setText(tl::var_to_str<double>(parms.Q[2], g_iPrec).c_str());
-	this->editQxrlu->setText(tl::var_to_str<double>(parms.Q_rlu[0], g_iPrec).c_str());
-	this->editQyrlu->setText(tl::var_to_str<double>(parms.Q_rlu[1], g_iPrec).c_str());
-	this->editQzrlu->setText(tl::var_to_str<double>(parms.Q_rlu[2], g_iPrec).c_str());
+	this->editQx->setText(tl::var_to_str<double>(-parms.Q[0], g_iPrec).c_str());
+	this->editQy->setText(tl::var_to_str<double>(-parms.Q[1], g_iPrec).c_str());
+	this->editQz->setText(tl::var_to_str<double>(-parms.Q[2], g_iPrec).c_str());
+	this->editQxrlu->setText(tl::var_to_str<double>(-parms.Q_rlu[0], g_iPrec).c_str());
+	this->editQyrlu->setText(tl::var_to_str<double>(-parms.Q_rlu[1], g_iPrec).c_str());
+	this->editQzrlu->setText(tl::var_to_str<double>(-parms.Q_rlu[2], g_iPrec).c_str());
 
-	this->editqx->setText(tl::var_to_str<double>(parms.q[0], g_iPrec).c_str());
-	this->editqy->setText(tl::var_to_str<double>(parms.q[1], g_iPrec).c_str());
-	this->editqz->setText(tl::var_to_str<double>(parms.q[2], g_iPrec).c_str());
-	this->editqxrlu->setText(tl::var_to_str<double>(parms.q_rlu[0], g_iPrec).c_str());
-	this->editqyrlu->setText(tl::var_to_str<double>(parms.q_rlu[1], g_iPrec).c_str());
-	this->editqzrlu->setText(tl::var_to_str<double>(parms.q_rlu[2], g_iPrec).c_str());
+	this->editqx->setText(tl::var_to_str<double>(-parms.q[0], g_iPrec).c_str());
+	this->editqy->setText(tl::var_to_str<double>(-parms.q[1], g_iPrec).c_str());
+	this->editqz->setText(tl::var_to_str<double>(-parms.q[2], g_iPrec).c_str());
+	this->editqxrlu->setText(tl::var_to_str<double>(-parms.q_rlu[0], g_iPrec).c_str());
+	this->editqyrlu->setText(tl::var_to_str<double>(-parms.q_rlu[1], g_iPrec).c_str());
+	this->editqzrlu->setText(tl::var_to_str<double>(-parms.q_rlu[2], g_iPrec).c_str());
 
-	this->editGx->setText(tl::var_to_str<double>(parms.G[0], g_iPrec).c_str());
-	this->editGy->setText(tl::var_to_str<double>(parms.G[1], g_iPrec).c_str());
-	this->editGz->setText(tl::var_to_str<double>(parms.G[2], g_iPrec).c_str());
-	this->editGxrlu->setText(tl::var_to_str<double>(parms.G_rlu[0], g_iPrec).c_str());
-	this->editGyrlu->setText(tl::var_to_str<double>(parms.G_rlu[1], g_iPrec).c_str());
-	this->editGzrlu->setText(tl::var_to_str<double>(parms.G_rlu[2], g_iPrec).c_str());
+	this->editGx->setText(tl::var_to_str<double>(-parms.G[0], g_iPrec).c_str());
+	this->editGy->setText(tl::var_to_str<double>(-parms.G[1], g_iPrec).c_str());
+	this->editGz->setText(tl::var_to_str<double>(-parms.G[2], g_iPrec).c_str());
+	this->editGxrlu->setText(tl::var_to_str<double>(-parms.G_rlu[0], g_iPrec).c_str());
+	this->editGyrlu->setText(tl::var_to_str<double>(-parms.G_rlu[1], g_iPrec).c_str());
+	this->editGzrlu->setText(tl::var_to_str<double>(-parms.G_rlu[2], g_iPrec).c_str());
 }
 
 

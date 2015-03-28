@@ -4,8 +4,9 @@
 
 #include <iostream>
 #include <fstream>
-#include "../helper/tcp.h"
+#include "../../tlibs/net/tcp.h"
 
+using namespace tl;
 
 struct TstOut
 {
