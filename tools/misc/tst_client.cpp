@@ -1,5 +1,5 @@
 /*
- * clang -o tst_client tst_client.cpp ../helper/tcp.cpp ../helper/log.cpp -lstdc++ -std=c++11 -lboost_system -lpthread
+ * clang -o tst_client tst_client.cpp ../../tlibs/net/tcp.cpp ../../tlibs/helper/log.cpp -lstdc++ -std=c++11 -lboost_system -lpthread
  */
 
 #include <iostream>
