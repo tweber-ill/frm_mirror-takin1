@@ -192,6 +192,8 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 	std::vector<std::string> vecScanVars = m_pInstr->GetScannedVars();
 	std::string strCntVar = m_pInstr->GetCountVar();
 
+	m_bDoUpdate = 0;
+
 	int iIdxX=-1, iIdxY=-1, iCurIdx=0;
 	const tl::FileInstr::t_vecColNames& vecColNames = m_pInstr->GetColNames();
 	for(const tl::FileInstr::t_vecColNames::value_type& strCol : vecColNames)
@@ -207,9 +209,9 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 		++iCurIdx;
 	}
 
-	m_bDoUpdate = 0;
 	comboX->setCurrentIndex(iIdxX);
 	comboY->setCurrentIndex(iIdxY);
+
 	m_bDoUpdate = 1;
 
 	ShowProps();

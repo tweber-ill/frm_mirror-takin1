@@ -359,7 +359,7 @@ void NeutronDlg::setupConstants()
 
 		Constant constant;
 		constant.strSymbol = "-g_e * mu_B";
-		constant.strName = "Zeemann shift";
+		constant.strName = "Zeeman shift";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
 		vecConsts.push_back(constant);
