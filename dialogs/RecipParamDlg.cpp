@@ -30,10 +30,15 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	if(parms.d2Theta < 0.)
 		dQ = -dQ;
 
+	double dq_rlu = std::sqrt(parms.q_rlu[0]*parms.q_rlu[0]
+				+ parms.q_rlu[1]*parms.q_rlu[1]
+				+ parms.q_rlu[2]*parms.q_rlu[2]);
+
 	this->editKi->setText(tl::var_to_str<double>(parms.dki, g_iPrec).c_str());
 	this->editKf->setText(tl::var_to_str<double>(parms.dkf, g_iPrec).c_str());
 	this->editQ->setText(tl::var_to_str<double>(dQ, g_iPrec).c_str());
 	this->editq->setText(tl::var_to_str<double>(parms.dq, g_iPrec).c_str());
+	this->editqrlu->setText(tl::var_to_str<double>(dq_rlu, g_iPrec).c_str());
 	this->editE->setText(tl::var_to_str<double>(parms.dE, g_iPrec).c_str());
 	this->edit2Theta->setText(tl::var_to_str<double>(parms.d2Theta / M_PI * 180., g_iPrec).c_str());
 	this->editTheta->setText(tl::var_to_str<double>(parms.dTheta / M_PI * 180., g_iPrec).c_str());

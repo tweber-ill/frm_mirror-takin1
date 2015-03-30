@@ -85,15 +85,8 @@
       <string>Transfers</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>ΔE (meV):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="editE">
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="editQ">
         <property name="readOnly">
          <bool>true</bool>
         </property>
@@ -106,10 +99,17 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="editQ">
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="editE">
         <property name="readOnly">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>ΔE (meV):</string>
         </property>
        </widget>
       </item>
@@ -124,6 +124,16 @@
        <widget class="QLineEdit" name="editq">
         <property name="readOnly">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="editqrlu"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_22">
+        <property name="text">
+         <string>q (rlu):</string>
         </property>
        </widget>
       </item>
@@ -479,6 +489,7 @@
   <tabstop>editE</tabstop>
   <tabstop>editQ</tabstop>
   <tabstop>editq</tabstop>
+  <tabstop>editqrlu</tabstop>
   <tabstop>edit2Theta</tabstop>
   <tabstop>editTheta</tabstop>
   <tabstop>editKiQ</tabstop>
