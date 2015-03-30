@@ -343,6 +343,30 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
+		ostrVal << double(co::mu_B / tl::meV * tl::tesla) << " meV/T";
+
+		Constant constant;
+		constant.strSymbol = "mu_B";
+		constant.strName = "Bohr magneton";
+		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
+
+		vecConsts.push_back(constant);
+	}
+	{
+		std::ostringstream ostrVal;
+		//ostrVal << std::scientific;
+		ostrVal << (-double(co::g_e * co::mu_B / tl::meV * tl::tesla)) << " meV/T";
+
+		Constant constant;
+		constant.strSymbol = "-g_e * mu_B";
+		constant.strName = "Zeemann shift";
+		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
+
+		vecConsts.push_back(constant);
+	}
+	{
+		std::ostringstream ostrVal;
+		ostrVal << std::scientific;
 		ostrVal << co::c;
 
 		Constant constant;
