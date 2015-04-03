@@ -69,13 +69,13 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	{
 		t_tupCheck("main/dlg_previews", 1, checkPreview)
 	};
-	
-	m_vecSpins = 
+
+	m_vecSpins =
 	{
 		t_tupSpin("main/prec", g_iPrec, spinPrecGen),
 		t_tupSpin("main/prec_gfx", g_iPrecGfx, spinPrecGfx)
 	};
-	
+
 	spinPrecGen->setMaximum(std::numeric_limits<double>::max_digits10);
 	spinPrecGfx->setMaximum(std::numeric_limits<double>::max_digits10);
 
