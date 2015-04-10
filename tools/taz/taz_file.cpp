@@ -380,9 +380,9 @@ bool TazDlg::Import()
 	pdlg->setFileMode(QFileDialog::ExistingFile);
 	pdlg->setViewMode(QFileDialog::Detail);
 #if !defined NO_IOSTR
-	QString strFilter = "Data files (*.dat *.scn *.DAT *.SCN *.scn.gz *.SCN.GZ *.dat.gz *.DAT.GZ *.scn.bz2 *.SCN.BZ2 *.dat.bz2 *.DAT.BZ2);;All files (*.*)";
+	QString strFilter = "Data files (*.dat *.scn *.DAT *.SCN *.ng0 *.NG0 *.scn.gz *.SCN.GZ *.dat.gz *.DAT.GZ *.ng0.gz *.NG0.GZ *.scn.bz2 *.SCN.BZ2 *.dat.bz2 *.DAT.BZ2 *.ng0.bz2 *.NG0.BZ2);;All files (*.*)";
 #else
-	QString strFilter = "Data files (*.dat *.scn *.DAT *.SCN);;All files (*.*)";
+	QString strFilter = "Data files (*.dat *.scn *.DAT *.SCN *.NG0 *.ng0);;All files (*.*)";
 #endif
 	pdlg->setNameFilter(strFilter);
 	if(!pdlg->exec())
