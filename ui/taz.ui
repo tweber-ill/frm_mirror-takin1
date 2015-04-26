@@ -107,7 +107,7 @@
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="2" rowspan="2">
-         <widget class="QGroupBox" name="groupBox_4">
+         <widget class="QGroupBox" name="groupScatteringPlane">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
             <horstretch>2</horstretch>
@@ -616,5 +616,22 @@
   <tabstop>editAnaD</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>checkPowder</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>groupScatteringPlane</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>413</x>
+     <y>603</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>695</x>
+     <y>567</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

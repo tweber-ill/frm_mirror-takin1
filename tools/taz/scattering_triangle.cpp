@@ -732,7 +732,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 					if(!pSpaceGroup->HasReflection(ih, ik, il))
 						continue;
 				}
-				
+
 				if(bIsPowder)
 					m_powder.AddPeak(ih, ik, il);
 
