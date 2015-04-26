@@ -196,6 +196,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SetCrystalType()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(CalcPeaks()));
+	QObject::connect(checkPowder, SIGNAL(stateChanged(int)), this, SLOT(CalcPeaks()));
 
 
 
@@ -897,7 +898,7 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "Takin version 0.9\n";
+	strAbout += "Takin version 0.9.1\n";
 	strAbout += "Written by Tobias Weber, 2014-2015.";
 	strAbout += "\n\n";
 

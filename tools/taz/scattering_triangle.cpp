@@ -212,11 +212,46 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 
 
-
 	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0) * m_dZoom;
 	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0) * m_dZoom;
 	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0) * m_dZoom;
 	QPointF ptGq = mapFromItem(m_pNodeGq, 0, 0) * m_dZoom;
+
+
+
+	// Powder lines
+	{
+		QPen penOrg = painter->pen();
+		painter->setPen(Qt::red);
+
+		const typename tl::Powder<int>::t_peaks_unique& powderpeaks = m_powder.GetUniquePeaks();
+		for(const typename tl::Powder<int>::t_peak& powderpeak : powderpeaks)
+		{
+			const int ih = std::get<0>(powderpeak);
+			const int ik = std::get<1>(powderpeak);
+			const int il = std::get<2>(powderpeak);
+			
+			if(ih==0 && ik==0 && il==0) continue;
+			
+			std::ostringstream ostrPowderLine;
+			ostrPowderLine << "(" << ih << ik << il << ")";
+			
+			const double dh = double(ih);
+			const double dk = double(ik);
+			const double dl = double(il);
+			
+			ublas::vector<double> vec = m_recip.GetPos(dh, dk, dl);
+
+			double drad = std::sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+			drad *= m_dScaleFactor*m_dZoom;
+			
+			painter->drawEllipse(ptKiQ, drad, drad);
+			painter->drawText(ptKiQ + QPointF(0., drad), ostrPowderLine.str().c_str());
+		}
+		painter->setPen(penOrg);
+	}
+
+
 
 	QPointF ptQMid = ptKiQ + (ptKfQ - ptKiQ)/2.;
 	QPointF ptKiMid = ptKiQ + (ptKiKf - ptKiQ)/2.;
@@ -630,9 +665,11 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
 void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 								const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
 								const tl::Plane<double>& plane,
-								const SpaceGroup* pSpaceGroup)
+								const SpaceGroup* pSpaceGroup,
+								bool bIsPowder)
 {
 	ClearPeaks();
+	m_powder.clear();
 
 	m_lattice = lattice;
 	m_recip = recip;
@@ -644,9 +681,6 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 	double dDir0Len = ublas::norm_2(dir0);
 	double dDir1Len = ublas::norm_2(dir1);
-
-	//std::cout << "dir 0 len: " << dDir0Len << std::endl;
-	//std::cout << "dir 1 len: " << dDir1Len << std::endl;
 
 	if(tl::float_equal(dDir0Len, 0.) || tl::float_equal(dDir1Len, 0.)
 		|| tl::is_nan_or_inf<double>(dDir0Len) || tl::is_nan_or_inf<double>(dDir1Len))
@@ -689,84 +723,85 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
 			for(int il=-m_iMaxPeaks; il<=m_iMaxPeaks; ++il)
 			{
-				double h = double(ih);
-				double k = double(ik);
-				double l = double(il);
+				const double h = double(ih);
+				const double k = double(ik);
+				const double l = double(il);
 
 				if(pSpaceGroup)
 				{
 					if(!pSpaceGroup->HasReflection(ih, ik, il))
 						continue;
 				}
+				
+				if(bIsPowder)
+					m_powder.AddPeak(ih, ik, il);
 
-				ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
-				double dDist = 0.;
-				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
-
-				if(tl::float_equal(dDist, 0., m_dPlaneDistTolerance))
+				if(!bIsPowder || (ih==0 && ik==0 && il==0))		// (000), i.e. direct beam, also needed for powder
 				{
-					ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
-					double dX = vecCoord[0];
-					double dY = -vecCoord[1];
+					ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
+					double dDist = 0.;
+					ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
-					/*if(ih==1 && ik==0 && il==0)
+					if(tl::float_equal(dDist, 0., m_dPlaneDistTolerance))
 					{
-						std::cout << h << k << l << ": ";
-						std::cout << "Lotfusspunkt: " << vecDropped << ", Distanz: " << dDist;
-						std::cout << ", Ebene (x,y) = " << dX << ", " << dY << std::endl;
-					}*/
+						ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
+						double dX = vecCoord[0];
+						double dY = -vecCoord[1];
 
-					RecipPeak *pPeak = new RecipPeak();
-					if(ih==0 && ik==0 && il==0)
-						pPeak->SetColor(Qt::green);
-					pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-					pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
-					pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
+						RecipPeak *pPeak = new RecipPeak();
+						if(ih==0 && ik==0 && il==0)
+							pPeak->SetColor(Qt::green);
+						pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+						pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
+						pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
-					std::ostringstream ostrTip;
-					ostrTip << "(" << ih << " " << ik << " " << il << ")";
+						std::ostringstream ostrTip;
+						ostrTip << "(" << ih << " " << ik << " " << il << ")";
 
-					if(ih!=0 || ik!=0 || il!=0)
-						pPeak->SetLabel(ostrTip.str().c_str());
+						if(ih!=0 || ik!=0 || il!=0)
+							pPeak->SetLabel(ostrTip.str().c_str());
 
-					//std::string strAA = ::get_spec_char_utf8("AA")+::get_spec_char_utf8("sup-")+::get_spec_char_utf8("sup1");
-					//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
-					pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
+						//std::string strAA = ::get_spec_char_utf8("AA")+::get_spec_char_utf8("sup-")+::get_spec_char_utf8("sup1");
+						//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
+						pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 
-					m_vecPeaks.push_back(pPeak);
-					m_scene.addItem(pPeak);
+						m_vecPeaks.push_back(pPeak);
+						m_scene.addItem(pPeak);
 
-					const int iCent[] = {0,0,0};
+						const int iCent[] = {0,0,0};
 
-					// 1st BZ
-					if(ih==iCent[0] && ik==iCent[1] && il==iCent[2])
-					{
-						ublas::vector<double> vecCentral(2);
-						vecCentral[0] = dX;
-						vecCentral[1] = dY;
+						// 1st BZ
+						if(ih==iCent[0] && ik==iCent[1] && il==iCent[2])
+						{
+							ublas::vector<double> vecCentral(2);
+							vecCentral[0] = dX;
+							vecCentral[1] = dY;
 
-						//log_debug("Central ", ih, ik, il, ": ", vecCentral);
-						m_bz.SetCentralReflex(vecCentral);
-					}
-					// TODO: check if 2 next neighbours is sufficient for all space groups
-					else if(std::abs(ih-iCent[0])<=2
-							&& std::abs(ik-iCent[1])<=2
-							&& std::abs(il-iCent[2])<=2)
-					{
-						ublas::vector<double> vecN(2);
-						vecN[0] = dX;
-						vecN[1] = dY;
+							//log_debug("Central ", ih, ik, il, ": ", vecCentral);
+							m_bz.SetCentralReflex(vecCentral);
+						}
+						// TODO: check if 2 next neighbours is sufficient for all space groups
+						else if(std::abs(ih-iCent[0])<=2
+								&& std::abs(ik-iCent[1])<=2
+								&& std::abs(il-iCent[2])<=2)
+						{
+							ublas::vector<double> vecN(2);
+							vecN[0] = dX;
+							vecN[1] = dY;
 
-						//log_debug("Reflex: ", vecN);
-						m_bz.AddReflex(vecN);
+							//log_debug("Reflex: ", vecN);
+							m_bz.AddReflex(vecN);
+						}
 					}
 				}
 			}
 
-	m_bz.CalcBZ();
-
-	//for(RecipPeak* pPeak : m_vecPeaks)
-	//	pPeak->SetBZ(&m_bz);
+	if(!bIsPowder)
+	{
+		m_bz.CalcBZ();
+		//for(RecipPeak* pPeak : m_vecPeaks)
+		//	pPeak->SetBZ(&m_bz);
+	}
 
 	m_scene.emitAllParams();
 	this->update();
@@ -1052,7 +1087,7 @@ static inline const QGraphicsItem* get_nearest_node(const QPointF& pt,
 												const QList<QGraphicsItem*>& nodes)
 {
 	if(nodes.size()==0)
-		return 0;
+		return nullptr;
 
 	double dMinLen = std::numeric_limits<double>::max();
 	int iMinIdx = -1;
@@ -1074,7 +1109,7 @@ static inline const QGraphicsItem* get_nearest_node(const QPointF& pt,
 	}
 
 	if(iMinIdx < 0)
-		return 0;
+		return nullptr;
 	return nodes[iMinIdx];
 }
 

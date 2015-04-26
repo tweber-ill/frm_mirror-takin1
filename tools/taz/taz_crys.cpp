@@ -272,14 +272,16 @@ void TazDlg::CalcPeaks()
 
 	try
 	{
+		const bool bPowder = checkPowder->isChecked();
+		
 		// lattice
-		double a = editA->text().toDouble();
-		double b = editB->text().toDouble();
-		double c = editC->text().toDouble();
+		const double a = editA->text().toDouble();
+		const double b = editB->text().toDouble();
+		const double c = editC->text().toDouble();
 
-		double alpha = editAlpha->text().toDouble()/180.*M_PI;
-		double beta = editBeta->text().toDouble()/180.*M_PI;
-		double gamma = editGamma->text().toDouble()/180.*M_PI;
+		const double alpha = editAlpha->text().toDouble()/180.*M_PI;
+		const double beta = editBeta->text().toDouble()/180.*M_PI;
+		const double gamma = editGamma->text().toDouble()/180.*M_PI;
 
 		tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
 		tl::Lattice<double> recip_unrot = lattice.GetRecip();
@@ -407,7 +409,7 @@ void TazDlg::CalcPeaks()
 
 		editCrystalSystem->setText(pcCryTy);
 
-		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
+		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup, bPowder);
 		if(m_sceneRecip.getSnapq())
 			m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();

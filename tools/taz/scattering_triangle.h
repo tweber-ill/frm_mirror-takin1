@@ -10,6 +10,7 @@
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/lattice.h"
+#include "tlibs/math/powder.h"
 #include "helper/spacegroup.h"
 #include "tlibs/math/bz.h"
 #include "tlibs/math/neutrons.hpp"
@@ -95,6 +96,8 @@ class ScatteringTriangle : public QGraphicsItem
 		tl::Lattice<double> m_lattice, m_recip, m_recip_unrot;
 		ublas::matrix<double> m_matPlane, m_matPlane_inv;
 		std::vector<RecipPeak*> m_vecPeaks;
+		
+		tl::Powder<int> m_powder;
 
 		bool m_bShowBZ = 1;
 		tl::Brillouin2D<double> m_bz;
@@ -143,7 +146,8 @@ class ScatteringTriangle : public QGraphicsItem
 		void CalcPeaks(const tl::Lattice<double>& lattice,
 						const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
 						const tl::Plane<double>& plane,
-						const SpaceGroup* pSpaceGroup=0);
+						const SpaceGroup* pSpaceGroup=0,
+						bool bIsPowder=0);
 
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }

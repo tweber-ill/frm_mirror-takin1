@@ -271,7 +271,12 @@
         </column>
         <column>
          <property name="text">
-          <string>Peaks</string>
+          <string>Peak</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Mult.</string>
          </property>
         </column>
        </widget>
@@ -285,7 +290,9 @@
       <string>Save...</string>
      </property>
      <property name="icon">
-      <iconset theme="document-save"/>
+      <iconset theme="document-save">
+       <normaloff/>
+      </iconset>
      </property>
     </widget>
    </item>
@@ -295,7 +302,9 @@
       <string>Load...</string>
      </property>
      <property name="icon">
-      <iconset theme="document-open"/>
+      <iconset theme="document-open">
+       <normaloff/>
+      </iconset>
      </property>
     </widget>
    </item>

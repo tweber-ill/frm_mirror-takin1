@@ -7,6 +7,7 @@
 
 #include "PowderDlg.h"
 #include "tlibs/math/lattice.h"
+#include "tlibs/math/powder.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/linalg.h"
 #include "tlibs/string/string.h"
@@ -24,6 +25,8 @@ namespace co = boost::units::si::constants::codata;
 
 struct PowderLine
 {
+	int h, k, l;
+	
 	double dAngle;
 	std::string strAngle;
 
@@ -31,6 +34,7 @@ struct PowderLine
 	std::string strQ;
 
 	std::string strPeaks;
+	unsigned int iMult;
 };
 
 
@@ -41,9 +45,10 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	this->setupUi(this);
 	tablePowderLines->horizontalHeader()->setVisible(true);
 	tablePowderLines->verticalHeader()->setDefaultSectionSize(tablePowderLines->verticalHeader()->defaultSectionSize()*1.4);
-	tablePowderLines->setColumnWidth(0, 75);
-	tablePowderLines->setColumnWidth(1, 75);
-	tablePowderLines->setColumnWidth(2, 250);
+	tablePowderLines->setColumnWidth(0, 100);
+	tablePowderLines->setColumnWidth(1, 100);
+	tablePowderLines->setColumnWidth(2, 75);
+	tablePowderLines->setColumnWidth(3, 65);
 
 	std::vector<QLineEdit*> vecEditsUC = {editA, editB, editC, editAlpha, editBeta, editGamma};
 	for(QLineEdit* pEdit : vecEditsUC)
@@ -90,13 +95,20 @@ void PowderDlg::CalcPeaks()
 	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 
 	std::map<std::string, PowderLine> mapPeaks;
+	tl::Powder<int> powder;
 
 	for(int ih=-iOrder; ih<iOrder; ++ih)
 		for(int ik=-iOrder; ik<iOrder; ++ik)
 			for(int il=-iOrder; il<iOrder; ++il)
 			{
 				if(ih==0 && ik==0 && il==0) continue;
-				if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il)) continue;
+				if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il)) 
+					continue;
+
+				bool bAlreadyHasPeak = powder.HasUniquePeak(ih, ik, il);
+				powder.AddPeak(ih, ik, il);
+				if(bAlreadyHasPeak)
+					continue;
 
 				ublas::vector<double> vecBragg = recip.GetPos(ih, ik, il);
 				double dQ = ublas::norm_2(vecBragg);
@@ -112,13 +124,18 @@ void PowderDlg::CalcPeaks()
 				ostrAngle << (dAngle/M_PI*180.);
 
 				std::ostringstream ostrPeak;
-				ostrPeak << "(" << ih << "," << ik << "," << il << ") ";
+				ostrPeak << "(" << std::abs(ih) << std::abs(ik) << std::abs(il) << ")";
 
 				mapPeaks[ostrAngle.str()].strPeaks += ostrPeak.str();
 				mapPeaks[ostrAngle.str()].dAngle = dAngle;
 				mapPeaks[ostrAngle.str()].dQ = dQ;
+				
+				mapPeaks[ostrAngle.str()].h = std::abs(ih);
+				mapPeaks[ostrAngle.str()].k = std::abs(ik);
+				mapPeaks[ostrAngle.str()].l = std::abs(il);
 			}
 
+	//std::cout << powder << std::endl;
 	std::vector<const PowderLine*> vecPowderLines;
 	vecPowderLines.reserve(mapPeaks.size());
 
@@ -127,6 +144,7 @@ void PowderDlg::CalcPeaks()
 	{
 		pair.second.strAngle = pair.first;
 		pair.second.strQ = tl::var_to_str<double>(pair.second.dQ, iPrec);
+		pair.second.iMult = powder.GetMultiplicity(pair.second.h, pair.second.k, pair.second.l);
 
 		vecPowderLines.push_back(&pair.second);
 	}
@@ -142,15 +160,18 @@ void PowderDlg::CalcPeaks()
 
 	for(int iRow=0; iRow<iNumRows; ++iRow)
 	{
-		for(int iCol=0; iCol<3; ++iCol)
+		for(int iCol=0; iCol<4; ++iCol)
 		{
 			if(!tablePowderLines->item(iRow, iCol))
 				tablePowderLines->setItem(iRow, iCol, new QTableWidgetItem());
 		}
+		
+		QString strMult = tl::var_to_str(vecPowderLines[iRow]->iMult).c_str();
 
 		tablePowderLines->item(iRow, 0)->setText(vecPowderLines[iRow]->strAngle.c_str());
 		tablePowderLines->item(iRow, 1)->setText(vecPowderLines[iRow]->strQ.c_str());
 		tablePowderLines->item(iRow, 2)->setText(vecPowderLines[iRow]->strPeaks.c_str());
+		tablePowderLines->item(iRow, 3)->setText(strMult);
 	}
 }
 
