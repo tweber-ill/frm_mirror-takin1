@@ -8,8 +8,11 @@
 #include "RecipParamDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
+#include "tlibs/math/linalg.h"
 #include "tlibs/math/neutrons.hpp"
 #include "helper/globals.h"
+
+namespace ublas = boost::numeric::ublas;
 
 
 RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
@@ -65,6 +68,23 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	this->editGxrlu->setText(tl::var_to_str<double>(-parms.G_rlu[0], g_iPrec).c_str());
 	this->editGyrlu->setText(tl::var_to_str<double>(-parms.G_rlu[1], g_iPrec).c_str());
 	this->editGzrlu->setText(tl::var_to_str<double>(-parms.G_rlu[2], g_iPrec).c_str());
+
+
+	// focus
+	ublas::vector<double> vecG = tl::make_vec({-parms.G_rlu[0], -parms.G_rlu[1], -parms.G_rlu[2]});
+	ublas::vector<double> vecUp = tl::make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
+	ublas::vector<double> vecFm = tl::cross_3(vecG, vecUp);
+	vecFm /= ublas::norm_2(vecFm);
+	
+	tl::set_eps_0(vecFm);
+	
+	this->editFmx->setText(tl::var_to_str<double>(vecFm[0], g_iPrec).c_str());
+	this->editFmy->setText(tl::var_to_str<double>(vecFm[1], g_iPrec).c_str());
+	this->editFmz->setText(tl::var_to_str<double>(vecFm[2], g_iPrec).c_str());
+
+	this->editFpx->setText(tl::var_to_str<double>(-vecFm[0], g_iPrec).c_str());
+	this->editFpy->setText(tl::var_to_str<double>(-vecFm[1], g_iPrec).c_str());
+	this->editFpz->setText(tl::var_to_str<double>(-vecFm[2], g_iPrec).c_str());
 }
 
 
