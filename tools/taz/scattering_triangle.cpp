@@ -1178,7 +1178,7 @@ void ScatteringTriangleScene::SnapToNearestPeak(ScatteringTriangleNode* pNode,
 
 	std::tuple<bool, double, QPointF> tupNearest =
 		get_nearest_node(pNodeOrg->pos(), pNode, items(), 
-			m_pTri->GetScaleFactor()*m_pTri->GetZoom(), &m_pTri->GetPowder());
+			m_pTri->GetScaleFactor(), &m_pTri->GetPowder());
 
 	if(std::get<0>(tupNearest))
 		pNode->setPos(std::get<2>(tupNearest));
@@ -1234,7 +1234,7 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 			QList<QGraphicsItem*> nodes = items();
 			std::tuple<bool, double, QPointF> tupNearest =
 				get_nearest_node(pEvt->scenePos(), pCurItem, nodes, 
-					m_pTri->GetScaleFactor()*m_pTri->GetZoom(), &m_pTri->GetPowder());
+					m_pTri->GetScaleFactor(), &m_pTri->GetPowder());
 
 			if(std::get<0>(tupNearest))
 			{
