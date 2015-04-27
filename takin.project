@@ -55,6 +55,7 @@
       <File Name="tlibs/helper/log.cpp"/>
       <File Name="tlibs/helper/traits.h"/>
       <File Name="tlibs/helper/py.h"/>
+      <File Name="tlibs/helper/hash.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="math">
       <File Name="tlibs/math/fourier.h" ExcludeProjConfig="Debug;Release"/>

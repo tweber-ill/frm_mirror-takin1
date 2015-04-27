@@ -31,8 +31,9 @@ enum ScatteringTriangleNodeType
 {
 	NODE_Q,
 	NODE_q,
-
+	
 	NODE_BRAGG,
+	NODE_KIQ,
 
 	NODE_OTHER
 };
@@ -152,9 +153,12 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
 		void SetZoom(double dZoom);
+		double GetZoom() const { return m_dZoom; }
 
 		void SetqVisible(bool bVisible);
 		void SetBZVisible(bool bVisible);
+		
+		const tl::Powder<int>& GetPowder() const { return m_powder; }
 
 	public:
 		std::vector<ScatteringTriangleNode*> GetNodes();

@@ -105,6 +105,7 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 
 	m_pNodeKfQ->setData(TRIANGLE_NODE_TYPE_KEY, NODE_Q);
 	m_pNodeGq->setData(TRIANGLE_NODE_TYPE_KEY, NODE_q);
+	m_pNodeKiQ->setData(TRIANGLE_NODE_TYPE_KEY, NODE_KIQ);
 
 	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable);
@@ -236,12 +237,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			std::ostringstream ostrPowderLine;
 			ostrPowderLine << "(" << ih << ik << il << ")";
 			
-			const double dh = double(ih);
-			const double dk = double(ik);
-			const double dl = double(il);
-			
-			ublas::vector<double> vec = m_recip.GetPos(dh, dk, dl);
-
+			ublas::vector<double> vec = m_powder.GetRecipLatticePos(double(ih), double(ik), double(il));
 			double drad = std::sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
 			drad *= m_dScaleFactor*m_dZoom;
 			
@@ -674,6 +670,8 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	m_lattice = lattice;
 	m_recip = recip;
 	m_recip_unrot = recip_unrot;
+	
+	m_powder.SetRecipLattice(&m_recip);
 
 	ublas::vector<double> dir0 = plane.GetDir0();
 	//ublas::vector<double> dir1 = plane.GetDir1();
@@ -1082,35 +1080,91 @@ void ScatteringTriangleScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
 }
 
 
-static inline const QGraphicsItem* get_nearest_node(const QPointF& pt,
-												const QGraphicsItem* pCurItem,
-												const QList<QGraphicsItem*>& nodes)
+static std::tuple<bool, double, QPointF> 
+get_nearest_node(const QPointF& pt,
+				const QGraphicsItem* pCurItem,
+				const QList<QGraphicsItem*>& nodes,
+				double dFactor,
+				const tl::Powder<int>* pPowder=nullptr)
 {
 	if(nodes.size()==0)
-		return nullptr;
+		return std::tuple<bool, double, QPointF>(0, 0., QPointF());
 
 	double dMinLen = std::numeric_limits<double>::max();
 	int iMinIdx = -1;
+	bool bHasPowderPeak = 0;
 
+	// Bragg peaks
 	for(int iNode=0; iNode<nodes.size(); ++iNode)
 	{
 		const QGraphicsItem *pNode = nodes[iNode];
 		if(pNode == pCurItem || pNode->data(TRIANGLE_NODE_TYPE_KEY)!=NODE_BRAGG)
 			continue;
 
-		QLineF line(pt, pNode->scenePos());
-
-		double dLen = line.length();
+		double dLen = QLineF(pt, pNode->scenePos()).length();
 		if(dLen < dMinLen)
 		{
 			dMinLen = dLen;
 			iMinIdx = iNode;
 		}
 	}
+	
+	const QGraphicsItem* pNodeOrigin = nullptr;
+	for(const QGraphicsItem* pNode : nodes)
+		if(pNode->data(TRIANGLE_NODE_TYPE_KEY) == NODE_KIQ)
+		{
+			pNodeOrigin = pNode;
+			break;
+		}
 
-	if(iMinIdx < 0)
-		return nullptr;
-	return nodes[iMinIdx];
+
+
+	// Powder peaks
+	QPointF ptPowder;
+	if(pNodeOrigin && pPowder)
+	{
+		ublas::vector<double> vecOrigin = qpoint_to_vec(pNodeOrigin->scenePos());
+		ublas::vector<double> vecPt = qpoint_to_vec(pt);		
+		ublas::vector<double> vecOriginPt = vecPt-vecOrigin;
+		const double dDistToOrigin = ublas::norm_2(vecOriginPt);
+		vecOriginPt /= dDistToOrigin;
+		
+		const typename tl::Powder<int>::t_peaks_unique& powderpeaks = pPowder->GetUniquePeaks();
+		for(const typename tl::Powder<int>::t_peak& powderpeak : powderpeaks)
+		{
+			const int ih = std::get<0>(powderpeak);
+			const int ik = std::get<1>(powderpeak);
+			const int il = std::get<2>(powderpeak);
+			if(ih==0 && ik==0 && il==0) continue;
+			
+			ublas::vector<double> vec = pPowder->GetRecipLatticePos(double(ih), double(ik), double(il));
+			double drad = std::sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+			drad *= dFactor;
+			
+			if(std::fabs(drad-dDistToOrigin) < dMinLen)
+			{
+				bHasPowderPeak = 1;
+				dMinLen = std::fabs(drad-dDistToOrigin);
+				
+				ublas::vector<double> vecPowder = vecOrigin + vecOriginPt*drad;
+				ptPowder = vec_to_qpoint(vecPowder);
+			}
+		}
+	}
+
+
+
+	if(bHasPowderPeak)
+	{
+		return std::tuple<bool, double, QPointF>(1, dMinLen, ptPowder);
+	}
+	else
+	{
+		if(iMinIdx < 0)
+			return std::tuple<bool, double, QPointF>(0, 0., QPointF());
+
+		return std::tuple<bool, double, QPointF>(1, dMinLen, nodes[iMinIdx]->pos());
+	}
 }
 
 // snap pNode to a peak near pNodeOrg
@@ -1122,11 +1176,12 @@ void ScatteringTriangleScene::SnapToNearestPeak(ScatteringTriangleNode* pNode,
 	if(!pNodeOrg)
 		pNodeOrg = pNode;
 
-	const QGraphicsItem *pNearestNode =
-					get_nearest_node(pNodeOrg->pos(), pNode, items());
+	std::tuple<bool, double, QPointF> tupNearest =
+		get_nearest_node(pNodeOrg->pos(), pNode, items(), 
+			m_pTri->GetScaleFactor()*m_pTri->GetZoom(), &m_pTri->GetPowder());
 
-	if(pNearestNode)
-		pNode->setPos(pNearestNode->pos());
+	if(std::get<0>(tupNearest))
+		pNode->setPos(std::get<2>(tupNearest));
 }
 
 void ScatteringTriangleScene::Snapq()
@@ -1177,12 +1232,13 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		if(pCurItem && (m_bSnap || (m_bSnapq && iNodeType == NODE_q)))
 		{
 			QList<QGraphicsItem*> nodes = items();
-			const QGraphicsItem *pNearestNode =
-							get_nearest_node(pEvt->scenePos(), pCurItem, nodes);
+			std::tuple<bool, double, QPointF> tupNearest =
+				get_nearest_node(pEvt->scenePos(), pCurItem, nodes, 
+					m_pTri->GetScaleFactor()*m_pTri->GetZoom(), &m_pTri->GetPowder());
 
-			if(pNearestNode)
+			if(std::get<0>(tupNearest))
 			{
-				pCurItem->setPos(pNearestNode->pos());
+				pCurItem->setPos(std::get<2>(tupNearest));
 				bHandled = 1;
 			}
 		}
