@@ -411,7 +411,7 @@ void TazDlg::CalcPeaks()
 
 		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup, bPowder);
 		if(m_sceneRecip.getSnapq())
-			m_sceneRecip.SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
+			m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();
 
 #ifndef NO_3D

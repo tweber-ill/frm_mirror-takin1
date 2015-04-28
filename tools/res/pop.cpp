@@ -106,7 +106,7 @@ CNResults calc_pop(const PopParams& pop)
 	t_mat C = ublas::zero_matrix<t_real>(4,8);
 	C(2,5) = C(2,4) = C(0,1) = C(0,0) = 0.5;
 	C(1,2) = 0.5/units::sin(thetam);
-	/*C(1,3)*/C(2,2) = -0.5/units::sin(thetam);		// seems to be wrong in rescal5, Popovici says C(2,2), not C(1,3)
+	C(1,3) /*C(2,2)*/ = -0.5/units::sin(thetam);		// Popovici says C(2,2), not C(1,3)
 	C(3,6) = 0.5/units::sin(thetaa);
 	C(3,7) = -0.5/units::sin(thetaa);
 

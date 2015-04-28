@@ -169,6 +169,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		ScatteringTriangleNode* GetNodeGq() { return m_pNodeGq; }
 		ScatteringTriangleNode* GetNodeKfQ() { return m_pNodeKfQ; }
+		ScatteringTriangleNode* GetNodeKiKf() { return m_pNodeKiKf; }
 
 		ublas::vector<double> GetHKLFromPlanePos(double x, double y) const;
 		ublas::vector<double> GetQVec(bool bSmallQ=0, bool bRLU=1) const;	// careful: check sign
@@ -178,6 +179,9 @@ class ScatteringTriangle : public QGraphicsItem
 		ublas::vector<double> GetKfVecPlane() const;
 
 		void RotateKiVec0To(bool bSense, double dAngle);
+		void SnapToNearestPeak(ScatteringTriangleNode* pNode,
+						const ScatteringTriangleNode* pNodeOrg=0);
+		bool KeepAbsKiKf(double dQx, double dQy);
 };
 
 
@@ -196,6 +200,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 		bool m_bSnap = 0;
 		bool m_bSnapq = 1;
 		bool m_bMousePressed = 0;
+		
+		bool m_bKeepAbsKiKf = 1;
 
 	public:
 		ScatteringTriangleScene();
@@ -212,20 +218,20 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void SetMonoSense(bool bPos);
 		void SetAnaSense(bool bPos);
 
+		const ScatteringTriangle* GetTriangle() const { return m_pTri; }
 		ScatteringTriangle* GetTriangle() { return m_pTri; }
-		void SnapToNearestPeak(ScatteringTriangleNode* pNode,
-							const ScatteringTriangleNode* pNodeOrg=0);
 
 		void CheckForSpurions();
-
-	protected:
-		void Snapq();
 
 	public slots:
 		void tasChanged(const TriangleOptions& opts);
 		void scaleChanged(double dTotalScale);
+
 		void setSnapq(bool bSnap);
 		bool getSnapq() const { return m_bSnapq; }
+		
+		void setKeepAbsKiKf(bool bKeep) { m_bKeepAbsKiKf = bKeep; }
+		bool getKeepAbsKiKf() const { return m_bKeepAbsKiKf; }
 
 	signals:
 		// relevant parameters for instrument view

@@ -295,6 +295,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pSnapSmallq->setChecked(m_sceneRecip.getSnapq());
 	m_pMenuViewRecip->addAction(m_pSnapSmallq);
 
+	QAction *pKeepAbsKiKf = new QAction(this);
+	pKeepAbsKiKf->setText("Keep |ki| and |kf| Fixed");
+	pKeepAbsKiKf->setCheckable(1);
+	pKeepAbsKiKf->setChecked(m_sceneRecip.getKeepAbsKiKf());
+	m_pMenuViewRecip->addAction(pKeepAbsKiKf);
+
 	m_pBZ = new QAction(this);
 	m_pBZ->setText("Show First Brillouin Zone");
 	m_pBZ->setIcon(QIcon("res/brillouin.svg"));
@@ -474,6 +480,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(m_pShowRealQDir, SIGNAL(toggled(bool)), this, SLOT(EnableRealQDir(bool)));
 
 	QObject::connect(m_pSnapSmallq, SIGNAL(toggled(bool)), &m_sceneRecip, SLOT(setSnapq(bool)));
+	QObject::connect(pKeepAbsKiKf, SIGNAL(toggled(bool)), &m_sceneRecip, SLOT(setKeepAbsKiKf(bool)));
 
 	QObject::connect(pRecipParams, SIGNAL(triggered()), this, SLOT(ShowRecipParams()));
 	QObject::connect(pRealParams, SIGNAL(triggered()), this, SLOT(ShowRealParams()));
