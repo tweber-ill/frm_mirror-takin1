@@ -34,6 +34,7 @@ enum ScatteringTriangleNodeType
 	
 	NODE_BRAGG,
 	NODE_KIQ,
+	NODE_KIKF,
 
 	NODE_OTHER
 };
@@ -168,6 +169,7 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetScaleFactor(double dScale) { m_dScaleFactor = dScale; }
 
 		ScatteringTriangleNode* GetNodeGq() { return m_pNodeGq; }
+		ScatteringTriangleNode* GetNodeKiQ() { return m_pNodeKiQ; }
 		ScatteringTriangleNode* GetNodeKfQ() { return m_pNodeKfQ; }
 		ScatteringTriangleNode* GetNodeKiKf() { return m_pNodeKiKf; }
 
@@ -202,6 +204,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 		bool m_bMousePressed = 0;
 		
 		bool m_bKeepAbsKiKf = 1;
+		bool m_bSnapKiKfToElastic = 0;
 
 	public:
 		ScatteringTriangleScene();

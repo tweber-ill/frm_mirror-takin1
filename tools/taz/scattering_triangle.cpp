@@ -103,9 +103,10 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_pNodeKfQ = new ScatteringTriangleNode(this);
 	m_pNodeGq = new ScatteringTriangleNode(this);
 
+	m_pNodeKiQ->setData(TRIANGLE_NODE_TYPE_KEY, NODE_KIQ);
+	m_pNodeKiKf->setData(TRIANGLE_NODE_TYPE_KEY, NODE_KIKF);
 	m_pNodeKfQ->setData(TRIANGLE_NODE_TYPE_KEY, NODE_Q);
 	m_pNodeGq->setData(TRIANGLE_NODE_TYPE_KEY, NODE_q);
-	m_pNodeKiQ->setData(TRIANGLE_NODE_TYPE_KEY, NODE_KIQ);
 
 	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable);
@@ -291,10 +292,15 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	ostrKi.precision(g_iPrecGfx); ostrKf.precision(g_iPrecGfx);
 	ostrG.precision(g_iPrecGfx); ostrq.precision(g_iPrecGfx);
 
-	ostrQ << L"Q = " << GetQ() << " " << strAA;
-	ostrKi << L"ki = " << GetKi() << " " << strAA;
-	ostrKf << L"kf = " << GetKf() << " " << strAA;
-	ostrE << strDelta << "E = " << GetE() << " meV";
+	double dQ = GetQ();		tl::set_eps_0(dQ);
+	double dKi = GetKi();	tl::set_eps_0(dKi);
+	double dKf = GetKf();	tl::set_eps_0(dKf);
+	double dE = GetE();		tl::set_eps_0(dE);
+
+	ostrQ << L"Q = " << dQ << " " << strAA;
+	ostrKi << L"ki = " << dKi << " " << strAA;
+	ostrKf << L"kf = " << dKf << " " << strAA;
+	ostrE << strDelta << "E = " << dE << " meV";
 	if(m_bqVisible)
 	{
 		ostrq << L"q = " << Getq() << " " << strAA;
@@ -892,6 +898,31 @@ std::vector<std::string> ScatteringTriangle::GetNodeNames() const
 		{ "kiQ", "kikf", "kfQ", "Gq" };
 }
 
+
+static std::pair<bool, QPointF>
+get_nearest_elastic_kikf_pos(const QPointF& ptKiKf, const QPointF& ptKiQ, const QPointF& ptKfQ)
+{
+	std::pair<bool, QPointF> pairRet;
+	bool& bOk = pairRet.first;
+	QPointF& ptRet = pairRet.second;
+
+	ublas::vector<double> vecKiQ = qpoint_to_vec(ptKiQ);
+	ublas::vector<double> vecKfQ = qpoint_to_vec(ptKfQ);
+	ublas::vector<double> vecKiKf = qpoint_to_vec(ptKiKf);
+	ublas::vector<double> vecQ = vecKfQ - vecKiQ;
+	
+	ublas::vector<double> vecQperp = tl::make_vec({vecQ[1], -vecQ[0]});
+	ublas::vector<double> vecQMid = vecKiQ + vecQ*0.5;
+	
+	tl::Line<double> lineQMidPerp(vecQMid, vecQperp);
+	ublas::vector<double> vecDrop = lineQMidPerp.GetDroppedPerp(vecKiKf);
+	ptRet = vec_to_qpoint(vecDrop);
+
+	bOk = 1;
+	return pairRet;
+}
+
+
 static std::tuple<bool, double, QPointF> 
 get_nearest_node(const QPointF& pt,
 				const QGraphicsItem* pCurItem,
@@ -1029,9 +1060,14 @@ bool ScatteringTriangle::KeepAbsKiKf(double dQx, double dQy)
 		ublas::matrix<double> matRot = tl::rotation_matrix_2d(-dAngKiQ);
 		vecKi = ublas::prod(matRot, vecNewQ) / ublas::norm_2(vecNewQ);
 		vecKi *= dKi * m_dScaleFactor;
+		ublas::vector<double> vecPtKiKf = vecKiQ - vecKi;
+
+		/*ublas::vector<double> vecKfChk = vecNewKfQ - vecPtKiKf;
+		double dKfChk = ublas::norm_2(vecKfChk) / m_dScaleFactor;
+		if(!tl::float_equal(dKfChk, dKf))
+			return 0;*/
 		
-		QPointF ptKiKf = vec_to_qpoint(vecKiQ - vecKi);
-		m_pNodeKiKf->setPos(ptKiKf);
+		m_pNodeKiKf->setPos(vec_to_qpoint(vecPtKiKf));
 		
 		return 1;	// allowed
 	}
@@ -1238,6 +1274,7 @@ void ScatteringTriangleScene::setSnapq(bool bSnap)
 void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	bool bHandled = 0;
+	bool bAllowed = 1;
 
 
 	// tooltip
@@ -1281,18 +1318,33 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 					bHandled = 1;
 				}
 			}
+			
+			else if(iNodeType == NODE_KIKF && m_bSnapKiKfToElastic)
+			{
+				std::pair<bool, QPointF> pairNearest = 
+					get_nearest_elastic_kikf_pos(pEvt->scenePos() /*m_pTri->GetNodeKiKf()->scenePos()*/, 
+						m_pTri->GetNodeKiQ()->scenePos(), 
+						m_pTri->GetNodeKfQ()->scenePos());
+
+				if(pairNearest.first)
+				{
+					pCurItem->setPos(pairNearest.second);
+					bHandled = 1;
+				}
+			}
+
 			// TODO: case for both snapping and abs ki kf fixed
 			else if(iNodeType == NODE_Q && m_bKeepAbsKiKf)
 			{
 				double dX = pEvt->scenePos().x()-pEvt->lastScenePos().x();
 				double dY = pEvt->scenePos().y()-pEvt->lastScenePos().y();
 
-				bHandled = !m_pTri->KeepAbsKiKf(dX, dY);
+				bAllowed = m_pTri->KeepAbsKiKf(dX, dY);
 			}
 		}
 	}
 
-	if(!bHandled)
+	if(!bHandled && bAllowed)
 		QGraphicsScene::mouseMoveEvent(pEvt);
 }
 
@@ -1307,6 +1359,8 @@ void ScatteringTriangleScene::keyPressEvent(QKeyEvent *pEvt)
 {
 	if(pEvt->key() == Qt::Key_Control)
 		m_bSnap = 1;
+	if(pEvt->key() == Qt::Key_Shift)
+		m_bSnapKiKfToElastic = 1;
 
 	QGraphicsScene::keyPressEvent(pEvt);
 }
@@ -1315,6 +1369,8 @@ void ScatteringTriangleScene::keyReleaseEvent(QKeyEvent *pEvt)
 {
 	if(pEvt->key() == Qt::Key_Control)
 		m_bSnap = 0;
+	if(pEvt->key() == Qt::Key_Shift)
+		m_bSnapKiKfToElastic = 0;
 
 	QGraphicsScene::keyReleaseEvent(pEvt);
 }
