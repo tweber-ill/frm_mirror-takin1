@@ -65,9 +65,14 @@ protected:
 
 	void WriteLastConfig();
 	void ReadLastConfig();
-	
+
+
+	// -------------------------------------------------------------------------
+	ublas::vector<double> m_vecOrient1, m_vecOrient2;
 	ublas::matrix<double> m_matUB, m_matUBinv;
 	bool m_bHasUB = 0;
+	// -------------------------------------------------------------------------
+
 
 	EckParams m_pop;
 	CNResults m_res;

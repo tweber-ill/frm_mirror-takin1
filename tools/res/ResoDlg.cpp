@@ -643,6 +643,9 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.Q = dQ / tl::angstrom;
 	m_pop.E = parms.dE * tl::one_meV;
 
+
+	m_pop.angle_Q_vec0 = parms.dAngleQVec0 * tl::radians;
+
 	m_pop.angle_ki_Q = /*M_PI*tl::radians - */tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
 	m_pop.angle_kf_Q = /*M_PI*tl::radians - */tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
 
@@ -686,12 +689,10 @@ void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 	tl::Lattice<double> lattice(parms.dLattice[0],parms.dLattice[1],parms.dLattice[2],
 								parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
 								
-	ublas::vector<double> vec1 = 
-		tl::make_vec<ublas::vector<double>>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
-	ublas::vector<double> vec2 = 
-		tl::make_vec<ublas::vector<double>>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});
+	m_vecOrient1 = tl::make_vec<ublas::vector<double>>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
+	m_vecOrient2 = tl::make_vec<ublas::vector<double>>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});
 		
-	m_matUB = tl::get_UB(lattice, vec1, vec2);
+	m_matUB = tl::get_UB(lattice, m_vecOrient1, m_vecOrient2);
 	m_bHasUB = tl::inverse(m_matUB, m_matUBinv);
 }
 

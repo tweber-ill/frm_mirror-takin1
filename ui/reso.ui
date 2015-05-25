@@ -1514,6 +1514,12 @@ Resolution Matrix:
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Count:</string>
             </property>
@@ -1521,6 +1527,12 @@ Resolution Matrix:
           </item>
           <item row="0" column="1">
            <widget class="QSpinBox" name="spinMCNeutrons">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="minimum">
              <number>1</number>
             </property>
@@ -1532,10 +1544,48 @@ Resolution Matrix:
             </property>
            </widget>
           </item>
-          <item row="2" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <widget class="QPushButton" name="btnMCGenerate">
             <property name="text">
              <string>Generate...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="comboMCCoords">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Direct (Q∥ Q⟂)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Lattice (Å⁻¹)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Lattice (rlu)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>System:</string>
             </property>
            </widget>
           </item>
@@ -1696,13 +1746,14 @@ Resolution Matrix:
   <tabstop>btnCalcElli4d</tabstop>
   <tabstop>spinMCNeutrons</tabstop>
   <tabstop>checkMCCenter</tabstop>
+  <tabstop>comboMCCoords</tabstop>
   <tabstop>btnMCGenerate</tabstop>
   <tabstop>groupSim</tabstop>
   <tabstop>editSim</tabstop>
-  <tabstop>buttonBox</tabstop>
-  <tabstop>tabWidget</tabstop>
   <tabstop>btnSave</tabstop>
   <tabstop>btnLoad</tabstop>
+  <tabstop>buttonBox</tabstop>
+  <tabstop>tabWidget</tabstop>
  </tabstops>
  <resources/>
  <connections>
