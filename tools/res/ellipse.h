@@ -26,7 +26,7 @@ namespace ublas = boost::numeric::ublas;
 
 
 struct Ellipse
-{	
+{
 	tl::QuadEllipsoid<double> quad;
 
 	double phi, slope;
@@ -45,7 +45,7 @@ struct Ellipse
 struct Ellipsoid
 {
 	tl::QuadEllipsoid<double> quad;
-	
+
 	//double alpha, beta, gamma;
 	ublas::matrix<double> rot;
 
@@ -59,7 +59,7 @@ struct Ellipsoid
 struct Ellipsoid4d
 {
 	tl::QuadEllipsoid<double> quad;
-	
+
 	ublas::matrix<double> rot;
 
 	double x_hwhm, y_hwhm, z_hwhm, w_hwhm;
@@ -74,7 +74,25 @@ extern Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, const ublas::
 extern Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iZ, int iInt, int iRem=-1);
 extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
 
-extern void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
+
+enum class McNeutronCoords
+{
+	DIRECT = 0,
+	ANGS = 1,
+	RLU = 2
+};
+
+struct McNeutronOpts
+{
+	McNeutronCoords coords = McNeutronCoords::RLU;
+	ublas::matrix<double> matUB, matUBinv;
+	double dAngleQVec0;
+
+	bool bCenter;
+};
+
+extern void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
+						const McNeutronOpts& opts,
 						std::vector<ublas::vector<double>>& vecResult);
 
 
@@ -97,12 +115,12 @@ ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, unsigned int i
 }
 
 template<class T = double>
-ublas::vector<T> ellipsoid_gauss_int(const ublas::vector<T>& vec, 
-									const ublas::matrix<T>& mat, 
+ublas::vector<T> ellipsoid_gauss_int(const ublas::vector<T>& vec,
+									const ublas::matrix<T>& mat,
 									unsigned int iIdx)
 {
 	ublas::vector<T> vecInt(vec.size()-1);
-	
+
 	for(std::size_t i=0, j=0; i<vec.size(); ++i)
 	{
 		if(i==iIdx) continue;
@@ -110,7 +128,7 @@ ublas::vector<T> ellipsoid_gauss_int(const ublas::vector<T>& vec,
 		vecInt[j] = vec[i] - vec[iIdx]*mat(i,iIdx)/mat(iIdx, iIdx);
 		++j;
 	}
-	
+
 	return vecInt;
 }
 

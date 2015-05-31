@@ -475,8 +475,9 @@ double ScatteringTriangle::Getq() const
 double ScatteringTriangle::GetAngleQVec0() const
 {
 	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+						- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 	vecQ /= ublas::norm_2(vecQ);
+	vecQ = -vecQ;
 	return tl::vec_angle(vecQ);
 }
 

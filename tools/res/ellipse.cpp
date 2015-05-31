@@ -229,7 +229,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 							int iX, int iY, int iZ, int iInt, int iRem)
 {
 	Ellipsoid ell;
-	
+
 	ell.quad.SetDim(4);
 	ell.quad.SetQ(reso);
 
@@ -267,7 +267,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	std::vector<double> evals;
 	tl::QuadEllipsoid<double> quad(3);
 	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
-	
+
 	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
 	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
 	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
@@ -291,7 +291,7 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 	std::vector<double> evals;
 	tl::QuadEllipsoid<double> quad(4);
 	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
-	
+
 	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
 	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
 	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
@@ -315,7 +315,8 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 }
 
 
-void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
+void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
+				const McNeutronOpts& opts,
 				std::vector<ublas::vector<double>>& vecResult)
 {
 	tl::init_rand();
@@ -338,8 +339,20 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum, bool bCenter,
 														ell4d.w_hwhm*tl::HWHM2SIGMA});
 
 		vecMC = ublas::prod(rot, vecMC);
-		if(!bCenter)
+		if(!opts.bCenter)
 			vecMC += vecTrans;
+
+		if(opts.coords == McNeutronCoords::ANGS || opts.coords == McNeutronCoords::RLU)
+		{
+			ublas::matrix<double> matQVec0 = tl::rotation_matrix_2d(-opts.dAngleQVec0);
+			ublas::vector<double> vecXY = tl::make_vec({vecMC[0], vecMC[1]});
+			vecXY = ublas::prod(matQVec0, vecXY);
+			vecMC[0] = vecXY[0];
+			vecMC[1] = vecXY[1];
+		}
+
+		if(opts.coords == McNeutronCoords::RLU)
+			vecMC = ublas::prod(opts.matUBinv, vecMC);
 
 		vecResult.push_back(std::move(vecMC));
 	}

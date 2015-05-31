@@ -31,14 +31,14 @@ std::ostream& operator<<(std::ostream& ostr, const tl::Lattice<double>& lat)
 
 void TazDlg::emitSampleParams()
 {
-	double a = editARecip->text().toDouble();
-	double b = editBRecip->text().toDouble();
-	double c = editCRecip->text().toDouble();
+	double a = editA->text().toDouble();
+	double b = editB->text().toDouble();
+	double c = editC->text().toDouble();
 
-	double alpha = editAlphaRecip->text().toDouble()/180.*M_PI;
-	double beta = editBetaRecip->text().toDouble()/180.*M_PI;
-	double gamma = editGammaRecip->text().toDouble()/180.*M_PI;
-	
+	double alpha = editAlpha->text().toDouble()/180.*M_PI;
+	double beta = editBeta->text().toDouble()/180.*M_PI;
+	double gamma = editGamma->text().toDouble()/180.*M_PI;
+
 	double dX0 = editScatX0->text().toDouble();
 	double dX1 = editScatX1->text().toDouble();
 	double dX2 = editScatX2->text().toDouble();
@@ -46,7 +46,7 @@ void TazDlg::emitSampleParams()
 	double dY0 = editScatY0->text().toDouble();
 	double dY1 = editScatY1->text().toDouble();
 	double dY2 = editScatY2->text().toDouble();
-	
+
 	SampleParams sampleparams;
 	sampleparams.dAngles[0] = alpha; sampleparams.dAngles[1] = beta; sampleparams.dAngles[2] = gamma;
 	sampleparams.dLattice[0] = a; sampleparams.dLattice[1] = b; sampleparams.dLattice[2] = c;
@@ -556,7 +556,7 @@ void TazDlg::InitReso()
 						m_pReso, SLOT(RealParamsChanged(const RealParams&)));
 		QObject::connect(this, SIGNAL(SampleParamsChanged(const SampleParams&)),
 						m_pReso, SLOT(SampleParamsChanged(const SampleParams&)));
-						
+
 		UpdateDs();
 		UpdateMonoSense();
 		UpdateSampleSense();

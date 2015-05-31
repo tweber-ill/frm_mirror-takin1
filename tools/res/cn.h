@@ -60,7 +60,7 @@ struct CNParams
 	units::quantity<units::si::plane_angle> twotheta;
 	units::quantity<units::si::plane_angle> angle_ki_Q;
 	units::quantity<units::si::plane_angle> angle_kf_Q;
-	units::quantity<units::si::plane_angle> angle_Q_vec0;
+	//units::quantity<units::si::plane_angle> angle_Q_vec0;
 
 	ublas::vector<double> vec0, vec1, vecUp;
 

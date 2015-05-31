@@ -275,7 +275,7 @@ void ResoDlg::Calc()
 	cn.dist_sample_ana = spinDistSampleAna->value()*0.01*tl::meters;
 	cn.dist_ana_det = spinDistAnaDet->value()*0.01*tl::meters;
 	cn.dist_src_mono = spinDistSrcMono->value()*0.01*tl::meters;
-	
+
 	// eck
 	cn.mono_mosaic_v = spinMonoMosaicV->value() / (180.*60.) * M_PI * tl::radians;
 	cn.ana_mosaic_v = spinAnaMosaicV->value() / (180.*60.) * M_PI * tl::radians;
@@ -616,7 +616,7 @@ void ResoDlg::ResoParamsChanged(const ResoParams& params)
 void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 {
 	//std::cout << "recip params changed" << std::endl;
-	
+
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
@@ -644,7 +644,7 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.E = parms.dE * tl::one_meV;
 
 
-	m_pop.angle_Q_vec0 = parms.dAngleQVec0 * tl::radians;
+	m_dAngleQVec0 = parms.dAngleQVec0;
 
 	m_pop.angle_ki_Q = /*M_PI*tl::radians - */tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
 	m_pop.angle_kf_Q = /*M_PI*tl::radians - */tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
@@ -655,7 +655,7 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	/*std::cout << "ki = " << double(m_pop.ki*tl::angstrom) << std::endl;
 	std::cout << "kf = " << double(m_pop.kf*tl::angstrom) << std::endl;
 	std::cout << "Q = " << double(m_pop.Q*tl::angstrom) << std::endl;
-	
+
 	std::cout << "kiQ = " << double(m_pop.angle_ki_Q/M_PI/tl::radians * 180.) << std::endl;
 	std::cout << "kfQ = " << double(m_pop.angle_kf_Q/M_PI/tl::radians * 180.) << std::endl;*/
 
@@ -667,7 +667,7 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 void ResoDlg::RealParamsChanged(const RealParams& parms)
 {
 	//std::cout << "real params changed" << std::endl;
-	
+
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
@@ -687,11 +687,13 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 {
 	tl::Lattice<double> lattice(parms.dLattice[0],parms.dLattice[1],parms.dLattice[2],
-								parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
-								
+				parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
+
 	m_vecOrient1 = tl::make_vec<ublas::vector<double>>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
 	m_vecOrient2 = tl::make_vec<ublas::vector<double>>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});
-		
+	//m_vecOrient1 /= ublas::norm_2(m_vecOrient1);
+	//m_vecOrient2 /= ublas::norm_2(m_vecOrient2);
+
 	m_matUB = tl::get_UB(lattice, m_vecOrient1, m_vecOrient2);
 	m_bHasUB = tl::inverse(m_matUB, m_matUBinv);
 }
@@ -749,14 +751,58 @@ void ResoDlg::MCGenerate()
 	}
 
 	std::vector<ublas::vector<double>> vecNeutrons;
-	mc_neutrons(m_ell4d, iNeutrons, bCenter, vecNeutrons);
+	McNeutronOpts opts;
+	opts.bCenter = bCenter;
+	opts.coords = McNeutronCoords(comboMCCoords->currentIndex());
+	opts.matUB = m_matUB;
+	opts.matUBinv = m_matUBinv;
+	opts.matUB.resize(4,4,1);
+	opts.matUBinv.resize(4,4,1);
+
+	for(int i0=0; i0<3; ++i0)
+	{
+		opts.matUB(i0,3) = opts.matUB(3,i0) = 0.;
+		opts.matUBinv(i0,3) = opts.matUBinv(3,i0) = 0.;
+	}
+	opts.matUB(3,3) = opts.matUB(3,3) = 1.;
+	opts.matUBinv(3,3) = opts.matUBinv(3,3) = 1.;
+
+
+	opts.dAngleQVec0 = m_dAngleQVec0;
+	mc_neutrons(m_ell4d, iNeutrons, opts, vecNeutrons);
+
 
 	ofstr.precision(16);
 
-	ofstr << "#" << std::setw(23) << m_ell4d.x_lab
-			<< std::setw(24) << m_ell4d.y_lab
-			<< std::setw(24) << m_ell4d.z_lab
-			<< std::setw(24) << m_ell4d.w_lab << "\n";
+	if(opts.coords == McNeutronCoords::DIRECT)
+	{
+		ofstr << "# coord_sys: direct\n";
+		ofstr << "#" << std::setw(23) << m_ell4d.x_lab
+				<< std::setw(24) << m_ell4d.y_lab
+				<< std::setw(24) << m_ell4d.z_lab
+				<< std::setw(24) << m_ell4d.w_lab << "\n";
+	}
+	else if(opts.coords == McNeutronCoords::ANGS)
+	{
+		ofstr << "# coord_sys: angstrom\n";
+		ofstr << "#" << std::setw(23) << "Qx (1/A)"
+				<< std::setw(24) << "Qy (1/A)"
+				<< std::setw(24) << "Qz (1/A)"
+				<< std::setw(24) << "E (meV)" << "\n";
+	}
+	else if(opts.coords == McNeutronCoords::RLU)
+	{
+		ofstr << "# coord_sys: rlu\n";
+		ofstr << "#" << std::setw(23) << "h (rlu)"
+				<< std::setw(24) << "k (rlu)"
+				<< std::setw(24) << "l (rlu)"
+				<< std::setw(24) << "E (meV)" << "\n";
+	}
+	else
+	{
+		ofstr << "# coord_sys: unknown\n";
+	}
+
 
 	for(const ublas::vector<double>& vecNeutron : vecNeutrons)
 	{
@@ -776,7 +822,7 @@ void ResoDlg::MCGenerate()
 void ResoDlg::AlgoChanged()
 {
 	std::string strAlgo;
-	
+
 	switch(comboAlgo->currentIndex())
 	{
 		case 0: strAlgo = "M. J. Cooper and R. Nathans\nActa Cryst. 23, 357\n1967"; break;
@@ -784,7 +830,7 @@ void ResoDlg::AlgoChanged()
 		case 2: strAlgo = "G. Eckold and O. Sobolev\nNIM A 752, pp. 54-64\n2014"; break;
 		default: strAlgo = "unknown"; break;
 	}
-	
+
 	labelAlgoRef->setText(strAlgo.c_str());
 }
 
