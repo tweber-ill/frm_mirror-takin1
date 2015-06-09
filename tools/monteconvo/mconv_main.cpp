@@ -2,7 +2,7 @@
  * monte carlo convolution tool
  * @author tweber
  * @date jun-2015
- * @copyright GPLv2
+ * @license GPLv2
  */
  
 #include <iostream>
@@ -87,7 +87,7 @@ static inline int monteconvo(const char* pcNeutrons, const char* pcSqw)
 
 	for(int i=0; i<4; ++i) dhklE[i] /= double(iCurNeutr+1);
 	
-	tl::log_info("Loaded ",  iCurNeutr+1, " MC neutrons.");
+	tl::log_info("Processed ",  iCurNeutr, " MC neutrons.");
 	
 	std::cout << "S(" 
 			<<  dhklE[0] << ", " << dhklE[1] <<  ", " << dhklE[2] << ", " << dhklE[3]

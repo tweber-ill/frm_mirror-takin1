@@ -2,7 +2,7 @@
  * monte carlo convolution tool
  * @author tweber
  * @date jun-2015
- * @copyright GPLv2
+ * @license GPLv2
  */
  
 #ifndef __MCONV_SQW_H__

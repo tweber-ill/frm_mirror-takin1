@@ -272,7 +272,7 @@ obj/reso_res_main.o: tools/res/res_main.cpp
 
 obj/mconv_main.o: tools/monteconvo/mconv_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
-obj/sqw.o: tools/monteconvo/sqw.cpp
+obj/sqw.o: tools/monteconvo/sqw.cpp tools/monteconvo/sqw.h tlibs/math/kd.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/scanviewer_main.o: tools/scanviewer/main.cpp

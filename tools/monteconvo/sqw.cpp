@@ -2,10 +2,8 @@
  * monte carlo convolution tool
  * @author tweber
  * @date jun-2015
- * @copyright GPLv2
+ * @license GPLv2
  */
-
-// TODO
 
 #include "sqw.h"
 #include "tlibs/string/string.h"
@@ -30,7 +28,7 @@ bool Sqw::open(const char* pcFile)
 		
 		if(strLine.length() == 0)
 			continue;
-		
+
 		if(strLine[0] == '#')
 		{
 			strLine[0] = ' ';
@@ -50,7 +48,7 @@ bool Sqw::open(const char* pcFile)
 		++iCurPoint;
 	}
 	
-	tl::log_info("Loaded ",  iCurPoint+1, " S(q,w) points.");
+	tl::log_info("Loaded ",  iCurPoint, " S(q,w) points.");
 	m_kd.Load(lstPoints);
 	tl::log_info("Generated k-d tree.");
 	

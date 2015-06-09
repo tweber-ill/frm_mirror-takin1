@@ -8,6 +8,7 @@
 ui/*.h
 bin/reso
 bin/montereso
+bin/monteconvo
 bin/taz
 bin/takin
 bin/scanviewer
@@ -23,6 +24,8 @@ takin.txt
 takin.mk
 montereso.txt
 montereso.mk
+monteconvo.txt
+monteconvo.mk
 scanviewer.txt
 scanviewer.mk
 Makefile
