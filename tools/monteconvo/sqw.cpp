@@ -49,7 +49,7 @@ bool Sqw::open(const char* pcFile)
 	}
 	
 	tl::log_info("Loaded ",  iCurPoint, " S(q,w) points.");
-	m_kd.Load(lstPoints);
+	m_kd.Load(lstPoints, 4);
 	tl::log_info("Generated k-d tree.");
 	
 	return true;
