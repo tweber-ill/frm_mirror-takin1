@@ -232,12 +232,13 @@ int main(int argc, char **argv)
 	::setlocale(LC_ALL, "C");
 	if(argc <= 1)
 	{
-		tl::log_err("No input file given.");
-		std::cout << "Usage: " << argv[0] << " [-r,-c] <file>\n" 
+		std::ostringstream ostr;
+		ostr << "Usage: " << argv[0] << " [-r,-c] <file>\n" 
 			<< "\t-r\t<file> contains resolution matrix\n"
 			<< "\t-c\t<file> contains covariance matrix\n"
-			<< "\t<n/a>\t<file> contains Q or ki,kf list\n"
-			<< std::endl;
+			<< "\t<n/a>\t<file> contains Q or ki,kf list";
+			
+		tl::log_err("No input file given.\n", ostr.str());
 		return -1;
 	}
 

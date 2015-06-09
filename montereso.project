@@ -26,6 +26,51 @@
  }]]]>
     </Plugin>
   </Plugins>
+  <VirtualDirectory Name="tlibs">
+    <VirtualDirectory Name="helper">
+      <File Name="tlibs/helper/py.h"/>
+      <File Name="tlibs/helper/log.h"/>
+      <File Name="tlibs/helper/flags.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/helper/hash.h"/>
+      <File Name="tlibs/helper/flags.h"/>
+      <File Name="tlibs/helper/misc.h"/>
+      <File Name="tlibs/helper/exception.h"/>
+      <File Name="tlibs/helper/log.cpp"/>
+      <File Name="tlibs/helper/stopwatch.h"/>
+      <File Name="tlibs/helper/traits.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="math">
+      <File Name="tlibs/math/fourier.h"/>
+      <File Name="tlibs/math/rand.h"/>
+      <File Name="tlibs/math/linalg2.h"/>
+      <File Name="tlibs/math/fourier.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/linalg2.cpp" ExcludeProjConfig=""/>
+      <File Name="tlibs/math/numint.hpp"/>
+      <File Name="tlibs/math/fftw.h"/>
+      <File Name="tlibs/math/linalg.h"/>
+      <File Name="tlibs/math/dft.h"/>
+      <File Name="tlibs/math/lattice.h"/>
+      <File Name="tlibs/math/minuit.h"/>
+      <File Name="tlibs/math/rand.cpp" ExcludeProjConfig=""/>
+      <File Name="tlibs/math/linalg_ops.h"/>
+      <File Name="tlibs/math/powder.h"/>
+      <File Name="tlibs/math/interpolation.h"/>
+      <File Name="tlibs/math/fftw.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/bz.h"/>
+      <File Name="tlibs/math/quat.h"/>
+      <File Name="tlibs/math/geo.h"/>
+      <File Name="tlibs/math/neutrons.hpp"/>
+      <File Name="tlibs/math/mieze.hpp"/>
+      <File Name="tlibs/math/funcmod.h"/>
+      <File Name="tlibs/math/math.h"/>
+      <File Name="tlibs/math/minuit.cpp" ExcludeProjConfig="Debug;Release"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="string">
+      <File Name="tlibs/string/spec_char.cpp" ExcludeProjConfig=""/>
+      <File Name="tlibs/string/string.h"/>
+      <File Name="tlibs/string/spec_char.h"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
   <VirtualDirectory Name="tools">
     <VirtualDirectory Name="montereso">
       <File Name="tools/montereso/res.h"/>
@@ -47,37 +92,6 @@
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
-  <VirtualDirectory Name="helper">
-    <File Name="helper/spec_char.cpp"/>
-    <File Name="helper/rand.h"/>
-    <File Name="helper/linalg2.h"/>
-    <File Name="helper/linalg2.cpp"/>
-    <File Name="helper/string.h"/>
-    <File Name="helper/log.h"/>
-    <File Name="helper/flags.cpp" ExcludeProjConfig="Debug"/>
-    <File Name="helper/linalg.h"/>
-    <File Name="helper/lattice.h" ExcludeProjConfig="Debug"/>
-    <File Name="helper/flags.h" ExcludeProjConfig="Debug"/>
-    <File Name="helper/tcp.h" ExcludeProjConfig="Debug"/>
-    <File Name="helper/tcp.cpp" ExcludeProjConfig="Debug"/>
-    <File Name="helper/rand.cpp"/>
-    <File Name="helper/plotgl.cpp" ExcludeProjConfig="Debug"/>
-    <File Name="helper/spec_char.h"/>
-    <File Name="helper/xml.cpp" ExcludeProjConfig="Debug"/>
-    <File Name="helper/misc.h"/>
-    <File Name="helper/bz.h"/>
-    <File Name="helper/linalg.cpp"/>
-    <File Name="helper/plotgl.h" ExcludeProjConfig="Debug"/>
-    <File Name="helper/spacegroup.cpp" ExcludeProjConfig="Debug"/>
-    <File Name="helper/spacegroup.h" ExcludeProjConfig="Debug"/>
-    <File Name="helper/string.cpp"/>
-    <File Name="helper/geo.h"/>
-    <File Name="helper/neutrons.hpp"/>
-    <File Name="helper/math.h"/>
-    <File Name="helper/exception.h"/>
-    <File Name="helper/log.cpp"/>
-    <File Name="helper/xml.h" ExcludeProjConfig="Debug"/>
-  </VirtualDirectory>
   <VirtualDirectory Name="dialogs">
     <File Name="dialogs/SpurionDlg.h" ExcludeProjConfig="Debug"/>
     <File Name="dialogs/NeutronDlg.h" ExcludeProjConfig="Debug"/>

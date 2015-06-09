@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="scanviewer" InternalType="Console">
+<CodeLite_Project Name="monteconvo" InternalType="Console">
   <Plugins>
     <Plugin Name="qmake">
-      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
+      <![CDATA[00010001N0005Debug000000000000]]>
     </Plugin>
     <Plugin Name="CMakePlugin">
       <![CDATA[[{
@@ -14,38 +14,60 @@
   "buildType": "",
   "arguments": [],
   "parentProject": ""
- }, {
-  "name": "Release",
-  "enabled": false,
-  "buildDirectory": "build",
-  "sourceDirectory": "$(ProjectPath)",
-  "generator": "",
-  "buildType": "",
-  "arguments": [],
-  "parentProject": ""
  }]]]>
     </Plugin>
   </Plugins>
   <VirtualDirectory Name="tlibs">
-    <VirtualDirectory Name="file">
-      <File Name="tlibs/file/loadinstr.h"/>
-      <File Name="tlibs/file/comp.h"/>
-      <File Name="tlibs/file/loadinstr.cpp"/>
-    </VirtualDirectory>
     <VirtualDirectory Name="helper">
-      <File Name="tlibs/helper/log.cpp"/>
+      <File Name="tlibs/helper/py.h"/>
       <File Name="tlibs/helper/log.h"/>
+      <File Name="tlibs/helper/flags.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/helper/hash.h"/>
+      <File Name="tlibs/helper/flags.h"/>
+      <File Name="tlibs/helper/misc.h"/>
       <File Name="tlibs/helper/exception.h"/>
+      <File Name="tlibs/helper/log.cpp"/>
+      <File Name="tlibs/helper/stopwatch.h"/>
+      <File Name="tlibs/helper/traits.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="string">
+      <File Name="tlibs/string/spec_char.cpp"/>
       <File Name="tlibs/string/string.h"/>
+      <File Name="tlibs/string/spec_char.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="math">
+      <File Name="tlibs/math/fourier.h"/>
+      <File Name="tlibs/math/rand.h"/>
+      <File Name="tlibs/math/linalg2.h"/>
+      <File Name="tlibs/math/fourier.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/linalg2.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/numint.hpp"/>
+      <File Name="tlibs/math/fftw.h"/>
+      <File Name="tlibs/math/linalg.h"/>
+      <File Name="tlibs/math/dft.h"/>
+      <File Name="tlibs/math/lattice.h"/>
+      <File Name="tlibs/math/minuit.h"/>
+      <File Name="tlibs/math/rand.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/linalg_ops.h"/>
+      <File Name="tlibs/math/powder.h"/>
+      <File Name="tlibs/math/interpolation.h"/>
+      <File Name="tlibs/math/fftw.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/bz.h"/>
+      <File Name="tlibs/math/quat.h"/>
+      <File Name="tlibs/math/geo.h"/>
+      <File Name="tlibs/math/neutrons.hpp"/>
+      <File Name="tlibs/math/mieze.hpp"/>
+      <File Name="tlibs/math/funcmod.h"/>
+      <File Name="tlibs/math/math.h"/>
+      <File Name="tlibs/math/minuit.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tlibs/math/kd.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="tools">
-    <VirtualDirectory Name="scanviewer">
-      <File Name="tools/scanviewer/main.cpp"/>
-      <File Name="tools/scanviewer/scanviewer.cpp"/>
-      <File Name="tools/scanviewer/scanviewer.h"/>
+    <VirtualDirectory Name="monteconvo">
+      <File Name="tools/monteconvo/mconv_main.cpp"/>
+      <File Name="tools/monteconvo/sqw.cpp"/>
+      <File Name="tools/monteconvo/sqw.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
@@ -63,32 +85,8 @@
     <Configuration Name="Debug" CompilerType="clang( tags/RELEASE_34/final )" DebuggerType="LLDB Debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g;-O0;-std=c++11;-Wall" C_Options="-g;-O0;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
-        <IncludePath Value="/usr/include/qt4"/>
-        <IncludePath Value="/usr/include/qt4/QtGui"/>
-        <IncludePath Value="/usr/include/qt4/QtCore"/>
-        <IncludePath Value="/usr/include/QtCore"/>
-        <IncludePath Value="/usr/include/QtGui"/>
-        <IncludePath Value="/usr/local/include"/>
-        <IncludePath Value="/usr/include/qwt6"/>
-        <IncludePath Value="/usr/include/qwt"/>
-        <IncludePath Value="/usr/include/qwt-qt4"/>
-        <IncludePath Value="/usr/include/lapacke"/>
-        <IncludePath Value="/usr/include/freetype2"/>
       </Compiler>
-      <Linker Options="" Required="yes">
-        <LibraryPath Value="/usr/lib64/qt4"/>
-        <LibraryPath Value="/usr/lib/qt4"/>
-        <LibraryPath Value="/usr/lib/qt4/lib"/>
-        <LibraryPath Value="/usr/lib/x86_64-linux-gnu"/>
-        <LibraryPath Value="/usr/local/lib64"/>
-        <LibraryPath Value="/usr/local/lib"/>
-        <Library Value="QtCore"/>
-        <Library Value="QtGui"/>
-        <Library Value="qwt"/>
-        <Library Value="boost_system"/>
-        <Library Value="boost_filesystem"/>
-        <Library Value="boost_iostreams"/>
-      </Linker>
+      <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
@@ -115,7 +113,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no">
+      <Completion EnableCpp11="no" EnableCpp14="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>
@@ -123,24 +121,11 @@
       </Completion>
     </Configuration>
     <Configuration Name="Release" CompilerType="clang( tags/RELEASE_34/final )" DebuggerType="LLDB Debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-O2;-std=c++11;-Wall" C_Options="-O2;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+      <Compiler Options="-O2;-Wall" C_Options="-O2;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <Preprocessor Value="NDEBUG"/>
       </Compiler>
-      <Linker Options="" Required="yes">
-        <LibraryPath Value="/usr/lib64/qt4"/>
-        <LibraryPath Value="/usr/lib/qt4"/>
-        <LibraryPath Value="/usr/lib/qt4/lib"/>
-        <LibraryPath Value="/usr/lib/x86_64-linux-gnu"/>
-        <LibraryPath Value="/usr/local/lib64"/>
-        <LibraryPath Value="/usr/local/lib"/>
-        <Library Value="QtCore"/>
-        <Library Value="QtGui"/>
-        <Library Value="qwt"/>
-        <Library Value="boost_system"/>
-        <Library Value="boost_filesystem"/>
-        <Library Value="boost_iostreams"/>
-      </Linker>
+      <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Release" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
@@ -167,7 +152,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no">
+      <Completion EnableCpp11="no" EnableCpp14="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>

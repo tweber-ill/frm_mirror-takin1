@@ -132,6 +132,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/loadinstr.o obj/recent.o \
 	obj/globals.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
+OBJ_MONTECONVO = obj/mconv_main.o obj/log.o obj/sqw.o
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
@@ -153,7 +154,7 @@ endif
 
 .PHONY: all clean
 
-all: takin montereso scanviewer
+all: takin montereso monteconvo scanviewer
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -163,6 +164,10 @@ takin: ${OBJ_COMMON} ${OBJ_TAZ}
 montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
 	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
 	${STRIP} montereso
+
+monteconvo: ${OBJ_MONTECONVO}
+	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} ${BASIC_LIBS}
+	${STRIP} monteconvo
 
 reso: ${OBJ_RESO}
 	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
@@ -263,6 +268,11 @@ obj/montereso_res.o: tools/montereso/res.cpp tools/montereso/res.h
 obj/montereso_res_main.o: tools/montereso/res_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 obj/reso_res_main.o: tools/res/res_main.cpp
+	${CC} ${FLAGS} -c -o $@ $<
+
+obj/mconv_main.o: tools/monteconvo/mconv_main.cpp
+	${CC} ${FLAGS} -c -o $@ $<
+obj/sqw.o: tools/monteconvo/sqw.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/scanviewer_main.o: tools/scanviewer/main.cpp

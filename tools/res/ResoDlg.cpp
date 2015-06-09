@@ -777,7 +777,7 @@ void ResoDlg::MCGenerate()
 	if(opts.coords == McNeutronCoords::DIRECT)
 	{
 		ofstr << "# coord_sys: direct\n";
-		ofstr << "#" << std::setw(23) << m_ell4d.x_lab
+		ofstr << "# columns: " << std::setw(13) << m_ell4d.x_lab
 				<< std::setw(24) << m_ell4d.y_lab
 				<< std::setw(24) << m_ell4d.z_lab
 				<< std::setw(24) << m_ell4d.w_lab << "\n";
@@ -785,7 +785,7 @@ void ResoDlg::MCGenerate()
 	else if(opts.coords == McNeutronCoords::ANGS)
 	{
 		ofstr << "# coord_sys: angstrom\n";
-		ofstr << "#" << std::setw(23) << "Qx (1/A)"
+		ofstr << "# columns: " << std::setw(13) << "Qx (1/A)"
 				<< std::setw(24) << "Qy (1/A)"
 				<< std::setw(24) << "Qz (1/A)"
 				<< std::setw(24) << "E (meV)" << "\n";
@@ -793,7 +793,7 @@ void ResoDlg::MCGenerate()
 	else if(opts.coords == McNeutronCoords::RLU)
 	{
 		ofstr << "# coord_sys: rlu\n";
-		ofstr << "#" << std::setw(23) << "h (rlu)"
+		ofstr << "# columns: " << std::setw(13) << "h (rlu)"
 				<< std::setw(24) << "k (rlu)"
 				<< std::setw(24) << "l (rlu)"
 				<< std::setw(24) << "E (meV)" << "\n";
