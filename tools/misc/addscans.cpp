@@ -1,4 +1,5 @@
 // gcc -DNO_IOSTR -o addscans ../../tlibs/file/loadinstr.cpp ../../tlibs/helper/log.cpp addscans.cpp -std=c++11 -lstdc++ -lm
+// e.g. ./addscans /home/tweber/Auswertungen/MnSi-Mira-15/data3/11009_00016851.dat /home/tweber/Auswertungen/MnSi-Mira-15/data3/11009_00016867.dat merged.dat
 
 #include <iostream>
 #include <fstream>

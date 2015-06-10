@@ -58,5 +58,9 @@ bool Sqw::open(const char* pcFile)
 
 double Sqw::operator()(double dh, double dk, double dl, double dE) const
 {
-	return 0.;
+	std::vector<double> vechklE = {dh, dk, dl, dE};
+	std::vector<double> vec = m_kd.GetNearestNode(vechklE);
+	
+	//tl::log_info("Nearest node: ", vec[0], ", ", vec[1], ", ", vec[2], ", ", vec[3], ", ", vec[4]);
+	return vec[4];
 }
