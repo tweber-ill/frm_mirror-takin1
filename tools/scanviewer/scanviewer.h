@@ -44,6 +44,8 @@ protected:
 	void ClearPlot();
 	void PlotScan();
 	void ShowProps();
+	void GenerateForRoot(const std::string& strTitle,
+		const std::string& strLabelX, const std::string& strLabelY);
 
 protected slots:
 	void UpdateFileList();
@@ -54,6 +56,8 @@ protected slots:
 
 	void XAxisSelected(const QString&);
 	void YAxisSelected(const QString&);
+
+	//void openExternally();
 
 public:
 	ScanViewerDlg(QWidget* pParent = nullptr);
