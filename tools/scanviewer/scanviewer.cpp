@@ -9,6 +9,7 @@
 #include <QtGui/QFileDialog>
 #include <QtGui/QTableWidget>
 #include <QtGui/QTableWidgetItem>
+//#include <QtCore/QProcess>
 #include <iostream>
 #include <set>
 #include <string>
@@ -16,6 +17,7 @@
 #include <iterator>
 #include <boost/filesystem.hpp>
 #include "tlibs/string/string.h"
+#include "tlibs/helper/log.h"
 
 namespace fs = boost::filesystem;
 
@@ -105,6 +107,9 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 					this, SLOT(YAxisSelected(const QString&)));
 	QObject::connect(tableProps, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)),
 					this, SLOT(PropSelected(QTableWidgetItem*, QTableWidgetItem*)));
+	QObject::connect(comboExport, SIGNAL(currentIndexChanged(int)),
+					this, SLOT(GenerateExternal(int)));
+	//QObject::connect(btnOpenExt, SIGNAL(clicked()), this, SLOT(openExternally()));
 
 	QString strDir = m_settings.value("last_dir", fs::current_path().native().c_str()).toString();
 	editPath->setText(strDir);
@@ -152,11 +157,24 @@ void ScanViewerDlg::ClearPlot()
 	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
 #endif
 
+	m_strX = m_strY = m_strCmd = "";
 	plot->setAxisTitle(QwtPlot::xBottom, "");
 	plot->setAxisTitle(QwtPlot::yLeft, "");
+	plot->setTitle("");
+
+	auto edits = { editA, editB, editC,
+				editAlpha, editBeta, editGamma,
+				editPlaneX0, editPlaneX1, editPlaneX2,
+				editPlaneY0, editPlaneY1, editPlaneY2,
+				editTitle, editSample,
+				editUser, editContact,
+				editKfix };
+	for(auto* pEdit : edits)
+		pEdit->setText("");
 
 	comboX->clear();
 	comboY->clear();
+	textRoot->clear();
 
 	plot->replot();
 }
@@ -223,11 +241,13 @@ void ScanViewerDlg::PlotScan()
 	if(m_pInstr==nullptr || !m_bDoUpdate)
 		return;
 
-	std::string strX = comboX->currentText().toStdString();
-	std::string strY = comboY->currentText().toStdString();
+	m_strX = comboX->currentText().toStdString();
+	m_strY = comboY->currentText().toStdString();
+	std::string strTitle = m_pInstr->GetTitle();
+	m_strCmd = m_pInstr->GetScanCommand();
 
-	m_vecX = m_pInstr->GetCol(strX.c_str());
-	m_vecY = m_pInstr->GetCol(strY.c_str());
+	m_vecX = m_pInstr->GetCol(m_strX.c_str());
+	m_vecY = m_pInstr->GetCol(m_strY.c_str());
 
 	if(m_vecX.size()==0 || m_vecY.size()==0)
 		return;
@@ -240,8 +260,38 @@ void ScanViewerDlg::PlotScan()
 	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
 #endif
 
-	plot->setAxisTitle(QwtPlot::xBottom, strX.c_str());
-	plot->setAxisTitle(QwtPlot::yLeft, strY.c_str());
+	plot->setAxisTitle(QwtPlot::xBottom, m_strX.c_str());
+	plot->setAxisTitle(QwtPlot::yLeft, m_strY.c_str());
+	plot->setTitle(m_strCmd.c_str());
+
+	std::array<double, 3> arrLatt = m_pInstr->GetSampleLattice();
+	std::array<double, 3> arrAng = m_pInstr->GetSampleAngles();
+	std::array<double, 3> arrPlaneX = m_pInstr->GetScatterPlane0();
+	std::array<double, 3> arrPlaneY = m_pInstr->GetScatterPlane1();
+
+	editA->setText(tl::var_to_str(arrLatt[0]).c_str());
+	editB->setText(tl::var_to_str(arrLatt[1]).c_str());
+	editC->setText(tl::var_to_str(arrLatt[2]).c_str());
+	editAlpha->setText(tl::var_to_str(arrAng[0]/M_PI*180.).c_str());
+	editBeta->setText(tl::var_to_str(arrAng[1]/M_PI*180.).c_str());
+	editGamma->setText(tl::var_to_str(arrAng[2]/M_PI*180.).c_str());
+
+	editPlaneX0->setText(tl::var_to_str(arrPlaneX[0]).c_str());
+	editPlaneX1->setText(tl::var_to_str(arrPlaneX[1]).c_str());
+	editPlaneX2->setText(tl::var_to_str(arrPlaneX[2]).c_str());
+	editPlaneY0->setText(tl::var_to_str(arrPlaneY[0]).c_str());
+	editPlaneY1->setText(tl::var_to_str(arrPlaneY[1]).c_str());
+	editPlaneY2->setText(tl::var_to_str(arrPlaneY[2]).c_str());
+
+	labelKfix->setText(m_pInstr->IsKiFixed()
+		? QString::fromWCharArray(L"ki (1/\x212b):")
+		: QString::fromWCharArray(L"kf (1/\x212b):"));
+	editKfix->setText(tl::var_to_str(m_pInstr->GetKFix()).c_str());
+
+	editTitle->setText(strTitle.c_str());
+	editSample->setText(m_pInstr->GetSampleName().c_str());
+	editUser->setText(m_pInstr->GetUser().c_str());
+	editContact->setText(m_pInstr->GetLocalContact().c_str());
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
@@ -255,6 +305,151 @@ void ScanViewerDlg::PlotScan()
 	m_pZoomer->setZoomBase(rect);
 
 	plot->replot();
+	GenerateExternal(comboExport->currentIndex());
+}
+
+void ScanViewerDlg::GenerateExternal(int iLang)
+{
+	textRoot->clear();
+
+	if(iLang == 0)
+		GenerateForRoot();
+	else if(iLang == 1)
+		GenerateForGnuplot();
+	else if(iLang == 2)
+		GenerateForPython();
+	else if(iLang == 3)
+		GenerateForHermelin();
+	else
+		tl::log_err("Unknown external language.");
+}
+
+void ScanViewerDlg::GenerateForGnuplot()
+{
+}
+
+void ScanViewerDlg::GenerateForPython()
+{
+}
+
+void ScanViewerDlg::GenerateForHermelin()
+{
+    std::string strStoatSrc =
+R"RAWSTR(#!./hermelin -t
+
+module_init()
+{
+	import("apps/instr.scr");
+
+	global fit_dbg = 1;
+	global theterm = "wxt";
+	global norm_to_mon = 1;
+}
+
+scan_plot()
+{
+	scanfile = "%%FILE%%";
+	[instr, datx, daty, datyerr, xlab, ylab] = load_instr(scanfile, norm_to_mon);
+	title = "\"" + scanfile + "\"";
+
+	maxx = max(datx); minx = min(datx);
+	maxy = max(daty); miny = min(daty);
+	rangex = maxx-minx; rangey = maxy-miny;
+	midx = minx + rangex*0.5;
+
+
+	gauss_pos = [midx];
+	gauss_amp = [rangey*0.5];
+	gauss_sig = [rangex*0.5];
+	bckgrd = miny;
+	fitsteps = ["xxx x"];
+
+	outfile = "";
+	#outfile = "scan_plot.pdf";
+
+	thefit = fit_gauss_manual_singlestep(datx, daty, datyerr, gauss_pos, gauss_amp, gauss_sig, bckgrd, fitsteps);
+
+
+	plotmap = map();
+	plotmap = ["xlimits" : minx + " " + maxx];
+	#plotmap += ["ylimits" : "0 0.5"];
+
+	plot_gausses(1, thefit, [datx, daty, datyerr], title, xlab, ylab, outfile, plotmap);
+}
+
+main(args)
+{
+	scan_plot();
+})RAWSTR";
+
+	const std::string strFile = m_strCurDir + m_strCurFile;
+	tl::find_and_replace<std::string>(strStoatSrc, "%%FILE%%", strFile);
+
+	textRoot->setText(strStoatSrc.c_str());
+}
+
+void ScanViewerDlg::GenerateForRoot()
+{
+	const std::string& strTitle = m_strCmd;
+	const std::string& strLabelX = m_strX;
+	const std::string& strLabelY = m_strY;
+
+	std::string strRootSrc =
+R"RAWSTR(void scan_plot()
+{
+	const Double_t vecX[] = { %%VECX%% };
+	const Double_t vecY[] = { %%VECY%% };
+	const Double_t vecYErr[] = { %%VECYERR%% };
+
+	const Double_t dMin[] = { %%MINX%%, %%MINY%% };
+	const Double_t dMax[] = { %%MAXX%%, %%MAXY%% };
+	const Int_t iSize = sizeof(vecX)/sizeof(*vecX);
+
+	gStyle->SetOptFit(1);
+	TCanvas *pCanvas = new TCanvas("canvas0", "Root Canvas", 800, 600);
+	pCanvas->SetGrid(1,1);
+	pCanvas->SetTicks(1,1);
+	//pCanvas->SetLogy();
+
+	TH1F *pFrame = pCanvas->DrawFrame(dMin[0], dMin[1], dMax[0], dMax[1], "");
+	pFrame->SetTitle("%%TITLE%%");
+	pFrame->SetXTitle("%%LABELX%%");
+	pFrame->SetYTitle("%%LABELY%%");
+
+	TGraphErrors *pGraph = new TGraphErrors(iSize, vecX, vecY, 0, vecYErr);
+	pGraph->SetMarkerStyle(20);
+	pGraph->Draw("P");
+})RAWSTR";
+
+
+	std::vector<double> vecYErr = m_vecY;
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](double& d) { d = std::sqrt(d); });
+
+	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+	double dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+
+	std::ostringstream ostrX, ostrY, ostrYErr;
+
+	for(std::size_t i=0; i<std::min(m_vecX.size(), m_vecY.size()); ++i)
+	{
+		ostrX << m_vecX[i] << ", ";
+		ostrY << m_vecY[i] << ", ";
+		ostrYErr << vecYErr[i] << ", ";
+	}
+
+	tl::find_and_replace<std::string>(strRootSrc, "%%MINX%%", tl::var_to_str(*minmaxX.first));
+	tl::find_and_replace<std::string>(strRootSrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second));
+	tl::find_and_replace<std::string>(strRootSrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY));
+	tl::find_and_replace<std::string>(strRootSrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY));
+	tl::find_and_replace<std::string>(strRootSrc, "%%TITLE%%", strTitle);
+	tl::find_and_replace<std::string>(strRootSrc, "%%LABELX%%", strLabelX);
+	tl::find_and_replace<std::string>(strRootSrc, "%%LABELY%%", strLabelY);
+	tl::find_and_replace<std::string>(strRootSrc, "%%VECX%%", ostrX.str());
+	tl::find_and_replace<std::string>(strRootSrc, "%%VECY%%", ostrY.str());
+	tl::find_and_replace<std::string>(strRootSrc, "%%VECYERR%%", ostrYErr.str());
+
+	textRoot->setText(strRootSrc.c_str());
 }
 
 void ScanViewerDlg::PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pItemPrev)

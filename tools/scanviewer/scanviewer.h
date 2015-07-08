@@ -40,12 +40,21 @@ protected:
 	QwtPlotPicker* m_pPicker = nullptr;
 	QwtPlotZoomer* m_pZoomer = nullptr;
 
+	std::string m_strX, m_strY, m_strCmd;
+
 protected:
 	void ClearPlot();
 	void PlotScan();
 	void ShowProps();
 
+	void GenerateForRoot();
+	void GenerateForGnuplot();
+	void GenerateForPython();
+	void GenerateForHermelin();
+
 protected slots:
+	void GenerateExternal(int iLang=0);
+
 	void UpdateFileList();
 	void FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
 	void PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pItemPrev);
@@ -54,6 +63,8 @@ protected slots:
 
 	void XAxisSelected(const QString&);
 	void YAxisSelected(const QString&);
+
+	//void openExternally();
 
 public:
 	ScanViewerDlg(QWidget* pParent = nullptr);
