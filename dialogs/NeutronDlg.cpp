@@ -376,6 +376,30 @@ void NeutronDlg::setupConstants()
 
 		vecConsts.push_back(constant);
 	}
+	{
+		std::ostringstream ostrVal;
+		ostrVal << std::scientific;
+		ostrVal << co::k_B;
+
+		Constant constant;
+		constant.strSymbol = "k_B";
+		constant.strName = "Boltzmann constant";
+		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
+
+		vecConsts.push_back(constant);
+	}
+	{
+		std::ostringstream ostrVal;
+		ostrVal << std::scientific;
+		ostrVal << double(co::k_B / tl::one_meV * tl::kelvin) << " meV/K";
+
+		Constant constant;
+		constant.strSymbol = "k_B";
+		constant.strName = "Boltzmann constant";
+		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
+
+		vecConsts.push_back(constant);
+	}
 
 
 	tableConst->setColumnCount(2);
