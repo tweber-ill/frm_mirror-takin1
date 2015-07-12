@@ -326,10 +326,135 @@ void ScanViewerDlg::GenerateExternal(int iLang)
 
 void ScanViewerDlg::GenerateForGnuplot()
 {
+	const std::string& strTitle = m_strCmd;
+	const std::string& strLabelX = m_strX;
+	const std::string& strLabelY = m_strY;
+
+	std::string strPySrc =
+R"RAWSTR(set term wxt
+
+set xlabel "%%LABELX%%"
+set ylabel "%%LABELY%%"
+set title "%%TITLE%%"
+set grid
+
+set xrange [%%MINX%%:%%MAXX%%]
+set yrange [%%MINY%%:%%MAXY%%]
+
+plot "-" using 1:2:3 pt 7 with yerrorbars title "Data"
+%%POINTS%%
+e)RAWSTR";
+
+
+	std::vector<double> vecYErr = m_vecY;
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](double& d) { d = std::sqrt(d); });
+
+	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+	double dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+
+	std::ostringstream ostrPoints;
+
+	for(std::size_t i=0; i<std::min(m_vecX.size(), m_vecY.size()); ++i)
+	{
+		ostrPoints << m_vecX[i]
+			<< " " << m_vecY[i]
+			<< " " << std::sqrt(m_vecY[i])
+			<< "\n";
+	}
+
+	tl::find_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first));
+	tl::find_and_replace<std::string>(strPySrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second));
+	tl::find_and_replace<std::string>(strPySrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY));
+	tl::find_and_replace<std::string>(strPySrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY));
+	tl::find_and_replace<std::string>(strPySrc, "%%TITLE%%", strTitle);
+	tl::find_and_replace<std::string>(strPySrc, "%%LABELX%%", strLabelX);
+	tl::find_and_replace<std::string>(strPySrc, "%%LABELY%%", strLabelY);
+	tl::find_and_replace<std::string>(strPySrc, "%%POINTS%%", ostrPoints.str());
+
+	textRoot->setText(strPySrc.c_str());
 }
 
 void ScanViewerDlg::GenerateForPython()
 {
+	const std::string& strTitle = m_strCmd;
+	const std::string& strLabelX = m_strX;
+	const std::string& strLabelY = m_strY;
+
+	std::string strPySrc =
+R"RAWSTR(import numpy as np
+
+x = np.array([ %%VECX%% ])
+y = np.array([ %%VECY%% ])
+yerr = np.array([ %%VECYERR%% ])
+
+min = np.array([ %%MINX%%, %%MINY%% ])
+max = np.array([ %%MAXX%%, %%MAXY%% ])
+range = max-min
+mid = min + range*0.5
+
+yerr = [a if a!=0. else 0.001*range[1] for a in yerr]
+
+
+
+import scipy.optimize as opt
+
+def gauss_model(x, x0, sigma, amp, offs):
+        return amp * np.exp(-0.5 * ((x-x0) / sigma)**2.) + offs
+
+hints = [mid[0], range[0]*0.5, range[1]*0.5, min[1]]
+popt, pcov = opt.curve_fit(gauss_model, x, y, sigma=yerr, absolute_sigma=True, p0=hints)
+
+x_fine = np.linspace(min[0], max[0], 128)
+y_fit = gauss_model(x_fine, *popt)
+
+
+
+import matplotlib.pyplot as plt
+
+plt.figure()
+
+plt.xlim(min[0], max[0])
+plt.ylim(min[1], max[1])
+
+plt.title("%%TITLE%%")
+plt.xlabel("%%LABELX%%")
+plt.ylabel("%%LABELY%%")
+
+plt.grid(True)
+plt.errorbar(x,y,yerr, fmt="o")
+plt.plot(x_fine, y_fit)
+plt.show())RAWSTR";
+
+
+	std::vector<double> vecYErr = m_vecY;
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](double& d) { d = std::sqrt(d); });
+
+	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+	double dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+
+	std::ostringstream ostrX, ostrY, ostrYErr;
+
+	for(std::size_t i=0; i<std::min(m_vecX.size(), m_vecY.size()); ++i)
+	{
+		ostrX << m_vecX[i] << ", ";
+		ostrY << m_vecY[i] << ", ";
+		ostrYErr << vecYErr[i] << ", ";
+	}
+
+	tl::find_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first));
+	tl::find_and_replace<std::string>(strPySrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second));
+	tl::find_and_replace<std::string>(strPySrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY));
+	tl::find_and_replace<std::string>(strPySrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY));
+	tl::find_and_replace<std::string>(strPySrc, "%%TITLE%%", strTitle);
+	tl::find_and_replace<std::string>(strPySrc, "%%LABELX%%", strLabelX);
+	tl::find_and_replace<std::string>(strPySrc, "%%LABELY%%", strLabelY);
+	tl::find_and_replace<std::string>(strPySrc, "%%VECX%%", ostrX.str());
+	tl::find_and_replace<std::string>(strPySrc, "%%VECY%%", ostrY.str());
+	tl::find_and_replace<std::string>(strPySrc, "%%VECYERR%%", ostrYErr.str());
+
+	textRoot->setText(strPySrc.c_str());
 }
 
 void ScanViewerDlg::GenerateForHermelin()
