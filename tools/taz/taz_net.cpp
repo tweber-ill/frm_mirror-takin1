@@ -7,8 +7,8 @@
 
 #include "taz.h"
 
-#include <QtGui/QStatusBar>
-#include <QtGui/QMessageBox>
+#include <QStatusBar>
+#include <QMessageBox>
 
 #define DEFAULT_MSG_TIMEOUT 4000
 

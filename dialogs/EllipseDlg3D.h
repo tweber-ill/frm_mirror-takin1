@@ -8,8 +8,8 @@
 #ifndef __RESO_ELLI_DLG_3D__
 #define __RESO_ELLI_DLG_3D__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 
 #include <vector>
 

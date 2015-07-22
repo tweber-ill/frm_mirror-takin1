@@ -12,7 +12,7 @@
 #include "helper/globals.h"
 #include "scattering_triangle.h"
 
-#include <QtGui/QToolTip>
+#include <QToolTip>
 #include <iostream>
 #include <cmath>
 #include <sstream>
@@ -232,16 +232,16 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			const int ih = std::get<0>(powderpeak);
 			const int ik = std::get<1>(powderpeak);
 			const int il = std::get<2>(powderpeak);
-			
+
 			if(ih==0 && ik==0 && il==0) continue;
-			
+
 			std::ostringstream ostrPowderLine;
 			ostrPowderLine << "(" << ih << ik << il << ")";
-			
+
 			ublas::vector<double> vec = m_powder.GetRecipLatticePos(double(ih), double(ik), double(il));
 			double drad = std::sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
 			drad *= m_dScaleFactor*m_dZoom;
-			
+
 			painter->drawEllipse(ptKiQ, drad, drad);
 			painter->drawText(ptKiQ + QPointF(0., drad), ostrPowderLine.str().c_str());
 		}
@@ -676,7 +676,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	m_lattice = lattice;
 	m_recip = recip;
 	m_recip_unrot = recip_unrot;
-	
+
 	m_powder.SetRecipLattice(&m_recip);
 
 	ublas::vector<double> dir0 = plane.GetDir0();
@@ -911,10 +911,10 @@ get_nearest_elastic_kikf_pos(const QPointF& ptKiKf, const QPointF& ptKiQ, const 
 	ublas::vector<double> vecKfQ = qpoint_to_vec(ptKfQ);
 	ublas::vector<double> vecKiKf = qpoint_to_vec(ptKiKf);
 	ublas::vector<double> vecQ = vecKfQ - vecKiQ;
-	
+
 	ublas::vector<double> vecQperp = tl::make_vec({vecQ[1], -vecQ[0]});
 	ublas::vector<double> vecQMid = vecKiQ + vecQ*0.5;
-	
+
 	tl::Line<double> lineQMidPerp(vecQMid, vecQperp);
 	ublas::vector<double> vecDrop = lineQMidPerp.GetDroppedPerp(vecKiKf);
 	ptRet = vec_to_qpoint(vecDrop);
@@ -952,7 +952,7 @@ get_nearest_node(const QPointF& pt,
 			iMinIdx = iNode;
 		}
 	}
-	
+
 	const QGraphicsItem* pNodeOrigin = nullptr;
 	for(const QGraphicsItem* pNode : nodes)
 		if(pNode->data(TRIANGLE_NODE_TYPE_KEY) == NODE_KIQ)
@@ -968,11 +968,11 @@ get_nearest_node(const QPointF& pt,
 	if(pNodeOrigin && pPowder)
 	{
 		ublas::vector<double> vecOrigin = qpoint_to_vec(pNodeOrigin->scenePos());
-		ublas::vector<double> vecPt = qpoint_to_vec(pt);		
+		ublas::vector<double> vecPt = qpoint_to_vec(pt);
 		ublas::vector<double> vecOriginPt = vecPt-vecOrigin;
 		const double dDistToOrigin = ublas::norm_2(vecOriginPt);
 		vecOriginPt /= dDistToOrigin;
-		
+
 		const typename tl::Powder<int>::t_peaks_unique& powderpeaks = pPowder->GetUniquePeaks();
 		for(const typename tl::Powder<int>::t_peak& powderpeak : powderpeaks)
 		{
@@ -980,16 +980,16 @@ get_nearest_node(const QPointF& pt,
 			const int ik = std::get<1>(powderpeak);
 			const int il = std::get<2>(powderpeak);
 			if(ih==0 && ik==0 && il==0) continue;
-			
+
 			ublas::vector<double> vec = pPowder->GetRecipLatticePos(double(ih), double(ik), double(il));
 			double drad = std::sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
 			drad *= dFactor;
-			
+
 			if(std::fabs(drad-dDistToOrigin) < dMinLen)
 			{
 				bHasPowderPeak = 1;
 				dMinLen = std::fabs(drad-dDistToOrigin);
-				
+
 				ublas::vector<double> vecPowder = vecOrigin + vecOriginPt*drad;
 				ptPowder = vec_to_qpoint(vecPowder);
 			}
@@ -1033,11 +1033,11 @@ bool ScatteringTriangle::KeepAbsKiKf(double dQx, double dQy)
 		ublas::vector<double> vecCurKfQ = tl::make_vec({
 			m_pNodeKfQ->scenePos().x(),
 			m_pNodeKfQ->scenePos().y() });
-			
+
 		ublas::vector<double> vecNewKfQ = tl::make_vec({
 			m_pNodeKfQ->scenePos().x() + dQx,
 			m_pNodeKfQ->scenePos().y() + dQy });
-		
+
 		ublas::vector<double> vecKiQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0));
 		ublas::vector<double> vecKi = vecKiQ
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
@@ -1046,7 +1046,7 @@ bool ScatteringTriangle::KeepAbsKiKf(double dQx, double dQy)
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 		ublas::vector<double> vecNewKf = vecNewKfQ
 									- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
-									
+
 		ublas::vector<double> vecCurQ = vecKiQ - vecCurKfQ;
 		ublas::vector<double> vecNewQ = vecKiQ - vecNewKfQ;
 
@@ -1067,9 +1067,9 @@ bool ScatteringTriangle::KeepAbsKiKf(double dQx, double dQy)
 		double dKfChk = ublas::norm_2(vecKfChk) / m_dScaleFactor;
 		if(!tl::float_equal(dKfChk, dKf))
 			return 0;*/
-		
+
 		m_pNodeKiKf->setPos(vec_to_qpoint(vecPtKiKf));
-		
+
 		return 1;	// allowed
 	}
 	catch(const std::exception&)
@@ -1319,7 +1319,6 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 					bHandled = 1;
 				}
 			}
-			
 			else if(iNodeType == NODE_KIKF && m_bSnapKiKfToElastic)
 			{
 				std::pair<bool, QPointF> pairNearest = 
@@ -1400,9 +1399,14 @@ void ScatteringTriangleView::wheelEvent(QWheelEvent *pEvt)
 	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
 	double dDelta = pEvt->delta()/100.;
+
+#if QT_VER>=5
+	double dScale = dDelta>0. ? 1.1 : 1./1.1;
+#else
 	double dScale = dDelta;
 	if(dDelta < 0.)
 		dScale = -1./dDelta;
+#endif
 
 	this->scale(dScale, dScale);
 

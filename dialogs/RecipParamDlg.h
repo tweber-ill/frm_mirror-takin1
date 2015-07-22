@@ -8,8 +8,8 @@
 #ifndef __RECIP_PARAMS_H__
 #define __RECIP_PARAMS_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 #include "ui/ui_recip_params.h"
 
 

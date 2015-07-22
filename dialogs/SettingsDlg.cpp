@@ -11,7 +11,7 @@
 #include "tlibs/gfx/gl.h"
 #include "helper/globals.h"
 
-#include <QtGui/QFileDialog>
+#include <QFileDialog>
 #include <iostream>
 #include <limits>
 

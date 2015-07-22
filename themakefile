@@ -2,8 +2,8 @@
 CC = clang
 
 DO_DEBUG = 0
-QWT_VER = 6
 QT_VER = 4
+QWT_VER = 6
 USE_LAPACK = 0
 USE_3D = 1
 USE_NET = 1
@@ -38,20 +38,24 @@ ifeq ($(USE_BOOST_REGEX), 1)
 endif
 
 DEFINES += -DQWT_VER=$(QWT_VER)
+DEFINES += -DQT_VER=$(QT_VER)
 
 ifeq ($(QT_VER), 5)
 	QT_INC = -I/usr/include/qt5 -I/usr/include/qt5/QtCore \
-		-I/usr/include/qt5/QtGui
+		-I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
+		-I/usr/include/QtOpenGL -I/usr/include/QtXmlPatterns
 	QT_LIB = -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
-		-lQt5Core -lQt5Gui -lQt5Xml -lQt5XmlPatterns -lQt5Svg
+		-lQt5Widgets -lQt5Gui -lQt5Core -lQt5Xml -lQt5XmlPatterns \
+		-lQt5Svg -lQt5Concurrent
 	ifeq ($(USE_3D), 1)
 		QT_LIB += -lQt5OpenGL
 	endif
-
-	DEFINES += -DUSE_QT5 -fPIC
 else
-	QT_INC = -I/usr/include/qt4 -I/usr/include/qt4/QtCore \
-		-I/usr/include/qt4/QtGui -I/usr/include/QtCore -I/usr/include/QtGui
+	QT_INC = -I/usr/include/qt4 \
+		-I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui \
+		-I/usr/include/qt4/QtOpenGL -I/usr/include/qt4/QtXmlPatterns \
+		-I/usr/include/QtCore -I/usr/include/QtGui \
+		-I/usr/include/QtOpenGL -I/usr/include/QtXmlPatterns
 	QT_LIB =  -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
 		-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtSvg
         ifeq ($(USE_3D), 1)
@@ -60,9 +64,13 @@ else
 endif
 
 ifeq ($(QWT_VER), 6)
-	QWT_INC = -I/usr/include/qwt6 -I/usr/include/qwt -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
-	QWT_LIB = -L/usr/local/qwt/lib -lqwt
-	DEFINES += -DUSE_QWT6
+	ifeq ($(QT_VER), 5)
+		QWT_INC = -I/usr/include/qt5/qwt -I/usr/include/qwt-qt5
+		QWT_LIB = -lqwt-qt5
+	else
+		QWT_INC = -I/usr/include/qwt6 -I/usr/include/qwt -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
+		QWT_LIB = -L/usr/local/qwt/lib -lqwt
+	endif
 else
 	QWT_INC = -I/usr/include/qwt5 -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
 	QWT_LIB = -L/usr/local/qwt/lib -lqwt
@@ -75,11 +83,13 @@ LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 
 
 ifeq ($(DO_DEBUG), 0)
-	FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall ${DEFINES}
+	FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall -fPIC
+	FLAGS += -DQT_NO_DEBUG
+	FLAGS += ${DEFINES}
 	#FLAGS += -fexpensive-optimizations
 	STRIP = strip
 else
-	FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall ${DEFINES}
+	FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall -fPIC ${DEFINES}
 	STRIP = echo Retaining debug symbols of 
 endif
 

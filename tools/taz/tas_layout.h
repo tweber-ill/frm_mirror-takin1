@@ -11,12 +11,15 @@
 #include "tlibs/helper/flags.h"
 #include <cmath>
 
-#include <QtGui/QGraphicsScene>
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGraphicsItem>
-#include <QtGui/QGraphicsSceneDragDropEvent>
-#include <QtGui/QGraphicsTextItem>
-#include <QtGui/QWheelEvent>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsItem>
+#include <QGraphicsSceneDragDropEvent>
+#include <QGraphicsTextItem>
+#include <QWheelEvent>
+#if QT_VER>=5
+	#include <QtWidgets>
+#endif
 
 #include "tasoptions.h"
 #include "dialogs/RealParamDlg.h"	// for RealParams struct

@@ -6,10 +6,10 @@
  */
 
 #include "scanviewer.h"
-#include <QtGui/QFileDialog>
-#include <QtGui/QTableWidget>
-#include <QtGui/QTableWidgetItem>
-//#include <QtCore/QProcess>
+#include <QFileDialog>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+//#include <QProcess>
 #include <iostream>
 #include <set>
 #include <string>
@@ -92,7 +92,16 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	tableProps->verticalHeader()->setDefaultSectionSize(tableProps->verticalHeader()->minimumSectionSize()+4);
 	// -------------------------------------------------------------------------
 
-
+#if QT_VER>=5
+	ScanViewerDlg *pThis = this;
+	QObject::connect(editPath, &QLineEdit::textEdited, pThis, &ScanViewerDlg::ChangedPath);
+	QObject::connect(listFiles, &QListWidget::currentItemChanged, pThis, &ScanViewerDlg::FileSelected);
+	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, &ScanViewerDlg::SelectDir);
+	QObject::connect(comboX, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::XAxisSelected);
+	QObject::connect(comboY, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxisSelected);
+	QObject::connect(tableProps, &QTableWidget::currentItemChanged, pThis, &ScanViewerDlg::PropSelected);
+	QObject::connect(comboExport, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::GenerateExternal);
+#else
 	QObject::connect(editPath, SIGNAL(textEdited(const QString&)),
 					this, SLOT(ChangedPath()));
 	//QObject::connect(listFiles, SIGNAL(itemSelectionChanged()),
@@ -110,6 +119,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(comboExport, SIGNAL(currentIndexChanged(int)),
 					this, SLOT(GenerateExternal(int)));
 	//QObject::connect(btnOpenExt, SIGNAL(clicked()), this, SLOT(openExternally()));
+#endif
 
 	QString strDir = m_settings.value("last_dir", fs::current_path().native().c_str()).toString();
 	editPath->setText(strDir);

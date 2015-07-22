@@ -13,9 +13,9 @@
 
 #include "dialogs/NetCacheDlg.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QString>
-#include <QtCore/QSettings>
+#include <QObject>
+#include <QString>
+#include <QSettings>
 
 #include <map>
 #include <vector>

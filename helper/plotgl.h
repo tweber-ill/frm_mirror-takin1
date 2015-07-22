@@ -8,11 +8,14 @@
 #ifndef __MIEZE_PLOT_GL__
 #define __MIEZE_PLOT_GL__
 
-#include <QtOpenGL/QGLWidget>
-#include <QtGui/QMouseEvent>
-#include <QtCore/QThread>
-#include <QtCore/QMutex>
-#include <QtCore/QSettings>
+#if QT_VER>=5
+       	#include <QtWidgets>
+#endif
+#include <QGLWidget>
+#include <QMouseEvent>
+#include <QThread>
+#include <QMutex>
+#include <QSettings>
 #include <vector>
 
 #include "tlibs/gfx/gl.h"

@@ -8,8 +8,8 @@
 #ifndef __SPURION_DLG_H__
 #define __SPURION_DLG_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>

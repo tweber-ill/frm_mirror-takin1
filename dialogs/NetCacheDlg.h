@@ -9,9 +9,9 @@
 #define __NET_CACHE_DLG_H__
 
 #include <map>
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
-#include <QtCore/QTimer>
+#include <QDialog>
+#include <QSettings>
+#include <QTimer>
 #include "ui/ui_netcache.h"
 
 struct CacheVal

@@ -8,8 +8,11 @@
 #ifndef __RESO_ELLI_DLG__
 #define __RESO_ELLI_DLG__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
+#if QT_VER>=5
+	#include <QtWidgets>
+#endif
 
 #include <vector>
 

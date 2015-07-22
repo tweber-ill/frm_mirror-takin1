@@ -21,10 +21,10 @@
 
 //#include <boost/units/io.hpp>
 
-#include <QtGui/QPainter>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
-#include <QtGui/QGridLayout>
+#include <QPainter>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QGridLayout>
 
 
 ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)

@@ -6,7 +6,7 @@
  */
 
 #include "EllipseDlg3D.h"
-#include <QtGui/QGridLayout>
+#include <QGridLayout>
 //#include <QtGui/QSplitter>
 
 EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)

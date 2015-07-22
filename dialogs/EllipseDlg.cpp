@@ -66,19 +66,19 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 		m_vecPlots[i]->canvas()->setMouseTracking(1);
 		m_vecPickers[i] = new QwtPlotPicker(m_vecPlots[i]->xBottom,
 											m_vecPlots[i]->yLeft,
-#ifndef USE_QWT6
+#if QWT_VER<6
 											QwtPlotPicker::PointSelection,
 #endif
 											//QwtPlotPicker::CrossRubberBand,
 											QwtPlotPicker::NoRubberBand,
-#ifdef USE_QWT6
+#if QWT_VER>=6
 											QwtPlotPicker::AlwaysOff,
 #else
 											QwtPlotPicker::AlwaysOn,
 #endif
 											m_vecPlots[i]->canvas());
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 		m_vecPickers[i]->setStateMachine(new QwtPickerTrackerMachine());
 		connect(m_vecPickers[i], SIGNAL(moved(const QPointF&)),
 				this, SLOT(cursorMoved(const QPointF&)));
@@ -112,7 +112,7 @@ EllipseDlg::~EllipseDlg()
 	}
 	m_vecZoomers.clear();
 
-#ifndef USE_QWT6
+#if QWT_VER<6
 	for(QwtPlot* pPlot : m_vecPlots)
 		pPlot->clear();
 #endif
@@ -243,7 +243,7 @@ void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vecto
 			m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512, dBBProj);
 			m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512, dBBSlice);
 
-	#ifdef USE_QWT6
+	#if QWT_VER>=6
 			pCurveProj->setRawSamples(vecXProj.data(), vecYProj.data(), vecXProj.size());
 			pCurveSlice->setRawSamples(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
 	#else

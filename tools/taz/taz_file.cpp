@@ -10,8 +10,8 @@
 #include "dialogs/FilePreviewDlg.h"
 #include "tlibs/file/recent.h"
 
-#include <QtGui/QMessageBox>
-#include <QtGui/QFileDialog>
+#include <QMessageBox>
+#include <QFileDialog>
 
 
 //--------------------------------------------------------------------------------

@@ -8,8 +8,8 @@
 #ifndef __POWDER_DLG_H__
 #define __POWDER_DLG_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 #include "ui/ui_powder.h"
 
 #include <map>

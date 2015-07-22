@@ -7,7 +7,7 @@
 
 #include "recip3d.h"
 #include "tlibs/math/geo.h"
-#include <QtGui/QGridLayout>
+#include <QGridLayout>
 
 Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
 			: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings))

@@ -17,6 +17,13 @@
 #include <sstream>
 
 
+#if QT_VER>=5
+	#define POS_F localPos
+#else
+	#define POS_F posF
+#endif
+
+
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings)
 		: QGLWidget(pParent), m_pSettings(pSettings),
 			m_mutex(QMutex::Recursive),
@@ -119,12 +126,18 @@ void PlotGl::initializeGLThread()
 	}
 	m_pFont = new tl::GlFontMap(strFont.c_str(), 12);
 
-	this->setMouseTracking(1);
+#if QT_VER>=5
+	QWidget::
+#endif
+	setMouseTracking(1);
 }
 
 void PlotGl::freeGLThread()
 {
-	this->setMouseTracking(0);
+#if QT_VER>=5
+	QWidget::
+#endif
+	setMouseTracking(0);
 
 	for(unsigned iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
 		glDeleteLists(m_iLstSphere[iSphere], 1);
@@ -432,14 +445,14 @@ void PlotGl::mousePressEvent(QMouseEvent *event)
 	{
 		m_bMouseRotateActive = 1;
 
-		m_dMouseBegin[0] = event->posF().x();
-		m_dMouseBegin[1] = event->posF().y();
+		m_dMouseBegin[0] = event->POS_F().x();
+		m_dMouseBegin[1] = event->POS_F().y();
 	}
 
 	if(event->buttons() & Qt::LeftButton)
 	{
 		m_bMouseScaleActive = 1;
-		m_dMouseScaleBegin = event->posF().y();
+		m_dMouseScaleBegin = event->POS_F().y();
 	}
 }
 
@@ -457,8 +470,8 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	bool bUpdateView = 0;
 	if(m_bMouseRotateActive)
 	{
-		double dNewX = pEvt->posF().x();
-		double dNewY = pEvt->posF().y();
+		double dNewX = pEvt->POS_F().x();
+		double dNewY = pEvt->POS_F().y();
 
 		m_dMouseRot[0] += dNewX - m_dMouseBegin[0];
 		m_dMouseRot[1] += dNewY - m_dMouseBegin[1];
@@ -471,7 +484,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 
 	if(m_bMouseScaleActive)
 	{
-		double dNewY = pEvt->posF().y();
+		double dNewY = pEvt->POS_F().y();
 
 		m_dMouseScale *= 1.-(dNewY - m_dMouseScaleBegin)/double(height()) * 2.;
 		m_dMouseScaleBegin = dNewY;
@@ -484,8 +497,8 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 
 
 
-	m_dMouseX = 2.*pEvt->posF().x()/double(m_iW) - 1.;
-	m_dMouseY = -(2.*pEvt->posF().y()/double(m_iH) - 1.);
+	m_dMouseX = 2.*pEvt->POS_F().x()/double(m_iW) - 1.;
+	m_dMouseY = -(2.*pEvt->POS_F().y()/double(m_iH) - 1.);
 	//std::cout << m_dMouseX << ", " << m_dMouseY << std::endl;
 
 	m_mutex.lock();

@@ -8,8 +8,8 @@
 #ifndef __FILE_PREV_DLG__
 #define __FILE_PREV_DLG__
 
-#include <QtGui/QFileDialog>
-#include <QtCore/QString>
+#include <QFileDialog>
+#include <QString>
 #include <vector>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>

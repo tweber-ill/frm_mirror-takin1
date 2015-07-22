@@ -8,8 +8,8 @@
 #ifndef __TAZ_SCANVIEWER_H__
 #define __TAZ_SCANVIEWER_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>

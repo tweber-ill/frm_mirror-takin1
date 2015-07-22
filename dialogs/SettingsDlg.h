@@ -8,8 +8,8 @@
 #ifndef __TAZ_SETTINGS_H__
 #define __TAZ_SETTINGS_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 
 #include <tuple>
 #include <vector>

@@ -15,12 +15,15 @@
 #include "tlibs/math/bz.h"
 #include "tlibs/math/neutrons.hpp"
 
-#include <QtGui/QGraphicsScene>
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGraphicsItem>
-#include <QtGui/QGraphicsSceneDragDropEvent>
-#include <QtGui/QGraphicsTextItem>
-#include <QtGui/QWheelEvent>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsItem>
+#include <QGraphicsSceneDragDropEvent>
+#include <QGraphicsTextItem>
+#include <QWheelEvent>
+#if QT_VER>=5
+	#include <QtWidgets>
+#endif
 
 #include "tasoptions.h"
 #include "dialogs/RecipParamDlg.h"	// for RecipParams struct
@@ -31,7 +34,7 @@ enum ScatteringTriangleNodeType
 {
 	NODE_Q,
 	NODE_q,
-	
+
 	NODE_BRAGG,
 	NODE_KIQ,
 	NODE_KIKF,

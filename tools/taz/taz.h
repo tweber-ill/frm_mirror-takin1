@@ -8,12 +8,12 @@
 #ifndef __TAZ_H__
 #define __TAZ_H__
 
-//#include <QtGui/QDialog>
-#include <QtGui/QMainWindow>
-#include <QtGui/QMenu>
-#include <QtCore/QSettings>
-#include <QtCore/QVariant>
-#include <QtCore/QSignalMapper>
+//#include <QDialog>
+#include <QMainWindow>
+#include <QMenu>
+#include <QSettings>
+#include <QVariant>
+#include <QSignalMapper>
 
 #include <string>
 #include <vector>

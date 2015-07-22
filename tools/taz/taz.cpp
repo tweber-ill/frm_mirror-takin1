@@ -12,13 +12,13 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 
-#include <QtGui/QApplication>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QMenuBar>
-#include <QtGui/QToolBar>
-#include <QtGui/QStatusBar>
-#include <QtGui/QMessageBox>
-#include <QtGui/QFileDialog>
+#include <QApplication>
+#include <QHBoxLayout>
+#include <QMenuBar>
+#include <QToolBar>
+#include <QStatusBar>
+#include <QMessageBox>
+#include <QFileDialog>
 
 #include "tlibs/math/lattice.h"
 #include "tlibs/string/spec_char.h"

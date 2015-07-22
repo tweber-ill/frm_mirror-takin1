@@ -17,8 +17,8 @@
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
+#include <QFileDialog>
+#include <QMessageBox>
 
 namespace ublas = boost::numeric::ublas;
 namespace co = boost::units::si::constants::codata;

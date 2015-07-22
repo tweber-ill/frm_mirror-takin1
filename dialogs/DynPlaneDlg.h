@@ -8,8 +8,8 @@
 #ifndef __DYN_PLANE_DLG_H__
 #define __DYN_PLANE_DLG_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 #include "ui/ui_dyn_plane.h"
 #include "RecipParamDlg.h"
 

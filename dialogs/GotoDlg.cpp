@@ -11,8 +11,8 @@
 #include "tlibs/string/spec_char.h"
 #include "helper/globals.h"
 
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
+#include <QFileDialog>
+#include <QMessageBox>
 
 namespace units = boost::units;
 namespace co = boost::units::si::constants::codata;

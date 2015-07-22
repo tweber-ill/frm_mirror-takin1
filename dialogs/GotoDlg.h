@@ -8,8 +8,8 @@
 #ifndef __GOTO_DLG_H__
 #define __GOTO_DLG_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 #include "ui/ui_goto.h"
 
 #include "tlibs/math/lattice.h"

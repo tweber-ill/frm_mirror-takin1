@@ -8,7 +8,7 @@
 #ifndef __TAZ_RECIP_3D__
 #define __TAZ_RECIP_3D__
 
-#include <QtGui/QDialog>
+#include <QDialog>
 #include "helper/plotgl.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/geo.h"

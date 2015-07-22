@@ -9,7 +9,7 @@
 #define __TASOPTIONS_H__
 
 #include "tlibs/math/linalg.h"
-#include <QtCore/QPointF>
+#include <QPointF>
 
 namespace ublas = boost::numeric::ublas;
 

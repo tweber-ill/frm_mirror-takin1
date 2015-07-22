@@ -6,8 +6,8 @@
  */
 
 #include "FilePreviewDlg.h"
-#include <QtGui/QGridLayout>
-#include <QtGui/QLabel>
+#include <QGridLayout>
+#include <QLabel>
 #include "tlibs/file/loadinstr.h"
 #include <iostream>
 #include <memory>
@@ -59,7 +59,7 @@ void FilePreviewDlg::ClearPlot()
 {
 	m_vecCts.clear();
 	m_vecScn.clear();
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pCurve->setRawSamples(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
 	m_pPoints->setRawSamples(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
 #else
@@ -90,7 +90,7 @@ void FilePreviewDlg::FileSelected(const QString& qstrFile)
 	//std::copy(m_vecScn.begin(), m_vecScn.end(), std::ostream_iterator<double>(std::cout, " "));
 	//std::cout << std::endl;
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pCurve->setRawSamples(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
 	m_pPoints->setRawSamples(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
 #else

@@ -36,18 +36,18 @@ DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 
 	plot->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
-#ifndef USE_QWT6
+#if QWT_VER<6
 									QwtPlotPicker::PointSelection,
 #endif
 									QwtPlotPicker::NoRubberBand,
-#ifdef USE_QWT6
+#if QWT_VER>=6
 									QwtPlotPicker::AlwaysOff,
 #else
 									QwtPlotPicker::AlwaysOn,
 #endif
 									plot->canvas());
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
 	connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 #endif
@@ -145,7 +145,7 @@ void DynPlaneDlg::Calc()
 	m_vecE.insert(m_vecE.end(), vecE[1].begin(), vecE[1].end());
 
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pCurve->setRawSamples(m_vecQ.data(), m_vecE.data(), m_vecQ.size());
 #else
 	m_pCurve->setRawData(m_vecQ.data(), m_vecE.data(), m_vecQ.size());

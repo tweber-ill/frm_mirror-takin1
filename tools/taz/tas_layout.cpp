@@ -630,9 +630,14 @@ void TasLayoutView::wheelEvent(QWheelEvent *pEvt)
 	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
 	double dDelta = pEvt->delta()/100.;
+
+#if QT_VER>=5
+        double dScale = dDelta>0. ? 1.1 : 1./1.1;
+#else
 	double dScale = dDelta;
 	if(dDelta < 0.)
 		dScale = -1./dDelta;
+#endif
 
 	this->scale(dScale, dScale);
 

@@ -8,8 +8,8 @@
 #ifndef __SRV_DLG_H__
 #define __SRV_DLG_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 #include "ui/ui_connection.h"
 
 class SrvDlg : public QDialog, Ui::SrvDlg

@@ -37,18 +37,18 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 
 	plotbragg->canvas()->setMouseTracking(1);
 	m_pBraggPicker = new QwtPlotPicker(plotbragg->xBottom, plotbragg->yLeft,
-#ifndef USE_QWT6
+#if QWT_VER<6
 									QwtPlotPicker::PointSelection,
 #endif
 									QwtPlotPicker::NoRubberBand,
-#ifdef USE_QWT6
+#if QWT_VER>=6
 									QwtPlotPicker::AlwaysOff,
 #else
 									QwtPlotPicker::AlwaysOn,
 #endif
 									plotbragg->canvas());
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pBraggPicker->setStateMachine(new QwtPickerTrackerMachine());
 	connect(m_pBraggPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 #endif
@@ -210,7 +210,7 @@ void SpurionDlg::CalcBragg()
 		m_vecE.push_back(E/tl::meV);
 	}
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pBraggCurve->setRawSamples(m_vecQ.data(), m_vecE.data(), m_vecQ.size());
 #else
 	m_pBraggCurve->setRawData(m_vecQ.data(), m_vecE.data(), m_vecQ.size());

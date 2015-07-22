@@ -5,8 +5,8 @@
  * @copyright GPLv2
  */
 
-#include <QtCore/QLocale>
-#include <QtGui/QApplication>
+#include <QLocale>
+#include <QApplication>
 #include "scanviewer.h"
 
 int main(int argc, char** argv)

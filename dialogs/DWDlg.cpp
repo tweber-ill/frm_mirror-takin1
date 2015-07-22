@@ -42,18 +42,18 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 
 	plot->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
-#ifndef USE_QWT6
+#if QWT_VER<6
 									QwtPlotPicker::PointSelection,
 #endif
 									QwtPlotPicker::NoRubberBand,
-#ifdef USE_QWT6
+#if QWT_VER>=6
 									QwtPlotPicker::AlwaysOff,
 #else
 									QwtPlotPicker::AlwaysOn,
 #endif
 									plot->canvas());
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
 	connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 #endif
@@ -62,10 +62,10 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 
 	plot->setAxisTitle(QwtPlot::xBottom, "Q (1/A)");
 	plot->setAxisTitle(QwtPlot::yLeft, "DW Factor");
-	
+
 	CalcDW();
 
-	
+
 
 	// -------------------------------------------------------------------------
 	// Ana Factor stuff
@@ -90,18 +90,18 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 
 	plotAna->canvas()->setMouseTracking(1);
 	m_pPickerAna = new QwtPlotPicker(plotAna->xBottom, plotAna->yLeft,
-#ifndef USE_QWT6
+#if QWT_VER<6
 									QwtPlotPicker::PointSelection,
 #endif
 									QwtPlotPicker::NoRubberBand,
-#ifdef USE_QWT6
+#if QWT_VER>=6
 									QwtPlotPicker::AlwaysOff,
 #else
 									QwtPlotPicker::AlwaysOn,
 #endif
 									plotAna->canvas());
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pPickerAna->setStateMachine(new QwtPickerTrackerMachine());
 	connect(m_pPickerAna, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 #endif
@@ -189,7 +189,7 @@ void DWDlg::CalcDW()
 		m_vecDeb.push_back(dDWF);
 	}
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pCurve->setRawSamples(m_vecQ.data(), m_vecDeb.data(), m_vecQ.size());
 #else
 	m_pCurve->setRawData(m_vecQ.data(), m_vecDeb.data(), m_vecQ.size());
@@ -206,34 +206,34 @@ void DWDlg::CalcAna()
 	const tl::length d = spinAnad->value()*tl::angstrom;
 	const double dMinKf = spinMinkf->value();
 	const double dMaxKf = spinMaxkf->value();
-	
+
 	double dAngMax = 0.5*tl::get_mono_twotheta(dMinKf/tl::angstrom, d, 1) / tl::radians / M_PI * 180.;
 	double dAngMin = 0.5*tl::get_mono_twotheta(dMaxKf/tl::angstrom, d, 1) / tl::radians / M_PI * 180.;
-	
+
 	editAngMin->setText(tl::var_to_str(dAngMin).c_str());
 	editAngMax->setText(tl::var_to_str(dAngMax).c_str());
-	
+
 	m_veckf.clear();
 	m_vecInt.clear();
-	
+
 	m_veckf.reserve(NUM_POINTS);
 	m_vecInt.reserve(NUM_POINTS);
-	
+
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
 		tl::wavenumber kf = (dMinKf + (dMaxKf - dMinKf)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
 		double dEffic = tl::ana_effic_factor(kf, d);
-		
+
 		m_veckf.push_back(kf * tl::angstrom);
 		m_vecInt.push_back(dEffic);
 	}
 
-#ifdef USE_QWT6
+#if QWT_VER>=6
 	m_pCurveAna->setRawSamples(m_veckf.data(), m_vecInt.data(), m_veckf.size());
 #else
 	m_pCurveAna->setRawData(m_veckf.data(), m_vecInt.data(), m_veckf.size());
 #endif
-	
+
 	plotAna->replot();
 }
 

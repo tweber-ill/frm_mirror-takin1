@@ -8,8 +8,8 @@
 #ifndef __DWDLG_H__
 #define __DWDLG_H__
 
-#include <QtGui/QDialog>
-#include <QtCore/QSettings>
+#include <QDialog>
+#include <QSettings>
 #include "ui/ui_dw.h"
 
 #include <vector>

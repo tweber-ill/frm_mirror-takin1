@@ -8,9 +8,9 @@
 #ifndef __RESO_DLG_H__
 #define __RESO_DLG_H__
 
-#include <QtCore/QSettings>
-#include <QtGui/QDialog>
-#include <QtGui/QLabel>
+#include <QSettings>
+#include <QDialog>
+#include <QLabel>
 
 #include <vector>
 #include <map>
