@@ -178,7 +178,7 @@ void ScanViewerDlg::ClearPlot()
 				editPlaneY0, editPlaneY1, editPlaneY2,
 				editTitle, editSample,
 				editUser, editContact,
-				editKfix };
+				editKfix, editTimestamp };
 	for(auto* pEdit : edits)
 		pEdit->setText("");
 
@@ -302,6 +302,7 @@ void ScanViewerDlg::PlotScan()
 	editSample->setText(m_pInstr->GetSampleName().c_str());
 	editUser->setText(m_pInstr->GetUser().c_str());
 	editContact->setText(m_pInstr->GetLocalContact().c_str());
+	editTimestamp->setText(m_pInstr->GetTimestamp().c_str());
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());

@@ -309,6 +309,20 @@
                 </property>
                </widget>
               </item>
+              <item row="2" column="4">
+               <widget class="QLineEdit" name="editTimestamp">
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>Date:</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -527,6 +541,7 @@
   <tabstop>editUser</tabstop>
   <tabstop>editContact</tabstop>
   <tabstop>editKfix</tabstop>
+  <tabstop>editTimestamp</tabstop>
   <tabstop>editA</tabstop>
   <tabstop>editB</tabstop>
   <tabstop>editC</tabstop>
@@ -540,6 +555,8 @@
   <tabstop>editPlaneY1</tabstop>
   <tabstop>editPlaneY2</tabstop>
   <tabstop>tableProps</tabstop>
+  <tabstop>comboExport</tabstop>
+  <tabstop>textRoot</tabstop>
  </tabstops>
  <resources/>
  <connections/>
