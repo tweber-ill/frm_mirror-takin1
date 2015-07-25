@@ -142,6 +142,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.pos_z = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_z").c_str(), 0.)*0.01*tl::meters;
 
 
+	m_algo = ResoAlgo(xml.Query<int>((strXmlRoot + "reso/algo").c_str(), 0));
+
 	// TODO
 	m_reso.mono_numtiles_h = 1;
 	m_reso.mono_numtiles_v = 1;
@@ -234,11 +236,25 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 	// calculate resolution at (hkl) and E
 	if(m_algo == ResoAlgo::CN)
+	{
+		tl::log_info("Algorithm: Cooper-Nathans");
 		m_res = calc_cn(m_reso);
+	}
 	else if(m_algo == ResoAlgo::POP)
+	{
+		tl::log_info("Algorithm: Popovici");
 		m_res = calc_pop(m_reso);
+	}
 	else if(m_algo == ResoAlgo::ECK)
+	{
+		tl::log_info("Algorithm: Eckold-Sobolev");
 		m_res = calc_eck(m_reso);
+	}
+	else
+	{
+		tl::log_err("Unknown algorithm selected.");
+		return false;
+	}
 
 	tl::log_info("Resolution matrix: ", m_res.reso);
 

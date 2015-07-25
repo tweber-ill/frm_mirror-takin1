@@ -45,6 +45,8 @@ public:
 
 	void SetKiFix(bool bKiFix) { m_bKiFix = bKiFix; }
 	void SetKFix(double dKFix) { m_dKFix = dKFix; }
+
+	void SetAlgo(ResoAlgo algo) { m_algo = algo; }
 };
 
 #endif

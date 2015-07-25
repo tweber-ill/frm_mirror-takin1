@@ -22,7 +22,7 @@ static inline void usage(const char* pcProg)
 	std::ostringstream ostr;
 	ostr << "Usage: "
 		<< "\n\t(1) " << pcProg << " <mc neutron file> <S(Q,w) file>"
-		<< "\n\t(2) " << pcProg << " <resolution file> <crystal file> <S(Q,w) file> <steps file> <neutron count>";
+		<< "\n\t(2) " << pcProg << " <resolution file> <crystal file> <S(Q,w) file> <steps file> <out file>";
 
 	tl::log_err("Wrong arguments.\n", ostr.str());
 }
@@ -97,7 +97,7 @@ static inline int monteconvo_simple(const char* pcNeutrons, const char* pcSqw)
 
 
 static inline int monteconvo(const char* pcRes, const char* pcCrys,
-	const char* pcSqw, const char* pcSteps)
+	const char* pcSqw, const char* pcSteps, const char* pcOut)
 {
 	TASReso reso;
 	tl::log_info("Loading resolution file \"", pcRes, "\".");
@@ -144,6 +144,9 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 		return -3;
 	}
 
+	reso.SetAlgo(ResoAlgo(tl::str_to_var<int>(steps.GetCommMapSingle().at("algo"))));
+
+
 	tl::log_info("Number of neutrons: ", iNumNeutrons);
 
 
@@ -155,6 +158,11 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 		return -4;
 	}
 
+
+	std::ofstream ofstrOut(pcOut);
+	ofstrOut << "#\n";
+	ofstrOut << "# Format: h k l E S\n";
+	ofstrOut << "#\n";
 
 	for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 	{
@@ -180,10 +188,19 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 		for(int i=0; i<4; ++i)
 			dhklE_mean[i] /= double(iNumNeutrons);
 
+		ofstrOut.precision(16);
+		ofstrOut << std::left << std::setw(20) << pH[iStep] << " "
+			<< std::left << std::setw(20) << pK[iStep] << " "
+			<< std::left << std::setw(20) << pL[iStep] << " "
+			<< std::left << std::setw(20) << pE[iStep] << " "
+			<< std::left << std::setw(20) << dS << " ";
+
 		tl::log_info("Mean position: Q = (", dhklE_mean[0], " ", dhklE_mean[1], " ", dhklE_mean[2], "), E = ", dhklE_mean[3], " meV.");
 		tl::log_info("S(", pH[iStep], ", ", pK[iStep],  ", ", pL[iStep], ", ", pE[iStep], ") = ", dS);
 	}
 
+	tl::log_info("Wrote output file \"", pcOut, "\".");
+	ofstrOut.close();
 	return 0;
 }
 
@@ -199,11 +216,10 @@ int main(int argc, char** argv)
 	::setlocale(LC_ALL, "C");
 	QLocale::setDefault(QLocale::English);
 
-
 	if(argc == 3)
 		return monteconvo_simple(argv[1], argv[2]);
-	else if(argc == 5)
-		return monteconvo(argv[1], argv[2], argv[3], argv[4]);
+	else if(argc==6)
+		return monteconvo(argv[1], argv[2], argv[3], argv[4], argv[5]);
 	else
 	{
 		usage(argv[0]);

@@ -25,7 +25,7 @@ bool Sqw::open(const char* pcFile)
 		std::string strLine;
 		std::getline(ifstr, strLine);
 		tl::trim(strLine);
-		
+
 		if(strLine.length() == 0)
 			continue;
 
@@ -35,7 +35,7 @@ bool Sqw::open(const char* pcFile)
 			m_mapParams.insert(tl::split_first(strLine, std::string(":"), 1));
 			continue;
 		}
-		
+
 		std::vector<double> vecSqw;
 		tl::get_tokens<double>(strLine, std::string(" \t"), vecSqw);
 		if(vecSqw.size() != 5)
@@ -43,15 +43,17 @@ bool Sqw::open(const char* pcFile)
 			tl::log_err("Need h,k,l,E,S data.");
 			return false;
 		}
-		
+
 		lstPoints.push_back(vecSqw);
 		++iCurPoint;
 	}
-	
+
 	tl::log_info("Loaded ",  iCurPoint, " S(q,w) points.");
 	m_kd.Load(lstPoints, 4);
 	tl::log_info("Generated k-d tree.");
-	
+
+	//std::ofstream ofstrkd("kd.dbg");
+	//m_kd.GetRootNode()->print(ofstrkd);
 	return true;
 }
 
@@ -60,7 +62,7 @@ double Sqw::operator()(double dh, double dk, double dl, double dE) const
 {
 	std::vector<double> vechklE = {dh, dk, dl, dE};
 	std::vector<double> vec = m_kd.GetNearestNode(vechklE);
-	
+
 	//tl::log_info("Nearest node: ", vec[0], ", ", vec[1], ", ", vec[2], ", ", vec[3], ", ", vec[4]);
 	return vec[4];
 }

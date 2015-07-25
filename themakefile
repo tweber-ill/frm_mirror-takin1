@@ -167,7 +167,7 @@ endif
 
 .PHONY: all clean
 
-all: takin montereso monteconvo scanviewer
+all: takin montereso monteconvo posextract scanviewer
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -181,6 +181,10 @@ montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
 monteconvo: ${OBJ_MONTECONVO}
 	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} -lQtCore -lQtGui -lQtXml -lQtXmlPatterns
 	${STRIP} monteconvo
+
+posextract: obj/posextract.o obj/loadinstr.o obj/log.o
+	${CC} ${FLAGS} -o bin/posextract $+ ${STD_LIBS} -lboost_iostreams
+	${STRIP} posextract
 
 reso: ${OBJ_RESO}
 	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
@@ -290,6 +294,8 @@ obj/mconv_main.o: tools/monteconvo/mconv_main.cpp
 obj/sqw.o: tools/monteconvo/sqw.cpp tools/monteconvo/sqw.h tlibs/math/kd.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tasreso.o: tools/monteconvo/TASReso.cpp tools/monteconvo/TASReso.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/posextract.o: tools/posextract/posextract.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/scanviewer_main.o: tools/scanviewer/main.cpp

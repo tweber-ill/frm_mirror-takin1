@@ -12,6 +12,7 @@ bin/monteconvo
 bin/taz
 bin/takin
 bin/scanviewer
+bin/posextract
 perf.data
 perf.data.old
 gmon.out
