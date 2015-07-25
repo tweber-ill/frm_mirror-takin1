@@ -45,7 +45,7 @@ CNResults calc_cn(const CNParams& cn)
 
 	// -------------------------------------------------------------------------
 	// transformation matrix
-	
+
 	angle twotheta = cn.twotheta;
 	angle thetaa = cn.thetaa;
 	angle thetam = cn.thetam;
@@ -53,13 +53,13 @@ CNResults calc_cn(const CNParams& cn)
 	angle kf_Q = cn.angle_kf_Q;
 	//kf_Q = twotheta + ki_Q;
 
-	if(cn.dsample_sense < 0) 
-	{ 
-		twotheta = -twotheta; 
-		ki_Q = -ki_Q; 
-		kf_Q = -kf_Q; 
+	if(cn.dsample_sense < 0)
+	{
+		twotheta = -twotheta;
+		ki_Q = -ki_Q;
+		kf_Q = -kf_Q;
 	}
-	
+
 
 	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
 	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
@@ -71,6 +71,7 @@ CNResults calc_cn(const CNParams& cn)
 	U(3,0) = 2.*cn.ki * angs * tl::KSQ2E;
 	U(3,3) = -2.*cn.kf * angs * tl::KSQ2E;
 	U(4,0) = 1.; U(5,2) = 1.;
+	//tl::log_info("U = ", U);
 
 	t_mat V(6,6);
 	if(!tl::inverse(U, V))
@@ -160,7 +161,7 @@ CNResults calc_cn(const CNParams& cn)
 	res.reso = NP;
 	res.reso_v = ublas::zero_vector<t_real>(4);
 	res.reso_s = 0.;
-	
+
 	// -------------------------------------------------------------------------
 
 

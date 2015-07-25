@@ -4,7 +4,7 @@
  * @date jun-2015
  * @license GPLv2
  */
- 
+
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -12,20 +12,23 @@
 
 #include "tlibs/string/string.h"
 #include "tlibs/helper/log.h"
+#include "tlibs/file/loadtxt.h"
+#include "TASReso.h"
 #include "sqw.h"
 
 
 static inline void usage(const char* pcProg)
 {
 	std::ostringstream ostr;
-	ostr << "Usage: " << pcProg 
-		<< " <mc neutron file> <S(Q,w) file>";
+	ostr << "Usage: "
+		<< "\n\t(1) " << pcProg << " <mc neutron file> <S(Q,w) file>"
+		<< "\n\t(2) " << pcProg << " <resolution file> <crystal file> <S(Q,w) file> <steps file> <neutron count>";
 
-	tl::log_err("No input files given.\n", ostr.str());
+	tl::log_err("Wrong arguments.\n", ostr.str());
 }
 
 
-static inline int monteconvo(const char* pcNeutrons, const char* pcSqw)
+static inline int monteconvo_simple(const char* pcNeutrons, const char* pcSqw)
 {
 	std::ifstream ifstrNeutr(pcNeutrons);
 	if(!ifstrNeutr.is_open())
@@ -33,14 +36,14 @@ static inline int monteconvo(const char* pcNeutrons, const char* pcSqw)
 		tl::log_err("Cannot open neutrons file \"", pcNeutrons, "\".");
 		return -1;
 	}
-	
+
 	Sqw sqw;
 	if(!sqw.open(pcSqw))
 	{
 		tl::log_err("Cannot open Sqw file \"", pcSqw, "\".");
 		return -2;
 	}
-	
+
 	unsigned int iCurNeutr = 0;
 	std::unordered_map<std::string, std::string> mapNeutrParams;
 	double dS = 0.;
@@ -51,17 +54,17 @@ static inline int monteconvo(const char* pcNeutrons, const char* pcSqw)
 		std::string strLine;
 		std::getline(ifstrNeutr, strLine);
 		tl::trim(strLine);
-		
+
 		if(strLine.size() == 0)
 			continue;
-		
+
 		if(strLine[0] == '#')
 		{
 			strLine[0] = ' ';
 			mapNeutrParams.insert(tl::split_first(strLine, std::string(":"), 1));
 			continue;
 		}
-		
+
 		/*if(mapNeutrParams["coord_sys"] != "rlu")
 		{
 			tl::log_err("Need rlu coordinate system.");
@@ -75,36 +78,135 @@ static inline int monteconvo(const char* pcNeutrons, const char* pcSqw)
 			tl::log_err("Need h,k,l,E data.");
 			return -3;
 		}
-		
+
 		//tl::log_info("Neutron ", iCurNeutr, ": ", vecNeutr[0], ", ", vecNeutr[1], ", ", vecNeutr[2], ", ", vecNeutr[3]);
-	
+
 		for(int i=0; i<4; ++i) dhklE[i] += vecNeutr[i];
 		sqw.SetNeutronParams(&mapNeutrParams);
 		dS += sqw(vecNeutr[0], vecNeutr[1], vecNeutr[2], vecNeutr[3]);
-		
+
 		++iCurNeutr;
 	}
 
 	for(int i=0; i<4; ++i) dhklE[i] /= double(iCurNeutr+1);
-	
+
 	tl::log_info("Processed ",  iCurNeutr, " MC neutrons.");
-	
-	std::cout << "S(" 
-			<<  dhklE[0] << ", " << dhklE[1] <<  ", " << dhklE[2] << ", " << dhklE[3]
-			<< ") = " << dS << std::endl;
+	tl::log_info("S(", dhklE[0], ", ", dhklE[1],  ", ", dhklE[2], ", ", dhklE[3], ") = ", dS);
 	return 0;
 }
 
 
+static inline int monteconvo(const char* pcRes, const char* pcCrys,
+	const char* pcSqw, const char* pcSteps)
+{
+	TASReso reso;
+	tl::log_info("Loading resolution file \"", pcRes, "\".");
+	if(!reso.LoadRes(pcRes))
+		return -1;
+
+	tl::log_info("Loading crystal file \"", pcRes, "\".");
+	if(!reso.LoadLattice(pcCrys))
+		return -2;
+
+
+	tl::LoadTxt steps;
+	tl::log_info("Loading scan steps file \"", pcRes, "\".");
+	if(!steps.Load(pcSteps))
+	{
+		tl::log_err("Cannot load steps file.");
+		return -3;
+	}
+	if(steps.GetColCnt() != 4)
+	{
+		tl::log_err("Need 4 columns in step file: h k l E.");
+		return -3;
+	}
+	const unsigned int iNumSteps = steps.GetColLen();
+	tl::log_info("Number of scan steps: ", iNumSteps);
+	const double *pH = steps.GetColumn(0);
+	const double *pK = steps.GetColumn(1);
+	const double *pL = steps.GetColumn(2);
+	const double *pE = steps.GetColumn(3);
+
+	unsigned int iNumNeutrons = 0;
+	try
+	{
+		iNumNeutrons = tl::str_to_var<unsigned int>(steps.GetCommMapSingle().at("num_neutrons"));
+		bool bFixedKi = tl::str_to_var<bool>(steps.GetCommMapSingle().at("fixed_ki"));
+		double dKFix = tl::str_to_var<double>(steps.GetCommMapSingle().at("kfix"));
+
+		reso.SetKiFix(bFixedKi);
+		reso.SetKFix(dKFix);
+	}
+	catch(const std::out_of_range& ex)
+	{
+		tl::log_err("Need keys \"num_neutrons\", \"fixed_ki\" and \"kfix\" in steps file.");
+		return -3;
+	}
+
+	tl::log_info("Number of neutrons: ", iNumNeutrons);
+
+
+	Sqw sqw;
+	tl::log_info("Loading S(Q,w) file \"", pcSqw, "\".");
+	if(!sqw.open(pcSqw))
+	{
+		tl::log_err("Cannot load Sqw file.");
+		return -4;
+	}
+
+
+	for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
+	{
+		tl::log_info("Q = (", pH[iStep], " ", pK[iStep], " ", pL[iStep], "), E = ", pE[iStep], " meV.");
+		if(!reso.SetHKLE(pH[iStep], pK[iStep], pL[iStep], pE[iStep]))
+		{
+			tl::log_err("Invalid position.");
+			break;
+		}
+
+		std::vector<ublas::vector<double>> vecNeutrons = reso.GenerateMC(iNumNeutrons);
+		double dS = 0.;
+		double dhklE_mean[4] = {0., 0., 0., 0.};
+
+		for(const ublas::vector<double>& vecHKLE : vecNeutrons)
+		{
+			dS += sqw(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
+
+			for(int i=0; i<4; ++i)
+				dhklE_mean[i] += vecHKLE[i];
+		}
+
+		for(int i=0; i<4; ++i)
+			dhklE_mean[i] /= double(iNumNeutrons);
+
+		tl::log_info("Mean position: Q = (", dhklE_mean[0], " ", dhklE_mean[1], " ", dhklE_mean[2], "), E = ", dhklE_mean[3], " meV.");
+		tl::log_info("S(", pH[iStep], ", ", pK[iStep],  ", ", pL[iStep], ", ", pE[iStep], ") = ", dS);
+	}
+
+	return 0;
+}
+
+
+
+// TODO: create non-Qt xml loader and remove linking to Qt...
+#include <QApplication>
+#include <QLocale>
+
 int main(int argc, char** argv)
 {
+	QApplication app(argc, argv, 0);
 	::setlocale(LC_ALL, "C");
+	QLocale::setDefault(QLocale::English);
 
-	if(argc < 3)
+
+	if(argc == 3)
+		return monteconvo_simple(argv[1], argv[2]);
+	else if(argc == 5)
+		return monteconvo(argv[1], argv[2], argv[3], argv[4]);
+	else
 	{
 		usage(argv[0]);
 		return -1;
 	}
-	
-	return monteconvo(argv[1], argv[2]);
 }

@@ -17,6 +17,10 @@
 
 #include "cn.h"
 
+typedef double t_real;
+typedef ublas::matrix<t_real> t_mat;
+typedef ublas::vector<t_real> t_vec;
+
 
 // --------------------------------------------------------------------------------
 
@@ -57,9 +61,9 @@ std::ostream& operator<<(std::ostream& ostr, const Ellipsoid4d& ell)
 
 // --------------------------------------------------------------------------------
 
-ublas::vector<double> Ellipse::operator()(double t) const
+t_vec Ellipse::operator()(t_real t) const
 {
-	ublas::vector<double> vec(2);
+	t_vec vec(2);
 
     vec[0] = x_hwhm*std::cos(2.*M_PI*t)*std::cos(phi) - y_hwhm*std::sin(2.*M_PI*t)*std::sin(phi) + x_offs;
     vec[1] = x_hwhm*std::cos(2.*M_PI*t)*std::sin(phi) + y_hwhm*std::sin(2.*M_PI*t)*std::cos(phi) + y_offs;
@@ -67,16 +71,16 @@ ublas::vector<double> Ellipse::operator()(double t) const
     return vec;
 }
 
-void Ellipse::GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
-							unsigned int iPoints, double *pLRTB)
+void Ellipse::GetCurvePoints(std::vector<t_real>& x, std::vector<t_real>& y,
+							unsigned int iPoints, t_real *pLRTB)
 {
 	x.resize(iPoints);
 	y.resize(iPoints);
 
 	for(unsigned int i=0; i<iPoints; ++i)
 	{
-		double dT = double(i)/double(iPoints-1);
-		ublas::vector<double> vec = operator()(dT);
+		t_real dT = t_real(i)/t_real(iPoints-1);
+		t_vec vec = operator()(dT);
 
 		x[i] = vec[0];
 		y[i] = vec[1];
@@ -96,7 +100,7 @@ void Ellipse::GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
 
 // --------------------------------------------------------------------------------
 
-template<class T = double>
+template<class T = t_real>
 static void elli_gauss_int(tl::QuadEllipsoid<T>& quad, unsigned int iIdx)
 {
 	ublas::matrix<T> m_Qint = ellipsoid_gauss_int(quad.GetQ(), iIdx);
@@ -113,8 +117,8 @@ static const std::string g_strLabels[] = {"Q_{para} (1/A)", "Q_{ortho} (1/A)", "
  * iInt: dimension to integrate
  * iRem1, iRem2: dimensions to remove
  */
-Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
-									const ublas::vector<double>& Q_avg,
+Ellipse calc_res_ellipse(const t_mat& reso,
+									const t_vec& Q_avg,
 									int iX, int iY, int iInt, int iRem1, int iRem2)
 {
 	Ellipse ell;
@@ -128,7 +132,7 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 	ell.y_lab = g_strLabels[iY];
 
 
-	ublas::vector<double> Q_offs = Q_avg;
+	t_vec Q_offs = Q_avg;
 
 	if(iRem1>-1)
 	{
@@ -160,14 +164,14 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 		if(iY>=iInt) --iY;
 	}
 
-	std::vector<double> evals;
-	ublas::matrix<double> matRot;
+	std::vector<t_real> evals;
+	t_mat matRot;
 
-	tl::QuadEllipsoid<double> quad(2);
+	tl::QuadEllipsoid<t_real> quad(2);
 	ell.quad.GetPrincipalAxes(matRot, evals, &quad);
 
 	/*std::cout << "matrix: " << ell.quad.GetQ() << std::endl;
-	for(double dEval : evals)
+	for(t_real dEval : evals)
 		std::cout << "Evals: " << dEval << ", ";
 	std::cout << std::endl;*/
 
@@ -207,9 +211,9 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 #ifndef NDEBUG
 	// sanity check, see Shirane p. 267
-	ublas::matrix<double> res_mat0 = ell.quad.GetQ();
-	double dMyPhi = ell.phi/M_PI*180.;
-	double dPhiShirane = 0.5*atan(2.*res_mat0(0,1) / (res_mat0(0,0)-res_mat0(1,1))) / M_PI*180.;
+	t_mat res_mat0 = ell.quad.GetQ();
+	t_real dMyPhi = ell.phi/M_PI*180.;
+	t_real dPhiShirane = 0.5*atan(2.*res_mat0(0,1) / (res_mat0(0,0)-res_mat0(1,1))) / M_PI*180.;
 	if(!tl::float_equal(dMyPhi, dPhiShirane, 0.01)
 		&& !tl::float_equal(dMyPhi-90., dPhiShirane, 0.01))
 	{
@@ -224,8 +228,8 @@ Ellipse calc_res_ellipse(const ublas::matrix<double>& reso,
 
 // --------------------------------------------------------------------------------
 
-Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
-							const ublas::vector<double>& Q_avg,
+Ellipsoid calc_res_ellipsoid(const t_mat& reso,
+							const t_vec& Q_avg,
 							int iX, int iY, int iZ, int iInt, int iRem)
 {
 	Ellipsoid ell;
@@ -241,7 +245,7 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 	ell.z_lab = g_strLabels[iZ];
 
 
-	ublas::vector<double> Q_offs = Q_avg;
+	t_vec Q_offs = Q_avg;
 
 	if(iRem>-1)
 	{
@@ -264,8 +268,8 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 		if(iZ>=iInt) --iZ;
 	}
 
-	std::vector<double> evals;
-	tl::QuadEllipsoid<double> quad(3);
+	std::vector<t_real> evals;
+	tl::QuadEllipsoid<t_real> quad(3);
 	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
 
 	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
@@ -282,14 +286,14 @@ Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso,
 
 // --------------------------------------------------------------------------------
 
-Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg)
+Ellipsoid4d calc_res_ellipsoid4d(const t_mat& reso, const t_vec& Q_avg)
 {
 	Ellipsoid4d ell;
 	ell.quad.SetDim(4);
 	ell.quad.SetQ(reso);
 
-	std::vector<double> evals;
-	tl::QuadEllipsoid<double> quad(4);
+	std::vector<t_real> evals;
+	tl::QuadEllipsoid<t_real> quad(4);
 	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
 
 	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
@@ -317,22 +321,22 @@ Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas:
 
 void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 				const McNeutronOpts& opts,
-				std::vector<ublas::vector<double>>& vecResult)
+				std::vector<t_vec>& vecResult)
 {
 	tl::init_rand();
 
-	ublas::vector<double> vecTrans(4);
+	t_vec vecTrans(4);
 	vecTrans[0] = ell4d.x_offs;
 	vecTrans[1] = ell4d.y_offs;
 	vecTrans[2] = ell4d.z_offs;
 	vecTrans[3] = ell4d.w_offs;
 
-	const ublas::matrix<double>& rot = ell4d.rot;
+	const t_mat& rot = ell4d.rot;
 	vecResult.reserve(iNum);
 
 	for(unsigned int iCur=0; iCur<iNum; ++iCur)
 	{
-		ublas::vector<double> vecMC = tl::rand_norm_nd<ublas::vector<double>>({0.,0.,0.,0.},
+		t_vec vecMC = tl::rand_norm_nd<t_vec>({0.,0.,0.,0.},
 														{ell4d.x_hwhm*tl::HWHM2SIGMA,
 														ell4d.y_hwhm*tl::HWHM2SIGMA,
 														ell4d.z_hwhm*tl::HWHM2SIGMA,
@@ -344,8 +348,8 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 
 		if(opts.coords == McNeutronCoords::ANGS || opts.coords == McNeutronCoords::RLU)
 		{
-			ublas::matrix<double> matQVec0 = tl::rotation_matrix_2d(-opts.dAngleQVec0);
-			ublas::vector<double> vecXY = tl::make_vec({vecMC[0], vecMC[1]});
+			t_mat matQVec0 = tl::rotation_matrix_2d(-opts.dAngleQVec0);
+			t_vec vecXY = tl::make_vec({vecMC[0], vecMC[1]});
 			vecXY = ublas::prod(matQVec0, vecXY);
 			vecMC[0] = vecXY[0];
 			vecMC[1] = vecXY[1];

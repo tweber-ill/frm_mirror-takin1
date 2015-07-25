@@ -28,7 +28,7 @@ GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSett
 	QObject::connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadList()));
 	QObject::connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveList()));
 	QObject::connect(listSeq, SIGNAL(itemSelectionChanged()), this, SLOT(ListItemSelected()));
-	QObject::connect(listSeq, SIGNAL(itemDoubleClicked(QListWidgetItem*)), 
+	QObject::connect(listSeq, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
 					this, SLOT(ListItemDoubleClicked(QListWidgetItem*)));
 
 	QObject::connect(editKi, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
@@ -106,6 +106,18 @@ void GotoDlg::CalcSample()
 	std::wostringstream ostrStatus;
 	ostrStatus << "Q = " << vecQ << " " << strAA << ", |Q| = " << ublas::norm_2(vecQ) << " " << strAA;
 	labelQ->setText(QString::fromWCharArray(ostrStatus.str().c_str()));
+
+#ifndef NDEBUG
+	try
+	{
+		ublas::vector<double> vecQ0 = vecQ;
+		vecQ0.resize(2, true);
+		double dAngleQVec0 = tl::vec_angle(vecQ0) / M_PI * 180.;
+		tl::log_info("Angle Q Orient0: ", dAngleQVec0, " deg.");
+	}
+	catch(const std::exception& ex)
+	{}
+#endif
 
 	if(bFailed) return;
 
@@ -307,9 +319,10 @@ void GotoDlg::EditedAngles()
 		bFailed = 1;
 	}
 
-	std::ostringstream ostrStatus;
-	ostrStatus << "Q = " << vecQ;
-	labelQ->setText(ostrStatus.str().c_str());
+	const std::wstring strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
+	std::wostringstream ostrStatus;
+	ostrStatus << "Q = " << vecQ << " " << strAA << ", |Q| = " << ublas::norm_2(vecQ) << " " << strAA;
+	labelQ->setText(QString::fromWCharArray(ostrStatus.str().c_str()));
 
 	if(bFailed) return;
 
@@ -451,9 +464,9 @@ bool GotoDlg::GotoPos(QListWidgetItem* pItem, bool bApply)
 
 	EditedKiKf();
 	CalcSample();
-	
+
 	if(bApply)
-		return ApplyCurPos();	
+		return ApplyCurPos();
 	return m_bMonoAnaOk && m_bSampleOk;
 }
 

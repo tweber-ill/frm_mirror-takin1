@@ -142,7 +142,10 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/loadinstr.o obj/recent.o \
 	obj/globals.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
-OBJ_MONTECONVO = obj/mconv_main.o obj/log.o obj/sqw.o
+OBJ_MONTECONVO = obj/mconv_main.o obj/log.o obj/sqw.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/ellipse.o \
+	obj/xml.o obj/rand.o obj/tasreso.o \
+	obj/loadtxt.o
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
@@ -176,7 +179,7 @@ montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
 	${STRIP} montereso
 
 monteconvo: ${OBJ_MONTECONVO}
-	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} ${BASIC_LIBS}
+	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} -lQtCore -lQtGui -lQtXml -lQtXmlPatterns
 	${STRIP} monteconvo
 
 reso: ${OBJ_RESO}
@@ -255,6 +258,8 @@ obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
 	${CC} ${FLAGS} -c -o $@ $<
+obj/loadtxt.o: tlibs/file/loadtxt.cpp tlibs/file/loadtxt.h
+	${CC} ${FLAGS} -c -o $@ $<
 obj/recent.o: tlibs/file/recent.cpp tlibs/file/recent.h
 	${CC} ${FLAGS} -c -o $@ $<
 
@@ -283,6 +288,8 @@ obj/reso_res_main.o: tools/res/res_main.cpp
 obj/mconv_main.o: tools/monteconvo/mconv_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 obj/sqw.o: tools/monteconvo/sqw.cpp tools/monteconvo/sqw.h tlibs/math/kd.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/tasreso.o: tools/monteconvo/TASReso.cpp tools/monteconvo/TASReso.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/scanviewer_main.o: tools/scanviewer/main.cpp
