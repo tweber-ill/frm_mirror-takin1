@@ -175,6 +175,10 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 	std::vector<ublas::vector<double>> vecNeutrons;
 	for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 	{
+		double dProgress = double(iStep)/double(iNumSteps)*100.;
+
+		tl::log_info("------------------------------------------------------------");
+		tl::log_info("Step ", iStep+1, " of ", iNumSteps, ".");
 		tl::log_info("Q = (", pH[iStep], " ", pK[iStep], " ", pL[iStep], "), E = ", pE[iStep], " meV.");
 		if(!reso.SetHKLE(pH[iStep], pK[iStep], pL[iStep], pE[iStep]))
 		{
@@ -182,11 +186,19 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 			break;
 		}
 
+		std::cout <<"\x1b]0;"
+			<< std::setprecision(3) << dProgress <<  "%"
+			<< " - generating MC neutrons"
+			<< "\x07" << std::flush;
 		Ellipsoid4d elli = reso.GenerateMC(iNumNeutrons, vecNeutrons);
 
 		double dS = 0.;
 		double dhklE_mean[4] = {0., 0., 0., 0.};
 
+		std::cout <<"\x1b]0;"
+			<< std::setprecision(3) << dProgress <<  "%"
+			<< " - calculating S(q,w)"
+			<< "\x07" << std::flush;
 		for(const ublas::vector<double>& vecHKLE : vecNeutrons)
 		{
 			dS += (*psqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
@@ -209,6 +221,7 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 		tl::log_info("Mean position: Q = (", dhklE_mean[0], " ", dhklE_mean[1], " ", dhklE_mean[2], "), E = ", dhklE_mean[3], " meV.");
 		tl::log_info("S(", pH[iStep], ", ", pK[iStep],  ", ", pL[iStep], ", ", pE[iStep], ") = ", dS);
 	}
+	std::cout <<"\x1b]0;" << "Progress: 100%" << "\x07" << std::flush;
 
 	tl::log_info("Wrote output file \"", pcOut, "\".");
 	ofstrOut.close();

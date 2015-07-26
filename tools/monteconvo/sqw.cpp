@@ -21,7 +21,7 @@ double SqwElast::operator()(double dh, double dk, double dl, double dE) const
 	ublas::vector<double> vecPt = tl::make_vec({std::round(dh),
 		std::round(dk), std::round(dl), 0.});
 
-	if(ublas::norm_2(vecPt-vecCur) < 0.01)
+	if(ublas::norm_2(vecPt-vecCur) < 0.001)
 		return 1.;
 	return 0.;
 }
