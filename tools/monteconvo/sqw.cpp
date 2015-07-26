@@ -11,8 +11,13 @@
 #include <fstream>
 #include <list>
 
+SqwKdTree::SqwKdTree(const char* pcFile)
+{
+	if(pcFile)
+		m_bOk = open(pcFile);
+}
 
-bool Sqw::open(const char* pcFile)
+bool SqwKdTree::open(const char* pcFile)
 {
 	std::ifstream ifstr(pcFile);
 	if(!ifstr.is_open())
@@ -58,10 +63,19 @@ bool Sqw::open(const char* pcFile)
 }
 
 
-double Sqw::operator()(double dh, double dk, double dl, double dE) const
+double SqwKdTree::operator()(double dh, double dk, double dl, double dE) const
 {
 	std::vector<double> vechklE = {dh, dk, dl, dE};
+	if(!m_kd.IsPointInGrid(vechklE))
+		return 0.;
+
 	std::vector<double> vec = m_kd.GetNearestNode(vechklE);
+
+	/*double dDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.) +
+			std::pow(vec[1]-vechklE[1], 2.) +
+			std::pow(vec[2]-vechklE[2], 2.) +
+			std::pow(vec[3]-vechklE[3], 2.));
+	tl::log_info("Distance to node: ", dDist);*/
 
 	//tl::log_info("Nearest node: ", vec[0], ", ", vec[1], ", ", vec[2], ", ", vec[3], ", ", vec[4]);
 	return vec[4];

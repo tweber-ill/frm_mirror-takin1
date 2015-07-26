@@ -41,7 +41,7 @@ public:
 			double alpha, double beta, double gamma,
 			const ublas::vector<double>& vec1, const ublas::vector<double>& vec2);
 	bool SetHKLE(double h, double k, double l, double E);
-	std::vector<ublas::vector<double>> GenerateMC(std::size_t iNum) const;
+	Ellipsoid4d GenerateMC(std::size_t iNum, std::vector<ublas::vector<double>>&) const;
 
 	void SetKiFix(bool bKiFix) { m_bKiFix = bKiFix; }
 	void SetKFix(double dKFix) { m_dKFix = dKFix; }

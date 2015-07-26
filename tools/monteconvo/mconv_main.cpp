@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <memory>
 #include <unordered_map>
 
 #include "tlibs/string/string.h"
@@ -37,8 +38,9 @@ static inline int monteconvo_simple(const char* pcNeutrons, const char* pcSqw)
 		return -1;
 	}
 
-	Sqw sqw;
-	if(!sqw.open(pcSqw))
+	std::shared_ptr<SqwBase> ptrSqw(new SqwKdTree(pcSqw));
+	SqwBase *psqw = ptrSqw.get();
+	if(!psqw->IsOk())
 	{
 		tl::log_err("Cannot open Sqw file \"", pcSqw, "\".");
 		return -2;
@@ -82,13 +84,16 @@ static inline int monteconvo_simple(const char* pcNeutrons, const char* pcSqw)
 		//tl::log_info("Neutron ", iCurNeutr, ": ", vecNeutr[0], ", ", vecNeutr[1], ", ", vecNeutr[2], ", ", vecNeutr[3]);
 
 		for(int i=0; i<4; ++i) dhklE[i] += vecNeutr[i];
-		sqw.SetNeutronParams(&mapNeutrParams);
-		dS += sqw(vecNeutr[0], vecNeutr[1], vecNeutr[2], vecNeutr[3]);
+		//sqw.SetNeutronParams(&mapNeutrParams);
+		dS += (*psqw)(vecNeutr[0], vecNeutr[1], vecNeutr[2], vecNeutr[3]);
 
 		++iCurNeutr;
 	}
 
-	for(int i=0; i<4; ++i) dhklE[i] /= double(iCurNeutr+1);
+	dS /= double(iCurNeutr+1);
+
+	for(int i=0; i<4; ++i)
+		dhklE[i] /= double(iCurNeutr+1);
 
 	tl::log_info("Processed ",  iCurNeutr, " MC neutrons.");
 	tl::log_info("S(", dhklE[0], ", ", dhklE[1],  ", ", dhklE[2], ", ", dhklE[3], ") = ", dS);
@@ -150,9 +155,11 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 	tl::log_info("Number of neutrons: ", iNumNeutrons);
 
 
-	Sqw sqw;
+	std::shared_ptr<SqwBase> ptrSqw(new SqwKdTree(pcSqw));
+	SqwBase *psqw = ptrSqw.get();
+
 	tl::log_info("Loading S(Q,w) file \"", pcSqw, "\".");
-	if(!sqw.open(pcSqw))
+	if(!psqw->IsOk())
 	{
 		tl::log_err("Cannot load Sqw file.");
 		return -4;
@@ -164,6 +171,7 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 	ofstrOut << "# Format: h k l E S\n";
 	ofstrOut << "#\n";
 
+	std::vector<ublas::vector<double>> vecNeutrons;
 	for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 	{
 		tl::log_info("Q = (", pH[iStep], " ", pK[iStep], " ", pL[iStep], "), E = ", pE[iStep], " meV.");
@@ -173,18 +181,20 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 			break;
 		}
 
-		std::vector<ublas::vector<double>> vecNeutrons = reso.GenerateMC(iNumNeutrons);
+		Ellipsoid4d elli = reso.GenerateMC(iNumNeutrons, vecNeutrons);
+
 		double dS = 0.;
 		double dhklE_mean[4] = {0., 0., 0., 0.};
 
 		for(const ublas::vector<double>& vecHKLE : vecNeutrons)
 		{
-			dS += sqw(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
+			dS += (*psqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
 			for(int i=0; i<4; ++i)
 				dhklE_mean[i] += vecHKLE[i];
 		}
 
+		dS /= double(iNumNeutrons);
 		for(int i=0; i<4; ++i)
 			dhklE_mean[i] /= double(iNumNeutrons);
 
@@ -193,7 +203,7 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 			<< std::left << std::setw(20) << pK[iStep] << " "
 			<< std::left << std::setw(20) << pL[iStep] << " "
 			<< std::left << std::setw(20) << pE[iStep] << " "
-			<< std::left << std::setw(20) << dS << " ";
+			<< std::left << std::setw(20) << dS << "\n";
 
 		tl::log_info("Mean position: Q = (", dhklE_mean[0], " ", dhklE_mean[1], " ", dhklE_mean[2], "), E = ", dhklE_mean[3], " meV.");
 		tl::log_info("S(", pH[iStep], ", ", pK[iStep],  ", ", pL[iStep], ", ", pE[iStep], ") = ", dS);

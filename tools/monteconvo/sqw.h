@@ -4,7 +4,7 @@
  * @date jun-2015
  * @license GPLv2
  */
- 
+
 #ifndef __MCONV_SQW_H__
 #define __MCONV_SQW_H__
 
@@ -12,23 +12,29 @@
 #include <unordered_map>
 #include "tlibs/math/kd.h"
 
-
-class Sqw
+class SqwBase
 {
 protected:
-	const std::unordered_map<std::string, std::string>* m_pmapNeutr = nullptr;
+	bool m_bOk = false;
+
+public:
+	virtual double operator()(double dh, double dk, double dl, double dE) const = 0;
+	bool IsOk() const { return m_bOk; }
+};
+
+
+class SqwKdTree : public SqwBase
+{
+protected:
 	std::unordered_map<std::string, std::string> m_mapParams;
 	Kd<double> m_kd;
-	
+
 public:
-	Sqw() = default;
-	virtual ~Sqw() = default;
-	
-	void SetNeutronParams(const std::unordered_map<std::string, std::string>* pmapNeutr)
-	{ m_pmapNeutr = pmapNeutr; }
-	
+	SqwKdTree(const char* pcFile = nullptr);
+	virtual ~SqwKdTree() = default;
+
 	bool open(const char* pcFile);
-	double operator()(double dh, double dk, double dl, double dE) const;
+	virtual double operator()(double dh, double dk, double dl, double dE) const override;
 };
 
 #endif
