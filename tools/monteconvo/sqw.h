@@ -22,6 +22,17 @@ public:
 	bool IsOk() const { return m_bOk; }
 };
 
+// ----------------------------------------------------------------------------
+
+// Test S(q,q): only bragg peaks
+class SqwElast : public SqwBase
+{
+	public:
+		SqwElast() { SqwBase::m_bOk = true; }
+		virtual double operator()(double dh, double dk, double dl, double dE) const override;
+};
+
+// ----------------------------------------------------------------------------
 
 class SqwKdTree : public SqwBase
 {

@@ -8,8 +8,25 @@
 #include "sqw.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/log.h"
+#include "tlibs/math/linalg.h"
 #include <fstream>
 #include <list>
+
+namespace ublas = boost::numeric::ublas;
+
+
+double SqwElast::operator()(double dh, double dk, double dl, double dE) const
+{
+	ublas::vector<double> vecCur = tl::make_vec({dh, dk, dl, dE});
+	ublas::vector<double> vecPt = tl::make_vec({std::round(dh),
+		std::round(dk), std::round(dl), 0.});
+
+	if(ublas::norm_2(vecPt-vecCur) < 0.01)
+		return 1.;
+	return 0.;
+}
+
+//  ---------------------------------------------------------------------------
 
 SqwKdTree::SqwKdTree(const char* pcFile)
 {

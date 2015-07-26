@@ -156,6 +156,7 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 
 
 	std::shared_ptr<SqwBase> ptrSqw(new SqwKdTree(pcSqw));
+	//std::shared_ptr<SqwBase> ptrSqw(new SqwElast());
 	SqwBase *psqw = ptrSqw.get();
 
 	tl::log_info("Loading S(Q,w) file \"", pcSqw, "\".");
