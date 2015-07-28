@@ -323,7 +323,12 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 				const McNeutronOpts& opts,
 				std::vector<t_vec>& vecResult)
 {
-	tl::init_rand();
+	static bool bInited = 0;
+	if(!bInited)
+	{
+		tl::init_rand();
+		bInited = 1;
+	}
 
 	t_vec vecTrans(4);
 	vecTrans[0] = ell4d.x_offs;
@@ -332,15 +337,14 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 	vecTrans[3] = ell4d.w_offs;
 
 	const t_mat& rot = ell4d.rot;
-	vecResult.reserve(iNum);
+	if(vecResult.size() != iNum)
+		vecResult.resize(iNum);
 
 	for(unsigned int iCur=0; iCur<iNum; ++iCur)
 	{
 		t_vec vecMC = tl::rand_norm_nd<t_vec>({0.,0.,0.,0.},
-														{ell4d.x_hwhm*tl::HWHM2SIGMA,
-														ell4d.y_hwhm*tl::HWHM2SIGMA,
-														ell4d.z_hwhm*tl::HWHM2SIGMA,
-														ell4d.w_hwhm*tl::HWHM2SIGMA});
+			{ell4d.x_hwhm*tl::HWHM2SIGMA, ell4d.y_hwhm*tl::HWHM2SIGMA,
+			ell4d.z_hwhm*tl::HWHM2SIGMA, ell4d.w_hwhm*tl::HWHM2SIGMA});
 
 		vecMC = ublas::prod(rot, vecMC);
 		if(!opts.bCenter)
@@ -358,6 +362,6 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 		if(opts.coords == McNeutronCoords::RLU)
 			vecMC = ublas::prod(opts.matUBinv, vecMC);
 
-		vecResult.push_back(std::move(vecMC));
+		vecResult[iCur] = std::move(vecMC);
 	}
 }

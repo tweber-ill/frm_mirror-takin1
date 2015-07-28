@@ -24,7 +24,7 @@ public:
 
 // ----------------------------------------------------------------------------
 
-// Test S(q,q): only bragg peaks
+// Test S(q,w): only bragg peaks
 class SqwElast : public SqwBase
 {
 	public:

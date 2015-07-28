@@ -221,7 +221,7 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 		tl::log_info("Mean position: Q = (", dhklE_mean[0], " ", dhklE_mean[1], " ", dhklE_mean[2], "), E = ", dhklE_mean[3], " meV.");
 		tl::log_info("S(", pH[iStep], ", ", pK[iStep],  ", ", pL[iStep], ", ", pE[iStep], ") = ", dS);
 	}
-	std::cout <<"\x1b]0;" << "Progress: 100%" << "\x07" << std::flush;
+	std::cout <<"\x1b]0;" << "100%" << "\x07" << std::flush;
 
 	tl::log_info("Wrote output file \"", pcOut, "\".");
 	ofstrOut.close();

@@ -264,10 +264,6 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 Ellipsoid4d TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& vecNeutrons) const
 {
 	Ellipsoid4d ell4d = calc_res_ellipsoid4d(m_res.reso, m_res.Q_avg);;
-
-	vecNeutrons.clear();
-	vecNeutrons.reserve(iNum);
 	mc_neutrons(ell4d, iNum, m_opts, vecNeutrons);
-
 	return ell4d;
 }
