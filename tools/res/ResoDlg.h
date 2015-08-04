@@ -22,7 +22,9 @@
 #include "eck.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/xml.h"
-#include "helper/plotgl.h"
+#ifndef NO_3D
+	#include "helper/plotgl.h"
+#endif
 #include "ellipse.h"
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"

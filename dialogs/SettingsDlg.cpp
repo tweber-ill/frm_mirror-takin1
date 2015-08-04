@@ -8,7 +8,9 @@
 #include "SettingsDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/log.h"
-#include "tlibs/gfx/gl.h"
+#ifndef NO_3D
+	#include "tlibs/gfx/gl.h"
+#endif
 #include "helper/globals.h"
 
 #include <QFileDialog>

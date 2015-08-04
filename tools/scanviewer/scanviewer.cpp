@@ -259,21 +259,6 @@ void ScanViewerDlg::PlotScan()
 	m_vecX = m_pInstr->GetCol(m_strX.c_str());
 	m_vecY = m_pInstr->GetCol(m_strY.c_str());
 
-	if(m_vecX.size()==0 || m_vecY.size()==0)
-		return;
-
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
-	m_pPoints->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
-#elif QWT_VER<6
-	m_pCurve->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
-	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
-#endif
-
-	plot->setAxisTitle(QwtPlot::xBottom, m_strX.c_str());
-	plot->setAxisTitle(QwtPlot::yLeft, m_strY.c_str());
-	plot->setTitle(m_strCmd.c_str());
-
 	std::array<double, 3> arrLatt = m_pInstr->GetSampleLattice();
 	std::array<double, 3> arrAng = m_pInstr->GetSampleAngles();
 	std::array<double, 3> arrPlaneX = m_pInstr->GetScatterPlane0();
@@ -303,6 +288,23 @@ void ScanViewerDlg::PlotScan()
 	editUser->setText(m_pInstr->GetUser().c_str());
 	editContact->setText(m_pInstr->GetLocalContact().c_str());
 	editTimestamp->setText(m_pInstr->GetTimestamp().c_str());
+
+
+	plot->setAxisTitle(QwtPlot::xBottom, m_strX.c_str());
+	plot->setAxisTitle(QwtPlot::yLeft, m_strY.c_str());
+	plot->setTitle(m_strCmd.c_str());
+
+
+	if(m_vecX.size()==0 || m_vecY.size()==0)
+		return;
+
+#if QWT_VER>=6
+	m_pCurve->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
+	m_pPoints->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
+#elif QWT_VER<6
+	m_pCurve->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
+	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
+#endif
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());

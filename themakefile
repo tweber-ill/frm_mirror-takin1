@@ -183,7 +183,7 @@ monteconvo: ${OBJ_MONTECONVO}
 	${STRIP} monteconvo
 
 posextract: obj/posextract.o obj/loadinstr.o obj/log.o
-	${CC} ${FLAGS} -o bin/posextract $+ ${STD_LIBS} -lboost_iostreams
+	${CC} ${FLAGS} -o bin/posextract $+ ${STD_LIBS} ${BASIC_LIBS}
 	${STRIP} posextract
 
 reso: ${OBJ_RESO}
