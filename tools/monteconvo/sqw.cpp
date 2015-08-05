@@ -9,10 +9,9 @@
 #include "tlibs/string/string.h"
 #include "tlibs/helper/log.h"
 #include "tlibs/math/linalg.h"
+#include "tlibs/math/neutrons.hpp"
 #include <fstream>
 #include <list>
-
-namespace ublas = boost::numeric::ublas;
 
 
 double SqwElast::operator()(double dh, double dk, double dl, double dE) const
@@ -26,7 +25,9 @@ double SqwElast::operator()(double dh, double dk, double dl, double dE) const
 	return 0.;
 }
 
-//  ---------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+
 
 SqwKdTree::SqwKdTree(const char* pcFile)
 {
@@ -96,4 +97,85 @@ double SqwKdTree::operator()(double dh, double dk, double dl, double dE) const
 
 	//tl::log_info("Nearest node: ", vec[0], ", ", vec[1], ", ", vec[2], ", ", vec[3], ", ", vec[4]);
 	return vec[4];
+}
+
+
+//------------------------------------------------------------------------------
+
+
+double SqwPhonon::disp(double dq, double da, double df)
+{
+	return std::abs(da*std::sin(dq*df));
+}
+
+SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
+	const ublas::vector<double>& vecTA1,
+	const ublas::vector<double>& vecTA2,
+	double dLA_amp, double dLA_freq,
+	double dTA1_amp, double dTA1_freq,
+	double dTA2_amp, double dTA2_freq)
+		: m_vecBragg(vecBragg), m_vecLA(vecBragg),
+			m_vecTA1(vecTA1), m_vecTA2(vecTA2),
+			m_dLA_amp(dLA_amp), m_dLA_freq(dLA_freq),
+			m_dTA1_amp(dTA1_amp), m_dTA1_freq(dTA1_freq),
+			m_dTA2_amp(dTA2_amp), m_dTA2_freq(dTA2_freq)
+{
+	const unsigned int iNumqs = 1000;
+
+	m_vecLA /= ublas::norm_2(m_vecLA);
+	m_vecTA1 /= ublas::norm_2(m_vecTA1);
+	m_vecTA2 /= ublas::norm_2(m_vecTA2);
+
+	tl::log_info("LA: ", m_vecLA);
+	tl::log_info("TA1: ", m_vecTA1);
+	tl::log_info("TA2: ", m_vecTA2);
+
+	std::list<std::vector<double>> lst;
+	for(double dq=-1.; dq<1.; dq+=1./double(iNumqs))
+	{
+		ublas::vector<double> vecQLA = dq*m_vecLA;
+		ublas::vector<double> vecQTA1 = dq*m_vecTA1;
+		ublas::vector<double> vecQTA2 = dq*m_vecTA2;
+
+		vecQLA += m_vecBragg;
+		vecQTA1 += m_vecBragg;
+		vecQTA2 += m_vecBragg;
+
+		double dELA = disp(dq, m_dLA_amp, m_dLA_freq);
+		double dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
+		double dETA2 = disp(dq, m_dTA2_amp, m_dTA2_freq);
+
+		lst.push_back(std::vector<double>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, 1.}));
+		lst.push_back(std::vector<double>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, 1.}));
+		lst.push_back(std::vector<double>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, 1.}));
+	}
+
+	tl::log_info("Generated ", lst.size(), " S(q,w) points.");
+	m_kd.Load(lst, 3);
+	tl::log_info("Generated k-d tree.");
+
+	m_bOk = 1;
+}
+
+double SqwPhonon::operator()(double dh, double dk, double dl, double dE) const
+{
+	std::vector<double> vechklE = {dh, dk, dl, dE};
+	if(!m_kd.IsPointInGrid(vechklE))
+		return 0.;
+
+	std::vector<double> vec = m_kd.GetNearestNode(vechklE);
+	//std::cout << "query: " << dh << " " << dk << " " << dl << " " << dE << std::endl;
+	//std::cout << "nearest: " << vec[0] << " " << vec[1] << " " << vec[2] << " " << vec[3] << std::endl;
+
+	double dS = vec[4];
+	double dT = 80.;
+	double dE_HWHM = 0.5;
+	double dQ_HWHM = 0.5;
+	double dE0 = vec[3];
+
+	double dqDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.)
+		+ std::pow(vec[1]-vechklE[1], 2.)
+		+ std::pow(vec[2]-vechklE[2], 2.));
+
+	return dS * std::abs(tl::DHO_model(dE, dT, dE0, dE_HWHM, 1., 0.)) * tl::gauss_model(dqDist, 0., dQ_HWHM*tl::HWHM2SIGMA, 1., 0.);
 }

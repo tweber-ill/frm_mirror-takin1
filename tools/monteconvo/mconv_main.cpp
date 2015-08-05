@@ -22,8 +22,9 @@ static inline void usage(const char* pcProg)
 {
 	std::ostringstream ostr;
 	ostr << "Usage: "
-		<< "\n\t(1) " << pcProg << " <mc neutron file> <S(Q,w) file>"
-		<< "\n\t(2) " << pcProg << " <resolution file> <crystal file> <S(Q,w) file> <steps file> <out file>";
+		<< "\n\t(1), single point: " << pcProg << " <mc neutron file> <S(Q,w) file>"
+		<< "\n\t(2), phonon model: " << pcProg << " <resolution file> <crystal file> <steps file> <out file>"
+		<< "\n\t(3), S(q,w) file:  " << pcProg << " <resolution file> <crystal file> <S(Q,w) file> <steps file> <out file>";
 
 	tl::log_err("Wrong arguments.\n", ostr.str());
 }
@@ -137,6 +138,7 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 	try
 	{
 		iNumNeutrons = tl::str_to_var<unsigned int>(steps.GetCommMapSingle().at("num_neutrons"));
+		reso.SetAlgo(ResoAlgo(tl::str_to_var<int>(steps.GetCommMapSingle().at("algo"))));
 		bool bFixedKi = tl::str_to_var<bool>(steps.GetCommMapSingle().at("fixed_ki"));
 		double dKFix = tl::str_to_var<double>(steps.GetCommMapSingle().at("kfix"));
 
@@ -145,24 +147,36 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 	}
 	catch(const std::out_of_range& ex)
 	{
-		tl::log_err("Need keys \"num_neutrons\", \"fixed_ki\" and \"kfix\" in steps file.");
+		tl::log_err("Need keys \"num_neutrons\", \"fixed_ki\", \"kfix\" and \"algo\" in steps file.");
 		return -3;
 	}
-
-	reso.SetAlgo(ResoAlgo(tl::str_to_var<int>(steps.GetCommMapSingle().at("algo"))));
 
 
 	tl::log_info("Number of neutrons: ", iNumNeutrons);
 
 
-	std::shared_ptr<SqwBase> ptrSqw(new SqwKdTree(pcSqw));
+	std::shared_ptr<SqwBase> ptrSqw;
 	//std::shared_ptr<SqwBase> ptrSqw(new SqwElast());
+
+	if(pcSqw)
+	{
+		tl::log_info("Loading S(Q,w) file \"", pcSqw, "\".");
+		ptrSqw.reset(new SqwKdTree(pcSqw));
+	}
+	else
+	{
+		tl::log_info("Using phonon model.");
+		ptrSqw.reset(new SqwPhonon(tl::make_vec({4.,4.,0}),
+				tl::make_vec({0.,0.,1.}), tl::make_vec({1.,-1.,0.}),
+				40., M_PI/2.,    12., M_PI/2.,    18., M_PI/2.));
+	}
+
+
 	SqwBase *psqw = ptrSqw.get();
 
-	tl::log_info("Loading S(Q,w) file \"", pcSqw, "\".");
 	if(!psqw->IsOk())
 	{
-		tl::log_err("Cannot load Sqw file.");
+		tl::log_err("Cannot init Sqw.");
 		return -4;
 	}
 
@@ -241,9 +255,26 @@ int main(int argc, char** argv)
 	QLocale::setDefault(QLocale::English);
 
 	if(argc == 3)
+	{
 		return monteconvo_simple(argv[1], argv[2]);
+	}
+	else if(argc==5)
+	{
+		const char *pcRes = argv[1];
+		const char *pcCrys = argv[2];
+		const char *pcSteps = argv[3];
+		const char *pcOut = argv[4];
+		return monteconvo(pcRes, pcCrys, 0, pcSteps, pcOut);
+	}
 	else if(argc==6)
-		return monteconvo(argv[1], argv[2], argv[3], argv[4], argv[5]);
+	{
+		const char *pcRes = argv[1];
+		const char *pcCrys = argv[2];
+		const char *pcSqw = argv[3];
+		const char *pcSteps = argv[4];
+		const char *pcOut = argv[5];
+		return monteconvo(pcRes, pcCrys, pcSqw, pcSteps, pcOut);
+	}
 	else
 	{
 		usage(argv[0]);
