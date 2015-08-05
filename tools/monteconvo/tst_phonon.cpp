@@ -13,7 +13,9 @@ int main()
 	SqwPhonon ph(tl::make_vec({4.,4.,0}),
 		tl::make_vec({0.,0.,1.}),
 		tl::make_vec({1.,-1.,0.}),
-		40., M_PI/2.,    12., M_PI/2.,    18., M_PI/2.);
+		40., M_PI/2., 0.5, 0.5,
+		12., M_PI/2., 0.5, 0.5,
+		18., M_PI/2., 0.5, 0.5);
 
 	const t_vec& vecBragg = ph.GetBragg();
 	const t_vec& vecLA = ph.GetLA();

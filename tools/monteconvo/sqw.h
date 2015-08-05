@@ -81,9 +81,9 @@ public:
 	SqwPhonon(const ublas::vector<double>& vecBragg,
 		const ublas::vector<double>& vecTA1,
 		const ublas::vector<double>& vecTA2,
-		double dLA_amp, double dLA_freq,
-		double dTA1_amp, double dTA1_freq,
-		double dTA2_amp, double dTA2_freq);
+		double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM,
+		double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM,
+		double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM);
 
 	virtual ~SqwPhonon() = default;
 

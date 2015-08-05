@@ -111,9 +111,9 @@ double SqwPhonon::disp(double dq, double da, double df)
 SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
 	const ublas::vector<double>& vecTA1,
 	const ublas::vector<double>& vecTA2,
-	double dLA_amp, double dLA_freq,
-	double dTA1_amp, double dTA1_freq,
-	double dTA2_amp, double dTA2_freq)
+	double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM,
+	double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM,
+	double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM)
 		: m_vecBragg(vecBragg), m_vecLA(vecBragg),
 			m_vecTA1(vecTA1), m_vecTA2(vecTA2),
 			m_dLA_amp(dLA_amp), m_dLA_freq(dLA_freq),
@@ -145,9 +145,9 @@ SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
 		double dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
 		double dETA2 = disp(dq, m_dTA2_amp, m_dTA2_freq);
 
-		lst.push_back(std::vector<double>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, 1.}));
-		lst.push_back(std::vector<double>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, 1.}));
-		lst.push_back(std::vector<double>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, 1.}));
+		lst.push_back(std::vector<double>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, 1., dLA_E_HWHM, dLA_q_HWHM}));
+		lst.push_back(std::vector<double>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, 1., dTA1_E_HWHM, dTA1_q_HWHM}));
+		lst.push_back(std::vector<double>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, 1., dTA2_E_HWHM, dTA2_q_HWHM}));
 	}
 
 	tl::log_info("Generated ", lst.size(), " S(q,w) points.");
@@ -167,11 +167,11 @@ double SqwPhonon::operator()(double dh, double dk, double dl, double dE) const
 	//std::cout << "query: " << dh << " " << dk << " " << dl << " " << dE << std::endl;
 	//std::cout << "nearest: " << vec[0] << " " << vec[1] << " " << vec[2] << " " << vec[3] << std::endl;
 
+	double dE0 = vec[3];
 	double dS = vec[4];
 	double dT = 80.;
-	double dE_HWHM = 0.5;
-	double dQ_HWHM = 0.5;
-	double dE0 = vec[3];
+	double dE_HWHM = vec[5];
+	double dQ_HWHM = vec[6];
 
 	double dqDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.)
 		+ std::pow(vec[1]-vechklE[1], 2.)
