@@ -924,7 +924,7 @@ get_nearest_elastic_kikf_pos(const QPointF& ptKiKf, const QPointF& ptKiQ, const 
 }
 
 
-static std::tuple<bool, double, QPointF> 
+static std::tuple<bool, double, QPointF>
 get_nearest_node(const QPointF& pt,
 				const QGraphicsItem* pCurItem,
 				const QList<QGraphicsItem*>& nodes,
@@ -1019,7 +1019,7 @@ void ScatteringTriangle::SnapToNearestPeak(ScatteringTriangleNode* pNode,
 	if(!pNodeOrg) pNodeOrg = pNode;
 
 	std::tuple<bool, double, QPointF> tupNearest =
-		get_nearest_node(pNodeOrg->pos(), pNode, m_scene.items(), 
+		get_nearest_node(pNodeOrg->pos(), pNode, m_scene.items(),
 			GetScaleFactor(), &GetPowder());
 
 	if(std::get<0>(tupNearest))
@@ -1068,7 +1068,9 @@ bool ScatteringTriangle::KeepAbsKiKf(double dQx, double dQy)
 		if(!tl::float_equal(dKfChk, dKf))
 			return 0;*/
 
+		m_bReady = 0;
 		m_pNodeKiKf->setPos(vec_to_qpoint(vecPtKiKf));
+		m_bReady = 1;
 
 		return 1;	// allowed
 	}
@@ -1115,6 +1117,7 @@ void ScatteringTriangleScene::emitUpdate()
 	opts.dAnaTwoTheta = m_pTri->GetAnaTwoTheta(m_dAnaD, m_bAnaPosSense);
 	opts.dMonoTwoTheta = m_pTri->GetMonoTwoTheta(m_dMonoD, m_bMonoPosSense);
 
+	//tl::log_debug("triangle: triangleChanged");
 	emit triangleChanged(opts);
 }
 
@@ -1169,7 +1172,7 @@ void ScatteringTriangleScene::emitAllParams()
 
 	CheckForSpurions();
 
-	//log_debug("triangle: emitAllParams");
+	//tl::log_debug("triangle: emitAllParams");
 	emit paramsChanged(parms);
 }
 
@@ -1310,7 +1313,7 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 			{
 				QList<QGraphicsItem*> nodes = items();
 				std::tuple<bool, double, QPointF> tupNearest =
-					get_nearest_node(pEvt->scenePos(), pCurItem, nodes, 
+					get_nearest_node(pEvt->scenePos(), pCurItem, nodes,
 						m_pTri->GetScaleFactor(), &m_pTri->GetPowder());
 
 				if(std::get<0>(tupNearest))
@@ -1321,9 +1324,9 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 			}
 			else if(iNodeType == NODE_KIKF && m_bSnapKiKfToElastic)
 			{
-				std::pair<bool, QPointF> pairNearest = 
-					get_nearest_elastic_kikf_pos(pEvt->scenePos() /*m_pTri->GetNodeKiKf()->scenePos()*/, 
-						m_pTri->GetNodeKiQ()->scenePos(), 
+				std::pair<bool, QPointF> pairNearest =
+					get_nearest_elastic_kikf_pos(pEvt->scenePos() /*m_pTri->GetNodeKiKf()->scenePos()*/,
+						m_pTri->GetNodeKiQ()->scenePos(),
 						m_pTri->GetNodeKfQ()->scenePos());
 
 				if(pairNearest.first)

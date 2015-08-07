@@ -273,7 +273,7 @@ void TazDlg::CalcPeaks()
 	try
 	{
 		const bool bPowder = checkPowder->isChecked();
-		
+
 		// lattice
 		const double a = editA->text().toDouble();
 		const double b = editB->text().toDouble();
@@ -355,14 +355,14 @@ void TazDlg::CalcPeaks()
 		dir1 /= dDir1Len;
 		//dirup /= dDirUpLen;
 
-	
+
 		if(m_pGotoDlg)
 		{
 			m_pGotoDlg->SetLattice(lattice);
 			m_pGotoDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
 			m_pGotoDlg->CalcSample();
 		}
-		
+
 		emitSampleParams();
 
 		//lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
@@ -591,6 +591,15 @@ void TazDlg::ShowResoEllipses()
 
 	m_pEllipseDlg->show();
 	m_pEllipseDlg->activateWindow();
+}
+
+void TazDlg::ShowResoConv()
+{
+	if(!m_pConvoDlg)
+		m_pConvoDlg = new ConvoDlg(this, &m_settings);
+
+	m_pConvoDlg->show();
+	m_pConvoDlg->activateWindow();
 }
 
 #ifndef NO_3D

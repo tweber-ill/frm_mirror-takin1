@@ -377,6 +377,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuReso->addAction(pResoEllipses3D);
 #endif
 
+	pMenuReso->addSeparator();
+
+	QAction *pResoConv = new QAction(this);
+	pResoConv->setText("Convolution...");
+	pMenuReso->addAction(pResoConv);
+
 
 	// --------------------------------------------------------------------------------
 	// calc menu
@@ -495,6 +501,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pResoParams, SIGNAL(triggered()), this, SLOT(ShowResoParams()));
 	QObject::connect(pResoEllipses, SIGNAL(triggered()), this, SLOT(ShowResoEllipses()));
+	QObject::connect(pResoConv, SIGNAL(triggered()), this, SLOT(ShowResoConv()));
 
 	QObject::connect(pNeutronProps, SIGNAL(triggered()), this, SLOT(ShowNeutronDlg()));
 	QObject::connect(m_pGoto, SIGNAL(triggered()), this, SLOT(ShowGotoDlg()));
@@ -597,6 +604,7 @@ TazDlg::~TazDlg()
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
 	if(m_pEllipseDlg) { delete m_pEllipseDlg; m_pEllipseDlg = 0; }
 	if(m_pReso) { delete m_pReso; m_pReso = 0; }
+	if(m_pConvoDlg) { delete m_pConvoDlg; m_pConvoDlg = 0; }
 	if(m_pSpuri) { delete m_pSpuri; m_pSpuri = 0; }
 	if(m_pNeutronDlg) { delete m_pNeutronDlg; m_pNeutronDlg = 0; }
 	if(m_pGotoDlg) { delete m_pGotoDlg; m_pGotoDlg = 0; }
@@ -905,7 +913,7 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "Takin version 0.9.1\n";
+	strAbout += "Takin version 0.9.2\n";
 	strAbout += "Written by Tobias Weber, 2014-2015.";
 	strAbout += "\n\n";
 

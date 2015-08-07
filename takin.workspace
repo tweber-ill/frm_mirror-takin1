@@ -3,10 +3,10 @@
   <Environment>
     <![CDATA[]]>
   </Environment>
-  <Project Name="takin" Path="takin.project" Active="No"/>
+  <Project Name="takin" Path="takin.project" Active="Yes"/>
   <Project Name="scanviewer" Path="scanviewer.project" Active="No"/>
   <Project Name="montereso" Path="montereso.project" Active="No"/>
-  <Project Name="monteconvo" Path="monteconvo.project" Active="Yes"/>
+  <Project Name="monteconvo" Path="monteconvo.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="takin" ConfigName="Debug"/>

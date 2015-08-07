@@ -19,6 +19,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 
+
 class DynPlaneDlg : public QDialog, Ui::DynPlaneDlg
 { Q_OBJECT
 protected:

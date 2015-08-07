@@ -189,7 +189,19 @@ bool TASReso::SetLattice(t_real a, t_real b, t_real c,
 
 bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 {
-	t_vec vecQ = ublas::prod(m_opts.matUB, tl::make_vec({h, k, l}));
+	//std::cout << "UB = " << m_opts.matUB << std::endl;
+	//std::cout << h << " " << k << " " << l << ", " << E << std::endl;
+
+	t_vec vecHKLE;
+	if(m_opts.matUB.size1() == 3)
+		vecHKLE = tl::make_vec({h, k, l});
+	else
+		vecHKLE = tl::make_vec({h, k, l, E});
+
+	t_vec vecQ = ublas::prod(m_opts.matUB, vecHKLE);
+	if(vecQ.size() > 3)
+		vecQ.resize(3, true);
+
 	m_reso.Q = ublas::norm_2(vecQ) / tl::angstrom;
 	m_reso.E = E * tl::meV;
 

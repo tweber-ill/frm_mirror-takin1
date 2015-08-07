@@ -120,6 +120,14 @@
       <File Name="tools/taz/taz_crys.cpp"/>
       <File Name="tools/taz/taz_file.cpp"/>
     </VirtualDirectory>
+    <VirtualDirectory Name="monteconvo">
+      <File Name="tools/monteconvo/sqw.cpp"/>
+      <File Name="tools/monteconvo/sqw.h"/>
+      <File Name="tools/monteconvo/TASReso.cpp"/>
+      <File Name="tools/monteconvo/TASReso.h"/>
+      <File Name="tools/monteconvo/ConvoDlg.cpp"/>
+      <File Name="tools/monteconvo/ConvoDlg.h"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>

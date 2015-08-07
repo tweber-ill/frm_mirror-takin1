@@ -45,6 +45,7 @@ declare -a hfiles=(
         "tools/taz/nicos.h"
         "tools/res/ResoDlg.h"
         "tools/scanviewer/scanviewer.h"
+	"tools/monteconvo/ConvoDlg.h"
         "dialogs/EllipseDlg.h"
         "dialogs/EllipseDlg3D.h"
         "dialogs/RecipParamDlg.h"

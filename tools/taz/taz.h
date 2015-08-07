@@ -26,6 +26,7 @@
 #include "dialogs/RealParamDlg.h"
 #include "dialogs/EllipseDlg.h"
 #include "../res/ResoDlg.h"
+#include "../monteconvo/ConvoDlg.h"
 #include "dialogs/SpurionDlg.h"
 #include "dialogs/NeutronDlg.h"
 #include "dialogs/GotoDlg.h"
@@ -33,6 +34,7 @@
 #include "dialogs/SettingsDlg.h"
 #include "dialogs/DWDlg.h"
 #include "dialogs/DynPlaneDlg.h"
+
 
 #if !defined NO_NET
 	#include "dialogs/SrvDlg.h"
@@ -112,6 +114,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		ResoDlg *m_pReso = nullptr;
 		EllipseDlg *m_pEllipseDlg = nullptr;
+		ConvoDlg *m_pConvoDlg = nullptr;
 
 		SpurionDlg *m_pSpuri = nullptr;
 		NeutronDlg *m_pNeutronDlg = nullptr;
@@ -181,6 +184,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowResoParams();
 		void ShowResoEllipses();
+		void ShowResoConv();
 
 		void ShowNeutronDlg();
 		void ShowGotoDlg();

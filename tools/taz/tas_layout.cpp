@@ -244,7 +244,6 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	}
 
 	bAllowUpdate = 1;
-
 	this->update();
 	m_scene.emitAllParams();
 }

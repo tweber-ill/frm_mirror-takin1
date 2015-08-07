@@ -140,7 +140,8 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/xml.o obj/spacegroup.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/loadinstr.o obj/recent.o \
-	obj/globals.o
+	obj/globals.o \
+	obj/sqw.o obj/tasreso.o obj/ConvoDlg.o
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 OBJ_MONTECONVO = obj/mconv_main.o obj/log.o obj/sqw.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ellipse.o \
@@ -179,7 +180,7 @@ montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
 	${STRIP} montereso
 
 monteconvo: ${OBJ_MONTECONVO}
-	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} -lQtCore -lQtGui -lQtXml -lQtXmlPatterns
+	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} ${BASIC_LIBS}
 	${STRIP} monteconvo
 
 posextract: obj/posextract.o obj/loadinstr.o obj/log.o
@@ -276,6 +277,8 @@ obj/eck.o: tools/res/eck.cpp tools/res/eck.h
 obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/ResoDlg.o: tools/res/ResoDlg.cpp tools/res/ResoDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/ConvoDlg.o: tools/monteconvo/ConvoDlg.cpp tools/monteconvo/ConvoDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/EllipseDlg.o: dialogs/EllipseDlg.cpp dialogs/EllipseDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
