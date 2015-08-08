@@ -32,6 +32,9 @@ protected:
 
 public:
 	TASReso();
+	TASReso(const TASReso& res);
+	const TASReso& operator=(const TASReso& res);
+
 	virtual ~TASReso() = default;
 
 	bool LoadRes(const char* pcXmlFile);

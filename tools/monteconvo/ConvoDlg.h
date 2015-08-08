@@ -26,7 +26,7 @@ private:
 protected:
 	QSettings *m_pSett = nullptr;
 
-	QwtPlotCurve *m_pCurve = nullptr;
+	QwtPlotCurve *m_pCurve, *m_pPoints = nullptr;
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
 

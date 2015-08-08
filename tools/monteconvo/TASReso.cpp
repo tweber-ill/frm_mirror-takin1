@@ -24,6 +24,24 @@ TASReso::TASReso()
 	m_opts.coords = McNeutronCoords::RLU;
 }
 
+TASReso::TASReso(const TASReso& res)
+{
+	operator=(res);
+}
+
+const TASReso& TASReso::operator=(const TASReso& res)
+{
+	this->m_algo = res.m_algo;
+	this->m_opts = res.m_opts;
+	this->m_reso = res.m_reso;
+	this->m_res = res.m_res;
+	this->m_bKiFix = res.m_bKiFix;
+	this->m_dKFix = res.m_dKFix;
+
+	return *this;
+}
+
+
 bool TASReso::LoadLattice(const char* pcXmlFile)
 {
 	const std::string strXmlRoot("taz/");
