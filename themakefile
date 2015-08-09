@@ -11,6 +11,10 @@ USE_IOSTR = 1
 USE_BOOST_REGEX = 0
 USE_PY = 1
 
+BOOST_SUFFIX = 
+#BOOST_SUFFIX = -mt
+QWT5_SUFFIX = 
+#QWT5_SUFFIX = -qt4
 
 # -----------------------------------------------------------------------------
 
@@ -86,8 +90,7 @@ ifeq ($(QWT_VER), 6)
 	endif
 else
 	QWT_INC = -I/usr/include/qwt5 -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
-	QWT_LIB = -L/usr/local/qwt/lib -lqwt
-#	QWT_LIB = -lqwt-qt4
+	QWT_LIB = -L/usr/local/qwt/lib -lqwt${QWT5_SUFFIX}
 endif
 
 
@@ -105,9 +108,13 @@ endif
 
 
 
-INC = ${QT_INC} ${QWT_INC} -I . -I/usr/local/include -I/usr/include/freetype2 \
-	-I/usr/include/lapacke -I/usr/include/python2.7
-LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
+INC = ${QT_INC} ${QWT_INC} -I . -I/usr/local/include \
+	-I/opt/include -I/opt/local/include \
+	-I/usr/include/freetype2 -I/usr/include/lapacke \
+	-I/usr/include/python2.7
+LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib \
+	-L/opt/lib -L/opt/local/lib
+
 
 STD_LIBS = -lstdc++ -lm
 STD_LIBS += -lpthread
@@ -132,21 +139,23 @@ else
 endif
 
 ifeq ($(USE_NET), 1)
-	BASIC_LIBS += -lboost_system
+	BASIC_LIBS += -lboost_system${BOOST_SUFFIX}
 endif
 
 ifeq ($(USE_IOSTR), 1)
-	BASIC_LIBS += -lboost_iostreams
+	BASIC_LIBS += -lboost_iostreams${BOOST_SUFFIX}
 endif
 
 ifeq ($(USE_BOOST_REGEX), 1)
-	BASIC_LIBS += -lboost_regex
+	BASIC_LIBS += -lboost_regex${BOOST_SUFFIX}
 endif
 
 ifeq ($(USE_PY), 1)
-	PY_LIBS = -lboost_python -lpython2.7
+	PY_LIBS = -lboost_python${BOOST_SUFFIX} -lpython2.7
+	PY_OBJS = obj/sqw_py.o 
 else
-	PY_LIBS = 
+	PY_LIBS =
+	PY_OBJS =
 endif
 
 
@@ -171,7 +180,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/loadinstr.o obj/recent.o \
 	obj/globals.o \
-	obj/sqw.o obj/sqw_py.o obj/tasreso.o obj/ConvoDlg.o
+	obj/sqw.o ${PY_OBJS} obj/tasreso.o obj/ConvoDlg.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 
@@ -226,12 +235,13 @@ posextract: obj/posextract.o obj/loadinstr.o obj/log.o
 	${STRIP} posextract
 
 reso: ${OBJ_RESO}
-	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
+	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS} \
+		-lX11
 	${STRIP} reso
 
 scanviewer: ${OBJ_SCANVIEWER}
-	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${QT_LIB} ${QWT_LIB} \
-		-lboost_system -lboost_iostreams -lboost_filesystem -lboost_regex
+	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB} \
+		-lboost_filesystem${BOOST_SUFFIX}
 	${STRIP} scanviewer
 
 

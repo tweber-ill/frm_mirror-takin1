@@ -37,6 +37,8 @@ protected slots:
 	void browseResoFiles();
 	void browseSqwFiles();
 
+	void SaveResult();
+
 	void Start();
 
 public:

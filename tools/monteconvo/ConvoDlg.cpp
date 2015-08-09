@@ -9,7 +9,9 @@
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
 #include "sqw.h"
-#include "sqw_py.h"
+#ifndef NO_PY
+	#include "sqw_py.h"
+#endif
 #include "TASReso.h"
 
 #include <iostream>
@@ -70,6 +72,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(btnBrowseRes, SIGNAL(clicked()), this, SLOT(browseResoFiles()));
 	QObject::connect(btnBrowseSqw, SIGNAL(clicked()), this, SLOT(browseSqwFiles()));
 
+	QObject::connect(btnSaveResult, SIGNAL(clicked()), this, SLOT(SaveResult()));
+
 	QObject::connect(btnStart, SIGNAL(clicked()), this, SLOT(Start()));
 }
 
@@ -77,6 +81,34 @@ ConvoDlg::~ConvoDlg()
 {
 }
 
+void ConvoDlg::SaveResult()
+{
+	QString strDirLast = ".";
+	if(m_pSett)
+		strDirLast = m_pSett->value("convo/last_dir_result", ".").toString();
+
+	QString strFile = QFileDialog::getSaveFileName(this,
+		"Save Scan", strDirLast, "Data Files (*.dat *.DAT)");
+
+	if(strFile == "")
+		return;
+
+	std::string strFile1 = strFile.toStdString();
+	std::string strDir = tl::get_dir(strFile1);
+
+	std::ofstream ofstr(strFile1);
+	if(!ofstr)
+	{
+		QMessageBox::critical(this, "Error", "Could not open file.");
+		return;
+	}
+
+	std::string strResult = textResult->toPlainText().toStdString();
+	ofstr.write(strResult.c_str(), strResult.size());
+
+	if(m_pSett)
+		m_pSett->setValue("convo/last_dir_result", QString(strDir.c_str()));
+}
 
 void ConvoDlg::Start()
 {
@@ -150,14 +182,19 @@ void ConvoDlg::Start()
 				ptrSqw.reset(new SqwKdTree(strSqwFile.c_str()));
 				break;
 			case 1:
+#ifdef NO_PY
+				QMessageBox::critical(this, "Error", "Compiled without python support.");
+				return;
+#else
 				ptrSqw.reset(new SqwPy(strSqwFile.c_str()));
 				break;
+#endif
 			case 2:
 				ptrSqw.reset(new SqwPhonon(tl::make_vec({4.,4.,0}),
 						tl::make_vec({0.,0.,1.}), tl::make_vec({1.,-1.,0.}),
-						40., M_PI/2., 0.1, 0.1,
-						12., M_PI/2., 0.1, 0.1,
-						18., M_PI/2., 0.1, 0.1));
+						55.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1,
+						22.5/(M_PI/2.), M_PI/2., 0.1, 0.1,
+						28.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1));
 				break;
 			default:
 			{
