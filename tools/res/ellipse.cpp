@@ -340,6 +340,16 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 	if(vecResult.size() != iNum)
 		vecResult.resize(iNum);
 
+	t_mat matQVec0 = tl::rotation_matrix_2d(-opts.dAngleQVec0);
+	matQVec0.resize(4,4, true);
+	matQVec0(2,2) = matQVec0(3,3) = 1.;
+	matQVec0(2,0) = matQVec0(2,1) = matQVec0(2,3) = 0.;
+	matQVec0(3,0) = matQVec0(3,1) = matQVec0(3,2) = 0.;
+	matQVec0(0,2) = matQVec0(0,3) = 0.;
+	matQVec0(1,2) = matQVec0(1,3) = 0.;
+
+	t_mat matUBinvQVec0 = ublas::prod(opts.matUBinv, matQVec0);
+
 	for(unsigned int iCur=0; iCur<iNum; ++iCur)
 	{
 		t_vec vecMC = tl::rand_norm_nd<t_vec>({0.,0.,0.,0.},
@@ -350,17 +360,10 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 		if(!opts.bCenter)
 			vecMC += vecTrans;
 
-		if(opts.coords == McNeutronCoords::ANGS || opts.coords == McNeutronCoords::RLU)
-		{
-			t_mat matQVec0 = tl::rotation_matrix_2d(-opts.dAngleQVec0);
-			t_vec vecXY = tl::make_vec({vecMC[0], vecMC[1]});
-			vecXY = ublas::prod(matQVec0, vecXY);
-			vecMC[0] = vecXY[0];
-			vecMC[1] = vecXY[1];
-		}
-
-		if(opts.coords == McNeutronCoords::RLU)
-			vecMC = ublas::prod(opts.matUBinv, vecMC);
+		if(opts.coords == McNeutronCoords::ANGS)
+			vecMC = ublas::prod(matQVec0, vecMC);
+		else if(opts.coords == McNeutronCoords::RLU)
+			vecMC = ublas::prod(matUBinvQVec0, vecMC);
 
 		vecResult[iCur] = std::move(vecMC);
 	}
