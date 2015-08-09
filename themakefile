@@ -9,6 +9,8 @@ USE_3D = 1
 USE_NET = 1
 USE_IOSTR = 1
 USE_BOOST_REGEX = 0
+USE_PY = 1
+
 
 # -----------------------------------------------------------------------------
 
@@ -37,8 +39,19 @@ ifeq ($(USE_BOOST_REGEX), 1)
 	DEFINES += -DUSE_BOOST_REX
 endif
 
+ifeq ($(USE_PY), 1)
+	DEFINES += -DUSE_PY
+else
+	DEFINES += -DNO_PY
+endif
+
+
 DEFINES += -DQWT_VER=$(QWT_VER)
 DEFINES += -DQT_VER=$(QT_VER)
+
+
+# -----------------------------------------------------------------------------
+
 
 ifeq ($(QT_VER), 5)
 	QT_INC = -I/usr/include/qt5 -I/usr/include/qt5/QtCore \
@@ -78,10 +91,6 @@ else
 endif
 
 
-INC = ${QT_INC} ${QWT_INC} -I . -I/usr/local/include -I/usr/include/freetype2 -I/usr/include/lapacke
-LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
-
-
 ifeq ($(DO_DEBUG), 0)
 	FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall -fPIC
 	FLAGS += -DQT_NO_DEBUG
@@ -94,8 +103,16 @@ else
 endif
 
 
+
+
+INC = ${QT_INC} ${QWT_INC} -I . -I/usr/local/include -I/usr/include/freetype2 \
+	-I/usr/include/lapacke -I/usr/include/python2.7
+LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
+
 STD_LIBS = -lstdc++ -lm
 STD_LIBS += -lpthread
+
+
 
 ifeq ($(USE_LAPACK), 1)
 	DEFINES += -DUSE_LAPACK
@@ -107,8 +124,11 @@ else
 endif
 
 BASIC_LIBS = ${QT_LIB}
+
 ifeq ($(USE_3D), 1)
-	BASIC_LIBS += -lX11 -lGL -lGLU -lfreetype -lfontconfig
+	GL_LIBS = -lX11 -lGL -lGLU -lfreetype -lfontconfig
+else
+	GL_LIBS = 
 endif
 
 ifeq ($(USE_NET), 1)
@@ -123,13 +143,23 @@ ifeq ($(USE_BOOST_REGEX), 1)
 	BASIC_LIBS += -lboost_regex
 endif
 
+ifeq ($(USE_PY), 1)
+	PY_LIBS = -lboost_python -lpython2.7
+else
+	PY_LIBS = 
+endif
 
-LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${BASIC_LIBS}
+
+LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${BASIC_LIBS} ${GL_LIBS} ${PY_LIBS}
 LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
+
+
+# -----------------------------------------------------------------------------
 
 
 OBJ_COMMON = obj/log.o obj/rand.o obj/linalg2.o \
 	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
+
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/taz_file.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
@@ -141,18 +171,22 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/loadinstr.o obj/recent.o \
 	obj/globals.o \
-	obj/sqw.o obj/tasreso.o obj/ConvoDlg.o
+	obj/sqw.o obj/sqw_py.o obj/tasreso.o obj/ConvoDlg.o
+
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
+
 OBJ_MONTECONVO = obj/mconv_main.o obj/log.o obj/sqw.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ellipse.o \
 	obj/xml.o obj/rand.o obj/tasreso.o \
 	obj/loadtxt.o
+
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 	obj/loadinstr.o obj/log.o
+
 
 ifeq ($(USE_3D), 1)
 	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/EllipseDlg3D.o
@@ -164,6 +198,10 @@ ifeq ($(USE_NET), 1)
 else
 	OBJ_TAZ += obj/taz_nonet.o
 endif
+
+
+
+# -----------------------------------------------------------------------------
 
 
 .PHONY: all clean
@@ -195,6 +233,11 @@ scanviewer: ${OBJ_SCANVIEWER}
 	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${QT_LIB} ${QWT_LIB} \
 		-lboost_system -lboost_iostreams -lboost_filesystem -lboost_regex
 	${STRIP} scanviewer
+
+
+
+# -----------------------------------------------------------------------------
+
 
 obj/taz_main.o: tools/taz/taz_main.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -296,6 +339,8 @@ obj/mconv_main.o: tools/monteconvo/mconv_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 obj/sqw.o: tools/monteconvo/sqw.cpp tools/monteconvo/sqw.h tlibs/math/kd.h
 	${CC} ${FLAGS} -c -o $@ $<
+obj/sqw_py.o: tools/monteconvo/sqw_py.cpp tools/monteconvo/sqw_py.h
+	${CC} ${FLAGS} -c -o $@ $<
 obj/tasreso.o: tools/monteconvo/TASReso.cpp tools/monteconvo/TASReso.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/posextract.o: tools/posextract/posextract.cpp
@@ -307,6 +352,10 @@ obj/scanviewer.o: tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 
+
+# -----------------------------------------------------------------------------
+
+
 clean:
 	find bin -regex 'bin/[_a-zA-Z0-9]*' | xargs rm -f
 	rm -f bin/*.exe
@@ -316,5 +365,6 @@ clean:
 	rm -f tools/taz/*.moc
 	rm -f tools/res/*.moc
 	rm -f tools/scanviewer/*.moc
+	rm -f tools/monteconvo/*.moc
 	rm -f helper/*.moc
 	rm -f dialogs/*.moc

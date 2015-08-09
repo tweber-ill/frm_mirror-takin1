@@ -9,6 +9,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
 #include "sqw.h"
+#include "sqw_py.h"
 #include "TASReso.h"
 
 #include <iostream>
@@ -142,19 +143,28 @@ void ConvoDlg::Start()
 
 		std::shared_ptr<SqwBase> ptrSqw;
 
-	/*	if(pcSqw)
+		std::string strSqwFile = editSqw->text().toStdString();
+		switch(comboSqw->currentIndex())
 		{
-			ptrSqw.reset(new SqwKdTree(pcSqw));
+			case 0:
+				ptrSqw.reset(new SqwKdTree(strSqwFile.c_str()));
+				break;
+			case 1:
+				ptrSqw.reset(new SqwPy(strSqwFile.c_str()));
+				break;
+			case 2:
+				ptrSqw.reset(new SqwPhonon(tl::make_vec({4.,4.,0}),
+						tl::make_vec({0.,0.,1.}), tl::make_vec({1.,-1.,0.}),
+						40., M_PI/2., 0.1, 0.1,
+						12., M_PI/2., 0.1, 0.1,
+						18., M_PI/2., 0.1, 0.1));
+				break;
+			default:
+			{
+				QMessageBox::critical(this, "Error", "Unknown S(q,w) model selected.");
+				return;
+			}
 		}
-		else*/
-		{
-			ptrSqw.reset(new SqwPhonon(tl::make_vec({4.,4.,0}),
-					tl::make_vec({0.,0.,1.}), tl::make_vec({1.,-1.,0.}),
-					40., M_PI/2., 0.1, 0.1,
-					12., M_PI/2., 0.1, 0.1,
-					18., M_PI/2., 0.1, 0.1));
-		}
-
 
 		SqwBase *psqw = ptrSqw.get();
 

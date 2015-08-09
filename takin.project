@@ -127,6 +127,8 @@
       <File Name="tools/monteconvo/TASReso.h"/>
       <File Name="tools/monteconvo/ConvoDlg.cpp"/>
       <File Name="tools/monteconvo/ConvoDlg.h"/>
+      <File Name="tools/monteconvo/sqw_py.cpp"/>
+      <File Name="tools/monteconvo/sqw_py.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
@@ -201,6 +203,7 @@
         <IncludePath Value="/usr/include/qwt-qt4"/>
         <IncludePath Value="/usr/include/lapacke"/>
         <IncludePath Value="/usr/include/freetype2"/>
+        <IncludePath Value="/usr/include/python2.7"/>
         <Preprocessor Value="QWT_VER=6"/>
         <Preprocessor Value="QT_VER=4"/>
         <Preprocessor Value="USE_LAPACK"/>
@@ -226,6 +229,8 @@
         <Library Value="pthread"/>
         <Library Value="boost_system"/>
         <Library Value="boost_iostreams"/>
+        <Library Value="boost_python"/>
+        <Library Value="python2.7"/>
         <Library Value="lapacke"/>
         <Library Value="lapack"/>
         <Library Value="blas"/>
@@ -288,6 +293,7 @@
         <IncludePath Value="/usr/include/qwt-qt4"/>
         <IncludePath Value="/usr/include/lapacke"/>
         <IncludePath Value="/usr/include/freetype2"/>
+        <IncludePath Value="/usr/include/python2.7"/>
         <Preprocessor Value="QWT_VER=6"/>
         <Preprocessor Value="QT_VER=4"/>
         <Preprocessor Value="USE_LAPACK"/>
@@ -313,6 +319,8 @@
         <Library Value="pthread"/>
         <Library Value="boost_system"/>
         <Library Value="boost_iostreams"/>
+        <Library Value="boost_python"/>
+        <Library Value="python2.7"/>
         <Library Value="lapacke"/>
         <Library Value="lapack"/>
         <Library Value="blas"/>
