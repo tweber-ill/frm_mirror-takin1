@@ -229,13 +229,13 @@ void ConvoDlg::Start()
 		m_vecQ.reserve(iNumSteps);
 		m_vecS.reserve(iNumSteps);
 
-		std::vector<std::future<double>> vecFuts;
+		std::vector<std::future<std::pair<bool,double>>> vecFuts;
 		vecFuts.reserve(iNumSteps);
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 		{
-			std::future<double> fut = std::async(std::launch::deferred | std::launch::async,
-			[&reso, iStep, iNumNeutrons, &vecH, &vecK, &vecL, &vecE, this, psqw]() -> double
+			std::future<std::pair<bool,double>> fut = std::async(std::launch::deferred | std::launch::async,
+			[&reso, iStep, iNumNeutrons, &vecH, &vecK, &vecL, &vecE, this, psqw]() -> std::pair<bool, double>
 			{
 				TASReso localreso = reso;
 				std::vector<ublas::vector<double>> vecNeutrons;
@@ -254,7 +254,7 @@ void ConvoDlg::Start()
 				catch(const std::exception& ex)
 				{
 					QMessageBox::critical(this, "Error", ex.what());
-					return 0.;
+					return std::pair<bool, double>(false, 0.);
 				}
 
 				Ellipsoid4d elli = localreso.GenerateMC(iNumNeutrons, vecNeutrons);
@@ -273,7 +273,7 @@ void ConvoDlg::Start()
 				dS /= double(iNumNeutrons);
 				for(int i=0; i<4; ++i)
 					dhklE_mean[i] /= double(iNumNeutrons);
-				return dS;
+				return std::pair<bool, double>(true, dS);
 			});
 
 			vecFuts.push_back(std::move(fut));
@@ -281,7 +281,10 @@ void ConvoDlg::Start()
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 		{
-			double dS = vecFuts[iStep].get();
+			std::pair<bool, double> pairS = vecFuts[iStep].get();
+			if(!pairS.first)
+				break;
+			double dS = pairS.second;
 
 			ostrOut.precision(16);
 			ostrOut << std::left << std::setw(20) << vecH[iStep] << " "

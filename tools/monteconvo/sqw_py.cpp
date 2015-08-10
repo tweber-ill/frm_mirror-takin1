@@ -48,5 +48,15 @@ SqwPy::~SqwPy()
 
 double SqwPy::operator()(double dh, double dk, double dl, double dE) const
 {
-	return py::extract<double>(m_Sqw(dh, dk, dl, dE));
+	try
+	{
+		return py::extract<double>(m_Sqw(dh, dk, dl, dE));
+	}
+	catch(const py::error_already_set& ex)
+	{
+		PyErr_Print();
+		PyErr_Clear();
+	}
+
+	return 0.;
 }
