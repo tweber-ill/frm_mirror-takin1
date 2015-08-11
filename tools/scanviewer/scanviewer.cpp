@@ -63,9 +63,11 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plot);
 
+#if QWT_VER>=6
 	m_pZoomer = new QwtPlotZoomer(plot->canvas());
 	m_pZoomer->setMaxStackDepth(-1);
 	m_pZoomer->setEnabled(1);
+#endif
 
 	plot->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
@@ -314,8 +316,12 @@ void ScanViewerDlg::PlotScan()
 	rect.setRight(*minmaxX.second);
 	rect.setBottom(*minmaxY.second);
 	rect.setTop(*minmaxY.first);
-	m_pZoomer->zoom(rect);
-	m_pZoomer->setZoomBase(rect);
+	
+	if(m_pZoomer)
+	{
+		m_pZoomer->zoom(rect);
+		m_pZoomer->setZoomBase(rect);
+	}
 
 	plot->replot();
 	GenerateExternal(comboExport->currentIndex());
