@@ -1,6 +1,6 @@
 /*
  * implementation of the eckold-sobolev algo
- * 
+ *
  * @author tweber
  * @date feb-2015
  * @copyright GPLv2
@@ -150,7 +150,7 @@ CNResults calc_eck(const EckParams& eck)
 	length mono_curvv = eck.mono_curvv * eck.dmono_sense;
 	length ana_curvh = eck.ana_curvh * eck.dana_sense;
 	length ana_curvv = eck.ana_curvv * eck.dana_sense;
-	
+
 	if(!eck.bMonoIsCurvedH) mono_curvh = 99999. * cm * eck.dmono_sense;
 	if(!eck.bMonoIsCurvedV) mono_curvv = 99999. * cm * eck.dmono_sense;
 	if(!eck.bAnaIsCurvedH) ana_curvh = 99999. * cm * eck.dana_sense;
@@ -164,13 +164,13 @@ CNResults calc_eck(const EckParams& eck)
 	//kf_Q = ki_Q + twotheta;
 
 	if(eck.dsample_sense < 0) { twotheta = -twotheta; ki_Q = -ki_Q; kf_Q = -kf_Q; }
-	
+
 	//std::cout << "thetaM = " << t_real(thetam/rads/M_PI*180.) << " deg"<< std::endl;
 	//std::cout << "thetaA = " << t_real(thetaa/rads/M_PI*180.) << " deg"<< std::endl;
-	
+
 	//std::cout << "ki = " << double(eck.ki*angs) << ", kf = " << double(eck.kf*angs) << std::endl;
 	//std::cout << "Q = " << double(eck.Q*angs) << ", E = " << double(eck.E/meV) << std::endl;
-	
+
 	//std::cout << "kiQ = " << t_real(ki_Q/rads/M_PI*180.) << " deg"<< std::endl;
 	//std::cout << "kfQ = " << t_real(kf_Q/rads/M_PI*180.) << " deg"<< std::endl;
 	//std::cout << "2theta = " << t_real(twotheta/rads/M_PI*180.) << " deg"<< std::endl;
@@ -187,10 +187,11 @@ CNResults calc_eck(const EckParams& eck)
 
 	//--------------------------------------------------------------------------
 	// mono part
-	
+
+	std::launch lpol = /*std::launch::deferred |*/ std::launch::async;
 	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futMono
-		= std::async(std::launch::deferred | std::launch::async, get_mono_vals, 
-					eck.src_w, eck.src_h, 
+		= std::async(lpol, get_mono_vals,
+					eck.src_w, eck.src_h,
 					eck.mono_w, eck.mono_h,
 					eck.dist_src_mono, eck.dist_mono_sample,
 					eck.ki, thetam,
@@ -200,20 +201,20 @@ CNResults calc_eck(const EckParams& eck)
 					mono_curvh, mono_curvv,
 					eck.pos_x , eck.pos_y, eck.pos_z,
 					eck.dmono_refl);
-					
+
 	//--------------------------------------------------------------------------
 
 
 	//--------------------------------------------------------------------------
 	// ana part
-	
+
 	// equ 43 in [eck14]
 	length pos_y2 = -eck.pos_x*units::sin(twotheta)
 					+eck.pos_y*units::cos(twotheta);
 
 	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futAna
-		= std::async(std::launch::deferred | std::launch::async, get_mono_vals,
-					eck.det_w, eck.det_h, 
+		= std::async(lpol, get_mono_vals,
+					eck.det_w, eck.det_h,
 					eck.ana_w, eck.ana_h,
 					eck.dist_ana_det, eck.dist_sample_ana,
 					eck.kf, -thetaa,
@@ -223,7 +224,7 @@ CNResults calc_eck(const EckParams& eck)
 					ana_curvh, ana_curvv,
 					eck.pos_x, pos_y2, eck.pos_z,
 					eck.dana_effic);
-					
+
 	//--------------------------------------------------------------------------
 	// get mono & ana results
 
@@ -240,7 +241,7 @@ CNResults calc_eck(const EckParams& eck)
 	const t_real& G = std::get<2>(tupAna);
 	const t_real& H = std::get<3>(tupAna);
 	const t_real& dReflA = std::get<4>(tupAna);
-	
+
 	/*std::cout << "A = " << A << std::endl;
 	std::cout << "B = " << B << std::endl;
 	std::cout << "C = " << C << std::endl;
@@ -275,7 +276,7 @@ CNResults calc_eck(const EckParams& eck)
 	T(3,4) = -1. * codata::hbar*codata::hbar*kperp/codata::m_n			/ meV / angs;
 	T(4,1) = T(5,2) = 0.5 - s0;
 	T(4,4) = T(5,5) = 0.5 + s0;
-	
+
 	t_mat Tinv;
 	if(!tl::inverse(T, Tinv))
 	{
@@ -283,7 +284,7 @@ CNResults calc_eck(const EckParams& eck)
 		res.strErr = "Matrix T cannot be inverted.";
 		return res;
 	}
-	
+
 	//std::cout << "T = " << T << std::endl;
 	//std::cout << "Tinv = " << Tinv << std::endl;
 
@@ -317,16 +318,16 @@ CNResults calc_eck(const EckParams& eck)
 
 	//--------------------------------------------------------------------------
 	// integrate last 2 vars -> equs 57 & 58 in [eck14]
-	
+
 	t_mat U2 = ellipsoid_gauss_int(U1, 5);
 	t_mat U = ellipsoid_gauss_int(U2, 4);
-	
+
 	t_vec V2 = ellipsoid_gauss_int(V1, U1, 5);
 	t_vec V = ellipsoid_gauss_int(V2, U2, 4);
 
 	t_real W2 = W1 - 0.25*V1[5]/U1(5,5);
 	t_real W = W2 - 0.25*V2[4]/U2(4,4);
-	
+
 	t_real Z2 = Z1*std::sqrt(M_PI/std::fabs(U1(5,5)));
 	t_real Z = Z2*std::sqrt(M_PI/std::fabs(U2(4,4)));
 

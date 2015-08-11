@@ -37,23 +37,23 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plot);
 
-        QPen penCurve;
-        penCurve.setColor(QColor(0,0,0x99));
-        penCurve.setWidth(2);
+	QPen penCurve;
+	penCurve.setColor(QColor(0,0,0x99));
+	penCurve.setWidth(2);
 	m_pCurve = new QwtPlotCurve("S(Q,w)");
-        m_pCurve->setPen(penCurve);
-        m_pCurve->setStyle(QwtPlotCurve::CurveStyle::Lines);
-        m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-        m_pCurve->attach(plot);
+	m_pCurve->setPen(penCurve);
+	m_pCurve->setStyle(QwtPlotCurve::CurveStyle::Lines);
+	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pCurve->attach(plot);
 
-        QPen penPoints;
-        penPoints.setColor(QColor(0xff,0,0));
-        penPoints.setWidth(4);
+	QPen penPoints;
+	penPoints.setColor(QColor(0xff,0,0));
+	penPoints.setWidth(4);
 	m_pPoints = new QwtPlotCurve("S(Q,w)");
-        m_pPoints->setPen(penPoints);
-        m_pPoints->setStyle(QwtPlotCurve::CurveStyle::Dots);
-        m_pPoints->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-        m_pPoints->attach(plot);
+	m_pPoints->setPen(penPoints);
+	m_pPoints->setStyle(QwtPlotCurve::CurveStyle::Dots);
+	m_pPoints->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pPoints->attach(plot);
 
 	plot->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
@@ -176,7 +176,9 @@ void ConvoDlg::Start()
 		std::shared_ptr<SqwBase> ptrSqw;
 
 		std::string strSqwFile = editSqw->text().toStdString();
-		switch(comboSqw->currentIndex())
+
+		int iSqwModel = comboSqw->currentIndex();
+		switch(iSqwModel)
 		{
 			case 0:
 				ptrSqw.reset(new SqwKdTree(strSqwFile.c_str()));
@@ -234,7 +236,11 @@ void ConvoDlg::Start()
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 		{
-			std::future<std::pair<bool,double>> fut = std::async(std::launch::deferred | std::launch::async,
+			std::launch lpol = std::launch::deferred | std::launch::async;
+			if(iSqwModel == 1)	// py: only deferred
+				lpol = std::launch::deferred;
+
+			std::future<std::pair<bool,double>> fut = std::async(lpol,
 			[&reso, iStep, iNumNeutrons, &vecH, &vecK, &vecL, &vecE, this, psqw]() -> std::pair<bool, double>
 			{
 				TASReso localreso = reso;
