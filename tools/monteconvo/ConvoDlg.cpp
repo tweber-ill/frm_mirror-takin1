@@ -8,6 +8,7 @@
 #include "ConvoDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
+#include "tlibs/helper/thread.h"
 #include "sqw.h"
 #ifndef NO_PY
 	#include "sqw_py.h"
@@ -16,8 +17,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <thread>
-#include <future>
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -231,35 +230,41 @@ void ConvoDlg::Start()
 		m_vecQ.reserve(iNumSteps);
 		m_vecS.reserve(iNumSteps);
 
-		std::vector<std::future<std::pair<bool,double>>> vecFuts;
-		vecFuts.reserve(iNumSteps);
+		unsigned int iNumThreads = std::thread::hardware_concurrency();
+		if(iSqwModel == 1)
+			iNumThreads = 0;	// deferred
+
+		tl::ThreadPool<std::pair<bool, double>()> tp(iNumThreads);
+		auto& lstFuts = tp.GetFutures();
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 		{
-			std::launch lpol = std::launch::deferred | std::launch::async;
-			if(iSqwModel == 1)	// py: only deferred
-				lpol = std::launch::deferred;
-
-			std::future<std::pair<bool,double>> fut = std::async(lpol,
-			[&reso, iStep, iNumNeutrons, &vecH, &vecK, &vecL, &vecE, this, psqw]() -> std::pair<bool, double>
+			double dCurH = vecH[iStep];
+			double dCurK = vecK[iStep];
+			double dCurL = vecL[iStep];
+			double dCurE = vecE[iStep];
+			
+			tp.AddTask(
+			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, psqw]() -> std::pair<bool, double>
 			{
 				TASReso localreso = reso;
 				std::vector<ublas::vector<double>> vecNeutrons;
 
 				try
 				{
-					if(!localreso.SetHKLE(vecH[iStep], vecK[iStep], vecL[iStep], vecE[iStep]))
+					if(!localreso.SetHKLE(dCurH, dCurK, dCurL, dCurE))
 					{
 						std::ostringstream ostrErr;
 						ostrErr << "Invalid crystal position: (" <<
-							vecH[iStep] << " " << vecK[iStep] << " " << vecL[iStep] << ") rlu, "
-							<< vecE[iStep] << " meV.";
+							dCurH << " " << dCurK << " " << dCurL << ") rlu, "
+							<< dCurE << " meV.";
 						throw tl::Err(ostrErr.str().c_str());
 					}
 				}
 				catch(const std::exception& ex)
 				{
-					QMessageBox::critical(this, "Error", ex.what());
+					//QMessageBox::critical(this, "Error", ex.what());
+					tl::log_err(ex.what());
 					return std::pair<bool, double>(false, 0.);
 				}
 
@@ -281,13 +286,22 @@ void ConvoDlg::Start()
 					dhklE_mean[i] /= double(iNumNeutrons);
 				return std::pair<bool, double>(true, dS);
 			});
-
-			vecFuts.push_back(std::move(fut));
 		}
 
-		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
+		tp.StartTasks();
+
+		auto iterTask = tp.GetTasks().begin();
+		unsigned int iStep = 0;
+		for(auto &fut : lstFuts)
 		{
-			std::pair<bool, double> pairS = vecFuts[iStep].get();
+			// deferred (in main thread), eval this task manually
+			if(iNumThreads == 0)
+			{
+				(*iterTask)();
+				++iterTask;
+			}
+			
+			std::pair<bool, double> pairS = fut.get();
 			if(!pairS.first)
 				break;
 			double dS = pairS.second;
@@ -318,6 +332,8 @@ void ConvoDlg::Start()
 			textResult->setPlainText(ostrOut.str().c_str());
 
 			progress->setValue(iStep+1);
+			
+			++iStep;
 		}
 
 		ostrOut << "# ---------------- EOF ----------------\n";

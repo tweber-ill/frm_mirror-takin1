@@ -9,7 +9,7 @@
 #define __SQW_PY_H__
 
 #include "sqw.h"
-//#include <mutex>
+#include <mutex>
 #include <boost/python.hpp>
 namespace py = boost::python;
 
@@ -17,7 +17,7 @@ namespace py = boost::python;
 class SqwPy : public SqwBase
 {
 protected:
-	//std::mutex m_mtx;
+	std::mutex m_mtx;
 	py::object m_sys, m_mod;
 	py::object m_Sqw;
 
