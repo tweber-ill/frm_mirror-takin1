@@ -87,6 +87,8 @@ protected:
 
 protected:
 	Kd<double> m_kd;
+	unsigned int m_iNumqs = 1000;
+	
 	ublas::vector<double> m_vecBragg;
 
 	ublas::vector<double> m_vecLA;

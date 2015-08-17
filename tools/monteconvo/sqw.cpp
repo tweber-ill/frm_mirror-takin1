@@ -137,8 +137,6 @@ void SqwPhonon::create()
 		m_bOk = 0;
 		return;
 	}
-	
-	const unsigned int iNumqs = 1000;
 
 	m_vecLA /= ublas::norm_2(m_vecLA);
 	m_vecTA1 /= ublas::norm_2(m_vecTA1);
@@ -149,7 +147,7 @@ void SqwPhonon::create()
 	tl::log_info("TA2: ", m_vecTA2);
 
 	std::list<std::vector<double>> lst;
-	for(double dq=-1.; dq<1.; dq+=1./double(iNumqs))
+	for(double dq=-1.; dq<1.; dq+=1./double(m_iNumqs))
 	{
 		ublas::vector<double> vecQLA = dq*m_vecLA;
 		ublas::vector<double> vecQTA1 = dq*m_vecTA1;
@@ -209,7 +207,9 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 		if(vecToks.size() == 0)
 			continue;
 
-		if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
+		if(vecToks[0] == "num_qs") m_iNumqs = tl::str_to_var<unsigned int>(vecToks[1]);
+
+		else if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
 		else if(vecToks[0] == "TA1") m_vecTA1 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
 		else if(vecToks[0] == "TA2") m_vecTA2 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
 		
@@ -282,6 +282,8 @@ static t_vec str_to_vec(const std::string& str)
 std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
 {
 	std::vector<SqwBase::t_var> vecVars;
+	
+	vecVars.push_back(SqwBase::t_var{"num_qs", "uint", tl::var_to_str(m_iNumqs)});
 
 	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
 	vecVars.push_back(SqwBase::t_var{"TA1", "vector", vec_to_str(m_vecTA1)});
@@ -312,7 +314,9 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 		const std::string& strVar = std::get<0>(var);
 		const std::string& strVal = std::get<2>(var);
 
-		if(strVar == "G") m_vecLA = m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
+		if(strVar == "num_qs") m_iNumqs = tl::str_to_var<decltype(m_iNumqs)>(strVal);
+
+		else if(strVar == "G") m_vecLA = m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
 		else if(strVar == "TA1") m_vecTA1 = str_to_vec<decltype(m_vecTA1)>(strVal);
 		else if(strVar == "TA2") m_vecTA2 = str_to_vec<decltype(m_vecTA2)>(strVal);
 
