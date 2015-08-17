@@ -131,6 +131,13 @@ double SqwPhonon::disp(double dq, double da, double df)
 void SqwPhonon::create()
 {
 	destroy();
+	
+	if(m_vecBragg.size()==0 || m_vecLA.size()==0 || m_vecTA1.size()==0 || m_vecTA2.size()==0)
+	{
+		m_bOk = 0;
+		return;
+	}
+	
 	const unsigned int iNumqs = 1000;
 
 	m_vecLA /= ublas::norm_2(m_vecLA);
@@ -188,6 +195,43 @@ SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
 	create();
 }
 
+SqwPhonon::SqwPhonon(const char* pcFile)
+{
+	std::ifstream ifstr(pcFile);
+	if(!ifstr)
+		return;
+
+	std::string strLine;
+	while(std::getline(ifstr, strLine))
+	{
+		std::vector<std::string> vecToks;
+		tl::get_tokens<std::string>(strLine, std::string(" \t"), vecToks);
+		if(vecToks.size() == 0)
+			continue;
+
+		if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
+		else if(vecToks[0] == "TA1") m_vecTA1 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
+		else if(vecToks[0] == "TA2") m_vecTA2 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
+		
+		else if(vecToks[0] == "LA_amp") m_dLA_amp = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "LA_freq") m_dLA_freq = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var<double>(vecToks[1]);
+
+		else if(vecToks[0] == "TA1_amp") m_dTA1_amp = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "TA1_freq") m_dTA1_freq = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var<double>(vecToks[1]);
+
+		else if(vecToks[0] == "TA2_amp") m_dTA2_amp = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "TA2_freq") m_dTA2_freq = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<double>(vecToks[1]);
+	}
+
+	create();
+}
+
 double SqwPhonon::operator()(double dh, double dk, double dl, double dE) const
 {
 	std::vector<double> vechklE = {dh, dk, dl, dE};
@@ -240,7 +284,6 @@ std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
 	std::vector<SqwBase::t_var> vecVars;
 
 	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
-	vecVars.push_back(SqwBase::t_var{"LA", "vector", vec_to_str(m_vecLA)});
 	vecVars.push_back(SqwBase::t_var{"TA1", "vector", vec_to_str(m_vecTA1)});
 	vecVars.push_back(SqwBase::t_var{"TA2", "vector", vec_to_str(m_vecTA2)});
 
@@ -269,25 +312,24 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 		const std::string& strVar = std::get<0>(var);
 		const std::string& strVal = std::get<2>(var);
 
-		if(strVar == "G") m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
-		else if(strVar == "LA") m_vecLA = str_to_vec<decltype(m_vecLA)>(strVal);
+		if(strVar == "G") m_vecLA = m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
 		else if(strVar == "TA1") m_vecTA1 = str_to_vec<decltype(m_vecTA1)>(strVal);
 		else if(strVar == "TA2") m_vecTA2 = str_to_vec<decltype(m_vecTA2)>(strVal);
 
-		else if(strVar == "LA_amp") m_dLA_amp = tl::str_to_var<decltype(m_dLA_amp)>(strVar);
-		else if(strVar == "LA_freq") m_dLA_freq = tl::str_to_var<decltype(m_dLA_freq)>(strVar);
-		else if(strVar == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<decltype(m_dLA_E_HWHM)>(strVar);
-		else if(strVar == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var<decltype(m_dLA_q_HWHM)>(strVar);
+		else if(strVar == "LA_amp") m_dLA_amp = tl::str_to_var<decltype(m_dLA_amp)>(strVal);
+		else if(strVar == "LA_freq") m_dLA_freq = tl::str_to_var<decltype(m_dLA_freq)>(strVal);
+		else if(strVar == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<decltype(m_dLA_E_HWHM)>(strVal);
+		else if(strVar == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var<decltype(m_dLA_q_HWHM)>(strVal);
 
-		else if(strVar == "TA1_amp") m_dTA1_amp = tl::str_to_var<decltype(m_dTA1_amp)>(strVar);
-		else if(strVar == "TA1_freq") m_dTA1_freq = tl::str_to_var<decltype(m_dTA1_freq)>(strVar);
-		else if(strVar == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var<decltype(m_dTA1_E_HWHM)>(strVar);
-		else if(strVar == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var<decltype(m_dTA1_q_HWHM)>(strVar);
+		else if(strVar == "TA1_amp") m_dTA1_amp = tl::str_to_var<decltype(m_dTA1_amp)>(strVal);
+		else if(strVar == "TA1_freq") m_dTA1_freq = tl::str_to_var<decltype(m_dTA1_freq)>(strVal);
+		else if(strVar == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var<decltype(m_dTA1_E_HWHM)>(strVal);
+		else if(strVar == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var<decltype(m_dTA1_q_HWHM)>(strVal);
 
-		else if(strVar == "TA2_amp") m_dTA2_amp = tl::str_to_var<decltype(m_dTA2_amp)>(strVar);
-		else if(strVar == "TA2_freq") m_dTA2_freq = tl::str_to_var<decltype(m_dTA2_freq)>(strVar);
-		else if(strVar == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var<decltype(m_dTA2_E_HWHM)>(strVar);
-		else if(strVar == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<decltype(m_dTA2_q_HWHM)>(strVar);
+		else if(strVar == "TA2_amp") m_dTA2_amp = tl::str_to_var<decltype(m_dTA2_amp)>(strVal);
+		else if(strVar == "TA2_freq") m_dTA2_freq = tl::str_to_var<decltype(m_dTA2_freq)>(strVal);
+		else if(strVar == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var<decltype(m_dTA2_E_HWHM)>(strVal);
+		else if(strVar == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<decltype(m_dTA2_q_HWHM)>(strVal);
 	}
 
 	create();

@@ -9,7 +9,6 @@
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
 #include "tlibs/helper/thread.h"
-#include "sqw.h"
 #ifndef NO_PY
 	#include "sqw_py.h"
 #endif
@@ -67,19 +66,41 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	plot->setAxisTitle(QwtPlot::yLeft, "S (a.u.)");
 
 
+	m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);
+	QObject::connect(this, SIGNAL(SqwLoaded(const std::vector<SqwBase::t_var>&)),
+		m_pSqwParamDlg, SLOT(SqwLoaded(const std::vector<SqwBase::t_var>&)));
+	QObject::connect(m_pSqwParamDlg, SIGNAL(SqwParamsChanged(const std::vector<SqwBase::t_var>&)), 
+		this, SLOT(SqwParamsChanged(const std::vector<SqwBase::t_var>&)));
+
+	QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
+
 	QObject::connect(btnBrowseCrys, SIGNAL(clicked()), this, SLOT(browseCrysFiles()));
 	QObject::connect(btnBrowseRes, SIGNAL(clicked()), this, SLOT(browseResoFiles()));
 	QObject::connect(btnBrowseSqw, SIGNAL(clicked()), this, SLOT(browseSqwFiles()));
 	QObject::connect(btnSqwParams, SIGNAL(clicked()), this, SLOT(showSqwParamDlg()));
-
 	QObject::connect(btnSaveResult, SIGNAL(clicked()), this, SLOT(SaveResult()));
+	
+	QObject::connect(comboSqw, SIGNAL(currentIndexChanged(int)), this, SLOT(SqwModelChanged(int)));
+	QObject::connect(editSqw, SIGNAL(textChanged(const QString&)), this, SLOT(createSqwModel(const QString&)));
 
 	QObject::connect(btnStart, SIGNAL(clicked()), this, SLOT(Start()));
 }
 
 ConvoDlg::~ConvoDlg()
 {
+	if(m_pSqw)
+	{
+		delete m_pSqw;
+		m_pSqw = nullptr;
+	}
+	
+	if(m_pSqwParamDlg)
+	{
+		delete m_pSqwParamDlg;
+		m_pSqwParamDlg = nullptr;
+	}
 }
+
 
 void ConvoDlg::SaveResult()
 {
@@ -109,6 +130,81 @@ void ConvoDlg::SaveResult()
 	if(m_pSett)
 		m_pSett->setValue("convo/last_dir_result", QString(strDir.c_str()));
 }
+
+
+void ConvoDlg::SqwModelChanged(int)
+{
+	editSqw->clear();
+	emit SqwLoaded(std::vector<SqwBase::t_var>{});
+}
+
+void ConvoDlg::createSqwModel(const QString& qstrFile)
+{
+	if(m_pSqw)
+	{
+		delete m_pSqw;
+		m_pSqw = nullptr;
+		
+		emit SqwLoaded(std::vector<SqwBase::t_var>{});
+	}
+	
+	
+	std::string strSqwFile = qstrFile.toStdString();
+	tl::trim(strSqwFile);
+	if(strSqwFile == "")
+		return;
+
+	const int iSqwModel = comboSqw->currentIndex();
+	switch(iSqwModel)
+	{
+		case 0:
+			m_pSqw = new SqwKdTree(strSqwFile.c_str());
+			break;
+		case 1:
+#ifdef NO_PY
+			QMessageBox::critical(this, "Error", "Compiled without python support.");
+			return;
+#else
+			m_pSqw = new SqwPy(strSqwFile.c_str());
+			break;
+#endif
+		case 2:
+			/*m_pSqw = new SqwPhonon(tl::make_vec({4.,4.,0}),
+					tl::make_vec({0.,0.,1.}), tl::make_vec({1.,-1.,0.}),
+					55.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1,
+					22.5/(M_PI/2.), M_PI/2., 0.1, 0.1,
+					28.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1);*/
+			m_pSqw = new SqwPhonon(strSqwFile.c_str());
+			break;
+		default:
+		{
+			QMessageBox::critical(this, "Error", "Unknown S(q,w) model selected.");
+			return;
+		}
+	}
+	
+	if(m_pSqw && m_pSqw->IsOk())
+		emit SqwLoaded(m_pSqw->GetVars());
+	else
+	{
+		QMessageBox::critical(this, "Error", "Could not create S(q,w).");
+		return;
+	}
+}
+
+
+void ConvoDlg::SqwParamsChanged(const std::vector<SqwBase::t_var>& vecVars)
+{
+	if(!m_pSqw)
+		return;
+	m_pSqw->SetVars(vecVars);
+
+#ifndef NDEBUG
+	// check: read parameters back in
+	emit SqwLoaded(m_pSqw->GetVars());
+#endif
+}
+
 
 void ConvoDlg::Start()
 {
@@ -151,7 +247,6 @@ void ConvoDlg::Start()
 			return;
 		}
 
-
 		plot->setAxisTitle(QwtPlot::xBottom, strScanVar.c_str());
 
 
@@ -173,52 +268,13 @@ void ConvoDlg::Start()
 		reso.SetKFix(spinKfix->value());
 
 
-		std::shared_ptr<SqwBase> ptrSqw;
 
-		std::string strSqwFile = editSqw->text().toStdString();
-
-		int iSqwModel = comboSqw->currentIndex();
-		switch(iSqwModel)
+		if(m_pSqw == nullptr || !m_pSqw->IsOk())
 		{
-			case 0:
-				ptrSqw.reset(new SqwKdTree(strSqwFile.c_str()));
-				break;
-			case 1:
-#ifdef NO_PY
-				QMessageBox::critical(this, "Error", "Compiled without python support.");
-				return;
-#else
-				ptrSqw.reset(new SqwPy(strSqwFile.c_str()));
-				break;
-#endif
-			case 2:
-				ptrSqw.reset(new SqwPhonon(tl::make_vec({4.,4.,0}),
-						tl::make_vec({0.,0.,1.}), tl::make_vec({1.,-1.,0.}),
-						55.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1,
-						22.5/(M_PI/2.), M_PI/2., 0.1, 0.1,
-						28.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1));
-				break;
-			default:
-			{
-				QMessageBox::critical(this, "Error", "Unknown S(q,w) model selected.");
-				return;
-			}
-		}
-
-		SqwBase *psqw = ptrSqw.get();
-		/*std::vector<SqwBase::t_var> vecVars = psqw->GetVars();
-		for(const SqwBase::t_var& var : vecVars)
-		{
-			std::cout << "variable: " << std::get<0>(var) << ", ";
-			std::cout << "type: " << std::get<1>(var) << ", ";
-			std::cout << "value: " << std::get<2>(var) << std::endl;
-		}*/
-
-		if(!psqw->IsOk())
-		{
-			QMessageBox::critical(this, "Error", "Could not create S(q,w).");
+			QMessageBox::critical(this, "Error", "No valid S(q,w) model loaded.");
 			return;
 		}
+
 
 
 		std::ostringstream ostrOut;
@@ -239,6 +295,7 @@ void ConvoDlg::Start()
 		m_vecS.reserve(iNumSteps);
 
 		unsigned int iNumThreads = std::thread::hardware_concurrency();
+		const int iSqwModel = comboSqw->currentIndex();
 		if(iSqwModel == 1)
 			iNumThreads = 0;	// deferred
 
@@ -253,7 +310,7 @@ void ConvoDlg::Start()
 			double dCurE = vecE[iStep];
 
 			tp.AddTask(
-			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, psqw]() -> std::pair<bool, double>
+			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, this]() -> std::pair<bool, double>
 			{
 				TASReso localreso = reso;
 				std::vector<ublas::vector<double>> vecNeutrons;
@@ -283,7 +340,7 @@ void ConvoDlg::Start()
 
 				for(const ublas::vector<double>& vecHKLE : vecNeutrons)
 				{
-					dS += (*psqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
+					dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
 					for(int i=0; i<4; ++i)
 						dhklE_mean[i] += vecHKLE[i];
@@ -410,10 +467,30 @@ void ConvoDlg::browseSqwFiles()
 
 void ConvoDlg::showSqwParamDlg()
 {
-	if(!m_pSqwParamDlg)
-		m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);
 	m_pSqwParamDlg->show();
 	m_pSqwParamDlg->activateWindow();
+}
+
+
+void ConvoDlg::showEvent(QShowEvent *pEvt)
+{
+	if(m_pSett && m_pSett->contains("monteconvo/geo"))
+		restoreGeometry(m_pSett->value("monteconvo/geo").toByteArray());
+
+	QDialog::showEvent(pEvt);
+}
+
+void ConvoDlg::ButtonBoxClicked(QAbstractButton *pBtn)
+{
+	QDialogButtonBox::Close;
+	
+	if(pBtn == buttonBox->button(QDialogButtonBox::Close))
+	{
+		if(m_pSett)
+			m_pSett->setValue("monteconvo/geo", saveGeometry());
+
+		QDialog::accept();
+	}
 }
 
 #include "ConvoDlg.moc"

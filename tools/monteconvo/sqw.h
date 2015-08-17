@@ -33,6 +33,8 @@ public:
 
 	virtual std::vector<t_var> GetVars() const = 0;
 	virtual void SetVars(const std::vector<t_var>&) = 0;
+	
+	virtual ~SqwBase() {}
 };
 
 
@@ -102,6 +104,7 @@ public:
 		double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM,
 		double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM,
 		double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM);
+	SqwPhonon(const char* pcFile);
 
 	virtual ~SqwPhonon() = default;
 

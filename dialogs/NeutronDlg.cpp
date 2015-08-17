@@ -21,6 +21,7 @@
 
 namespace co = boost::units::si::constants::codata;
 
+
 NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
 			: QDialog(pParent), m_pSettings(pSett)
 {
@@ -483,10 +484,8 @@ void NeutronDlg::SetEditTT(QLineEdit *pEditT, QLineEdit *pEditTT)
 	pEditTT->setText(strTT.c_str());
 }
 
-void NeutronDlg::RealThetaEdited()
-{ SetEditTT(editBraggDirT, editBraggDirTT); }
-void NeutronDlg::RecipThetaEdited()
-{ SetEditTT(editBraggReciT, editBraggReciTT); }
+void NeutronDlg::RealThetaEdited() { SetEditTT(editBraggDirT, editBraggDirTT); }
+void NeutronDlg::RecipThetaEdited() { SetEditTT(editBraggReciT, editBraggReciTT); }
 
 
 void NeutronDlg::SetEditT(QLineEdit *pEditT, QLineEdit *pEditTT)
@@ -497,10 +496,8 @@ void NeutronDlg::SetEditT(QLineEdit *pEditT, QLineEdit *pEditTT)
 	pEditT->setText(strT.c_str());
 }
 
-void NeutronDlg::RealTwoThetaEdited()
-{ SetEditT(editBraggDirT, editBraggDirTT); }
-void NeutronDlg::RecipTwoThetaEdited()
-{ SetEditT(editBraggReciT, editBraggReciTT); }
+void NeutronDlg::RealTwoThetaEdited() { SetEditT(editBraggDirT, editBraggDirTT); }
+void NeutronDlg::RecipTwoThetaEdited() { SetEditT(editBraggReciT, editBraggReciTT); }
 
 
 void NeutronDlg::CalcBraggReal()

@@ -28,7 +28,7 @@ SqwPy::SqwPy(const char* pcFile)
 		py::dict moddict = py::extract<py::dict>(m_mod.attr("__dict__"));
 		m_Sqw = moddict["Sqw"];
 
-		m_bOk = 1;
+		m_bOk = !!m_Sqw;
 	}
 	catch(const py::error_already_set& ex)
 	{
@@ -76,7 +76,9 @@ std::vector<SqwBase::t_var> SqwPy::GetVars() const
 
 		std::string strType = py::extract<std::string>(dict.items()[i][1]
 			.attr("__class__").attr("__name__"));
-		if(strType == "function" || strType == "module" || strType == "NoneType")
+		if(strType=="module" || strType=="NoneType" || strType=="type")
+			continue;
+		if(strType.find("func") != std::string::npos)
 			continue;
 
 		SqwBase::t_var var;

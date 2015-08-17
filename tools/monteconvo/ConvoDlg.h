@@ -19,6 +19,8 @@
 #include "SqwParamDlg.h"
 #include "ui/ui_monteconvo.h"
 
+#include "sqw.h"
+
 
 class ConvoDlg : public QDialog, Ui::ConvoDlg
 { Q_OBJECT
@@ -32,7 +34,11 @@ protected:
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
 
+	SqwBase *m_pSqw = nullptr;
 	std::vector<double> m_vecQ, m_vecS;
+
+protected:
+	virtual void showEvent(QShowEvent *pEvt) override;
 
 protected slots:
 	void showSqwParamDlg();
@@ -40,14 +46,23 @@ protected slots:
 	void browseCrysFiles();
 	void browseResoFiles();
 	void browseSqwFiles();
+	
+	void SqwModelChanged(int);
+	void createSqwModel(const QString& qstrFile);
+	void SqwParamsChanged(const std::vector<SqwBase::t_var>&);
 
 	void SaveResult();
 
 	void Start();
+	
+	void ButtonBoxClicked(QAbstractButton *pBtn);
 
 public:
 	ConvoDlg(QWidget* pParent=0, QSettings* pSett=0);
 	virtual ~ConvoDlg();
+	
+signals:
+	void SqwLoaded(const std::vector<SqwBase::t_var>&);
 };
 
 #endif
