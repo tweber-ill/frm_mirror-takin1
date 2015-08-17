@@ -178,9 +178,9 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/xml.o obj/spacegroup.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
-	obj/loadinstr.o obj/recent.o \
-	obj/globals.o \
-	obj/sqw.o ${PY_OBJS} obj/tasreso.o obj/ConvoDlg.o
+	obj/loadinstr.o obj/recent.o obj/globals.o \
+	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
+	obj/ConvoDlg.o obj/SqwParamDlg.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 
@@ -332,6 +332,8 @@ obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
 obj/ResoDlg.o: tools/res/ResoDlg.cpp tools/res/ResoDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/ConvoDlg.o: tools/monteconvo/ConvoDlg.cpp tools/monteconvo/ConvoDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/SqwParamDlg.o: tools/monteconvo/SqwParamDlg.cpp tools/monteconvo/SqwParamDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/EllipseDlg.o: dialogs/EllipseDlg.cpp dialogs/EllipseDlg.h
 	${CC} ${FLAGS} -c -o $@ $<

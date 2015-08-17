@@ -16,6 +16,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 
+#include "SqwParamDlg.h"
 #include "ui/ui_monteconvo.h"
 
 
@@ -25,6 +26,7 @@ private:
 
 protected:
 	QSettings *m_pSett = nullptr;
+	SqwParamDlg *m_pSqwParamDlg = nullptr;
 
 	QwtPlotCurve *m_pCurve, *m_pPoints = nullptr;
 	QwtPlotGrid *m_pGrid = nullptr;
@@ -33,6 +35,8 @@ protected:
 	std::vector<double> m_vecQ, m_vecS;
 
 protected slots:
+	void showSqwParamDlg();
+
 	void browseCrysFiles();
 	void browseResoFiles();
 	void browseSqwFiles();

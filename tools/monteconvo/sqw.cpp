@@ -25,6 +25,15 @@ double SqwElast::operator()(double dh, double dk, double dl, double dE) const
 	return 0.;
 }
 
+std::vector<SqwBase::t_var> SqwElast::GetVars() const
+{
+	std::vector<SqwBase::t_var> vecVars;
+	return vecVars;
+}
+
+void SqwElast::SetVars(const std::vector<SqwBase::t_var>&)
+{
+}
 
 //------------------------------------------------------------------------------
 
@@ -99,6 +108,17 @@ double SqwKdTree::operator()(double dh, double dk, double dl, double dE) const
 	return vec[4];
 }
 
+std::vector<SqwBase::t_var> SqwKdTree::GetVars() const
+{
+	std::vector<SqwBase::t_var> vecVars;
+
+	return vecVars;
+}
+
+void SqwKdTree::SetVars(const std::vector<SqwBase::t_var>&)
+{
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -108,18 +128,9 @@ double SqwPhonon::disp(double dq, double da, double df)
 	return std::abs(da*std::sin(dq*df));
 }
 
-SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
-	const ublas::vector<double>& vecTA1,
-	const ublas::vector<double>& vecTA2,
-	double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM,
-	double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM,
-	double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM)
-		: m_vecBragg(vecBragg), m_vecLA(vecBragg),
-			m_vecTA1(vecTA1), m_vecTA2(vecTA2),
-			m_dLA_amp(dLA_amp), m_dLA_freq(dLA_freq),
-			m_dTA1_amp(dTA1_amp), m_dTA1_freq(dTA1_freq),
-			m_dTA2_amp(dTA2_amp), m_dTA2_freq(dTA2_freq)
+void SqwPhonon::create()
 {
+	destroy();
 	const unsigned int iNumqs = 1000;
 
 	m_vecLA /= ublas::norm_2(m_vecLA);
@@ -145,9 +156,9 @@ SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
 		double dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
 		double dETA2 = disp(dq, m_dTA2_amp, m_dTA2_freq);
 
-		lst.push_back(std::vector<double>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, 1., dLA_E_HWHM, dLA_q_HWHM}));
-		lst.push_back(std::vector<double>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, 1., dTA1_E_HWHM, dTA1_q_HWHM}));
-		lst.push_back(std::vector<double>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, 1., dTA2_E_HWHM, dTA2_q_HWHM}));
+		lst.push_back(std::vector<double>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, 1., m_dLA_E_HWHM, m_dLA_q_HWHM}));
+		lst.push_back(std::vector<double>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, 1., m_dTA1_E_HWHM, m_dTA1_q_HWHM}));
+		lst.push_back(std::vector<double>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, 1., m_dTA2_E_HWHM, m_dTA2_q_HWHM}));
 	}
 
 	tl::log_info("Generated ", lst.size(), " S(q,w) points.");
@@ -155,6 +166,26 @@ SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
 	tl::log_info("Generated k-d tree.");
 
 	m_bOk = 1;
+}
+
+void SqwPhonon::destroy()
+{
+	m_kd.Unload();
+}
+
+SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
+	const ublas::vector<double>& vecTA1,
+	const ublas::vector<double>& vecTA2,
+	double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM,
+	double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM,
+	double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM)
+		: m_vecBragg(vecBragg), m_vecLA(vecBragg),
+			m_vecTA1(vecTA1), m_vecTA2(vecTA2),
+			m_dLA_amp(dLA_amp), m_dLA_freq(dLA_freq), m_dLA_E_HWHM(dLA_E_HWHM), m_dLA_q_HWHM(dLA_q_HWHM),
+			m_dTA1_amp(dTA1_amp), m_dTA1_freq(dTA1_freq), m_dTA1_E_HWHM(dTA1_E_HWHM), m_dTA1_q_HWHM(dTA1_q_HWHM),
+			m_dTA2_amp(dTA2_amp), m_dTA2_freq(dTA2_freq), m_dTA2_E_HWHM(dTA2_E_HWHM), m_dTA2_q_HWHM(dTA2_q_HWHM)
+{
+	create();
 }
 
 double SqwPhonon::operator()(double dh, double dk, double dl, double dE) const
@@ -178,4 +209,86 @@ double SqwPhonon::operator()(double dh, double dk, double dl, double dE) const
 		+ std::pow(vec[2]-vechklE[2], 2.));
 
 	return dS * std::abs(tl::DHO_model(dE, dT, dE0, dE_HWHM, 1., 0.)) * tl::gauss_model(dqDist, 0., dQ_HWHM*tl::HWHM2SIGMA, 1., 0.);
+}
+
+
+template<class t_vec>
+static std::string vec_to_str(const t_vec& vec)
+{
+	std::ostringstream ostr;
+	for(const typename t_vec::value_type& t : vec)
+		ostr << t << " ";
+	return ostr.str();
+}
+
+template<class t_vec>
+static t_vec str_to_vec(const std::string& str)
+{
+	typedef typename t_vec::value_type T;
+
+	std::vector<T> vec0;
+	tl::get_tokens<T, std::string, std::vector<T>>(str, " \t", vec0);
+
+	t_vec vec(vec0.size());
+	for(unsigned int i=0; i<vec0.size(); ++i)
+		vec[i] = vec0[i];
+	return vec;
+}
+
+std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
+{
+	std::vector<SqwBase::t_var> vecVars;
+
+	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
+	vecVars.push_back(SqwBase::t_var{"LA", "vector", vec_to_str(m_vecLA)});
+	vecVars.push_back(SqwBase::t_var{"TA1", "vector", vec_to_str(m_vecTA1)});
+	vecVars.push_back(SqwBase::t_var{"TA2", "vector", vec_to_str(m_vecTA2)});
+
+	vecVars.push_back(SqwBase::t_var{"LA_amp", "double", tl::var_to_str(m_dLA_amp)});
+	vecVars.push_back(SqwBase::t_var{"LA_freq", "double", tl::var_to_str(m_dLA_freq)});
+	vecVars.push_back(SqwBase::t_var{"LA_E_HWHM", "double", tl::var_to_str(m_dLA_E_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"LA_q_HWHM", "double", tl::var_to_str(m_dLA_q_HWHM)});
+
+	vecVars.push_back(SqwBase::t_var{"TA1_amp", "double", tl::var_to_str(m_dTA1_amp)});
+	vecVars.push_back(SqwBase::t_var{"TA1_freq", "double", tl::var_to_str(m_dTA1_freq)});
+	vecVars.push_back(SqwBase::t_var{"TA1_E_HWHM", "double", tl::var_to_str(m_dTA1_E_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"TA1_q_HWHM", "double", tl::var_to_str(m_dTA1_q_HWHM)});
+
+	vecVars.push_back(SqwBase::t_var{"TA2_amp", "double", tl::var_to_str(m_dTA2_amp)});
+	vecVars.push_back(SqwBase::t_var{"TA2_freq", "double", tl::var_to_str(m_dTA2_freq)});
+	vecVars.push_back(SqwBase::t_var{"TA2_E_HWHM", "double", tl::var_to_str(m_dTA2_E_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"TA2_q_HWHM", "double", tl::var_to_str(m_dTA2_q_HWHM)});
+
+	return vecVars;
+}
+
+void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
+{
+	for(const SqwBase::t_var& var : vecVars)
+	{
+		const std::string& strVar = std::get<0>(var);
+		const std::string& strVal = std::get<2>(var);
+
+		if(strVar == "G") m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
+		else if(strVar == "LA") m_vecLA = str_to_vec<decltype(m_vecLA)>(strVal);
+		else if(strVar == "TA1") m_vecTA1 = str_to_vec<decltype(m_vecTA1)>(strVal);
+		else if(strVar == "TA2") m_vecTA2 = str_to_vec<decltype(m_vecTA2)>(strVal);
+
+		else if(strVar == "LA_amp") m_dLA_amp = tl::str_to_var<decltype(m_dLA_amp)>(strVar);
+		else if(strVar == "LA_freq") m_dLA_freq = tl::str_to_var<decltype(m_dLA_freq)>(strVar);
+		else if(strVar == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<decltype(m_dLA_E_HWHM)>(strVar);
+		else if(strVar == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var<decltype(m_dLA_q_HWHM)>(strVar);
+
+		else if(strVar == "TA1_amp") m_dTA1_amp = tl::str_to_var<decltype(m_dTA1_amp)>(strVar);
+		else if(strVar == "TA1_freq") m_dTA1_freq = tl::str_to_var<decltype(m_dTA1_freq)>(strVar);
+		else if(strVar == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var<decltype(m_dTA1_E_HWHM)>(strVar);
+		else if(strVar == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var<decltype(m_dTA1_q_HWHM)>(strVar);
+
+		else if(strVar == "TA2_amp") m_dTA2_amp = tl::str_to_var<decltype(m_dTA2_amp)>(strVar);
+		else if(strVar == "TA2_freq") m_dTA2_freq = tl::str_to_var<decltype(m_dTA2_freq)>(strVar);
+		else if(strVar == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var<decltype(m_dTA2_E_HWHM)>(strVar);
+		else if(strVar == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<decltype(m_dTA2_q_HWHM)>(strVar);
+	}
+
+	create();
 }

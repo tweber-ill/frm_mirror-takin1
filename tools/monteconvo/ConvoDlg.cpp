@@ -70,6 +70,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(btnBrowseCrys, SIGNAL(clicked()), this, SLOT(browseCrysFiles()));
 	QObject::connect(btnBrowseRes, SIGNAL(clicked()), this, SLOT(browseResoFiles()));
 	QObject::connect(btnBrowseSqw, SIGNAL(clicked()), this, SLOT(browseSqwFiles()));
+	QObject::connect(btnSqwParams, SIGNAL(clicked()), this, SLOT(showSqwParamDlg()));
 
 	QObject::connect(btnSaveResult, SIGNAL(clicked()), this, SLOT(SaveResult()));
 
@@ -205,6 +206,13 @@ void ConvoDlg::Start()
 		}
 
 		SqwBase *psqw = ptrSqw.get();
+		/*std::vector<SqwBase::t_var> vecVars = psqw->GetVars();
+		for(const SqwBase::t_var& var : vecVars)
+		{
+			std::cout << "variable: " << std::get<0>(var) << ", ";
+			std::cout << "type: " << std::get<1>(var) << ", ";
+			std::cout << "value: " << std::get<2>(var) << std::endl;
+		}*/
 
 		if(!psqw->IsOk())
 		{
@@ -243,7 +251,7 @@ void ConvoDlg::Start()
 			double dCurK = vecK[iStep];
 			double dCurL = vecL[iStep];
 			double dCurE = vecE[iStep];
-			
+
 			tp.AddTask(
 			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, psqw]() -> std::pair<bool, double>
 			{
@@ -300,7 +308,7 @@ void ConvoDlg::Start()
 				(*iterTask)();
 				++iterTask;
 			}
-			
+
 			std::pair<bool, double> pairS = fut.get();
 			if(!pairS.first)
 				break;
@@ -332,7 +340,7 @@ void ConvoDlg::Start()
 			textResult->setPlainText(ostrOut.str().c_str());
 
 			progress->setValue(iStep+1);
-			
+
 			++iStep;
 		}
 
@@ -400,6 +408,12 @@ void ConvoDlg::browseSqwFiles()
 		m_pSett->setValue("convo/last_dir_sqw", QString(strDir.c_str()));
 }
 
-
+void ConvoDlg::showSqwParamDlg()
+{
+	if(!m_pSqwParamDlg)
+		m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);
+	m_pSqwParamDlg->show();
+	m_pSqwParamDlg->activateWindow();
+}
 
 #include "ConvoDlg.moc"

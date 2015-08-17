@@ -46,6 +46,7 @@ declare -a hfiles=(
         "tools/res/ResoDlg.h"
         "tools/scanviewer/scanviewer.h"
 	"tools/monteconvo/ConvoDlg.h"
+	"tools/monteconvo/SqwParamDlg.h"
         "dialogs/EllipseDlg.h"
         "dialogs/EllipseDlg3D.h"
         "dialogs/RecipParamDlg.h"

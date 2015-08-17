@@ -40,7 +40,7 @@ SqwPy::SqwPy(const char* pcFile)
 }
 
 SqwPy::~SqwPy()
-{	
+{
 	//::Py_Finalize();
 }
 
@@ -59,4 +59,38 @@ double SqwPy::operator()(double dh, double dk, double dl, double dE) const
 	}
 
 	return 0.;
+}
+
+
+std::vector<SqwBase::t_var> SqwPy::GetVars() const
+{
+	py::dict dict = py::extract<py::dict>(m_mod.attr("__dict__"));
+
+	std::vector<SqwBase::t_var> vecVars;
+
+	for(py::ssize_t i=0; i<py::len(dict.items()); ++i)
+	{
+		std::string strName = py::extract<std::string>(dict.items()[i][0]);
+		if(strName.length() == 0) continue;
+		if(strName[0] == '_') continue;
+
+		std::string strType = py::extract<std::string>(dict.items()[i][1]
+			.attr("__class__").attr("__name__"));
+		if(strType == "function" || strType == "module" || strType == "NoneType")
+			continue;
+
+		SqwBase::t_var var;
+		std::get<0>(var) = std::move(strName);
+		std::get<1>(var) = std::move(strType);
+
+		vecVars.push_back(var);
+	}
+
+	return vecVars;
+}
+
+
+void SqwPy::SetVars(const std::vector<SqwBase::t_var>&)
+{
+
 }

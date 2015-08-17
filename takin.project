@@ -130,6 +130,8 @@
       <File Name="tools/monteconvo/ConvoDlg.h"/>
       <File Name="tools/monteconvo/sqw_py.cpp"/>
       <File Name="tools/monteconvo/sqw_py.h"/>
+      <File Name="tools/monteconvo/SqwParamDlg.cpp"/>
+      <File Name="tools/monteconvo/SqwParamDlg.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Description/>

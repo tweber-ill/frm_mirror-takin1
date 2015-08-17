@@ -26,6 +26,9 @@ public:
 	virtual ~SqwPy();
 
 	virtual double operator()(double dh, double dk, double dl, double dE) const override;
+
+	virtual std::vector<SqwBase::t_var> GetVars() const override;
+	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 };
 
 #endif
