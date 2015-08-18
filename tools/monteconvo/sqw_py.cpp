@@ -47,7 +47,7 @@ SqwPy::~SqwPy()
 
 double SqwPy::operator()(double dh, double dk, double dl, double dE) const
 {
-	std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(m_mtx));
+	std::lock_guard<decltype(m_mtx)> lock(m_mtx);
 	try
 	{
 		return py::extract<double>(m_Sqw(dh, dk, dl, dE));

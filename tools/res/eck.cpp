@@ -33,8 +33,8 @@ static const auto rads = tl::radians;
 static const auto meV = tl::meV;
 
 
-static std::tuple<t_mat, t_vec, t_real, t_real, t_real> 
-get_mono_vals(const length& src_w, const length& src_h, 
+static std::tuple<t_mat, t_vec, t_real, t_real, t_real>
+get_mono_vals(const length& src_w, const length& src_h,
 			const length& mono_w, const length& mono_h,
 			const length& dist_src_mono, const length& dist_mono_sample,
 			const wavenumber& ki, const angle& thetam,
@@ -211,7 +211,6 @@ CNResults calc_eck(const EckParams& eck)
 	// equ 43 in [eck14]
 	length pos_y2 = -eck.pos_x*units::sin(twotheta)
 					+eck.pos_y*units::cos(twotheta);
-
 	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futAna
 		= std::async(lpol, get_mono_vals,
 					eck.det_w, eck.det_h,

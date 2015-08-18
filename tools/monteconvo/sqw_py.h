@@ -17,7 +17,7 @@ namespace py = boost::python;
 class SqwPy : public SqwBase
 {
 protected:
-	std::mutex m_mtx;
+	mutable std::mutex m_mtx;
 	py::object m_sys, m_mod;
 	py::object m_Sqw;
 
