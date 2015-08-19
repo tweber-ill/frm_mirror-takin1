@@ -84,10 +84,13 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(editSqw, SIGNAL(textChanged(const QString&)), this, SLOT(createSqwModel(const QString&)));
 
 	QObject::connect(btnStart, SIGNAL(clicked()), this, SLOT(Start()));
+	QObject::connect(btnStop, SIGNAL(clicked()), this, SLOT(Stop()));
 }
 
 ConvoDlg::~ConvoDlg()
 {
+	if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; m_pth = nullptr; }
+	
 	if(m_pSqw)
 	{
 		delete m_pSqw;
@@ -208,8 +211,21 @@ void ConvoDlg::SqwParamsChanged(const std::vector<SqwBase::t_var>& vecVars)
 
 void ConvoDlg::Start()
 {
-	// TODO: use thread
-	//std::thread* pth = new std::thread([this]
+	m_atStop.store(false);
+	
+	btnStart->setEnabled(false);
+	tabSettings->setEnabled(false);
+	btnStop->setEnabled(true);
+	tabWidget->setCurrentWidget(tabPlot);
+	
+	bool bForceDeferred = false;
+	const int iSqwModel = comboSqw->currentIndex();
+	if(iSqwModel == 1)
+		bForceDeferred = true;
+	Qt::ConnectionType connty = bForceDeferred ? Qt::ConnectionType::DirectConnection 
+			: Qt::ConnectionType::BlockingQueuedConnection;
+	
+	std::function<void()> fkt = [this, connty, bForceDeferred]
 	{
 		const unsigned int iNumNeutrons = spinNeutrons->value();
 
@@ -247,7 +263,7 @@ void ConvoDlg::Start()
 			return;
 		}
 
-		plot->setAxisTitle(QwtPlot::xBottom, strScanVar.c_str());
+		//plot->setAxisTitle(QwtPlot::xBottom, strScanVar.c_str());
 
 
 		TASReso reso;
@@ -283,9 +299,10 @@ void ConvoDlg::Start()
 		ostrOut << "# Neutrons: " << iNumNeutrons << "\n";
 		ostrOut << "#\n";
 
-		progress->setMaximum(iNumSteps);
-		progress->setValue(0);
-		tabWidget->setCurrentWidget(tabPlot);
+		QMetaObject::invokeMethod(progress, "setMaximum", Q_ARG(int, iNumSteps));
+		QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, 0));
+		
+		QMetaObject::invokeMethod(textResult, "clear", connty);
 
 
 		m_vecQ.clear();
@@ -294,16 +311,13 @@ void ConvoDlg::Start()
 		m_vecQ.reserve(iNumSteps);
 		m_vecS.reserve(iNumSteps);
 
-		unsigned int iNumThreads = std::thread::hardware_concurrency();
-		const int iSqwModel = comboSqw->currentIndex();
-		if(iSqwModel == 1)
-			iNumThreads = 0;	// deferred
+		unsigned int iNumThreads = bForceDeferred ? 0 : std::thread::hardware_concurrency();
 
 		tl::ThreadPool<std::pair<bool, double>()> tp(iNumThreads);
 		auto& lstFuts = tp.GetFutures();
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
-		{
+		{			
 			double dCurH = vecH[iStep];
 			double dCurK = vecK[iStep];
 			double dCurL = vecL[iStep];
@@ -312,6 +326,8 @@ void ConvoDlg::Start()
 			tp.AddTask(
 			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, this]() -> std::pair<bool, double>
 			{
+				if(m_atStop.load()) return std::pair<bool, double>(false, 0.);
+				
 				TASReso localreso = reso;
 				std::vector<ublas::vector<double>> vecNeutrons;
 
@@ -340,6 +356,8 @@ void ConvoDlg::Start()
 
 				for(const ublas::vector<double>& vecHKLE : vecNeutrons)
 				{
+					if(m_atStop.load()) return std::pair<bool, double>(false, 0.);
+					
 					dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
 					for(int i=0; i<4; ++i)
@@ -349,6 +367,7 @@ void ConvoDlg::Start()
 				dS /= double(iNumNeutrons);
 				for(int i=0; i<4; ++i)
 					dhklE_mean[i] /= double(iNumNeutrons);
+
 				return std::pair<bool, double>(true, dS);
 			});
 		}
@@ -359,6 +378,8 @@ void ConvoDlg::Start()
 		unsigned int iStep = 0;
 		for(auto &fut : lstFuts)
 		{
+			if(m_atStop.load()) break;
+			
 			// deferred (in main thread), eval this task manually
 			if(iNumThreads == 0)
 			{
@@ -390,21 +411,39 @@ void ConvoDlg::Start()
 			m_pCurve->setRawData(m_vecQ.data(), m_vecS.data(), m_vecQ.size());
 			m_pPoints->setRawData(m_vecQ.data(), m_vecS.data(), m_vecQ.size());
 	#endif
-			plot->replot();
+			QMetaObject::invokeMethod(plot, "replot", connty);
 
+			QMetaObject::invokeMethod(textResult, "setPlainText", connty, 
+				Q_ARG(const QString&, QString(ostrOut.str().c_str())));
 
-			textResult->clear();
-			textResult->setPlainText(ostrOut.str().c_str());
-
-			progress->setValue(iStep+1);
-
+			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
 			++iStep;
 		}
 
 		ostrOut << "# ---------------- EOF ----------------\n";
-		textResult->clear();
-		textResult->setPlainText(ostrOut.str().c_str());
-	}//);
+		
+		QMetaObject::invokeMethod(textResult, "setPlainText", connty, 
+			Q_ARG(const QString&, QString(ostrOut.str().c_str())));
+
+		QMetaObject::invokeMethod(btnStop, "setEnabled", Q_ARG(bool, false));
+		QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
+		QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
+	};
+
+
+	if(bForceDeferred)
+		fkt();
+	else
+	{
+		if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; }
+		m_pth = new std::thread(std::move(fkt));
+	}
+}
+
+
+void ConvoDlg::Stop()
+{
+	m_atStop.store(true);
 }
 
 

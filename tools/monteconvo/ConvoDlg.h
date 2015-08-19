@@ -11,6 +11,9 @@
 #include <QDialog>
 #include <QSettings>
 
+#include <thread>
+#include <atomic>
+
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
@@ -24,9 +27,10 @@
 
 class ConvoDlg : public QDialog, Ui::ConvoDlg
 { Q_OBJECT
-private:
-
 protected:
+	std::thread *m_pth = nullptr;
+	std::atomic<bool> m_atStop;
+
 	QSettings *m_pSett = nullptr;
 	SqwParamDlg *m_pSqwParamDlg = nullptr;
 
@@ -54,6 +58,7 @@ protected slots:
 	void SaveResult();
 
 	void Start();
+	void Stop();
 	
 	void ButtonBoxClicked(QAbstractButton *pBtn);
 
