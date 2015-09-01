@@ -22,9 +22,8 @@ class SrvDlg : public QDialog, Ui::SrvDlg
 		virtual ~SrvDlg();
 
 	signals:
-		void ConnectTo(const QString& strHost, const QString& strPort);
-
-	protected slots:
+		void ConnectTo(int iSys, const QString& strHost, const QString& strPort,
+			const QString& strUser, const QString& strPass);
 
 	protected:
 		virtual void accept();

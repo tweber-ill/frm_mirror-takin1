@@ -6,43 +6,113 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>304</width>
-    <height>111</height>
+    <width>277</width>
+    <height>292</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Connection</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Host:</string>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Connection</string>
      </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="editHost">
-     <property name="text">
-      <string>mira1.mira.frm2</string>
-     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>System:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboSys">
+        <item>
+         <property name="text">
+          <string>NICOS</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>SICS</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Host:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="editHost">
+        <property name="text">
+         <string>mira1.mira.frm2</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Port:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="editPort">
+        <property name="text">
+         <string>14869</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Port:</string>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Login</string>
      </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Login:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="editLogin"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Password:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="editPwd">
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="checkRememberPwd">
+        <property name="text">
+         <string>Remember Password</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="editPort">
-     <property name="text">
-      <string>14869</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
+   <item row="2" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -55,8 +125,12 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>comboSys</tabstop>
   <tabstop>editHost</tabstop>
   <tabstop>editPort</tabstop>
+  <tabstop>editLogin</tabstop>
+  <tabstop>editPwd</tabstop>
+  <tabstop>checkRememberPwd</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>

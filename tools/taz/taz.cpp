@@ -419,7 +419,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuNet->setTitle("Network");
 
 	QAction *pConn = new QAction(this);
-	pConn->setText("Connect to NICOS...");
+	pConn->setText("Connect to Instrument...");
 	pConn->setIcon(QIcon::fromTheme("network-wireless"));
 	pMenuNet->addAction(pConn);
 
@@ -913,7 +913,7 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "Takin version 0.9.2\n";
+	strAbout += "Takin version 0.9.3\n";
 	strAbout += "Written by Tobias Weber, 2014-2015.";
 	strAbout += "\n\n";
 

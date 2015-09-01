@@ -43,6 +43,7 @@ declare -a hfiles=(
         "tools/taz/tas_layout.h"
         "tools/taz/recip3d.h"
         "tools/taz/nicos.h"
+        "tools/taz/sics.h"
         "tools/res/ResoDlg.h"
         "tools/scanviewer/scanviewer.h"
 	"tools/monteconvo/ConvoDlg.h"

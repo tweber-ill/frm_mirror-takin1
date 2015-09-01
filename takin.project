@@ -120,6 +120,8 @@
       <File Name="tools/taz/taz_net.cpp"/>
       <File Name="tools/taz/taz_crys.cpp"/>
       <File Name="tools/taz/taz_file.cpp"/>
+      <File Name="tools/taz/sics.cpp"/>
+      <File Name="tools/taz/sics.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="monteconvo">
       <File Name="tools/monteconvo/sqw.cpp"/>

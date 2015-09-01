@@ -17,57 +17,99 @@ void TazDlg::ShowConnectDlg()
 	if(!m_pSrvDlg)
 	{
 		m_pSrvDlg = new SrvDlg(this, &m_settings);
-		QObject::connect(m_pSrvDlg, SIGNAL(ConnectTo(const QString&, const QString&)),
-						this, SLOT(ConnectTo(const QString&, const QString&)));
+		QObject::connect(m_pSrvDlg, SIGNAL(ConnectTo(int, const QString&, const QString&, const QString&, const QString&)),
+			this, SLOT(ConnectTo(int, const QString&, const QString&, const QString&, const QString&)));
 	}
 
 	m_pSrvDlg->show();
 	m_pSrvDlg->activateWindow();
 }
 
-void TazDlg::ConnectTo(const QString& _strHost, const QString& _strPort)
+void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPort,
+	const QString& _strUser, const QString& _strPass)
 {
 	Disconnect();
 
-	std::string strHost =  _strHost.toStdString();
-	std::string strPort =  _strPort.toStdString();
+	std::string strHost = _strHost.toStdString();
+	std::string strPort = _strPort.toStdString();
+	std::string strUser = _strUser.toStdString();
+	std::string strPass = _strPass.toStdString();
 
-	m_pNicosCache = new NicosCache(&m_settings);
-	QObject::connect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
+	const QObject* pNetCache = nullptr;
+	if(iSys == 0)
+	{
+		m_pNicosCache = new NicosCache(&m_settings);
+		pNetCache = m_pNicosCache;
+	}
+	else if(iSys == 1)
+	{
+		m_pSicsCache = new SicsCache(&m_settings);
+		pNetCache = m_pSicsCache;
+	}
+	else
+	{
+		tl::log_err("Unknown instrument control system selected.");
+		return;
+	}
+
+
+	QObject::connect(pNetCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
-	QObject::connect(m_pNicosCache, SIGNAL(connected(const QString&, const QString&)),
+	QObject::connect(pNetCache, SIGNAL(connected(const QString&, const QString&)),
 					this, SLOT(Connected(const QString&, const QString&)));
-	QObject::connect(m_pNicosCache, SIGNAL(disconnected()),
+	QObject::connect(pNetCache, SIGNAL(disconnected()),
 					this, SLOT(Disconnected()));
 
 	if(!m_pNetCacheDlg)
 		m_pNetCacheDlg = new NetCacheDlg(this, &m_settings);
 
 	m_pNetCacheDlg->ClearAll();
-	QObject::connect(m_pNicosCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
+	QObject::connect(pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
 					m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
 
-	m_pNicosCache->connect(strHost, strPort);
+	if(iSys==0)
+		m_pNicosCache->connect(strHost, strPort);
+	else if(iSys==1)
+		m_pSicsCache->connect(strHost, strPort, strUser, strPass);
 }
 
 void TazDlg::Disconnect()
 {
+	const QObject *pNetCache = nullptr;
 	if(m_pNicosCache)
 	{
 		m_pNicosCache->disconnect();
+		pNetCache = m_pNicosCache;
+	}
+	else if(m_pSicsCache)
+	{
+		m_pSicsCache->disconnect();
+		pNetCache = m_pSicsCache;
+	}
 
-		QObject::disconnect(m_pNicosCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
+
+	if(pNetCache)
+	{
+		QObject::disconnect(pNetCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 						this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
-		QObject::disconnect(m_pNicosCache, SIGNAL(connected(const QString&, const QString&)),
+		QObject::disconnect(pNetCache, SIGNAL(connected(const QString&, const QString&)),
 						this, SLOT(Connected(const QString&, const QString&)));
-		QObject::disconnect(m_pNicosCache, SIGNAL(disconnected()),
+		QObject::disconnect(pNetCache, SIGNAL(disconnected()),
 						this, SLOT(Disconnected()));
 
-		QObject::disconnect(m_pNicosCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
+		QObject::disconnect(pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
 						m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
+	}
 
+	if(m_pNicosCache)
+	{
 		delete m_pNicosCache;
-		m_pNicosCache = 0;
+		m_pNicosCache = nullptr;
+	}
+	if(m_pSicsCache)
+	{
+		delete m_pSicsCache;
+		m_pSicsCache = nullptr;
 	}
 
 	statusBar()->showMessage("Disconnected.", DEFAULT_MSG_TIMEOUT);
@@ -84,13 +126,12 @@ void TazDlg::ShowNetCache()
 
 void TazDlg::NetRefresh()
 {
-	if(!m_pNicosCache)
-	{
+	if(m_pNicosCache)
+		m_pNicosCache->RefreshKeys();
+	else if(m_pSicsCache)
+		QMessageBox::information(this, "Info", "Sics is automatically polled and does not need refreshs.");
+	else
 		QMessageBox::warning(this, "Warning", "Not connected to a server.");
-		return;
-	}
-
-	m_pNicosCache->RefreshKeys();
 }
 
 void TazDlg::Connected(const QString& strHost, const QString& strSrv)
@@ -115,20 +156,34 @@ void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& tria
 
 	if(crys.bChangedLattice)
 	{
-		this->editA->setText(QString::number(crys.dLattice[0]));
-		this->editB->setText(QString::number(crys.dLattice[1]));
-		this->editC->setText(QString::number(crys.dLattice[2]));
+		QString qstr0 = QString::number(crys.dLattice[0]);
+		QString qstr1 = QString::number(crys.dLattice[1]);
+		QString qstr2 = QString::number(crys.dLattice[2]);
 
-		CalcPeaks();
+		if(qstr0!=editA->text() || qstr1!=editB->text() || qstr2!=editC->text())
+		{
+			editA->setText(qstr0);
+			editB->setText(qstr1);
+			editC->setText(qstr2);
+
+			CalcPeaks();
+		}
 	}
 
 	if(crys.bChangedLatticeAngles)
 	{
-		this->editAlpha->setText(QString::number(crys.dLatticeAngles[0]));
-		this->editBeta->setText(QString::number(crys.dLatticeAngles[1]));
-		this->editGamma->setText(QString::number(crys.dLatticeAngles[2]));
+		QString qstr0 = QString::number(crys.dLatticeAngles[0]);
+		QString qstr1 = QString::number(crys.dLatticeAngles[1]);
+		QString qstr2 = QString::number(crys.dLatticeAngles[2]);
 
-		CalcPeaks();
+		if(qstr0!=editAlpha->text() || qstr1!=editBeta->text() || qstr2!=editGamma->text())
+		{
+			editAlpha->setText(qstr0);
+			editBeta->setText(qstr1);
+			editGamma->setText(qstr2);
+
+			CalcPeaks();
+		}
 	}
 
 	if(crys.bChangedSpacegroup)
@@ -143,30 +198,52 @@ void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& tria
 
 	if(crys.bChangedPlane1)
 	{
-		this->editScatX0->setText(QString::number(crys.dPlane1[0]));
-		this->editScatX1->setText(QString::number(crys.dPlane1[1]));
-		this->editScatX2->setText(QString::number(crys.dPlane1[2]));
+		QString qstr0 = QString::number(crys.dPlane1[0]);
+		QString qstr1 = QString::number(crys.dPlane1[1]);
+		QString qstr2 = QString::number(crys.dPlane1[2]);
 
-		CalcPeaks();
+		if(qstr0!=editScatX0->text() || qstr1!=editScatX1->text() || qstr2!=editScatX2->text())
+		{
+			editScatX0->setText(qstr0);
+			editScatX1->setText(qstr1);
+			editScatX2->setText(qstr2);
+
+			CalcPeaks();
+		}
 	}
 	if(crys.bChangedPlane2)
 	{
-		this->editScatY0->setText(QString::number(crys.dPlane2[0]));
-		this->editScatY1->setText(QString::number(crys.dPlane2[1]));
-		this->editScatY2->setText(QString::number(crys.dPlane2[2]));
+		QString qstr0 = QString::number(crys.dPlane2[0]);
+		QString qstr1 = QString::number(crys.dPlane2[1]);
+		QString qstr2 = QString::number(crys.dPlane2[2]);
 
-		CalcPeaks();
+		if(qstr0!=editScatY0->text() || qstr1!=editScatY1->text() || qstr2!=editScatY2->text())
+		{
+			editScatY0->setText(qstr0);
+			editScatY1->setText(qstr1);
+			editScatY2->setText(qstr2);
+
+			CalcPeaks();
+		}
 	}
 
 	if(triag.bChangedMonoD)
 	{
-		this->editMonoD->setText(QString::number(triag.dMonoD));
-		UpdateDs();
+		QString qstr = QString::number(triag.dMonoD);
+		if(qstr != editMonoD->text())
+		{
+			editMonoD->setText(qstr);
+			UpdateDs();
+		}
 	}
 	if(triag.bChangedAnaD)
 	{
-		this->editAnaD->setText(QString::number(triag.dAnaD));
-		UpdateDs();
+		QString qstr = QString::number(triag.dAnaD);
+		if(qstr != editAnaD->text())
+		{
+			editAnaD->setText(qstr);
+			UpdateDs();
+		}
 	}
 
 
@@ -175,7 +252,7 @@ void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& tria
 		const_cast<TriangleOptions&>(triag).dTwoTheta = -triag.dTwoTheta;
 
 	//if(triag.bChangedTwoTheta)
-	//	log_info("2theta: ", triag.dTwoTheta/M_PI*180.);
+	//	tl::log_info("2theta: ", triag.dTwoTheta/M_PI*180.);
 
 	m_sceneReal.triangleChanged(triag);
 	m_sceneReal.emitUpdate(triag);

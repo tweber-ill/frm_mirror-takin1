@@ -40,6 +40,7 @@
 	#include "dialogs/SrvDlg.h"
 	#include "dialogs/NetCacheDlg.h"
 	#include "nicos.h"
+	#include "sics.h"
 #endif
 
 #if !defined NO_3D
@@ -126,6 +127,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 #if !defined NO_NET
 		SrvDlg *m_pSrvDlg = nullptr;
 		NicosCache *m_pNicosCache = nullptr;
+		SicsCache *m_pSicsCache = nullptr;
 		NetCacheDlg *m_pNetCacheDlg = nullptr;
 #endif
 
@@ -205,7 +207,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowConnectDlg();
 
-		void ConnectTo(const QString& strHost, const QString& strPort);
+		void ConnectTo(int iSys, const QString& strHost, const QString& strPort,
+			const QString& strUser, const QString& strPass);
 		void Disconnect();
 		void NetRefresh();
 		void ShowNetCache();

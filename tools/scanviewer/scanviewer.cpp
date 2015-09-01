@@ -260,6 +260,7 @@ void ScanViewerDlg::PlotScan()
 
 	m_vecX = m_pInstr->GetCol(m_strX.c_str());
 	m_vecY = m_pInstr->GetCol(m_strY.c_str());
+	//tl::log_debug("Number of points: ", m_vecX.size(), ", ", m_vecY.size());
 
 	std::array<double, 3> arrLatt = m_pInstr->GetSampleLattice();
 	std::array<double, 3> arrAng = m_pInstr->GetSampleAngles();
@@ -308,17 +309,33 @@ void ScanViewerDlg::PlotScan()
 	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
 #endif
 
-	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
-	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-
-	QRectF rect;
-	rect.setLeft(*minmaxX.first);
-	rect.setRight(*minmaxX.second);
-	rect.setBottom(*minmaxY.second);
-	rect.setTop(*minmaxY.first);
-	
 	if(m_pZoomer)
 	{
+		const auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+		const auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+		//tl::log_debug("min: ", *minmaxX.first, " ", *minmaxY.first);
+		//tl::log_debug("max: ", *minmaxX.second, " ", *minmaxY.second);
+
+		double dminmax[] = {*minmaxX.first, *minmaxX.second,
+			*minmaxY.first, *minmaxY.second};
+
+		if(tl::float_equal(dminmax[0], dminmax[1]))
+		{
+			dminmax[0] -= dminmax[0]/10.;
+			dminmax[1] += dminmax[1]/10.;
+		}
+		if(tl::float_equal(dminmax[2], dminmax[3]))
+		{
+			dminmax[2] -= dminmax[2]/10.;
+			dminmax[3] += dminmax[3]/10.;
+		}
+
+		QRectF rect;
+		rect.setLeft(dminmax[0]);
+		rect.setRight(dminmax[1]);
+		rect.setBottom(dminmax[3]);
+		rect.setTop(dminmax[2]);
+
 		m_pZoomer->zoom(rect);
 		m_pZoomer->setZoomBase(rect);
 	}

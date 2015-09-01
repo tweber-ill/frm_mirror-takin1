@@ -202,7 +202,7 @@ ifeq ($(USE_3D), 1)
 endif
 
 ifeq ($(USE_NET), 1)
-	OBJ_TAZ += obj/tcp.o obj/nicos.o obj/taz_net.o \
+	OBJ_TAZ += obj/tcp.o obj/nicos.o obj/sics.o obj/taz_net.o \
 	obj/SrvDlg.o obj/NetCacheDlg.o
 else
 	OBJ_TAZ += obj/taz_nonet.o
@@ -294,6 +294,8 @@ obj/SrvDlg.o: dialogs/SrvDlg.cpp dialogs/SrvDlg.h
 obj/NetCacheDlg.o: dialogs/NetCacheDlg.cpp dialogs/NetCacheDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/nicos.o: tools/taz/nicos.cpp tools/taz/nicos.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/sics.o: tools/taz/sics.cpp tools/taz/sics.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/spec_char.o: tlibs/string/spec_char.cpp tlibs/string/spec_char.h

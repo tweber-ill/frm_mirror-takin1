@@ -1,26 +1,36 @@
 /*
- * clang -o mini_scanmon mini_scanmon.cpp ../../tlibs/net/tcp.cpp ../../tlibs/helper/log.cpp -lstdc++ -std=c++11 -lboost_system -lpthread
+ * mini scan monitor
+ * @author tweber
+ * @date 2015
+ * @license GPLv2
+ *
+ * clang -O2 -o mini_scanmon mini_scanmon.cpp dialog_indirect.cpp ../../tlibs/net/tcp.cpp ../../tlibs/helper/log.cpp -std=c++11 -lstdc++ -lm -lboost_system -lboost_iostreams -lpthread
+ * clang -O2 -o mini_scanmon mini_scanmon.cpp dialog.cpp ../../tlibs/net/tcp.cpp ../../tlibs/helper/log.cpp -std=c++11 -lstdc++ -lboost_system -lm -lpthread -ldialog
  */
 
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+
 #include "../../tlibs/net/tcp.h"
 #include "../../tlibs/helper/log.h"
 #include "../../tlibs/string/string.h"
+#include "dialog.h"
+
 
 using namespace tl;
-
-
-std::string strCtr = "nicos/ctr1/value";
-std::string strTim = "nicos/timer/value";
-std::string strSel = "nicos/timer/preselection";
-
 typedef float t_real;
 
-t_real dCtr = 0.;
-t_real dTim = 0.;
-t_real dSel = 0.;
+static t_real dCtr = 0.;
+static t_real dMon = 0.;	// or time
+static t_real dSel = 0.;
+static bool bCountToMon = 1;
+
+
+static const std::string strCtr = "nicos/ctr1/value";
+static const std::string strTim = "nicos/timer/value";
+static const std::string strSel = "nicos/timer/preselection";
+
 
 void refresh()
 {
@@ -29,39 +39,73 @@ void refresh()
 
 	if(!float_equal(dSel, t_real(0.)))
 	{
-		dProgress = dTim / dSel;
-		dExpCtr = dCtr / dProgress;
+		dProgress = dMon / dSel;
+		if(!float_equal(dProgress, t_real(0.)))
+			dExpCtr = dCtr / dProgress;
 	}
 
-	std::cout.precision(2);
-	std::cout << "\r"
-		<< "Counts: " /*<< std::setw(8)*/ << std::fixed << dCtr
+	if(dProgress < t_real(0.)) dProgress = t_real(0.);
+	else if(dProgress > t_real(1.)) dProgress = t_real(1.);
+
+
+	std::ostringstream ostr;
+	ostr.precision(2);
+
+	/*ostr << "\r"
+		<< "Counts: " << std::fixed << dCtr
 		<< ", Expected: " << std::fixed << dExpCtr
 		<< ", Scan progress: " << std::fixed << dProgress*100. << " % ("
-		<< std::fixed << dTim << " s of " << dSel << " s)."
+		<< std::fixed << dMon << " of " << dSel << " monitor counts)."
 		<< "        ";
-	std::cout.flush();
+
+	std::cout << ostr.str();
+	std::cout.flush();*/
+
+	std::string strMon = "Monitor:  ";
+	if(!bCountToMon)
+		strMon = "Time:     ";
+	ostr << "Counts:   " << std::fixed << dCtr << "\n";
+	ostr << "Expected: " << std::fixed << int(std::round(dExpCtr)) << " (" << dExpCtr << ")\n";
+	ostr << strMon << std::fixed << dMon << " of " << dSel << "\n";
+	ostr << "Progress: " << std::fixed << dProgress*t_real(100.) << " %";
+	set_progress(int(std::round(dProgress*t_real(100.))), ostr.str());
 }
 
 
 void disconnected(const std::string& strHost, const std::string& strSrv)
 {
-	log_info("Disconnected from ", strHost, " on port ", strSrv, ".");;
+	//log_info("Disconnected from ", strHost, " on port ", strSrv, ".");;
 }
 
 void connected(const std::string& strHost, const std::string& strSrv)
 {
-	log_info("Connected to ", strHost, " on port ", strSrv, ".");
+	//log_info("Connected to ", strHost, " on port ", strSrv, ".");
 }
 
-void received(const std::string& strMsg)
+void received_sics(const std::string& strMsg)
+{
+//	log_info("Received: ", strMsg);
+
+	std::pair<std::string, std::string> pair = split_first<std::string>(strMsg, "=", true);
+
+	if(str_is_equal<std::string>(pair.first, "counter.Monitor 1"))
+		dMon = str_to_var<t_real>(pair.second);
+	else if(str_is_equal<std::string>(pair.first, "counter.Counts"))
+		dCtr = str_to_var<t_real>(pair.second);
+	else if(str_is_equal<std::string>(pair.first, "counter.Preset"))
+		dSel = str_to_var<t_real>(pair.second);
+
+	refresh();
+}
+
+void received_nicos(const std::string& strMsg)
 {
 	//log_info("Received: ", strMsg);
 
 	std::pair<std::string, std::string> pair = split_first<std::string>(strMsg, "=", true);
 
 	if(pair.first == strTim)
-		dTim = str_to_var<t_real>(pair.second);
+		dMon = str_to_var<t_real>(pair.second);
 	else if(pair.first == strCtr)
 		dCtr = str_to_var<t_real>(pair.second);
 	else if(pair.first == strSel)
@@ -71,37 +115,79 @@ void received(const std::string& strMsg)
 }
 
 
+
 int main(int argc, char** argv)
 {
-	if(argc < 3)
+	bool bUseNicos = 1;
+
+	if(argc == 3)
 	{
-		std::cerr << "Usage: " << argv[0] << " <server> <port>" << std::endl;
-		std::cerr << "\te.g.: " << argv[0] << " mira1.mira.frm2 14869" << std::endl;
+		bUseNicos = 1;
+		bCountToMon = 0;
+	}
+	else if(argc == 5)
+	{
+		bUseNicos = 0;
+		bCountToMon = 1;
+	}
+	else
+	{
+		std::cerr << "Usage: \n"
+			<< "\t" << argv[0] << " <nicos server> <port>\n"
+			<< "\t" << argv[0] << " <sics server> <port> <login> <password>\n\n"
+			<< "\t e.g.: " << argv[0] << " mira1 14869"
+			<< std::endl;
+		return -1;
+	}
+
+
+	if(!open_progress("Scan Progress"))
+	{
+		log_err("Cannot open progress dialog.");
 		return -1;
 	}
 
 
 	TcpClient client;
-	client.add_receiver(received);
+	if(bUseNicos)
+		client.add_receiver(received_nicos);
+	else
+		client.add_receiver(received_sics);
 	client.add_disconnect(disconnected);
 	client.add_connect(connected);
 
 
 	if(!client.connect(argv[1], argv[2]))
 	{
-		log_err("Error: Cannot connect.");
+		log_err("Error: Cannot connect to instrument server.");
 		return -1;
 	}
 
 
-	//std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-	for(const std::string& strKey : {strSel, strTim, strCtr})
+	if(bUseNicos)	// nicos
 	{
-		client.write(strKey + "?\n");
-		client.write(strKey + ":\n");
+		for(const std::string& strKey : {strSel, strTim, strCtr})
+		{
+			client.write(strKey + "?\n");
+			client.write(strKey + ":\n");
+		}
+
+		client.wait();
+	}
+	else		// sics
+	{
+		std::string strLogin = argv[3];
+		std::string strPwd = argv[4];
+		client.write(strLogin + " " + strPwd + "\n");
+		std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+		while(1)
+		{
+			client.write("counter getcounts\ncounter getmonitor 1\ncounter getpreset\n");
+			std::this_thread::sleep_for(std::chrono::milliseconds(750));
+		}
 	}
 
-	client.wait();
+	close_progress();
 	return 0;
 }
