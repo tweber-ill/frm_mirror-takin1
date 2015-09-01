@@ -8,7 +8,7 @@
 #include "taz.h"
 
 void TazDlg::ShowConnectDlg() {}
-void TazDlg::ConnectTo(const QString& _strHost, const QString& _strPort) {}
+void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPort, const QString& _strUser, const QString& _strPass) {}
 void TazDlg::Disconnect() {}
 void TazDlg::ShowNetCache() {}
 void TazDlg::NetRefresh() {}

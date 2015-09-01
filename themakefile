@@ -240,7 +240,7 @@ reso: ${OBJ_RESO}
 	${STRIP} reso
 
 scanviewer: ${OBJ_SCANVIEWER}
-	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB} \
+	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${BASIC_LIBS} -lboost_system${BOOST_SUFFIX} ${QWT_LIB} \
 		-lboost_filesystem${BOOST_SUFFIX}
 	${STRIP} scanviewer
 

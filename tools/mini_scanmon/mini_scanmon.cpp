@@ -135,7 +135,7 @@ int main(int argc, char** argv)
 		std::cerr << "Usage: \n"
 			<< "\t" << argv[0] << " <nicos server> <port>\n"
 			<< "\t" << argv[0] << " <sics server> <port> <login> <password>\n\n"
-			<< "\t e.g.: " << argv[0] << " mira1 14869"
+			<< "\t e.g.: " << argv[0] << " mira1.mira.frm2 14869"
 			<< std::endl;
 		return -1;
 	}
