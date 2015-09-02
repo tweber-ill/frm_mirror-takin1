@@ -8,7 +8,7 @@ USE_LAPACK = 0
 USE_3D = 1
 USE_NET = 1
 USE_IOSTR = 1
-USE_BOOST_REGEX = 0
+USE_BOOST_REGEX = 1
 USE_PY = 1
 
 BOOST_SUFFIX = 
@@ -60,21 +60,19 @@ DEFINES += -DQT_VER=$(QT_VER)
 ifeq ($(QT_VER), 5)
 	QT_INC = -I/usr/include/qt5 -I/usr/include/qt5/QtCore \
 		-I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
-		-I/usr/include/QtOpenGL -I/usr/include/QtXmlPatterns
+		-I/usr/include/QtOpenGL
 	QT_LIB = -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
-		-lQt5Widgets -lQt5Gui -lQt5Core -lQt5Xml -lQt5XmlPatterns \
-		-lQt5Svg -lQt5Concurrent
+		-lQt5Widgets -lQt5Gui -lQt5Core -lQt5Svg -lQt5Concurrent
 	ifeq ($(USE_3D), 1)
 		QT_LIB += -lQt5OpenGL
 	endif
 else
 	QT_INC = -I/usr/include/qt4 \
 		-I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui \
-		-I/usr/include/qt4/QtOpenGL -I/usr/include/qt4/QtXmlPatterns \
-		-I/usr/include/QtCore -I/usr/include/QtGui \
-		-I/usr/include/QtOpenGL -I/usr/include/QtXmlPatterns
+		-I/usr/include/qt4/QtOpenGL \
+		-I/usr/include/QtCore -I/usr/include/QtGui -I/usr/include/QtOpenGL
 	QT_LIB =  -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
-		-lQtCore -lQtGui -lQtXml -lQtXmlPatterns -lQtSvg
+		-lQtCore -lQtGui -lQtSvg
         ifeq ($(USE_3D), 1)
                 QT_LIB += -lQtOpenGL
         endif
