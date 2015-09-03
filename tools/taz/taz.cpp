@@ -254,6 +254,12 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	pMenuFile->addSeparator();
 
+	QAction *pScanViewer = new QAction(this);
+	pScanViewer->setText("Scan Viewer...");
+	pMenuFile->addAction(pScanViewer);
+
+	pMenuFile->addSeparator();
+
 	QAction *pSettings = new QAction(this);
 	pSettings->setText("Settings...");
 	pSettings->setIcon(QIcon::fromTheme("preferences-system"));
@@ -478,6 +484,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
 	QObject::connect(pImport, SIGNAL(triggered()), this, SLOT(Import()));
+	QObject::connect(pScanViewer, SIGNAL(triggered()), this, SLOT(ShowScanViewer()));
 	QObject::connect(pSettings, SIGNAL(triggered()), this, SLOT(ShowSettingsDlg()));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
@@ -612,6 +619,7 @@ TazDlg::~TazDlg()
 	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
 	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
+	if(m_pScanViewer) { delete m_pScanViewer; m_pScanViewer = nullptr; }
 
 #if !defined NO_3D
 	if(m_pRecip3d) { delete m_pRecip3d; m_pRecip3d = 0; }

@@ -79,7 +79,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(btnBrowseSqw, SIGNAL(clicked()), this, SLOT(browseSqwFiles()));
 	QObject::connect(btnSqwParams, SIGNAL(clicked()), this, SLOT(showSqwParamDlg()));
 	QObject::connect(btnSaveResult, SIGNAL(clicked()), this, SLOT(SaveResult()));
-	
+
 	QObject::connect(comboSqw, SIGNAL(currentIndexChanged(int)), this, SLOT(SqwModelChanged(int)));
 	QObject::connect(editSqw, SIGNAL(textChanged(const QString&)), this, SLOT(createSqwModel(const QString&)));
 
@@ -90,13 +90,13 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 ConvoDlg::~ConvoDlg()
 {
 	if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; m_pth = nullptr; }
-	
+
 	if(m_pSqw)
 	{
 		delete m_pSqw;
 		m_pSqw = nullptr;
 	}
-	
+
 	if(m_pSqwParamDlg)
 	{
 		delete m_pSqwParamDlg;
@@ -147,11 +147,11 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	{
 		delete m_pSqw;
 		m_pSqw = nullptr;
-		
+
 		emit SqwLoaded(std::vector<SqwBase::t_var>{});
 	}
-	
-	
+
+
 	std::string strSqwFile = qstrFile.toStdString();
 	tl::trim(strSqwFile);
 	if(strSqwFile == "")
@@ -185,7 +185,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 			return;
 		}
 	}
-	
+
 	if(m_pSqw && m_pSqw->IsOk())
 		emit SqwLoaded(m_pSqw->GetVars());
 	else
@@ -212,21 +212,28 @@ void ConvoDlg::SqwParamsChanged(const std::vector<SqwBase::t_var>& vecVars)
 void ConvoDlg::Start()
 {
 	m_atStop.store(false);
-	
+
 	btnStart->setEnabled(false);
 	tabSettings->setEnabled(false);
 	btnStop->setEnabled(true);
 	tabWidget->setCurrentWidget(tabPlot);
-	
+
 	bool bForceDeferred = false;
 	const int iSqwModel = comboSqw->currentIndex();
 	if(iSqwModel == 1)
 		bForceDeferred = true;
-	Qt::ConnectionType connty = bForceDeferred ? Qt::ConnectionType::DirectConnection 
+	Qt::ConnectionType connty = bForceDeferred ? Qt::ConnectionType::DirectConnection
 			: Qt::ConnectionType::BlockingQueuedConnection;
-	
+
 	std::function<void()> fkt = [this, connty, bForceDeferred]
 	{
+		std::function<void()> fktEnableButtons = [this]
+		{
+			QMetaObject::invokeMethod(btnStop, "setEnabled", Q_ARG(bool, false));
+			QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
+		};
+
 		const unsigned int iNumNeutrons = spinNeutrons->value();
 
 		const unsigned int iNumSteps = spinStepCnt->value();
@@ -259,7 +266,8 @@ void ConvoDlg::Start()
 		}
 		else
 		{
-			QMessageBox::critical(this, "Error", "No scan variable found.");
+			//QMessageBox::critical(this, "Error", "No scan variable found.");
+			fktEnableButtons();
 			return;
 		}
 
@@ -269,13 +277,15 @@ void ConvoDlg::Start()
 		TASReso reso;
 		if(!reso.LoadRes(editRes->text().toStdString().c_str()))
 		{
-			QMessageBox::critical(this, "Error", "Could not load resolution file.");
+			//QMessageBox::critical(this, "Error", "Could not load resolution file.");
+			fktEnableButtons();
 			return;
 		}
 
 		if(!reso.LoadLattice(editCrys->text().toStdString().c_str()))
 		{
-			QMessageBox::critical(this, "Error", "Could not load crystal file.");
+			//QMessageBox::critical(this, "Error", "Could not load crystal file.");
+			fktEnableButtons();
 			return;
 		}
 
@@ -287,7 +297,8 @@ void ConvoDlg::Start()
 
 		if(m_pSqw == nullptr || !m_pSqw->IsOk())
 		{
-			QMessageBox::critical(this, "Error", "No valid S(q,w) model loaded.");
+			//QMessageBox::critical(this, "Error", "No valid S(q,w) model loaded.");
+			fktEnableButtons();
 			return;
 		}
 
@@ -301,7 +312,7 @@ void ConvoDlg::Start()
 
 		QMetaObject::invokeMethod(progress, "setMaximum", Q_ARG(int, iNumSteps));
 		QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, 0));
-		
+
 		QMetaObject::invokeMethod(textResult, "clear", connty);
 
 
@@ -317,7 +328,7 @@ void ConvoDlg::Start()
 		auto& lstFuts = tp.GetFutures();
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
-		{			
+		{
 			double dCurH = vecH[iStep];
 			double dCurK = vecK[iStep];
 			double dCurL = vecL[iStep];
@@ -327,7 +338,7 @@ void ConvoDlg::Start()
 			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, this]() -> std::pair<bool, double>
 			{
 				if(m_atStop.load()) return std::pair<bool, double>(false, 0.);
-				
+
 				TASReso localreso = reso;
 				std::vector<ublas::vector<double>> vecNeutrons;
 
@@ -357,7 +368,7 @@ void ConvoDlg::Start()
 				for(const ublas::vector<double>& vecHKLE : vecNeutrons)
 				{
 					if(m_atStop.load()) return std::pair<bool, double>(false, 0.);
-					
+
 					dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
 					for(int i=0; i<4; ++i)
@@ -379,7 +390,7 @@ void ConvoDlg::Start()
 		for(auto &fut : lstFuts)
 		{
 			if(m_atStop.load()) break;
-			
+
 			// deferred (in main thread), eval this task manually
 			if(iNumThreads == 0)
 			{
@@ -421,13 +432,11 @@ void ConvoDlg::Start()
 		}
 
 		ostrOut << "# ---------------- EOF ----------------\n";
-		
+
 		QMetaObject::invokeMethod(textResult, "setPlainText", connty, 
 			Q_ARG(const QString&, QString(ostrOut.str().c_str())));
 
-		QMetaObject::invokeMethod(btnStop, "setEnabled", Q_ARG(bool, false));
-		QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
-		QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
+		fktEnableButtons();
 	};
 
 
@@ -522,7 +531,7 @@ void ConvoDlg::showEvent(QShowEvent *pEvt)
 void ConvoDlg::ButtonBoxClicked(QAbstractButton *pBtn)
 {
 	QDialogButtonBox::Close;
-	
+
 	if(pBtn == buttonBox->button(QDialogButtonBox::Close))
 	{
 		if(m_pSett)

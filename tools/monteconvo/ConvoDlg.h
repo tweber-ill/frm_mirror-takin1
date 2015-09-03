@@ -50,7 +50,7 @@ protected slots:
 	void browseCrysFiles();
 	void browseResoFiles();
 	void browseSqwFiles();
-	
+
 	void SqwModelChanged(int);
 	void createSqwModel(const QString& qstrFile);
 	void SqwParamsChanged(const std::vector<SqwBase::t_var>&);
@@ -59,13 +59,13 @@ protected slots:
 
 	void Start();
 	void Stop();
-	
+
 	void ButtonBoxClicked(QAbstractButton *pBtn);
 
 public:
 	ConvoDlg(QWidget* pParent=0, QSettings* pSett=0);
 	virtual ~ConvoDlg();
-	
+
 signals:
 	void SqwLoaded(const std::vector<SqwBase::t_var>&);
 };

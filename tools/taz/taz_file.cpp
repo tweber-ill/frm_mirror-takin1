@@ -506,3 +506,12 @@ bool TazDlg::Import(const char* pcFile)
 
 	return true;
 }
+
+void TazDlg::ShowScanViewer()
+{
+	if(!m_pScanViewer)
+		m_pScanViewer = new ScanViewerDlg(this);
+
+	m_pScanViewer->show();
+	m_pScanViewer->activateWindow();
+}

@@ -27,6 +27,7 @@
 #include "dialogs/EllipseDlg.h"
 #include "../res/ResoDlg.h"
 #include "../monteconvo/ConvoDlg.h"
+#include "../scanviewer/scanviewer.h"
 #include "dialogs/SpurionDlg.h"
 #include "dialogs/NeutronDlg.h"
 #include "dialogs/GotoDlg.h"
@@ -124,6 +125,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		DWDlg *m_pDWDlg = nullptr;
 		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
 
+		ScanViewerDlg *m_pScanViewer = nullptr;
+
 #if !defined NO_NET
 		SrvDlg *m_pSrvDlg = nullptr;
 		NicosCache *m_pNicosCache = nullptr;
@@ -172,6 +175,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		bool SaveAs();
 		bool Load();
 		bool Import();
+
+		void ShowScanViewer();
 
 		bool LoadFile(const QString& strFile);
 		bool ImportFile(const QString& strFile);
