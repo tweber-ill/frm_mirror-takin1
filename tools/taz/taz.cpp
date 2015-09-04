@@ -68,7 +68,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QStatusBar *pStatusBar = new QStatusBar(this);
 	pStatusBar->addWidget(m_pStatusMsg, 1);
 	pStatusBar->addPermanentWidget(m_pCoordStatusMsg, 0);
-	m_pCoordStatusMsg->setMinimumWidth(200);
+	m_pCoordStatusMsg->setMinimumWidth(350);
 	m_pCoordStatusMsg->setAlignment(Qt::AlignCenter);
 	this->setStatusBar(pStatusBar);
 
@@ -154,8 +154,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
 					&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
 
-	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(double, double, double)),
-					this, SLOT(RecipCoordsChanged(double, double, double)));
+	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(double, double, double, bool, double, double, double)),
+					this, SLOT(RecipCoordsChanged(double, double, double, bool, double, double, double)));
 
 	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)),
 					this, SLOT(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)));
@@ -809,10 +809,14 @@ void TazDlg::EnableRealQDir(bool bEnable)
 	m_sceneReal.GetTasLayout()->SetRealQVisible(bEnable);
 }
 
-void TazDlg::RecipCoordsChanged(double dh, double dk, double dl)
+void TazDlg::RecipCoordsChanged(double dh, double dk, double dl,
+	bool bHasNearest, double dNearestH, double dNearestK, double dNearestL)
 {
 	std::ostringstream ostrPos;
 	ostrPos << "(" << dh << ", " << dk << ", " << dl  << ") rlu";
+	if(bHasNearest)
+		ostrPos << ", in 1st BZ of ("
+			<< dNearestH << ", " << dNearestK << ", " << dNearestL << ")";
 
 	m_pCoordStatusMsg->setText(ostrPos.str().c_str());
 }

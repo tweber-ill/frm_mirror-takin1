@@ -14,6 +14,7 @@
 #include "helper/spacegroup.h"
 #include "tlibs/math/bz.h"
 #include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/kd.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -101,8 +102,9 @@ class ScatteringTriangle : public QGraphicsItem
 		tl::Lattice<double> m_lattice, m_recip, m_recip_unrot;
 		ublas::matrix<double> m_matPlane, m_matPlane_inv;
 		std::vector<RecipPeak*> m_vecPeaks;
-		
+
 		tl::Powder<int> m_powder;
+		tl::Kd<double> m_kdLattice;
 
 		bool m_bShowBZ = 1;
 		tl::Brillouin2D<double> m_bz;
@@ -161,8 +163,9 @@ class ScatteringTriangle : public QGraphicsItem
 
 		void SetqVisible(bool bVisible);
 		void SetBZVisible(bool bVisible);
-		
+
 		const tl::Powder<int>& GetPowder() const { return m_powder; }
+		const tl::Kd<double>& GetKdLattice() const { return m_kdLattice; }
 
 	public:
 		std::vector<ScatteringTriangleNode*> GetNodes();
@@ -205,7 +208,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 		bool m_bSnap = 0;
 		bool m_bSnapq = 1;
 		bool m_bMousePressed = 0;
-		
+
 		bool m_bKeepAbsKiKf = 1;
 		bool m_bSnapKiKfToElastic = 0;
 
@@ -235,7 +238,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 
 		void setSnapq(bool bSnap);
 		bool getSnapq() const { return m_bSnapq; }
-		
+
 		void setKeepAbsKiKf(bool bKeep) { m_bKeepAbsKiKf = bKeep; }
 		bool getKeepAbsKiKf() const { return m_bKeepAbsKiKf; }
 
@@ -249,7 +252,9 @@ class ScatteringTriangleScene : public QGraphicsScene
 					const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
 					const std::vector<tl::InelasticSpurion<double>>& vecInelCKF);
 
-		void coordsChanged(double dh, double dk, double dl);
+		void coordsChanged(double dh, double dk, double dl,
+			bool bHasNearest,
+			double dNearestH, double dNearestK, double dNearestL);
 
 	protected:
 		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);

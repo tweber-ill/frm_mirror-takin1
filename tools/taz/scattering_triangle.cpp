@@ -672,6 +672,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 {
 	ClearPeaks();
 	m_powder.clear();
+	m_kdLattice.Unload();
 
 	m_lattice = lattice;
 	m_recip = recip;
@@ -722,6 +723,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 		return;
 	}
 
+	std::list<std::vector<double>> m_lstPeaksForKd;
 
 	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
 		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
@@ -739,6 +741,8 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 				if(bIsPowder)
 					m_powder.AddPeak(ih, ik, il);
+				else
+					m_lstPeaksForKd.push_back(std::vector<double>{h,k,l});
 
 				if(!bIsPowder || (ih==0 && ik==0 && il==0))		// (000), i.e. direct beam, also needed for powder
 				{
@@ -805,6 +809,8 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 		m_bz.CalcBZ();
 		//for(RecipPeak* pPeak : m_vecPeaks)
 		//	pPeak->SetBZ(&m_bz);
+
+		m_kdLattice.Load(m_lstPeaksForKd, 3);
 	}
 
 	m_scene.emitAllParams();
@@ -1296,7 +1302,20 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 			//ostrPos << "(" << vecHKL[0] << ", " << vecHKL[1] << ", " << vecHKL[2]  << ")";
 			//QToolTip::showText(pEvt->screenPos(), ostrPos.str().c_str());
 
-			emit coordsChanged(vecHKL[0], vecHKL[1], vecHKL[2]);
+			const std::vector<double>* pvecNearest = nullptr;
+
+			const tl::Kd<double>& kd = m_pTri->GetKdLattice();
+			if(kd.GetRootNode())
+			{
+				std::vector<double> stdvecHKL{vecHKL[0], vecHKL[1], vecHKL[2]};
+				pvecNearest = &kd.GetNearestNode(stdvecHKL);
+			}
+
+			emit coordsChanged(vecHKL[0], vecHKL[1], vecHKL[2],
+				pvecNearest != nullptr,
+				pvecNearest?(*pvecNearest)[0]:0.,
+				pvecNearest?(*pvecNearest)[1]:0.,
+				pvecNearest?(*pvecNearest)[2]:0.);
 		}
 	}
 

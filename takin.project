@@ -80,6 +80,7 @@
       <File Name="tlibs/math/interpolation.cpp" ExcludeProjConfig="Debug;Release"/>
       <File Name="tlibs/math/dft.h"/>
       <File Name="tlibs/math/powder.h"/>
+      <File Name="tlibs/math/kd.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="net">
       <File Name="tlibs/net/tcp.h"/>
@@ -134,6 +135,10 @@
       <File Name="tools/monteconvo/sqw_py.h"/>
       <File Name="tools/monteconvo/SqwParamDlg.cpp"/>
       <File Name="tools/monteconvo/SqwParamDlg.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="scanviewer">
+      <File Name="tools/scanviewer/scanviewer.cpp"/>
+      <File Name="tools/scanviewer/scanviewer.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
@@ -225,14 +230,13 @@
         <Library Value="QtGui"/>
         <Library Value="QtSvg"/>
         <Library Value="QtOpenGL"/>
-        <Library Value="QtXml"/>
-        <Library Value="QtXmlPatterns"/>
         <Library Value="qwt"/>
         <Library Value="GL"/>
         <Library Value="GLU"/>
         <Library Value="X11"/>
         <Library Value="pthread"/>
         <Library Value="boost_system"/>
+        <Library Value="boost_filesystem"/>
         <Library Value="boost_iostreams"/>
         <Library Value="boost_python"/>
         <Library Value="python2.7"/>
@@ -315,14 +319,13 @@
         <Library Value="QtGui"/>
         <Library Value="QtSvg"/>
         <Library Value="QtOpenGL"/>
-        <Library Value="QtXml"/>
-        <Library Value="QtXmlPatterns"/>
         <Library Value="qwt"/>
         <Library Value="GL"/>
         <Library Value="GLU"/>
         <Library Value="X11"/>
         <Library Value="pthread"/>
         <Library Value="boost_system"/>
+        <Library Value="boost_filesystem"/>
         <Library Value="boost_iostreams"/>
         <Library Value="boost_python"/>
         <Library Value="python2.7"/>
