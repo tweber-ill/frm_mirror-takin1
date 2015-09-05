@@ -1289,21 +1289,25 @@ namespace gil = boost::gil;
 bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
 {
 	if(!m_pTri) return false;
-	const int iScaleDown = 4;
 
-	int iW = int(std::abs(sceneRect().right()/iScaleDown - sceneRect().left()/iScaleDown))+1;
-	int iH = int(std::abs(sceneRect().bottom()/iScaleDown - sceneRect().top()/iScaleDown))+1;
+	const int iW = 720;
+	const int iH = 720;
 
 	std::unique_ptr<gil::rgb8_pixel_t[]> _ptrPix(new gil::rgb8_pixel_t[iH * iW]);
 	gil::rgb8_view_t view = gil::interleaved_view(iW, iH, _ptrPix.get(), iW*sizeof(gil::rgb8_pixel_t));
 
 	const int iMaxPeaks = m_pTri->GetMaxPeaks();
-	int iY=0;
-	for(double dY=sceneRect().top()/iScaleDown; dY<sceneRect().bottom()/iScaleDown; dY+=1., ++iY)
+	int iXMid = sceneRect().left() + (sceneRect().right()-sceneRect().left())/2;
+	int iYMid = sceneRect().top() + (sceneRect().bottom()-sceneRect().top())/2;
+
+	int _iY=0;
+	for(int iY=iYMid-iH/2; iY<iYMid+iH/2; ++iY, ++_iY)
 	{
-		int iX=0;
-		for(double dX=sceneRect().left()/iScaleDown; dX<sceneRect().right()/iScaleDown; dX+=1., ++iX)
+		int _iX=0;
+		double dY = iY;
+		for(int iX=iXMid-iW/2; iX<iXMid+iW/2; ++iX, ++_iX)
 		{
+			double dX = iX;
 			ublas::vector<double> vecHKL = m_pTri->GetHKLFromPlanePos(dX, -dY);
 			if(vecHKL.size()!=3) return false;
 			vecHKL /= m_pTri->GetScaleFactor();
@@ -1317,15 +1321,25 @@ bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
 			}
 
 			if(!pvecNearest) return false;
+			ublas::vector<double> vecNearest = tl::make_vec({(*pvecNearest)[0], (*pvecNearest)[1], (*pvecNearest)[2]});
+			double dDist = ublas::norm_2(vecNearest-vecHKL);
 
-			unsigned char ucR = (unsigned char)(((*pvecNearest)[0]+iMaxPeaks) * 255 / (iMaxPeaks*2));
-			unsigned char ucG = (unsigned char)(((*pvecNearest)[1]+iMaxPeaks) * 255 / (iMaxPeaks*2));
-			unsigned char ucB = (unsigned char)(((*pvecNearest)[2]+iMaxPeaks) * 255 / (iMaxPeaks*2));
-			decltype(view)::x_iterator iterX = view.row_begin(iY);
-			iterX[iX] = gil::rgb8_pixel_t(ucR, ucG, ucB);
+			unsigned int iR = (vecNearest[0]+iMaxPeaks) * 255 / (iMaxPeaks*2);
+			unsigned int iG = (vecNearest[1]+iMaxPeaks) * 255 / (iMaxPeaks*2);
+			unsigned int iB = (vecNearest[2]+iMaxPeaks) * 255 / (iMaxPeaks*2);
+			double dBraggAmp = tl::gauss_model(dDist, 0., 0.01, 255., 0.);
+			iR += (unsigned int)dBraggAmp;
+			iG += (unsigned int)dBraggAmp;
+			iB += (unsigned int)dBraggAmp;
+
+			if(iR > 255) iR = 255;
+			if(iG > 255) iG = 255;
+			if(iB > 255) iB = 255;
+			decltype(view)::x_iterator iterX = view.row_begin(_iY);
+			iterX[_iX] = gil::rgb8_pixel_t((unsigned char)iR, (unsigned char)iG, (unsigned char)iB);
 		}
 
-		//tl::log_info("BZ export: Line ", iY+1, " of ", iH);
+		//tl::log_info("BZ export: Line ", _iY+1, " of ", iH);
 	}
 
 	gil::png_write_view(pcFile, view);
