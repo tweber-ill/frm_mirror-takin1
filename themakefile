@@ -9,6 +9,7 @@ USE_3D = 1
 USE_NET = 1
 USE_IOSTR = 1
 USE_BOOST_REGEX = 1
+USE_GIL = 1
 USE_PY = 1
 
 BOOST_SUFFIX = 
@@ -47,6 +48,12 @@ ifeq ($(USE_PY), 1)
 	DEFINES += -DUSE_PY
 else
 	DEFINES += -DNO_PY
+endif
+
+ifeq ($(USE_GIL), 1)
+	DEFINES += -DUSE_GIL
+else
+	DEFINES += -DNO_GIL
 endif
 
 
@@ -152,8 +159,14 @@ else
 	PY_OBJS =
 endif
 
+ifeq ($(USE_GIL), 1)
+	GIL_LIBS = -lpng
+else
+	GIL_LIBS =
+endif
 
-LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${BASIC_LIBS} ${GL_LIBS} ${PY_LIBS}
+
+LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${BASIC_LIBS} ${GL_LIBS} ${PY_LIBS} ${GIL_LIBS}
 LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
 
 

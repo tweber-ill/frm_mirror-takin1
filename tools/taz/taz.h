@@ -183,6 +183,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ExportReal();
 		void ExportRecip();
+		void ExportBZImage();
 
 		void RepopulateSpaceGroups();
 

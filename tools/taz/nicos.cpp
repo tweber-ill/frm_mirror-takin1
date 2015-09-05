@@ -263,12 +263,20 @@ void NicosCache::slot_receive(const std::string& str)
 		const std::string& strSthAlias = m_mapCache[m_strSampleTheta_aux_alias].strVal;
 
 		// angle from ki to bragg peak at orient1
-		triag.dAngleKiVec0 = -dOm-dPsi;
+		triag.dAngleKiVec0 = -dOm/*-dPsi*/;
+
 
 		// if the rotation sample stick is used, sth is an additional angle,
 		// otherwise sth copies the om value.
-		if(tl::get_py_string(strSthAlias) != "om")
-			triag.dAngleKiVec0 -= dTh_aux;
+		std::vector<std::string> vecStrOm;
+		tl::get_tokens<std::string, std::string>(m_strSampleTheta, "/", vecStrOm);
+		std::string strOm = "om";
+		if(vecStrOm.size() > 2)
+			strOm = vecStrOm[vecStrOm.size()-2];
+
+		if(m_strSampleTheta!=m_strSampleTheta_aux && tl::get_py_string(strSthAlias)!=strOm)
+			triag.dAngleKiVec0 -= dTh_aux+dPsi;
+
 
 		triag.bChangedAngleKiVec0 = 1;
 		//std::cout << "rotation: " << triag.dAngleKiVec0 << std::endl;

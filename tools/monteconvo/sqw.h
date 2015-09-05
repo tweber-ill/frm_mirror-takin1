@@ -33,7 +33,7 @@ public:
 
 	virtual std::vector<t_var> GetVars() const = 0;
 	virtual void SetVars(const std::vector<t_var>&) = 0;
-	
+
 	virtual ~SqwBase() {}
 };
 
@@ -60,7 +60,7 @@ class SqwKdTree : public SqwBase
 {
 protected:
 	std::unordered_map<std::string, std::string> m_mapParams;
-	Kd<double> m_kd;
+	tl::Kd<double> m_kd;
 
 public:
 	SqwKdTree(const char* pcFile = nullptr);
@@ -86,9 +86,9 @@ protected:
 	void destroy();
 
 protected:
-	Kd<double> m_kd;
+	tl::Kd<double> m_kd;
 	unsigned int m_iNumqs = 1000;
-	
+
 	ublas::vector<double> m_vecBragg;
 
 	ublas::vector<double> m_vecLA;

@@ -1260,16 +1260,13 @@ void ScatteringTriangleScene::SetAnaSense(bool bPos)
 
 void ScatteringTriangleScene::scaleChanged(double dTotalScale)
 {
-	if(!m_pTri)
-		return;
-
+	if(!m_pTri) return;
 	m_pTri->SetZoom(dTotalScale);
 }
 
 void ScatteringTriangleScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	m_bMousePressed = 1;
-
 	QGraphicsScene::mousePressEvent(pEvt);
 }
 
@@ -1279,6 +1276,99 @@ void ScatteringTriangleScene::setSnapq(bool bSnap)
 
 	if(m_bSnapq && m_pTri)
 		m_pTri->SnapToNearestPeak(m_pTri->GetNodeGq(), m_pTri->GetNodeKfQ());
+}
+
+
+#ifdef USE_GIL
+
+#define int_p_NULL nullptr
+#include <boost/gil/gil_all.hpp>
+#include <boost/gil/extension/io/png_io.hpp>
+namespace gil = boost::gil;
+
+bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
+{
+	if(!m_pTri) return false;
+	const int iScaleDown = 4;
+
+	int iW = int(std::abs(sceneRect().right()/iScaleDown - sceneRect().left()/iScaleDown))+1;
+	int iH = int(std::abs(sceneRect().bottom()/iScaleDown - sceneRect().top()/iScaleDown))+1;
+
+	std::unique_ptr<gil::rgb8_pixel_t[]> _ptrPix(new gil::rgb8_pixel_t[iH * iW]);
+	gil::rgb8_view_t view = gil::interleaved_view(iW, iH, _ptrPix.get(), iW*sizeof(gil::rgb8_pixel_t));
+
+	const int iMaxPeaks = m_pTri->GetMaxPeaks();
+	int iY=0;
+	for(double dY=sceneRect().top()/iScaleDown; dY<sceneRect().bottom()/iScaleDown; dY+=1., ++iY)
+	{
+		int iX=0;
+		for(double dX=sceneRect().left()/iScaleDown; dX<sceneRect().right()/iScaleDown; dX+=1., ++iX)
+		{
+			ublas::vector<double> vecHKL = m_pTri->GetHKLFromPlanePos(dX, -dY);
+			if(vecHKL.size()!=3) return false;
+			vecHKL /= m_pTri->GetScaleFactor();
+
+			const std::vector<double>* pvecNearest = nullptr;
+			const tl::Kd<double>& kd = m_pTri->GetKdLattice();
+			if(kd.GetRootNode())
+			{
+				std::vector<double> stdvecHKL{vecHKL[0], vecHKL[1], vecHKL[2]};
+				pvecNearest = &kd.GetNearestNode(stdvecHKL);
+			}
+
+			if(!pvecNearest) return false;
+
+			unsigned char ucR = (unsigned char)(((*pvecNearest)[0]+iMaxPeaks) * 255 / (iMaxPeaks*2));
+			unsigned char ucG = (unsigned char)(((*pvecNearest)[1]+iMaxPeaks) * 255 / (iMaxPeaks*2));
+			unsigned char ucB = (unsigned char)(((*pvecNearest)[2]+iMaxPeaks) * 255 / (iMaxPeaks*2));
+			decltype(view)::x_iterator iterX = view.row_begin(iY);
+			iterX[iX] = gil::rgb8_pixel_t(ucR, ucG, ucB);
+		}
+
+		//tl::log_info("BZ export: Line ", iY+1, " of ", iH);
+	}
+
+	gil::png_write_view(pcFile, view);
+	return true;
+}
+
+#else
+void ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const {}
+#endif
+
+
+void ScatteringTriangleScene::drawBackground(QPainter* pPainter, const QRectF& rect)
+{
+	QGraphicsScene::drawBackground(pPainter, rect);
+
+/* draws correct 3D BZ, but much too slowly...
+	if(!m_pTri) return;
+	for(double dY=rect.top(); dY<=rect.bottom(); dY+=1.)
+		for(double dX=rect.left(); dX<=rect.right(); dX+=1.)
+		{
+			ublas::vector<double> vecHKL = m_pTri->GetHKLFromPlanePos(dX, -dY);
+			if(vecHKL.size()!=3) return;
+			vecHKL /= m_pTri->GetScaleFactor();
+
+			const std::vector<double>* pvecNearest = nullptr;
+			const tl::Kd<double>& kd = m_pTri->GetKdLattice();
+			if(kd.GetRootNode())
+			{
+				std::vector<double> stdvecHKL{vecHKL[0], vecHKL[1], vecHKL[2]};
+				pvecNearest = &kd.GetNearestNode(stdvecHKL);
+			}
+
+			if(!pvecNearest) return;
+			QPen pen;
+			int iCol = (*pvecNearest)[0]+(*pvecNearest)[1]+(*pvecNearest)[2];
+			iCol += m_pTri->GetMaxPeaks()*3;
+			iCol *= 255;
+			iCol /= m_pTri->GetMaxPeaks()*2*3;
+			pen.setColor(QColor(iCol, iCol, iCol));
+			pPainter->setPen(pen);
+			pPainter->drawPoint(QPointF(dX, dY));
+		}
+*/
 }
 
 void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)

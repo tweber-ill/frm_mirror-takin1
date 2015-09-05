@@ -330,7 +330,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	pRecipExport->setIcon(QIcon::fromTheme("image-x-generic"));
 	m_pMenuViewRecip->addAction(pRecipExport);
 
-
+#ifdef USE_GIL
+	QAction *pBZExport = new QAction(this);
+	pBZExport->setText("Export Brillouin Zone Image...");
+	pBZExport->setIcon(QIcon::fromTheme("image-x-generic"));
+	m_pMenuViewRecip->addAction(pBZExport);
+#endif
 
 	// --------------------------------------------------------------------------------
 	// real menu
@@ -505,6 +510,9 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
+#ifdef USE_GIL
+	QObject::connect(pBZExport, SIGNAL(triggered()), this, SLOT(ExportBZImage()));
+#endif
 
 	QObject::connect(pResoParams, SIGNAL(triggered()), this, SLOT(ShowResoParams()));
 	QObject::connect(pResoEllipses, SIGNAL(triggered()), this, SLOT(ShowResoEllipses()));
@@ -865,7 +873,7 @@ void TazDlg::RealContextMenu(const QPoint& _pt)
 
 
 //--------------------------------------------------------------------------------
-// svg export
+// image exports
 
 #include <QtSvg/QSvgGenerator>
 
@@ -886,7 +894,7 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 	QRectF rect = scene.sceneRect();
 
 	QSvgGenerator svg;
-	svg.setFileName(/*"/home/tweber/0000.svg"*/ strFile);
+	svg.setFileName(strFile);
 	svg.setSize(QSize(rect.width(), rect.height()));
 	//svg.setResolution(300);
 	svg.setViewBox(QRectF(0, 0, rect.width(), rect.height()));
@@ -901,6 +909,31 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 	std::string strDir = tl::get_dir(strFile.toStdString());
 	m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
 }
+
+#ifdef USE_GIL
+void TazDlg::ExportBZImage()
+{
+	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
+	QString strFile = QFileDialog::getSaveFileName(this,
+								"Export PNG",
+								strDirLast,
+								"PNG files (*.png *.PNG)");
+	if(strFile == "")
+		return;
+
+	bool bOk = m_sceneRecip.ExportBZAccurate(strFile.toStdString().c_str());
+	if(!bOk)
+		QMessageBox::critical(this, "Error", "Could not export image.");
+
+	if(bOk)
+	{
+		std::string strDir = tl::get_dir(strFile.toStdString());
+		m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
+	}
+}
+#else
+void TazDlg::ExportBZImage() {}
+#endif
 
 
 

@@ -158,6 +158,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
+		unsigned int GetMaxPeaks() const { return m_iMaxPeaks; }
 		void SetZoom(double dZoom);
 		double GetZoom() const { return m_dZoom; }
 
@@ -232,6 +233,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 
 		void CheckForSpurions();
 
+		bool ExportBZAccurate(const char* pcFile) const;
+
 	public slots:
 		void tasChanged(const TriangleOptions& opts);
 		void scaleChanged(double dTotalScale);
@@ -257,12 +260,14 @@ class ScatteringTriangleScene : public QGraphicsScene
 			double dNearestH, double dNearestK, double dNearestL);
 
 	protected:
-		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
-		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt);
-		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt) override;
+		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt) override;
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt) override;
 
-		virtual void keyPressEvent(QKeyEvent *pEvt);
-		virtual void keyReleaseEvent(QKeyEvent *pEvt);
+		virtual void keyPressEvent(QKeyEvent *pEvt) override;
+		virtual void keyReleaseEvent(QKeyEvent *pEvt) override;
+
+		virtual void drawBackground(QPainter*, const QRectF&) override;
 };
 
 
