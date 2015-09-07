@@ -571,7 +571,7 @@ double ScatteringTriangle::GetTwoTheta(bool bPosSense) const
 double ScatteringTriangle::GetMonoTwoTheta(double dMonoD, bool bPosSense) const
 {
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
-									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKi = ublas::norm_2(vecKi) / m_dScaleFactor;
 	return tl::get_mono_twotheta(dKi/tl::angstrom, dMonoD*tl::angstrom, bPosSense) / units::si::radians;
 }
@@ -593,7 +593,7 @@ void ScatteringTriangle::SetAnaTwoTheta(double dTT, double dAnaD)
 	const ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	const ublas::vector<double> vecNodeKfQ = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
-									- vecNodeKiKf;
+		- vecNodeKiKf;
 
 	vecKf /= ublas::norm_2(vecKf);
 	ublas::vector<double> vecKf_new = vecKf * dKf;
@@ -613,7 +613,7 @@ void ScatteringTriangle::SetMonoTwoTheta(double dTT, double dMonoD)
 	const ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	const ublas::vector<double> vecNodeKiQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0));
 	const ublas::vector<double> vecKi_old = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
-											- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 
 	ublas::vector<double> vecKi = vecKi_old;
 	vecKi /= ublas::norm_2(vecKi);
@@ -628,11 +628,10 @@ void ScatteringTriangle::SetMonoTwoTheta(double dTT, double dMonoD)
 void ScatteringTriangle::SetTwoTheta(double dTT)
 {
 	const ublas::vector<double> vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
-
 	const ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-										- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	const ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
-										- vecNodeKiKf;
+		- vecNodeKiKf;
 
 	ublas::vector<double> vecKf_new = ublas::prod(tl::rotation_matrix_2d(-dTT), vecKi);
 
@@ -665,10 +664,9 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
 }
 
 void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
-								const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
-								const tl::Plane<double>& plane,
-								const SpaceGroup* pSpaceGroup,
-								bool bIsPowder)
+	const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
+	const tl::Plane<double>& plane, const SpaceGroup* pSpaceGroup,
+	bool bIsPowder)
 {
 	ClearPeaks();
 	m_powder.clear();
@@ -723,7 +721,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 		return;
 	}
 
-	std::list<std::vector<double>> m_lstPeaksForKd;
+	std::list<std::vector<double>> lstPeaksForKd;
 
 	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
 		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
@@ -741,12 +739,14 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 				if(bIsPowder)
 					m_powder.AddPeak(ih, ik, il);
-				else
-					m_lstPeaksForKd.push_back(std::vector<double>{h,k,l});
 
 				if(!bIsPowder || (ih==0 && ik==0 && il==0))		// (000), i.e. direct beam, also needed for powder
 				{
 					ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
+					
+					// add peak in 1/A and rlu units
+					lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
+
 					double dDist = 0.;
 					ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
@@ -810,7 +810,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 		//for(RecipPeak* pPeak : m_vecPeaks)
 		//	pPeak->SetBZ(&m_bz);
 
-		m_kdLattice.Load(m_lstPeaksForKd, 3);
+		m_kdLattice.Load(lstPeaksForKd, 3);
 	}
 
 	m_scene.emitAllParams();
@@ -861,7 +861,7 @@ ublas::vector<double> ScatteringTriangle::GetQVec(bool bSmallQ, bool bRLU) const
 ublas::vector<double> ScatteringTriangle::GetKiVecPlane() const
 {
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	vecKi[1] = -vecKi[1];
 	vecKi /= m_dScaleFactor;
 	return vecKi;
@@ -870,7 +870,7 @@ ublas::vector<double> ScatteringTriangle::GetKiVecPlane() const
 ublas::vector<double> ScatteringTriangle::GetKfVecPlane() const
 {
 	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	vecKf[1] = -vecKf[1];
 	vecKf /= m_dScaleFactor;
 	return vecKf;
@@ -901,8 +901,7 @@ std::vector<ScatteringTriangleNode*> ScatteringTriangle::GetNodes()
 
 std::vector<std::string> ScatteringTriangle::GetNodeNames() const
 {
-	return std::vector<std::string>
-		{ "kiQ", "kikf", "kfQ", "Gq" };
+	return std::vector<std::string>{ "kiQ", "kikf", "kfQ", "Gq" };
 }
 
 
@@ -932,10 +931,8 @@ get_nearest_elastic_kikf_pos(const QPointF& ptKiKf, const QPointF& ptKiQ, const 
 
 static std::tuple<bool, double, QPointF>
 get_nearest_node(const QPointF& pt,
-				const QGraphicsItem* pCurItem,
-				const QList<QGraphicsItem*>& nodes,
-				double dFactor,
-				const tl::Powder<int>* pPowder=nullptr)
+	const QGraphicsItem* pCurItem, const QList<QGraphicsItem*>& nodes,
+	double dFactor, const tl::Powder<int>* pPowder=nullptr)
 {
 	if(nodes.size()==0)
 		return std::tuple<bool, double, QPointF>(0, 0., QPointF());
@@ -1019,7 +1016,7 @@ get_nearest_node(const QPointF& pt,
 
 // snap pNode to a peak near pNodeOrg
 void ScatteringTriangle::SnapToNearestPeak(ScatteringTriangleNode* pNode,
-									const ScatteringTriangleNode* pNodeOrg)
+	const ScatteringTriangleNode* pNodeOrg)
 {
 	if(!pNode) return;
 	if(!pNodeOrg) pNodeOrg = pNode;
@@ -1314,27 +1311,32 @@ bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
 
 			const std::vector<double>* pvecNearest = nullptr;
 			const tl::Kd<double>& kd = m_pTri->GetKdLattice();
+			ublas::vector<double> vecHKLinvA = m_pTri->GetRecipLattice().GetPos(vecHKL[0], vecHKL[1], vecHKL[2]);
+
 			if(kd.GetRootNode())
 			{
-				std::vector<double> stdvecHKL{vecHKL[0], vecHKL[1], vecHKL[2]};
+				std::vector<double> stdvecHKL{vecHKLinvA[0], vecHKLinvA[1], vecHKLinvA[2]};
 				pvecNearest = &kd.GetNearestNode(stdvecHKL);
 			}
 
 			if(!pvecNearest) return false;
-			ublas::vector<double> vecNearest = tl::make_vec({(*pvecNearest)[0], (*pvecNearest)[1], (*pvecNearest)[2]});
-			double dDist = ublas::norm_2(vecNearest-vecHKL);
+			double dDist = ublas::norm_2(tl::make_vec({(*pvecNearest)[0], (*pvecNearest)[1], (*pvecNearest)[2]}) - vecHKLinvA);
 
-			unsigned int iR = (vecNearest[0]+iMaxPeaks) * 255 / (iMaxPeaks*2);
-			unsigned int iG = (vecNearest[1]+iMaxPeaks) * 255 / (iMaxPeaks*2);
-			unsigned int iB = (vecNearest[2]+iMaxPeaks) * 255 / (iMaxPeaks*2);
+			bool bIsDirectBeam = 0;
+			if(tl::float_equal((*pvecNearest)[3], 0.) && tl::float_equal((*pvecNearest)[4], 0.) && tl::float_equal((*pvecNearest)[5], 0.))
+				bIsDirectBeam = 1;
+
+			int iR = ((*pvecNearest)[3]+iMaxPeaks) * 255 / (iMaxPeaks*2);
+			int iG = ((*pvecNearest)[4]+iMaxPeaks) * 255 / (iMaxPeaks*2);
+			int iB = ((*pvecNearest)[5]+iMaxPeaks) * 255 / (iMaxPeaks*2);
 			double dBraggAmp = tl::gauss_model(dDist, 0., 0.01, 255., 0.);
-			iR += (unsigned int)dBraggAmp;
-			iG += (unsigned int)dBraggAmp;
-			iB += (unsigned int)dBraggAmp;
+			iR += bIsDirectBeam ? -(unsigned int)dBraggAmp : (unsigned int)dBraggAmp;
+			iG += bIsDirectBeam ? -(unsigned int)dBraggAmp : (unsigned int)dBraggAmp;
+			iB += bIsDirectBeam ? -(unsigned int)dBraggAmp : (unsigned int)dBraggAmp;
 
-			if(iR > 255) iR = 255;
-			if(iG > 255) iG = 255;
-			if(iB > 255) iB = 255;
+			if(iR > 255) iR = 255; if(iG > 255) iG = 255; if(iB > 255) iB = 255;
+			if(iR < 0) iR = 0; if(iG < 0) iG = 0; if(iB < 0) iB = 0;
+
 			decltype(view)::x_iterator iterX = view.row_begin(_iY);
 			iterX[_iX] = gil::rgb8_pixel_t((unsigned char)iR, (unsigned char)iG, (unsigned char)iB);
 		}
@@ -1354,35 +1356,8 @@ void ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const {}
 void ScatteringTriangleScene::drawBackground(QPainter* pPainter, const QRectF& rect)
 {
 	QGraphicsScene::drawBackground(pPainter, rect);
-
-/* draws correct 3D BZ, but much too slowly...
-	if(!m_pTri) return;
-	for(double dY=rect.top(); dY<=rect.bottom(); dY+=1.)
-		for(double dX=rect.left(); dX<=rect.right(); dX+=1.)
-		{
-			ublas::vector<double> vecHKL = m_pTri->GetHKLFromPlanePos(dX, -dY);
-			if(vecHKL.size()!=3) return;
-			vecHKL /= m_pTri->GetScaleFactor();
-
-			const std::vector<double>* pvecNearest = nullptr;
-			const tl::Kd<double>& kd = m_pTri->GetKdLattice();
-			if(kd.GetRootNode())
-			{
-				std::vector<double> stdvecHKL{vecHKL[0], vecHKL[1], vecHKL[2]};
-				pvecNearest = &kd.GetNearestNode(stdvecHKL);
-			}
-
-			if(!pvecNearest) return;
-			QPen pen;
-			int iCol = (*pvecNearest)[0]+(*pvecNearest)[1]+(*pvecNearest)[2];
-			iCol += m_pTri->GetMaxPeaks()*3;
-			iCol *= 255;
-			iCol /= m_pTri->GetMaxPeaks()*2*3;
-			pen.setColor(QColor(iCol, iCol, iCol));
-			pPainter->setPen(pen);
-			pPainter->drawPoint(QPointF(dX, dY));
-		}
-*/
+	
+	// TODO: draw accurate BZ
 }
 
 void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
@@ -1409,17 +1384,20 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 			const std::vector<double>* pvecNearest = nullptr;
 
 			const tl::Kd<double>& kd = m_pTri->GetKdLattice();
+			const tl::Lattice<double>& recip = m_pTri->GetRecipLattice();
+			ublas::vector<double> vecHKLinvA = recip.GetPos(vecHKL[0], vecHKL[1], vecHKL[2]);
+
 			if(kd.GetRootNode())
 			{
-				std::vector<double> stdvecHKL{vecHKL[0], vecHKL[1], vecHKL[2]};
+				std::vector<double> stdvecHKL{vecHKLinvA[0], vecHKLinvA[1], vecHKLinvA[2]};
 				pvecNearest = &kd.GetNearestNode(stdvecHKL);
 			}
 
 			emit coordsChanged(vecHKL[0], vecHKL[1], vecHKL[2],
 				pvecNearest != nullptr,
-				pvecNearest?(*pvecNearest)[0]:0.,
-				pvecNearest?(*pvecNearest)[1]:0.,
-				pvecNearest?(*pvecNearest)[2]:0.);
+				pvecNearest?(*pvecNearest)[3]:0.,
+				pvecNearest?(*pvecNearest)[4]:0.,
+				pvecNearest?(*pvecNearest)[5]:0.);
 		}
 	}
 
@@ -1506,12 +1484,10 @@ void ScatteringTriangleScene::keyReleaseEvent(QKeyEvent *pEvt)
 
 
 ScatteringTriangleView::ScatteringTriangleView(QWidget* pParent)
-						: QGraphicsView(pParent)
+	: QGraphicsView(pParent)
 {
-	setRenderHints(QPainter::Antialiasing |
-				QPainter::TextAntialiasing |
-				QPainter::SmoothPixmapTransform |
-				QPainter::HighQualityAntialiasing);
+	setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing |
+		QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing);
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
 	setMouseTracking(1);

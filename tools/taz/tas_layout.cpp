@@ -251,7 +251,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 QRectF TasLayout::boundingRect() const
 {
 	return QRectF(-1000.*m_dZoom, -1000.*m_dZoom,
-				2000.*m_dZoom, 2000.*m_dZoom);
+		2000.*m_dZoom, 2000.*m_dZoom);
 }
 
 void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)

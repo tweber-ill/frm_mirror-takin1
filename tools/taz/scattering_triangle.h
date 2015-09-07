@@ -191,6 +191,8 @@ class ScatteringTriangle : public QGraphicsItem
 		void SnapToNearestPeak(ScatteringTriangleNode* pNode,
 						const ScatteringTriangleNode* pNodeOrg=0);
 		bool KeepAbsKiKf(double dQx, double dQy);
+		
+		const tl::Lattice<double>& GetRecipLattice() const { return m_recip; }
 };
 
 
