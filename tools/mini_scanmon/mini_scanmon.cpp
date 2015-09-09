@@ -66,7 +66,8 @@ void refresh()
 		strMon = "Time:     ";
 	ostr << "Counts:   " << std::fixed << dCtr << "\n";
 	ostr << "Expected: " << std::fixed << int(std::round(dExpCtr)) << " (" << dExpCtr << ")\n";
-	ostr << strMon << std::fixed << dMon << " of " << dSel << "\n";
+	ostr << strMon << std::fixed << dMon << " of " << dSel 
+		<< (bCountToMon ? " counts" : " seconds") << "\n";
 	ostr << "Progress: " << std::fixed << dProgress*t_real(100.) << " %";
 	set_progress(int(std::round(dProgress*t_real(100.))), ostr.str());
 }

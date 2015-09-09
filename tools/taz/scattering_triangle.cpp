@@ -1344,7 +1344,15 @@ bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
 		//tl::log_info("BZ export: Line ", _iY+1, " of ", iH);
 	}
 
-	gil::png_write_view(pcFile, view);
+	try
+	{
+		gil::png_write_view(pcFile, view);
+	}
+	catch(const std::ios_base::failure& ex)
+	{
+		tl::log_err(ex.what());
+		return false;
+	}
 	return true;
 }
 
@@ -1356,7 +1364,7 @@ void ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const {}
 void ScatteringTriangleScene::drawBackground(QPainter* pPainter, const QRectF& rect)
 {
 	QGraphicsScene::drawBackground(pPainter, rect);
-	
+
 	// TODO: draw accurate BZ
 }
 
