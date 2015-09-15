@@ -262,8 +262,9 @@ void NicosCache::slot_receive(const std::string& str)
 
 		const std::string& strSthAlias = m_mapCache[m_strSampleTheta_aux_alias].strVal;
 
+		// om and psi0 are arbitrary, but together they form the
 		// angle from ki to bragg peak at orient1
-		triag.dAngleKiVec0 = -dOm/*-dPsi*/;
+		triag.dAngleKiVec0 = -dOm-dPsi;
 
 
 		// if the rotation sample stick is used, sth is an additional angle,
@@ -275,7 +276,7 @@ void NicosCache::slot_receive(const std::string& str)
 			strOm = vecStrOm[vecStrOm.size()-2];
 
 		if(m_strSampleTheta!=m_strSampleTheta_aux && tl::get_py_string(strSthAlias)!=strOm)
-			triag.dAngleKiVec0 -= dTh_aux+dPsi;
+			triag.dAngleKiVec0 -= dTh_aux/*+dPsi*/;
 
 
 		triag.bChangedAngleKiVec0 = 1;
