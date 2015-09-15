@@ -30,8 +30,8 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 		{"atheta", &m_strAnaTheta},
 		{"a2theta", &m_strAna2Theta},
 		{"ana_d", &m_strAnaD},
-		{"stheta_aux", &m_strSampleTheta_aux},
-		{"stheta_aux_alias", &m_strSampleTheta_aux_alias}
+		//{"stheta_aux", &m_strSampleTheta_aux},
+		//{"stheta_aux_alias", &m_strSampleTheta_aux_alias}
 	};
 
 	for(const std::pair<std::string, std::string*>& pair : vecStrings)
@@ -55,7 +55,7 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 		m_strMonoD, m_strMonoTheta, m_strMono2Theta,
 		m_strAnaD, m_strAnaTheta, m_strAna2Theta,
 
-		m_strSampleTheta_aux, m_strSampleTheta_aux_alias,
+		//m_strSampleTheta_aux, m_strSampleTheta_aux_alias,
 
 		"logbook/remark",
 	};
@@ -251,22 +251,22 @@ void NicosCache::slot_receive(const std::string& str)
 
 	if(m_mapCache.find(m_strSampleTheta) != m_mapCache.end()
 			&& m_mapCache.find(m_strSamplePsi0) != m_mapCache.end()
-			&& m_mapCache.find(m_strSampleTheta_aux) != m_mapCache.end()
-			&& m_mapCache.find(m_strSampleTheta_aux_alias) != m_mapCache.end())
+			/*&& m_mapCache.find(m_strSampleTheta_aux) != m_mapCache.end()
+			&& m_mapCache.find(m_strSampleTheta_aux_alias) != m_mapCache.end()*/)
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 
-		double dOm = tl::str_to_var<double>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
-		double dTh_aux = tl::str_to_var<double>(m_mapCache[m_strSampleTheta_aux].strVal) /180.*M_PI;
+		double dSth = tl::str_to_var<double>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
 		double dPsi = tl::str_to_var<double>(m_mapCache[m_strSamplePsi0].strVal) /180.*M_PI;
 
-		const std::string& strSthAlias = m_mapCache[m_strSampleTheta_aux_alias].strVal;
+		//double dTh_aux = tl::str_to_var<double>(m_mapCache[m_strSampleTheta_aux].strVal) /180.*M_PI;
+		//const std::string& strSthAlias = m_mapCache[m_strSampleTheta_aux_alias].strVal;
 
-		// om and psi0 are arbitrary, but together they form the
+		// sth and psi0 are arbitrary, but together they form the
 		// angle from ki to bragg peak at orient1
-		triag.dAngleKiVec0 = -dOm-dPsi;
+		triag.dAngleKiVec0 = -dSth-dPsi;
 
-
+		/*
 		// if the rotation sample stick is used, sth is an additional angle,
 		// otherwise sth copies the om value.
 		std::vector<std::string> vecStrOm;
@@ -276,8 +276,8 @@ void NicosCache::slot_receive(const std::string& str)
 			strOm = vecStrOm[vecStrOm.size()-2];
 
 		if(m_strSampleTheta!=m_strSampleTheta_aux && tl::get_py_string(strSthAlias)!=strOm)
-			triag.dAngleKiVec0 -= dTh_aux/*+dPsi*/;
-
+			triag.dAngleKiVec0 -= dTh_aux;
+		*/
 
 		triag.bChangedAngleKiVec0 = 1;
 		//std::cout << "rotation: " << triag.dAngleKiVec0 << std::endl;

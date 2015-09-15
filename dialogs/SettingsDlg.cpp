@@ -49,7 +49,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupEdit("net/spacegroup", "nicos/sample/spacegroup", editSampleSG),
 		t_tupEdit("net/psi0", "nicos/sample/psi0", editSamplePsi0),
 
-		t_tupEdit("net/stheta", "nicos/om/value", editSampleTheta),
+		t_tupEdit("net/stheta", "nicos/sth/value", editSampleTheta),
 		t_tupEdit("net/s2theta", "nicos/phi/value", editSample2Theta),
 
 		t_tupEdit("net/mtheta", "nicos/m2th/value", editMonoTheta),
@@ -60,8 +60,8 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupEdit("net/a2theta", "nicos/att/value", editAna2Theta),
 		t_tupEdit("net/ana_d", "nicos/ana/dvalue", editAnaD),
 
-		t_tupEdit("net/stheta_aux", "nicos/sth/value", editRotTheta),
-		t_tupEdit("net/stheta_aux_alias", "nicos/sth/alias", editRotAlias),
+		//t_tupEdit("net/stheta_aux", "nicos/sth/value", editRotTheta),
+		//t_tupEdit("net/stheta_aux_alias", "nicos/sth/alias", editRotAlias),
 
 
 		t_tupEdit("gl/font", strDefFont, editGLFont)

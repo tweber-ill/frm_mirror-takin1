@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>566</width>
-    <height>480</height>
+    <height>410</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -447,43 +447,6 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="2">
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="title">
-          <string>Rotation Sample Stick</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_4">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_16">
-            <property name="text">
-             <string>Theta:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="editRotTheta">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_17">
-            <property name="text">
-             <string>Alias:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="editRotAlias">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
       </layout>
      </widget>
     </widget>
@@ -512,8 +475,6 @@
   <tabstop>editAnaTheta</tabstop>
   <tabstop>editAna2Theta</tabstop>
   <tabstop>editAnaD</tabstop>
-  <tabstop>editRotTheta</tabstop>
-  <tabstop>editRotAlias</tabstop>
   <tabstop>buttonBox</tabstop>
   <tabstop>btnGLFont</tabstop>
  </tabstops>
