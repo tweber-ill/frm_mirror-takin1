@@ -6,6 +6,7 @@
  */
 
 #include "taz.h"
+#include "helper/globals.h"
 
 #include <iostream>
 #include <algorithm>
@@ -35,7 +36,8 @@ TazDlg::TazDlg(QWidget* pParent)
 		  m_settings("tobis_stuff", "takin"),
 		  m_pSettingsDlg(new SettingsDlg(this, &m_settings)),
 		  m_pStatusMsg(new QLabel(this)),
-		  m_pCoordStatusMsg(new QLabel(this)),
+		  m_pCoordQStatusMsg(new QLabel(this)),
+		  m_pCoordCursorStatusMsg(new QLabel(this)),
 		  m_pmapSpaceGroups(get_space_groups()),
 		  m_dlgRecipParam(this, &m_settings),
 		  m_dlgRealParam(this, &m_settings),
@@ -63,13 +65,17 @@ TazDlg::TazDlg(QWidget* pParent)
 	}*/
 
 	m_pStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-	m_pCoordStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	m_pCoordQStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	m_pCoordCursorStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 
 	QStatusBar *pStatusBar = new QStatusBar(this);
 	pStatusBar->addWidget(m_pStatusMsg, 1);
-	pStatusBar->addPermanentWidget(m_pCoordStatusMsg, 0);
-	m_pCoordStatusMsg->setMinimumWidth(350);
-	m_pCoordStatusMsg->setAlignment(Qt::AlignCenter);
+	pStatusBar->addPermanentWidget(m_pCoordQStatusMsg, 0);
+	pStatusBar->addPermanentWidget(m_pCoordCursorStatusMsg, 0);
+	m_pCoordQStatusMsg->setMinimumWidth(320);
+	m_pCoordQStatusMsg->setAlignment(Qt::AlignCenter);
+	m_pCoordCursorStatusMsg->setMinimumWidth(320);
+	m_pCoordCursorStatusMsg->setAlignment(Qt::AlignCenter);
 	this->setStatusBar(pStatusBar);
 
 	// --------------------------------------------------------------------------------
@@ -154,6 +160,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
 					&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
 
+	// cursor position
 	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(double, double, double, bool, double, double, double)),
 					this, SLOT(RecipCoordsChanged(double, double, double, bool, double, double, double)));
 
@@ -164,6 +171,9 @@ TazDlg::TazDlg(QWidget* pParent)
 					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 					m_pGotoDlg, SLOT(RecipParamsChanged(const RecipParams&)));
+
+	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+					this, SLOT(recipParamsChanged(const RecipParams&)));
 
 
 	for(QLineEdit* pEdit : m_vecEdits_monoana)
@@ -817,16 +827,35 @@ void TazDlg::EnableRealQDir(bool bEnable)
 	m_sceneReal.GetTasLayout()->SetRealQVisible(bEnable);
 }
 
+// Q position
+void TazDlg::recipParamsChanged(const RecipParams& params)
+{
+	std::ostringstream ostrPos;
+	ostrPos.precision(g_iPrecGfx);
+	ostrPos << "Q = (" << -params.Q_rlu[0] << ", "
+		<< -params.Q_rlu[1] << ", "
+		<< -params.Q_rlu[2]  << ") rlu";
+
+	ostrPos << ", in 1st BZ of ("
+			<< params.G_rlu_accurate[0] << ", "
+			<< params.G_rlu_accurate[1] << ", "
+			<< params.G_rlu_accurate[2] << ")";
+
+	m_pCoordQStatusMsg->setText(ostrPos.str().c_str());
+}
+
+// cursor position
 void TazDlg::RecipCoordsChanged(double dh, double dk, double dl,
 	bool bHasNearest, double dNearestH, double dNearestK, double dNearestL)
 {
 	std::ostringstream ostrPos;
-	ostrPos << "(" << dh << ", " << dk << ", " << dl  << ") rlu";
+	ostrPos.precision(g_iPrecGfx);
+	ostrPos << "Cur: (" << dh << ", " << dk << ", " << dl  << ") rlu";
 	if(bHasNearest)
 		ostrPos << ", in 1st BZ of ("
 			<< dNearestH << ", " << dNearestK << ", " << dNearestL << ")";
 
-	m_pCoordStatusMsg->setText(ostrPos.str().c_str());
+	m_pCoordCursorStatusMsg->setText(ostrPos.str().c_str());
 }
 
 

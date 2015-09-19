@@ -743,7 +743,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 				if(!bIsPowder || (ih==0 && ik==0 && il==0))		// (000), i.e. direct beam, also needed for powder
 				{
 					ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
-					
+
 					// add peak in 1/A and rlu units
 					lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
 
@@ -1172,6 +1172,26 @@ void ScatteringTriangleScene::emitAllParams()
 		parms.orient_1[i] = vec1[i];
 		parms.orient_up[i] = vecUp[i];
 	}
+
+
+	// nearest node (exact G)
+	parms.G_rlu_accurate[0] = parms.G_rlu_accurate[1] = parms.G_rlu_accurate[2] = 0.;
+	const tl::Kd<double>& kd = m_pTri->GetKdLattice();
+	ublas::vector<double> vecHKLinvA = m_pTri->GetRecipLattice().GetPos(-vecQrlu[0], -vecQrlu[1], -vecQrlu[2]);
+
+	if(kd.GetRootNode())
+	{
+		std::vector<double> stdvecHKL{vecHKLinvA[0], vecHKLinvA[1], vecHKLinvA[2]};
+		const std::vector<double>* pvecNearest = &kd.GetNearestNode(stdvecHKL);
+
+		if(pvecNearest)
+		{
+			parms.G_rlu_accurate[0] = (*pvecNearest)[3];
+			parms.G_rlu_accurate[1] = (*pvecNearest)[4];
+			parms.G_rlu_accurate[2] = (*pvecNearest)[5];
+		}
+	}
+
 
 	CheckForSpurions();
 

@@ -21,7 +21,7 @@ struct RecipParams
 	double dAngleQVec0;
 
 	double Q[3], Q_rlu[3];
-	double G[3], G_rlu[3];
+	double G[3], G_rlu[3], G_rlu_accurate[3];
 	double q[3], q_rlu[3];
 
 	double orient_0[3], orient_1[3], orient_up[3];

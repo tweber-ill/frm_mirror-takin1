@@ -89,7 +89,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		SettingsDlg *m_pSettingsDlg = nullptr;
 
 		QLabel* m_pStatusMsg = nullptr;
-		QLabel* m_pCoordStatusMsg = nullptr;
+		QLabel* m_pCoordQStatusMsg = nullptr;
+		QLabel* m_pCoordCursorStatusMsg = nullptr;
 
 		QMenu *m_pMenuViewRecip = nullptr;
 		QMenu *m_pMenuViewReal = nullptr;
@@ -209,7 +210,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void spurionInfo(const tl::ElasticSpurion& spuris,
 				const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
 				const std::vector<tl::InelasticSpurion<double>>& vecInelCKF);
-		//void paramsChanged(const RecipParams& parms);
+		void recipParamsChanged(const RecipParams&);
 
 		void ShowConnectDlg();
 
