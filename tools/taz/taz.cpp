@@ -72,9 +72,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	pStatusBar->addWidget(m_pStatusMsg, 1);
 	pStatusBar->addPermanentWidget(m_pCoordQStatusMsg, 0);
 	pStatusBar->addPermanentWidget(m_pCoordCursorStatusMsg, 0);
-	m_pCoordQStatusMsg->setMinimumWidth(320);
+	m_pCoordQStatusMsg->setMinimumWidth(325);
 	m_pCoordQStatusMsg->setAlignment(Qt::AlignCenter);
-	m_pCoordCursorStatusMsg->setMinimumWidth(320);
+	m_pCoordCursorStatusMsg->setMinimumWidth(325);
 	m_pCoordCursorStatusMsg->setAlignment(Qt::AlignCenter);
 	this->setStatusBar(pStatusBar);
 
@@ -835,11 +835,12 @@ void TazDlg::recipParamsChanged(const RecipParams& params)
 	ostrPos << "Q = (" << -params.Q_rlu[0] << ", "
 		<< -params.Q_rlu[1] << ", "
 		<< -params.Q_rlu[2]  << ") rlu";
+	ostrPos << ", E = " << params.dE << " meV";
 
-	ostrPos << ", in 1st BZ of ("
-			<< params.G_rlu_accurate[0] << ", "
-			<< params.G_rlu_accurate[1] << ", "
-			<< params.G_rlu_accurate[2] << ")";
+	ostrPos << ", BZ: ("
+		<< params.G_rlu_accurate[0] << ", "
+		<< params.G_rlu_accurate[1] << ", "
+		<< params.G_rlu_accurate[2] << ")";
 
 	m_pCoordQStatusMsg->setText(ostrPos.str().c_str());
 }
@@ -852,7 +853,7 @@ void TazDlg::RecipCoordsChanged(double dh, double dk, double dl,
 	ostrPos.precision(g_iPrecGfx);
 	ostrPos << "Cur: (" << dh << ", " << dk << ", " << dl  << ") rlu";
 	if(bHasNearest)
-		ostrPos << ", in 1st BZ of ("
+		ostrPos << ", BZ: ("
 			<< dNearestH << ", " << dNearestK << ", " << dNearestL << ")";
 
 	m_pCoordCursorStatusMsg->setText(ostrPos.str().c_str());
