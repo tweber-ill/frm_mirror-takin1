@@ -57,7 +57,11 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 
 		//m_strSampleTheta_aux, m_strSampleTheta_aux_alias,
 
+		// additional info fields (not needed for calculation)
 		"logbook/remark",
+		"nicos/ctr1/value",
+		"nicos/timer/value",
+		"nicos/timer/preselection",
 	};
 
 	m_tcp.add_connect(boost::bind(&NicosCache::slot_connected, this, _1, _2));
@@ -172,6 +176,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 	CrystalOptions crys;
 	TriangleOptions triag;
+	bool bUpdatedVals = 1;
 
 	if(strKey == m_strSampleLattice)
 	{
@@ -247,43 +252,31 @@ void NicosCache::slot_receive(const std::string& str)
 	{
 		crys.strSampleName = tl::get_py_string(strVal);
 	}
+	else if(strKey == m_strSampleTheta || strKey == m_strSamplePsi0)
+	{}
+	else
+	{
+		bUpdatedVals = 0;
+	}
 
 
-	if(m_mapCache.find(m_strSampleTheta) != m_mapCache.end()
-			&& m_mapCache.find(m_strSamplePsi0) != m_mapCache.end()
-			/*&& m_mapCache.find(m_strSampleTheta_aux) != m_mapCache.end()
-			&& m_mapCache.find(m_strSampleTheta_aux_alias) != m_mapCache.end()*/)
+	if(bUpdatedVals && m_mapCache.find(m_strSampleTheta) != m_mapCache.end()
+			&& m_mapCache.find(m_strSamplePsi0) != m_mapCache.end())
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 
 		double dSth = tl::str_to_var<double>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
 		double dPsi = tl::str_to_var<double>(m_mapCache[m_strSamplePsi0].strVal) /180.*M_PI;
 
-		//double dTh_aux = tl::str_to_var<double>(m_mapCache[m_strSampleTheta_aux].strVal) /180.*M_PI;
-		//const std::string& strSthAlias = m_mapCache[m_strSampleTheta_aux_alias].strVal;
-
 		// sth and psi0 are arbitrary, but together they form the
-		// angle from ki to bragg peak at orient1
+		// angle from ki to the bragg peak at orient1
 		triag.dAngleKiVec0 = -dSth-dPsi;
-
-		/*
-		// if the rotation sample stick is used, sth is an additional angle,
-		// otherwise sth copies the om value.
-		std::vector<std::string> vecStrOm;
-		tl::get_tokens<std::string, std::string>(m_strSampleTheta, "/", vecStrOm);
-		std::string strOm = "om";
-		if(vecStrOm.size() > 2)
-			strOm = vecStrOm[vecStrOm.size()-2];
-
-		if(m_strSampleTheta!=m_strSampleTheta_aux && tl::get_py_string(strSthAlias)!=strOm)
-			triag.dAngleKiVec0 -= dTh_aux;
-		*/
-
 		triag.bChangedAngleKiVec0 = 1;
 		//std::cout << "rotation: " << triag.dAngleKiVec0 << std::endl;
 	}
 
-	emit vars_changed(crys, triag);
+	if(bUpdatedVals)
+		emit vars_changed(crys, triag);
 }
 
 #include "nicos.moc"
