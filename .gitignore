@@ -30,6 +30,9 @@ monteconvo.txt
 monteconvo.mk
 scanviewer.txt
 scanviewer.mk
+CMakeFiles/*
+CMakeCache.txt
+cmake_install.cmake
 Makefile
 tlibs-master.tar.bz2
 tlibs/*

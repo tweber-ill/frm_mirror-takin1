@@ -294,26 +294,26 @@ void TazDlg::CalcPeaks()
 		double dX1 = editScatX1->text().toDouble();
 		double dX2 = editScatX2->text().toDouble();
 		ublas::vector<double> vecPlaneX = dX0*recip_unrot.GetVec(0) +
-										dX1*recip_unrot.GetVec(1) +
-										dX2*recip_unrot.GetVec(2);
+			dX1*recip_unrot.GetVec(1) +
+			dX2*recip_unrot.GetVec(2);
 
 		double dY0 = editScatY0->text().toDouble();
 		double dY1 = editScatY1->text().toDouble();
 		double dY2 = editScatY2->text().toDouble();
 		ublas::vector<double> vecPlaneY = dY0*recip_unrot.GetVec(0) +
-										dY1*recip_unrot.GetVec(1) +
-										dY2*recip_unrot.GetVec(2);
+			dY1*recip_unrot.GetVec(1) +
+			dY2*recip_unrot.GetVec(2);
 
 		//----------------------------------------------------------------------
 		// show integer up vector
 		unsigned int iMaxDec = 4;	// TODO: determine max. # of entered decimals
 		ublas::vector<int> ivecUp = tl::cross_3(
 			tl::make_vec<ublas::vector<int>>({int(dX0*std::pow(10, iMaxDec)),
-											int(dX1*std::pow(10, iMaxDec)),
-											int(dX2*std::pow(10, iMaxDec))}),
+				int(dX1*std::pow(10, iMaxDec)),
+				int(dX2*std::pow(10, iMaxDec))}),
 			tl::make_vec<ublas::vector<int>>({int(dY0*std::pow(10, iMaxDec)),
-											int(dY1*std::pow(10, iMaxDec)),
-											int(dY2*std::pow(10, iMaxDec))}));
+				int(dY1*std::pow(10, iMaxDec)),
+				int(dY2*std::pow(10, iMaxDec))}));
 		ivecUp = tl::get_gcd_vec(ivecUp);
 		editScatZ0->setText(std::to_string(ivecUp[0]).c_str());
 		editScatZ1->setText(std::to_string(ivecUp[1]).c_str());

@@ -1035,7 +1035,7 @@ void TazDlg::ShowAbout()
 #endif
 
 	strAbout += strBullet + " ";
-	strAbout += "Uses TLIBS version " + QString(TLIBS_VERSION);
+	strAbout += "Uses tLibs version " + QString(TLIBS_VERSION);
 	strAbout += "\n";
 
 	strAbout += "\n";
