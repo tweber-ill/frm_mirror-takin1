@@ -224,7 +224,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pLoad = new QAction(this);
 	pLoad->setText("Load...");
-	pLoad->setIcon(QIcon::fromTheme("document-open"));
+	pLoad->setIcon(QIcon("res/document-open.svg"));
 	pMenuFile->addAction(pLoad);
 
 	m_pMenuRecent = new QMenu(this);
@@ -238,19 +238,19 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pSave = new QAction(this);
 	pSave->setText("Save");
-	pSave->setIcon(QIcon::fromTheme("document-save"));
+	pSave->setIcon(QIcon("res/document-save.svg"));
 	pMenuFile->addAction(pSave);
 
 	QAction *pSaveAs = new QAction(this);
 	pSaveAs->setText("Save as...");
-	pSaveAs->setIcon(QIcon::fromTheme("document-save-as"));
+	pSaveAs->setIcon(QIcon("res/document-save-as.svg"));
 	pMenuFile->addAction(pSaveAs);
 
 	pMenuFile->addSeparator();
 
 	QAction *pImport = new QAction(this);
 	pImport->setText("Import...");
-	pImport->setIcon(QIcon::fromTheme(/*"text-x-generic-template"*/"emblem-documents"));
+	pImport->setIcon(QIcon("res/drive-harddisk.svg"));
 	pMenuFile->addAction(pImport);
 
 	m_pMenuRecentImport = new QMenu(this);
@@ -272,14 +272,14 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pSettings = new QAction(this);
 	pSettings->setText("Settings...");
-	pSettings->setIcon(QIcon::fromTheme("preferences-system"));
+	pSettings->setIcon(QIcon("res/preferences-system.svg"));
 	pMenuFile->addAction(pSettings);
 
 	pMenuFile->addSeparator();
 
 	QAction *pExit = new QAction(this);
 	pExit->setText("Exit");
-	pExit->setIcon(QIcon::fromTheme("application-exit"));
+	pExit->setIcon(QIcon("res/system-log-out.svg"));
 	pMenuFile->addAction(pExit);
 
 
@@ -329,7 +329,7 @@ TazDlg::TazDlg(QWidget* pParent)
 #if !defined NO_3D
 	QAction *pView3D = new QAction(this);
 	pView3D->setText("3D View...");
-	pView3D->setIcon(QIcon::fromTheme("applications-graphics"));
+	//pView3D->setIcon(QIcon::fromTheme("applications-graphics"));
 	m_pMenuViewRecip->addAction(pView3D);
 
 	m_pMenuViewRecip->addSeparator();
@@ -337,13 +337,13 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pRecipExport = new QAction(this);
 	pRecipExport->setText("Export Image...");
-	pRecipExport->setIcon(QIcon::fromTheme("image-x-generic"));
+	pRecipExport->setIcon(QIcon("res/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pRecipExport);
 
 #ifdef USE_GIL
 	QAction *pBZExport = new QAction(this);
 	pBZExport->setText("Export Brillouin Zone Image...");
-	pBZExport->setIcon(QIcon::fromTheme("image-x-generic"));
+	pBZExport->setIcon(QIcon("res/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pBZExport);
 #endif
 
@@ -370,7 +370,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pRealExport = new QAction(this);
 	pRealExport->setText("Export Image...");
-	pRealExport->setIcon(QIcon::fromTheme("image-x-generic"));
+	pRealExport->setIcon(QIcon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pRealExport);
 
 
@@ -382,7 +382,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pResoParams = new QAction(this);
 	pResoParams->setText("Parameters...");
-	pResoParams->setIcon(QIcon::fromTheme("accessories-calculator"));
+	pResoParams->setIcon(QIcon("res/accessories-calculator.svg"));
 	pMenuReso->addAction(pResoParams);
 
 	pMenuReso->addSeparator();
@@ -441,12 +441,12 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pConn = new QAction(this);
 	pConn->setText("Connect to Instrument...");
-	pConn->setIcon(QIcon::fromTheme("network-wireless"));
+	pConn->setIcon(QIcon("res/network-transmit-receive.svg"));
 	pMenuNet->addAction(pConn);
 
 	QAction *pDisconn = new QAction(this);
 	pDisconn->setText("Disconnect");
-	pDisconn->setIcon(QIcon::fromTheme("network-offline"));
+	pDisconn->setIcon(QIcon("res/network-offline.svg"));
 	pMenuNet->addAction(pDisconn);
 
 	QAction *pNetCache = new QAction(this);
@@ -456,7 +456,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pNetRefresh = new QAction(this);
 	pNetRefresh->setText("Refresh");
-	pNetRefresh->setIcon(QIcon::fromTheme("view-refresh"));
+	pNetRefresh->setIcon(QIcon("res/view-refresh.svg"));
 	pMenuNet->addSeparator();
 	pMenuNet->addAction(pNetRefresh);
 #endif
@@ -476,7 +476,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pAbout = new QAction(this);
 	pAbout->setText("About...");
-	pAbout->setIcon(QIcon::fromTheme("help-about"));
+	pAbout->setIcon(QIcon("res/dialog-information.svg"));
 	pMenuHelp->addAction(pAbout);
 
 

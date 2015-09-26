@@ -39,7 +39,8 @@ class NicosCache : public QObject
 		NicosCache(QSettings* pSettings=0);
 		virtual ~NicosCache();
 
-		void connect(const std::string& strHost, const std::string& strPort);
+		void connect(const std::string& strHost, const std::string& strPort,
+			const std::string& strUser, const std::string& strPass);
 		void disconnect();
 
 		void AddKey(const std::string& strKey);

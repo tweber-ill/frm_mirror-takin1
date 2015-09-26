@@ -74,7 +74,8 @@ NicosCache::~NicosCache()
 	disconnect();
 }
 
-void NicosCache::connect(const std::string& strHost, const std::string& strPort)
+void NicosCache::connect(const std::string& strHost, const std::string& strPort,
+	const std::string& strUser, const std::string& strPass)
 {
 	m_mapCache.clear();
 	emit cleared_cache();

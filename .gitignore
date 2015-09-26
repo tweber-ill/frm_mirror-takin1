@@ -6,14 +6,8 @@
 .directory
 *.kate-swp
 ui/*.h
-bin/reso
-bin/montereso
-bin/monteconvo
-bin/xmonteconvo
-bin/taz
-bin/takin
-bin/scanviewer
-bin/posextract
+bin/*
+!bin/.dir
 perf.data
 perf.data.old
 gmon.out
@@ -38,3 +32,9 @@ Makefile
 tlibs-master.tar.bz2
 tlibs/*
 tlibs
+tango-icon-theme*.tar.gz
+res/*
+!res/brillouin.svg
+!res/ellipses.svg
+!res/goto.svg
+!res/q.svg

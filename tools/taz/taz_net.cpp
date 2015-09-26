@@ -68,7 +68,7 @@ void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPor
 					m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
 
 	if(iSys==0)
-		m_pNicosCache->connect(strHost, strPort);
+		m_pNicosCache->connect(strHost, strPort, strUser, strPass);
 	else if(iSys==1)
 		m_pSicsCache->connect(strHost, strPort, strUser, strPass);
 }
