@@ -340,6 +340,7 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 	if(vecResult.size() != iNum)
 		vecResult.resize(iNum);
 
+	//tl::log_debug("Qvec0 = ", opts.dAngleQVec0/M_PI*180.);
 	t_mat matQVec0 = tl::rotation_matrix_2d(-opts.dAngleQVec0);
 	matQVec0.resize(4,4, true);
 	matQVec0(2,2) = matQVec0(3,3) = 1.;

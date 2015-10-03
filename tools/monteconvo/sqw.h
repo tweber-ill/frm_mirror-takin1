@@ -40,13 +40,26 @@ public:
 
 // -----------------------------------------------------------------------------
 
+struct ElastPeak
+{
+	double h, k, l;
+	double dSigQ, dSigE;
+	double dS;
+};
 
 // Test S(q,w): only bragg peaks
 class SqwElast : public SqwBase
 {
+protected:
+	bool m_bLoadedFromFile = false;
+	std::list<ElastPeak> m_lstPeaks;
+
 public:
 	SqwElast() { SqwBase::m_bOk = true; }
+	SqwElast(const char* pcFile);
 	virtual double operator()(double dh, double dk, double dl, double dE) const override;
+
+	void AddPeak(double h, double k, double l, double dSigQ, double dSigE, double dS);
 
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;

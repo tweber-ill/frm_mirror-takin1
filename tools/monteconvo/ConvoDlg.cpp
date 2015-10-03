@@ -69,7 +69,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);
 	QObject::connect(this, SIGNAL(SqwLoaded(const std::vector<SqwBase::t_var>&)),
 		m_pSqwParamDlg, SLOT(SqwLoaded(const std::vector<SqwBase::t_var>&)));
-	QObject::connect(m_pSqwParamDlg, SIGNAL(SqwParamsChanged(const std::vector<SqwBase::t_var>&)), 
+	QObject::connect(m_pSqwParamDlg, SIGNAL(SqwParamsChanged(const std::vector<SqwBase::t_var>&)),
 		this, SLOT(SqwParamsChanged(const std::vector<SqwBase::t_var>&)));
 
 	QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
@@ -152,12 +152,16 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	}
 
 
+	const int iSqwModel = comboSqw->currentIndex();
 	std::string strSqwFile = qstrFile.toStdString();
 	tl::trim(strSqwFile);
-	if(strSqwFile == "")
-		return;
 
-	const int iSqwModel = comboSqw->currentIndex();
+	if(iSqwModel!=3 && strSqwFile == "")
+	{
+		QMessageBox::critical(this, "Error", "Could not load S(q,w) config file.");
+		return;
+	}
+
 	switch(iSqwModel)
 	{
 		case 0:
@@ -178,6 +182,12 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 					22.5/(M_PI/2.), M_PI/2., 0.1, 0.1,
 					28.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1);*/
 			m_pSqw = new SqwPhonon(strSqwFile.c_str());
+			break;
+		case 3:
+			if(strSqwFile.length())
+				m_pSqw = new SqwElast(strSqwFile.c_str());
+			else
+				m_pSqw = new SqwElast();
 			break;
 		default:
 		{
@@ -271,6 +281,9 @@ void ConvoDlg::Start()
 			return;
 		}
 
+		//QMetaObject::invokeMethod(plot, "setAxisTitle",
+		//	Q_ARG(int, QwtPlot::xBottom),
+		//	Q_ARG(const QString&, QString(strScanVar.c_str())));
 		//plot->setAxisTitle(QwtPlot::xBottom, strScanVar.c_str());
 
 
@@ -424,7 +437,7 @@ void ConvoDlg::Start()
 	#endif
 			QMetaObject::invokeMethod(plot, "replot", connty);
 
-			QMetaObject::invokeMethod(textResult, "setPlainText", connty, 
+			QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 				Q_ARG(const QString&, QString(ostrOut.str().c_str())));
 
 			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
@@ -433,7 +446,7 @@ void ConvoDlg::Start()
 
 		ostrOut << "# ---------------- EOF ----------------\n";
 
-		QMetaObject::invokeMethod(textResult, "setPlainText", connty, 
+		QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 			Q_ARG(const QString&, QString(ostrOut.str().c_str())));
 
 		fktEnableButtons();
@@ -522,8 +535,49 @@ void ConvoDlg::showSqwParamDlg()
 
 void ConvoDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSett && m_pSett->contains("monteconvo/geo"))
-		restoreGeometry(m_pSett->value("monteconvo/geo").toByteArray());
+	if(m_pSett)
+	{
+		if(m_pSett->contains("monteconvo/geo"))
+			restoreGeometry(m_pSett->value("monteconvo/geo").toByteArray());
+
+		if(m_pSett->contains("monteconvo/algo"))
+			comboAlgo->setCurrentIndex(m_pSett->value("monteconvo/algo").toInt());
+		if(m_pSett->contains("monteconvo/fixedk"))
+			comboFixedK->setCurrentIndex(m_pSett->value("monteconvo/fixedk").toInt());
+		if(m_pSett->contains("monteconvo/sqw"))
+			comboSqw->setCurrentIndex(m_pSett->value("monteconvo/sqw").toInt());
+
+		if(m_pSett->contains("monteconvo/crys"))
+			editCrys->setText(m_pSett->value("monteconvo/crys").toString());
+		if(m_pSett->contains("monteconvo/instr"))
+			editRes->setText(m_pSett->value("monteconvo/instr").toString());
+		if(m_pSett->contains("monteconvo/sqw_conf"))
+			editSqw->setText(m_pSett->value("monteconvo/sqw_conf").toString());
+
+		if(m_pSett->contains("monteconvo/h_from"))
+			spinStartH->setValue(m_pSett->value("monteconvo/h_from").toDouble());
+		if(m_pSett->contains("monteconvo/k_from"))
+			spinStartK->setValue(m_pSett->value("monteconvo/k_from").toDouble());
+		if(m_pSett->contains("monteconvo/l_from"))
+			spinStartL->setValue(m_pSett->value("monteconvo/l_from").toDouble());
+		if(m_pSett->contains("monteconvo/E_from"))
+			spinStartE->setValue(m_pSett->value("monteconvo/E_from").toDouble());
+		if(m_pSett->contains("monteconvo/h_to"))
+			spinStopH->setValue(m_pSett->value("monteconvo/h_to").toDouble());
+		if(m_pSett->contains("monteconvo/k_to"))
+			spinStopK->setValue(m_pSett->value("monteconvo/k_to").toDouble());
+		if(m_pSett->contains("monteconvo/l_to"))
+			spinStopL->setValue(m_pSett->value("monteconvo/l_to").toDouble());
+		if(m_pSett->contains("monteconvo/E_to"))
+			spinStopE->setValue(m_pSett->value("monteconvo/E_to").toDouble());
+
+		if(m_pSett->contains("monteconvo/kfix"))
+			spinKfix->setValue(m_pSett->value("monteconvo/kfix").toDouble());
+		if(m_pSett->contains("monteconvo/neutron_count"))
+			spinNeutrons->setValue(m_pSett->value("monteconvo/neutron_count").toDouble());
+		if(m_pSett->contains("monteconvo/step_count"))
+			spinStepCnt->setValue(m_pSett->value("monteconvo/step_count").toDouble());
+	}
 
 	QDialog::showEvent(pEvt);
 }
@@ -535,7 +589,30 @@ void ConvoDlg::ButtonBoxClicked(QAbstractButton *pBtn)
 	if(pBtn == buttonBox->button(QDialogButtonBox::Close))
 	{
 		if(m_pSett)
+		{
 			m_pSett->setValue("monteconvo/geo", saveGeometry());
+
+			m_pSett->setValue("monteconvo/algo", comboAlgo->currentIndex());
+			m_pSett->setValue("monteconvo/fixedk", comboFixedK->currentIndex());
+			m_pSett->setValue("monteconvo/sqw", comboSqw->currentIndex());
+
+			m_pSett->setValue("monteconvo/crys", editCrys->text());
+			m_pSett->setValue("monteconvo/instr", editRes->text());
+			m_pSett->setValue("monteconvo/sqw_conf", editSqw->text());
+
+			m_pSett->setValue("monteconvo/h_from", spinStartH->value());
+			m_pSett->setValue("monteconvo/k_from", spinStartK->value());
+			m_pSett->setValue("monteconvo/l_from", spinStartL->value());
+			m_pSett->setValue("monteconvo/E_from", spinStartE->value());
+			m_pSett->setValue("monteconvo/h_to", spinStopH->value());
+			m_pSett->setValue("monteconvo/k_to", spinStopK->value());
+			m_pSett->setValue("monteconvo/l_to", spinStopL->value());
+			m_pSett->setValue("monteconvo/E_to", spinStopE->value());
+
+			m_pSett->setValue("monteconvo/kfix", spinKfix->value());
+			m_pSett->setValue("monteconvo/neutron_count", spinNeutrons->value());
+			m_pSett->setValue("monteconvo/step_count", spinStepCnt->value());
+		}
 
 		QDialog::accept();
 	}

@@ -13,16 +13,73 @@
 #include <fstream>
 #include <list>
 
+SqwElast::SqwElast(const char* pcFile) : m_bLoadedFromFile(true)
+{
+	std::ifstream ifstr(pcFile);
+	if(!ifstr)
+	{
+		m_bLoadedFromFile = false;
+		tl::log_err("Cannot open config file.");
+		return;
+	}
+
+	std::string strLine;
+	while(std::getline(ifstr, strLine))
+	{
+		tl::trim(strLine);
+		if(strLine.length()==0 || strLine[0]=='#')
+			continue;
+
+		std::istringstream istr(strLine);
+		double h=0., k=0. ,l=0., dSigQ=0., dSigE=0., dS=0.;
+		istr >> h >> k >> l >> dSigQ >> dSigE >> dS;
+
+		AddPeak(h,k,l, dSigQ, dSigE, dS);
+	}
+
+	tl::log_info("Number of elastic peaks: ", m_lstPeaks.size());
+	SqwBase::m_bOk = true;
+}
+
+void SqwElast::AddPeak(double h, double k, double l, double dSigQ, double dSigE, double dS)
+{
+	ElastPeak pk;
+	pk.h = h; pk.k = k; pk.l = l;
+	pk.dSigQ = dSigQ; pk.dSigE = dSigE;
+	pk.dS = dS;
+	m_lstPeaks.push_back(std::move(pk));
+}
 
 double SqwElast::operator()(double dh, double dk, double dl, double dE) const
 {
-	ublas::vector<double> vecCur = tl::make_vec({dh, dk, dl, dE});
-	ublas::vector<double> vecPt = tl::make_vec({std::round(dh),
-		std::round(dk), std::round(dl), 0.});
+	const ublas::vector<double> vecCur = tl::make_vec({dh, dk, dl});
 
-	if(ublas::norm_2(vecPt-vecCur) < 0.001)
-		return 1.;
-	return 0.;
+	if(!m_bLoadedFromFile)	// use nearest integer bragg peak
+	{
+		const ublas::vector<double> vecPt = tl::make_vec({std::round(dh), std::round(dk), std::round(dl)});
+
+		const double dDistQ = ublas::norm_2(vecPt-vecCur);
+		const double dSigmaQ = 0.02;
+		const double dSigmaE = 0.02;
+
+		return tl::gauss_model(dDistQ, 0., dSigmaQ, 1., 0.) *
+			tl::gauss_model(dE, 0., dSigmaE, 1., 0.);
+	}
+	else	// use bragg peaks from config file
+	{
+		double dS = 0.;
+
+		for(const ElastPeak& pk : m_lstPeaks)
+		{
+			const ublas::vector<double> vecPk = tl::make_vec({pk.h, pk.k, pk.l});
+			const double dDistQ = ublas::norm_2(vecPk-vecCur);
+
+			dS += pk.dS * tl::gauss_model(dDistQ, 0., pk.dSigQ, 1., 0.) *
+				tl::gauss_model(dE, 0., pk.dSigE, 1., 0.);
+		}
+
+		return dS;
+	}
 }
 
 std::vector<SqwBase::t_var> SqwElast::GetVars() const
@@ -131,7 +188,7 @@ double SqwPhonon::disp(double dq, double da, double df)
 void SqwPhonon::create()
 {
 	destroy();
-	
+
 	if(m_vecBragg.size()==0 || m_vecLA.size()==0 || m_vecTA1.size()==0 || m_vecTA2.size()==0)
 	{
 		m_bOk = 0;
@@ -212,7 +269,7 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 		else if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
 		else if(vecToks[0] == "TA1") m_vecTA1 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
 		else if(vecToks[0] == "TA2") m_vecTA2 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
-		
+
 		else if(vecToks[0] == "LA_amp") m_dLA_amp = tl::str_to_var<double>(vecToks[1]);
 		else if(vecToks[0] == "LA_freq") m_dLA_freq = tl::str_to_var<double>(vecToks[1]);
 		else if(vecToks[0] == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<double>(vecToks[1]);
@@ -282,7 +339,7 @@ static t_vec str_to_vec(const std::string& str)
 std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
 {
 	std::vector<SqwBase::t_var> vecVars;
-	
+
 	vecVars.push_back(SqwBase::t_var{"num_qs", "uint", tl::var_to_str(m_iNumqs)});
 
 	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
