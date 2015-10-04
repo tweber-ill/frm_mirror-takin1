@@ -392,7 +392,10 @@ void GotoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
 		if(m_pSettings)
+		{
 			m_pSettings->setValue("goto_pos/geo", saveGeometry());
+			m_pSettings->setValue("goto_pos/ki_fix", radioFixedKi->isChecked());
+		}
 
 		QDialog::accept();
 	}
@@ -400,8 +403,13 @@ void GotoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 
 void GotoDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings && m_pSettings->contains("goto_pos/geo"))
-		restoreGeometry(m_pSettings->value("goto_pos/geo").toByteArray());
+	if(m_pSettings)
+	{
+		if(m_pSettings->contains("goto_pos/geo"))
+			restoreGeometry(m_pSettings->value("goto_pos/geo").toByteArray());
+		if(m_pSettings->contains("goto_pos/ki_fix"))
+			radioFixedKi->setChecked(m_pSettings->value("goto_pos/ki_fix").toBool());
+	}
 
 	QDialog::showEvent(pEvt);
 }
