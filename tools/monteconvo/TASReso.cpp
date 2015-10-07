@@ -267,17 +267,17 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	// calculate resolution at (hkl) and E
 	if(m_algo == ResoAlgo::CN)
 	{
-		tl::log_info("Algorithm: Cooper-Nathans");
+		//tl::log_info("Algorithm: Cooper-Nathans");
 		m_res = calc_cn(m_reso);
 	}
 	else if(m_algo == ResoAlgo::POP)
 	{
-		tl::log_info("Algorithm: Popovici");
+		//tl::log_info("Algorithm: Popovici");
 		m_res = calc_pop(m_reso);
 	}
 	else if(m_algo == ResoAlgo::ECK)
 	{
-		tl::log_info("Algorithm: Eckold-Sobolev");
+		//tl::log_info("Algorithm: Eckold-Sobolev");
 		m_res = calc_eck(m_reso);
 	}
 	else
@@ -286,8 +286,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		return false;
 	}
 
-	tl::log_info("Resolution matrix: ", m_res.reso);
-
+	//tl::log_info("Resolution matrix: ", m_res.reso);
 	return m_res.bOk;
 }
 

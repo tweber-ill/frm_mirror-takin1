@@ -42,6 +42,7 @@ protected:
 	std::vector<double> m_vecQ, m_vecS;
 
 protected:
+	void LoadSettings();
 	virtual void showEvent(QShowEvent *pEvt) override;
 
 protected slots:

@@ -85,6 +85,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 	QObject::connect(btnStart, SIGNAL(clicked()), this, SLOT(Start()));
 	QObject::connect(btnStop, SIGNAL(clicked()), this, SLOT(Stop()));
+
+	LoadSettings();
 }
 
 ConvoDlg::~ConvoDlg()
@@ -532,8 +534,7 @@ void ConvoDlg::showSqwParamDlg()
 	m_pSqwParamDlg->activateWindow();
 }
 
-
-void ConvoDlg::showEvent(QShowEvent *pEvt)
+void ConvoDlg::LoadSettings()
 {
 	if(m_pSett)
 	{
@@ -578,7 +579,11 @@ void ConvoDlg::showEvent(QShowEvent *pEvt)
 		if(m_pSett->contains("monteconvo/step_count"))
 			spinStepCnt->setValue(m_pSett->value("monteconvo/step_count").toDouble());
 	}
+}
 
+void ConvoDlg::showEvent(QShowEvent *pEvt)
+{
+	//LoadSettings();
 	QDialog::showEvent(pEvt);
 }
 
