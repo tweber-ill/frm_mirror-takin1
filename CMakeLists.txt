@@ -1,7 +1,13 @@
 project(takin)
 cmake_minimum_required(VERSION 3.0)
 
+#set(CMAKE_VERBOSE_MAKEFILE TRUE)
+set(CMAKE_BUILD_TYPE Release)
+
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" ".")
+set(CMAKE_BINARY_DIR "${CMAKE_SOURCE_DIR}")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 find_package(Boost REQUIRED COMPONENTS iostreams system filesystem regex python REQUIRED)
 find_package(Threads REQUIRED)
@@ -11,12 +17,17 @@ find_package(PNG REQUIRED)
 find_package(Qwt REQUIRED)
 
 
+#message("Source dir: ${CMAKE_SOURCE_DIR}")
+#message("Binary dir: ${CMAKE_BINARY_DIR}")
+message("Install path prefix: ${CMAKE_INSTALL_PREFIX}")
 message("Using qwt version ${QWT_MAJOR_VERSION}")
 message("Qt moc: ${QT_MOC_EXECUTABLE}\nQt uic: ${QT_UIC_EXECUTABLE}")
+
 
 add_definitions(-DUSE_NET -DUSE_IOSTR -DUSE_BOOST_REX -DUSE_PY -DUSE_GIL)
 add_definitions(-DQT_VER=4 -DQWT_VER=${QWT_MAJOR_VERSION})
 add_definitions(-DNO_LAPACK -DNO_3D)
+add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_definitions(${Boost_CXX_FLAGS})
 
 
@@ -29,7 +40,6 @@ include_directories("${QWT_INCLUDE_DIRS}")
 
 set(CMAKE_AUTOMOC OFF)
 set(CMAKE_AUTOUIC OFF)
-set(CMAKE_BUILD_TYPE Release)
 
 add_definitions(-std=c++11)
 add_definitions(-march=native -s)
@@ -76,13 +86,17 @@ target_link_libraries(takin ${Boost_LIBRARIES} Threads::Threads
 
 # prebuild
 add_custom_target(prebuild-script
-	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/prebuild.sh ${QT_UIC_EXECUTABLE} ${QT_MOC_EXECUTABLE}
+	COMMAND ${PROJECT_SOURCE_DIR}/prebuild.sh ${QT_UIC_EXECUTABLE} ${QT_MOC_EXECUTABLE}
 )
 add_dependencies(takin prebuild-script)
 
 
 # postbuild
-add_custom_command(TARGET takin POST_BUILD
-	COMMAND mv takin bin/takin && ln -sf bin/takin && strip takin
-	MAIN_DEPENDENCY takin
-)
+#add_custom_command(TARGET takin POST_BUILD
+#	COMMAND mv takin bin/takin && ln -sf bin/takin && strip takin
+#	MAIN_DEPENDENCY takin
+#)
+
+
+install(TARGETS takin DESTINATION bin)
+install(DIRECTORY res test DESTINATION share/takin)

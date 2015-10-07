@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <vector>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include <QApplication>
 #include <QHBoxLayout>
@@ -29,7 +30,30 @@
 #include "tlibs/file/recent.h"
 #include "tlibs/helper/log.h"
 
+
 const std::string TazDlg::s_strTitle = "Takin";
+
+static const std::vector<std::string> s_vecInstallPaths =
+{
+	".",
+#ifdef INSTALL_PREFIX
+	INSTALL_PREFIX "/share/takin"
+#endif
+};
+
+static QIcon load_icon(const std::string& strIcon)
+{
+	for(const std::string& strPrefix : s_vecInstallPaths)
+	{
+		std::string strFile = strPrefix + "/" + strIcon;
+		//tl::log_debug("Looking for file: ", strFile);
+		if(boost::filesystem::exists(strFile))
+			return QIcon(strFile.c_str());
+	}
+
+	tl::log_err("Could not load icon \"", strIcon, "\".");
+	return QIcon();
+}
 
 TazDlg::TazDlg(QWidget* pParent)
 		: QMainWindow(pParent),
@@ -224,7 +248,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pLoad = new QAction(this);
 	pLoad->setText("Load...");
-	pLoad->setIcon(QIcon("res/document-open.svg"));
+	pLoad->setIcon(load_icon("res/document-open.svg"));
 	pMenuFile->addAction(pLoad);
 
 	m_pMenuRecent = new QMenu(this);
@@ -238,19 +262,19 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pSave = new QAction(this);
 	pSave->setText("Save");
-	pSave->setIcon(QIcon("res/document-save.svg"));
+	pSave->setIcon(load_icon("res/document-save.svg"));
 	pMenuFile->addAction(pSave);
 
 	QAction *pSaveAs = new QAction(this);
 	pSaveAs->setText("Save as...");
-	pSaveAs->setIcon(QIcon("res/document-save-as.svg"));
+	pSaveAs->setIcon(load_icon("res/document-save-as.svg"));
 	pMenuFile->addAction(pSaveAs);
 
 	pMenuFile->addSeparator();
 
 	QAction *pImport = new QAction(this);
 	pImport->setText("Import...");
-	pImport->setIcon(QIcon("res/drive-harddisk.svg"));
+	pImport->setIcon(load_icon("res/drive-harddisk.svg"));
 	pMenuFile->addAction(pImport);
 
 	m_pMenuRecentImport = new QMenu(this);
@@ -272,14 +296,14 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pSettings = new QAction(this);
 	pSettings->setText("Settings...");
-	pSettings->setIcon(QIcon("res/preferences-system.svg"));
+	pSettings->setIcon(load_icon("res/preferences-system.svg"));
 	pMenuFile->addAction(pSettings);
 
 	pMenuFile->addSeparator();
 
 	QAction *pExit = new QAction(this);
 	pExit->setText("Exit");
-	pExit->setIcon(QIcon("res/system-log-out.svg"));
+	pExit->setIcon(load_icon("res/system-log-out.svg"));
 	pMenuFile->addAction(pExit);
 
 
@@ -290,7 +314,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pGoto = new QAction(this);
 	m_pGoto->setText("Go to Position...");
-	m_pGoto->setIcon(QIcon("res/goto.svg"));
+	m_pGoto->setIcon(load_icon("res/goto.svg"));
 	m_pMenuViewRecip->addAction(m_pGoto);
 
 	QAction *pRecipParams = new QAction(this);
@@ -300,7 +324,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pSmallq = new QAction(this);
 	m_pSmallq->setText("Show Reduced Scattering Vector q");
-	m_pSmallq->setIcon(QIcon("res/q.svg"));
+	m_pSmallq->setIcon(load_icon("res/q.svg"));
 	m_pSmallq->setCheckable(1);
 	m_pSmallq->setChecked(bSmallqVisible);
 	m_pMenuViewRecip->addAction(m_pSmallq);
@@ -319,7 +343,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pBZ = new QAction(this);
 	m_pBZ->setText("Show First Brillouin Zone");
-	m_pBZ->setIcon(QIcon("res/brillouin.svg"));
+	m_pBZ->setIcon(load_icon("res/brillouin.svg"));
 	m_pBZ->setCheckable(1);
 	m_pBZ->setChecked(bBZVisible);
 	m_pMenuViewRecip->addAction(m_pBZ);
@@ -337,13 +361,13 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pRecipExport = new QAction(this);
 	pRecipExport->setText("Export Image...");
-	pRecipExport->setIcon(QIcon("res/image-x-generic.svg"));
+	pRecipExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pRecipExport);
 
 #ifdef USE_GIL
 	QAction *pBZExport = new QAction(this);
 	pBZExport->setText("Export Brillouin Zone Image...");
-	pBZExport->setIcon(QIcon("res/image-x-generic.svg"));
+	pBZExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pBZExport);
 #endif
 
@@ -370,7 +394,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pRealExport = new QAction(this);
 	pRealExport->setText("Export Image...");
-	pRealExport->setIcon(QIcon("res/image-x-generic.svg"));
+	pRealExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pRealExport);
 
 
@@ -382,14 +406,14 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pResoParams = new QAction(this);
 	pResoParams->setText("Parameters...");
-	pResoParams->setIcon(QIcon("res/accessories-calculator.svg"));
+	pResoParams->setIcon(load_icon("res/accessories-calculator.svg"));
 	pMenuReso->addAction(pResoParams);
 
 	pMenuReso->addSeparator();
 
 	QAction *pResoEllipses = new QAction(this);
 	pResoEllipses->setText("Ellipses...");
-	pResoEllipses->setIcon(QIcon("res/ellipses.svg"));
+	pResoEllipses->setIcon(load_icon("res/ellipses.svg"));
 	pMenuReso->addAction(pResoEllipses);
 
 #if !defined NO_3D
@@ -441,12 +465,12 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pConn = new QAction(this);
 	pConn->setText("Connect to Instrument...");
-	pConn->setIcon(QIcon("res/network-transmit-receive.svg"));
+	pConn->setIcon(load_icon("res/network-transmit-receive.svg"));
 	pMenuNet->addAction(pConn);
 
 	QAction *pDisconn = new QAction(this);
 	pDisconn->setText("Disconnect");
-	pDisconn->setIcon(QIcon("res/network-offline.svg"));
+	pDisconn->setIcon(load_icon("res/network-offline.svg"));
 	pMenuNet->addAction(pDisconn);
 
 	QAction *pNetCache = new QAction(this);
@@ -456,7 +480,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pNetRefresh = new QAction(this);
 	pNetRefresh->setText("Refresh");
-	pNetRefresh->setIcon(QIcon("res/view-refresh.svg"));
+	pNetRefresh->setIcon(load_icon("res/view-refresh.svg"));
 	pMenuNet->addSeparator();
 	pMenuNet->addAction(pNetRefresh);
 #endif
@@ -476,7 +500,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pAbout = new QAction(this);
 	pAbout->setText("About...");
-	pAbout->setIcon(QIcon("res/dialog-information.svg"));
+	pAbout->setIcon(load_icon("res/dialog-information.svg"));
 	pMenuHelp->addAction(pAbout);
 
 

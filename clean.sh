@@ -12,3 +12,8 @@ fi
 
 rm -f CMakeCache.txt
 rm -rf CMakeFiles
+
+
+# restore link
+#rm takin
+#ln -sf bin/takin
