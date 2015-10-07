@@ -1,16 +1,24 @@
 #!/bin/bash
 
-UIC="$(which uic-qt4)"
-MOC="$(which moc-qt4)"
+if [[ $# -ge 2 ]]; then
+	UIC="$1"
+	MOC="$2"
+else
+	UIC="$(which uic-qt4)"
+	MOC="$(which moc-qt4)"
 
-#UIC="$(which uic-qt5)"
-#MOC="$(which moc-qt5)"
+	#UIC="$(which uic-qt5)"
+	#MOC="$(which moc-qt5)"
+fi
+
 
 if [ -z "$UIC" ] || [ -z "${MOC}" ];
 then
 	echo "Error: moc/uic tools not found!";
 	exit -1;
 fi
+
+echo -e "Using UIC: ${UIC}\nUsing MOC: ${MOC}\n"
 
 
 
