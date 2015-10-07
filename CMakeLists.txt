@@ -84,19 +84,20 @@ target_link_libraries(takin ${Boost_LIBRARIES} Threads::Threads
 
 
 
-# prebuild
+# pre-build
 add_custom_target(prebuild-script
 	COMMAND ${PROJECT_SOURCE_DIR}/prebuild.sh ${QT_UIC_EXECUTABLE} ${QT_MOC_EXECUTABLE}
 )
 add_dependencies(takin prebuild-script)
 
 
-# postbuild
-#add_custom_command(TARGET takin POST_BUILD
-#	COMMAND mv takin bin/takin && ln -sf bin/takin && strip takin
-#	MAIN_DEPENDENCY takin
-#)
+# post-build
+add_custom_command(TARGET takin POST_BUILD
+	COMMAND strip takin
+	MAIN_DEPENDENCY takin
+)
 
 
 install(TARGETS takin DESTINATION bin)
 install(DIRECTORY res test DESTINATION share/takin)
+install(FILES COPYING LICENSES DESTINATION share/takin)

@@ -1039,30 +1039,34 @@ void TazDlg::ShowAbout()
 	strAbout += strBullet + " ";
 	strAbout += "Uses Qt version ";
 	strAbout += QString(QT_VERSION_STR);
-	strAbout += "       \t" + strArrow + " http://qt-project.org\n";
+	strAbout += "\t" + strArrow + " http://qt-project.org\n";
 	strAbout += strBullet + " ";
 	strAbout += "Uses Qwt version ";
 	strAbout += QString(QWT_VERSION_STR);
-	strAbout += "      \t" + strArrow + " http://qwt.sourceforge.net\n";
+	strAbout += "\t" + strArrow + " http://qwt.sourceforge.net\n";
 
 	strAbout += strBullet + " ";
 	strAbout += "Uses Boost version ";
 	std::string strBoost = BOOST_LIB_VERSION;
 	tl::find_all_and_replace<std::string>(strBoost, "_", ".");
 	strAbout += strBoost.c_str();
-	strAbout += "    \t" + strArrow + " http://www.boost.org\n";
+	strAbout += "\t" + strArrow + " http://www.boost.org\n";
 
 #ifndef NO_LAPACK
 	strAbout += strBullet + " ";
 	strAbout += "Uses Lapack/e version 3";
-	strAbout += "    \t" + strArrow + " http://www.netlib.org/lapack\n";
+	strAbout += "\t" + strArrow + " http://www.netlib.org/lapack\n";
 #endif
 
 	strAbout += strBullet + " ";
 	strAbout += "Uses tLibs version " + QString(TLIBS_VERSION);
 	strAbout += "\n";
 
-	strAbout += "\n";
+	strAbout += strBullet + " ";
+	strAbout += "Uses Tango icons";
+	strAbout += "\t" + strArrow + " http://tango.freedesktop.org\n";
+
+	//strAbout += "\n";
 	strAbout += strBullet + " ";
 	strAbout += "Uses space group calculations ported from Nicos version 2";
 	strAbout += "\n\t " + strArrow + " https://forge.frm2.tum.de/redmine/projects/nicos\n";
