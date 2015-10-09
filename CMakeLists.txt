@@ -17,7 +17,8 @@ find_package(PNG REQUIRED)
 find_package(Qwt REQUIRED)
 
 
-#message("Source dir: ${CMAKE_SOURCE_DIR}")
+#message("Project source dir: ${PROJECT_SOURCE_DIR}")
+#message("CMake source dir: ${CMAKE_SOURCE_DIR}")
 #message("Binary dir: ${CMAKE_BINARY_DIR}")
 message("Install path prefix: ${CMAKE_INSTALL_PREFIX}")
 message("Using qwt version ${QWT_MAJOR_VERSION}")
@@ -86,18 +87,18 @@ target_link_libraries(takin ${Boost_LIBRARIES} Threads::Threads
 
 # pre-build
 add_custom_target(prebuild-script
-	COMMAND ${PROJECT_SOURCE_DIR}/prebuild.sh ${QT_UIC_EXECUTABLE} ${QT_MOC_EXECUTABLE}
+	COMMAND ${PROJECT_SOURCE_DIR}/prebuild.sh ${QT_UIC_EXECUTABLE} ${QT_MOC_EXECUTABLE} ${PROJECT_SOURCE_DIR}
 )
 add_dependencies(takin prebuild-script)
 
 
 # post-build
 add_custom_command(TARGET takin POST_BUILD
-	COMMAND strip takin
+	COMMAND strip ${CMAKE_BINARY_DIR}/bin/takin
 	MAIN_DEPENDENCY takin
 )
 
 
 install(TARGETS takin DESTINATION bin)
-install(DIRECTORY res test DESTINATION share/takin)
-install(FILES COPYING LICENSES DESTINATION share/takin)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/res ${PROJECT_SOURCE_DIR}/test DESTINATION share/takin)
+install(FILES ${PROJECT_SOURCE_DIR}/COPYING ${PROJECT_SOURCE_DIR}/LICENSES DESTINATION share/takin)

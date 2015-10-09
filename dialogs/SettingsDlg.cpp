@@ -35,7 +35,9 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 #endif
 	if(strDefFont == "")
 	{
+#ifndef NO_3D
 		tl::log_warn("Default gl font not available.");
+#endif
 		strDefFont = "/usr/share/fonts/dejavu/DejaVuSansMono.ttf";
 	}
 

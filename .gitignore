@@ -13,6 +13,7 @@ perf.data.old
 gmon.out
 Debug/*
 Release/*
+build/*
 .clang/*
 .codelite/*
 .settings/*

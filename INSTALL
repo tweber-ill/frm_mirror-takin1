@@ -1,0 +1,12 @@
+Set up external dependencies:
+	* ./setup_tlibs.sh
+	* ./setup_externals.sh
+
+Make using CMake:
+	* cmake .
+	* make
+	* optional: make install (as root)
+
+
+Run program with
+	* takin
