@@ -21,6 +21,11 @@ namespace co = boost::units::si::constants::codata;
 GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSettings(pSett)
 {
 	this->setupUi(this);
+	btnAdd->setIcon(load_icon("res/list-add.svg"));
+	btnDel->setIcon(load_icon("res/list-remove.svg"));
+	btnSave->setIcon(load_icon("res/document-save.svg"));
+	btnLoad->setIcon(load_icon("res/document-open.svg"));
+
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 
 	QObject::connect(btnAdd, SIGNAL(clicked()), this, SLOT(AddPosToList()));

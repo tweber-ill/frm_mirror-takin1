@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <vector>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 
 #include <QApplication>
 #include <QHBoxLayout>
@@ -33,27 +32,6 @@
 
 const std::string TazDlg::s_strTitle = "Takin";
 
-static const std::vector<std::string> s_vecInstallPaths =
-{
-	".",
-#ifdef INSTALL_PREFIX
-	INSTALL_PREFIX "/share/takin"
-#endif
-};
-
-static QIcon load_icon(const std::string& strIcon)
-{
-	for(const std::string& strPrefix : s_vecInstallPaths)
-	{
-		std::string strFile = strPrefix + "/" + strIcon;
-		//tl::log_debug("Looking for file: ", strFile);
-		if(boost::filesystem::exists(strFile))
-			return QIcon(strFile.c_str());
-	}
-
-	tl::log_err("Could not load icon \"", strIcon, "\".");
-	return QIcon();
-}
 
 TazDlg::TazDlg(QWidget* pParent)
 		: QMainWindow(pParent),

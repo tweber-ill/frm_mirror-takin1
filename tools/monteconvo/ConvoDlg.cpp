@@ -9,10 +9,12 @@
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
 #include "tlibs/helper/thread.h"
+
 #ifndef NO_PY
 	#include "sqw_py.h"
 #endif
 #include "TASReso.h"
+#include "helper/globals.h"
 
 #include <iostream>
 #include <fstream>
@@ -27,6 +29,9 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSett(pSett)
 {
 	setupUi(this);
+	btnStart->setIcon(load_icon("res/media-playback-start.svg"));
+	btnStop->setIcon(load_icon("res/media-playback-stop.svg"));
+	btnSaveResult->setIcon(load_icon("res/document-save-as.svg"));
 
 	m_pGrid = new QwtPlotGrid();
 	QPen penGrid;

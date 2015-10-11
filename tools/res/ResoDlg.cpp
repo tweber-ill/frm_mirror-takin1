@@ -20,6 +20,8 @@
 #include "tlibs/math/math.h"
 #include "tlibs/math/lattice.h"
 
+#include "helper/globals.h"
+
 #include <QPainter>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -30,6 +32,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 			: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
 	setupUi(this);
+	btnSave->setIcon(load_icon("res/document-save.svg"));
+	btnLoad->setIcon(load_icon("res/document-open.svg"));
 
 	setupAlgos();
 	QObject::connect(comboAlgo, SIGNAL(currentIndexChanged(int)), this, SLOT(AlgoChanged()));

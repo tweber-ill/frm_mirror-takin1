@@ -19,11 +19,6 @@
      <property name="text">
       <string>Save...</string>
      </property>
-     <property name="icon">
-      <iconset theme="document-save">
-       <normaloff/>
-      </iconset>
-     </property>
     </widget>
    </item>
    <item row="1" column="0">
@@ -65,11 +60,6 @@
     <widget class="QPushButton" name="btnLoad">
      <property name="text">
       <string>Load...</string>
-     </property>
-     <property name="icon">
-      <iconset theme="document-open">
-       <normaloff/>
-      </iconset>
      </property>
     </widget>
    </item>

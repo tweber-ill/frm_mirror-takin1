@@ -12,6 +12,8 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/string/string.h"
 
+#include "helper/globals.h"
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -43,6 +45,9 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 				m_pmapSpaceGroups(get_space_groups())
 {
 	this->setupUi(this);
+	btnSave->setIcon(load_icon("res/document-save.svg"));
+	btnLoad->setIcon(load_icon("res/document-open.svg"));
+
 	tablePowderLines->horizontalHeader()->setVisible(true);
 	tablePowderLines->verticalHeader()->setDefaultSectionSize(tablePowderLines->verticalHeader()->defaultSectionSize()*1.4);
 	tablePowderLines->setColumnWidth(0, 100);
