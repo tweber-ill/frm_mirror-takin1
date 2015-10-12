@@ -7,8 +7,8 @@ namespace ublas = boost::numeric::ublas;
 
 int main()
 {
-	unsigned iMaxOrder = 2;
-	double dStartAngle = 15.;
+	unsigned iMaxOrder = 3;
+	double dStartAngle = 30.;
 	double dIncAngle = 60.;
 	double dScale = 0.028;
 
@@ -18,10 +18,10 @@ int main()
 	double dSigQ = 0.002;
 	double dSigE = 0.01;
 
-	//ublas::vector<double> vecN = tl::make_vec({1., 0., 0.});
-	//ublas::vector<double> vecY = tl::make_vec({0.,-1.,0.});
-	ublas::vector<double> vecN = tl::make_vec({1., 1., 0.});
-	ublas::vector<double> vecY = tl::make_vec({1.,-1.,0.});
+	ublas::vector<double> vecN = tl::make_vec({1., 0., 0.});
+	ublas::vector<double> vecY = tl::make_vec({0.,-1.,0.});
+	//ublas::vector<double> vecN = tl::make_vec({1., 1., 0.});
+	//ublas::vector<double> vecY = tl::make_vec({1.,-1.,0.});
 	ublas::vector<double> vecX = vecN;
 
 	vecX /= ublas::norm_2(vecX);
@@ -38,7 +38,7 @@ int main()
 
 		ublas::vector<double> vecLast;
 		bool bHasLast = 0;
-		for(double dAngle=dStartAngle; dAngle<360.; dAngle+=dIncAngle)
+		for(double dAngle=dStartAngle; dAngle<=dStartAngle+360.; dAngle+=dIncAngle)
 		{
 			ublas::vector<double> vec =
 				std::cos(dAngle/180.*M_PI)*vecY +
@@ -47,8 +47,12 @@ int main()
 			vec *= dScale*double(iOrder+1);
 			vec += vecN;
 			double dIntensity = dStartInt * std::pow(dIntScale, iOrder);
-			std::cout << vec[0] << " " << vec[1] << " " << vec[2]
-				<< "  " << dSigQ << " " << dSigE << "  " << dIntensity << "\n";
+
+			if(dAngle < dStartAngle + 360.)
+			{
+				std::cout << vec[0] << " " << vec[1] << " " << vec[2]
+					<< "  " << dSigQ << " " << dSigE << "  " << dIntensity << "\n";
+			}
 
 			if(bHasLast)
 			for(unsigned iOrd=0; iOrd<iOrder; ++iOrd)
