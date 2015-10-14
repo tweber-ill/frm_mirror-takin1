@@ -18,6 +18,67 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 		: QDialog(pParent), m_pSettings(pSettings)
 {
 	this->setupUi(this);
+	
+
+	// -------------------------------------------------------------------------
+	// Bose Factor stuff
+	std::vector<QDoubleSpinBox*> vecSpinBoxesBose = {spinBoseT, spinBoseEMin, spinBoseEMax};
+	for(QDoubleSpinBox* pSpin : vecSpinBoxesBose)
+		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcBose()));
+
+	m_pGridBose = new QwtPlotGrid();
+	QPen penGridBose;
+	penGridBose.setColor(QColor(0x99,0x99,0x99));
+	penGridBose.setStyle(Qt::DashLine);
+	m_pGridBose->setPen(penGridBose);
+	m_pGridBose->attach(plotBose);
+
+	// positive Bose factor
+	m_pCurveBosePos = new QwtPlotCurve("Boson Creation");
+	QPen penCurveBosePos;
+	penCurveBosePos.setColor(QColor(0,0,0x99));
+	penCurveBosePos.setWidth(2);
+	m_pCurveBosePos->setPen(penCurveBosePos);
+	m_pCurveBosePos->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pCurveBosePos->attach(plotBose);
+
+	// negative Bose factor
+	m_pCurveBoseNeg = new QwtPlotCurve("Boson Annihilation");
+	QPen penCurveBoseNeg;
+	penCurveBoseNeg.setColor(QColor(0x99,0,0));
+	penCurveBoseNeg.setWidth(2);
+	m_pCurveBoseNeg->setPen(penCurveBoseNeg);
+	m_pCurveBoseNeg->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pCurveBoseNeg->attach(plotBose);
+
+	plotBose->canvas()->setMouseTracking(1);
+	m_pPickerBose = new QwtPlotPicker(plotBose->xBottom, plotBose->yLeft,
+#if QWT_VER<6
+									QwtPlotPicker::PointSelection,
+#endif
+									QwtPlotPicker::NoRubberBand,
+#if QWT_VER>=6
+									QwtPlotPicker::AlwaysOff,
+#else
+									QwtPlotPicker::AlwaysOn,
+#endif
+									plotBose->canvas());
+
+#if QWT_VER>=6
+	m_pPickerBose->setStateMachine(new QwtPickerTrackerMachine());
+	connect(m_pPickerBose, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
+#endif
+	m_pPickerBose->setEnabled(1);
+
+	m_pLegendBose = new QwtLegend();
+	plotBose->insertLegend(m_pLegendBose, QwtPlot::TopLegend);
+
+	plotBose->setAxisTitle(QwtPlot::xBottom, "E (meV)");
+	plotBose->setAxisTitle(QwtPlot::yLeft, "Bose Factor");
+
+	CalcBose();
+
+
 
 	// -------------------------------------------------------------------------
 	// DW Factor stuff
@@ -116,7 +177,7 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 
 DWDlg::~DWDlg()
 {
-	for(QwtPlotPicker** pPicker : {&m_pPicker, &m_pPickerAna})
+	for(QwtPlotPicker** pPicker : {&m_pPicker, &m_pPickerAna, &m_pPickerBose})
 	{
 		if(*pPicker)
 		{
@@ -126,7 +187,7 @@ DWDlg::~DWDlg()
 		}
 	}
 
-	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridAna})
+	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridAna, &m_pGridBose})
 	{
 		if(*pGrid)
 		{
@@ -146,6 +207,45 @@ void DWDlg::cursorMoved(const QPointF& pt)
 
 	this->labelStatus->setText(ostr.str().c_str());
 }
+
+
+void DWDlg::CalcBose()
+{
+	const unsigned int NUM_POINTS = 512;
+
+	const double dMinE = spinBoseEMin->value();
+	const double dMaxE = spinBoseEMax->value();
+
+	const tl::temp T = spinBoseT->value() * tl::kelvin;
+
+	m_vecBoseE.clear();
+	m_vecBoseIntPos.clear();
+	m_vecBoseIntNeg.clear();
+
+	m_vecBoseE.reserve(NUM_POINTS);
+	m_vecBoseIntPos.reserve(NUM_POINTS);
+	m_vecBoseIntNeg.reserve(NUM_POINTS);
+
+	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
+	{
+		tl::energy E = (dMinE + (dMaxE - dMinE)/double(NUM_POINTS)*double(iPt)) * tl::meV;
+		m_vecBoseE.push_back(E / tl::meV);
+		
+		m_vecBoseIntPos.push_back(tl::bose(E, T));
+		m_vecBoseIntNeg.push_back(tl::bose(-E, T));
+	}
+
+#if QWT_VER>=6
+	m_pCurveBosePos->setRawSamples(m_vecBoseE.data(), m_vecBoseIntPos.data(), m_vecBoseE.size());
+	m_pCurveBoseNeg->setRawSamples(m_vecBoseE.data(), m_vecBoseIntNeg.data(), m_vecBoseE.size());
+#else
+	m_pCurveBosePos->setRawData(m_vecBoseE.data(), m_vecBoseIntPos.data(), m_vecBoseE.size());
+	m_pCurveBoseNeg->setRawData(m_vecBoseE.data(), m_vecBoseIntNeg.data(), m_vecBoseE.size());
+#endif
+
+	plotBose->replot();
+}
+
 
 void DWDlg::CalcDW()
 {
@@ -256,3 +356,4 @@ void DWDlg::accept()
 
 
 #include "DWDlg.moc"
+

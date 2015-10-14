@@ -3,7 +3,8 @@
 if [ $# -ge 1  -a  "$1" == "latest" ]; then
 	TLIBS=tlibs-master
 else
-	TLIBS=tlibs-0.5.8
+	#TLIBS=tlibs-0.5.8
+	TLIBS=tlibs-master	# override for non-tagged version
 fi
 
 

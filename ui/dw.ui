@@ -14,11 +14,103 @@
    <string>Scattering Factors</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="0">
+    <widget class="QLabel" name="labelStatus">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Bose Factor</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Temperature (K):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="spinBoseT">
+         <property name="decimals">
+          <number>2</number>
+         </property>
+         <property name="maximum">
+          <double>9999.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>10.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Energy Range (meV):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="spinBoseEMin">
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>9999.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QDoubleSpinBox" name="spinBoseEMax">
+         <property name="maximum">
+          <double>9999.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="3">
+        <widget class="QwtPlot" name="plotBose"/>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>Debye-Waller Factor</string>
@@ -335,29 +427,6 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="labelStatus">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -369,6 +438,9 @@
  </customwidgets>
  <tabstops>
   <tabstop>tabWidget</tabstop>
+  <tabstop>spinBoseT</tabstop>
+  <tabstop>spinBoseEMin</tabstop>
+  <tabstop>spinBoseEMax</tabstop>
   <tabstop>spinAMU_deb</tabstop>
   <tabstop>spinTD_deb</tabstop>
   <tabstop>spinT_deb</tabstop>
@@ -378,6 +450,8 @@
   <tabstop>spinAnad</tabstop>
   <tabstop>spinMinkf</tabstop>
   <tabstop>spinMaxkf</tabstop>
+  <tabstop>editAngMin</tabstop>
+  <tabstop>editAngMax</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
