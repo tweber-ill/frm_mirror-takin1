@@ -599,13 +599,18 @@ TazDlg::TazDlg(QWidget* pParent)
 
 
 	RepopulateSpaceGroups();
+	
+	unsigned int iMaxPeaks = m_settings.value("main/max_peaks", 10).toUInt();
 
-	m_sceneRecip.GetTriangle()->SetMaxPeaks(s_iMaxPeaks);
+	m_sceneRecip.GetTriangle()->SetMaxPeaks(iMaxPeaks);
 	m_sceneRecip.GetTriangle()->SetPlaneDistTolerance(s_dPlaneDistTolerance);
 
 #if !defined NO_3D
 	if(m_pRecip3d)
+	{
+		m_pRecip3d->SetMaxPeaks((double)iMaxPeaks);
 		m_pRecip3d->SetPlaneDistTolerance(s_dPlaneDistTolerance);
+	}
 #endif
 
 	UpdateDs();

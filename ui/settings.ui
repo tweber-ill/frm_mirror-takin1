@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>566</width>
-    <height>410</height>
+    <width>560</width>
+    <height>426</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -194,6 +194,32 @@
          </layout>
         </widget>
        </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Reciprocal Space</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_16">
+            <property name="text">
+             <string>Max. Peak Order:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinBragg">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="3" column="0" colspan="2">
         <spacer name="verticalSpacer">
          <property name="orientation">
@@ -342,6 +368,19 @@
             </property>
            </widget>
           </item>
+          <item row="9" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkFlipOrient2">
+            <property name="toolTip">
+             <string>Converts Nicos' left-handed coordinate system to Takin's right-handed one.</string>
+            </property>
+            <property name="text">
+             <string>Flip Orientation Vector 2</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -458,8 +497,10 @@
   <tabstop>spinPrecGen</tabstop>
   <tabstop>spinPrecGfx</tabstop>
   <tabstop>spinNetPoll</tabstop>
+  <tabstop>spinBragg</tabstop>
   <tabstop>checkPreview</tabstop>
   <tabstop>editGLFont</tabstop>
+  <tabstop>btnGLFont</tabstop>
   <tabstop>editSampleName</tabstop>
   <tabstop>editSampleLattice</tabstop>
   <tabstop>editSampleAngles</tabstop>
@@ -469,6 +510,7 @@
   <tabstop>editSampleTheta</tabstop>
   <tabstop>editSample2Theta</tabstop>
   <tabstop>editSamplePsi0</tabstop>
+  <tabstop>checkFlipOrient2</tabstop>
   <tabstop>editMonoTheta</tabstop>
   <tabstop>editMono2Theta</tabstop>
   <tabstop>editMonoD</tabstop>
@@ -476,7 +518,6 @@
   <tabstop>editAna2Theta</tabstop>
   <tabstop>editAnaD</tabstop>
   <tabstop>buttonBox</tabstop>
-  <tabstop>btnGLFont</tabstop>
  </tabstops>
  <resources/>
  <connections>

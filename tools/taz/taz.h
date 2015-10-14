@@ -82,7 +82,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::vector<std::string> m_vecCheckBoxNamesSenses;
 
 	protected:
-		static constexpr unsigned int s_iMaxPeaks = 10;
 		static constexpr double s_dPlaneDistTolerance = tl::get_plane_dist_tolerance<double>();
 
 		QSettings m_settings;

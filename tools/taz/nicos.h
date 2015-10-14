@@ -29,6 +29,8 @@ class NicosCache : public QObject
 		tl::TcpClient m_tcp;
 		std::vector<std::string> m_vecKeys;
 		t_mapCacheVal m_mapCache;
+		
+		bool m_bFlipOrient2 = 1;
 
 		// endpoints of the TcpClient signals
 		void slot_connected(const std::string& strHost, const std::string& strSrv);

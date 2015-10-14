@@ -71,7 +71,9 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 
 	m_vecChecks =
 	{
-		t_tupCheck("main/dlg_previews", 1, checkPreview)
+		t_tupCheck("main/dlg_previews", 1, checkPreview),
+		
+		t_tupCheck("net/flip_orient2", 1, checkFlipOrient2),
 	};
 
 	m_vecSpins =
@@ -79,7 +81,9 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupSpin("main/prec", g_iPrec, spinPrecGen),
 		t_tupSpin("main/prec_gfx", g_iPrecGfx, spinPrecGfx),
 
-		t_tupSpin("net/poll", 750, spinNetPoll)
+		t_tupSpin("net/poll", 750, spinNetPoll),
+		
+		t_tupSpin("main/max_peaks", 10, spinBragg),
 	};
 
 	spinPrecGen->setMaximum(std::numeric_limits<double>::max_digits10);
