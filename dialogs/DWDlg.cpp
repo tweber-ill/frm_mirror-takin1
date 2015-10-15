@@ -2,7 +2,7 @@
  * Scattering factors dialog (e.g. Debye-Waller factor)
  * @author tweber
  * @date 2013, jan-2015
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "DWDlg.h"

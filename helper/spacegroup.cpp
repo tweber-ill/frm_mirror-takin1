@@ -3,7 +3,7 @@
  * @author of original Python version "spacegroups.py": Georg Brandl
  * @author of this C++ port: Tobias Weber
  * @date 19-mar-2014
- * @copyright GPLv2
+ * @license GPLv2
  *
  * Georg's original Python version:
  * http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos-core.git/tree/nicos/devices/tas/spacegroups.py

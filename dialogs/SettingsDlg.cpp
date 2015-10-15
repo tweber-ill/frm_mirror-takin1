@@ -2,7 +2,7 @@
  * Settings
  * @author tweber
  * @date 5-dec-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "SettingsDlg.h"

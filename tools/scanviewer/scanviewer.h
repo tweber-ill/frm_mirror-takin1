@@ -2,7 +2,7 @@
  * Scan viewer
  * @author tweber
  * @date mar-2015
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #ifndef __TAZ_SCANVIEWER_H__

@@ -2,7 +2,7 @@
  * Server Dialog
  * @author Tobias Weber
  * @date 27-aug-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #ifndef __SRV_DLG_H__

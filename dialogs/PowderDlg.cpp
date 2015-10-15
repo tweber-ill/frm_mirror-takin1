@@ -2,7 +2,7 @@
  * Powder Line Dialog
  * @author Tobias Weber
  * @date 2013, 2-dec-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "PowderDlg.h"
@@ -131,6 +131,8 @@ void PowderDlg::CalcPeaks()
 				std::ostringstream ostrPeak;
 				ostrPeak << "(" << std::abs(ih) << std::abs(ik) << std::abs(il) << ")";
 
+				if(mapPeaks[ostrAngle.str()].strPeaks.length()!=0)
+					mapPeaks[ostrAngle.str()].strPeaks += ", ";
 				mapPeaks[ostrAngle.str()].strPeaks += ostrPeak.str();
 				mapPeaks[ostrAngle.str()].dAngle = dAngle;
 				mapPeaks[ostrAngle.str()].dQ = dQ;

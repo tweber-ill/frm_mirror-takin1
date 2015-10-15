@@ -2,7 +2,7 @@
  * Goto Dialog
  * @author Tobias Weber
  * @date 15-oct-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "GotoDlg.h"

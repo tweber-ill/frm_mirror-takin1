@@ -2,7 +2,7 @@
  * TAS tool
  * @author tweber
  * @date feb-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "taz.h"
@@ -133,10 +133,12 @@ TazDlg::TazDlg(QWidget* pParent)
 
 
 	QHBoxLayout *pLayoutRecip = new QHBoxLayout(groupRecip);
+	pLayoutRecip->setContentsMargins(QMargins(4,4,4,4));
 	m_pviewRecip = new ScatteringTriangleView(groupRecip);
 	pLayoutRecip->addWidget(m_pviewRecip);
 
 	QHBoxLayout *pLayoutReal = new QHBoxLayout(groupReal);
+	pLayoutReal->setContentsMargins(QMargins(4,4,4,4));
 	m_pviewReal = new TasLayoutView(groupReal);
 	pLayoutReal->addWidget(m_pviewReal);
 

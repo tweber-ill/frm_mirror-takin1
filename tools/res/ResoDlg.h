@@ -2,7 +2,7 @@
  * resolution calculation
  * @author tweber
  * @date may-2013, apr-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #ifndef __RESO_DLG_H__

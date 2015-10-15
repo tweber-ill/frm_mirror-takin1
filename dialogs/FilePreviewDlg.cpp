@@ -2,7 +2,7 @@
  * File Preview Dialog
  * @author Tobias Weber
  * @date feb-2015
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "FilePreviewDlg.h"

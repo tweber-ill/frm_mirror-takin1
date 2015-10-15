@@ -2,7 +2,7 @@
  * Scan viewer
  * @author tweber
  * @date mar-2015
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "scanviewer.h"

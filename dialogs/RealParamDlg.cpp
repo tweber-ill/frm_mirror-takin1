@@ -2,7 +2,7 @@
  * Real Space Parameters
  * @author tweber
  * @date 29-mar-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "RealParamDlg.h"

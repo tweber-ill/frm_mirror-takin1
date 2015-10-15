@@ -2,7 +2,7 @@
  * Scattering Triangle
  * @author tweber
  * @date feb-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #ifndef __TAZ_SCATT_TRIAG_H__

@@ -2,7 +2,7 @@
  * popovici calculation
  * @author tweber
  * @date 08-may-2013
- * @copyright GPLv2
+ * @license GPLv2
  *
  * @desc This is a reimplementation in C++ of the file rc_popma.m of the
  *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:

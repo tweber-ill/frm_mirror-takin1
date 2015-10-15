@@ -2,7 +2,7 @@
  * Ellipse Dialog
  * @author Tobias Weber
  * @date may-2013, 29-apr-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "EllipseDlg.h"

@@ -2,7 +2,7 @@
  * gl plotter
  * @author tweber
  * @date 19-may-2013
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #ifndef __MIEZE_PLOT_GL__

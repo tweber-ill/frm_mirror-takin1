@@ -2,7 +2,7 @@
  * Scattering Triangle Tool
  * @author tweber
  * @date mar-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "recip3d.h"

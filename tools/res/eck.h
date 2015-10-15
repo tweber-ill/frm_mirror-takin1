@@ -3,7 +3,7 @@
  * 
  * @author tweber
  * @date feb-2015
- * @copyright GPLv2
+ * @license GPLv2
  *
  * @desc algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
  */
