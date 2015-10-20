@@ -32,6 +32,7 @@ class RecipParamDlg : public QDialog, Ui::RecipParamDlg
 { Q_OBJECT
 	protected:
 		QSettings *m_pSettings = 0;
+		RecipParams m_params;
 
 	public:
 		RecipParamDlg(QWidget* pParent=0, QSettings* pSett=0);
@@ -43,6 +44,9 @@ class RecipParamDlg : public QDialog, Ui::RecipParamDlg
 	protected slots:
 		void KiChanged();
 		void KfChanged();
+		
+		void SetGOrigin();
+		void OriginChanged();
 
 	protected:
 		virtual void closeEvent(QCloseEvent *pEvt);

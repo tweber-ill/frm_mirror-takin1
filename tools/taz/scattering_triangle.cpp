@@ -1156,6 +1156,10 @@ void ScatteringTriangleScene::emitAllParams()
 	tl::set_eps_0(vecQ); tl::set_eps_0(vecQrlu);
 	tl::set_eps_0(vecq); tl::set_eps_0(vecqrlu);
 	tl::set_eps_0(vecG); tl::set_eps_0(vecGrlu);
+	
+	/*std::cout << "Q = " << vecQrlu << std::endl;
+	std::cout << "q = " << vecqrlu << std::endl;
+	std::cout << "G = " << vecGrlu << std::endl;*/
 
 	for(unsigned int i=0; i<3; ++i)
 	{
