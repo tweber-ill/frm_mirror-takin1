@@ -28,7 +28,7 @@ namespace fs = boost::filesystem;
 
 ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	: QDialog(pParent), m_settings("tobis_stuff", "scanviewer"),
-		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0" })
+		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG" })
 {
 	this->setupUi(this);
 	splitter->setStretchFactor(0, 1);
@@ -347,6 +347,8 @@ void ScanViewerDlg::PlotScan()
 void ScanViewerDlg::GenerateExternal(int iLang)
 {
 	textRoot->clear();
+	if(!m_vecX.size() || !m_vecY.size())
+		return;
 
 	if(iLang == 0)
 		GenerateForRoot();
