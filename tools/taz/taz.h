@@ -211,7 +211,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void Show3D();
 		void ShowResoEllipses3D();
-		
+
 		void ShowSgListDlg();
 
 

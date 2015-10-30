@@ -638,6 +638,6 @@ void TazDlg::ShowSgListDlg()
 	m_pSgListDlg->activateWindow();
 }
 #else
-void ShowSgListDlg() {}
+void TazDlg::ShowSgListDlg() {}
 #endif
 
