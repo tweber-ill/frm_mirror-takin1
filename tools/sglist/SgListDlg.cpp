@@ -21,6 +21,9 @@ SgListDlg::SgListDlg(QWidget *pParent)
 	
 	QObject::connect(listSGs, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
 		this, SLOT(SGSelected(QListWidgetItem*, QListWidgetItem*)));
+
+	for(QSpinBox* pSpin : {spinH, spinK, spinL})
+		QObject::connect(pSpin, SIGNAL(valueChanged(int)), this, SLOT(RecalcBragg()));
 }
 
 SgListDlg::~SgListDlg()
@@ -74,6 +77,31 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 		const clipper::Symop& symop = sg.symop(iSymOp);
 		listSymOps->addItem(get_stdstring(symop.format()).c_str());
 	}
+	
+	RecalcBragg();
+}
+
+void SgListDlg::RecalcBragg()
+{
+	const QListWidgetItem* pItem = listSGs->currentItem();
+	if(!pItem) return;
+	const int iSG = pItem->data(Qt::UserRole).toInt();
+	
+	const int h = spinH->value();
+	const int k = spinK->value();
+	const int l = spinL->value();
+	
+	//std::cout << h << k << l << std::endl;
+	
+	clipper::Spgr_descr dsc(iSG);
+	clipper::Spacegroup sg(dsc);
+	clipper::HKL_class hkl = sg.hkl_class(clipper::HKL(h,k,l));
+	const bool bForbidden = hkl.sys_abs();
+
+	QFont font = spinH->font();
+	font.setStrikeOut(bForbidden);
+	for(QSpinBox* pSpin : {spinH, spinK, spinL})
+		pSpin->setFont(font);
 }
 
 

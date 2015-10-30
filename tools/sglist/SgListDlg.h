@@ -24,6 +24,7 @@ protected:
 
 protected slots:
 	void SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
+	void RecalcBragg();
 
 public:
 	SgListDlg(QWidget* pParent = nullptr);

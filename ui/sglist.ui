@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>616</width>
-    <height>482</height>
+    <width>622</width>
+    <height>510</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,14 +49,42 @@
        <string>Space Group Information</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_6">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Symmetry Operations:</string>
+          <string>Number:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="0" column="1" colspan="3">
+        <widget class="QLineEdit" name="editNr">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Hermann-Mauguin Symbol:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="3">
+        <widget class="QLineEdit" name="editHM">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Hall Symbol:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="3">
         <widget class="QLineEdit" name="editHall">
          <property name="readOnly">
           <bool>true</bool>
@@ -70,50 +98,76 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Hall Symbol:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Hermann-Mauguin Symbol:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
+       <item row="3" column="1" colspan="3">
         <widget class="QLineEdit" name="editLaue">
          <property name="readOnly">
           <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="5" column="0" colspan="2">
-        <widget class="QListWidget" name="listSymOps"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="editHM">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="editNr">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Number:</string>
+          <string>Check Bragg Peak:</string>
          </property>
         </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QSpinBox" name="spinH">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+           <strikeout>false</strikeout>
+           <kerning>true</kerning>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>h</string>
+         </property>
+         <property name="prefix">
+          <string>h = </string>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QSpinBox" name="spinK">
+         <property name="toolTip">
+          <string>k</string>
+         </property>
+         <property name="prefix">
+          <string>k = </string>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="3">
+        <widget class="QSpinBox" name="spinL">
+         <property name="toolTip">
+          <string>l</string>
+         </property>
+         <property name="prefix">
+          <string>l = </string>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Symmetry Operations:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="4">
+        <widget class="QListWidget" name="listSymOps"/>
        </item>
       </layout>
      </widget>
@@ -127,6 +181,9 @@
   <tabstop>editHM</tabstop>
   <tabstop>editHall</tabstop>
   <tabstop>editLaue</tabstop>
+  <tabstop>spinH</tabstop>
+  <tabstop>spinK</tabstop>
+  <tabstop>spinL</tabstop>
   <tabstop>listSymOps</tabstop>
  </tabstops>
  <resources/>
