@@ -623,3 +623,21 @@ void TazDlg::ShowResoEllipses3D()
 #else
 void TazDlg::ShowResoEllipses3D() {}
 #endif
+
+
+
+//--------------------------------------------------------------------------------
+// spacegroups dialog
+
+#ifdef USE_CLP
+void TazDlg::ShowSgListDlg()
+{
+	if(!m_pSgListDlg)
+		m_pSgListDlg = new SgListDlg(this);
+	m_pSgListDlg->show();
+	m_pSgListDlg->activateWindow();
+}
+#else
+void ShowSgListDlg() {}
+#endif
+

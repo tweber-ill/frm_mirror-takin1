@@ -26,7 +26,8 @@
 
 
 ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
-	: QDialog(pParent), m_pSett(pSett)
+	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint), 
+		m_pSett(pSett)
 {
 	setupUi(this);
 	btnStart->setIcon(load_icon("res/media-playback-start.svg"));
@@ -594,8 +595,6 @@ void ConvoDlg::showEvent(QShowEvent *pEvt)
 
 void ConvoDlg::ButtonBoxClicked(QAbstractButton *pBtn)
 {
-	QDialogButtonBox::Close;
-
 	if(pBtn == buttonBox->button(QDialogButtonBox::Close))
 	{
 		if(m_pSett)

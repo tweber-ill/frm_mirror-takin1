@@ -49,6 +49,10 @@
 	#include "dialogs/EllipseDlg3D.h"
 #endif
 
+#ifdef USE_CLP
+	#include "../sglist/SgListDlg.h"
+#endif
+
 
 #include "helper/spacegroup.h"
 #include "tlibs/math/lattice.h"
@@ -139,6 +143,10 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		EllipseDlg3D *m_pEllipseDlg3D = nullptr;
 #endif
 
+#ifdef USE_CLP
+		SgListDlg *m_pSgListDlg = nullptr;
+#endif
+
 	protected:
 		void InitReso();
 		void InitGoto();
@@ -203,6 +211,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void Show3D();
 		void ShowResoEllipses3D();
+		
+		void ShowSgListDlg();
 
 
 		void ShowSpurions();

@@ -140,6 +140,10 @@
       <File Name="tools/scanviewer/scanviewer.cpp"/>
       <File Name="tools/scanviewer/scanviewer.h"/>
     </VirtualDirectory>
+    <VirtualDirectory Name="sglist">
+      <File Name="tools/sglist/SgListDlg.cpp"/>
+      <File Name="tools/sglist/SgListDlg.h"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
@@ -218,6 +222,7 @@
         <Preprocessor Value="QT_VER=4"/>
         <Preprocessor Value="USE_LAPACK"/>
         <Preprocessor Value="USE_GIL"/>
+        <Preprocessor Value="USE_CLP"/>
         <Preprocessor Value="DEBUG"/>
       </Compiler>
       <Linker Options="" Required="yes">
@@ -248,6 +253,7 @@
         <Library Value="freetype"/>
         <Library Value="fontconfig"/>
         <Library Value="png"/>
+        <Library Value="clipper-core"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(IntermediateDirectory)/$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)/.." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
@@ -309,6 +315,7 @@
         <Preprocessor Value="QT_VER=4"/>
         <Preprocessor Value="USE_LAPACK"/>
         <Preprocessor Value="USE_GIL"/>
+        <Preprocessor Value="USE_CLP"/>
         <Preprocessor Value="NDEBUG"/>
       </Compiler>
       <Linker Options="-s" Required="yes">
@@ -339,6 +346,7 @@
         <Library Value="freetype"/>
         <Library Value="fontconfig"/>
         <Library Value="png"/>
+        <Library Value="clipper-core"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Release" Command="./$(IntermediateDirectory)/$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)/.." PauseExecWhenProcTerminates="no" IsGUIProgram="yes" IsEnabled="yes"/>

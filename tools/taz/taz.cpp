@@ -213,7 +213,6 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(checkPowder, SIGNAL(stateChanged(int)), this, SLOT(CalcPeaks()));
 
 
-
 	// --------------------------------------------------------------------------------
 	// file menu
 	QMenu *pMenuFile = new QMenu(this);
@@ -265,12 +264,6 @@ TazDlg::TazDlg(QWidget* pParent)
 					this, SLOT(ImportFile(const QString&)));
 	recentimport.FillMenu(m_pMenuRecentImport, m_pMapperRecentImport);
 	pMenuFile->addMenu(m_pMenuRecentImport);
-
-	pMenuFile->addSeparator();
-
-	QAction *pScanViewer = new QAction(this);
-	pScanViewer->setText("Scan Viewer...");
-	pMenuFile->addAction(pScanViewer);
 
 	pMenuFile->addSeparator();
 
@@ -467,6 +460,25 @@ TazDlg::TazDlg(QWidget* pParent)
 
 
 	// --------------------------------------------------------------------------------
+	// tools menu
+
+	QMenu *pMenuTools = new QMenu(this);
+	pMenuTools->setTitle("Tools");
+
+	QAction *pScanViewer = new QAction(this);
+	pScanViewer->setText("Scan Viewer...");
+	pMenuTools->addAction(pScanViewer);
+	
+	
+#ifdef USE_CLP
+	QAction *pSgList = new QAction(this);
+	pSgList->setText("Space Group List...");
+	pMenuTools->addAction(pSgList);
+#endif
+
+
+
+	// --------------------------------------------------------------------------------
 	// help menu
 	QMenu *pMenuHelp = new QMenu(this);
 	pMenuHelp->setTitle("Help");
@@ -492,6 +504,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuBar->addMenu(m_pMenuViewReal);
 	pMenuBar->addMenu(pMenuReso);
 	pMenuBar->addMenu(pMenuCalc);
+	pMenuBar->addMenu(pMenuTools);
 #if !defined NO_NET
 	pMenuBar->addMenu(pMenuNet);
 #endif
@@ -544,6 +557,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pDisconn, SIGNAL(triggered()), this, SLOT(Disconnect()));
 	QObject::connect(pNetRefresh, SIGNAL(triggered()), this, SLOT(NetRefresh()));
 	QObject::connect(pNetCache, SIGNAL(triggered()), this, SLOT(ShowNetCache()));
+#endif
+
+#ifdef USE_CLP
+	QObject::connect(pSgList, SIGNAL(triggered()), this, SLOT(ShowSgListDlg()));
 #endif
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
@@ -1050,6 +1067,12 @@ void TazDlg::ShowAbout()
 	strAbout += strBullet + " ";
 	strAbout += "Uses Tango icons";
 	strAbout += "\t" + strArrow + " http://tango.freedesktop.org\n";
+
+#ifdef USE_CLP
+	strAbout += strBullet + " ";
+	strAbout += "Uses Clipper";
+	strAbout += "\n\t" + strArrow + " http://www.ysbl.york.ac.uk/~cowtan/clipper\n";
+#endif
 
 	//strAbout += "\n";
 	strAbout += strBullet + " ";

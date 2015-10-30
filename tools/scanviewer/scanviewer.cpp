@@ -27,7 +27,8 @@ namespace fs = boost::filesystem;
 
 
 ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
-	: QDialog(pParent), m_settings("tobis_stuff", "scanviewer"),
+	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint), 
+		m_settings("tobis_stuff", "scanviewer"),
 		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG" })
 {
 	this->setupUi(this);

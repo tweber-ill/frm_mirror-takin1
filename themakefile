@@ -8,9 +8,10 @@ USE_LAPACK = 0
 USE_3D = 1
 USE_NET = 1
 USE_IOSTR = 1
-USE_BOOST_REGEX = 1
+USE_BOOST_REGEX = 0
 USE_GIL = 1
 USE_PY = 1
+USE_CLP = 1
 
 BOOST_SUFFIX = 
 #BOOST_SUFFIX = -mt
@@ -54,6 +55,12 @@ ifeq ($(USE_GIL), 1)
 	DEFINES += -DUSE_GIL
 else
 	DEFINES += -DNO_GIL
+endif
+
+ifeq ($(USE_CLP), 1)
+	DEFINES += -DUSE_CLP
+else
+	DEFINES += -DNO_CLP
 endif
 
 
@@ -201,9 +208,11 @@ OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
+
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 	obj/loadinstr.o obj/log.o
 
+OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o
 
 ifeq ($(USE_3D), 1)
 	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/EllipseDlg3D.o
@@ -216,6 +225,10 @@ else
 	OBJ_TAZ += obj/taz_nonet.o
 endif
 
+ifeq ($(USE_CLP), 1)
+	OBJ_TAZ += obj/SgListDlg.o
+	LIBS_TAZ += -lclipper-core
+endif
 
 
 # -----------------------------------------------------------------------------
@@ -223,7 +236,7 @@ endif
 
 .PHONY: all clean
 
-all: takin montereso monteconvo xmonteconvo posextract scanviewer
+all: takin montereso monteconvo xmonteconvo posextract scanviewer sglist
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -253,6 +266,10 @@ reso: ${OBJ_RESO}
 scanviewer: ${OBJ_SCANVIEWER}
 	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB}
 	${STRIP} scanviewer
+
+sglist: ${OBJ_SGLIST}
+	${CC} ${FLAGS} -o bin/sglist $+ ${STD_LIBS} ${QT_LIB} -lclipper-core
+	${STRIP} sglist
 
 
 
@@ -375,6 +392,11 @@ obj/posextract.o: tools/posextract/posextract.cpp
 obj/scanviewer_main.o: tools/scanviewer/main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 obj/scanviewer.o: tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer.h
+	${CC} ${FLAGS} -c -o $@ $<
+
+obj/sglist_main.o: tools/sglist/main.cpp
+	${CC} ${FLAGS} -c -o $@ $<
+obj/SgListDlg.o: tools/sglist/SgListDlg.cpp tools/sglist/SgListDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 

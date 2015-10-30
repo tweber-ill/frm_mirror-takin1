@@ -63,6 +63,7 @@ declare -a hfiles=(
         "${TAKINROOT}/tools/scanviewer/scanviewer.h"
 	"${TAKINROOT}/tools/monteconvo/ConvoDlg.h"
 	"${TAKINROOT}/tools/monteconvo/SqwParamDlg.h"
+	"${TAKINROOT}/tools/sglist/SgListDlg.h"
         "${TAKINROOT}/dialogs/EllipseDlg.h"
         "${TAKINROOT}/dialogs/EllipseDlg3D.h"
         "${TAKINROOT}/dialogs/RecipParamDlg.h"
