@@ -97,7 +97,7 @@ void SgListDlg::SetupSpacegroups()
 void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 {
 	listSymOps->clear();
-	for(QLineEdit *pEdit : {editHM, editHall, editLaue, editNr})
+	for(QLineEdit *pEdit : {editHM, editHall, editLaue, editNr, editAxisSym})
 		pEdit->setText("");
 	if(!pItem) return;
 
@@ -117,10 +117,57 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 	editHall->setText(get_stdstring(sg.symbol_hall()).c_str());
 	editLaue->setText((strLaue + " (" + strCrysSys + ")").c_str());
 
-	for(int iSymOp=0; iSymOp<sg.num_symops(); ++iSymOp)
+	const int iSymAxisA = sg.order_of_symmetry_about_axis(clipper::Spacegroup::A);
+	const int iSymAxisB = sg.order_of_symmetry_about_axis(clipper::Spacegroup::B);
+	const int iSymAxisC = sg.order_of_symmetry_about_axis(clipper::Spacegroup::C);
+	std::ostringstream ostrAxisSym;
+	ostrAxisSym << "a: " << iSymAxisA << "-fold, "
+		<< "b: " << iSymAxisB << "-fold, "
+		<< "c: " << iSymAxisC << "-fold";
+	editAxisSym->setText(ostrAxisSym.str().c_str());
+
 	{
-		const clipper::Symop& symop = sg.symop(iSymOp);
-		listSymOps->addItem(get_stdstring(symop.format()).c_str());
+		std::ostringstream ostr;
+		ostr << "All Symmetry Operations (" << sg.num_symops() << ")";
+		listSymOps->addItem(create_header_item(ostr.str().c_str()));
+		for(int iSymOp=0; iSymOp<sg.num_symops(); ++iSymOp)
+		{
+			const clipper::Symop& symop = sg.symop(iSymOp);
+			listSymOps->addItem(get_stdstring(symop.format()).c_str());
+		}
+	}
+	if(sg.num_primitive_symops())
+	{
+		std::ostringstream ostr;
+		ostr << "Primitive Symmetry Operations (" << sg.num_primitive_symops() << ")";
+		listSymOps->addItem(create_header_item(ostr.str().c_str()));
+		for(int iSymOp=0; iSymOp<sg.num_primitive_symops(); ++iSymOp)
+		{
+			const clipper::Symop& symop = sg.primitive_symop(iSymOp);
+			listSymOps->addItem(get_stdstring(symop.format()).c_str());
+		}
+	}
+	if(sg.num_inversion_symops())
+	{
+		std::ostringstream ostr;
+		ostr << "Inverting Symmetry Operations (" << sg.num_inversion_symops() << ")";
+		listSymOps->addItem(create_header_item(ostr.str().c_str()));
+		for(int iSymOp=0; iSymOp<sg.num_inversion_symops(); ++iSymOp)
+		{
+			const clipper::Symop& symop = sg.inversion_symop(iSymOp);
+			listSymOps->addItem(get_stdstring(symop.format()).c_str());
+		}
+	}
+	if(sg.num_centering_symops())
+	{
+		std::ostringstream ostr;
+		ostr << "Centering Symmetry Operations (" << sg.num_centering_symops() << ")";
+		listSymOps->addItem(create_header_item(ostr.str().c_str()));
+		for(int iSymOp=0; iSymOp<sg.num_centering_symops(); ++iSymOp)
+		{
+			const clipper::Symop& symop = sg.centering_symop(iSymOp);
+			listSymOps->addItem(get_stdstring(symop.format()).c_str());
+		}
 	}
 
 	RecalcBragg();
