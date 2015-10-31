@@ -7,15 +7,7 @@
 
 #include "spacegroup_clp.h"
 #include "tlibs/string/string.h"
-#include <sstream>
 #include <ctype.h>
-
-std::string get_stdstring(const clipper::String& str)
-{
-	std::ostringstream ostr;
-	ostr << str;
-	return ostr.str();
-}
 
 // convert e.g.: "P 21 3"  ->  "P2_13"
 void convert_hm_symbol(std::string& strHM)
@@ -56,10 +48,10 @@ void convert_hm_symbol(std::string& strHM)
 SpaceGroup::SpaceGroup(unsigned int iNum)
 	: m_psg(new clipper::Spacegroup(clipper::Spgr_descr(iNum)))
 {
-	m_strName = get_stdstring(m_psg->symbol_hm());
+	m_strName = m_psg->symbol_hm();
 	convert_hm_symbol(m_strName);
 
-	m_strLaue = get_stdstring(m_psg->symbol_laue());
+	m_strLaue = m_psg->symbol_laue();
 	m_crystalsys = get_crystal_system_from_laue_group(m_strLaue.c_str());
 }
 

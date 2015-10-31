@@ -23,6 +23,7 @@ SgListDlg::SgListDlg(QWidget *pParent)
 
 	QObject::connect(listSGs, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
 		this, SLOT(SGSelected(QListWidgetItem*, QListWidgetItem*)));
+	QObject::connect(checkMatrices, SIGNAL(toggled(bool)), this, SLOT(UpdateSG()));
 
 	for(QSpinBox* pSpin : {spinH, spinK, spinL})
 		QObject::connect(pSpin, SIGNAL(valueChanged(int)), this, SLOT(RecalcBragg()));
@@ -94,7 +95,12 @@ void SgListDlg::SetupSpacegroups()
 	}
 }
 
-void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
+void SgListDlg::UpdateSG()
+{
+	SGSelected(listSGs->currentItem(), nullptr);
+}
+
+void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 {
 	listSymOps->clear();
 	for(QLineEdit *pEdit : {editHM, editHall, editLaue, editNr, editAxisSym})
@@ -109,12 +115,12 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 	clipper::Spgr_descr dsc(iSG);
 	clipper::Spacegroup sg(dsc);
 
-	std::string strLaue = get_stdstring(sg.symbol_laue());
+	std::string strLaue = sg.symbol_laue();
 	std::string strCrysSys = get_crystal_system_name(get_crystal_system_from_laue_group(strLaue.c_str()));
 
 	editNr->setText(tl::var_to_str(iSG).c_str());
-	editHM->setText(get_stdstring(sg.symbol_hm()).c_str());
-	editHall->setText(get_stdstring(sg.symbol_hall()).c_str());
+	editHM->setText(sg.symbol_hm().c_str());
+	editHall->setText(sg.symbol_hall().c_str());
 	editLaue->setText((strLaue + " (" + strCrysSys + ")").c_str());
 
 	const int iSymAxisA = sg.order_of_symmetry_about_axis(clipper::Spacegroup::A);
@@ -126,6 +132,8 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 		<< "c: " << iSymAxisC << "-fold";
 	editAxisSym->setText(ostrAxisSym.str().c_str());
 
+	bool bShowMatrices = checkMatrices->isChecked();
+
 	{
 		std::ostringstream ostr;
 		ostr << "All Symmetry Operations (" << sg.num_symops() << ")";
@@ -133,7 +141,10 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 		for(int iSymOp=0; iSymOp<sg.num_symops(); ++iSymOp)
 		{
 			const clipper::Symop& symop = sg.symop(iSymOp);
-			listSymOps->addItem(get_stdstring(symop.format()).c_str());
+			if(bShowMatrices)
+				listSymOps->addItem(print_matrix(symop_to_matrix(symop)).c_str());
+			else
+				listSymOps->addItem(symop.format().c_str());
 		}
 	}
 	if(sg.num_primitive_symops())
@@ -144,7 +155,10 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 		for(int iSymOp=0; iSymOp<sg.num_primitive_symops(); ++iSymOp)
 		{
 			const clipper::Symop& symop = sg.primitive_symop(iSymOp);
-			listSymOps->addItem(get_stdstring(symop.format()).c_str());
+			if(bShowMatrices)
+				listSymOps->addItem(print_matrix(symop_to_matrix(symop)).c_str());
+			else
+				listSymOps->addItem(symop.format().c_str());
 		}
 	}
 	if(sg.num_inversion_symops())
@@ -155,7 +169,10 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 		for(int iSymOp=0; iSymOp<sg.num_inversion_symops(); ++iSymOp)
 		{
 			const clipper::Symop& symop = sg.inversion_symop(iSymOp);
-			listSymOps->addItem(get_stdstring(symop.format()).c_str());
+			if(bShowMatrices)
+				listSymOps->addItem(print_matrix(symop_to_matrix(symop)).c_str());
+			else
+				listSymOps->addItem(symop.format().c_str());
 		}
 	}
 	if(sg.num_centering_symops())
@@ -166,7 +183,10 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 		for(int iSymOp=0; iSymOp<sg.num_centering_symops(); ++iSymOp)
 		{
 			const clipper::Symop& symop = sg.centering_symop(iSymOp);
-			listSymOps->addItem(get_stdstring(symop.format()).c_str());
+			if(bShowMatrices)
+				listSymOps->addItem(print_matrix(symop_to_matrix(symop)).c_str());
+			else
+				listSymOps->addItem(symop.format().c_str());
 		}
 	}
 

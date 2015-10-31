@@ -24,6 +24,7 @@ protected:
 	virtual void closeEvent(QCloseEvent* pEvt) override;
 
 protected slots:
+	void UpdateSG();
 	void SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
 	void RecalcBragg();
 	void SearchSG(const QString& qstr);
