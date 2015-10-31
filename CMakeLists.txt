@@ -66,7 +66,7 @@ add_executable(takin tools/taz/taz_main.cpp
 	dialogs/SrvDlg.cpp dialogs/NetCacheDlg.cpp
 	dialogs/EllipseDlg.cpp
 
-	helper/globals.cpp helper/spacegroup.cpp
+	helper/globals.cpp helper/spacegroup.cpp helper/crystalsys.cpp
 
 	tlibs/file/loadinstr.cpp tlibs/file/recent.cpp tlibs/file/xml.cpp
 	tlibs/helper/log.cpp

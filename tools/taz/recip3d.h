@@ -13,7 +13,12 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/geo.h"
 #include "tlibs/math/lattice.h"
-#include "helper/spacegroup.h"
+
+#ifdef USE_CLP
+	#include "helper/spacegroup_clp.h"
+#else
+	#include "helper/spacegroup.h"
+#endif
 
 class Recip3DDlg : public QDialog
 {Q_OBJECT

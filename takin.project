@@ -180,10 +180,14 @@
   <VirtualDirectory Name="helper">
     <File Name="helper/plotgl.cpp"/>
     <File Name="helper/plotgl.h"/>
-    <File Name="helper/spacegroup.cpp"/>
-    <File Name="helper/spacegroup.h"/>
+    <File Name="helper/spacegroup.cpp" ExcludeProjConfig="Debug"/>
+    <File Name="helper/spacegroup.h" ExcludeProjConfig="Debug"/>
     <File Name="helper/globals.cpp"/>
     <File Name="helper/globals.h"/>
+    <File Name="helper/crystalsys.h"/>
+    <File Name="helper/crystalsys.cpp"/>
+    <File Name="helper/spacegroup_clp.cpp"/>
+    <File Name="helper/spacegroup_clp.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>

@@ -28,7 +28,7 @@ namespace co = boost::units::si::constants::codata;
 struct PowderLine
 {
 	int h, k, l;
-	
+
 	double dAngle;
 	std::string strAngle;
 
@@ -107,7 +107,7 @@ void PowderDlg::CalcPeaks()
 			for(int il=-iOrder; il<iOrder; ++il)
 			{
 				if(ih==0 && ik==0 && il==0) continue;
-				if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il)) 
+				if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il))
 					continue;
 
 				bool bAlreadyHasPeak = powder.HasUniquePeak(ih, ik, il);
@@ -136,7 +136,7 @@ void PowderDlg::CalcPeaks()
 				mapPeaks[ostrAngle.str()].strPeaks += ostrPeak.str();
 				mapPeaks[ostrAngle.str()].dAngle = dAngle;
 				mapPeaks[ostrAngle.str()].dQ = dQ;
-				
+
 				mapPeaks[ostrAngle.str()].h = std::abs(ih);
 				mapPeaks[ostrAngle.str()].k = std::abs(ik);
 				mapPeaks[ostrAngle.str()].l = std::abs(il);
@@ -172,7 +172,7 @@ void PowderDlg::CalcPeaks()
 			if(!tablePowderLines->item(iRow, iCol))
 				tablePowderLines->setItem(iRow, iCol, new QTableWidgetItem());
 		}
-		
+
 		QString strMult = tl::var_to_str(vecPowderLines[iRow]->iMult).c_str();
 
 		tablePowderLines->item(iRow, 0)->setText(vecPowderLines[iRow]->strAngle.c_str());
@@ -237,103 +237,9 @@ void PowderDlg::RepopulateSpaceGroups()
 
 void PowderDlg::CheckCrystalType()
 {
-	switch(m_crystalsys)
-	{
-		case CRYS_CUBIC:
-			editA->setEnabled(1);
-			editB->setEnabled(0);
-			editC->setEnabled(0);
-			editAlpha->setEnabled(0);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editB->setText(editA->text());
-			editC->setText(editA->text());
-			editAlpha->setText("90");
-			editBeta->setText("90");
-			editGamma->setText("90");
-			break;
-
-		case CRYS_HEXAGONAL:
-			editA->setEnabled(1);
-			editB->setEnabled(0);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(0);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editB->setText(editA->text());
-			editAlpha->setText("90");
-			editBeta->setText("90");
-			editGamma->setText("120");
-			break;
-
-		case CRYS_MONOCLINIC:
-			editA->setEnabled(1);
-			editB->setEnabled(1);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(1);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editBeta->setText("90");
-			editGamma->setText("90");
-			break;
-
-		case CRYS_ORTHORHOMBIC:
-			editA->setEnabled(1);
-			editB->setEnabled(1);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(0);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editAlpha->setText("90");
-			editBeta->setText("90");
-			editGamma->setText("90");
-			break;
-
-		case CRYS_TETRAGONAL:
-			editA->setEnabled(1);
-			editB->setEnabled(0);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(0);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editB->setText(editA->text());
-			editAlpha->setText("90");
-			editBeta->setText("90");
-			editGamma->setText("90");
-			break;
-
-		case CRYS_TRIGONAL:
-			editA->setEnabled(1);
-			editB->setEnabled(0);
-			editC->setEnabled(0);
-			editAlpha->setEnabled(1);
-			editBeta->setEnabled(0);
-			editGamma->setEnabled(0);
-
-			editB->setText(editA->text());
-			editC->setText(editA->text());
-			editBeta->setText(editAlpha->text());
-			editGamma->setText(editAlpha->text());
-			break;
-
-		case CRYS_TRICLINIC:
-		case CRYS_NOT_SET:
-		default:
-			editA->setEnabled(1);
-			editB->setEnabled(1);
-			editC->setEnabled(1);
-			editAlpha->setEnabled(1);
-			editBeta->setEnabled(1);
-			editGamma->setEnabled(1);
-			break;
-	}
+	set_crystal_system_edits(m_crystalsys, editA, editB, editC,
+		editAlpha, editBeta, editGamma);
 }
-
 
 void PowderDlg::SavePowder()
 {

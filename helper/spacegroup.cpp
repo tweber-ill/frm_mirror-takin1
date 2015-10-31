@@ -12,23 +12,6 @@
 #include "spacegroup.h"
 #include <cstdlib>
 
-const char* get_crystal_system_name(CrystalSystem ty)
-{
-	switch(ty)
-	{
-		case CRYS_NOT_SET: return "<not set>";
-		case CRYS_TRICLINIC: return "triclinic";
-		case CRYS_MONOCLINIC: return "monoclinic";
-		case CRYS_ORTHORHOMBIC: return "orthorhombic";
-		case CRYS_TETRAGONAL: return "tetragonal";
-		case CRYS_TRIGONAL: return "trigonal";
-		case CRYS_HEXAGONAL: return "hexagonal";
-		case CRYS_CUBIC: return "cubic";
-	}
-
-	return "<unknown>";
-}
-
 // -> function "check_refcond" in Georg's Python code
 // -> http://www.ccp14.ac.uk/ccp/web-mirrors/powdcell/a_v/v_1/powder/details/extinct.htm
 static std::array<bool (*)(int h, int k, int l), 32> g_vecConds =
@@ -131,7 +114,7 @@ static t_mapSpaceGroups g_mapSpaceGroups;
 // -> sg_by_hm and sg_by_num in Georg's Python code
 // -> http://www.ccp14.ac.uk/ccp/web-mirrors/powdcell/a_v/v_1/powder/details/pcwspgr.htm
 // -> matched against CFML_Sym_Table.f90 in CrysFML
-void init_space_groups()
+static void init_space_groups()
 {
 	g_mapSpaceGroups =
 	{
@@ -269,7 +252,7 @@ void init_space_groups()
 		{"C2/n11",   SpaceGroup({{3, 2, 27, 1, 1, 6, 6, 0, 0, 0, 0, 0, 0, 0}}, CRYS_MONOCLINIC)},
 		{"C2/c11",   SpaceGroup({{3, 2, 27, 1, 1, 6, 6, 0, 0, 0, 0, 0, 0, 0}}, CRYS_MONOCLINIC)},
 		{"F121",     SpaceGroup({{3, 2, 27, 1, 28, 26, 7, 0, 0, 0, 0, 0, 0, 0}}, CRYS_MONOCLINIC)},
-		
+
 		// 16 - 74
 		{"P2mm",             SpaceGroup({{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}, CRYS_ORTHORHOMBIC)},
 		{"Pmm2",             SpaceGroup({{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}, CRYS_ORTHORHOMBIC)},
@@ -771,27 +754,27 @@ const t_mapSpaceGroups* get_space_groups()
 int main()
 {
 	init_space_groups();
-	
+
 	std::set<unsigned char> setConds;
 	std::set<unsigned char> setAll;
 	for(unsigned char ch=0; ch<32; ++ch)
 		setAll.insert(ch);
-		
+
 	std::cout << g_mapSpaceGroups.size() << " spacegroups.\n";
 
 	for(const t_mapSpaceGroups::value_type& sg : g_mapSpaceGroups)
 	{
 		const std::string& strName = sg.first;
 		const SpaceGroup& thesg = sg.second;
-		
+
 		std::cout << thesg.GetName() << " " << thesg.GetCrystalSystemName();
 		std::cout << " " << "[";
-		
+
 		for(unsigned int iCond=0; iCond<thesg.GetConds().size(); ++iCond)
 		{
 			unsigned char ch = thesg.GetConds()[iCond];
 			setConds.insert(ch);
-			
+
 			std::cout << unsigned(ch);
 			if(iCond != thesg.GetConds().size()-1)
 				std::cout << ", ";

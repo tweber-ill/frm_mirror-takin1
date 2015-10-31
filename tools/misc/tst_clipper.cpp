@@ -17,8 +17,14 @@ void test_hkls()
 	std::cout << "Enter spacegroup: ";
 	std::getline(std::cin, strSg);
 	clipper::Spgr_descr dsc(strSg);
+	int iSGNum = dsc.spacegroup_number();
+	if(iSGNum <= 0)
+	{
+		std::cerr << "Error: Unknown Spacegroup." << std::endl;
+		return;
+	}
 
-	std::cout << "Nr.: " << dsc.spacegroup_number() << std::endl;
+	std::cout << "Nr.: " << iSGNum << std::endl;
 	std::cout << "Hall: " << dsc.symbol_hall() << std::endl;
 	std::cout << "HM: " << dsc.symbol_hm() << std::endl;
 

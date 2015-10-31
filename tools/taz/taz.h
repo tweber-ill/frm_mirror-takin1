@@ -51,10 +51,11 @@
 
 #ifdef USE_CLP
 	#include "../sglist/SgListDlg.h"
+	#include "helper/spacegroup_clp.h"
+#else
+	#include "helper/spacegroup.h"
 #endif
 
-
-#include "helper/spacegroup.h"
 #include "tlibs/math/lattice.h"
 
 

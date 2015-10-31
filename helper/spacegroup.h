@@ -15,6 +15,7 @@
 #include <string>
 #include <array>
 #include <map>
+#include "crystalsys.h"
 
 enum Refls
 {
@@ -34,30 +35,15 @@ enum Refls
 	REFL_HHH = 13
 };
 
-enum CrystalSystem
-{
-	CRYS_NOT_SET,
-
-	CRYS_TRICLINIC,		// all params free
-	CRYS_MONOCLINIC,	// beta=gamma=90
-	CRYS_ORTHORHOMBIC,	// alpha=beta=gamma=90
-	CRYS_TETRAGONAL,	// a=b, alpha=beta=gamma=90
-	CRYS_TRIGONAL,		// a=b=c, alpha=beta=gamma
-	CRYS_HEXAGONAL,		// a=b, gamma=120, alpha=beta=90
-	CRYS_CUBIC			// a=b=c, alpha=beta=gamma=90
-};
-
-extern const char* get_crystal_system_name(CrystalSystem ty);
-
 class SpaceGroup
 {
 	protected:
 		std::string m_strName;
 		CrystalSystem m_crystalsys;
-		
+
 		// general conditions in the order as given in Refls
 		std::array<unsigned char, 14> m_vecCond = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
-		
+
 		// TODO: special conditions (not relevant for BZ calculation) in the order as given in Refls
 		//std::array<unsigned char, 14> m_vecCondSpec = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
@@ -69,10 +55,10 @@ class SpaceGroup
 					const std::array<unsigned char, 14>& vecCond,
 					const std::array<unsigned char, 14>& vecCondSpec,
 					CrystalSystem ty=CRYS_NOT_SET)
-					: m_strName(strName), m_crystalsys(ty), 
+					: m_strName(strName), m_crystalsys(ty),
 						m_vecCond(vecCond)/*, m_vecCondSpec(vecCondSpec)*/
 		{}
-		virtual ~SpaceGroup()
+		~SpaceGroup()
 		{}
 
 		bool HasReflection(int h, int k, int l, bool bGeneral=true) const;
@@ -86,8 +72,6 @@ class SpaceGroup
 
 
 typedef std::map<std::string, SpaceGroup> t_mapSpaceGroups;
-
-extern void init_space_groups();
 extern const t_mapSpaceGroups* get_space_groups();
 
 #endif

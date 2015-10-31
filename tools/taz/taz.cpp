@@ -468,8 +468,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pScanViewer = new QAction(this);
 	pScanViewer->setText("Scan Viewer...");
 	pMenuTools->addAction(pScanViewer);
-	
-	
+
+
 #ifdef USE_CLP
 	QAction *pSgList = new QAction(this);
 	pSgList->setText("Space Group List...");
@@ -618,7 +618,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 
 	RepopulateSpaceGroups();
-	
+
 	unsigned int iMaxPeaks = m_settings.value("main/max_peaks", 10).toUInt();
 
 	m_sceneRecip.GetTriangle()->SetMaxPeaks(iMaxPeaks);
@@ -1070,10 +1070,9 @@ void TazDlg::ShowAbout()
 
 #ifdef USE_CLP
 	strAbout += strBullet + " ";
-	strAbout += "Uses Clipper";
+	strAbout += "Uses Clipper crystallography library";
 	strAbout += "\n\t" + strArrow + " http://www.ysbl.york.ac.uk/~cowtan/clipper\n";
-#endif
-
+#else
 	//strAbout += "\n";
 	strAbout += strBullet + " ";
 	strAbout += "Uses space group calculations ported from Nicos version 2";
@@ -1082,6 +1081,7 @@ void TazDlg::ShowAbout()
 	strAbout += "\n\t " + strArrow
 			+ " www.bam.de/de/service/publikationen/" + strRet
 			+ "\n\t\tpowder_cell_a.htm\n";
+#endif
 
 	strAbout += strBullet + " ";
 	strAbout += "Uses resolution algorithms ported from Rescal version 5";

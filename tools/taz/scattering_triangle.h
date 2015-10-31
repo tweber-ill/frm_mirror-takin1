@@ -11,10 +11,15 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/lattice.h"
 #include "tlibs/math/powder.h"
-#include "helper/spacegroup.h"
 #include "tlibs/math/bz.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/kd.h"
+
+#ifdef USE_CLP
+	#include "helper/spacegroup_clp.h"
+#else
+	#include "helper/spacegroup.h"
+#endif
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -191,7 +196,7 @@ class ScatteringTriangle : public QGraphicsItem
 		void SnapToNearestPeak(ScatteringTriangleNode* pNode,
 						const ScatteringTriangleNode* pNodeOrg=0);
 		bool KeepAbsKiKf(double dQx, double dQy);
-		
+
 		const tl::Lattice<double>& GetRecipLattice() const { return m_recip; }
 };
 
