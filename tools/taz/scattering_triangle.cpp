@@ -53,9 +53,9 @@ void ScatteringTriangleNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
 	QGraphicsItem::mouseReleaseEvent(pEvt);
 }
 
-QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVariant &val)
 {
-	QVariant var = QGraphicsItem::itemChange(change, value);
+	QVariant var = QGraphicsItem::itemChange(change, val);
 
 	if(change == QGraphicsItem::ItemPositionHasChanged)
 		m_pParentItem->nodeMoved(this);
@@ -1156,7 +1156,7 @@ void ScatteringTriangleScene::emitAllParams()
 	tl::set_eps_0(vecQ); tl::set_eps_0(vecQrlu);
 	tl::set_eps_0(vecq); tl::set_eps_0(vecqrlu);
 	tl::set_eps_0(vecG); tl::set_eps_0(vecGrlu);
-	
+
 	/*std::cout << "Q = " << vecQrlu << std::endl;
 	std::cout << "q = " << vecqrlu << std::endl;
 	std::cout << "G = " << vecGrlu << std::endl;*/
@@ -1532,7 +1532,7 @@ void ScatteringTriangleView::wheelEvent(QWheelEvent *pEvt)
 {
 	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
-	double dDelta = pEvt->delta()/100.;
+	const double dDelta = pEvt->delta()/100.;
 
 #if QT_VER>=5
 	double dScale = dDelta>0. ? 1.1 : 1./1.1;

@@ -35,7 +35,7 @@ class TasLayoutNode : public QGraphicsItem
 		QRectF boundingRect() const;
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-		QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+		QVariant itemChange(GraphicsItemChange change, const QVariant &val);
 
 	public:
 		TasLayoutNode(TasLayout* pSupItem);

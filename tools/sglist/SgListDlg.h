@@ -18,13 +18,15 @@ class SgListDlg : public QDialog, Ui::SgListDlg
 { Q_OBJECT
 protected:
 	QSettings m_settings;
-	
+
 protected:
 	void SetupSpacegroups();
+	virtual void closeEvent(QCloseEvent* pEvt) override;
 
 protected slots:
 	void SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
 	void RecalcBragg();
+	void SearchSG(const QString& qstr);
 
 public:
 	SgListDlg(QWidget* pParent = nullptr);

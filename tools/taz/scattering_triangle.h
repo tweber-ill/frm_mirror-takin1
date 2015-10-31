@@ -60,7 +60,7 @@ class ScatteringTriangleNode : public QGraphicsItem
 
 		void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
-		QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+		QVariant itemChange(GraphicsItemChange change, const QVariant &val);
 
 	public:
 		ScatteringTriangleNode(ScatteringTriangle* pSupItem);

@@ -28,10 +28,10 @@ void TasLayoutNode::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QW
 	painter->drawEllipse(QRectF(-2., -2., 4., 4.));
 }
 
-QVariant TasLayoutNode::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant TasLayoutNode::itemChange(GraphicsItemChange change, const QVariant &val)
 {
 	//std::cout << change << std::endl;
-	QVariant var = QGraphicsItem::itemChange(change, value);
+	QVariant var = QGraphicsItem::itemChange(change, val);
 
 	if(change == QGraphicsItem::ItemPositionHasChanged)
 		m_pParentItem->nodeMoved(this);

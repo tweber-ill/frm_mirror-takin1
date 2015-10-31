@@ -20,17 +20,48 @@ SgListDlg::SgListDlg(QWidget *pParent)
 	setupUi(this);
 	SetupSpacegroups();
 
+
 	QObject::connect(listSGs, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
 		this, SLOT(SGSelected(QListWidgetItem*, QListWidgetItem*)));
 
 	for(QSpinBox* pSpin : {spinH, spinK, spinL})
 		QObject::connect(pSpin, SIGNAL(valueChanged(int)), this, SLOT(RecalcBragg()));
+
+	QObject::connect(editFilter, SIGNAL(textEdited(const QString&)),
+		this, SLOT(SearchSG(const QString&)));
+
+
+	if(m_settings.contains("sglist/geo"))
+		restoreGeometry(m_settings.value("sglist/geo").toByteArray());
 }
 
 SgListDlg::~SgListDlg()
+{}
+
+void SgListDlg::closeEvent(QCloseEvent* pEvt)
 {
+	m_settings.setValue("sglist/geo", saveGeometry());
 }
 
+
+static QListWidgetItem* create_header_item(const char *pcTitle)
+{
+	QListWidgetItem *pHeaderItem = new QListWidgetItem(pcTitle);
+	pHeaderItem->setTextAlignment(Qt::AlignHCenter);
+
+	QFont fontHeader = pHeaderItem->font();
+	fontHeader.setBold(1);
+	pHeaderItem->setFont(fontHeader);
+
+	QBrush brushHeader = pHeaderItem->foreground();
+	brushHeader.setColor(QColor(0xff, 0xff, 0xff));
+	pHeaderItem->setForeground(brushHeader);
+
+	pHeaderItem->setData(Qt::UserRole, 0);
+	pHeaderItem->setBackgroundColor(QColor(0x65, 0x65, 0x65));
+
+	return pHeaderItem;
+}
 
 void SgListDlg::SetupSpacegroups()
 {
@@ -39,6 +70,16 @@ void SgListDlg::SetupSpacegroups()
 	// actually: space group TYPE, not space group...
 	for(int iSg=1; iSg<=230; ++iSg)
 	{
+		// list headers
+		if(iSg==1) listSGs->addItem(create_header_item("Triclinic"));
+		else if(iSg==3) listSGs->addItem(create_header_item("Monoclinic"));
+		else if(iSg==16) listSGs->addItem(create_header_item("Orthorhombic"));
+		else if(iSg==75) listSGs->addItem(create_header_item("Tetragonal"));
+		else if(iSg==143) listSGs->addItem(create_header_item("Trigonal"));
+		else if(iSg==168) listSGs->addItem(create_header_item("Hexagonal"));
+		else if(iSg==195) listSGs->addItem(create_header_item("Cubic"));
+
+
 		clipper::Spgr_descr dsc(iSg);
 
 		std::string strSg = dsc.symbol_hm();
@@ -56,9 +97,14 @@ void SgListDlg::SetupSpacegroups()
 void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 {
 	listSymOps->clear();
-
+	for(QLineEdit *pEdit : {editHM, editHall, editLaue, editNr})
+		pEdit->setText("");
 	if(!pItem) return;
+
+	// header selected?
 	int iSG = pItem->data(Qt::UserRole).toInt();
+	if(iSG <= 0)
+		return;
 
 	clipper::Spgr_descr dsc(iSG);
 	clipper::Spacegroup sg(dsc);
@@ -101,6 +147,13 @@ void SgListDlg::RecalcBragg()
 	font.setStrikeOut(bForbidden);
 	for(QSpinBox* pSpin : {spinH, spinK, spinL})
 		pSpin->setFont(font);
+}
+
+void SgListDlg::SearchSG(const QString& qstr)
+{
+	QList<QListWidgetItem*> lstItems = listSGs->findItems(qstr, Qt::MatchContains);
+	if(lstItems.size())
+		listSGs->setCurrentItem(lstItems[0], QItemSelectionModel::SelectCurrent);
 }
 
 
