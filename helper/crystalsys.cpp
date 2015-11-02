@@ -48,6 +48,8 @@ const char* get_crystal_system_name(CrystalSystem ty)
 	return "<unknown>";
 }
 
+#ifndef NO_QT
+
 void set_crystal_system_edits(CrystalSystem crystalsys,
 	QLineEdit* editA, QLineEdit* editB, QLineEdit* editC,
 	QLineEdit* editAlpha, QLineEdit* editBeta, QLineEdit* editGamma,
@@ -221,3 +223,4 @@ void set_crystal_system_edits(CrystalSystem crystalsys,
 			break;
 	}
 }
+#endif

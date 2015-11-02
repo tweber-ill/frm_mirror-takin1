@@ -81,6 +81,7 @@
       <File Name="tlibs/math/dft.h"/>
       <File Name="tlibs/math/powder.h"/>
       <File Name="tlibs/math/kd.h"/>
+      <File Name="tlibs/math/atoms.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="net">
       <File Name="tlibs/net/tcp.h"/>

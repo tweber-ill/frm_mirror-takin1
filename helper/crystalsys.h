@@ -25,10 +25,13 @@ enum CrystalSystem
 
 extern CrystalSystem get_crystal_system_from_laue_group(const char* pcLaue);
 extern const char* get_crystal_system_name(CrystalSystem ty);
+
+#ifndef NO_QT
 extern void set_crystal_system_edits(CrystalSystem crystalsys,
 	QLineEdit* pA, QLineEdit* pB, QLineEdit* pC,
 	QLineEdit* pAlpha, QLineEdit* pBeta, QLineEdit* pGamma,
 	QLineEdit* pAReci=nullptr, QLineEdit* pBReci=nullptr, QLineEdit* pCReci=nullptr,
 	QLineEdit* pAlphaReci=nullptr, QLineEdit* pBetaReci=nullptr, QLineEdit* pGammaReci=nullptr);
+#endif
 
 #endif

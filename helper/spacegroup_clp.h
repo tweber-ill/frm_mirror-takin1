@@ -81,6 +81,24 @@ ublas::matrix<T> symop_to_matrix(const clipper::Symop& symop)
 
 
 template<class T=clipper::ftype>
+void get_symtrafos(const clipper::Spacegroup& sg, std::vector<ublas::matrix<T>>& vecTrafos)
+{
+	const int iNumSymOps = sg.num_symops();
+
+	vecTrafos.clear();
+	vecTrafos.reserve(iNumSymOps);
+
+	for(int iSymOp=0; iSymOp<iNumSymOps; ++iSymOp)
+	{
+		const clipper::Symop& symop = sg.symop(iSymOp);
+		ublas::matrix<T> mat = symop_to_matrix<T>(symop);
+		
+		vecTrafos.push_back(mat);
+	}
+}
+
+
+template<class T=clipper::ftype>
 std::string print_matrix(const ublas::matrix<T>& mat)
 {
 	std::ostringstream ostr;
