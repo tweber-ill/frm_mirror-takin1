@@ -93,9 +93,19 @@ void gen_atoms()
 		{
 			std::cout << "\t" << vec << "\n";
 
+			// map back to 1st Brillouin zone
+			t_vec vecCoord = vec;
+			for(int iComp=0; iComp<vecCoord.size(); ++iComp)
+			{
+				while(vecCoord[iComp] > 0.5)
+					vecCoord[iComp] -= 1;
+				while(vecCoord[iComp] < -0.5)
+					vecCoord[iComp] += 1.;
+			}
+
 			tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
-			pTrafo->SetTrans(matGlobal * vec);
-			tl::X3dSphere *pSphere = new tl::X3dSphere(0.25);
+			pTrafo->SetTrans(matGlobal * vecCoord);
+			tl::X3dSphere *pSphere = new tl::X3dSphere(0.1);
 			pSphere->SetColor(vecColors[iAtom % vecColors.size()]);
 			pTrafo->AddChild(pSphere);
 
