@@ -89,18 +89,21 @@ void gen_atoms()
 		std::vector<t_vec> vecPos = tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom);
 
 		std::cout << "Atom " << (iAtom+1) << ":\n";
-		for(const t_vec& vec : vecPos)
+		for(int iPos=0; iPos<vecPos.size(); ++iPos)
 		{
-			std::cout << "\t" << vec << "\n";
+			const t_vec& vec = vecPos[iPos];
+
+			std::cout << "\t(" << (iPos+1) << ") " << vec << "\n";
 
 			// map back to 1st Brillouin zone
 			t_vec vecCoord = vec;
+			const double dBZSize = 1.;
 			for(int iComp=0; iComp<vecCoord.size(); ++iComp)
 			{
-				while(vecCoord[iComp] > 0.5)
-					vecCoord[iComp] -= 1;
-				while(vecCoord[iComp] < -0.5)
-					vecCoord[iComp] += 1.;
+				while(vecCoord[iComp] > dBZSize*0.5)
+					vecCoord[iComp] -= dBZSize;
+				while(vecCoord[iComp] < -dBZSize*0.5)
+					vecCoord[iComp] += dBZSize;
 			}
 
 			tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
@@ -121,6 +124,13 @@ void gen_atoms()
 
 int main()
 {
-	gen_atoms();
+	try
+	{
+		gen_atoms();
+	}
+	catch(const clipper::Message_fatal& err)
+	{
+		std::cerr << "Error in spacegroup." << std::endl;
+	}
 	return 0;
 }
