@@ -31,6 +31,14 @@ void gen_atoms()
 		tl::make_vec({1., 0., 1.}),
 	};
 
+	// to transform into program-specific coordinate systems
+	const t_mat matGlobal = tl::make_mat(
+	{	{-1., 0., 0., 0.},
+		{ 0., 0., 1., 0.},
+		{ 0., 1., 0., 0.},
+		{ 0., 0., 0., 1.}	});
+
+
 	std::string strSg;
 
 	std::cout << "Enter spacegroup: ";
@@ -86,7 +94,7 @@ void gen_atoms()
 			std::cout << "\t" << vec << "\n";
 
 			tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
-			pTrafo->SetTrans(vec);
+			pTrafo->SetTrans(matGlobal * vec);
 			tl::X3dSphere *pSphere = new tl::X3dSphere(0.25);
 			pSphere->SetColor(vecColors[iAtom % vecColors.size()]);
 			pTrafo->AddChild(pSphere);
