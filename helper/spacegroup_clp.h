@@ -92,7 +92,7 @@ void get_symtrafos(const clipper::Spacegroup& sg, std::vector<ublas::matrix<T>>&
 	{
 		const clipper::Symop& symop = sg.symop(iSymOp);
 		ublas::matrix<T> mat = symop_to_matrix<T>(symop);
-		
+
 		vecTrafos.push_back(mat);
 	}
 }
@@ -104,11 +104,11 @@ std::string print_matrix(const ublas::matrix<T>& mat)
 	std::ostringstream ostr;
 	ostr.precision(4);
 
-	for(int i=0; i<mat.size1(); ++i)
+	for(int i=0; i<int(mat.size1()); ++i)
 	{
 		ostr << "(";
 
-		for(int j=0; j<mat.size2(); ++j)
+		for(int j=0; j<int(mat.size2()); ++j)
 			ostr << std::setw(8) << mat(i,j);
 
 		ostr << ")";

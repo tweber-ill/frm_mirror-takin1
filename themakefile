@@ -190,7 +190,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
 	obj/FilePreviewDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
-	obj/xml.o obj/crystalsys.o \
+	obj/xml.o obj/crystalsys.o obj/formfact.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/loadinstr.o obj/recent.o obj/globals.o \
 	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
@@ -342,6 +342,8 @@ obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
 obj/spacegroup_clp.o: helper/spacegroup_clp.cpp helper/spacegroup_clp.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/crystalsys.o: helper/crystalsys.cpp helper/crystalsys.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/formfact.o: helper/formfact.cpp helper/formfact.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/rand.o: tlibs/math/rand.cpp tlibs/math/rand.h
 	${CC} ${FLAGS} -c -o $@ $<

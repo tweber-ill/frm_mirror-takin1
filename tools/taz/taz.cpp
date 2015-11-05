@@ -472,7 +472,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 #ifdef USE_CLP
 	QAction *pSgList = new QAction(this);
-	pSgList->setText("Space Group List...");
+	pSgList->setText("Space Groups...");
 	pMenuTools->addAction(pSgList);
 #endif
 
