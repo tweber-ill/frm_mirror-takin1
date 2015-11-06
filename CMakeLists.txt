@@ -73,6 +73,7 @@ add_executable(takin tools/taz/taz_main.cpp
 	tlibs/math/linalg2.cpp tlibs/math/rand.cpp
 	tlibs/net/tcp.cpp
 	tlibs/string/spec_char.cpp
+	tlibs/version.cpp
 
 #	helper/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp tlibs/gfx/gl.cpp
 )

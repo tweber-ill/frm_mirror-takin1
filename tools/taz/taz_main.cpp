@@ -7,6 +7,7 @@
 #include "taz.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/helper/log.h"
+#include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
 
 #include <QMetaType>
@@ -21,6 +22,17 @@ int main(int argc, char** argv)
 	try
 	{
 		tl::log_info("Starting up Takin.");
+
+		// tlibs version check
+		tl::log_info("Using tLibs version ", tl::get_tlibs_version(), ".");
+		if(!tl::check_tlibs_version(TLIBS_VERSION))
+		{
+			tl::log_crit("Version mismatch in tLibs. Please recompile.");
+			tl::log_crit("tLibs versions: library: ", tl::get_tlibs_version(),
+				", headers: ", TLIBS_VERSION, ".");
+			return -1;
+		}
+
 
 		#if defined Q_WS_X11 && !defined NO_3D
 			XInitThreads();

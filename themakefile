@@ -195,7 +195,8 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/loadinstr.o obj/recent.o obj/globals.o \
 	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
-	obj/scanviewer.o
+	obj/scanviewer.o \
+	obj/tlibs_ver.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 
@@ -329,6 +330,8 @@ obj/nicos.o: tools/taz/nicos.cpp tools/taz/nicos.h
 obj/sics.o: tools/taz/sics.cpp tools/taz/sics.h
 	${CC} ${FLAGS} -c -o $@ $<
 
+obj/tlibs_ver.o: tlibs/version.cpp tlibs/version.h
+	${CC} ${FLAGS} -c -o $@ $<
 obj/spec_char.o: tlibs/string/spec_char.cpp tlibs/string/spec_char.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/xml.o: tlibs/file/xml.cpp tlibs/file/xml.h
