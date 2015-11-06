@@ -38,6 +38,9 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 
 	// -------------------------------------------------------------------------
 	// plot stuff
+	QColor colorBck(240, 240, 240, 255);
+	plot->setCanvasBackground(colorBck);
+
 	m_pCurve = new QwtPlotCurve("Scan Curve");
 	m_pPoints = new QwtPlotCurve("Scan Points");
 

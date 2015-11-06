@@ -18,6 +18,11 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 	setupUi(this);
 	m_vecPlots = {plot1,plot2,plot3,plot4};
 
+	QColor colorBck(240, 240, 240, 255);
+	for(QwtPlot *pPlt : m_vecPlots)
+		pPlt->setCanvasBackground(colorBck);
+
+
 	m_elliProj.resize(4);
 	m_elliSlice.resize(4);
 	m_vecGrid.resize(4);

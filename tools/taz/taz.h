@@ -52,6 +52,7 @@
 #ifdef USE_CLP
 	#include "../sglist/SgListDlg.h"
 	#include "helper/spacegroup_clp.h"
+	#include "dialogs/FormfactorDlg.h"
 #else
 	#include "helper/spacegroup.h"
 #endif
@@ -146,6 +147,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 #ifdef USE_CLP
 		SgListDlg *m_pSgListDlg = nullptr;
+		FormfactorDlg* m_pFormfactorDlg = nullptr;
 #endif
 
 	protected:
@@ -214,6 +216,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowResoEllipses3D();
 
 		void ShowSgListDlg();
+		void ShowFormfactorDlg();
 
 
 		void ShowSpurions();

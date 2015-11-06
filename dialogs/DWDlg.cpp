@@ -19,6 +19,9 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 {
 	this->setupUi(this);
 	
+	QColor colorBck(240, 240, 240, 255);
+	for(QwtPlot *pPlt : {plot, plotBose, plotAna})
+		pPlt->setCanvasBackground(colorBck);
 
 	// -------------------------------------------------------------------------
 	// Bose Factor stuff

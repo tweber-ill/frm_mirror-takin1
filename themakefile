@@ -187,7 +187,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/taz_file.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
-	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o \
+	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o obj/FormfactorDlg.o \
 	obj/FilePreviewDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/xml.o obj/crystalsys.o obj/formfact.o \
@@ -316,6 +316,8 @@ obj/FilePreviewDlg.o: dialogs/FilePreviewDlg.cpp dialogs/FilePreviewDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/DynPlaneDlg.o: dialogs/DynPlaneDlg.cpp dialogs/DynPlaneDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
+obj/FormfactorDlg.o: dialogs/FormfactorDlg.cpp dialogs/FormfactorDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
 obj/NeutronDlg.o: dialogs/NeutronDlg.cpp dialogs/NeutronDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SrvDlg.o: dialogs/SrvDlg.cpp dialogs/SrvDlg.h
@@ -422,5 +424,6 @@ clean:
 	rm -f tools/res/*.moc
 	rm -f tools/scanviewer/*.moc
 	rm -f tools/monteconvo/*.moc
+	rm -f tools/sglist/*.moc
 	rm -f helper/*.moc
 	rm -f dialogs/*.moc

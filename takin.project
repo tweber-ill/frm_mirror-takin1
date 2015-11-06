@@ -177,6 +177,8 @@
     <File Name="dialogs/DynPlaneDlg.h"/>
     <File Name="dialogs/FilePreviewDlg.cpp"/>
     <File Name="dialogs/FilePreviewDlg.h"/>
+    <File Name="dialogs/FormfactorDlg.h"/>
+    <File Name="dialogs/FormfactorDlg.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
     <File Name="helper/plotgl.cpp"/>

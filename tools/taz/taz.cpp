@@ -418,6 +418,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pDW = new QAction(this);
 	pDW->setText("Scattering Factors...");
 	pMenuCalc->addAction(pDW);
+	
+#ifdef USE_CLP
+	QAction *pFormfactor = new QAction(this);
+	pFormfactor->setText("Atomic Form Factors...");
+	pMenuCalc->addAction(pFormfactor);
+#endif
 
 	pMenuCalc->addSeparator();
 
@@ -561,6 +567,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 #ifdef USE_CLP
 	QObject::connect(pSgList, SIGNAL(triggered()), this, SLOT(ShowSgListDlg()));
+	QObject::connect(pFormfactor, SIGNAL(triggered()), this, SLOT(ShowFormfactorDlg()));
 #endif
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
@@ -674,6 +681,11 @@ TazDlg::~TazDlg()
 	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
 	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
 	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
+#endif
+
+#ifdef USE_CLP
+	if(m_pSgListDlg) { delete m_pSgListDlg; m_pSgListDlg = 0; }
+	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }
 #endif
 }
 

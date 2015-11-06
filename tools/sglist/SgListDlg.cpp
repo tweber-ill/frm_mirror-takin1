@@ -161,12 +161,12 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 				listSymOps->addItem(symop.format().c_str());
 		}
 	}
-	if(sg.num_inversion_symops())
+	if(sg.num_inversion_symops()/*-1*/)
 	{
 		std::ostringstream ostr;
-		ostr << "Inverting Symmetry Operations (" << sg.num_inversion_symops() << ")";
+		ostr << "Inverting Symmetry Operations (" << (sg.num_inversion_symops()/*-1*/) << ")";
 		listSymOps->addItem(create_header_item(ostr.str().c_str()));
-		for(int iSymOp=0; iSymOp<sg.num_inversion_symops(); ++iSymOp)
+		for(int iSymOp=/*1*/0; iSymOp<sg.num_inversion_symops(); ++iSymOp)
 		{
 			const clipper::Symop& symop = sg.inversion_symop(iSymOp);
 			if(bShowMatrices)
@@ -175,12 +175,12 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 				listSymOps->addItem(symop.format().c_str());
 		}
 	}
-	if(sg.num_centering_symops())
+	if(sg.num_centering_symops()/*-1*/)
 	{
 		std::ostringstream ostr;
-		ostr << "Centering Symmetry Operations (" << sg.num_centering_symops() << ")";
+		ostr << "Centering Symmetry Operations (" << (sg.num_centering_symops()/*-1*/) << ")";
 		listSymOps->addItem(create_header_item(ostr.str().c_str()));
-		for(int iSymOp=0; iSymOp<sg.num_centering_symops(); ++iSymOp)
+		for(int iSymOp=/*1*/0; iSymOp<sg.num_centering_symops(); ++iSymOp)
 		{
 			const clipper::Symop& symop = sg.centering_symop(iSymOp);
 			if(bShowMatrices)

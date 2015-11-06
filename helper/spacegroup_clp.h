@@ -112,7 +112,7 @@ std::string print_matrix(const ublas::matrix<T>& mat)
 			ostr << std::setw(8) << mat(i,j);
 
 		ostr << ")";
-		if(i!=mat.size1()-1) ostr << "\n";
+		if(i!=int(mat.size1())-1) ostr << "\n";
 	}
 
 	return ostr.str();
