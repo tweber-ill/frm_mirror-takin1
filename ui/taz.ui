@@ -585,7 +585,7 @@
            <item row="2" column="0">
             <widget class="QLabel" name="label_18">
              <property name="text">
-              <string>Type:</string>
+              <string>System:</string>
              </property>
             </widget>
            </item>

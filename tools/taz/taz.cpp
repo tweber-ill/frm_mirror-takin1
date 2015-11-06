@@ -411,6 +411,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	pNeutronProps->setText("Neutron Properties...");
 	pMenuCalc->addAction(pNeutronProps);
 
+	pMenuCalc->addSeparator();
+
 	QAction *pPowder = new QAction(this);
 	pPowder->setText("Powder Lines...");
 	pMenuCalc->addAction(pPowder);
@@ -418,11 +420,15 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pDW = new QAction(this);
 	pDW->setText("Scattering Factors...");
 	pMenuCalc->addAction(pDW);
-	
+
 #ifdef USE_CLP
 	QAction *pFormfactor = new QAction(this);
 	pFormfactor->setText("Atomic Form Factors...");
 	pMenuCalc->addAction(pFormfactor);
+
+	QAction *pSgList = new QAction(this);
+	pSgList->setText("Space Group Types...");
+	pMenuCalc->addAction(pSgList);
 #endif
 
 	pMenuCalc->addSeparator();
@@ -474,13 +480,6 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pScanViewer = new QAction(this);
 	pScanViewer->setText("Scan Viewer...");
 	pMenuTools->addAction(pScanViewer);
-
-
-#ifdef USE_CLP
-	QAction *pSgList = new QAction(this);
-	pSgList->setText("Space Groups...");
-	pMenuTools->addAction(pSgList);
-#endif
 
 
 

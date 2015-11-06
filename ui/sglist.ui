@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Space Groups</string>
+   <string>Space Group Types</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -30,7 +30,7 @@
        </sizepolicy>
       </property>
       <property name="title">
-       <string>Space Group List</string>
+       <string>List of Space Group Types</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="margin">
@@ -46,7 +46,7 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="editFilter">
          <property name="toolTip">
-          <string>Search Space Groups</string>
+          <string>Search Space Group Types</string>
          </property>
         </widget>
        </item>
