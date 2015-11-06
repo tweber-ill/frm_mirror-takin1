@@ -24,8 +24,8 @@ struct Formfact
 	protected:
 		std::string strAtom;
 
-		tl::wrapper_array<T> a;
-		tl::wrapper_array<T> b;
+		std::vector<T> a;
+		std::vector<T> b;
 		T c;
 
 	public:
@@ -33,10 +33,8 @@ struct Formfact
 
 		T GetFormfact(T G) const
 		{
-			return tl::formfact<T, tl::wrapper_array>(G, a, b, c);
+			return tl::formfact<T, std::vector>(G, a, b, c);
 		}
-		
-		
 };
 
 
@@ -59,4 +57,3 @@ class FormfactList
 
 
 #endif
-

@@ -8,60 +8,33 @@
 #include "formfact.h"
 #include "tlibs/math/math.h"
 #include "tlibs/helper/log.h"
-
-
-#ifdef USE_CLP
-
-
-// ----------------------------------------------------------------------------
-// ugly, but can't be helped for the moment:
-// directly link to the internal clipper coefficients table
-// that lives in clipper/clipper/core/atomsf.cpp
-namespace clipper { namespace data
-{
-	extern const struct SFData
-	{
-		const char atomname[8];
-		const double a[5], c, b[5], d;	// d is always 0
-	} sfdata[];
-
-	const unsigned int numsfdata = 212;
-}}
-// ----------------------------------------------------------------------------
-
+#include "tlibs/file/xml.h"
+#include "tlibs/string/string.h"
 
 
 void FormfactList::Init()
 {
-	Formfact<double> ffact;
+	tl::Xml xml;
+	if(!xml.Load("res/ffacts.xml"))
+		return;
 
-	for(unsigned int iSf=0; iSf<clipper::data::numsfdata; ++iSf)
+	unsigned int iNumDat = xml.Query<unsigned int>("num_atoms", 0);
+
+	for(unsigned int iSf=0; iSf<iNumDat; ++iSf)
 	{
-		// use d==0 as check
-		if(!tl::float_equal(clipper::data::sfdata[iSf].d, 0.))
-		{
-			tl::log_err("Data corruption in form factor coefficient table!");
-			break;
-		}
+		Formfact<double> ffact;
+		std::string strAtom = "atom_" + tl::var_to_str(iSf);
 
-		ffact.strAtom = clipper::data::sfdata[iSf].atomname;
-		ffact.a = tl::wrapper_array<double>((double*)clipper::data::sfdata[iSf].a, 5);
-		ffact.b = tl::wrapper_array<double>((double*)clipper::data::sfdata[iSf].b, 5);
-		ffact.c = clipper::data::sfdata[iSf].c;
+		ffact.strAtom = xml.QueryString((strAtom + "/name").c_str(), "");
+		tl::get_tokens<double, std::string, std::vector<double>>
+			(xml.QueryString((strAtom + "/a").c_str(), ""), " \t", ffact.a);
+		tl::get_tokens<double, std::string, std::vector<double>>
+			(xml.QueryString((strAtom + "/b").c_str(), ""), " \t", ffact.b);
+		ffact.c = xml.Query<double>((strAtom + "/c").c_str(), 0.);
 
 		s_vecFormfact.push_back(std::move(ffact));
 	}
 }
-
-#else
-
-void FormfactList::Init()
-{
-	tl::log_err("No atom form factor coefficient table available!");
-}
-
-#endif
-
 
 std::vector<Formfact<double>> FormfactList::s_vecFormfact;
 
