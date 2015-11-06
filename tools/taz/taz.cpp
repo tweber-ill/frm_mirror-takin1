@@ -1025,7 +1025,7 @@ void TazDlg::ShowAbout()
 
 
 	QString strAbout;
-	strAbout += "Takin version 0.9.3\n";
+	strAbout += "Takin version 0.9.4\n";
 	strAbout += "Written by Tobias Weber, 2014-2015.";
 	strAbout += "\n\n";
 

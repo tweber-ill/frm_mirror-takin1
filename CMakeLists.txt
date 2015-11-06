@@ -43,7 +43,7 @@ set(CMAKE_AUTOMOC OFF)
 set(CMAKE_AUTOUIC OFF)
 
 add_definitions(-std=c++11)
-add_definitions(-march=native -s)
+#add_definitions(-march=native -s)
 
 
 add_executable(takin tools/taz/taz_main.cpp
@@ -101,4 +101,6 @@ add_custom_command(TARGET takin POST_BUILD
 
 install(TARGETS takin DESTINATION bin)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/res ${PROJECT_SOURCE_DIR}/test DESTINATION share/takin)
-install(FILES ${PROJECT_SOURCE_DIR}/COPYING ${PROJECT_SOURCE_DIR}/LICENSES DESTINATION share/takin)
+install(FILES ${PROJECT_SOURCE_DIR}/COPYING ${PROJECT_SOURCE_DIR}/AUTHORS ${PROJECT_SOURCE_DIR}/LICENSES
+	DESTINATION share/takin
+)
