@@ -18,12 +18,12 @@ void FormfactList::Init()
 	if(!xml.Load("res/ffacts.xml"))
 		return;
 
-	unsigned int iNumDat = xml.Query<unsigned int>("num_atoms", 0);
+	unsigned int iNumDat = xml.Query<unsigned int>("ffacts/num_atoms", 0);
 
 	for(unsigned int iSf=0; iSf<iNumDat; ++iSf)
 	{
 		Formfact<double> ffact;
-		std::string strAtom = "atom_" + tl::var_to_str(iSf);
+		std::string strAtom = "ffacts/atom_" + tl::var_to_str(iSf);
 
 		ffact.strAtom = xml.QueryString((strAtom + "/name").c_str(), "");
 		tl::get_tokens<double, std::string, std::vector<double>>
