@@ -52,6 +52,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
+	btnAtoms->setEnabled(g_bHasScatlens);
 
 	if(m_settings.contains("main/geo"))
 	{
@@ -211,6 +212,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SetCrystalType()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(CalcPeaks()));
 	QObject::connect(checkPowder, SIGNAL(stateChanged(int)), this, SLOT(CalcPeaks()));
+
+	QObject::connect(btnAtoms, SIGNAL(clicked(bool)), this, SLOT(ShowAtomsDlg()));
+
 
 
 	// --------------------------------------------------------------------------------
@@ -676,6 +680,7 @@ TazDlg::~TazDlg()
 	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
 	if(m_pScanViewer) { delete m_pScanViewer; m_pScanViewer = nullptr; }
+	if(m_pAtomsDlg) { delete m_pAtomsDlg; m_pAtomsDlg = nullptr; }
 
 #if !defined NO_3D
 	if(m_pRecip3d) { delete m_pRecip3d; m_pRecip3d = 0; }

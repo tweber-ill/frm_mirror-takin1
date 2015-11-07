@@ -36,6 +36,7 @@
 #include "dialogs/DWDlg.h"
 #include "dialogs/DynPlaneDlg.h"
 #include "dialogs/FormfactorDlg.h"
+#include "dialogs/AtomsDlg.h"
 
 
 #if !defined NO_NET
@@ -131,6 +132,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		DWDlg *m_pDWDlg = nullptr;
 		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
 		FormfactorDlg* m_pFormfactorDlg = nullptr;
+		AtomsDlg *m_pAtomsDlg = nullptr;
 
 		ScanViewerDlg *m_pScanViewer = nullptr;
 
@@ -217,6 +219,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowSgListDlg();
 		void ShowFormfactorDlg();
+		void ShowAtomsDlg();
 
 
 		void ShowSpurions();

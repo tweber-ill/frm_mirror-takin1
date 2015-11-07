@@ -82,7 +82,7 @@ bool TazDlg::Load(const char* pcFile)
 
 	std::string strDescr = xml.QueryString((strXmlRoot+"sample/descr").c_str(), "", &bOk);
 	if(bOk)
-		this->editDescr->setPlainText(strDescr.c_str());
+		editDescr->setText(strDescr.c_str());
 
 
 	/*// spin boxes
@@ -240,7 +240,7 @@ bool TazDlg::Save()
 		++iIdxEdit;
 	}
 
-	mapConf[strXmlRoot + "sample/descr"] = editDescr->toPlainText().toStdString();
+	mapConf[strXmlRoot + "sample/descr"] = editDescr->text().toStdString();
 
 	/*// spin boxes
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxesSample.size(); ++iSpinBox)
@@ -462,7 +462,7 @@ bool TazDlg::Import(const char* pcFile)
 		std::string strSample = pdat->GetSampleName();
 		if(strSample != "")
 			strExp += std::string(" - ") + strSample;
-		editDescr->setPlainText(strExp.c_str());
+		editDescr->setText(strExp.c_str());
 
 		iScanNum = pdat->GetScanCount();
 		if(iScanNum)

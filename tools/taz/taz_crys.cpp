@@ -474,6 +474,14 @@ void TazDlg::ShowFormfactorDlg()
 	m_pFormfactorDlg->activateWindow();
 }
 
+void TazDlg::ShowAtomsDlg()
+{
+	if(!m_pAtomsDlg)
+		m_pAtomsDlg = new AtomsDlg(this, &m_settings);
+	m_pAtomsDlg->show();
+	m_pAtomsDlg->activateWindow();
+}
+
 
 #ifdef USE_CLP
 

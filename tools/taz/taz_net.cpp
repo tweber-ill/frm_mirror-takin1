@@ -150,9 +150,7 @@ void TazDlg::Disconnected()
 void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag)
 {
 	if(crys.strSampleName != "")
-	{
-		this->editDescr->setPlainText(crys.strSampleName.c_str());
-	}
+		editDescr->setText(crys.strSampleName.c_str());
 
 	if(crys.bChangedLattice)
 	{

@@ -340,6 +340,9 @@
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
         <widget class="QTableWidget" name="tableConst">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
          <column>
           <property name="text">
            <string>Name</string>

@@ -244,12 +244,22 @@
            </sizepolicy>
           </property>
           <property name="title">
-           <string>Sample</string>
+           <string>Sample Unit Cell</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_4">
            <property name="bottomMargin">
             <number>9</number>
            </property>
+           <item row="1" column="10">
+            <widget class="QLineEdit" name="editBetaRecip">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="4">
             <widget class="QLabel" name="label_7">
              <property name="text">
@@ -378,16 +388,6 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="10">
-            <widget class="QLineEdit" name="editBetaRecip">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="8">
             <widget class="QLineEdit" name="editBRecip"/>
            </item>
@@ -422,19 +422,6 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="12" rowspan="2">
-            <widget class="QPlainTextEdit" name="editDescr">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOff</enum>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="11" rowspan="3">
             <widget class="Line" name="line_2">
              <property name="orientation">
@@ -442,10 +429,39 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="12">
+           <item row="0" column="12">
+            <widget class="QLineEdit" name="editDescr">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="12">
             <widget class="QCheckBox" name="checkPowder">
              <property name="text">
               <string>Powder</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="12">
+            <widget class="QPushButton" name="btnAtoms">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Atoms...</string>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -461,7 +477,7 @@
            </sizepolicy>
           </property>
           <property name="title">
-           <string>TAS</string>
+           <string>Instrument</string>
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <item row="1" column="0">
@@ -541,7 +557,7 @@
            </sizepolicy>
           </property>
           <property name="title">
-           <string>Space Group</string>
+           <string>Sample Space Group</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
            <item row="0" column="0" colspan="2">
@@ -621,6 +637,7 @@
   <tabstop>editGammaRecip</tabstop>
   <tabstop>editDescr</tabstop>
   <tabstop>checkPowder</tabstop>
+  <tabstop>btnAtoms</tabstop>
   <tabstop>comboSpaceGroups</tabstop>
   <tabstop>editSpaceGroupsFilter</tabstop>
   <tabstop>editCrystalSystem</tabstop>

@@ -68,6 +68,7 @@ add_executable(takin tools/taz/taz_main.cpp
 	dialogs/RecipParamDlg.cpp dialogs/RealParamDlg.cpp
 	dialogs/SrvDlg.cpp dialogs/NetCacheDlg.cpp
 	dialogs/EllipseDlg.cpp dialogs/FormfactorDlg.cpp
+	dialogs/AtomsDlg.cpp
 
 	helper/globals.cpp helper/spacegroup.cpp helper/crystalsys.cpp
 	helper/formfact.cpp

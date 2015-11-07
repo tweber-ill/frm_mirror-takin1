@@ -188,7 +188,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o obj/FormfactorDlg.o \
-	obj/FilePreviewDlg.o \
+	obj/FilePreviewDlg.o obj/AtomsDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/xml.o obj/crystalsys.o obj/formfact.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
@@ -302,6 +302,8 @@ obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
 obj/RealParamDlg.o: dialogs/RealParamDlg.cpp dialogs/RealParamDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/GotoDlg.o: dialogs/GotoDlg.cpp dialogs/GotoDlg.h tlibs/math/lattice.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/AtomsDlg.o: dialogs/AtomsDlg.cpp dialogs/AtomsDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SettingsDlg.o: dialogs/SettingsDlg.cpp dialogs/SettingsDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
