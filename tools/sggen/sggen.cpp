@@ -93,7 +93,7 @@ void gen_atoms()
 		{
 			const t_vec& vec = vecPos[iPos];
 
-			std::cout << "\t(" << (iPos+1) << ") " << vec << "\n";
+			//std::cout << "\t(" << (iPos+1) << ") " << vec << "\n";
 
 			// map back to 1st Brillouin zone
 			t_vec vecCoord = vec;
@@ -105,6 +105,7 @@ void gen_atoms()
 				while(vecCoord[iComp] < -dBZSize*0.5)
 					vecCoord[iComp] += dBZSize;
 			}
+			std::cout << "\t(" << (iPos+1) << ") " << vecCoord << "\n";
 
 			tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
 			pTrafo->SetTrans(matGlobal * vecCoord);
