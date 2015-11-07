@@ -6,6 +6,7 @@
  */
 
 #include "formfact.h"
+#include "globals.h"
 #include "tlibs/math/math.h"
 #include "tlibs/helper/log.h"
 #include "tlibs/file/xml.h"
@@ -17,7 +18,7 @@
 void FormfactList::Init()
 {
 	tl::Xml xml;
-	if(!xml.Load("res/ffacts.xml"))
+	if(!xml.Load(find_resource("res/ffacts.xml").c_str()))
 		return;
 
 	unsigned int iNumDat = xml.Query<unsigned int>("ffacts/num_atoms", 0);
@@ -59,7 +60,7 @@ FormfactList::~FormfactList()
 void ScatlenList::Init()
 {
 	tl::Xml xml;
-	if(!xml.Load("res/scatlens.xml"))
+	if(!xml.Load(find_resource("res/scatlens.xml").c_str()))
 		return;
 
 	const unsigned int iNumDat = xml.Query<unsigned int>("scatlens/num_atoms", 0);

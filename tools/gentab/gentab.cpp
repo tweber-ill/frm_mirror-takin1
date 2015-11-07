@@ -42,7 +42,7 @@ namespace dat = clipper::data;
 bool gen_formfacts()
 {
 	prop::ptree prop;
-	prop.add("ffacts.source", "form factor coefficients extracted from Clipper: http://www.ysbl.york.ac.uk/~cowtan/clipper/");
+	prop.add("ffacts.source", "form factor coefficients from Clipper: http://www.ysbl.york.ac.uk/~cowtan/clipper/");
 	prop.add("ffacts.num_atoms", tl::var_to_str(dat::numsfdata));
 
 	for(unsigned int iFF=0; iFF<dat::numsfdata; ++iFF)

@@ -92,6 +92,8 @@
       <File Name="tlibs/string/string.h"/>
       <File Name="tlibs/string/spec_char.h"/>
     </VirtualDirectory>
+    <File Name="tlibs/version.cpp"/>
+    <File Name="tlibs/version.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="tools">
     <VirtualDirectory Name="res">

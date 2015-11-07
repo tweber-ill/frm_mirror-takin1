@@ -9,6 +9,7 @@
 #include "tlibs/helper/log.h"
 #include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
+#include "helper/globals.h"
 
 #include <QMetaType>
 
@@ -32,6 +33,14 @@ int main(int argc, char** argv)
 				", headers: ", TLIBS_VERSION, ".");
 			return -1;
 		}
+
+		// check tables
+		g_bHasScatlens = (find_resource("res/scatlens.xml") != "");
+		g_bHasFormfacts = (find_resource("res/ffacts.xml") != "");
+		if(!g_bHasScatlens)
+			tl::log_warn("Scattering length table not found.");
+		if(!g_bHasFormfacts)
+			tl::log_warn("Form factor coefficient table not found.");
 
 
 		#if defined Q_WS_X11 && !defined NO_3D

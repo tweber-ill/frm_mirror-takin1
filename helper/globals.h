@@ -14,7 +14,11 @@
 
 extern unsigned int g_iPrec;
 extern unsigned int g_iPrecGfx;
+extern bool g_bHasFormfacts;
+extern bool g_bHasScatlens;
+
 
 extern QIcon load_icon(const std::string& strIcon);
+extern std::string find_resource(const std::string& strFile);
 
 #endif

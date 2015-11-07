@@ -1,5 +1,5 @@
 /*
- * Form Factor Dialog
+ * Form Factor & Scattering Length Dialog
  * @author tweber
  * @date nov-2015
  * @license GPLv2
@@ -17,8 +17,10 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 {
 	this->setupUi(this);
 	SetupAtoms();
-	
+
 	QColor colorBck(240, 240, 240, 255);
+
+	// form factors
 	plotF->setCanvasBackground(colorBck);
 
 	m_pGrid = new QwtPlotGrid();
@@ -55,18 +57,53 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 #endif
 	m_pPicker->setEnabled(1);
 
-
 	plotF->setAxisTitle(QwtPlot::xBottom, "Scattering Wavenumber Q (1/A)");
-	plotF->setAxisTitle(QwtPlot::yLeft, "Atomic Form Factor f");	
+	plotF->setAxisTitle(QwtPlot::yLeft, "Atomic Form Factor f");
 
+
+	// scattering lengths
+	plotSc->setCanvasBackground(colorBck);
+
+	m_pGridSc = new QwtPlotGrid();
+	m_pGridSc->setPen(penGrid);
+	m_pGridSc->attach(plotSc);
+
+	m_pCurveSc = new QwtPlotCurve("Scattering Lengths");
+	m_pCurveSc->setPen(penCurve);
+	m_pCurveSc->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pCurveSc->attach(plotSc);
+
+	plotSc->canvas()->setMouseTracking(1);
+	m_pPickerSc = new QwtPlotPicker(plotSc->xBottom, plotSc->yLeft,
+#if QWT_VER<6
+									QwtPlotPicker::PointSelection,
+#endif
+									QwtPlotPicker::NoRubberBand,
+#if QWT_VER>=6
+									QwtPlotPicker::AlwaysOff,
+#else
+									QwtPlotPicker::AlwaysOn,
+#endif
+									plotSc->canvas());
+
+#if QWT_VER>=6
+	m_pPickerSc->setStateMachine(new QwtPickerTrackerMachine());
+	connect(m_pPickerSc, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
+#endif
+	m_pPickerSc->setEnabled(1);
+
+	plotSc->setAxisTitle(QwtPlot::xBottom, "Element");
+	plotSc->setAxisTitle(QwtPlot::yLeft, "Scattering Length b");
 
 
 
 	QObject::connect(listAtoms, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
 		this, SLOT(AtomSelected(QListWidgetItem*, QListWidgetItem*)));
-	
 	QObject::connect(editFilter, SIGNAL(textEdited(const QString&)),
 		this, SLOT(SearchAtom(const QString&)));
+
+	QObject::connect(radioCoherent, SIGNAL(toggled(bool)),
+		this, SLOT(PlotScatteringLengths()));
 
 
 	if(m_pSettings && m_pSettings->contains("formfactors/geo"))
@@ -74,22 +111,26 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 
 
 	SearchAtom("H");
+	//radioCoherent->setChecked(1);
+	PlotScatteringLengths();
 }
 
 FormfactorDlg::~FormfactorDlg()
 {
-	if(m_pPicker)
-	{
-		m_pPicker->setEnabled(0);
-		delete m_pPicker;
-		m_pPicker = nullptr;
-	}
+	for(QwtPlotPicker** pPicker : {&m_pPicker, &m_pPickerSc})
+		if(*pPicker)
+		{
+			(*pPicker)->setEnabled(0);
+			delete (*pPicker);
+			*pPicker = nullptr;
+		}
 
-	if(m_pGrid)
-	{
-		delete m_pGrid;
-		m_pGrid = nullptr;
-	}
+	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridSc})
+		if(*pGrid)
+		{
+			delete (*pGrid);
+			*pGrid = nullptr;
+		}
 }
 
 
@@ -115,7 +156,7 @@ static QListWidgetItem* create_header_item(const char *pcTitle, bool bSubheader=
 void FormfactorDlg::SetupAtoms()
 {
 	bool bHadIonsHeader = 0, bIonsBegin = 0;
-	
+
 	FormfactList lstff;
 	for(unsigned int iFF=0; iFF<lstff.GetNumFormfacts(); ++iFF)
 	{
@@ -141,7 +182,7 @@ void FormfactorDlg::SetupAtoms()
 			listAtoms->addItem(create_header_item("Ions"));
 			bHadIonsHeader = 1;
 		}
-		
+
 		std::ostringstream ostrAtom;
 		if(!bHadIonsHeader)
 			ostrAtom << (iFF+1) << " ";
@@ -167,7 +208,7 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 
 	m_vecQ.reserve(NUM_POINTS);
 	m_vecFF.reserve(NUM_POINTS);
-	
+
 	FormfactList lstff;
 	if(iAtom < lstff.GetNumFormfacts())
 	{
@@ -177,7 +218,7 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 		{
 			const double dQ = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt));
 			const double dFF = ff.GetFormfact(dQ);
-			
+
 			m_vecQ.push_back(dQ);
 			m_vecFF.push_back(dFF);
 		}
@@ -193,20 +234,69 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 }
 
 
+void FormfactorDlg::PlotScatteringLengths()
+{
+	const bool bCoh = radioCoherent->isChecked();
+
+	m_vecElem.clear();
+	m_vecSc.clear();
+
+	ScatlenList lstsc;
+	for(unsigned int iAtom=0; iAtom<lstsc.GetNumElems(); ++iAtom)
+	{
+		const ScatlenList::elem_type& sc = lstsc.GetElem(iAtom);
+		std::complex<double> b = bCoh ? sc.GetCoherent() : sc.GetIncoherent();
+
+		m_vecElem.push_back(double(iAtom+1));
+		m_vecSc.push_back(b.real());
+	}
+
+#if QWT_VER>=6
+	m_pCurveSc->setRawSamples(m_vecElem.data(), m_vecSc.data(), m_vecElem.size());
+#else
+	m_pCurveSc->setRawData(m_vecElem.data(), m_vecSc.data(), m_vecElem.size());
+#endif
+
+	plotSc->replot();
+}
+
 void FormfactorDlg::cursorMoved(const QPointF& pt)
 {
-	std::wstring strX = std::to_wstring(pt.x());
-	std::wstring strY = std::to_wstring(pt.y());
+	if(tabWidget->currentIndex() == 0)
+	{
+		std::wstring strX = std::to_wstring(pt.x());
+		std::wstring strY = std::to_wstring(pt.y());
 
-	const std::wstring strAA = tl::get_spec_char_utf16("AA") + 
-		tl::get_spec_char_utf16("sup-") + 
-		tl::get_spec_char_utf16("sup1");
+		const std::wstring strAA = tl::get_spec_char_utf16("AA") +
+			tl::get_spec_char_utf16("sup-") +
+			tl::get_spec_char_utf16("sup1");
 
-	std::wostringstream ostr;
-	ostr << L"Q = " << strX << L" " << strAA; 
-	ostr << L", f = " << strY;
+		std::wostringstream ostr;
+		ostr << L"Q = " << strX << L" " << strAA;
+		ostr << L", f = " << strY;
 
-	labelStatus->setText(QString::fromWCharArray(ostr.str().c_str()));
+		labelStatus->setText(QString::fromWCharArray(ostr.str().c_str()));
+	}
+	else if(tabWidget->currentIndex() == 1)
+	{
+		ScatlenList lst;
+
+		int iElem = std::round(pt.x());
+		if(iElem<=0 || iElem>=lst.GetNumElems())
+		{
+			labelStatus->setText("");
+			return;
+		}
+
+		const std::string& strName = lst.GetElem(unsigned(iElem-1)).GetAtomName();
+		std::complex<double> b_coh = lst.GetElem(unsigned(iElem-1)).GetCoherent();
+		std::complex<double> b_inc = lst.GetElem(unsigned(iElem-1)).GetIncoherent();
+
+		std::ostringstream ostr;
+		ostr << iElem << ", " << strName
+			<< ": b_coh = " << b_coh << ", b_inc = " << b_inc;
+		labelStatus->setText(ostr.str().c_str());
+	}
 }
 
 void FormfactorDlg::closeEvent(QCloseEvent* pEvt)

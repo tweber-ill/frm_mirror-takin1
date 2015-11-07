@@ -35,6 +35,7 @@
 #include "dialogs/SettingsDlg.h"
 #include "dialogs/DWDlg.h"
 #include "dialogs/DynPlaneDlg.h"
+#include "dialogs/FormfactorDlg.h"
 
 
 #if !defined NO_NET
@@ -52,7 +53,6 @@
 #ifdef USE_CLP
 	#include "../sglist/SgListDlg.h"
 	#include "helper/spacegroup_clp.h"
-	#include "dialogs/FormfactorDlg.h"
 #else
 	#include "helper/spacegroup.h"
 #endif
@@ -130,6 +130,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		PowderDlg *m_pPowderDlg = nullptr;
 		DWDlg *m_pDWDlg = nullptr;
 		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
+		FormfactorDlg* m_pFormfactorDlg = nullptr;
 
 		ScanViewerDlg *m_pScanViewer = nullptr;
 
@@ -147,7 +148,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 #ifdef USE_CLP
 		SgListDlg *m_pSgListDlg = nullptr;
-		FormfactorDlg* m_pFormfactorDlg = nullptr;
 #endif
 
 	protected:

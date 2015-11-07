@@ -421,11 +421,15 @@ TazDlg::TazDlg(QWidget* pParent)
 	pDW->setText("Scattering Factors...");
 	pMenuCalc->addAction(pDW);
 
-#ifdef USE_CLP
-	QAction *pFormfactor = new QAction(this);
-	pFormfactor->setText("Atomic Form Factors...");
-	pMenuCalc->addAction(pFormfactor);
+	QAction *pFormfactor = nullptr;
+	if(g_bHasFormfacts && g_bHasScatlens)
+	{
+		pFormfactor = new QAction(this);
+		pFormfactor->setText("Elements...");
+		pMenuCalc->addAction(pFormfactor);
+	}
 
+#ifdef USE_CLP
 	QAction *pSgList = new QAction(this);
 	pSgList->setText("Space Group Types...");
 	pMenuCalc->addAction(pSgList);
@@ -566,8 +570,10 @@ TazDlg::TazDlg(QWidget* pParent)
 
 #ifdef USE_CLP
 	QObject::connect(pSgList, SIGNAL(triggered()), this, SLOT(ShowSgListDlg()));
-	QObject::connect(pFormfactor, SIGNAL(triggered()), this, SLOT(ShowFormfactorDlg()));
 #endif
+
+	if(pFormfactor)
+		QObject::connect(pFormfactor, SIGNAL(triggered()), this, SLOT(ShowFormfactorDlg()));
 
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -684,8 +690,9 @@ TazDlg::~TazDlg()
 
 #ifdef USE_CLP
 	if(m_pSgListDlg) { delete m_pSgListDlg; m_pSgListDlg = 0; }
-	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }
 #endif
+
+	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }
 }
 
 
