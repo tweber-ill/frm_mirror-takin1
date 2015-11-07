@@ -10,7 +10,18 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <vector>
+#include <string>
+
 #include "ui/ui_atoms.h"
+namespace ublas = boost::numeric::ublas;
+
+struct AtomPos
+{
+	std::string strAtomName;
+	ublas::vector<double> vecPos;
+};
 
 
 class AtomsDlg : public QDialog, Ui::AtomsDlg
@@ -20,6 +31,7 @@ protected:
 
 protected:
 	virtual void closeEvent(QCloseEvent*) override;
+	void SendApplyAtoms();
 
 protected slots:
 	void ButtonBoxClicked(QAbstractButton* pBtn);
@@ -29,6 +41,11 @@ protected slots:
 public:
 	AtomsDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr);
 	virtual ~AtomsDlg();
+
+	void SetAtoms(const std::vector<AtomPos>& vecAtoms);
+
+signals:
+	void ApplyAtoms(const std::vector<AtomPos>& vecAtoms);
 };
 
 

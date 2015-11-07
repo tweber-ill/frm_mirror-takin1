@@ -7,6 +7,9 @@
 
 #include "AtomsDlg.h"
 #include "helper/globals.h"
+#include "tlibs/string/string.h"
+#include "tlibs/math/linalg.h"
+
 #include <iostream>
 
 
@@ -55,16 +58,58 @@ void AtomsDlg::RemoveAtom()
 
 void AtomsDlg::AddAtom()
 {
-	tableAtoms->insertRow(tableAtoms->rowCount());
+	int iRow = tableAtoms->rowCount();
+	tableAtoms->insertRow(iRow);
+	tableAtoms->setItem(iRow, 0, new QTableWidgetItem("H"));
+	for(unsigned int i=0; i<3; ++i)
+		tableAtoms->setItem(iRow, i+1, new QTableWidgetItem("0"));
 }
 
+
+void AtomsDlg::SetAtoms(const std::vector<AtomPos>& vecAtoms)
+{
+	tableAtoms->setRowCount(vecAtoms.size());
+
+	for(unsigned int iRow=0; iRow<vecAtoms.size(); ++iRow)
+	{
+		// add missing items
+		for(int iCol=0; iCol<4; ++iCol)
+			if(!tableAtoms->item(iRow, iCol))
+				tableAtoms->setItem(iRow, iCol, new QTableWidgetItem(""));
+
+		const AtomPos& atom = vecAtoms[iRow];
+		tableAtoms->item(iRow, 0)->setText(atom.strAtomName.c_str());
+		for(unsigned int i=0; i<3; ++i)
+			tableAtoms->item(iRow, i+1)->setText(tl::var_to_str(atom.vecPos[i]).c_str());
+	}
+}
+
+void AtomsDlg::SendApplyAtoms()
+{
+	std::vector<AtomPos> vecAtoms;
+	vecAtoms.reserve(tableAtoms->rowCount());
+
+	for(int iRow=0; iRow<tableAtoms->rowCount(); ++iRow)
+	{
+		AtomPos atom;
+		atom.strAtomName = tableAtoms->item(iRow, 0)->text().toStdString();
+		double dX = tl::str_to_var<double>(tableAtoms->item(iRow, 1)->text().toStdString());
+		double dY = tl::str_to_var<double>(tableAtoms->item(iRow, 2)->text().toStdString());
+		double dZ = tl::str_to_var<double>(tableAtoms->item(iRow, 3)->text().toStdString());
+		atom.vecPos = tl::make_vec({dX, dY, dZ});
+
+		vecAtoms.push_back(std::move(atom));
+	}
+
+	emit ApplyAtoms(vecAtoms);
+}
 
 void AtomsDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 {
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ApplyRole ||
 	   buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
-
+		SendApplyAtoms();
 	}
 	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::RejectRole)
 	{

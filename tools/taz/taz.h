@@ -115,6 +115,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
 
+		std::vector<AtomPos> m_vecAtoms;
 		CrystalSystem m_crystalsys = CRYS_NOT_SET;
 		const t_mapSpaceGroups* m_pmapSpaceGroups;
 
@@ -219,7 +220,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowSgListDlg();
 		void ShowFormfactorDlg();
+
 		void ShowAtomsDlg();
+		void ApplyAtoms(const std::vector<AtomPos>& vecAtoms);
 
 
 		void ShowSpurions();

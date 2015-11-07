@@ -477,11 +477,22 @@ void TazDlg::ShowFormfactorDlg()
 void TazDlg::ShowAtomsDlg()
 {
 	if(!m_pAtomsDlg)
+	{
 		m_pAtomsDlg = new AtomsDlg(this, &m_settings);
+		QObject::connect(m_pAtomsDlg, SIGNAL(ApplyAtoms(const std::vector<AtomPos>&)),
+			this, SLOT(ApplyAtoms(const std::vector<AtomPos>&)));
+	}
+
+	m_pAtomsDlg->SetAtoms(m_vecAtoms);
 	m_pAtomsDlg->show();
 	m_pAtomsDlg->activateWindow();
 }
 
+void TazDlg::ApplyAtoms(const std::vector<AtomPos>& vecAtoms)
+{
+	m_vecAtoms = vecAtoms;
+	CalcPeaks();
+}
 
 #ifdef USE_CLP
 

@@ -182,6 +182,29 @@ bool TazDlg::Load(const char* pcFile)
 	}
 
 
+	m_vecAtoms.clear();
+	unsigned int iNumAtoms = xml.Query<unsigned int>((strXmlRoot + "sample/atoms/num").c_str(), 0, &bOk);
+	if(bOk)
+	{
+		m_vecAtoms.reserve(iNumAtoms);
+
+		for(unsigned int iAtom=0; iAtom<iNumAtoms; ++iAtom)
+		{
+			AtomPos atom;
+			atom.vecPos.resize(3,0);
+
+			std::string strNr = tl::var_to_str(iAtom);
+			atom.strAtomName = xml.QueryString((strXmlRoot + "sample/atoms/" + strNr + "/name").c_str(), "");
+			atom.vecPos[0] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/x").c_str(), 0.);
+			atom.vecPos[1] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/y").c_str(), 0.);
+			atom.vecPos[2] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/z").c_str(), 0.);
+
+			m_vecAtoms.push_back(atom);
+		}
+	}
+
+
+
 	if(xml.Exists((strXmlRoot + "reso").c_str()))
 	{
 		InitReso();
@@ -310,6 +333,23 @@ bool TazDlg::Save()
 	if(strSG == "<not set>")
 		strSG = "-1";
 	mapConf[strXmlRoot + "sample/spacegroup"] = strSG;
+
+
+	mapConf[strXmlRoot + "sample/atoms/num"] = tl::var_to_str(m_vecAtoms.size());
+	for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
+	{
+		const AtomPos& atom = m_vecAtoms[iAtom];
+
+		std::string strAtomNr = tl::var_to_str(iAtom);
+		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/name"] =
+			atom.strAtomName;
+		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/x"] =
+			tl::var_to_str(atom.vecPos[0]);
+		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/y"] =
+			tl::var_to_str(atom.vecPos[1]);
+		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/z"] =
+			tl::var_to_str(atom.vecPos[2]);
+	}
 
 
 	if(m_pReso) m_pReso->Save(mapConf, strXmlRoot);
