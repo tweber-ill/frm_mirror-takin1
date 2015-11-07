@@ -93,7 +93,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPickerSc->setEnabled(1);
 
 	plotSc->setAxisTitle(QwtPlot::xBottom, "Element");
-	plotSc->setAxisTitle(QwtPlot::yLeft, "Scattering Length b");
+	plotSc->setAxisTitle(QwtPlot::yLeft, "Scattering Length b (fm)");
 
 
 
@@ -147,7 +147,7 @@ static QListWidgetItem* create_header_item(const char *pcTitle, bool bSubheader=
 	brushHeader.setColor(QColor(0xff, 0xff, 0xff));
 	pHeaderItem->setForeground(brushHeader);
 
-	pHeaderItem->setData(Qt::UserRole, 1000);	// set invalid atom number
+	pHeaderItem->setData(Qt::UserRole, 0);
 	pHeaderItem->setBackgroundColor(bSubheader ? QColor(0x85, 0x85, 0x85) : QColor(0x65, 0x65, 0x65));
 
 	return pHeaderItem;
@@ -155,16 +155,11 @@ static QListWidgetItem* create_header_item(const char *pcTitle, bool bSubheader=
 
 void FormfactorDlg::SetupAtoms()
 {
-	bool bHadIonsHeader = 0, bIonsBegin = 0;
-
 	FormfactList lstff;
-	for(unsigned int iFF=0; iFF<lstff.GetNumFormfacts(); ++iFF)
+	listAtoms->addItem(create_header_item("Atoms"));
+	for(unsigned int iFF=0; iFF<lstff.GetNumAtoms(); ++iFF)
 	{
-		if(iFF==0)
-		{
-			listAtoms->addItem(create_header_item("Atoms"));
-			listAtoms->addItem(create_header_item("Period 1", 1));
-		}
+		if(iFF==0) listAtoms->addItem(create_header_item("Period 1", 1));
 		else if(iFF==2) listAtoms->addItem(create_header_item("Period 2", 1));
 		else if(iFF==10) listAtoms->addItem(create_header_item("Period 3", 1));
 		else if(iFF==18) listAtoms->addItem(create_header_item("Period 4", 1));
@@ -172,23 +167,28 @@ void FormfactorDlg::SetupAtoms()
 		else if(iFF==54) listAtoms->addItem(create_header_item("Period 6", 1));
 		else if(iFF==86) listAtoms->addItem(create_header_item("Period 7", 1));
 
-		const Formfact<double>& ff = lstff.GetFormfact(iFF);
+		const Formfact<double>& ff = lstff.GetAtom(iFF);
 		const std::string& strAtom = ff.GetAtomName();
 
-		if(!bHadIonsHeader && (strAtom.find('+')!=std::string::npos || strAtom.find('-')!=std::string::npos))
-			bIonsBegin = 1;
-		if(bIonsBegin && !bHadIonsHeader)
-		{
-			listAtoms->addItem(create_header_item("Ions"));
-			bHadIonsHeader = 1;
-		}
+		std::ostringstream ostrAtom;
+		ostrAtom << (iFF+1) << " " << strAtom;
+		QListWidgetItem* pItem = new QListWidgetItem(ostrAtom.str().c_str());
+		pItem->setData(Qt::UserRole, 1);
+		pItem->setData(Qt::UserRole+1, iFF);
+		listAtoms->addItem(pItem);
+	}
+
+	listAtoms->addItem(create_header_item("Ions"));
+	for(unsigned int iFF=0; iFF<lstff.GetNumIons(); ++iFF)
+	{
+		const Formfact<double>& ff = lstff.GetIon(iFF);
+		const std::string& strAtom = ff.GetAtomName();
 
 		std::ostringstream ostrAtom;
-		if(!bHadIonsHeader)
-			ostrAtom << (iFF+1) << " ";
 		ostrAtom << strAtom;
 		QListWidgetItem* pItem = new QListWidgetItem(ostrAtom.str().c_str());
-		pItem->setData(Qt::UserRole, iFF);
+		pItem->setData(Qt::UserRole, 2);
+		pItem->setData(Qt::UserRole+1, iFF);
 		listAtoms->addItem(pItem);
 	}
 }
@@ -196,7 +196,8 @@ void FormfactorDlg::SetupAtoms()
 void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 {
 	if(!pItem) return;
-	const unsigned int iAtom = pItem->data(Qt::UserRole).toUInt();
+	const unsigned int iAtomOrIon = pItem->data(Qt::UserRole).toUInt();
+	const unsigned int iAtom = pItem->data(Qt::UserRole+1).toUInt();
 
 	const unsigned int NUM_POINTS = 512;
 
@@ -210,9 +211,10 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	m_vecFF.reserve(NUM_POINTS);
 
 	FormfactList lstff;
-	if(iAtom < lstff.GetNumFormfacts())
+	if((iAtomOrIon==1 && iAtom < lstff.GetNumAtoms()) ||
+		(iAtomOrIon==2 && iAtom < lstff.GetNumIons()))
 	{
-		const Formfact<double>& ff = lstff.GetFormfact(iAtom);
+		const Formfact<double>& ff = (iAtomOrIon==1 ? lstff.GetAtom(iAtom) : lstff.GetIon(iAtom));
 
 		for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 		{
@@ -282,7 +284,7 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 		ScatlenList lst;
 
 		int iElem = std::round(pt.x());
-		if(iElem<=0 || iElem>=lst.GetNumElems())
+		if(iElem<=0 || iElem>=int(lst.GetNumElems()))
 		{
 			labelStatus->setText("");
 			return;

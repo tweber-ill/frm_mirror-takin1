@@ -24,6 +24,9 @@ struct Formfact
 {
 	friend class FormfactList;
 
+	public:
+		typedef T value_type;
+
 	protected:
 		std::string strAtom;
 
@@ -43,19 +46,29 @@ struct Formfact
 
 class FormfactList
 {
+	public:
+		typedef Formfact<double> elem_type;
+		typedef typename elem_type::value_type value_type;
+
 	private:
 		static void Init();
 
 	protected:
-		static std::vector<Formfact<double>> s_vecFormfact;
+		static std::vector<elem_type> s_vecAtoms, s_vecIons;
 
 	public:
 		FormfactList();
 		virtual ~FormfactList();
 
-		unsigned int GetNumFormfacts() const { return s_vecFormfact.size(); }
-		const Formfact<double>& GetFormfact(unsigned int iFormfact) const 
-		{ return s_vecFormfact[iFormfact]; }
+		unsigned int GetNumAtoms() const { return s_vecAtoms.size(); }
+		const elem_type& GetAtom(unsigned int iFormfact) const
+		{ return s_vecAtoms[iFormfact]; }
+
+		unsigned int GetNumIons() const { return s_vecIons.size(); }
+		const elem_type& GetIon(unsigned int iFormfact) const
+		{ return s_vecIons[iFormfact]; }
+
+		const elem_type* Find(const std::string& strElem) const;
 };
 
 

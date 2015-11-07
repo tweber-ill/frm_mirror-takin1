@@ -11,8 +11,10 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 find_package(Boost REQUIRED COMPONENTS iostreams system filesystem regex python REQUIRED)
 find_package(Threads REQUIRED)
+find_package(tlibs REQUIRED)
 find_package(Qt4 REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(PythonInterp 2.7 REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Qwt REQUIRED)
 
@@ -34,6 +36,7 @@ add_definitions(${Boost_CXX_FLAGS})
 
 include_directories("${PROJECT_SOURCE_DIR}" ".")
 include_directories("${Boost_INCLUDE_DIRS}/..")
+include_directories("${tlibs_INCLUDE_DIRS}/..")
 include_directories("${PYTHON_INCLUDE_DIRS}")
 include_directories("${PNG_INCLUDE_DIRS}")
 include_directories("${QWT_INCLUDE_DIRS}")
@@ -64,22 +67,15 @@ add_executable(takin tools/taz/taz_main.cpp
 	dialogs/NeutronDlg.cpp dialogs/SpurionDlg.cpp dialogs/PowderDlg.cpp
 	dialogs/RecipParamDlg.cpp dialogs/RealParamDlg.cpp
 	dialogs/SrvDlg.cpp dialogs/NetCacheDlg.cpp
-	dialogs/EllipseDlg.cpp
+	dialogs/EllipseDlg.cpp dialogs/FormfactorDlg.cpp
 
 	helper/globals.cpp helper/spacegroup.cpp helper/crystalsys.cpp
-
-	tlibs/file/loadinstr.cpp tlibs/file/recent.cpp tlibs/file/xml.cpp
-	tlibs/helper/log.cpp
-	tlibs/math/linalg2.cpp tlibs/math/rand.cpp
-	tlibs/net/tcp.cpp
-	tlibs/string/spec_char.cpp
-	tlibs/version.cpp
-
-#	helper/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp tlibs/gfx/gl.cpp
+	helper/formfact.cpp
+#	helper/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp
 )
 
 
-target_link_libraries(takin ${Boost_LIBRARIES} Threads::Threads
+target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES} Threads::Threads
 	Qt4::QtCore Qt4::QtGui Qt4::QtSvg #Qt4::QtOpenGL
 	${PYTHON_LIBRARIES} ${PNG_LIBRARIES} ${QWT_LIBRARIES}
 )

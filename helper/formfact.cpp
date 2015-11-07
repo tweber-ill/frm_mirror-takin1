@@ -22,39 +22,77 @@ void FormfactList::Init()
 		return;
 
 	unsigned int iNumDat = xml.Query<unsigned int>("ffacts/num_atoms", 0);
-
+	bool bIonStart = 0;
 	for(unsigned int iSf=0; iSf<iNumDat; ++iSf)
 	{
-		Formfact<double> ffact;
+		elem_type ffact;
 		std::string strAtom = "ffacts/atom_" + tl::var_to_str(iSf);
 
 		ffact.strAtom = xml.QueryString((strAtom + "/name").c_str(), "");
-		tl::get_tokens<double, std::string, std::vector<double>>
+		tl::get_tokens<value_type, std::string, std::vector<value_type>>
 			(xml.QueryString((strAtom + "/a").c_str(), ""), " \t", ffact.a);
-		tl::get_tokens<double, std::string, std::vector<double>>
+		tl::get_tokens<value_type, std::string, std::vector<value_type>>
 			(xml.QueryString((strAtom + "/b").c_str(), ""), " \t", ffact.b);
-		ffact.c = xml.Query<double>((strAtom + "/c").c_str(), 0.);
+		ffact.c = xml.Query<value_type>((strAtom + "/c").c_str(), 0.);
 
-		s_vecFormfact.push_back(std::move(ffact));
+		if(!bIonStart && ffact.strAtom.find_first_of("+-") != std::string::npos)
+			bIonStart = 1;
+
+		if(!bIonStart)
+			s_vecAtoms.push_back(std::move(ffact));
+		else
+			s_vecIons.push_back(std::move(ffact));
 	}
 }
 
-std::vector<Formfact<double>> FormfactList::s_vecFormfact;
+std::vector<Formfact<double>> FormfactList::s_vecAtoms;
+std::vector<Formfact<double>> FormfactList::s_vecIons;
 
 // -----------------------------------------------------------------------------
 
 
 FormfactList::FormfactList()
 {
-	if(!s_vecFormfact.size())
+	if(!s_vecAtoms.size())
 		Init();
 }
 
 FormfactList::~FormfactList()
 {}
 
+const FormfactList::elem_type* FormfactList::Find(const std::string& strElem) const
+{
+	typedef typename decltype(s_vecAtoms)::const_iterator t_iter;
+
+	// atoms
+	t_iter iter = std::find_if(s_vecAtoms.begin(), s_vecAtoms.end(),
+		[&strElem](const elem_type& elem)->bool
+		{
+			//std::cout << elem.GetAtomName() << std::endl;
+			return elem.GetAtomName() == strElem;
+		});
+	if(iter != s_vecAtoms.end())
+		return &*iter;
+
+	// ions
+	iter = std::find_if(s_vecIons.begin(), s_vecIons.end(),
+		[&strElem](const elem_type& elem)->bool
+		{
+			//std::cout << elem.GetAtomName() << std::endl;
+			return elem.GetAtomName() == strElem;
+		});
+	if(iter != s_vecIons.end())
+		return &*iter;
+
+	return nullptr;
+}
+
+
+
 
 // =============================================================================
+
+
 
 
 void ScatlenList::Init()
@@ -107,16 +145,20 @@ const ScatlenList::elem_type* ScatlenList::Find(const std::string& strElem) cons
 			//std::cout << elem.GetAtomName() << std::endl;
 			return elem.GetAtomName() == strElem;
 		});
+	if(iter != s_vecElems.end())
+		return &*iter;
 
 	// isotopes
-	if(iter == s_vecElems.end())
-	{
-	}
+	iter = std::find_if(s_vecIsotopes.begin(), s_vecIsotopes.end(),
+		[&strElem](const elem_type& elem)->bool
+		{
+			//std::cout << elem.GetAtomName() << std::endl;
+			return elem.GetAtomName() == strElem;
+		});
+	if(iter != s_vecIsotopes.end())
+		return &*iter;
 
-	if(iter == s_vecElems.end())
-		return nullptr;
-
-	return &*iter;
+	return nullptr;
 }
 
 

@@ -466,6 +466,15 @@ void TazDlg::ShowResoEllipses3D() {}
 //--------------------------------------------------------------------------------
 // spacegroups & formfactors dialogs
 
+void TazDlg::ShowFormfactorDlg()
+{
+	if(!m_pFormfactorDlg)
+		m_pFormfactorDlg = new FormfactorDlg(this, &m_settings);
+	m_pFormfactorDlg->show();
+	m_pFormfactorDlg->activateWindow();
+}
+
+
 #ifdef USE_CLP
 
 void TazDlg::ShowSgListDlg()
@@ -476,17 +485,8 @@ void TazDlg::ShowSgListDlg()
 	m_pSgListDlg->activateWindow();
 }
 
-void TazDlg::ShowFormfactorDlg()
-{
-	if(!m_pFormfactorDlg)
-		m_pFormfactorDlg = new FormfactorDlg(this, &m_settings);
-	m_pFormfactorDlg->show();
-	m_pFormfactorDlg->activateWindow();
-}
-
 #else
 
 void TazDlg::ShowSgListDlg() {}
-void TazDlg::ShowFormfactorDlg() {}
 
 #endif
