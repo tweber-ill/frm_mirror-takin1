@@ -115,13 +115,17 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	clipper::Spgr_descr dsc(iSG);
 	clipper::Spacegroup sg(dsc);
 
+	std::string strHM = sg.symbol_hm();
+	std::string strHMShort = strHM; convert_hm_symbol(strHMShort);
+	std::string strPointGroup = get_pointgroup(strHMShort);
 	std::string strLaue = sg.symbol_laue();
 	std::string strCrysSys = get_crystal_system_name(get_crystal_system_from_laue_group(strLaue.c_str()));
 
 	editNr->setText(tl::var_to_str(iSG).c_str());
-	editHM->setText(sg.symbol_hm().c_str());
+	editHM->setText(strHM.c_str());
 	editHall->setText(sg.symbol_hall().c_str());
-	editLaue->setText((strLaue + " (" + strCrysSys + ")").c_str());
+	editLaue->setText(("PG: " + strPointGroup + ", LG: " + strLaue +
+		" (" + strCrysSys + ")").c_str());
 
 	const int iSymAxisA = sg.order_of_symmetry_about_axis(clipper::Spacegroup::A);
 	const int iSymAxisB = sg.order_of_symmetry_about_axis(clipper::Spacegroup::B);

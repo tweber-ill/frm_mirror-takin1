@@ -6,43 +6,7 @@
  */
 
 #include "spacegroup_clp.h"
-#include "tlibs/string/string.h"
 #include <ctype.h>
-
-// convert e.g.: "P 21 3"  ->  "P2_13"
-void convert_hm_symbol(std::string& strHM)
-{
-	std::vector<std::string> vecSyms;
-	tl::get_tokens<std::string, std::string, decltype(vecSyms)>(strHM, " ", vecSyms);
-
-	for(std::string& str : vecSyms)
-	{
-		bool bLastWasDigit = 0;
-		for(std::size_t iC = 0; iC<str.length(); ++iC)
-		{
-			std::string::value_type c = str[iC];
-
-			bool bCurIsDigit = std::isdigit(c);
-
-			if(bCurIsDigit && bLastWasDigit)
-			{
-				str.insert(iC, "_");
-				bLastWasDigit = 0;
-			}
-			else
-			{
-				bLastWasDigit = bCurIsDigit;
-			}
-		}
-	}
-
-	strHM = "";
-	for(const std::string& str : vecSyms)
-		strHM += str /*+ " "*/;
-}
-
-
-// -----------------------------------------------------------------------------
 
 
 SpaceGroup::SpaceGroup(unsigned int iNum)

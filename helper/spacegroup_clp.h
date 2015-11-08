@@ -16,9 +16,13 @@
 #include <sstream>
 #include <iomanip>
 #include <map>
+#include <algorithm>
+#include <iterator>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <clipper/clipper.h>
 #include "crystalsys.h"
+#include "tlibs/string/string.h"
+
 
 namespace ublas = boost::numeric::ublas;
 
@@ -54,8 +58,6 @@ class SpaceGroup
 
 typedef std::map<std::string, SpaceGroup> t_mapSpaceGroups;
 extern const t_mapSpaceGroups* get_space_groups();
-
-extern void convert_hm_symbol(std::string& strHM);
 
 
 template<class T=clipper::ftype>
@@ -116,6 +118,67 @@ std::string print_matrix(const ublas::matrix<T>& mat)
 	}
 
 	return ostr.str();
+}
+
+// convert e.g.: "P 21 3"  ->  "P2_13"
+template<class t_str=std::string>
+void convert_hm_symbol(t_str& strHM)
+{
+	std::vector<t_str> vecSyms;
+	tl::get_tokens<t_str, t_str, decltype(vecSyms)>(strHM, " ", vecSyms);
+
+	for(t_str& str : vecSyms)
+	{
+		bool bLastWasDigit = 0;
+		for(std::size_t iC = 0; iC<str.length(); ++iC)
+		{
+			typename t_str::value_type c = str[iC];
+			bool bCurIsDigit = std::isdigit(c);
+
+			if(bCurIsDigit && bLastWasDigit)
+			{
+				str.insert(iC, "_");
+				bLastWasDigit = 0;
+			}
+			else
+			{
+				bLastWasDigit = bCurIsDigit;
+			}
+		}
+	}
+
+	strHM = "";
+	for(const t_str& str : vecSyms)
+		strHM += str /*+ " "*/;
+}
+
+
+// get PG from SG, eg.: P2_13 -> 23
+template<class t_str=std::string>
+t_str get_pointgroup(const t_str& str)
+{
+	t_str strRet;
+
+	// remove cell centering symbol
+	std::remove_copy_if(str.begin(), str.end(),
+		std::back_insert_iterator<t_str>(strRet),
+		[](typename t_str::value_type c)->bool { return std::isupper(c); });
+
+	// remove screw axes
+	while(1)
+	{
+		std::size_t iPosScrew = strRet.find('_');
+		if(iPosScrew == t_str::npos)
+			break;
+		strRet.erase(iPosScrew, 2);
+	}
+
+	// mirror plane
+	std::replace_if(strRet.begin(), strRet.end(),
+		[](typename t_str::value_type c)->bool
+		{ return c=='a'||c=='b'||c=='c'||c=='d'||c=='e'||c=='f'||c=='n'; },
+		'm' );
+	return strRet;
 }
 
 #endif

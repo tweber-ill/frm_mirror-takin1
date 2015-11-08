@@ -8,8 +8,6 @@
 #ifndef __TAKIN_CRYSSYS_H__
 #define __TAKIN_CRYSSYS_H__
 
-#include <QLineEdit>
-
 enum CrystalSystem
 {
 	CRYS_NOT_SET,
@@ -27,6 +25,8 @@ extern CrystalSystem get_crystal_system_from_laue_group(const char* pcLaue);
 extern const char* get_crystal_system_name(CrystalSystem ty);
 
 #ifndef NO_QT
+#include <QLineEdit>
+
 extern void set_crystal_system_edits(CrystalSystem crystalsys,
 	QLineEdit* pA, QLineEdit* pB, QLineEdit* pC,
 	QLineEdit* pAlpha, QLineEdit* pBeta, QLineEdit* pGamma,
