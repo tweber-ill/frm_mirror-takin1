@@ -17,6 +17,7 @@ find_package(PythonInterp 2.7 REQUIRED)
 find_package(PythonLibs 2.7 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Qwt REQUIRED)
+find_package(Clipper)
 
 
 #message("Project source dir: ${PROJECT_SOURCE_DIR}")
@@ -26,12 +27,17 @@ message("Install path prefix: ${CMAKE_INSTALL_PREFIX}")
 message("Using qwt version ${QWT_MAJOR_VERSION}")
 message("Qt moc: ${QT_MOC_EXECUTABLE}\nQt uic: ${QT_UIC_EXECUTABLE}")
 
-
 add_definitions(-DUSE_NET -DUSE_IOSTR -DUSE_BOOST_REX -DUSE_PY -DUSE_GIL)
 add_definitions(-DQT_VER=4 -DQWT_VER=${QWT_MAJOR_VERSION})
 add_definitions(-DNO_LAPACK -DNO_3D -DNO_CLP)
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_definitions(${Boost_CXX_FLAGS})
+if(Clipper_FOUND)
+	add_definitions(-DUSE_CLP)
+	set(SG_FILES  helper/spacegroup_clp.cpp tools/sglist/SgListDlg.cpp)
+else()
+	set(SG_FILES  helper/spacegroup.cpp)
+endif()
 
 
 include_directories("${PROJECT_SOURCE_DIR}" ".")
@@ -70,7 +76,8 @@ add_executable(takin tools/taz/taz_main.cpp
 	dialogs/EllipseDlg.cpp dialogs/FormfactorDlg.cpp
 	dialogs/AtomsDlg.cpp
 
-	helper/globals.cpp helper/spacegroup.cpp helper/crystalsys.cpp
+	${SG_FILES}
+	helper/globals.cpp helper/crystalsys.cpp
 	helper/formfact.cpp
 #	helper/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp
 )
@@ -78,7 +85,7 @@ add_executable(takin tools/taz/taz_main.cpp
 
 target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES} Threads::Threads
 	Qt4::QtCore Qt4::QtGui Qt4::QtSvg #Qt4::QtOpenGL
-	${PYTHON_LIBRARIES} ${PNG_LIBRARIES} ${QWT_LIBRARIES}
+	${PYTHON_LIBRARIES} ${PNG_LIBRARIES} ${QWT_LIBRARIES} ${Clipper_LIBRARIES}
 )
 
 

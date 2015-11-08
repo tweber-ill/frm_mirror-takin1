@@ -12,6 +12,11 @@ find_library(tlibs_LIBRARIES
 	DOC "tlibs library"
 )
 
-
-message("tLibs include directories: ${tlibs_INCLUDE_DIRS}")
-message("tLibs library: ${tlibs_LIBRARIES}")
+if(tlibs_LIBRARIES)
+	set(tlibs_FOUND 1)
+	message("tLibs include directories: ${tlibs_INCLUDE_DIRS}")
+	message("tLibs library: ${tlibs_LIBRARIES}")
+else()
+	set(tlibs_FOUND 0)
+	message("Error: tLibs could not be found!")
+endif()

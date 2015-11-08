@@ -14,8 +14,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 namespace prop = boost::property_tree;
-
-#include <boost/algorithm/string/regex.hpp>
 namespace algo = boost::algorithm;
 
 
@@ -118,7 +116,7 @@ bool gen_scatlens()
 
 
 	std::vector<std::string> vecRows;
-	algo::split_regex(vecRows, strTable, boost::regex("<tr>"));
+	tl::get_tokens_seq<std::string, std::string>(strTable, "<tr>", vecRows, 0);
 
 
 	prop::ptree prop;
@@ -137,7 +135,7 @@ bool gen_scatlens()
 
 
 		std::vector<std::string> vecCol;
-		algo::split_regex(vecCol, strRow, boost::regex("<td>"));
+		tl::get_tokens_seq<std::string, std::string>(strRow, "<td>", vecCol, 0);
 
 		std::string strName = vecCol[1];  tl::trim(strName);
 		std::string strCoh = vecCol[3];   formatnumber(strCoh);
