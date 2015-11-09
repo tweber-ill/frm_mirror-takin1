@@ -1,4 +1,4 @@
-// clang -o gentab gentab.cpp -lstdc++ -lm -std=c++11 -lclipper-core -lboost_regex
+// clang -o gentab gentab.cpp -lstdc++ -lm -std=c++11 -lclipper-core
 /**
  * Creates needed tables
  * @author tweber
@@ -63,10 +63,10 @@ bool gen_formfacts()
 	}
 
 
-	std::ofstream ofstr("ffacts.xml");
+	std::ofstream ofstr("res/ffacts.xml");
 	if(!ofstr)
 	{
-		std::cerr << "Error: Cannot open \"ffacts.xml\"." << std::endl;
+		std::cerr << "Error: Cannot write \"res/ffacts.xml\"." << std::endl;
 		return false;
 	}
 	prop::write_xml(ofstr, prop,
@@ -95,10 +95,10 @@ void formatnumber(std::string& str)
 
 bool gen_scatlens()
 {
-	std::ifstream ifstr("list.html");
+	std::ifstream ifstr("res/scatlens.html");
 	if(!ifstr)
 	{
-		std::cerr << "Error: Cannot open \"list.html\"." << std::endl;
+		std::cerr << "Error: Cannot open \"res/scatlens.html\"." << std::endl;
 		return false;
 	}
 
@@ -149,10 +149,10 @@ bool gen_scatlens()
 	}
 
 
-	std::ofstream ofstr("scatlens.xml");
+	std::ofstream ofstr("res/scatlens.xml");
 	if(!ofstr)
 	{
-		std::cerr << "Error: Cannot open \"scatlens.xml\"." << std::endl;
+		std::cerr << "Error: Cannot write \"res/scatlens.xml\"." << std::endl;
 		return false;
 	}
 	prop::write_xml(ofstr, prop,

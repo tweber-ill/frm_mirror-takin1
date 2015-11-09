@@ -3,6 +3,7 @@
 
 FINDQWT=http://cmake.org/Wiki/images/2/27/FindQwt.cmake
 TANGOICONS=http://tango.freedesktop.org/releases/tango-icon-theme-0.8.90.tar.gz
+SCATLENS=https://www.ncnr.nist.gov/resources/n-lengths/list.html
 
 
 function dl_findqwt
@@ -58,9 +59,23 @@ function dl_tangoicons
 	mv -v *.svg res/
 }
 
+function dl_scatlens
+{
+	if [ ! -f res/scatlens.html ]; then
+		echo -e "Downloading scattering length list...\n"
+
+		if ! wget ${SCATLENS} -O res/scatlens.html; then
+			echo -e "Error: Cannot download scattering length list.";
+			exit -1;
+		fi
+	fi
+}
+
 
 echo -e "--------------------------------------------------------------------------------"
 dl_tangoicons
 echo -e "--------------------------------------------------------------------------------"
 dl_findqwt
+echo -e "--------------------------------------------------------------------------------"
+dl_scatlens
 echo -e "--------------------------------------------------------------------------------"

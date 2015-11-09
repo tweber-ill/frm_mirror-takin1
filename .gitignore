@@ -39,3 +39,5 @@ res/*
 !res/ellipses.svg
 !res/goto.svg
 !res/q.svg
+*.htm
+*.html

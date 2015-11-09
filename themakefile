@@ -215,6 +215,9 @@ OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 
 OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup_clp.o obj/crystalsys.o
 
+OBJ_GENTAB = obj/gentab.o
+
+
 ifeq ($(USE_3D), 1)
 	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/EllipseDlg3D.o
 endif
@@ -239,7 +242,7 @@ endif
 
 .PHONY: all clean
 
-all: takin montereso monteconvo xmonteconvo posextract scanviewer sglist
+all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -273,6 +276,9 @@ scanviewer: ${OBJ_SCANVIEWER}
 sglist: ${OBJ_SGLIST}
 	${CC} ${FLAGS} -o bin/sglist $+ ${STD_LIBS} ${QT_LIB} -lclipper-core
 	${STRIP} sglist
+
+gentab: ${OBJ_GENTAB}
+	${CC} ${FLAGS} -o bin/gentab $+ ${STD_LIBS} -lclipper-core
 
 
 
@@ -407,6 +413,9 @@ obj/posextract.o: tools/posextract/posextract.cpp
 obj/scanviewer_main.o: tools/scanviewer/main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 obj/scanviewer.o: tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer.h
+	${CC} ${FLAGS} -c -o $@ $<
+
+obj/gentab.o: tools/gentab/gentab.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/sglist_main.o: tools/sglist/main.cpp

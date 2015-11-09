@@ -100,6 +100,7 @@ add_dependencies(takin prebuild-script)
 # post-build
 add_custom_command(TARGET takin POST_BUILD
 	COMMAND strip ${CMAKE_BINARY_DIR}/bin/takin
+	COMMAND cd ${CMAKE_BINARY_DIR} && ./gentab
 	MAIN_DEPENDENCY takin
 )
 
