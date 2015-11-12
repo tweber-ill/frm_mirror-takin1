@@ -1,4 +1,4 @@
-// gcc -o sfact sfact.cpp -std=c++11 -lstdc++ -lm -I../.. -I/usr/include/QtGui/ ../../helper/spacegroup_clp.cpp ../../helper/crystalsys.cpp ../../helper/formfact.cpp ../../tlibs/file/xml.cpp -DUSE_CLP -DNO_QT -lclipper-core
+// gcc -o sfact sfact.cpp -std=c++11 -lstdc++ -lm -I../.. -I/usr/include/QtGui/ ../../helper/spacegroup_clp.cpp ../../helper/crystalsys.cpp ../../helper/globals.cpp ../../helper/formfact.cpp ../../tlibs/file/xml.cpp ../../tlibs/helper/log.cpp -DUSE_CLP -DNO_QT -lclipper-core -lboost_system -lboost_filesystem
 
 /**
  * generates structure factors
@@ -104,8 +104,11 @@ void gen_atoms_sfact()
 
 		std::complex<double> F = tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
 			(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecScatlens);
+
+		double dFsq = (std::conj(F)*F).real();
 		std::cout << "F = " << F << std::endl;
-		std::cout << "|F|^2 = " << std::conj(F)*F << std::endl;
+		std::cout << "|F| = " << std::sqrt(dFsq) << std::endl;
+		std::cout << "|F|^2 = " << dFsq << std::endl;
 	}
 }
 

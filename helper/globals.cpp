@@ -27,6 +27,7 @@ static const std::vector<std::string> s_vecInstallPaths =
 #endif
 };
 
+#ifndef NO_QT
 QIcon load_icon(const std::string& strIcon)
 {
 	std::string strFile = find_resource(strIcon);
@@ -35,6 +36,7 @@ QIcon load_icon(const std::string& strIcon)
 
 	return QIcon();
 }
+#endif
 
 std::string find_resource(const std::string& strFile)
 {
