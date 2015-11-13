@@ -9,6 +9,7 @@
 
 #include "tlibs/string/string.h"
 #include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/atoms.h"
 
 #include <boost/units/io.hpp>
 #include <qwt_picker_machine.h>
@@ -18,10 +19,21 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 		: QDialog(pParent), m_pSettings(pSettings)
 {
 	this->setupUi(this);
-	
+
+
+	QPen penGrid;
+	penGrid.setColor(QColor(0x99,0x99,0x99));
+	penGrid.setStyle(Qt::DashLine);
+
+	QPen penCurve;
+	penCurve.setColor(QColor(0,0,0x99));
+	penCurve.setWidth(2);
+
+
 	QColor colorBck(240, 240, 240, 255);
-	for(QwtPlot *pPlt : {plot, plotBose, plotAna})
+	for(QwtPlot *pPlt : {plot, plotBose, plotAna, plotLorentz})
 		pPlt->setCanvasBackground(colorBck);
+
 
 	// -------------------------------------------------------------------------
 	// Bose Factor stuff
@@ -30,10 +42,7 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcBose()));
 
 	m_pGridBose = new QwtPlotGrid();
-	QPen penGridBose;
-	penGridBose.setColor(QColor(0x99,0x99,0x99));
-	penGridBose.setStyle(Qt::DashLine);
-	m_pGridBose->setPen(penGridBose);
+	m_pGridBose->setPen(penGrid);
 	m_pGridBose->attach(plotBose);
 
 	// positive Bose factor
@@ -82,7 +91,6 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	CalcBose();
 
 
-
 	// -------------------------------------------------------------------------
 	// DW Factor stuff
 	std::vector<QDoubleSpinBox*> vecSpinBoxes = {spinAMU_deb, spinTD_deb, spinT_deb, spinMinQ_deb, spinMaxQ_deb};
@@ -90,16 +98,10 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcDW()));
 
 	m_pGrid = new QwtPlotGrid();
-	QPen penGrid;
-	penGrid.setColor(QColor(0x99,0x99,0x99));
-	penGrid.setStyle(Qt::DashLine);
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plot);
 
 	m_pCurve = new QwtPlotCurve("Debye-Waller Factor");
-	QPen penCurve;
-	penCurve.setColor(QColor(0,0,0x99));
-	penCurve.setWidth(2);
 	m_pCurve->setPen(penCurve);
 	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 	m_pCurve->attach(plot);
@@ -138,17 +140,11 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcAna()));
 
 	m_pGridAna = new QwtPlotGrid();
-	QPen penGridAna;
-	penGridAna.setColor(QColor(0x99,0x99,0x99));
-	penGridAna.setStyle(Qt::DashLine);
-	m_pGridAna->setPen(penGridAna);
+	m_pGridAna->setPen(penGrid);
 	m_pGridAna->attach(plotAna);
 
 	m_pCurveAna = new QwtPlotCurve("Analyser Factor");
-	QPen penCurveAna;
-	penCurveAna.setColor(QColor(0,0,0x99));
-	penCurveAna.setWidth(2);
-	m_pCurveAna->setPen(penCurveAna);
+	m_pCurveAna->setPen(penCurve);
 	m_pCurveAna->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 	m_pCurveAna->attach(plotAna);
 
@@ -176,11 +172,55 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	plotAna->setAxisTitle(QwtPlot::yLeft, "Intensity (a.u.)");
 
 	CalcAna();
+
+
+
+	// -------------------------------------------------------------------------
+	// Lorentz Factor stuff
+	std::vector<QDoubleSpinBox*> vecSpinBoxesLor = {spinMin2Th, spinMax2Th};
+	for(QDoubleSpinBox* pSpin : vecSpinBoxesLor)
+		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcLorentz()));
+	QObject::connect(checkPol, SIGNAL(toggled(bool)), this, SLOT(CalcLorentz()));
+
+	m_pGridLor = new QwtPlotGrid();
+	m_pGridLor->setPen(penGrid);
+	m_pGridLor->attach(plotLorentz);
+
+	m_pCurveLor = new QwtPlotCurve("Lorentz Factor");
+	m_pCurveLor->setPen(penCurve);
+	m_pCurveLor->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pCurveLor->attach(plotLorentz);
+
+	plotLorentz->canvas()->setMouseTracking(1);
+	m_pPickerLor = new QwtPlotPicker(plotLorentz->xBottom, plotLorentz->yLeft,
+#if QWT_VER<6
+									QwtPlotPicker::PointSelection,
+#endif
+									QwtPlotPicker::NoRubberBand,
+#if QWT_VER>=6
+									QwtPlotPicker::AlwaysOff,
+#else
+									QwtPlotPicker::AlwaysOn,
+#endif
+									plotLorentz->canvas());
+
+#if QWT_VER>=6
+	m_pPickerLor->setStateMachine(new QwtPickerTrackerMachine());
+	connect(m_pPickerLor, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
+#endif
+	m_pPickerLor->setEnabled(1);
+
+
+	plotLorentz->setAxisTitle(QwtPlot::xBottom, "Scattering Angle (deg)");
+	plotLorentz->setAxisTitle(QwtPlot::yLeft, "Lorentz Factor");
+
+	CalcLorentz();
 }
+
 
 DWDlg::~DWDlg()
 {
-	for(QwtPlotPicker** pPicker : {&m_pPicker, &m_pPickerAna, &m_pPickerBose})
+	for(QwtPlotPicker** pPicker : {&m_pPicker, &m_pPickerAna, &m_pPickerBose, &m_pPickerLor})
 	{
 		if(*pPicker)
 		{
@@ -190,7 +230,7 @@ DWDlg::~DWDlg()
 		}
 	}
 
-	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridAna, &m_pGridBose})
+	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridAna, &m_pGridBose, &m_pGridLor})
 	{
 		if(*pGrid)
 		{
@@ -233,7 +273,7 @@ void DWDlg::CalcBose()
 	{
 		tl::energy E = (dMinE + (dMaxE - dMinE)/double(NUM_POINTS)*double(iPt)) * tl::meV;
 		m_vecBoseE.push_back(E / tl::meV);
-		
+
 		m_vecBoseIntPos.push_back(tl::bose(E, T));
 		m_vecBoseIntNeg.push_back(tl::bose(-E, T));
 	}
@@ -247,6 +287,42 @@ void DWDlg::CalcBose()
 #endif
 
 	plotBose->replot();
+}
+
+
+void DWDlg::CalcLorentz()
+{
+	const unsigned int NUM_POINTS = 512;
+
+	const double dMin2th = spinMin2Th->value() / 180.*M_PI;
+	const double dMax2th = spinMax2Th->value() / 180.*M_PI;
+
+	const bool bPol = checkPol->isChecked();
+
+	m_vecLor2th.clear();
+	m_vecLor.clear();
+
+	m_vecLor2th.reserve(NUM_POINTS);
+	m_vecLor.reserve(NUM_POINTS);
+
+	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
+	{
+		double d2th = (dMin2th + (dMax2th - dMin2th)/double(NUM_POINTS)*double(iPt));
+		double dLor = tl::lorentz_factor(d2th);
+		if(bPol)
+			dLor *= tl::lorentz_pol_factor(d2th);
+
+		m_vecLor2th.push_back(d2th);
+		m_vecLor.push_back(dLor);
+	}
+
+#if QWT_VER>=6
+	m_pCurveLor->setRawSamples(m_vecLor2th.data(), m_vecLor.data(), m_vecLor2th.size());
+#else
+	m_pCurveLor->setRawData(m_vecLor2th.data(), m_vecLor.data(), m_vecLor2th.size());
+#endif
+
+	plotLorentz->replot();
 }
 
 

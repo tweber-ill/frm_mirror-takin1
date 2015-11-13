@@ -164,13 +164,14 @@ void gen_atoms_sfact()
 			(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecFormfacts);
 
 
+		std::cout << std::endl;
 		std::cout << "Neutron structure factor: " << std::endl;
 		double dFsq = (std::conj(F)*F).real();
 		std::cout << "F = " << F << std::endl;
 		std::cout << "|F| = " << std::sqrt(dFsq) << std::endl;
 		std::cout << "|F|^2 = " << dFsq << std::endl;
-		std::cout << std::endl;
 
+		std::cout << std::endl;
 		std::cout << "X-ray structure factor: " << std::endl;
 		double dFxsq = (std::conj(Fx)*Fx).real();
 		std::cout << "Fx = " << Fx << std::endl;

@@ -50,6 +50,15 @@ protected:
 	QwtLegend *m_pLegendBose = nullptr;
 
 
+	// lorentz stuff
+	std::vector<double> m_vecLor2th, m_vecLor;
+
+	QwtPlotCurve *m_pCurveLor = nullptr;
+	QwtPlotGrid *m_pGridLor = nullptr;
+	QwtPlotPicker *m_pPickerLor = nullptr;
+
+
+
 protected:
 	virtual void showEvent(QShowEvent *pEvt) override;
 	virtual void accept() override;
@@ -59,6 +68,7 @@ protected slots:
 	void CalcDW();
 	void CalcAna();
 	void CalcBose();
+	void CalcLorentz();
 
 public:
 	DWDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr);
