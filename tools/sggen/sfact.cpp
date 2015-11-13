@@ -21,6 +21,10 @@ typedef tl::ublas::matrix<double> t_mat;
 
 void gen_atoms_sfact()
 {
+	ScatlenList lst;
+	FormfactList lstff;
+
+
 	std::string strSg;
 	std::cout << "Enter spacegroup: ";
 	std::getline(std::cin, strSg);
@@ -35,6 +39,7 @@ void gen_atoms_sfact()
 
 
 
+	std::cout << std::endl;
 	int iAtom=0;
 	std::vector<std::string> vecElems;
 	std::vector<t_vec> vecAtoms;
@@ -72,43 +77,66 @@ void gen_atoms_sfact()
 
 	std::vector<t_vec> vecAllAtoms;
 	std::vector<std::complex<double>> vecScatlens;
-	ScatlenList lst;
+	std::vector<double> vecFormfacts;
 
-	for(int iAtom=0; iAtom<vecAtoms.size(); ++iAtom)
+	for(int iAtom=0; iAtom<int(vecAtoms.size()); ++iAtom)
 	{
 		const t_vec& vecAtom = vecAtoms[iAtom];
 		std::vector<t_vec> vecPos = tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom);
 
 		const ScatlenList::elem_type* pElem = lst.Find(vecElems[iAtom]);
+		const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
+
 		if(pElem == nullptr)
 		{
-			std::cerr << "Error: cannot get scattering length." << std::endl;
+			std::cerr << "Error: cannot get scattering length for "
+				<< vecElems[iAtom] << "." << std::endl;
+			return;
+		}
+		if(pElemff == nullptr)
+		{
+			std::cerr << "Error: cannot get form factor for "
+				<< vecElems[iAtom] << "." << std::endl;
 			return;
 		}
 		std::complex<double> b = pElem->GetCoherent() / 10.;
+		double dG = 0.;		// TODO
+		double dFF = pElemff->GetFormfact(dG);
 
 		for(t_vec vecAtom : vecPos)
 		{
 			vecAtom.resize(3,1);
 			vecAllAtoms.push_back(vecAtom);
 			vecScatlens.push_back(b);
+			vecFormfacts.push_back(dFF);
 		}
 	}
 
 
 	while(1)
 	{
+		std::cout << std::endl;
+
 		double h=0., k=0., l=0.;
 		std::cout << "Enter hkl: ";
 		std::cin >> h >> k >> l;
 
 		std::complex<double> F = tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
 			(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecScatlens);
+		std::complex<double> Fx = tl::structfact<double, double, ublas::vector<double>, std::vector>
+			(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecFormfacts);
 
+		std::cout << "Neutron structure factor: " << std::endl;
 		double dFsq = (std::conj(F)*F).real();
 		std::cout << "F = " << F << std::endl;
 		std::cout << "|F| = " << std::sqrt(dFsq) << std::endl;
 		std::cout << "|F|^2 = " << dFsq << std::endl;
+		std::cout << std::endl;
+		std::cout << "X-ray structure factor: " << std::endl;
+		double dFxsq = (std::conj(Fx)*Fx).real();
+		std::cout << "Fx = " << Fx << std::endl;
+		std::cout << "|Fx| = " << std::sqrt(dFxsq) << std::endl;
+		std::cout << "|Fx|^2 = " << dFxsq << std::endl;
 	}
 }
 

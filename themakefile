@@ -142,7 +142,8 @@ else
 	LAPACK_LIBS = 
 endif
 
-BASIC_LIBS = ${QT_LIB} -lboost_system${BOOST_SUFFIX} -lboost_filesystem${BOOST_SUFFIX}
+# actually: boost libs...
+BASIC_LIBS = -lboost_system${BOOST_SUFFIX} -lboost_filesystem${BOOST_SUFFIX}
 
 ifeq ($(USE_3D), 1)
 	GL_LIBS = -lX11 -lGL -lGLU -lfreetype -lfontconfig
@@ -173,8 +174,8 @@ else
 endif
 
 
-LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${BASIC_LIBS} ${GL_LIBS} ${PY_LIBS} ${GIL_LIBS}
-LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS}
+LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${GL_LIBS} ${PY_LIBS} ${GIL_LIBS}
+LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS}
 
 
 # -----------------------------------------------------------------------------
@@ -217,6 +218,9 @@ OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup_clp.o obj/crystals
 
 OBJ_GENTAB = obj/gentab.o
 
+OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals_noqt.o \
+	obj/formfact.o obj/xml.o obj/log.o
+
 
 ifeq ($(USE_3D), 1)
 	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/EllipseDlg3D.o
@@ -242,7 +246,7 @@ endif
 
 .PHONY: all clean
 
-all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist
+all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist sfact
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -250,15 +254,15 @@ takin: ${OBJ_COMMON} ${OBJ_TAZ}
 	${STRIP} bin/takin
 
 montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
-	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB} ${LAPACK_LIBS}
+	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${LAPACK_LIBS}
 	${STRIP} montereso
 
 monteconvo: ${OBJ_MONTECONVO} obj/mconv_main.o
-	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} ${BASIC_LIBS}
+	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB}
 	${STRIP} monteconvo
 
 xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/globals.o obj/SqwParamDlg.o ${PY_OBJS}
-	${CC} ${FLAGS} -o bin/xmonteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB} ${PY_LIBS}
+	${CC} ${FLAGS} -o bin/xmonteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${PY_LIBS}
 	${STRIP} xmonteconvo
 
 posextract: obj/posextract.o obj/loadinstr.o obj/log.o
@@ -266,11 +270,11 @@ posextract: obj/posextract.o obj/loadinstr.o obj/log.o
 	${STRIP} posextract
 
 reso: ${OBJ_RESO}
-	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${BASIC_LIBS} ${LAPACK_LIBS} -lX11
+	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS} -lX11
 	${STRIP} reso
 
 scanviewer: ${OBJ_SCANVIEWER}
-	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${BASIC_LIBS} ${QWT_LIB}
+	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB}
 	${STRIP} scanviewer
 
 sglist: ${OBJ_SGLIST}
@@ -280,6 +284,8 @@ sglist: ${OBJ_SGLIST}
 gentab: ${OBJ_GENTAB}
 	${CC} ${FLAGS} -o bin/gentab $+ ${STD_LIBS} -lclipper-core
 
+sfact: ${OBJ_SFACT}
+	${CC} ${FLAGS} -o bin/sfact $+ ${STD_LIBS} ${BASIC_LIBS} -lclipper-core
 
 
 # -----------------------------------------------------------------------------
@@ -423,6 +429,12 @@ obj/sglist_main.o: tools/sglist/main.cpp
 obj/SgListDlg.o: tools/sglist/SgListDlg.cpp tools/sglist/SgListDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 
+obj/globals_noqt.o: helper/globals.cpp helper/globals.h
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
+obj/crystalsys_noqt.o: helper/crystalsys.cpp helper/crystalsys.h
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
+obj/sfact.o: tools/sggen/sfact.cpp
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 
 
 # -----------------------------------------------------------------------------
