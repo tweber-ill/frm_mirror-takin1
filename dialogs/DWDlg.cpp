@@ -312,7 +312,7 @@ void DWDlg::CalcLorentz()
 		if(bPol)
 			dLor *= tl::lorentz_pol_factor(d2th);
 
-		m_vecLor2th.push_back(d2th);
+		m_vecLor2th.push_back(d2th /M_PI*180.);
 		m_vecLor.push_back(dLor);
 	}
 
