@@ -11,6 +11,8 @@
 #include <vector>
 #include <sstream>
 #include "tlibs/math/atoms.h"
+#include "tlibs/math/lattice.h"
+#include "tlibs/math/linalg_ops.h"
 #include "tlibs/string/string.h"
 #include "helper/spacegroup_clp.h"
 #include "helper/formfact.h"
@@ -25,8 +27,26 @@ void gen_atoms_sfact()
 	FormfactList lstff;
 
 
+	double a,b,c, alpha,beta,gamma;
+	std::cout << "Enter unit cell lattice constants: ";
+	std::cin >> a >> b >> c;
+	std::cout << "Enter unit cell angles: ";
+	std::cin >> alpha >> beta >> gamma;
+
+	alpha = alpha/180.*M_PI;
+	beta = beta/180.*M_PI;
+	gamma = gamma/180.*M_PI;
+
+	const tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
+	const t_mat matB = lattice.GetRecip().GetMetric();
+	std::cout << "B = " << matB << std::endl;
+
+
+
+	std::cout << std::endl;
 	std::string strSg;
 	std::cout << "Enter spacegroup: ";
+	std::cin.ignore();
 	std::getline(std::cin, strSg);
 	clipper::Spgr_descr dsc(strSg);
 	const int iSGNum = dsc.spacegroup_number();
@@ -45,7 +65,7 @@ void gen_atoms_sfact()
 	std::vector<t_vec> vecAtoms;
 	while(1)
 	{
-		std::cout << "Enter element " << (++iAtom) << " name: ";
+		std::cout << "Enter element " << (++iAtom) << " name (or <Enter> to finish): ";
 		std::string strElem;
 		std::getline(std::cin, strElem);
 		tl::trim(strElem);
@@ -78,6 +98,8 @@ void gen_atoms_sfact()
 	std::vector<t_vec> vecAllAtoms;
 	std::vector<std::complex<double>> vecScatlens;
 	std::vector<double> vecFormfacts;
+	std::vector<int> vecAtomIndices;
+
 
 	for(int iAtom=0; iAtom<int(vecAtoms.size()); ++iAtom)
 	{
@@ -85,7 +107,6 @@ void gen_atoms_sfact()
 		std::vector<t_vec> vecPos = tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom);
 
 		const ScatlenList::elem_type* pElem = lst.Find(vecElems[iAtom]);
-		const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
 
 		if(pElem == nullptr)
 		{
@@ -93,22 +114,15 @@ void gen_atoms_sfact()
 				<< vecElems[iAtom] << "." << std::endl;
 			return;
 		}
-		if(pElemff == nullptr)
-		{
-			std::cerr << "Error: cannot get form factor for "
-				<< vecElems[iAtom] << "." << std::endl;
-			return;
-		}
 		std::complex<double> b = pElem->GetCoherent() / 10.;
-		double dG = 0.;		// TODO
-		double dFF = pElemff->GetFormfact(dG);
+
 
 		for(t_vec vecAtom : vecPos)
 		{
 			vecAtom.resize(3,1);
 			vecAllAtoms.push_back(vecAtom);
 			vecScatlens.push_back(b);
-			vecFormfacts.push_back(dFF);
+			vecAtomIndices.push_back(iAtom);
 		}
 	}
 
@@ -121,10 +135,34 @@ void gen_atoms_sfact()
 		std::cout << "Enter hkl: ";
 		std::cin >> h >> k >> l;
 
+		t_vec vecG = matB * tl::make_vec({h,k,l});
+		double dG = ublas::norm_2(vecG);
+		std::cout << "G = " << dG << " / A" << std::endl;
+
+
+		vecFormfacts.clear();
+		for(unsigned int iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
+		{
+			//const t_vec& vecAtom = vecAllAtoms[iAtom];
+			const FormfactList::elem_type* pElemff = lstff.Find(vecElems[vecAtomIndices[iAtom]]);
+
+			if(pElemff == nullptr)
+			{
+				std::cerr << "Error: cannot get form factor for "
+					<< vecElems[iAtom] << "." << std::endl;
+				return;
+			}
+
+			double dFF = pElemff->GetFormfact(dG);
+			vecFormfacts.push_back(dFF);
+		}
+
+
 		std::complex<double> F = tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
 			(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecScatlens);
 		std::complex<double> Fx = tl::structfact<double, double, ublas::vector<double>, std::vector>
 			(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecFormfacts);
+
 
 		std::cout << "Neutron structure factor: " << std::endl;
 		double dFsq = (std::conj(F)*F).real();
@@ -132,6 +170,7 @@ void gen_atoms_sfact()
 		std::cout << "|F| = " << std::sqrt(dFsq) << std::endl;
 		std::cout << "|F|^2 = " << dFsq << std::endl;
 		std::cout << std::endl;
+
 		std::cout << "X-ray structure factor: " << std::endl;
 		double dFxsq = (std::conj(Fx)*Fx).real();
 		std::cout << "Fx = " << Fx << std::endl;
