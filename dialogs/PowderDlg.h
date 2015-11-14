@@ -22,6 +22,7 @@
 #endif
 
 #include "tlibs/file/xml.h"
+#include "AtomsDlg.h"
 
 
 class PowderDlg : public QDialog, Ui::PowderDlg
@@ -32,6 +33,9 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 
 		CrystalSystem m_crystalsys = CRYS_NOT_SET;
 		const t_mapSpaceGroups* m_pmapSpaceGroups;
+
+		AtomsDlg *m_pAtomsDlg = nullptr;
+		std::vector<AtomPos> m_vecAtoms;
 
 	public:
 		PowderDlg(QWidget* pParent=0, QSettings* pSett=0);
@@ -46,6 +50,9 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 
 		void SavePowder();
 		void LoadPowder();
+
+		void ShowAtomDlg();
+		void ApplyAtoms(const std::vector<AtomPos>&);
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);

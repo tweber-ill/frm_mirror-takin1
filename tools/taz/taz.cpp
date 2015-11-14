@@ -348,6 +348,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pMenuViewRecip->addAction(pBZExport);
 #endif
 
+
 	// --------------------------------------------------------------------------------
 	// real menu
 	m_pMenuViewReal = new QMenu(this);
@@ -413,12 +414,14 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QAction *pNeutronProps = new QAction(this);
 	pNeutronProps->setText("Neutron Properties...");
+	pNeutronProps->setIcon(load_icon("res/x-office-spreadsheet-template.svg"));
 	pMenuCalc->addAction(pNeutronProps);
 
 	pMenuCalc->addSeparator();
 
 	QAction *pPowder = new QAction(this);
 	pPowder->setText("Powder Lines...");
+	pPowder->setIcon(load_icon("res/weather-snow.svg"));
 	pMenuCalc->addAction(pPowder);
 
 	QAction *pDW = new QAction(this);
@@ -620,6 +623,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	pResoTools->addAction(pResoParams);
 	pResoTools->addAction(pResoEllipses);
 	addToolBar(pResoTools);
+
+	QToolBar *pCalcTools = new QToolBar(this);
+	pCalcTools->setWindowTitle("Calculation");
+	pCalcTools->addAction(pNeutronProps);
+	pCalcTools->addAction(pPowder);
+	addToolBar(pCalcTools);
 
 #if !defined NO_NET
 	QToolBar *pNetTools = new QToolBar(this);

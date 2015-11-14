@@ -34,6 +34,7 @@ tlibs-master.tar.bz2
 tlibs/*
 tlibs
 tango-icon-theme*.tar.gz
+tmp/*
 res/*
 !res/brillouin.svg
 !res/ellipses.svg

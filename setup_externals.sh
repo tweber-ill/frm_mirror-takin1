@@ -25,10 +25,10 @@ function dl_tangoicons
 {
 #	rm -f tango-icon-theme.tar.gz
 
-	if [ ! -f tango-icon-theme.tar.gz  ]; then
+	if [ ! -f tmp/tango-icon-theme.tar.gz  ]; then
 		echo -e "Downloading Tango icons...\n"
 
-		if ! wget ${TANGOICONS} -O tango-icon-theme.tar.gz; then
+		if ! wget ${TANGOICONS} -O tmp/tango-icon-theme.tar.gz; then
 			echo -e "Error: Cannot download Tango icons.";
 			exit -1;
 		fi
@@ -36,7 +36,7 @@ function dl_tangoicons
 
 
 	echo -e "Extracting Tango icons...\n"
-
+	cd tmp
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/actions/document-save.svg --strip-components=3
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/actions/document-save-as.svg --strip-components=3
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/actions/document-open.svg --strip-components=3
@@ -51,12 +51,14 @@ function dl_tangoicons
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/devices/drive-harddisk.svg --strip-components=3
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/devices/network-wireless.svg --strip-components=3
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/mimetypes/image-x-generic.svg --strip-components=3
+	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/mimetypes/x-office-spreadsheet-template.svg --strip-components=3
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/apps/accessories-calculator.svg --strip-components=3
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/status/network-transmit-receive.svg --strip-components=3
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/status/network-offline.svg --strip-components=3
 	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/status/dialog-information.svg --strip-components=3
-
-	mv -v *.svg res/
+	tar --wildcards -xzvf tango-icon-theme.tar.gz */scalable/status/weather-snow.svg --strip-components=3
+	cd ..
+	mv -v tmp/*.svg res/
 }
 
 function dl_scatlens
@@ -72,6 +74,7 @@ function dl_scatlens
 }
 
 
+mkdir tmp
 echo -e "--------------------------------------------------------------------------------"
 dl_tangoicons
 echo -e "--------------------------------------------------------------------------------"

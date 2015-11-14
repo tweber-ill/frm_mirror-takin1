@@ -13,6 +13,7 @@
 #include "tlibs/string/string.h"
 
 #include "helper/globals.h"
+#include "helper/formfact.h"
 
 #include <vector>
 #include <string>
@@ -25,6 +26,8 @@
 namespace ublas = boost::numeric::ublas;
 namespace co = boost::units::si::constants::codata;
 
+
+
 struct PowderLine
 {
 	int h, k, l;
@@ -36,9 +39,22 @@ struct PowderLine
 	std::string strQ;
 
 	std::string strPeaks;
+
 	unsigned int iMult;
+	double dFn, dFx;	// neutron/xray structure factors
+	double dIn, dIx;	// neutron/xray intensities
 };
 
+
+
+#define TABLE_ANGLE	0
+#define TABLE_Q		1
+#define TABLE_PEAK	2
+#define TABLE_MULT	3
+#define TABLE_FN	4
+#define TABLE_IN	5
+#define TABLE_FX	6
+#define TABLE_IX	7
 
 PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 			: QDialog(pParent), m_pSettings(pSett),
@@ -50,10 +66,14 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 
 	tablePowderLines->horizontalHeader()->setVisible(true);
 	tablePowderLines->verticalHeader()->setDefaultSectionSize(tablePowderLines->verticalHeader()->defaultSectionSize()*1.4);
-	tablePowderLines->setColumnWidth(0, 100);
-	tablePowderLines->setColumnWidth(1, 100);
-	tablePowderLines->setColumnWidth(2, 75);
-	tablePowderLines->setColumnWidth(3, 65);
+	tablePowderLines->setColumnWidth(TABLE_ANGLE, 100);
+	tablePowderLines->setColumnWidth(TABLE_Q, 100);
+	tablePowderLines->setColumnWidth(TABLE_PEAK, 75);
+	tablePowderLines->setColumnWidth(TABLE_MULT, 65);
+	tablePowderLines->setColumnWidth(TABLE_FN, 75);
+	tablePowderLines->setColumnWidth(TABLE_FX, 75);
+	tablePowderLines->setColumnWidth(TABLE_IN, 75);
+	tablePowderLines->setColumnWidth(TABLE_IX, 75);
 
 	std::vector<QLineEdit*> vecEditsUC = {editA, editB, editC, editAlpha, editBeta, editGamma};
 	for(QLineEdit* pEdit : vecEditsUC)
@@ -69,6 +89,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 
 	connect(btnSave, SIGNAL(clicked()), this, SLOT(SavePowder()));
 	connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadPowder()));
+	connect(btnAtoms, SIGNAL(clicked()), this, SLOT(ShowAtomDlg()));
 
 	m_bDontCalc = 0;
 	RepopulateSpaceGroups();
@@ -99,6 +120,57 @@ void PowderDlg::CalcPeaks()
 
 	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 
+
+#ifdef USE_CLP
+	ScatlenList lstsl;
+	FormfactList lstff;
+
+	std::vector<ublas::vector<double>> vecAllAtoms;
+	std::vector<std::complex<double>> vecScatlens;
+	std::vector<double> vecFormfacts;
+	std::vector<std::string> vecElems;
+
+	std::vector<ublas::matrix<double>> vecSymTrafos;
+	if(pSpaceGroup)
+		pSpaceGroup->GetSymTrafos(vecSymTrafos);
+
+	if(vecSymTrafos.size() && g_bHasFormfacts && g_bHasScatlens && m_vecAtoms.size())
+	{
+		for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
+		{
+			ublas::vector<double> vecAtom = m_vecAtoms[iAtom].vecPos;
+			// homogeneous coordinates
+			vecAtom.resize(4,1); vecAtom[3] = 1.;
+			const std::string& strElem = m_vecAtoms[iAtom].strAtomName;
+
+			std::vector<ublas::vector<double>> vecSymPos =
+				tl::generate_atoms<ublas::matrix<double>, ublas::vector<double>, std::vector>
+					(vecSymTrafos, vecAtom);
+
+			const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
+			if(!pElem)
+			{
+				tl::log_err("Element \"", strElem, "\" not found in scattering length table.");
+				vecAllAtoms.clear();
+				vecScatlens.clear();
+				break;
+			}
+
+
+			const std::complex<double> b = pElem->GetCoherent() / 10.;
+
+			for(ublas::vector<double> vecThisAtom : vecSymPos)
+			{
+				vecThisAtom.resize(3,1);
+				vecAllAtoms.push_back(std::move(vecThisAtom));
+				vecScatlens.push_back(b);
+				vecElems.push_back(strElem);
+			}
+		}
+	}
+#endif
+
+
 	std::map<std::string, PowderLine> mapPeaks;
 	tl::Powder<int> powder;
 
@@ -115,6 +187,7 @@ void PowderDlg::CalcPeaks()
 				if(bAlreadyHasPeak)
 					continue;
 
+
 				ublas::vector<double> vecBragg = recip.GetPos(ih, ik, il);
 				double dQ = ublas::norm_2(vecBragg);
 				if(tl::is_nan_or_inf<double>(dQ)) continue;
@@ -123,6 +196,59 @@ void PowderDlg::CalcPeaks()
 				if(tl::is_nan_or_inf<double>(dAngle)) continue;
 
 				//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;
+
+
+				ublas::vector<double> vechkl = tl::make_vec({double(ih), double(ik), double(il)});
+				double dF = -1., dI = -1.;
+				double dFx = -1., dIx = -1.;
+#ifdef USE_CLP
+				if(vecScatlens.size())
+				{
+					std::complex<double> cF =
+						tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
+							(vecAllAtoms, vechkl*2.*M_PI, vecScatlens);
+					double dFsq = (std::conj(cF)*cF).real();
+					dF = std::sqrt(dFsq);
+					tl::set_eps_0(dF);
+
+					double dLor = tl::lorentz_factor(dAngle);
+					dI = dFsq*dLor;
+				}
+
+
+
+				vecFormfacts.clear();
+				for(unsigned int iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
+				{
+					//const t_vec& vecAtom = vecAllAtoms[iAtom];
+					const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
+
+					if(pElemff == nullptr)
+					{
+						tl::log_err("Cannot get form factor for \"", vecElems[iAtom], "\".");
+						vecFormfacts.clear();
+						break;
+					}
+
+					double dFF = pElemff->GetFormfact(dQ);
+					vecFormfacts.push_back(dFF);
+				}
+
+				if(vecFormfacts.size())
+				{
+					std::complex<double> cFx =
+						tl::structfact<double, double, ublas::vector<double>, std::vector>
+							(vecAllAtoms, vechkl*2.*M_PI, vecFormfacts);
+
+					double dFxsq = (std::conj(cFx)*cFx).real();
+					dFx = std::sqrt(dFxsq);
+					tl::set_eps_0(dFx);
+
+					double dLor = tl::lorentz_factor(dAngle)*tl::lorentz_pol_factor(dAngle);
+					dIx = dFxsq*dLor;
+				}
+#endif
+
 
 				std::ostringstream ostrAngle;
 				ostrAngle.precision(iPrec);
@@ -140,6 +266,11 @@ void PowderDlg::CalcPeaks()
 				mapPeaks[ostrAngle.str()].h = std::abs(ih);
 				mapPeaks[ostrAngle.str()].k = std::abs(ik);
 				mapPeaks[ostrAngle.str()].l = std::abs(il);
+
+				mapPeaks[ostrAngle.str()].dFn = dF;
+				mapPeaks[ostrAngle.str()].dIn = dI;
+				mapPeaks[ostrAngle.str()].dFx = dFx;
+				mapPeaks[ostrAngle.str()].dIx = dIx;
 			}
 
 	//std::cout << powder << std::endl;
@@ -152,6 +283,9 @@ void PowderDlg::CalcPeaks()
 		pair.second.strAngle = pair.first;
 		pair.second.strQ = tl::var_to_str<double>(pair.second.dQ, iPrec);
 		pair.second.iMult = powder.GetMultiplicity(pair.second.h, pair.second.k, pair.second.l);
+
+		pair.second.dIn *= double(pair.second.iMult);
+		pair.second.dIx *= double(pair.second.iMult);
 
 		vecPowderLines.push_back(&pair.second);
 	}
@@ -167,18 +301,31 @@ void PowderDlg::CalcPeaks()
 
 	for(int iRow=0; iRow<iNumRows; ++iRow)
 	{
-		for(int iCol=0; iCol<4; ++iCol)
+		for(int iCol=0; iCol<8; ++iCol)
 		{
 			if(!tablePowderLines->item(iRow, iCol))
 				tablePowderLines->setItem(iRow, iCol, new QTableWidgetItem());
 		}
 
 		QString strMult = tl::var_to_str(vecPowderLines[iRow]->iMult).c_str();
+		QString strFn, strIn, strFx, strIx;
+		if(vecPowderLines[iRow]->dFn >= 0.)
+			strFn = tl::var_to_str(vecPowderLines[iRow]->dFn, iPrec).c_str();
+		if(vecPowderLines[iRow]->dIn >= 0.)
+			strIn = tl::var_to_str(vecPowderLines[iRow]->dIn, iPrec).c_str();
+		if(vecPowderLines[iRow]->dFx >= 0.)
+			strFx = tl::var_to_str(vecPowderLines[iRow]->dFx, iPrec).c_str();
+		if(vecPowderLines[iRow]->dIx >= 0.)
+			strIx = tl::var_to_str(vecPowderLines[iRow]->dIx, iPrec).c_str();
 
-		tablePowderLines->item(iRow, 0)->setText(vecPowderLines[iRow]->strAngle.c_str());
-		tablePowderLines->item(iRow, 1)->setText(vecPowderLines[iRow]->strQ.c_str());
-		tablePowderLines->item(iRow, 2)->setText(vecPowderLines[iRow]->strPeaks.c_str());
-		tablePowderLines->item(iRow, 3)->setText(strMult);
+		tablePowderLines->item(iRow, TABLE_ANGLE)->setText(vecPowderLines[iRow]->strAngle.c_str());
+		tablePowderLines->item(iRow, TABLE_Q)->setText(vecPowderLines[iRow]->strQ.c_str());
+		tablePowderLines->item(iRow, TABLE_PEAK)->setText(vecPowderLines[iRow]->strPeaks.c_str());
+		tablePowderLines->item(iRow, TABLE_MULT)->setText(strMult);
+		tablePowderLines->item(iRow, TABLE_FN)->setText(strFn);
+		tablePowderLines->item(iRow, TABLE_IN)->setText(strIn);
+		tablePowderLines->item(iRow, TABLE_FX)->setText(strFx);
+		tablePowderLines->item(iRow, TABLE_IX)->setText(strIx);
 	}
 }
 
@@ -314,6 +461,23 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 	mapConf[strXmlRoot + "powder/lambda"] = editLam->text().toStdString();
 
 	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
+
+	// atom positions
+	mapConf[strXmlRoot + "sample/atoms/num"] = tl::var_to_str(m_vecAtoms.size());
+	for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
+	{
+		const AtomPos& atom = m_vecAtoms[iAtom];
+
+		std::string strAtomNr = tl::var_to_str(iAtom);
+		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/name"] =
+			atom.strAtomName;
+		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/x"] =
+			tl::var_to_str(atom.vecPos[0]);
+		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/y"] =
+			tl::var_to_str(atom.vecPos[1]);
+		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/z"] =
+			tl::var_to_str(atom.vecPos[2]);
+	}
 }
 
 void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
@@ -342,11 +506,56 @@ void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 			comboSpaceGroups->setCurrentIndex(iSGIdx);
 	}
 
+
+	// atom positions
+	m_vecAtoms.clear();
+	unsigned int iNumAtoms = xml.Query<unsigned int>((strXmlRoot + "sample/atoms/num").c_str(), 0, &bOk);
+	if(bOk)
+	{
+		m_vecAtoms.reserve(iNumAtoms);
+
+		for(unsigned int iAtom=0; iAtom<iNumAtoms; ++iAtom)
+		{
+			AtomPos atom;
+			atom.vecPos.resize(3,0);
+
+			std::string strNr = tl::var_to_str(iAtom);
+			atom.strAtomName = xml.QueryString((strXmlRoot + "sample/atoms/" + strNr + "/name").c_str(), "");
+			atom.vecPos[0] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/x").c_str(), 0.);
+			atom.vecPos[1] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/y").c_str(), 0.);
+			atom.vecPos[2] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/z").c_str(), 0.);
+
+			m_vecAtoms.push_back(atom);
+		}
+	}
+
+
 	m_bDontCalc = 0;
 	CalcPeaks();
 }
 
 
+void PowderDlg::ApplyAtoms(const std::vector<AtomPos>& vecAtoms)
+{
+	m_vecAtoms = vecAtoms;
+	CalcPeaks();
+}
+
+void PowderDlg::ShowAtomDlg()
+{
+	if(!m_pAtomsDlg)
+	{
+		m_pAtomsDlg = new AtomsDlg(this, m_pSettings);
+		m_pAtomsDlg->setWindowTitle(m_pAtomsDlg->windowTitle() + QString(" (Powder)"));
+
+		QObject::connect(m_pAtomsDlg, SIGNAL(ApplyAtoms(const std::vector<AtomPos>&)),
+			this, SLOT(ApplyAtoms(const std::vector<AtomPos>&)));
+	}
+
+	m_pAtomsDlg->SetAtoms(m_vecAtoms);
+	m_pAtomsDlg->show();
+	m_pAtomsDlg->activateWindow();
+}
 
 void PowderDlg::accept()
 {

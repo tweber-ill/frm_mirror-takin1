@@ -76,7 +76,7 @@ RecipPeak::RecipPeak()
 
 QRectF RecipPeak::boundingRect() const
 {
-	return QRectF(-7.5, -5., 70., 50.);
+	return QRectF(-35., -10., 70., 50.);
 }
 
 void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
@@ -87,8 +87,10 @@ void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	if(m_strLabel != "")
 	{
 		painter->setPen(m_color);
-		//painter->drawRect(QRectF(0., 14., 65., 20.));
-		painter->drawText(boundingRect(), Qt::AlignHCenter|Qt::AlignTop, m_strLabel);
+		QRectF rect = boundingRect();
+		rect.setTop(rect.top()+16.5);
+		//painter->drawRect(rect);
+		painter->drawText(rect, Qt::AlignHCenter|Qt::AlignTop, m_strLabel);
 	}
 }
 
@@ -800,8 +802,8 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 				}
 
 
-				std::string strStructfact;
 				double dF = -1.;
+				std::string strStructfact;
 #ifdef USE_CLP
 				if(vecScatlens.size())
 				{
