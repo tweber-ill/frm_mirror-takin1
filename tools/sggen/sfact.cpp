@@ -117,14 +117,17 @@ void gen_atoms_sfact()
 		std::complex<double> b = pElem->GetCoherent() / 10.;
 
 
-		for(t_vec vecAtom : vecPos)
+		for(t_vec vecThisAtom : vecPos)
 		{
-			vecAtom.resize(3,1);
-			vecAllAtoms.push_back(vecAtom);
+			vecThisAtom.resize(3,1);
+			vecAllAtoms.push_back(vecThisAtom);
 			vecScatlens.push_back(b);
 			vecAtomIndices.push_back(iAtom);
 		}
 	}
+
+	//for(const t_vec& vecAt : vecAllAtoms) std::cout << vecAt << std::endl;
+	//for(const std::complex<double>& cb : vecScatlens) std::cout << cb << std::endl;
 
 
 	while(1)

@@ -137,6 +137,7 @@ void TazDlg::NetRefresh()
 void TazDlg::Connected(const QString& strHost, const QString& strSrv)
 {
 	m_strCurFile = "";
+	m_vecAtoms.clear();
 
 	setWindowTitle((s_strTitle + " - ").c_str() + strHost + ":" + strSrv);
 	statusBar()->showMessage("Connected to " + strHost + " on port " + strSrv + ".", DEFAULT_MSG_TIMEOUT);

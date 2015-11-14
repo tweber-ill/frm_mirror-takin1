@@ -14,6 +14,7 @@
 #include "tlibs/math/bz.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/kd.h"
+#include "dialogs/AtomsDlg.h"
 
 #ifdef USE_CLP
 	#include "helper/spacegroup_clp.h"
@@ -33,6 +34,7 @@
 
 #include "tasoptions.h"
 #include "dialogs/RecipParamDlg.h"	// for RecipParams struct
+
 
 #define TRIANGLE_NODE_TYPE_KEY	0
 
@@ -158,8 +160,9 @@ class ScatteringTriangle : public QGraphicsItem
 		void CalcPeaks(const tl::Lattice<double>& lattice,
 						const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
 						const tl::Plane<double>& plane,
-						const SpaceGroup* pSpaceGroup=0,
-						bool bIsPowder=0);
+						const SpaceGroup* pSpaceGroup=nullptr,
+						bool bIsPowder=0,
+						const std::vector<AtomPos>* pvecAtomPos=nullptr);
 
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }

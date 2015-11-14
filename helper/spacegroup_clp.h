@@ -51,6 +51,8 @@ class SpaceGroup
 
 		CrystalSystem GetCrystalSystem() const { return m_crystalsys; }
 		const char* GetCrystalSystemName() const { return get_crystal_system_name(m_crystalsys); }
+
+		void GetSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const;
 };
 
 

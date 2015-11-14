@@ -10,6 +10,7 @@
 #include "tlibs/string/spec_char.h"
 #include "tlibs/helper/log.h"
 #include "helper/globals.h"
+#include "helper/formfact.h"
 #include "scattering_triangle.h"
 
 #include <QToolTip>
@@ -75,7 +76,7 @@ RecipPeak::RecipPeak()
 
 QRectF RecipPeak::boundingRect() const
 {
-	return QRectF(-3., -3., 64., 25.);
+	return QRectF(-7.5, -5., 70., 50.);
 }
 
 void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
@@ -86,7 +87,8 @@ void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	if(m_strLabel != "")
 	{
 		painter->setPen(m_color);
-		painter->drawText(0., 14., m_strLabel);
+		//painter->drawRect(QRectF(0., 14., 65., 20.));
+		painter->drawText(boundingRect(), Qt::AlignHCenter|Qt::AlignTop, m_strLabel);
 	}
 }
 
@@ -236,7 +238,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			if(ih==0 && ik==0 && il==0) continue;
 
 			std::ostringstream ostrPowderLine;
-			ostrPowderLine << "(" << ih << ik << il << ")";
+			ostrPowderLine << "(" << ih << " "<< ik << " " << il << ")";
 
 			ublas::vector<double> vec = m_powder.GetRecipLatticePos(double(ih), double(ik), double(il));
 			double drad = std::sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
@@ -666,7 +668,7 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
 void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
 	const tl::Plane<double>& plane, const SpaceGroup* pSpaceGroup,
-	bool bIsPowder)
+	bool bIsPowder, const std::vector<AtomPos>* pvecAtomPos)
 {
 	ClearPeaks();
 	m_powder.clear();
@@ -721,6 +723,66 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 		return;
 	}
 
+
+
+	//const ublas::matrix<double> matB = recip.GetMetric();
+
+	// structure factors
+#ifdef USE_CLP
+	ScatlenList lstsl;
+	//FormfactList lstff;
+
+	std::vector<ublas::vector<double>> vecAllAtoms;
+	std::vector<std::complex<double>> vecScatlens;
+
+	std::vector<ublas::matrix<double>> vecSymTrafos;
+	if(pSpaceGroup)
+		pSpaceGroup->GetSymTrafos(vecSymTrafos);
+	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
+
+	if(vecSymTrafos.size() && /*g_bHasFormfacts &&*/ g_bHasScatlens && pvecAtomPos && pvecAtomPos->size())
+	{
+		for(unsigned int iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
+		{
+			ublas::vector<double> vecAtom = (*pvecAtomPos)[iAtom].vecPos;
+			// homogeneous coordinates
+			vecAtom.resize(4,1); vecAtom[3] = 1.;
+			const std::string& strElem = (*pvecAtomPos)[iAtom].strAtomName;
+			//std::cout << strElem << ": " << vecAtom << std::endl;
+
+			std::vector<ublas::vector<double>> vecSymPos =
+				tl::generate_atoms<ublas::matrix<double>, ublas::vector<double>, std::vector>
+					(vecSymTrafos, vecAtom);
+
+			const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
+			if(!pElem)
+			{
+				tl::log_err("Element \"", strElem, "\" not found in scattering length table.");
+				vecAllAtoms.clear();
+				vecScatlens.clear();
+				break;
+			}
+
+
+			const std::complex<double> b = pElem->GetCoherent() / 10.;
+			//std::cout << "b = " << b << std::endl;
+
+			for(ublas::vector<double> vecThisAtom : vecSymPos)
+			{
+				vecThisAtom.resize(3,1);
+				vecAllAtoms.push_back(std::move(vecThisAtom));
+				vecScatlens.push_back(b);
+			}
+		}
+
+		//for(const ublas::vector<double>& vecAt : vecAllAtoms)
+		//	std::cout << vecAt << std::endl;
+		//for(const std::complex<double>& b : vecScatlens)
+		//	std::cout << b << std::endl;
+	}
+#endif
+
+
 	std::list<std::vector<double>> lstPeaksForKd;
 
 	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
@@ -737,15 +799,38 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 						continue;
 				}
 
+
+				std::string strStructfact;
+				double dF = -1.;
+#ifdef USE_CLP
+				if(vecScatlens.size())
+				{
+					std::complex<double> cF =
+						tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
+							(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecScatlens);
+					double dFsq = (std::conj(cF)*cF).real();
+					dF = std::sqrt(dFsq);
+					tl::set_eps_0(dF);
+
+					std::ostringstream ostrStructfact;
+					ostrStructfact.precision(g_iPrecGfx);
+					ostrStructfact << "F = " << dF;
+					strStructfact = ostrStructfact.str();
+				}
+#endif
+
 				if(bIsPowder)
 					m_powder.AddPeak(ih, ik, il);
 
 				if(!bIsPowder || (ih==0 && ik==0 && il==0))		// (000), i.e. direct beam, also needed for powder
 				{
-					ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
+					const ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
+					//ublas::vector<double> vecPeak = matB * tl::make_vec({h,k,l});
+					//const double dG = ublas::norm_2(vecPeak);
+
 
 					// add peak in 1/A and rlu units
-					lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
+					lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l, dF});
 
 					double dDist = 0.;
 					ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
@@ -765,6 +850,8 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 						std::ostringstream ostrTip;
 						ostrTip << "(" << ih << " " << ik << " " << il << ")";
+						if(strStructfact.length())
+							ostrTip << "\n" << strStructfact;
 
 						if(ih!=0 || ik!=0 || il!=0)
 							pPeak->SetLabel(ostrTip.str().c_str());

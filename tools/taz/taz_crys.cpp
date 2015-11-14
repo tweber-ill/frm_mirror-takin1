@@ -246,7 +246,8 @@ void TazDlg::CalcPeaks()
 
 		editCrystalSystem->setText(pcCryTy);
 
-		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup, bPowder);
+		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot,
+			plane, pSpaceGroup, bPowder, &m_vecAtoms);
 		if(m_sceneRecip.getSnapq())
 			m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();

@@ -48,6 +48,10 @@ bool SpaceGroup::HasReflection(int h, int k, int l) const
 	return !hkl.sys_abs();
 }
 
+void SpaceGroup::GetSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const
+{
+	get_symtrafos<clipper::ftype>(*m_psg, vecTrafos);
+}
 
 // -----------------------------------------------------------------------------
 
