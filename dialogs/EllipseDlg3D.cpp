@@ -37,6 +37,13 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	m_elliSlice.resize(2);
 
 	resize(640,480);
+
+
+	if(m_pSettings && m_pSettings->contains("reso/ellipsoid3d_geo"))
+		restoreGeometry(m_pSettings->value("reso/ellipsoid3d_geo").toByteArray());
+
+	for(unsigned int i=0; i<m_pPlots.size(); ++i)
+		m_pPlots[i]->SetEnabled(1);
 }
 
 EllipseDlg3D::~EllipseDlg3D()
@@ -54,13 +61,10 @@ void EllipseDlg3D::hideEvent(QHideEvent *event)
 	if(m_pSettings)
 		m_pSettings->setValue("reso/ellipsoid3d_geo", saveGeometry());
 }
+
 void EllipseDlg3D::showEvent(QShowEvent *event)
 {
-	if(m_pSettings && m_pSettings->contains("reso/ellipsoid3d_geo"))
-		restoreGeometry(m_pSettings->value("reso/ellipsoid3d_geo").toByteArray());
-
-	for(unsigned int i=0; i<m_pPlots.size(); ++i)
-		m_pPlots[i]->SetEnabled(1);
+	QDialog::showEvent(event);
 }
 
 

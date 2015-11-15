@@ -673,10 +673,6 @@ TazDlg::~TazDlg()
 {
 	//log_debug("In ", __func__, ".");
 
-	//m_settings.setValue("main/width", this->width());
-	//m_settings.setValue("main/height", this->height());
-	m_settings.setValue("main/geo", saveGeometry());
-
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
 	if(m_pEllipseDlg) { delete m_pEllipseDlg; m_pEllipseDlg = 0; }
 	if(m_pReso) { delete m_pReso; m_pReso = 0; }
@@ -707,6 +703,13 @@ TazDlg::~TazDlg()
 #endif
 
 	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }
+}
+
+void TazDlg::closeEvent(QCloseEvent* pEvt)
+{
+	//m_settings.setValue("main/width", this->width());
+	//m_settings.setValue("main/height", this->height());
+	m_settings.setValue("main/geo", saveGeometry());
 }
 
 

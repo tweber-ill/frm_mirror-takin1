@@ -52,6 +52,8 @@ protected:
 	void GenerateForPython();
 	void GenerateForHermelin();
 
+	virtual void closeEvent(QCloseEvent* pEvt) override;
+
 protected slots:
 	void GenerateExternal(int iLang=0);
 

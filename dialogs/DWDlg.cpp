@@ -215,6 +215,10 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	plotLorentz->setAxisTitle(QwtPlot::yLeft, "Lorentz Factor");
 
 	CalcLorentz();
+
+
+	if(m_pSettings && m_pSettings->contains("dw/geo"))
+		restoreGeometry(m_pSettings->value("dw/geo").toByteArray());
 }
 
 
@@ -419,9 +423,6 @@ void DWDlg::CalcAna()
 
 void DWDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings && m_pSettings->contains("dw/geo"))
-		restoreGeometry(m_pSettings->value("dw/geo").toByteArray());
-
 	QDialog::showEvent(pEvt);
 }
 

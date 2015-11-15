@@ -66,6 +66,10 @@ DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 	QObject::connect(btnSync, SIGNAL(toggled(bool)), this, SLOT(Calc()));
 
 	Calc();
+
+
+	if(m_pSettings && m_pSettings->contains("dyn_plane/geo"))
+		restoreGeometry(m_pSettings->value("dyn_plane/geo").toByteArray());
 }
 
 DynPlaneDlg::~DynPlaneDlg()
@@ -176,9 +180,6 @@ void DynPlaneDlg::FixedKiKfToggled()
 
 void DynPlaneDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings && m_pSettings->contains("dyn_plane/geo"))
-		restoreGeometry(m_pSettings->value("dyn_plane/geo").toByteArray());
-
 	QDialog::showEvent(pEvt);
 }
 

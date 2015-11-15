@@ -74,6 +74,10 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 	QObject::connect(spinMaxQ, SIGNAL(valueChanged(double)), this, SLOT(CalcBragg()));
 
 	Calc();
+
+
+	if(m_pSettings && m_pSettings->contains("spurions/geo"))
+		restoreGeometry(m_pSettings->value("spurions/geo").toByteArray());
 }
 
 SpurionDlg::~SpurionDlg()
@@ -257,9 +261,6 @@ void SpurionDlg::accept()
 
 void SpurionDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings && m_pSettings->contains("spurions/geo"))
-		restoreGeometry(m_pSettings->value("spurions/geo").toByteArray());
-
 	QDialog::showEvent(pEvt);
 }
 

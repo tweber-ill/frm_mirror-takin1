@@ -22,12 +22,21 @@ RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
 
 	QObject::connect(editKi, SIGNAL(textChanged(const QString&)), this, SLOT(KiChanged()));
 	QObject::connect(editKf, SIGNAL(textChanged(const QString&)), this, SLOT(KfChanged()));
-	
+
 	QObject::connect(btnUseG, SIGNAL(clicked()), this, SLOT(SetGOrigin()));
 	QObject::connect(editOriginH, SIGNAL(textEdited(const QString&)), this, SLOT(OriginChanged()));
 	QObject::connect(editOriginK, SIGNAL(textEdited(const QString&)), this, SLOT(OriginChanged()));
 	QObject::connect(editOriginL, SIGNAL(textEdited(const QString&)), this, SLOT(OriginChanged()));
 	QObject::connect(radioEm, SIGNAL(toggled(bool)), this, SLOT(OriginChanged()));
+
+
+	if(m_pSettings)
+	{
+		if(m_pSettings->contains("recip_params/geo"))
+			restoreGeometry(m_pSettings->value("recip_params/geo").toByteArray());
+		if(m_pSettings->contains("recip_params/defs_Em"))
+			radioEm->setChecked(m_pSettings->value("recip_params/defs_Em").toBool());
+	}
 }
 
 RecipParamDlg::~RecipParamDlg()
@@ -36,7 +45,7 @@ RecipParamDlg::~RecipParamDlg()
 void RecipParamDlg::paramsChanged(const RecipParams& parms)
 {
 	m_params = parms;
-	
+
 	double dQ = m_params.dQ;
 	if(m_params.d2Theta < 0.)
 		dQ = -dQ;
@@ -84,7 +93,7 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	ublas::vector<double> vecFm = tl::cross_3(vecG, vecUp);
 	vecFm /= ublas::norm_2(vecFm);
 	tl::set_eps_0(vecFm);
-	
+
 	this->editFmx->setText(tl::var_to_str<double>(vecFm[0], g_iPrec).c_str());
 	this->editFmy->setText(tl::var_to_str<double>(vecFm[1], g_iPrec).c_str());
 	this->editFmz->setText(tl::var_to_str<double>(vecFm[2], g_iPrec).c_str());
@@ -130,7 +139,7 @@ void RecipParamDlg::SetGOrigin()
 	editOriginH->setText(editGxrlu->text());
 	editOriginK->setText(editGyrlu->text());
 	editOriginL->setText(editGzrlu->text());
-	
+
 	OriginChanged();
 }
 
@@ -141,13 +150,13 @@ void RecipParamDlg::OriginChanged()
 	const double dK = tl::str_to_var<double>(editOriginK->text().toStdString());
 	const double dL = tl::str_to_var<double>(editOriginL->text().toStdString());
 	const double dSq = dH*dH + dK*dK + dL*dL;
-	
+
 	const ublas::vector<double> vecQ = tl::make_vec({dH, dK, dL});
 	ublas::vector<double> vecUp = tl::make_vec({m_params.orient_up[0], m_params.orient_up[1], m_params.orient_up[2]});
 	ublas::vector<double> vecFm = tl::cross_3(vecQ, vecUp);
 	vecUp /= ublas::norm_2(vecUp);
 	vecFm /= ublas::norm_2(vecFm);
-	
+
 	if(!bEm) vecFm = -vecFm;
 	tl::set_eps_0(vecUp);
 	tl::set_eps_0(vecFm);
@@ -161,10 +170,10 @@ void RecipParamDlg::OriginChanged()
 	if(!tl::float_equal(dSq, 1.))
 		ostrDefs << " / np.sqrt(" << dSq << ")";
 	ostrDefs << "\n";
-	
+
 	ostrDefs << "transdir = np.array([" << vecFm[0] << ", " << vecFm[1] << ", " << vecFm[2] << "])\n";
 	ostrDefs << "updir = np.array([" << vecUp[0] << ", " << vecUp[1] << ", " << vecUp[2] << "])\n\n\n";
-	
+
 	ostrDefs << "# define some arbitrary direction in the scattering plane here:\n";
 	ostrDefs << "# userangle = 45. / 180. * np.pi\n";
 	ostrDefs << "# userdir = longdir*np.cos(userangle) + transdir*np.sin(userangle)\n";
@@ -191,14 +200,6 @@ void RecipParamDlg::accept()
 
 void RecipParamDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings)
-	{
-		if(m_pSettings->contains("recip_params/geo"))
-			restoreGeometry(m_pSettings->value("recip_params/geo").toByteArray());
-		if(m_pSettings->contains("recip_params/defs_Em"))
-			radioEm->setChecked(m_pSettings->value("recip_params/defs_Em").toBool());
-	}
-
 	QDialog::showEvent(pEvt);
 }
 

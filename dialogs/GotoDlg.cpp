@@ -48,6 +48,15 @@ GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSett
 	std::vector<QObject*> vecAngles {edit2ThetaM, editThetaM, edit2ThetaA, editThetaA, edit2ThetaS, editThetaS};
 	for(QObject* pObj : vecAngles)
 		QObject::connect(pObj, SIGNAL(textEdited(const QString&)), this, SLOT(EditedAngles()));
+
+
+	if(m_pSettings)
+	{
+		if(m_pSettings->contains("goto_pos/geo"))
+			restoreGeometry(m_pSettings->value("goto_pos/geo").toByteArray());
+		if(m_pSettings->contains("goto_pos/ki_fix"))
+			radioFixedKi->setChecked(m_pSettings->value("goto_pos/ki_fix").toBool());
+	}
 }
 
 GotoDlg::~GotoDlg()
@@ -408,14 +417,6 @@ void GotoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 
 void GotoDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings)
-	{
-		if(m_pSettings->contains("goto_pos/geo"))
-			restoreGeometry(m_pSettings->value("goto_pos/geo").toByteArray());
-		if(m_pSettings->contains("goto_pos/ki_fix"))
-			radioFixedKi->setChecked(m_pSettings->value("goto_pos/ki_fix").toBool());
-	}
-
 	QDialog::showEvent(pEvt);
 }
 

@@ -16,6 +16,10 @@ RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
 	this->setupUi(this);
+
+
+	if(m_pSettings && m_pSettings->contains("real_params/geo"))
+		restoreGeometry(m_pSettings->value("real_params/geo").toByteArray());
 }
 
 RealParamDlg::~RealParamDlg()
@@ -54,9 +58,6 @@ void RealParamDlg::accept()
 
 void RealParamDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings && m_pSettings->contains("real_params/geo"))
-		restoreGeometry(m_pSettings->value("real_params/geo").toByteArray());
-
 	QDialog::showEvent(pEvt);
 }
 

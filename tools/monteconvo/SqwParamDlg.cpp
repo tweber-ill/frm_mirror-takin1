@@ -13,8 +13,12 @@ SqwParamDlg::SqwParamDlg(QWidget* pParent, QSettings* pSett)
 {
 	setupUi(this);
 	tableParams->verticalHeader()->setDefaultSectionSize(tableParams->verticalHeader()->minimumSectionSize()+2);
-	
+
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
+
+
+	if(m_pSett && m_pSett->contains("monteconvo/param_geo"))
+		restoreGeometry(m_pSett->value("monteconvo/param_geo").toByteArray());
 }
 
 SqwParamDlg::~SqwParamDlg()
@@ -64,7 +68,7 @@ void SqwParamDlg::SqwLoaded(const std::vector<SqwBase::t_var>& vecVars)
 		}
 		pItemVal->setFlags(pItemVal->flags() | Qt::ItemIsEditable);
 		pItemVal->setText(strVal.c_str());
-		
+
 		++iRow;
 	}
 }
@@ -72,16 +76,16 @@ void SqwParamDlg::SqwLoaded(const std::vector<SqwBase::t_var>& vecVars)
 void SqwParamDlg::SaveSqwParams()
 {
 	std::vector<SqwBase::t_var> vecVars;
-	
+
 	for(int iRow=0; iRow<tableParams->rowCount(); ++iRow)
 	{
 		SqwBase::t_var var;
 		std::get<0>(var) = tableParams->item(iRow, 0)->text().toStdString();
 		std::get<2>(var) = tableParams->item(iRow, 2)->text().toStdString();
-		
+
 		vecVars.push_back(std::move(var));
 	}
-	
+
 	emit SqwParamsChanged(vecVars);
 }
 
@@ -89,9 +93,6 @@ void SqwParamDlg::SaveSqwParams()
 
 void SqwParamDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSett && m_pSett->contains("monteconvo/param_geo"))
-		restoreGeometry(m_pSett->value("monteconvo/param_geo").toByteArray());
-
 	QDialog::showEvent(pEvt);
 }
 

@@ -120,9 +120,7 @@ void AtomsDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
 		if(m_pSettings)
-		{
 			m_pSettings->setValue("atoms/geo", saveGeometry());
-		}
 
 		QDialog::accept();
 	}

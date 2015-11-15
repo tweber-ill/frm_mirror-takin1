@@ -29,6 +29,10 @@ NetCacheDlg::NetCacheDlg(QWidget* pParent, QSettings* pSett)
 
 	QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(UpdateTimer()));
 	m_timer.start(s_iTimer);
+
+
+	if(m_pSettings && m_pSettings->contains("net_cache/geo"))
+		restoreGeometry(m_pSettings->value("net_cache/geo").toByteArray());
 }
 
 NetCacheDlg::~NetCacheDlg()
@@ -46,9 +50,6 @@ void NetCacheDlg::hideEvent(QHideEvent *pEvt)
 
 void NetCacheDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings && m_pSettings->contains("net_cache/geo"))
-		restoreGeometry(m_pSettings->value("net_cache/geo").toByteArray());
-
 	m_timer.start(s_iTimer);
 }
 

@@ -27,7 +27,7 @@ namespace fs = boost::filesystem;
 
 
 ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
-	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint), 
+	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint),
 		m_settings("tobis_stuff", "scanviewer"),
 		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG" })
 {
@@ -132,6 +132,10 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 
 	m_bDoUpdate = 1;
 	ChangedPath();
+
+
+	if(m_settings.contains("geo"))
+		restoreGeometry(m_settings.value("geo").toByteArray());
 }
 
 ScanViewerDlg::~ScanViewerDlg()
@@ -152,6 +156,12 @@ ScanViewerDlg::~ScanViewerDlg()
 		m_pPicker->setEnabled(0);
 		delete m_pPicker;
 	}
+}
+
+void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
+{
+	m_settings.setValue("geo", saveGeometry());
+	QDialog::closeEvent(pEvt);
 }
 
 void ScanViewerDlg::ClearPlot()

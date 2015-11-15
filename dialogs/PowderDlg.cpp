@@ -100,7 +100,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CheckCrystalType()));
 		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
 	}
-	QObject::connect(editLam, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPeaks()));
+	QObject::connect(spinLam, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
 	QObject::connect(spinOrder, SIGNAL(valueChanged(int)), this, SLOT(CalcPeaks()));
 
 	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
@@ -113,6 +113,10 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	m_bDontCalc = 0;
 	RepopulateSpaceGroups();
 	CalcPeaks();
+
+
+	if(m_pSettings && m_pSettings->contains("powder/geo"))
+		restoreGeometry(m_pSettings->value("powder/geo").toByteArray());
 }
 
 PowderDlg::~PowderDlg()
@@ -201,233 +205,241 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 
 void PowderDlg::CalcPeaks()
 {
-	if(m_bDontCalc) return;
-	static const unsigned int iPrec = 8;
-
-	const double dA = editA->text().toDouble();
-	const double dB = editB->text().toDouble();
-	const double dC = editC->text().toDouble();
-	const double dAlpha = editAlpha->text().toDouble()/180.*M_PI;
-	const double dBeta = editBeta->text().toDouble()/180.*M_PI;
-	const double dGamma = editGamma->text().toDouble()/180.*M_PI;
-
-	const double dLam = editLam->text().toDouble();
-	const int iOrder = spinOrder->value();
-
-	tl::Lattice<double> lattice(dA, dB, dC, dAlpha, dBeta, dGamma);
-	tl::Lattice<double> recip = lattice.GetRecip();
-
-	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
-
-
-#ifdef USE_CLP
-	ScatlenList lstsl;
-	FormfactList lstff;
-
-	std::vector<ublas::vector<double>> vecAllAtoms;
-	std::vector<std::complex<double>> vecScatlens;
-	std::vector<double> vecFormfacts;
-	std::vector<std::string> vecElems;
-
-	std::vector<ublas::matrix<double>> vecSymTrafos;
-	if(pSpaceGroup)
-		pSpaceGroup->GetSymTrafos(vecSymTrafos);
-
-	if(vecSymTrafos.size() && g_bHasFormfacts && g_bHasScatlens && m_vecAtoms.size())
+	try
 	{
-		for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
-		{
-			ublas::vector<double> vecAtom = m_vecAtoms[iAtom].vecPos;
-			// homogeneous coordinates
-			vecAtom.resize(4,1); vecAtom[3] = 1.;
-			const std::string& strElem = m_vecAtoms[iAtom].strAtomName;
+		if(m_bDontCalc) return;
+		static const unsigned int iPrec = 8;
 
-			std::vector<ublas::vector<double>> vecSymPos =
-				tl::generate_atoms<ublas::matrix<double>, ublas::vector<double>, std::vector>
-					(vecSymTrafos, vecAtom);
+		const double dA = editA->text().toDouble();
+		const double dB = editB->text().toDouble();
+		const double dC = editC->text().toDouble();
+		const double dAlpha = editAlpha->text().toDouble()/180.*M_PI;
+		const double dBeta = editBeta->text().toDouble()/180.*M_PI;
+		const double dGamma = editGamma->text().toDouble()/180.*M_PI;
 
-			const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
-			if(!pElem)
-			{
-				tl::log_err("Element \"", strElem, "\" not found in scattering length table.");
-				vecAllAtoms.clear();
-				vecScatlens.clear();
-				break;
-			}
+		const double dLam = spinLam->value();
+		const int iOrder = spinOrder->value();
+		//tl::log_debug("Lambda = ", dLam, ", order = ", iOrder);
 
+		tl::Lattice<double> lattice(dA, dB, dC, dAlpha, dBeta, dGamma);
+		tl::Lattice<double> recip = lattice.GetRecip();
 
-			const std::complex<double> b = pElem->GetCoherent() / 10.;
-
-			for(ublas::vector<double> vecThisAtom : vecSymPos)
-			{
-				vecThisAtom.resize(3,1);
-				vecAllAtoms.push_back(std::move(vecThisAtom));
-				vecScatlens.push_back(b);
-				vecElems.push_back(strElem);
-			}
-		}
-	}
-#endif
+		const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 
 
-	std::map<std::string, PowderLine> mapPeaks;
-	tl::Powder<int> powder;
-
-	for(int ih=-iOrder; ih<iOrder; ++ih)
-		for(int ik=-iOrder; ik<iOrder; ++ik)
-			for(int il=-iOrder; il<iOrder; ++il)
-			{
-				if(ih==0 && ik==0 && il==0) continue;
-				if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il))
-					continue;
-
-				bool bAlreadyHasPeak = powder.HasUniquePeak(ih, ik, il);
-				powder.AddPeak(ih, ik, il);
-				if(bAlreadyHasPeak)
-					continue;
-
-
-				ublas::vector<double> vecBragg = recip.GetPos(ih, ik, il);
-				double dQ = ublas::norm_2(vecBragg);
-				if(tl::is_nan_or_inf<double>(dQ)) continue;
-
-				double dAngle = tl::bragg_recip_twotheta(dQ/tl::angstrom, dLam*tl::angstrom, 1.) / tl::radians;
-				if(tl::is_nan_or_inf<double>(dAngle)) continue;
-
-				//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;
-
-
-				ublas::vector<double> vechkl = tl::make_vec({double(ih), double(ik), double(il)});
-				double dF = -1., dI = -1.;
-				double dFx = -1., dIx = -1.;
 #ifdef USE_CLP
-				if(vecScatlens.size())
-				{
-					std::complex<double> cF =
-						tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
-							(vecAllAtoms, vechkl*2.*M_PI, vecScatlens);
-					double dFsq = (std::conj(cF)*cF).real();
-					dF = std::sqrt(dFsq);
-					tl::set_eps_0(dF);
+		ScatlenList lstsl;
+		FormfactList lstff;
 
-					double dLor = tl::lorentz_factor(dAngle);
-					dI = dFsq*dLor;
+		std::vector<ublas::vector<double>> vecAllAtoms;
+		std::vector<std::complex<double>> vecScatlens;
+		std::vector<double> vecFormfacts;
+		std::vector<std::string> vecElems;
+
+		std::vector<ublas::matrix<double>> vecSymTrafos;
+		if(pSpaceGroup)
+			pSpaceGroup->GetSymTrafos(vecSymTrafos);
+
+		if(vecSymTrafos.size() && g_bHasFormfacts && g_bHasScatlens && m_vecAtoms.size())
+		{
+			for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
+			{
+				ublas::vector<double> vecAtom = m_vecAtoms[iAtom].vecPos;
+				// homogeneous coordinates
+				vecAtom.resize(4,1); vecAtom[3] = 1.;
+				const std::string& strElem = m_vecAtoms[iAtom].strAtomName;
+
+				std::vector<ublas::vector<double>> vecSymPos =
+					tl::generate_atoms<ublas::matrix<double>, ublas::vector<double>, std::vector>
+						(vecSymTrafos, vecAtom);
+
+				const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
+				if(!pElem)
+				{
+					tl::log_err("Element \"", strElem, "\" not found in scattering length table.");
+					vecAllAtoms.clear();
+					vecScatlens.clear();
+					break;
 				}
 
 
+				const std::complex<double> b = pElem->GetCoherent() / 10.;
 
-				vecFormfacts.clear();
-				for(unsigned int iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
+				for(ublas::vector<double> vecThisAtom : vecSymPos)
 				{
-					//const t_vec& vecAtom = vecAllAtoms[iAtom];
-					const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
+					vecThisAtom.resize(3,1);
+					vecAllAtoms.push_back(std::move(vecThisAtom));
+					vecScatlens.push_back(b);
+					vecElems.push_back(strElem);
+				}
+			}
+		}
+#endif
 
-					if(pElemff == nullptr)
+
+		std::map<std::string, PowderLine> mapPeaks;
+		tl::Powder<int> powder;
+
+		for(int ih=-iOrder; ih<iOrder; ++ih)
+			for(int ik=-iOrder; ik<iOrder; ++ik)
+				for(int il=-iOrder; il<iOrder; ++il)
+				{
+					if(ih==0 && ik==0 && il==0) continue;
+					if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il))
+						continue;
+
+					bool bAlreadyHasPeak = powder.HasUniquePeak(ih, ik, il);
+					powder.AddPeak(ih, ik, il);
+					if(bAlreadyHasPeak)
+						continue;
+
+
+					ublas::vector<double> vecBragg = recip.GetPos(ih, ik, il);
+					double dQ = ublas::norm_2(vecBragg);
+					if(tl::is_nan_or_inf<double>(dQ)) continue;
+
+					double dAngle = tl::bragg_recip_twotheta(dQ/tl::angstrom, dLam*tl::angstrom, 1.) / tl::radians;
+					if(tl::is_nan_or_inf<double>(dAngle)) continue;
+
+					//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;
+
+
+					ublas::vector<double> vechkl = tl::make_vec({double(ih), double(ik), double(il)});
+					double dF = -1., dI = -1.;
+					double dFx = -1., dIx = -1.;
+#ifdef USE_CLP
+					if(vecScatlens.size())
 					{
-						tl::log_err("Cannot get form factor for \"", vecElems[iAtom], "\".");
-						vecFormfacts.clear();
-						break;
+						std::complex<double> cF =
+							tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
+								(vecAllAtoms, vechkl*2.*M_PI, vecScatlens);
+						double dFsq = (std::conj(cF)*cF).real();
+						dF = std::sqrt(dFsq);
+						tl::set_eps_0(dF);
+
+						double dLor = tl::lorentz_factor(dAngle);
+						dI = dFsq*dLor;
 					}
 
-					double dFF = pElemff->GetFormfact(dQ);
-					vecFormfacts.push_back(dFF);
-				}
 
-				if(vecFormfacts.size())
-				{
-					std::complex<double> cFx =
-						tl::structfact<double, double, ublas::vector<double>, std::vector>
-							(vecAllAtoms, vechkl*2.*M_PI, vecFormfacts);
 
-					double dFxsq = (std::conj(cFx)*cFx).real();
-					dFx = std::sqrt(dFxsq);
-					tl::set_eps_0(dFx);
+					vecFormfacts.clear();
+					for(unsigned int iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
+					{
+						//const t_vec& vecAtom = vecAllAtoms[iAtom];
+						const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
 
-					double dLor = tl::lorentz_factor(dAngle)*tl::lorentz_pol_factor(dAngle);
-					dIx = dFxsq*dLor;
-				}
+						if(pElemff == nullptr)
+						{
+							tl::log_err("Cannot get form factor for \"", vecElems[iAtom], "\".");
+							vecFormfacts.clear();
+							break;
+						}
+
+						double dFF = pElemff->GetFormfact(dQ);
+						vecFormfacts.push_back(dFF);
+					}
+
+					if(vecFormfacts.size())
+					{
+						std::complex<double> cFx =
+							tl::structfact<double, double, ublas::vector<double>, std::vector>
+								(vecAllAtoms, vechkl*2.*M_PI, vecFormfacts);
+
+						double dFxsq = (std::conj(cFx)*cFx).real();
+						dFx = std::sqrt(dFxsq);
+						tl::set_eps_0(dFx);
+
+						double dLor = tl::lorentz_factor(dAngle)*tl::lorentz_pol_factor(dAngle);
+						dIx = dFxsq*dLor;
+					}
 #endif
 
 
-				std::ostringstream ostrAngle;
-				ostrAngle.precision(iPrec);
-				ostrAngle << (dAngle/M_PI*180.);
+					std::ostringstream ostrAngle;
+					ostrAngle.precision(iPrec);
+					ostrAngle << (dAngle/M_PI*180.);
 
-				std::ostringstream ostrPeak;
-				ostrPeak << "(" << std::abs(ih) << std::abs(ik) << std::abs(il) << ")";
+					std::ostringstream ostrPeak;
+					ostrPeak << "(" << std::abs(ih) << std::abs(ik) << std::abs(il) << ")";
 
-				if(mapPeaks[ostrAngle.str()].strPeaks.length()!=0)
-					mapPeaks[ostrAngle.str()].strPeaks += ", ";
-				mapPeaks[ostrAngle.str()].strPeaks += ostrPeak.str();
-				mapPeaks[ostrAngle.str()].dAngle = dAngle;
-				mapPeaks[ostrAngle.str()].dQ = dQ;
+					if(mapPeaks[ostrAngle.str()].strPeaks.length()!=0)
+						mapPeaks[ostrAngle.str()].strPeaks += ", ";
+					mapPeaks[ostrAngle.str()].strPeaks += ostrPeak.str();
+					mapPeaks[ostrAngle.str()].dAngle = dAngle;
+					mapPeaks[ostrAngle.str()].dQ = dQ;
 
-				mapPeaks[ostrAngle.str()].h = std::abs(ih);
-				mapPeaks[ostrAngle.str()].k = std::abs(ik);
-				mapPeaks[ostrAngle.str()].l = std::abs(il);
+					mapPeaks[ostrAngle.str()].h = std::abs(ih);
+					mapPeaks[ostrAngle.str()].k = std::abs(ik);
+					mapPeaks[ostrAngle.str()].l = std::abs(il);
 
-				mapPeaks[ostrAngle.str()].dFn = dF;
-				mapPeaks[ostrAngle.str()].dIn = dI;
-				mapPeaks[ostrAngle.str()].dFx = dFx;
-				mapPeaks[ostrAngle.str()].dIx = dIx;
-			}
+					mapPeaks[ostrAngle.str()].dFn = dF;
+					mapPeaks[ostrAngle.str()].dIn = dI;
+					mapPeaks[ostrAngle.str()].dFx = dFx;
+					mapPeaks[ostrAngle.str()].dIx = dIx;
+				}
 
-	//std::cout << powder << std::endl;
-	std::vector<const PowderLine*> vecPowderLines;
-	vecPowderLines.reserve(mapPeaks.size());
-
-
-	for(auto& pair : mapPeaks)
-	{
-		pair.second.strAngle = pair.first;
-		pair.second.strQ = tl::var_to_str<double>(pair.second.dQ, iPrec);
-		pair.second.iMult = powder.GetMultiplicity(pair.second.h, pair.second.k, pair.second.l);
-
-		pair.second.dIn *= double(pair.second.iMult);
-		pair.second.dIx *= double(pair.second.iMult);
-
-		vecPowderLines.push_back(&pair.second);
-	}
+		//std::cout << powder << std::endl;
+		std::vector<const PowderLine*> vecPowderLines;
+		vecPowderLines.reserve(mapPeaks.size());
 
 
-	std::sort(vecPowderLines.begin(), vecPowderLines.end(),
-				[](const PowderLine* pLine1, const PowderLine* pLine2) -> bool
-					{ return pLine1->dAngle <= pLine2->dAngle; });
-
-
-	const int iNumRows = vecPowderLines.size();
-	tablePowderLines->setRowCount(iNumRows);
-
-	for(int iRow=0; iRow<iNumRows; ++iRow)
-	{
-		for(int iCol=0; iCol<8; ++iCol)
+		for(auto& pair : mapPeaks)
 		{
-			if(!tablePowderLines->item(iRow, iCol))
-				tablePowderLines->setItem(iRow, iCol, new QTableWidgetItem());
+			pair.second.strAngle = pair.first;
+			pair.second.strQ = tl::var_to_str<double>(pair.second.dQ, iPrec);
+			pair.second.iMult = powder.GetMultiplicity(pair.second.h, pair.second.k, pair.second.l);
+
+			pair.second.dIn *= double(pair.second.iMult);
+			pair.second.dIx *= double(pair.second.iMult);
+
+			vecPowderLines.push_back(&pair.second);
 		}
 
-		QString strMult = tl::var_to_str(vecPowderLines[iRow]->iMult).c_str();
-		QString strFn, strIn, strFx, strIx;
-		if(vecPowderLines[iRow]->dFn >= 0.)
-			strFn = tl::var_to_str(vecPowderLines[iRow]->dFn, iPrec).c_str();
-		if(vecPowderLines[iRow]->dIn >= 0.)
-			strIn = tl::var_to_str(vecPowderLines[iRow]->dIn, iPrec).c_str();
-		if(vecPowderLines[iRow]->dFx >= 0.)
-			strFx = tl::var_to_str(vecPowderLines[iRow]->dFx, iPrec).c_str();
-		if(vecPowderLines[iRow]->dIx >= 0.)
-			strIx = tl::var_to_str(vecPowderLines[iRow]->dIx, iPrec).c_str();
 
-		tablePowderLines->item(iRow, TABLE_ANGLE)->setText(vecPowderLines[iRow]->strAngle.c_str());
-		tablePowderLines->item(iRow, TABLE_Q)->setText(vecPowderLines[iRow]->strQ.c_str());
-		tablePowderLines->item(iRow, TABLE_PEAK)->setText(vecPowderLines[iRow]->strPeaks.c_str());
-		tablePowderLines->item(iRow, TABLE_MULT)->setText(strMult);
-		tablePowderLines->item(iRow, TABLE_FN)->setText(strFn);
-		tablePowderLines->item(iRow, TABLE_IN)->setText(strIn);
-		tablePowderLines->item(iRow, TABLE_FX)->setText(strFx);
-		tablePowderLines->item(iRow, TABLE_IX)->setText(strIx);
+		std::sort(vecPowderLines.begin(), vecPowderLines.end(),
+					[](const PowderLine* pLine1, const PowderLine* pLine2) -> bool
+						{ return pLine1->dAngle <= pLine2->dAngle; });
+
+
+		const int iNumRows = vecPowderLines.size();
+		tablePowderLines->setRowCount(iNumRows);
+
+		for(int iRow=0; iRow<iNumRows; ++iRow)
+		{
+			for(int iCol=0; iCol<8; ++iCol)
+			{
+				if(!tablePowderLines->item(iRow, iCol))
+					tablePowderLines->setItem(iRow, iCol, new QTableWidgetItem());
+			}
+
+			QString strMult = tl::var_to_str(vecPowderLines[iRow]->iMult).c_str();
+			QString strFn, strIn, strFx, strIx;
+			if(vecPowderLines[iRow]->dFn >= 0.)
+				strFn = tl::var_to_str(vecPowderLines[iRow]->dFn, iPrec).c_str();
+			if(vecPowderLines[iRow]->dIn >= 0.)
+				strIn = tl::var_to_str(vecPowderLines[iRow]->dIn, iPrec).c_str();
+			if(vecPowderLines[iRow]->dFx >= 0.)
+				strFx = tl::var_to_str(vecPowderLines[iRow]->dFx, iPrec).c_str();
+			if(vecPowderLines[iRow]->dIx >= 0.)
+				strIx = tl::var_to_str(vecPowderLines[iRow]->dIx, iPrec).c_str();
+
+			tablePowderLines->item(iRow, TABLE_ANGLE)->setText(vecPowderLines[iRow]->strAngle.c_str());
+			tablePowderLines->item(iRow, TABLE_Q)->setText(vecPowderLines[iRow]->strQ.c_str());
+			tablePowderLines->item(iRow, TABLE_PEAK)->setText(vecPowderLines[iRow]->strPeaks.c_str());
+			tablePowderLines->item(iRow, TABLE_MULT)->setText(strMult);
+			tablePowderLines->item(iRow, TABLE_FN)->setText(strFn);
+			tablePowderLines->item(iRow, TABLE_IN)->setText(strIn);
+			tablePowderLines->item(iRow, TABLE_FX)->setText(strFx);
+			tablePowderLines->item(iRow, TABLE_IX)->setText(strIx);
+		}
+
+		PlotPowderLines(vecPowderLines);
 	}
-
-	PlotPowderLines(vecPowderLines);
+	catch(const std::exception& ex)
+	{
+		tl::log_err("Cannot calculate powder peaks: ", ex.what());
+	}
 }
 
 
@@ -559,7 +571,7 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 	mapConf[strXmlRoot + "sample/gamma"] = editGamma->text().toStdString();
 
 	mapConf[strXmlRoot + "powder/maxhkl"] = tl::var_to_str<int>(spinOrder->value());
-	mapConf[strXmlRoot + "powder/lambda"] = editLam->text().toStdString();
+	mapConf[strXmlRoot + "powder/lambda"] = tl::var_to_str<double>(spinLam->value());
 
 	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
 
@@ -595,7 +607,7 @@ void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 	editGamma->setText(std::to_string(xml.Query<double>((strXmlRoot + "sample/gamma").c_str(), 90., &bOk)).c_str());
 
 	spinOrder->setValue(xml.Query<int>((strXmlRoot + "powder/maxhkl").c_str(), 10, &bOk));
-	editC->setText(std::to_string(xml.Query<double>((strXmlRoot + "powder/lambda").c_str(), 5., &bOk)).c_str());
+	spinLam->setValue(xml.Query<double>((strXmlRoot + "powder/lambda").c_str(), 5., &bOk));
 
 	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
 	tl::trim(strSpaceGroup);
@@ -668,9 +680,6 @@ void PowderDlg::accept()
 
 void PowderDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings && m_pSettings->contains("powder/geo"))
-		restoreGeometry(m_pSettings->value("powder/geo").toByteArray());
-
 	QDialog::showEvent(pEvt);
 }
 

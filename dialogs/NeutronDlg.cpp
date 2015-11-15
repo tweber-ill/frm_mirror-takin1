@@ -70,6 +70,23 @@ NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
 	EnableRecipEdits();
 	CalcBraggReal();
 	CalcBraggRecip();
+
+
+	if(m_pSettings)
+	{
+		if(m_pSettings->contains("neutron_props/geo"))
+			restoreGeometry(m_pSettings->value("neutron_props/geo").toByteArray());
+
+		bool bOk = 0;
+		double dLam = m_pSettings->value("neutron_props/lam").toDouble(&bOk);
+		if(!bOk)
+			dLam = 5.;
+
+		std::string strLam = tl::var_to_str(dLam, g_iPrec);
+		editLam->setText(strLam.c_str());
+
+		CalcNeutronLam();
+	}
 }
 
 NeutronDlg::~NeutronDlg()
@@ -585,22 +602,6 @@ void NeutronDlg::accept()
 
 void NeutronDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings)
-	{
-		if(m_pSettings->contains("neutron_props/geo"))
-			restoreGeometry(m_pSettings->value("neutron_props/geo").toByteArray());
-
-		bool bOk = 0;
-		double dLam = m_pSettings->value("neutron_props/lam").toDouble(&bOk);
-		if(!bOk)
-			dLam = 5.;
-
-		std::string strLam = tl::var_to_str(dLam, g_iPrec);
-		editLam->setText(strLam.c_str());
-
-		CalcNeutronLam();
-	}
-
 	QDialog::showEvent(pEvt);
 }
 

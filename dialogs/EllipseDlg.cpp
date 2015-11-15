@@ -95,7 +95,12 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 		m_vecZoomers[i]->setMaxStackDepth(-1);
 		m_vecZoomers[i]->setEnabled(1);
 	}
+
+
+	if(m_pSettings && m_pSettings->contains("reso/ellipse_geo"))
+		restoreGeometry(m_pSettings->value("reso/ellipse_geo").toByteArray());
 }
+
 
 EllipseDlg::~EllipseDlg()
 {
@@ -300,9 +305,6 @@ void EllipseDlg::accept()
 
 void EllipseDlg::showEvent(QShowEvent *pEvt)
 {
-	if(m_pSettings && m_pSettings->contains("reso/ellipse_geo"))
-		restoreGeometry(m_pSettings->value("reso/ellipse_geo").toByteArray());
-
 	QDialog::showEvent(pEvt);
 }
 
