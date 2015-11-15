@@ -93,6 +93,7 @@ void AtomsDlg::SendApplyAtoms()
 	{
 		AtomPos atom;
 		atom.strAtomName = tableAtoms->item(iRow, 0)->text().toStdString();
+		tl::trim(atom.strAtomName);
 		double dX = tl::str_to_var<double>(tableAtoms->item(iRow, 1)->text().toStdString());
 		double dY = tl::str_to_var<double>(tableAtoms->item(iRow, 2)->text().toStdString());
 		double dZ = tl::str_to_var<double>(tableAtoms->item(iRow, 3)->text().toStdString());

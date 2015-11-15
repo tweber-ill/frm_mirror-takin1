@@ -14,6 +14,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #ifdef USE_CLP
 	#include "helper/spacegroup_clp.h"
@@ -24,9 +25,44 @@
 #include "tlibs/file/xml.h"
 #include "AtomsDlg.h"
 
+#include <qwt_plot.h>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_grid.h>
+//#include <qwt_plot_picker.h>
+//#include <qwt_legend.h>
+
+
+struct PowderLine
+{
+	int h, k, l;
+
+	double dAngle;
+	std::string strAngle;
+
+	double dQ;
+	std::string strQ;
+
+	std::string strPeaks;
+
+	unsigned int iMult;
+	double dFn, dFx;	// neutron/xray structure factors
+	double dIn, dIx;	// neutron/xray intensities
+};
+
 
 class PowderDlg : public QDialog, Ui::PowderDlg
 { Q_OBJECT
+	protected:
+		std::vector<double> m_vecTT, m_vecInt;
+		std::vector<double> m_vecTTx, m_vecIntx;
+
+		QwtPlotCurve *m_pCurve = nullptr;
+		QwtPlotGrid *m_pGrid = nullptr;
+
+		QwtPlotCurve *m_pCurveX = nullptr;
+		QwtPlotGrid *m_pGridX = nullptr;
+
+
 	protected:
 		bool m_bDontCalc = 1;
 		QSettings *m_pSettings = 0;
@@ -40,6 +76,9 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 	public:
 		PowderDlg(QWidget* pParent=0, QSettings* pSett=0);
 		virtual ~PowderDlg();
+
+	protected:
+		void PlotPowderLines(const std::vector<const PowderLine*>& vecLines);
 
 	protected slots:
 		void CalcPeaks();

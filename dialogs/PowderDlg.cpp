@@ -27,26 +27,6 @@ namespace ublas = boost::numeric::ublas;
 namespace co = boost::units::si::constants::codata;
 
 
-
-struct PowderLine
-{
-	int h, k, l;
-
-	double dAngle;
-	std::string strAngle;
-
-	double dQ;
-	std::string strQ;
-
-	std::string strPeaks;
-
-	unsigned int iMult;
-	double dFn, dFx;	// neutron/xray structure factors
-	double dIn, dIx;	// neutron/xray intensities
-};
-
-
-
 #define TABLE_ANGLE	0
 #define TABLE_Q		1
 #define TABLE_PEAK	2
@@ -61,6 +41,45 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 				m_pmapSpaceGroups(get_space_groups())
 {
 	this->setupUi(this);
+
+	// -------------------------------------------------------------------------
+	// plot stuff
+	QPen penGrid;
+	penGrid.setColor(QColor(0x99,0x99,0x99));
+	penGrid.setStyle(Qt::DashLine);
+
+	QPen penCurve;
+	penCurve.setColor(QColor(0,0,0x99));
+	penCurve.setWidth(2);
+
+	QColor colorBck(240, 240, 240, 255);
+	for(QwtPlot *pPlt : {plotN, plotX})
+		pPlt->setCanvasBackground(colorBck);
+
+
+	m_pGrid = new QwtPlotGrid();
+	m_pGrid->setPen(penGrid);
+	m_pGrid->attach(plotN);
+	m_pGridX = new QwtPlotGrid();
+	m_pGridX->setPen(penGrid);
+	m_pGridX->attach(plotX);
+
+	m_pCurve = new QwtPlotCurve("Neutron Powder Pattern");
+	m_pCurve->setPen(penCurve);
+	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pCurve->attach(plotN);
+
+	m_pCurveX = new QwtPlotCurve("X-Ray Powder Pattern");
+	m_pCurveX->setPen(penCurve);
+	m_pCurveX->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	m_pCurveX->attach(plotX);
+
+	plotN->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
+	plotN->setAxisTitle(QwtPlot::yLeft, "Intensity");
+	plotX->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
+	plotX->setAxisTitle(QwtPlot::yLeft, "Intensity");
+	// -------------------------------------------------------------------------
+
 	btnSave->setIcon(load_icon("res/document-save.svg"));
 	btnLoad->setIcon(load_icon("res/document-open.svg"));
 
@@ -97,7 +116,87 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 }
 
 PowderDlg::~PowderDlg()
-{}
+{
+	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridX})
+	{
+		if(*pGrid)
+		{
+			delete *pGrid;
+			*pGrid = nullptr;
+		}
+	}
+}
+
+
+void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
+{
+	const unsigned int NUM_POINTS = 512;
+
+	using t_iter = typename std::vector<const PowderLine*>::const_iterator;
+	std::pair<t_iter, t_iter> pairMinMax =
+		boost::minmax_element(vecLines.begin(), vecLines.end(),
+		[](const PowderLine* pLine1, const PowderLine* pLine2) ->bool
+		{
+			return pLine1->dAngle <= pLine2->dAngle;
+		});
+
+	double dMinTT = 0., dMaxTT = 0.;
+	if(pairMinMax.first!=vecLines.end() && pairMinMax.second!=vecLines.end())
+	{
+		dMinTT = (*pairMinMax.first)->dAngle;
+		dMaxTT = (*pairMinMax.second)->dAngle;
+
+		dMinTT -= 10./180.*M_PI;
+		dMaxTT += 10./180.*M_PI;
+		if(dMinTT < 0.) dMinTT = 0.;
+	}
+
+	m_vecTT.clear();
+	m_vecTTx.clear();
+	m_vecInt.clear();
+	m_vecIntx.clear();
+
+	m_vecTT.reserve(NUM_POINTS);
+	m_vecTTx.reserve(NUM_POINTS);
+	m_vecInt.reserve(NUM_POINTS);
+	m_vecIntx.reserve(NUM_POINTS);
+
+	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
+	{
+		double dTT = (dMinTT + (dMaxTT - dMinTT)/double(NUM_POINTS)*double(iPt));
+
+		double dInt = 0., dIntX = 0.;
+		for(const PowderLine *pLine : vecLines)
+		{
+			const double dPeakX = pLine->dAngle;
+
+			double dPeakInt = pLine->dIn;
+			double dPeakIntX = pLine->dIx;
+			if(dPeakInt < 0.) dPeakInt = 1.;
+			if(dPeakIntX < 0.) dPeakIntX = 1.;
+
+			constexpr double dSig = 0.25;
+			dInt += tl::gauss_model(dTT/M_PI*180., dPeakX/M_PI*180., dSig, dPeakInt, 0.);
+			dIntX += tl::gauss_model(dTT/M_PI*180., dPeakX/M_PI*180., dSig, dPeakIntX, 0.);
+		}
+
+		m_vecTT.push_back(dTT /M_PI*180.);
+		m_vecTTx.push_back(dTT /M_PI*180.);
+		m_vecInt.push_back(dInt);
+		m_vecIntx.push_back(dIntX);
+	}
+
+#if QWT_VER>=6
+	m_pCurve->setRawSamples(m_vecTT.data(), m_vecInt.data(), m_vecTT.size());
+	m_pCurveX->setRawSamples(m_vecTTx.data(), m_vecIntx.data(), m_vecTTx.size());
+#else
+	m_pCurve->setRawData(m_vecTT.data(), m_vecInt.data(), m_vecTT.size());
+	m_pCurveX->setRawData(m_vecTTx.data(), m_vecIntx.data(), m_vecTTx.size());
+#endif
+
+	plotN->replot();
+	plotX->replot();
+}
 
 
 void PowderDlg::CalcPeaks()
@@ -327,6 +426,8 @@ void PowderDlg::CalcPeaks()
 		tablePowderLines->item(iRow, TABLE_FX)->setText(strFx);
 		tablePowderLines->item(iRow, TABLE_IX)->setText(strIx);
 	}
+
+	PlotPowderLines(vecPowderLines);
 }
 
 

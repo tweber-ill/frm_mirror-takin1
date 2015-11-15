@@ -19,6 +19,8 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 		: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
+	QColor colorBck(240, 240, 240, 255);
+	plotbragg->setCanvasBackground(colorBck);
 
 	m_pBraggGrid = new QwtPlotGrid();
 	QPen penGrid;

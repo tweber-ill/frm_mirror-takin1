@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>487</width>
-    <height>555</height>
+    <width>506</width>
+    <height>534</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,16 +17,9 @@
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
-   <item row="3" column="3">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
+   <property name="margin">
+    <number>8</number>
+   </property>
    <item row="0" column="0" colspan="3">
     <widget class="QGroupBox" name="groupBox">
      <property name="sizePolicy">
@@ -39,6 +32,9 @@
       <string>Unit Cell</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <property name="margin">
+       <number>4</number>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
@@ -138,6 +134,9 @@
       <string>Space Group</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_7">
+      <property name="margin">
+       <number>4</number>
+      </property>
       <item row="0" column="0" colspan="2">
        <widget class="QComboBox" name="comboSpaceGroups">
         <property name="sizePolicy">
@@ -199,6 +198,16 @@
      </layout>
     </widget>
    </item>
+   <item row="3" column="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0" colspan="4">
     <widget class="QGroupBox" name="groupBox_3">
      <property name="sizePolicy">
@@ -211,57 +220,126 @@
       <string>Elastic Reflexes</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
-       <widget class="QTableWidget" name="tablePowderLines">
-        <property name="alternatingRowColors">
-         <bool>true</bool>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>0</number>
         </property>
-        <attribute name="horizontalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="verticalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-        <column>
-         <property name="text">
-          <string>2θ (deg)</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Q (Å⁻¹)</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Peak</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Mult.</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>|F_n|</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>I_n</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>|F_xray|</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>I_xray</string>
-         </property>
-        </column>
+        <widget class="QWidget" name="tab_3">
+         <attribute name="title">
+          <string>Table</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <property name="margin">
+           <number>8</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QTableWidget" name="tablePowderLines">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+            <attribute name="horizontalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>2θ (deg)</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Q (Å⁻¹)</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Peak</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Mult.</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>|F_n|</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>I_n</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>|F_xray|</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>I_xray</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_4">
+         <attribute name="title">
+          <string>Neutron Diffraction Pattern</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <property name="margin">
+           <number>8</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QwtPlot" name="plotN">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>3</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_5">
+         <attribute name="title">
+          <string>X-Ray Diffraction Pattern</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_9">
+          <property name="margin">
+           <number>8</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QwtPlot" name="plotX">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>3</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -306,6 +384,9 @@
       <string>Input</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
+      <property name="margin">
+       <number>4</number>
+      </property>
       <item row="0" column="1">
        <widget class="QLineEdit" name="editLam">
         <property name="text">
@@ -354,6 +435,9 @@
       <string>Unit Cell Layout</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
+      <property name="margin">
+       <number>4</number>
+      </property>
       <item row="0" column="0">
        <widget class="QPushButton" name="btnAtoms">
         <property name="text">
@@ -366,6 +450,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QwtPlot</class>
+   <extends>QFrame</extends>
+   <header>qwt_plot.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>editA</tabstop>
   <tabstop>editB</tabstop>
@@ -379,6 +470,7 @@
   <tabstop>editLam</tabstop>
   <tabstop>spinOrder</tabstop>
   <tabstop>btnAtoms</tabstop>
+  <tabstop>tabWidget</tabstop>
   <tabstop>tablePowderLines</tabstop>
   <tabstop>btnSave</tabstop>
   <tabstop>btnLoad</tabstop>
