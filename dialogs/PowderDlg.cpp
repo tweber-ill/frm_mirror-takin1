@@ -80,7 +80,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	plotN->setAxisTitle(QwtPlot::yLeft, "Intensity");
 	plotX->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
 	plotX->setAxisTitle(QwtPlot::yLeft, "Intensity");
-	
+
 	plotN->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plotN->xBottom, plotN->yLeft,
 #if QWT_VER<6
@@ -143,6 +143,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	}
 	QObject::connect(spinLam, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
 	QObject::connect(spinOrder, SIGNAL(valueChanged(int)), this, SLOT(CalcPeaks()));
+	QObject::connect(checkUniquePeaks, SIGNAL(toggled(bool)), this, SLOT(CalcPeaks()));
 
 	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SpaceGroupChanged()));
@@ -250,6 +251,7 @@ void PowderDlg::CalcPeaks()
 	{
 		if(m_bDontCalc) return;
 		static const unsigned int iPrec = g_iPrec;
+		const bool bWantUniquePeaks = checkUniquePeaks->isChecked();
 
 		const double dA = editA->text().toDouble();
 		const double dB = editB->text().toDouble();
@@ -320,18 +322,14 @@ void PowderDlg::CalcPeaks()
 
 		std::map<std::string, PowderLine> mapPeaks;
 		tl::Powder<int> powder;
+		powder.SetRecipLattice(&recip);
 
-		for(int ih=-iOrder; ih<iOrder; ++ih)
-			for(int ik=-iOrder; ik<iOrder; ++ik)
-				for(int il=-iOrder; il<iOrder; ++il)
+		for(int ih=iOrder; ih>=-iOrder; --ih)
+			for(int ik=iOrder; ik>=-iOrder; --ik)
+				for(int il=iOrder; il>=-iOrder; --il)
 				{
 					if(ih==0 && ik==0 && il==0) continue;
 					if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il))
-						continue;
-
-					bool bAlreadyHasPeak = powder.HasUniquePeak(ih, ik, il);
-					powder.AddPeak(ih, ik, il);
-					if(bAlreadyHasPeak)
 						continue;
 
 
@@ -396,13 +394,21 @@ void PowderDlg::CalcPeaks()
 					}
 #endif
 
+					bool bHasPeak = 0;
+					if(bWantUniquePeaks)
+						bHasPeak = powder.HasUniquePeak(ih, ik, il, dF);
+					powder.AddPeak(ih, ik, il, dF);
+					if(bHasPeak)
+						continue;
 
+
+					// using angle and F as hash for the set
 					std::ostringstream ostrAngle;
 					ostrAngle.precision(iPrec);
-					ostrAngle << (dAngle/M_PI*180.);
+					ostrAngle << (dAngle/M_PI*180.) << " " << dF;
 
 					std::ostringstream ostrPeak;
-					ostrPeak << "(" << std::abs(ih) << std::abs(ik) << std::abs(il) << ")";
+					ostrPeak << "(" << /*std::abs*/(ih) << /*std::abs*/(ik) << /*std::abs*/(il) << ")";
 
 					if(mapPeaks[ostrAngle.str()].strPeaks.length()!=0)
 						mapPeaks[ostrAngle.str()].strPeaks += ", ";
@@ -410,9 +416,9 @@ void PowderDlg::CalcPeaks()
 					mapPeaks[ostrAngle.str()].dAngle = dAngle;
 					mapPeaks[ostrAngle.str()].dQ = dQ;
 
-					mapPeaks[ostrAngle.str()].h = std::abs(ih);
-					mapPeaks[ostrAngle.str()].k = std::abs(ik);
-					mapPeaks[ostrAngle.str()].l = std::abs(il);
+					mapPeaks[ostrAngle.str()].h = /*std::abs*/(ih);
+					mapPeaks[ostrAngle.str()].k = /*std::abs*/(ik);
+					mapPeaks[ostrAngle.str()].l = /*std::abs*/(il);
 
 					mapPeaks[ostrAngle.str()].dFn = dF;
 					mapPeaks[ostrAngle.str()].dIn = dI;
@@ -427,9 +433,9 @@ void PowderDlg::CalcPeaks()
 
 		for(auto& pair : mapPeaks)
 		{
-			pair.second.strAngle = pair.first;
+			pair.second.strAngle = tl::var_to_str<double>(tl::r2d(pair.second.dAngle), iPrec);
 			pair.second.strQ = tl::var_to_str<double>(pair.second.dQ, iPrec);
-			pair.second.iMult = powder.GetMultiplicity(pair.second.h, pair.second.k, pair.second.l);
+			pair.second.iMult = powder.GetMultiplicity(pair.second.h, pair.second.k, pair.second.l, pair.second.dFn);
 
 			pair.second.dIn *= double(pair.second.iMult);
 			pair.second.dIx *= double(pair.second.iMult);
