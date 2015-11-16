@@ -11,6 +11,7 @@
 
 #include "../../tlibs/string/string.h"
 
+#include <boost/version.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 namespace prop = boost::property_tree;
@@ -37,9 +38,21 @@ namespace clipper { namespace data
 
 namespace dat = clipper::data;
 
+
+using t_prop = prop::basic_ptree<std::string, std::string>;
+
+// in later boost versions, the template arg is now the string type, not the char type
+#if BOOST_VERSION >= 105800
+	using t_writer = typename t_prop::key_type;
+#else
+	using t_writer = typename t_prop::key_type::value_type;
+#endif
+
+
 bool gen_formfacts()
 {
-	prop::basic_ptree<std::string, std::string> prop;
+	t_prop prop;
+
 	prop.add("ffacts.source", "form factor coefficients from Clipper: http://www.ysbl.york.ac.uk/~cowtan/clipper/");
 	prop.add("ffacts.num_atoms", tl::var_to_str(dat::numsfdata));
 
@@ -69,9 +82,8 @@ bool gen_formfacts()
 		std::cerr << "Error: Cannot write \"res/ffacts.xml\"." << std::endl;
 		return false;
 	}
-	prop::write_xml(ofstr, prop,
-		prop::xml_writer_settings<typename decltype(prop)::key_type>('\t',1));
 
+	prop::write_xml(ofstr, prop, prop::xml_writer_settings<t_writer>('\t',1));
 	return true;
 }
 
@@ -155,9 +167,8 @@ bool gen_scatlens()
 		std::cerr << "Error: Cannot write \"res/scatlens.xml\"." << std::endl;
 		return false;
 	}
-	prop::write_xml(ofstr, prop,
-		prop::xml_writer_settings<typename decltype(prop)::key_type>('\t',1));
 
+	prop::write_xml(ofstr, prop, prop::xml_writer_settings<t_writer>('\t',1));
 	return true;
 }
 
