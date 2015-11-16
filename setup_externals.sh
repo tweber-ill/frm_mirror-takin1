@@ -63,10 +63,10 @@ function dl_tangoicons
 
 function dl_scatlens
 {
-	if [ ! -f res/scatlens.html ]; then
+	if [ ! -f tmp/scatlens.html ]; then
 		echo -e "Downloading scattering length list...\n"
 
-		if ! wget ${SCATLENS} -O res/scatlens.html; then
+		if ! wget ${SCATLENS} -O tmp/scatlens.html; then
 			echo -e "Error: Cannot download scattering length list.";
 			exit -1;
 		fi

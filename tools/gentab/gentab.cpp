@@ -107,7 +107,7 @@ void formatnumber(std::string& str)
 
 bool gen_scatlens()
 {
-	std::ifstream ifstr("res/scatlens.html");
+	std::ifstream ifstr("tmp/scatlens.html");
 	if(!ifstr)
 	{
 		std::cerr << "Error: Cannot open \"res/scatlens.html\"." << std::endl;
