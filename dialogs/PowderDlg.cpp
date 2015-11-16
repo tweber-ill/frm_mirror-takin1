@@ -11,6 +11,7 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/linalg.h"
 #include "tlibs/string/string.h"
+#include "tlibs/string/spec_char.h"
 
 #include "helper/globals.h"
 #include "helper/formfact.h"
@@ -22,6 +23,7 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <qwt_picker_machine.h>
 
 namespace ublas = boost::numeric::ublas;
 namespace co = boost::units::si::constants::codata;
@@ -78,6 +80,45 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	plotN->setAxisTitle(QwtPlot::yLeft, "Intensity");
 	plotX->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
 	plotX->setAxisTitle(QwtPlot::yLeft, "Intensity");
+	
+	plotN->canvas()->setMouseTracking(1);
+	m_pPicker = new QwtPlotPicker(plotN->xBottom, plotN->yLeft,
+#if QWT_VER<6
+									QwtPlotPicker::PointSelection,
+#endif
+									QwtPlotPicker::NoRubberBand,
+#if QWT_VER>=6
+									QwtPlotPicker::AlwaysOff,
+#else
+									QwtPlotPicker::AlwaysOn,
+#endif
+									plotN->canvas());
+
+#if QWT_VER>=6
+	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
+	connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
+#endif
+	m_pPicker->setEnabled(1);
+
+
+	plotX->canvas()->setMouseTracking(1);
+	m_pPickerX = new QwtPlotPicker(plotX->xBottom, plotX->yLeft,
+#if QWT_VER<6
+									QwtPlotPicker::PointSelection,
+#endif
+									QwtPlotPicker::NoRubberBand,
+#if QWT_VER>=6
+									QwtPlotPicker::AlwaysOff,
+#else
+									QwtPlotPicker::AlwaysOn,
+#endif
+									plotX->canvas());
+
+#if QWT_VER>=6
+	m_pPickerX->setStateMachine(new QwtPickerTrackerMachine());
+	connect(m_pPickerX, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
+#endif
+	m_pPickerX->setEnabled(1);
 	// -------------------------------------------------------------------------
 
 	btnSave->setIcon(load_icon("res/document-save.svg"));
@@ -208,7 +249,7 @@ void PowderDlg::CalcPeaks()
 	try
 	{
 		if(m_bDontCalc) return;
-		static const unsigned int iPrec = 8;
+		static const unsigned int iPrec = g_iPrec;
 
 		const double dA = editA->text().toDouble();
 		const double dB = editB->text().toDouble();
@@ -435,9 +476,12 @@ void PowderDlg::CalcPeaks()
 		}
 
 		PlotPowderLines(vecPowderLines);
+		labelStatus->setText("OK.");
 	}
 	catch(const std::exception& ex)
 	{
+		//labelStatus->setText(QString("Error: ") + ex.what());
+		labelStatus->setText("Error.");
 		tl::log_err("Cannot calculate powder peaks: ", ex.what());
 	}
 }
@@ -668,6 +712,20 @@ void PowderDlg::ShowAtomDlg()
 	m_pAtomsDlg->SetAtoms(m_vecAtoms);
 	m_pAtomsDlg->show();
 	m_pAtomsDlg->activateWindow();
+}
+
+void PowderDlg::cursorMoved(const QPointF& pt)
+{
+	const double dX = pt.x();
+	const double dY = pt.y();
+
+	const std::wstring strTh = tl::get_spec_char_utf16("theta");
+	std::wostringstream ostr;
+	ostr.precision(g_iPrecGfx);
+	ostr << L"2" << strTh << L" = " << dX << L", ";
+	ostr << L"I = " << dY;
+
+	labelStatus->setText(QString::fromWCharArray(ostr.str().c_str()));
 }
 
 void PowderDlg::accept()

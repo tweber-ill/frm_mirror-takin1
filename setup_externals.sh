@@ -23,7 +23,7 @@ function dl_findqwt
 
 function dl_tangoicons
 {
-#	rm -f tango-icon-theme.tar.gz
+#	rm -f tmp/tango-icon-theme.tar.gz
 
 	if [ ! -f tmp/tango-icon-theme.tar.gz  ]; then
 		echo -e "Downloading Tango icons...\n"

@@ -28,7 +28,7 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
-//#include <qwt_plot_picker.h>
+#include <qwt_plot_picker.h>
 //#include <qwt_legend.h>
 
 
@@ -58,9 +58,11 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 
 		QwtPlotCurve *m_pCurve = nullptr;
 		QwtPlotGrid *m_pGrid = nullptr;
+		QwtPlotPicker *m_pPicker = nullptr;
 
 		QwtPlotCurve *m_pCurveX = nullptr;
 		QwtPlotGrid *m_pGridX = nullptr;
+		QwtPlotPicker *m_pPickerX = nullptr;
 
 
 	protected:
@@ -92,6 +94,8 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 
 		void ShowAtomDlg();
 		void ApplyAtoms(const std::vector<AtomPos>&);
+		
+		void cursorMoved(const QPointF& pt);
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);
