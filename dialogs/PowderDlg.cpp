@@ -43,6 +43,8 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 				m_pmapSpaceGroups(get_space_groups())
 {
 	this->setupUi(this);
+	btnAtoms->setEnabled(g_bHasScatlens);
+
 
 	// -------------------------------------------------------------------------
 	// plot stuff
@@ -126,10 +128,10 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 
 	tablePowderLines->horizontalHeader()->setVisible(true);
 	tablePowderLines->verticalHeader()->setDefaultSectionSize(tablePowderLines->verticalHeader()->defaultSectionSize()*1.4);
-	tablePowderLines->setColumnWidth(TABLE_ANGLE, 100);
-	tablePowderLines->setColumnWidth(TABLE_Q, 100);
+	tablePowderLines->setColumnWidth(TABLE_ANGLE, 75);
+	tablePowderLines->setColumnWidth(TABLE_Q, 75);
 	tablePowderLines->setColumnWidth(TABLE_PEAK, 75);
-	tablePowderLines->setColumnWidth(TABLE_MULT, 65);
+	tablePowderLines->setColumnWidth(TABLE_MULT, 50);
 	tablePowderLines->setColumnWidth(TABLE_FN, 75);
 	tablePowderLines->setColumnWidth(TABLE_FX, 75);
 	tablePowderLines->setColumnWidth(TABLE_IN, 75);
@@ -363,20 +365,23 @@ void PowderDlg::CalcPeaks()
 
 
 					vecFormfacts.clear();
-					for(unsigned int iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
+					if(g_bHasFormfacts)
 					{
-						//const t_vec& vecAtom = vecAllAtoms[iAtom];
-						const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
-
-						if(pElemff == nullptr)
+						for(unsigned int iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
 						{
-							tl::log_err("Cannot get form factor for \"", vecElems[iAtom], "\".");
-							vecFormfacts.clear();
-							break;
-						}
+							//const t_vec& vecAtom = vecAllAtoms[iAtom];
+							const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
 
-						double dFF = pElemff->GetFormfact(dQ);
-						vecFormfacts.push_back(dFF);
+							if(pElemff == nullptr)
+							{
+								tl::log_err("Cannot get form factor for \"", vecElems[iAtom], "\".");
+								vecFormfacts.clear();
+								break;
+							}
+
+							double dFF = pElemff->GetFormfact(dQ);
+							vecFormfacts.push_back(dFF);
+						}
 					}
 
 					if(vecFormfacts.size())

@@ -55,8 +55,10 @@ add_definitions(-std=c++11)
 #add_definitions(-march=native -s)
 
 
-add_executable(gentab tools/gentab/gentab.cpp)
-target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES})
+if(Clipper_FOUND)
+	add_executable(gentab tools/gentab/gentab.cpp)
+	target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES})
+endif()
 
 
 add_executable(takin tools/taz/taz_main.cpp
@@ -93,7 +95,13 @@ target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES} Threads::Threa
 )
 
 
-add_dependencies(takin gentab)
+if(Clipper_FOUND)
+	add_dependencies(takin gentab)
+
+	add_custom_command(TARGET gentab POST_BUILD
+		COMMAND cd ${CMAKE_BINARY_DIR} && ./gentab
+		MAIN_DEPENDENCY gentab)
+endif()
 
 
 # pre-build
@@ -106,7 +114,6 @@ add_dependencies(takin prebuild-script)
 # post-build
 add_custom_command(TARGET takin POST_BUILD
 	COMMAND strip ${CMAKE_BINARY_DIR}/bin/takin
-	COMMAND cd ${CMAKE_BINARY_DIR} && ./gentab
 	MAIN_DEPENDENCY takin
 )
 
