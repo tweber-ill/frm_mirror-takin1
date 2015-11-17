@@ -12,3 +12,5 @@ Make using CMake:
 
 Run program with
 	* takin
+	* Or, in case tlibs is not found, 
+	  e.g.: LD_LIBRARY_PATH=/usr/local/lib takin

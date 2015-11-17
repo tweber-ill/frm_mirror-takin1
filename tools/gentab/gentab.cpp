@@ -110,7 +110,7 @@ bool gen_scatlens()
 	std::ifstream ifstr("tmp/scatlens.html");
 	if(!ifstr)
 	{
-		std::cerr << "Error: Cannot open \"res/scatlens.html\"." << std::endl;
+		std::cerr << "Error: Cannot open \"tmp/scatlens.html\"." << std::endl;
 		return false;
 	}
 

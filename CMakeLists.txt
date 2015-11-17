@@ -55,6 +55,10 @@ add_definitions(-std=c++11)
 #add_definitions(-march=native -s)
 
 
+add_executable(gentab tools/gentab/gentab.cpp)
+target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES})
+
+
 add_executable(takin tools/taz/taz_main.cpp
 	tools/taz/taz.cpp tools/taz/tas_layout.cpp tools/taz/taz_crys.cpp tools/taz/taz_file.cpp
 	tools/taz/tas_layout.cpp tools/taz/scattering_triangle.cpp
@@ -88,6 +92,8 @@ target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES} Threads::Threa
 	${PYTHON_LIBRARIES} ${PNG_LIBRARIES} ${QWT_LIBRARIES} ${Clipper_LIBRARIES}
 )
 
+
+add_dependencies(takin gentab)
 
 
 # pre-build
