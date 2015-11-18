@@ -45,9 +45,9 @@ if [ "$NPROC" == "" ]; then NPROC="/usr/bin/nproc"; fi
 
 if [ ! -x $NPROC ]
 then
-	CPUCNT=4
+	CPUCNT=2
 else
-	CPUCNT=$($NPROC)
+	CPUCNT=$($NPROC --ignore=1)
 fi
 
 echo -e "\nBuilding using $CPUCNT processes..."

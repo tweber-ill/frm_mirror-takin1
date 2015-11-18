@@ -11,8 +11,8 @@ else
 	UIC="$(which uic-qt4)"
 	MOC="$(which moc-qt4)"
 
-	#UIC="$(which uic-qt5)"
-	#MOC="$(which moc-qt5)"
+#	UIC="$(which uic-qt5)"
+#	MOC="$(which moc-qt5)"
 
 	TAKINROOT=.
 	FORCE=1		# force rebuild when manually called
