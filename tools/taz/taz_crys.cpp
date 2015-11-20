@@ -311,8 +311,8 @@ void TazDlg::ShowSpurions()
 }
 
 void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
-					const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
-					const std::vector<tl::InelasticSpurion<double>>& vecInelCKF)
+	const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
+	const std::vector<tl::InelasticSpurion<double>>& vecInelCKF)
 {
 	std::ostringstream ostrMsg;
 	if(spuri.bAType || spuri.bMType || vecInelCKI.size() || vecInelCKF.size())
@@ -336,7 +336,7 @@ void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
 			ostrMsg << "M";
 			ostrMsg << (spuri.bMKfSmallerKi ? " (kf<ki)" : " (kf>ki)");
 		}
-		ostrMsg << " detected.";
+		ostrMsg << ".";
 
 		if(vecInelCKI.size() || vecInelCKF.size())
 			ostrMsg << " ";
@@ -354,7 +354,7 @@ void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
 			if(iInel != vecInelCKI.size()-1)
 				ostrMsg << ", ";
 		}
-		ostrMsg << " detected.";
+		ostrMsg << ".";
 
 		if(vecInelCKF.size())
 			ostrMsg << " ";
@@ -370,7 +370,7 @@ void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
 			if(iInel != vecInelCKF.size()-1)
 				ostrMsg << ", ";
 		}
-		ostrMsg << " detected.";
+		ostrMsg << ".";
 	}
 
 	m_pStatusMsg->setText(QString::fromUtf8(ostrMsg.str().c_str(), ostrMsg.str().size()));

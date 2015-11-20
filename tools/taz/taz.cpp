@@ -705,6 +705,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
 	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
 	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
+	if(m_pSicsCache) { delete m_pSicsCache; m_pSicsCache = 0; }
 #endif
 
 #ifdef USE_CLP
