@@ -673,8 +673,12 @@ TazDlg::TazDlg(QWidget* pParent)
 TazDlg::~TazDlg()
 {
 	//log_debug("In ", __func__, ".");
-	
 	DeleteDialogs();
+
+	// don't delete non-optional sub-modules in DeleteDialogs()
+	if(m_pGotoDlg) { delete m_pGotoDlg; m_pGotoDlg = 0; }
+	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
+
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
 	if(m_pviewReal) { delete m_pviewReal; m_pviewReal = 0; }
 }
@@ -686,9 +690,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pConvoDlg) { delete m_pConvoDlg; m_pConvoDlg = 0; }
 	if(m_pSpuri) { delete m_pSpuri; m_pSpuri = 0; }
 	if(m_pNeutronDlg) { delete m_pNeutronDlg; m_pNeutronDlg = 0; }
-	if(m_pGotoDlg) { delete m_pGotoDlg; m_pGotoDlg = 0; }
 	if(m_pPowderDlg) { delete m_pPowderDlg; m_pPowderDlg = 0; }
-	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
 	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
 	if(m_pScanViewer) { delete m_pScanViewer; m_pScanViewer = nullptr; }
