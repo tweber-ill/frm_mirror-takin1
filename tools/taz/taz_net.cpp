@@ -151,7 +151,7 @@ void TazDlg::Disconnected()
 void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag)
 {
 	if(crys.strSampleName != "")
-		editDescr->setText(crys.strSampleName.c_str());
+		editDescr->setText(tl::trimmed(crys.strSampleName).c_str());
 
 	if(crys.bChangedLattice)
 	{
@@ -191,6 +191,8 @@ void TazDlg::VarsChanged(const CrystalOptions& crys, const TriangleOptions& tria
 		int iSGIdx = comboSpaceGroups->findText(crys.strSpacegroup.c_str());
 		if(iSGIdx >= 0)
 			comboSpaceGroups->setCurrentIndex(iSGIdx);
+		else
+			comboSpaceGroups->setCurrentIndex(0);
 
 		CalcPeaks();
 	}

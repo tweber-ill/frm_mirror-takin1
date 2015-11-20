@@ -222,12 +222,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	QMenu *pMenuFile = new QMenu(this);
 	pMenuFile->setTitle("File");
 
-	/*QAction *pNew = new QAction(this);
+	QAction *pNew = new QAction(this);
 	pNew->setText("New");
-	pNew->setIcon(QIcon::fromTheme("document-new"));
+	pNew->setIcon(load_icon("res/document-new.svg"));
 	pMenuFile->addAction(pNew);
 
-	pMenuFile->addSeparator();*/
+	pMenuFile->addSeparator();
 
 	QAction *pLoad = new QAction(this);
 	pLoad->setText("Load...");
@@ -527,7 +527,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuBar->addMenu(pMenuHelp);
 
 
-
+	QObject::connect(pNew, SIGNAL(triggered()), this, SLOT(New()));
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSave, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
@@ -605,6 +605,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	// tool bars
 	QToolBar *pFileTools = new QToolBar(this);
 	pFileTools->setWindowTitle("File");
+	pFileTools->addAction(pNew);
 	pFileTools->addAction(pLoad);
 	pFileTools->addAction(pImport);
 	pFileTools->addAction(pSave);
@@ -672,8 +673,14 @@ TazDlg::TazDlg(QWidget* pParent)
 TazDlg::~TazDlg()
 {
 	//log_debug("In ", __func__, ".");
-
+	
+	DeleteDialogs();
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
+	if(m_pviewReal) { delete m_pviewReal; m_pviewReal = 0; }
+}
+
+void TazDlg::DeleteDialogs()
+{
 	if(m_pEllipseDlg) { delete m_pEllipseDlg; m_pEllipseDlg = 0; }
 	if(m_pReso) { delete m_pReso; m_pReso = 0; }
 	if(m_pConvoDlg) { delete m_pConvoDlg; m_pConvoDlg = 0; }
@@ -702,8 +709,9 @@ TazDlg::~TazDlg()
 	if(m_pSgListDlg) { delete m_pSgListDlg; m_pSgListDlg = 0; }
 #endif
 
-	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }
+	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }	
 }
+
 
 void TazDlg::closeEvent(QCloseEvent* pEvt)
 {

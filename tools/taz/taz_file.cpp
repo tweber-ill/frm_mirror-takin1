@@ -17,6 +17,41 @@
 //--------------------------------------------------------------------------------
 // loading/saving
 
+void TazDlg::New()
+{
+	CrystalOptions crys;
+	TriangleOptions triag;
+
+	crys.dLattice[0] = crys.dLattice[1] = crys.dLattice[2] = 5.;
+	crys.dLatticeAngles[0] = crys.dLatticeAngles[1] = crys.dLatticeAngles[2] = 90.;
+	crys.bChangedLattice = crys.bChangedLatticeAngles = 1;
+	
+	crys.dPlane1[0] = 1.; crys.dPlane1[1] = 0.; crys.dPlane1[2] = 0.;
+	crys.dPlane2[0] = 0.; crys.dPlane2[1] = 1.; crys.dPlane2[2] = 0.;
+	crys.bChangedPlane1 = crys.bChangedPlane2 = 1;
+	
+	crys.strSampleName = " ";
+	crys.strSpacegroup = "";
+	crys.bChangedSpacegroup = 1;
+	
+	triag.dAnaD = triag.dMonoD = 3.355;
+	triag.bChangedAnaD = triag.bChangedMonoD = 1;
+	triag.dAnaTwoTheta = triag.dMonoTwoTheta = M_PI/2.;
+	triag.bChangedAnaTwoTheta = triag.bChangedMonoTwoTheta = 1;
+	
+	triag.dTwoTheta = M_PI/2.;
+	triag.dAngleKiVec0 = M_PI/4.;
+	triag.bChangedTwoTheta = triag.bChangedAngleKiVec0 = 1;
+	
+	m_vecAtoms.clear();
+	m_strCurFile = "";
+	setWindowTitle(s_strTitle.c_str());
+
+	DeleteDialogs();
+	Disconnect();
+	VarsChanged(crys, triag);
+}
+
 bool TazDlg::Load()
 {
 	QString strDirLast = m_settings.value("main/last_dir", ".").toString();

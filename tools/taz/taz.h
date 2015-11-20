@@ -64,6 +64,9 @@
 class TazDlg : public QMainWindow, Ui::TazDlg
 { Q_OBJECT
 	private:
+		void DeleteDialogs();
+
+	private:
 		bool m_bUpdateRecipEdits = 1;
 
 		QAction *m_pSmallq = nullptr;
@@ -187,6 +190,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowAbout();
 
+		void New();
 		bool Save();
 		bool SaveAs();
 		bool Load();
