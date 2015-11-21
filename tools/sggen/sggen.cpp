@@ -140,6 +140,12 @@ void gen_atoms()
 		std::cout << std::endl;
 	}
 
+
+	// test: only for cubic unit cells!
+	tl::X3dCube *pCube = new tl::X3dCube(a,b,c);
+	pCube->SetColor(tl::make_vec({1., 1., 1., 0.75}));
+	x3d.GetScene().AddChild(pCube);
+
 	if(x3d.Save("out.x3d"))
 		std::cout << "Wrote out.x3d." << std::endl;
 }
