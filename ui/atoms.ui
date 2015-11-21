@@ -77,17 +77,17 @@
      </column>
      <column>
       <property name="text">
-       <string>x (rlu)</string>
+       <string>x (frac)</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>y (rlu)</string>
+       <string>y (frac)</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>z (rlu)</string>
+       <string>z (frac)</string>
       </property>
      </column>
     </widget>

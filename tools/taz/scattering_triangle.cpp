@@ -682,6 +682,9 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 	m_powder.SetRecipLattice(&m_recip);
 
+	const ublas::matrix<double> matA = m_lattice.GetMetric();
+	const ublas::matrix<double> matB = m_recip.GetMetric();
+
 	ublas::vector<double> dir0 = plane.GetDir0();
 	//ublas::vector<double> dir1 = plane.GetDir1();
 	ublas::vector<double> dir1 = tl::cross_3(plane.GetNorm(), dir0);
@@ -772,6 +775,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 			for(ublas::vector<double> vecThisAtom : vecSymPos)
 			{
 				vecThisAtom.resize(3,1);
+				vecThisAtom = matA * vecThisAtom;
 				vecAllAtoms.push_back(std::move(vecThisAtom));
 				vecScatlens.push_back(b);
 			}
@@ -802,6 +806,11 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 				}
 
 
+				const ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
+				//ublas::vector<double> vecPeak = matB * tl::make_vec({h,k,l});
+				//const double dG = ublas::norm_2(vecPeak);
+
+
 				double dF = -1.;
 				std::string strStructfact;
 #ifdef USE_CLP
@@ -809,7 +818,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 				{
 					std::complex<double> cF =
 						tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
-							(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecScatlens);
+							(vecAllAtoms, vecPeak, vecScatlens);
 					double dFsq = (std::conj(cF)*cF).real();
 					dF = std::sqrt(dFsq);
 					tl::set_eps_0(dF);
@@ -826,11 +835,6 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 				if(!bIsPowder || (ih==0 && ik==0 && il==0))		// (000), i.e. direct beam, also needed for powder
 				{
-					const ublas::vector<double> vecPeak = m_recip.GetPos(h,k,l);
-					//ublas::vector<double> vecPeak = matB * tl::make_vec({h,k,l});
-					//const double dG = ublas::norm_2(vecPeak);
-
-
 					// add peak in 1/A and rlu units
 					lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l, dF});
 

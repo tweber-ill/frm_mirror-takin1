@@ -112,6 +112,12 @@ void ScatlenList::Init()
 		slen.coh = xml.Query<ScatlenList::value_type>((strAtom + "/coh").c_str(), 0.);
 		slen.incoh = xml.Query<ScatlenList::value_type>((strAtom + "/incoh").c_str(), 0.);
 
+		slen.xsec_coh = xml.Query<ScatlenList::value_type>((strAtom + "/xsec_coh").c_str(), 0.);
+		slen.xsec_incoh = xml.Query<ScatlenList::value_type>((strAtom + "/xsec_incoh").c_str(), 0.);
+		slen.xsec_scat = xml.Query<ScatlenList::value_type>((strAtom + "/xsec_scat").c_str(), 0.);
+		slen.xsec_abs = xml.Query<ScatlenList::value_type>((strAtom + "/xsec_abs").c_str(), 0.);
+
+
 		if(std::isdigit(slen.strAtom[0]))
 			s_vecIsotopes.push_back(std::move(slen));
 		else

@@ -90,11 +90,21 @@ struct Scatlen
 		value_type coh;
 		value_type incoh;
 
+		value_type xsec_coh;
+		value_type xsec_incoh;
+		value_type xsec_scat;
+		value_type xsec_abs;
+
 	public:
 		const std::string& GetAtomName() const { return strAtom; }
 
-		value_type GetCoherent() const { return coh; }
-		value_type GetIncoherent() const { return incoh; }
+		const value_type& GetCoherent() const { return coh; }
+		const value_type& GetIncoherent() const { return incoh; }
+
+		const value_type& GetXSecCoherent() const { return xsec_coh; }
+		const value_type& GetXSecIncoherent() const { return xsec_incoh; }
+		const value_type& GetXSecScatter() const { return xsec_scat; }
+		const value_type& GetXSecAbsorption() const { return xsec_abs; }
 };
 
 

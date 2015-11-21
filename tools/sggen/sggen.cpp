@@ -95,15 +95,15 @@ void gen_atoms()
 
 			//std::cout << "\t(" << (iPos+1) << ") " << vec << "\n";
 
-			// map back to 1st Brillouin zone
+			// map back to unit cell
 			t_vec vecCoord = vec;
-			const double dBZSize = 1.;
+			const double dUCSize = 1.;
 			for(int iComp=0; iComp<vecCoord.size(); ++iComp)
 			{
-				while(vecCoord[iComp] > dBZSize*0.5)
-					vecCoord[iComp] -= dBZSize;
-				while(vecCoord[iComp] < -dBZSize*0.5)
-					vecCoord[iComp] += dBZSize;
+				while(vecCoord[iComp] > dUCSize*0.5)
+					vecCoord[iComp] -= dUCSize;
+				while(vecCoord[iComp] < -dUCSize*0.5)
+					vecCoord[iComp] += dUCSize;
 			}
 			std::cout << "\t(" << (iPos+1) << ") " << vecCoord << "\n";
 

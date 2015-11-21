@@ -269,6 +269,9 @@ void PowderDlg::CalcPeaks()
 		tl::Lattice<double> lattice(dA, dB, dC, dAlpha, dBeta, dGamma);
 		tl::Lattice<double> recip = lattice.GetRecip();
 
+		const ublas::matrix<double> matA = lattice.GetMetric();
+		const ublas::matrix<double> matB = recip.GetMetric();
+
 		const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 
 
@@ -313,6 +316,7 @@ void PowderDlg::CalcPeaks()
 				for(ublas::vector<double> vecThisAtom : vecSymPos)
 				{
 					vecThisAtom.resize(3,1);
+					vecThisAtom = matA*vecThisAtom;
 					vecAllAtoms.push_back(std::move(vecThisAtom));
 					vecScatlens.push_back(b);
 					vecElems.push_back(strElem);
@@ -353,7 +357,7 @@ void PowderDlg::CalcPeaks()
 					{
 						std::complex<double> cF =
 							tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
-								(vecAllAtoms, vechkl*2.*M_PI, vecScatlens);
+								(vecAllAtoms, vecBragg, vecScatlens);
 						double dFsq = (std::conj(cF)*cF).real();
 						dF = std::sqrt(dFsq);
 						tl::set_eps_0(dF);
@@ -388,7 +392,7 @@ void PowderDlg::CalcPeaks()
 					{
 						std::complex<double> cFx =
 							tl::structfact<double, double, ublas::vector<double>, std::vector>
-								(vecAllAtoms, vechkl*2.*M_PI, vecFormfacts);
+								(vecAllAtoms, vecBragg, vecFormfacts);
 
 						double dFxsq = (std::conj(cFx)*cFx).real();
 						dFx = std::sqrt(dFxsq);

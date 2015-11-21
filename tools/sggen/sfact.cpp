@@ -12,6 +12,7 @@
 #include <sstream>
 #include "tlibs/math/atoms.h"
 #include "tlibs/math/lattice.h"
+#include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/linalg_ops.h"
 #include "tlibs/string/string.h"
 #include "helper/spacegroup_clp.h"
@@ -38,7 +39,10 @@ void gen_atoms_sfact()
 	gamma = gamma/180.*M_PI;
 
 	const tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
+	const double dVol = lattice.GetVol();
+	const t_mat matA = lattice.GetMetric();
 	const t_mat matB = lattice.GetRecip().GetMetric();
+	std::cout << "A = " << matA << std::endl;
 	std::cout << "B = " << matB << std::endl;
 
 
@@ -95,16 +99,19 @@ void gen_atoms_sfact()
 	std::vector<t_mat> vecTrafos;
 	get_symtrafos(sg, vecTrafos);
 
+	std::vector<unsigned int> vecNumAtoms;
 	std::vector<t_vec> vecAllAtoms;
 	std::vector<std::complex<double>> vecScatlens;
 	std::vector<double> vecFormfacts;
 	std::vector<int> vecAtomIndices;
 
+	double dSigAbs = 0.;
 
 	for(int iAtom=0; iAtom<int(vecAtoms.size()); ++iAtom)
 	{
 		const t_vec& vecAtom = vecAtoms[iAtom];
 		std::vector<t_vec> vecPos = tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom);
+		vecNumAtoms.push_back(vecPos.size());
 
 		const ScatlenList::elem_type* pElem = lst.Find(vecElems[iAtom]);
 
@@ -116,15 +123,24 @@ void gen_atoms_sfact()
 		}
 		std::complex<double> b = pElem->GetCoherent() / 10.;
 
+		dSigAbs += tl::macro_xsect(pElem->GetXSecCoherent().real()*tl::barns, 
+			vecNumAtoms[iAtom],
+			dVol*tl::angstrom*tl::angstrom*tl::angstrom) * tl::cm;
+		//dSigAbs += pElem->GetXSecCoherent().real()*1e-24 * vecNumAtoms[iAtom] / (dVol*1e-24);
 
 		for(t_vec vecThisAtom : vecPos)
 		{
 			vecThisAtom.resize(3,1);
-			vecAllAtoms.push_back(vecThisAtom);
+			vecAllAtoms.push_back(matA * vecThisAtom);
 			vecScatlens.push_back(b);
 			vecAtomIndices.push_back(iAtom);
 		}
 	}
+
+	const double dLam0 = 1.8;	// thermal
+	const double dLam = 4.5;
+	std::cout << "\nMacroscopic absorption cross-section for lambda = 4.5 A: "
+		<< dSigAbs*dLam/dLam0 << " / cm." << std::endl;
 
 	//for(const t_vec& vecAt : vecAllAtoms) std::cout << vecAt << std::endl;
 	//for(const std::complex<double>& cb : vecScatlens) std::cout << cb << std::endl;
@@ -162,9 +178,9 @@ void gen_atoms_sfact()
 
 
 		std::complex<double> F = tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
-			(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecScatlens);
+			(vecAllAtoms, vecG, vecScatlens);
 		std::complex<double> Fx = tl::structfact<double, double, ublas::vector<double>, std::vector>
-			(vecAllAtoms, tl::make_vec({h,k,l})*2.*M_PI, vecFormfacts);
+			(vecAllAtoms, vecG, vecFormfacts);
 
 
 		std::cout << std::endl;

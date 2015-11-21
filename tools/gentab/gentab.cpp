@@ -42,7 +42,7 @@ namespace dat = clipper::data;
 using t_prop = prop::basic_ptree<std::string, std::string>;
 
 // in later boost versions, the template arg is now the string type, not the char type
-#if BOOST_VERSION >= 105800
+#if BOOST_VERSION >= 105700
 	using t_writer = typename t_prop::key_type;
 #else
 	using t_writer = typename t_prop::key_type::value_type;
@@ -153,9 +153,19 @@ bool gen_scatlens()
 		std::string strCoh = vecCol[3];   formatnumber(strCoh);
 		std::string strIncoh = vecCol[4]; formatnumber(strIncoh);
 
+		std::string strXsecCoh = vecCol[5]; formatnumber(strXsecCoh);
+		std::string strXsecIncoh = vecCol[6]; formatnumber(strXsecIncoh);
+		std::string strXsecScat = vecCol[7]; formatnumber(strXsecScat);
+		std::string strXsecAbsTherm = vecCol[8]; formatnumber(strXsecAbsTherm);
+
 		prop.add(strAtom + ".name", strName);
 		prop.add(strAtom + ".coh", strCoh);
 		prop.add(strAtom + ".incoh", strIncoh);
+
+		prop.add(strAtom + ".xsec_coh", strXsecCoh);
+		prop.add(strAtom + ".xsec_incoh", strXsecIncoh);
+		prop.add(strAtom + ".xsec_scat", strXsecScat);
+		prop.add(strAtom + ".xsec_abs", strXsecAbsTherm);
 
 		++iAtom;
 	}
