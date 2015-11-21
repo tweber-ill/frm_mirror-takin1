@@ -80,7 +80,7 @@ add_executable(takin tools/taz/taz_main.cpp
 	dialogs/RecipParamDlg.cpp dialogs/RealParamDlg.cpp
 	dialogs/SrvDlg.cpp dialogs/NetCacheDlg.cpp
 	dialogs/EllipseDlg.cpp dialogs/FormfactorDlg.cpp
-	dialogs/AtomsDlg.cpp
+	dialogs/AtomsDlg.cpp dialogs/AboutDlg.cpp
 
 	${SG_FILES}
 	helper/globals.cpp helper/crystalsys.cpp

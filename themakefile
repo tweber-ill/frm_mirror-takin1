@@ -197,7 +197,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
 	obj/scanviewer.o \
-	obj/tlibs_ver.o
+	obj/tlibs_ver.o obj/AboutDlg.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 
@@ -435,6 +435,9 @@ obj/crystalsys_noqt.o: helper/crystalsys.cpp helper/crystalsys.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/sfact.o: tools/sggen/sfact.cpp
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
+
+obj/AboutDlg.o: dialogs/AboutDlg.cpp dialogs/AboutDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
 
 
 # -----------------------------------------------------------------------------

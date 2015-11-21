@@ -53,7 +53,8 @@ bool gen_formfacts()
 {
 	t_prop prop;
 
-	prop.add("ffacts.source", "form factor coefficients from Clipper: http://www.ysbl.york.ac.uk/~cowtan/clipper/");
+	prop.add("ffacts.source", "Form factor coefficients from Clipper");
+	prop.add("ffacts.source_url", "http://www.ysbl.york.ac.uk/~cowtan/clipper/");
 	prop.add("ffacts.num_atoms", tl::var_to_str(dat::numsfdata));
 
 	for(unsigned int iFF=0; iFF<dat::numsfdata; ++iFF)
@@ -132,7 +133,8 @@ bool gen_scatlens()
 
 
 	prop::ptree prop;
-	prop.add("scatlens.source", "Scattering length table from NIST: https://www.ncnr.nist.gov/resources/n-lengths/list.html");
+	prop.add("scatlens.source", "Scattering lengths and cross-sections from NIST");
+	prop.add("scatlens.source_url", "https://www.ncnr.nist.gov/resources/n-lengths/list.html");
 	prop.add("scatlens.num_atoms", tl::var_to_str(vecRows.size()));
 
 	unsigned int iAtom = 0;

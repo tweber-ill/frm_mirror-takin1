@@ -11,6 +11,9 @@
 #include <vector>
 #include <sstream>
 #include "tlibs/math/atoms.h"
+#include "tlibs/math/lattice.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/linalg_ops.h"
 #include "tlibs/file/x3d.h"
 #include "tlibs/string/string.h"
 #include "helper/spacegroup_clp.h"
@@ -39,9 +42,24 @@ void gen_atoms()
 		{ 0., 0., 0., 1.}	});
 
 
+	double a,b,c, alpha,beta,gamma;
+	std::cout << "Enter unit cell lattice constants: ";
+	std::cin >> a >> b >> c;
+	std::cout << "Enter unit cell angles: ";
+	std::cin >> alpha >> beta >> gamma;
+
+	alpha = alpha/180.*M_PI;
+	beta = beta/180.*M_PI;
+	gamma = gamma/180.*M_PI;
+
+	const tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
+	const t_mat matA = lattice.GetMetric();
+
+
 	std::string strSg;
 
 	std::cout << "Enter spacegroup: ";
+	std::cin.ignore();
 	std::getline(std::cin, strSg);
 	clipper::Spgr_descr dsc(strSg);
 	const int iSGNum = dsc.spacegroup_number();
@@ -106,6 +124,10 @@ void gen_atoms()
 					vecCoord[iComp] += dUCSize;
 			}
 			std::cout << "\t(" << (iPos+1) << ") " << vecCoord << "\n";
+
+			vecCoord.resize(3,1);
+			vecCoord = matA * vecCoord;
+			vecCoord.resize(4,1); vecCoord[3] = 1.;
 
 			tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
 			pTrafo->SetTrans(matGlobal * vecCoord);

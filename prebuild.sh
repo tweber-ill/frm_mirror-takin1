@@ -80,6 +80,7 @@ declare -a hfiles=(
 	"${TAKINROOT}/dialogs/DynPlaneDlg.h"
 	"${TAKINROOT}/dialogs/FilePreviewDlg.h"
 	"${TAKINROOT}/dialogs/FormfactorDlg.h"
+	"${TAKINROOT}/dialogs/AboutDlg.h"
 )
 
 for hfile in ${hfiles[@]}; do

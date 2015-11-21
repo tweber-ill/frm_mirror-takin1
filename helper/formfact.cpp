@@ -43,10 +43,16 @@ void FormfactList::Init()
 		else
 			s_vecIons.push_back(std::move(ffact));
 	}
+
+	s_strSrc = xml.QueryString("ffacts/source", "");
+	s_strSrcUrl = xml.QueryString("ffacts/source_url", "");
 }
 
 std::vector<Formfact<double>> FormfactList::s_vecAtoms;
 std::vector<Formfact<double>> FormfactList::s_vecIons;
+
+std::string FormfactList::s_strSrc;
+std::string FormfactList::s_strSrcUrl;
 
 // -----------------------------------------------------------------------------
 
@@ -123,11 +129,16 @@ void ScatlenList::Init()
 		else
 			s_vecElems.push_back(std::move(slen));
 	}
+
+	s_strSrc = xml.QueryString("scatlens/source", "");
+	s_strSrcUrl = xml.QueryString("scatlens/source_url", "");
 }
 
 std::vector<ScatlenList::elem_type> ScatlenList::s_vecElems;
 std::vector<ScatlenList::elem_type> ScatlenList::s_vecIsotopes;
 
+std::string ScatlenList::s_strSrc;
+std::string ScatlenList::s_strSrcUrl;
 // -----------------------------------------------------------------------------
 
 

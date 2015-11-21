@@ -55,6 +55,7 @@ class FormfactList
 
 	protected:
 		static std::vector<elem_type> s_vecAtoms, s_vecIons;
+		static std::string s_strSrc, s_strSrcUrl;
 
 	public:
 		FormfactList();
@@ -69,6 +70,9 @@ class FormfactList
 		{ return s_vecIons[iFormfact]; }
 
 		const elem_type* Find(const std::string& strElem) const;
+
+		const std::string& GetSource() const { return s_strSrc; }
+		const std::string& GetSourceUrl() const { return s_strSrcUrl; }
 };
 
 
@@ -119,6 +123,7 @@ class ScatlenList
 
 	protected:
 		static std::vector<elem_type> s_vecElems, s_vecIsotopes;
+		static std::string s_strSrc, s_strSrcUrl;
 
 	public:
 		ScatlenList();
@@ -133,6 +138,9 @@ class ScatlenList
 		{ return s_vecIsotopes[i]; }
 
 		const elem_type* Find(const std::string& strElem) const;
+
+		const std::string& GetSource() const { return s_strSrc; }
+		const std::string& GetSourceUrl() const { return s_strSrcUrl; }
 };
 
 

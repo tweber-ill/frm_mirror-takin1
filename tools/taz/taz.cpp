@@ -504,10 +504,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	//pAboutQt->setIcon(QIcon::fromTheme("help-about"));
 	pMenuHelp->addAction(pAboutQt);
 
-	pMenuHelp->addSeparator();
-
+	//pMenuHelp->addSeparator();
 	QAction *pAbout = new QAction(this);
-	pAbout->setText("About...");
+	pAbout->setText("About Takin...");
 	pAbout->setIcon(load_icon("res/dialog-information.svg"));
 	pMenuHelp->addAction(pAbout);
 
@@ -685,6 +684,7 @@ TazDlg::~TazDlg()
 
 void TazDlg::DeleteDialogs()
 {
+	if(m_pAboutDlg) { delete m_pAboutDlg; m_pAboutDlg = 0; }
 	if(m_pEllipseDlg) { delete m_pEllipseDlg; m_pEllipseDlg = 0; }
 	if(m_pReso) { delete m_pReso; m_pReso = 0; }
 	if(m_pConvoDlg) { delete m_pConvoDlg; m_pConvoDlg = 0; }
@@ -712,7 +712,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pSgListDlg) { delete m_pSgListDlg; m_pSgListDlg = 0; }
 #endif
 
-	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }	
+	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }
 }
 
 
@@ -1043,102 +1043,13 @@ void TazDlg::ExportBZImage() {}
 //--------------------------------------------------------------------------------
 // about dialog
 
-#include <boost/config.hpp>
-#include <boost/version.hpp>
-#include <qwt_global.h>
-#include "tlibs/version.h"
-
 void TazDlg::ShowAbout()
 {
-	const std::wstring& _strRet = tl::get_spec_char_utf16("return");
-	const std::wstring& _strBullet = tl::get_spec_char_utf16("bullet");
-	const std::wstring& _strArrow = tl::get_spec_char_utf16("rightarrow");
+	if(!m_pAboutDlg)
+		m_pAboutDlg = new AboutDlg(this, &m_settings);
 
-	const QString strRet = QString::fromUtf16((ushort*)_strRet.c_str(), _strRet.length());
-	const QString strBullet = QString::fromUtf16((ushort*)_strBullet.c_str(), _strBullet.length());
-	const QString strArrow = QString::fromUtf16((ushort*)_strArrow.c_str(), _strArrow.length());
-
-
-	QString strAbout;
-	strAbout += "Takin version 0.9.4\n";
-	strAbout += "Written by Tobias Weber, 2014-2015.";
-	strAbout += "\n\n";
-
-	strAbout += "Takin is free software: you can redistribute it and/or modify ";
-	strAbout += "it under the terms of the GNU General Public License version 2 ";
-	strAbout += "as published by the Free Software Foundation.\n\n";
-	strAbout += "Takin is distributed in the hope that it will be useful, ";
-	strAbout += "but WITHOUT ANY WARRANTY; without even the implied warranty of ";
-	strAbout += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the ";
-	strAbout += "GNU General Public License for more details.\n\n";
-	strAbout += "You should have received a copy of the GNU General Public License ";
-	strAbout += "along with Takin.  If not, see <http://www.gnu.org/licenses/>.\n\n";
-
-	strAbout += "Built with ";
-	strAbout += QString(BOOST_COMPILER);
-	strAbout += ".\n";
-
-	strAbout += "Build date: ";
-	strAbout += QString(__DATE__);
-	strAbout += ", ";
-	strAbout += QString(__TIME__);
-	strAbout += ".\n\n";
-
-	strAbout += strBullet + " ";
-	strAbout += "Uses Qt version ";
-	strAbout += QString(QT_VERSION_STR);
-	strAbout += "\t" + strArrow + " http://qt-project.org\n";
-	strAbout += strBullet + " ";
-	strAbout += "Uses Qwt version ";
-	strAbout += QString(QWT_VERSION_STR);
-	strAbout += "\t" + strArrow + " http://qwt.sourceforge.net\n";
-
-	strAbout += strBullet + " ";
-	strAbout += "Uses Boost version ";
-	std::string strBoost = BOOST_LIB_VERSION;
-	tl::find_all_and_replace<std::string>(strBoost, "_", ".");
-	strAbout += strBoost.c_str();
-	strAbout += "\t" + strArrow + " http://www.boost.org\n";
-
-#ifndef NO_LAPACK
-	strAbout += strBullet + " ";
-	strAbout += "Uses Lapack/e version 3";
-	strAbout += "\t" + strArrow + " http://www.netlib.org/lapack\n";
-#endif
-
-	strAbout += strBullet + " ";
-	strAbout += "Uses tLibs version " + QString(TLIBS_VERSION);
-	strAbout += "\n";
-
-	strAbout += strBullet + " ";
-	strAbout += "Uses Tango icons";
-	strAbout += "\t" + strArrow + " http://tango.freedesktop.org\n";
-
-#ifdef USE_CLP
-	strAbout += strBullet + " ";
-	strAbout += "Uses Clipper crystallography library";
-	strAbout += "\n\t" + strArrow + " http://www.ysbl.york.ac.uk/~cowtan/clipper\n";
-#else
-	//strAbout += "\n";
-	strAbout += strBullet + " ";
-	strAbout += "Uses space group calculations ported from Nicos version 2";
-	strAbout += "\n\t " + strArrow + " https://forge.frm2.tum.de/redmine/projects/nicos\n";
-	strAbout += "   which uses space group data adapted from PowderCell version 2.3";
-	strAbout += "\n\t " + strArrow
-			+ " www.bam.de/de/service/publikationen/" + strRet
-			+ "\n\t\tpowder_cell_a.htm\n";
-#endif
-
-	strAbout += strBullet + " ";
-	strAbout += "Uses resolution algorithms ported from Rescal version 5";
-	strAbout += "\n\t " + strArrow
-			+ " www.ill.eu/en/html/instruments-support/" + strRet
-			+ "\n\t\tcomputing-for-science/cs-software/" + strRet
-			+ "\n\t\tall-software/matlab-ill/rescal-for-matlab\n";
-
-	strAbout += "\nSee the LICENSES file in the Takin root directory.";
-
-	QMessageBox::information(this, "About Takin", strAbout);
+	m_pAboutDlg->show();
+	m_pAboutDlg->activateWindow();
 }
 
 #include "taz.moc"

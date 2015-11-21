@@ -183,6 +183,8 @@
     <File Name="dialogs/FormfactorDlg.cpp"/>
     <File Name="dialogs/AtomsDlg.cpp"/>
     <File Name="dialogs/AtomsDlg.h"/>
+    <File Name="dialogs/AboutDlg.cpp"/>
+    <File Name="dialogs/AboutDlg.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="helper">
     <File Name="helper/plotgl.cpp"/>
