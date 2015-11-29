@@ -55,7 +55,7 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrLibs << "<dd><a href=\"http://www.boost.org\">http://www.boost.org</a></dd>";
 
 #ifndef NO_LAPACK
-	ostrLibs << "<dt>Uses Lapack/e version 3"</dt>";
+	ostrLibs << "<dt>Uses Lapack/e version 3</dt>";
 	ostrLibs << "<dd><a href=\"http://www.netlib.org/lapack\">http://www.netlib.org/lapack</a></dd>";
 #endif
 

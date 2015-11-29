@@ -338,6 +338,8 @@ void PlotGl::resizeEvent(QResizeEvent *evt)
 	m_mutex.lock();
 	m_iW = size().width();
 	m_iH = size().height();
+
+std::cout << m_iW << " " << m_iH << std::endl;
 	m_bDoResize = 1;
 	m_mutex.unlock();
 }

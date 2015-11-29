@@ -360,7 +360,7 @@ void PowderDlg::CalcPeaks()
 								(vecAllAtoms, vecBragg, vecScatlens);
 						double dFsq = (std::conj(cF)*cF).real();
 						dF = std::sqrt(dFsq);
-						tl::set_eps_0(dF);
+						tl::set_eps_0(dF, g_dEps);
 
 						double dLor = tl::lorentz_factor(dAngle);
 						dI = dFsq*dLor;
@@ -396,7 +396,7 @@ void PowderDlg::CalcPeaks()
 
 						double dFxsq = (std::conj(cFx)*cFx).real();
 						dFx = std::sqrt(dFxsq);
-						tl::set_eps_0(dFx);
+						tl::set_eps_0(dFx, g_dEps);
 
 						double dLor = tl::lorentz_factor(dAngle)*tl::lorentz_pol_factor(dAngle);
 						dIx = dFxsq*dLor;

@@ -13,6 +13,10 @@
 
 extern unsigned int g_iPrec;
 extern unsigned int g_iPrecGfx;
+
+extern double g_dEps;
+extern double g_dEpsGfx;
+
 extern bool g_bHasFormfacts;
 extern bool g_bHasScatlens;
 

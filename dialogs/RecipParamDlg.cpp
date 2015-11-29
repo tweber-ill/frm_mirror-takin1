@@ -92,7 +92,7 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	ublas::vector<double> vecUp = tl::make_vec({m_params.orient_up[0], m_params.orient_up[1], m_params.orient_up[2]});
 	ublas::vector<double> vecFm = tl::cross_3(vecG, vecUp);
 	vecFm /= ublas::norm_2(vecFm);
-	tl::set_eps_0(vecFm);
+	tl::set_eps_0(vecFm, g_dEps);
 
 	this->editFmx->setText(tl::var_to_str<double>(vecFm[0], g_iPrec).c_str());
 	this->editFmy->setText(tl::var_to_str<double>(vecFm[1], g_iPrec).c_str());
@@ -158,8 +158,8 @@ void RecipParamDlg::OriginChanged()
 	vecFm /= ublas::norm_2(vecFm);
 
 	if(!bEm) vecFm = -vecFm;
-	tl::set_eps_0(vecUp);
-	tl::set_eps_0(vecFm);
+	tl::set_eps_0(vecUp, g_dEps);
+	tl::set_eps_0(vecFm, g_dEps);
 
 
 	std::ostringstream ostrDefs;

@@ -296,10 +296,10 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	ostrKi.precision(g_iPrecGfx); ostrKf.precision(g_iPrecGfx);
 	ostrG.precision(g_iPrecGfx); ostrq.precision(g_iPrecGfx);
 
-	double dQ = GetQ();		tl::set_eps_0(dQ);
-	double dKi = GetKi();	tl::set_eps_0(dKi);
-	double dKf = GetKf();	tl::set_eps_0(dKf);
-	double dE = GetE();		tl::set_eps_0(dE);
+	double dQ = GetQ();	tl::set_eps_0(dQ, g_dEpsGfx);
+	double dKi = GetKi();	tl::set_eps_0(dKi, g_dEpsGfx);
+	double dKf = GetKf();	tl::set_eps_0(dKf, g_dEpsGfx);
+	double dE = GetE();	tl::set_eps_0(dE, g_dEpsGfx);
 
 	ostrQ << L"Q = " << dQ << " " << strAA;
 	ostrKi << L"ki = " << dKi << " " << strAA;
@@ -821,7 +821,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 							(vecAllAtoms, vecPeak, vecScatlens);
 					double dFsq = (std::conj(cF)*cF).real();
 					dF = std::sqrt(dFsq);
-					tl::set_eps_0(dF);
+					tl::set_eps_0(dF, g_dEpsGfx);
 
 					std::ostringstream ostrStructfact;
 					ostrStructfact.precision(g_iPrecGfx);
@@ -1246,9 +1246,9 @@ void ScatteringTriangleScene::emitAllParams()
 	ublas::vector<double> vec1 = tl::get_column(matPlane, 1);
 	ublas::vector<double> vecUp = tl::get_column(matPlane, 2);
 
-	tl::set_eps_0(vecQ); tl::set_eps_0(vecQrlu);
-	tl::set_eps_0(vecq); tl::set_eps_0(vecqrlu);
-	tl::set_eps_0(vecG); tl::set_eps_0(vecGrlu);
+	tl::set_eps_0(vecQ, g_dEpsGfx); tl::set_eps_0(vecQrlu, g_dEpsGfx);
+	tl::set_eps_0(vecq, g_dEpsGfx); tl::set_eps_0(vecqrlu, g_dEpsGfx);
+	tl::set_eps_0(vecG, g_dEpsGfx); tl::set_eps_0(vecGrlu, g_dEpsGfx);
 
 	/*std::cout << "Q = " << vecQrlu << std::endl;
 	std::cout << "q = " << vecqrlu << std::endl;
@@ -1498,7 +1498,7 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		const double dY = -pEvt->scenePos().y()/m_pTri->GetScaleFactor();
 
 		ublas::vector<double> vecHKL = m_pTri->GetHKLFromPlanePos(dX, dY);
-		tl::set_eps_0(vecHKL);
+		tl::set_eps_0(vecHKL, g_dEpsGfx);
 
 		if(vecHKL.size()==3)
 		{

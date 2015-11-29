@@ -111,9 +111,9 @@ void GotoDlg::CalcSample()
 		bFailed = 1;
 	}
 
-	tl::set_eps_0(vecQ);
-	tl::set_eps_0(m_dSample2Theta);
-	tl::set_eps_0(m_dSampleTheta);
+	tl::set_eps_0(vecQ, g_dEps);
+	tl::set_eps_0(m_dSample2Theta, g_dEps);
+	tl::set_eps_0(m_dSampleTheta, g_dEps);
 
 	const std::wstring strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
 
@@ -169,7 +169,7 @@ void GotoDlg::CalcMonoAna()
 		if(tl::is_nan_or_inf<double>(m_dMono2Theta))
 			throw tl::Err("Invalid monochromator angle.");
 
-		tl::set_eps_0(m_dMono2Theta);
+		tl::set_eps_0(m_dMono2Theta, g_dEps);
 		bMonoOk = 1;
 	}
 	catch(const std::exception& ex)
@@ -187,7 +187,7 @@ void GotoDlg::CalcMonoAna()
 		if(tl::is_nan_or_inf<double>(m_dAna2Theta))
 			throw tl::Err("Invalid analysator angle.");
 
-		tl::set_eps_0(m_dAna2Theta);
+		tl::set_eps_0(m_dAna2Theta, g_dEps);
 		bAnaOk = 1;
 	}
 	catch(const std::exception& ex)
@@ -229,7 +229,7 @@ void GotoDlg::EditedKiKf()
 
 	tl::energy E = Ei-Ef;
 	double dE = E/tl::one_meV;
-	tl::set_eps_0(dE);
+	tl::set_eps_0(dE, g_dEps);
 
 	std::string strE = tl::var_to_str<double>(dE, g_iPrec);
 	editE->setText(strE.c_str());
@@ -260,7 +260,7 @@ void GotoDlg::EditedE()
 		tl::wavenumber kf = units::sqrt(ki*ki - dSign*k_E*k_E);
 
 		double dKf = kf*tl::angstrom;
-		tl::set_eps_0(dKf);
+		tl::set_eps_0(dKf, g_dEps);
 
 		std::string strKf = tl::var_to_str<double>(dKf, g_iPrec);
 		editKf->setText(strKf.c_str());
@@ -275,7 +275,7 @@ void GotoDlg::EditedE()
 		tl::wavenumber ki = units::sqrt(kf*kf + dSign*k_E*k_E);
 
 		double dKi = ki*tl::angstrom;
-		tl::set_eps_0(dKi);
+		tl::set_eps_0(dKi, g_dEps);
 
 		std::string strKi = tl::var_to_str<double>(dKi, g_iPrec);
 		editKi->setText(strKi.c_str());
@@ -290,13 +290,13 @@ void GotoDlg::EditedAngles()
 {
 	bool bthmOk;
 	double th_m = edit2ThetaM->text().toDouble(&bthmOk)/2. / 180.*M_PI;
-	tl::set_eps_0(th_m);
+	tl::set_eps_0(th_m, g_dEps);
 	if(bthmOk)
 		editThetaM->setText(tl::var_to_str<double>(th_m/M_PI*180., g_iPrec).c_str());
 
 	bool bthaOk;
 	double th_a = edit2ThetaA->text().toDouble(&bthaOk)/2. / 180.*M_PI;
-	tl::set_eps_0(th_a);
+	tl::set_eps_0(th_a, g_dEps);
 	if(bthaOk)
 		editThetaA->setText(tl::var_to_str<double>(th_a/M_PI*180., g_iPrec).c_str());
 
@@ -341,7 +341,7 @@ void GotoDlg::EditedAngles()
 	if(bFailed) return;
 
 	for(double* d : {&h,&k,&l, &dKi,&dKf,&dE})
-		tl::set_eps_0(*d);
+		tl::set_eps_0(*d, g_dEps);
 
 	editH->setText(tl::var_to_str<double>(h, g_iPrec).c_str());
 	editK->setText(tl::var_to_str<double>(k, g_iPrec).c_str());
@@ -367,11 +367,11 @@ void GotoDlg::GetCurPos()
 	if(!m_bHasParamsRecip)
 		return;
 
-	tl::set_eps_0(m_paramsRecip.dki);
-	tl::set_eps_0(m_paramsRecip.dkf);
-	tl::set_eps_0(m_paramsRecip.Q_rlu[0]);
-	tl::set_eps_0(m_paramsRecip.Q_rlu[1]);
-	tl::set_eps_0(m_paramsRecip.Q_rlu[2]);
+	tl::set_eps_0(m_paramsRecip.dki, g_dEps);
+	tl::set_eps_0(m_paramsRecip.dkf, g_dEps);
+	tl::set_eps_0(m_paramsRecip.Q_rlu[0], g_dEps);
+	tl::set_eps_0(m_paramsRecip.Q_rlu[1], g_dEps);
+	tl::set_eps_0(m_paramsRecip.Q_rlu[2], g_dEps);
 
 	editKi->setText(tl::var_to_str(m_paramsRecip.dki, g_iPrec).c_str());
 	editKf->setText(tl::var_to_str(m_paramsRecip.dkf, g_iPrec).c_str());
@@ -515,12 +515,12 @@ void GotoDlg::AddPosToList(double dh, double dk, double dl, double dki, double d
 	pPos->dkf = dkf;
 	pPos->dE = (tl::k2E(pPos->dki/tl::angstrom) - tl::k2E(pPos->dkf/tl::angstrom))/tl::meV;
 
-	tl::set_eps_0(pPos->dh);
-	tl::set_eps_0(pPos->dk);
-	tl::set_eps_0(pPos->dl);
-	tl::set_eps_0(pPos->dki);
-	tl::set_eps_0(pPos->dkf);
-	tl::set_eps_0(pPos->dE);
+	tl::set_eps_0(pPos->dh, g_dEps);
+	tl::set_eps_0(pPos->dk, g_dEps);
+	tl::set_eps_0(pPos->dl, g_dEps);
+	tl::set_eps_0(pPos->dki, g_dEps);
+	tl::set_eps_0(pPos->dkf, g_dEps);
+	tl::set_eps_0(pPos->dE, g_dEps);
 
 	const std::wstring strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
 

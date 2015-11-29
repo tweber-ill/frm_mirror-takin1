@@ -207,6 +207,9 @@ void SettingsDlg::SaveSettings()
 
 	g_iPrec = spinPrecGen->value();
 	g_iPrecGfx = spinPrecGfx->value();
+
+	g_dEps = std::pow(10., -g_iPrec);
+	g_dEpsGfx = std::pow(10., -g_iPrecGfx);
 }
 
 
