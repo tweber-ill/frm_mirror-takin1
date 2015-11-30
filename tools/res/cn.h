@@ -29,18 +29,18 @@ struct CNParams
 	// monochromator
 	units::quantity<units::si::length> mono_d;
 	units::quantity<units::si::plane_angle> mono_mosaic;
-	double dmono_sense;
+	double dmono_sense=-1.;
 
 	// analyser
 	units::quantity<units::si::length> ana_d;
 	units::quantity<units::si::plane_angle> ana_mosaic;
-	double dana_sense;
+	double dana_sense=-1.;
 
 	// sample
 	units::quantity<units::si::plane_angle> sample_mosaic;
 	units::quantity<units::si::length> sample_lattice[3];
 	units::quantity<units::si::plane_angle> sample_angles[3];
-	double dsample_sense;
+	double dsample_sense=1.;
 
 	// collimators
 	units::quantity<units::si::plane_angle> coll_h_pre_mono;
@@ -60,9 +60,6 @@ struct CNParams
 	units::quantity<units::si::plane_angle> twotheta;
 	units::quantity<units::si::plane_angle> angle_ki_Q;
 	units::quantity<units::si::plane_angle> angle_kf_Q;
-	//units::quantity<units::si::plane_angle> angle_Q_vec0;
-
-	//ublas::vector<double> vec0, vec1, vecUp;
 
 	// resolution volume stuff
 	double dmono_refl;

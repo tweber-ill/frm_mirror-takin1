@@ -95,6 +95,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	LoadSettings();
 }
 
+
 ConvoDlg::~ConvoDlg()
 {
 	if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; m_pth = nullptr; }
@@ -314,6 +315,19 @@ void ConvoDlg::Start()
 		reso.SetKiFix(comboFixedK->currentIndex()==0);
 		reso.SetKFix(spinKfix->value());
 
+		const int iFocMono = comboFocMono->currentIndex();
+		const int iFocAna = comboFocAna->currentIndex();
+		
+		unsigned ifocMode = unsigned(ResoFocus::FOC_NONE);
+		if(iFocMono == 1) ifocMode |= unsigned(ResoFocus::FOC_MONO_H);	// horizontal
+		else if(iFocMono == 2) ifocMode |= unsigned(ResoFocus::FOC_MONO_V);	// vertical
+		else if(iFocMono == 3) ifocMode |= unsigned(ResoFocus::FOC_MONO_V)|unsigned(ResoFocus::FOC_MONO_H);	// both
+		if(iFocAna == 1) ifocMode |= unsigned(ResoFocus::FOC_ANA_H);	// horizontal
+		else if(iFocAna == 2) ifocMode |= unsigned(ResoFocus::FOC_ANA_V);	// vertical
+		else if(iFocAna == 3) ifocMode |= unsigned(ResoFocus::FOC_ANA_V)|unsigned(ResoFocus::FOC_ANA_H);		// both
+
+		ResoFocus focMode = ResoFocus(ifocMode);
+		reso.SetOptimalFocus(focMode);
 
 
 		if(m_pSqw == nullptr || !m_pSqw->IsOk())

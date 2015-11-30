@@ -18,11 +18,24 @@ enum class ResoAlgo
 	ECK
 };
 
+enum class ResoFocus : unsigned
+{
+	FOC_NONE = 0,
+
+	FOC_MONO_H = (1<<1),
+	FOC_MONO_V = (1<<2),
+
+	FOC_ANA_H = (1<<3),
+	FOC_ANA_V = (1<<4)
+};
+
 
 class TASReso
 {
 protected:
 	ResoAlgo m_algo = ResoAlgo::CN;
+	ResoFocus m_foc = ResoFocus::FOC_NONE;
+
 	McNeutronOpts m_opts;
 	EckParams m_reso;
 	CNResults m_res;
@@ -41,8 +54,8 @@ public:
 	bool LoadLattice(const char* pcXmlFile);
 
 	bool SetLattice(double a, double b, double c,
-			double alpha, double beta, double gamma,
-			const ublas::vector<double>& vec1, const ublas::vector<double>& vec2);
+		double alpha, double beta, double gamma,
+		const ublas::vector<double>& vec1, const ublas::vector<double>& vec2);
 	bool SetHKLE(double h, double k, double l, double E);
 	Ellipsoid4d GenerateMC(std::size_t iNum, std::vector<ublas::vector<double>>&) const;
 
@@ -50,6 +63,7 @@ public:
 	void SetKFix(double dKFix) { m_dKFix = dKFix; }
 
 	void SetAlgo(ResoAlgo algo) { m_algo = algo; }
+	void SetOptimalFocus(ResoFocus foc) { m_foc = foc; }
 };
 
 #endif

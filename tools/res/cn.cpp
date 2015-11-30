@@ -43,6 +43,18 @@ CNResults calc_cn(const CNParams& cn)
 	res.Q_avg[3] = cn.E / meV;
 
 
+	const length lam = tl::k2lam(cn.ki);
+
+	angle coll_h_pre_mono = cn.coll_h_pre_mono;
+	angle coll_v_pre_mono = cn.coll_v_pre_mono;
+/*
+	if(cn.bGuide)
+	{
+		coll_h_pre_mono = lam*(cn.guide_div_h/angs);
+		coll_v_pre_mono = lam*(cn.guide_div_v/angs);
+	}
+*/
+
 	// -------------------------------------------------------------------------
 	// transformation matrix
 
@@ -100,7 +112,7 @@ CNResults calc_cn(const CNParams& cn)
 	t_vec palf0(2);
 	palf0[0] = 2.*units::tan(thetam);
 	palf0[1] = 1.;
-	palf0 /= (cn.ki*angs * cn.coll_h_pre_mono/rads);
+	palf0 /= (cn.ki*angs * coll_h_pre_mono/rads);
 
 	t_vec palf1(2);
 	palf1[0] = 0;
@@ -134,7 +146,7 @@ CNResults calc_cn(const CNParams& cn)
 		(
 			1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/rads/rads) +
 			1./((2.*units::sin(thetam)*cn.mono_mosaic/rads)*(2.*units::sin(thetam)*cn.mono_mosaic/rads) +
-				cn.coll_v_pre_mono*cn.coll_v_pre_mono/rads/rads)
+				coll_v_pre_mono*coll_v_pre_mono/rads/rads)
 		);
 	M(5,5) = 1./(cn.kf*cn.kf * angs*angs) *
 		(

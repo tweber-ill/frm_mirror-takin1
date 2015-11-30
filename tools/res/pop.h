@@ -21,7 +21,8 @@ struct PopParams : public CNParams
 	units::quantity<units::si::length> mono_thick;
 	units::quantity<units::si::length> mono_curvh;
 	units::quantity<units::si::length> mono_curvv;
-	bool bMonoIsCurvedH, bMonoIsCurvedV;
+	bool bMonoIsCurvedH=0, bMonoIsCurvedV=0;
+	bool bMonoIsOptimallyCurvedH=0, bMonoIsOptimallyCurvedV=0;
 	unsigned int mono_numtiles_v, mono_numtiles_h;
 
 	units::quantity<units::si::length> ana_w;
@@ -29,23 +30,24 @@ struct PopParams : public CNParams
 	units::quantity<units::si::length> ana_thick;
 	units::quantity<units::si::length> ana_curvh;
 	units::quantity<units::si::length> ana_curvv;
-	bool bAnaIsCurvedH, bAnaIsCurvedV;
+	bool bAnaIsCurvedH=0, bAnaIsCurvedV=0;
+	bool bAnaIsOptimallyCurvedH=0, bAnaIsOptimallyCurvedV=0;
 	unsigned int ana_numtiles_v, ana_numtiles_h;
 
-	bool bSampleCub;
+	bool bSampleCub=1;
 	units::quantity<units::si::length> sample_w_q;
 	units::quantity<units::si::length> sample_w_perpq;
 	units::quantity<units::si::length> sample_h;
 
-	bool bSrcRect;
+	bool bSrcRect=1;
 	units::quantity<units::si::length> src_w;
 	units::quantity<units::si::length> src_h;
 
-	bool bDetRect;
+	bool bDetRect=1;
 	units::quantity<units::si::length> det_w;
 	units::quantity<units::si::length> det_h;
 
-	bool bGuide;
+	bool bGuide=0;
 	units::quantity<units::si::plane_angle> guide_div_h;
 	units::quantity<units::si::plane_angle> guide_div_v;
 

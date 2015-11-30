@@ -32,6 +32,7 @@ TASReso::TASReso(const TASReso& res)
 const TASReso& TASReso::operator=(const TASReso& res)
 {
 	this->m_algo = res.m_algo;
+	this->m_foc = res.m_foc;
 	this->m_opts = res.m_opts;
 	this->m_reso = res.m_reso;
 	this->m_res = res.m_res;
@@ -120,6 +121,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.mono_curvv = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_curvv").c_str(), 0.)*0.01*tl::meters;
 	m_reso.bMonoIsCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvh").c_str(), 0) != 0);
 	m_reso.bMonoIsCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvv").c_str(), 0) != 0);
+	m_reso.bMonoIsOptimallyCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvh_opt").c_str(), 1) != 0);
+	m_reso.bMonoIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvv_opt").c_str(), 1) != 0);
 
 	m_reso.ana_w = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_w").c_str(), 0.)*0.01*tl::meters;
 	m_reso.ana_h = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_h").c_str(), 0.)*0.01*tl::meters;
@@ -128,6 +131,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.ana_curvv = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_curvv").c_str(), 0.)*0.01*tl::meters;
 	m_reso.bAnaIsCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvh").c_str(), 0) != 0);
 	m_reso.bAnaIsCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvv").c_str(), 0) != 0);
+	m_reso.bAnaIsOptimallyCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvh_opt").c_str(), 1) != 0);
+	m_reso.bAnaIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvv_opt").c_str(), 1) != 0);
 
 	m_reso.bSampleCub = (xml.Query<int>((strXmlRoot + "reso/pop_sample_cuboid").c_str(), 0) != 0);
 	m_reso.sample_w_q = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_wq").c_str(), 0.)*0.01*tl::meters;
@@ -178,6 +183,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_dKFix = m_bKiFix ? m_reso.ki*tl::angstrom : m_reso.kf*tl::angstrom;
 	return true;
 }
+
 
 bool TASReso::SetLattice(t_real a, t_real b, t_real c,
 		t_real alpha, t_real beta, t_real gamma,
@@ -268,6 +274,26 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 	m_reso.angle_ki_Q = units::abs(m_reso.angle_ki_Q);
 	m_reso.angle_kf_Q = units::abs(m_reso.angle_kf_Q);
+
+
+	if(m_foc == ResoFocus::FOC_NONE)
+	{
+		m_reso.bMonoIsCurvedH = m_reso.bMonoIsCurvedV = 0;
+		m_reso.bAnaIsCurvedH = m_reso.bAnaIsCurvedV = 0;
+		
+		//tl::log_info("No focus.");
+	}
+	else
+	{
+		m_reso.bMonoIsCurvedH = m_reso.bMonoIsOptimallyCurvedH = (unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_H));
+		m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV = (unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V));
+		m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH = (unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H));
+		m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV = (unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V));
+		
+		//tl::log_info("Mono focus (h,v): ", m_reso.bMonoIsOptimallyCurvedH, ", ", m_reso.bMonoIsOptimallyCurvedV);
+		//tl::log_info("Ana focus (h,v): ", m_reso.bAnaIsOptimallyCurvedH, ", ", m_reso.bAnaIsOptimallyCurvedV);
+	}
+
 
 	/*tl::log_info("thetam = ", m_reso.thetam);
 	tl::log_info("thetaa = ", m_reso.thetaa);

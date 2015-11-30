@@ -146,22 +146,47 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 CNResults calc_eck(const EckParams& eck)
 {
-	length mono_curvh = eck.mono_curvh * eck.dmono_sense;
-	length mono_curvv = eck.mono_curvv * eck.dmono_sense;
-	length ana_curvh = eck.ana_curvh * eck.dana_sense;
-	length ana_curvv = eck.ana_curvv * eck.dana_sense;
-
-	if(!eck.bMonoIsCurvedH) mono_curvh = 99999. * cm * eck.dmono_sense;
-	if(!eck.bMonoIsCurvedV) mono_curvv = 99999. * cm * eck.dmono_sense;
-	if(!eck.bAnaIsCurvedH) ana_curvh = 99999. * cm * eck.dana_sense;
-	if(!eck.bAnaIsCurvedV) ana_curvv = 99999. * cm * eck.dana_sense;
-
 	angle twotheta = eck.twotheta;
 	angle thetaa = eck.thetaa;
 	angle thetam = eck.thetam;
 	angle ki_Q = eck.angle_ki_Q;
 	angle kf_Q = eck.angle_kf_Q;
 	//kf_Q = ki_Q + twotheta;
+
+
+	// --------------------------------------------------------------------
+	// mono/ana focus
+	length mono_curvh = eck.mono_curvh, mono_curvv = eck.mono_curvv;
+	length ana_curvh = eck.ana_curvh, ana_curvv = eck.ana_curvv;
+
+	if(eck.bMonoIsOptimallyCurvedH) mono_curvh = tl::foc_curv(eck.dist_src_mono, eck.dist_mono_sample, 2.*thetam, false);
+	if(eck.bMonoIsOptimallyCurvedV) mono_curvv = tl::foc_curv(eck.dist_src_mono, eck.dist_mono_sample, 2.*thetam, true);
+	if(eck.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, 2.*thetaa, false);
+	if(eck.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, 2.*thetaa, true);
+
+	mono_curvh = eck.mono_curvh * eck.dmono_sense;
+	mono_curvv = eck.mono_curvv * eck.dmono_sense;
+	ana_curvh = eck.ana_curvh * eck.dana_sense;
+	ana_curvv = eck.ana_curvv * eck.dana_sense;
+
+	if(!eck.bMonoIsCurvedH) mono_curvh = 99999. * cm * eck.dmono_sense;
+	if(!eck.bMonoIsCurvedV) mono_curvv = 99999. * cm * eck.dmono_sense;
+	if(!eck.bAnaIsCurvedH) ana_curvh = 99999. * cm * eck.dana_sense;
+	if(!eck.bAnaIsCurvedV) ana_curvv = 99999. * cm * eck.dana_sense;
+	// --------------------------------------------------------------------
+
+
+	const length lam = tl::k2lam(eck.ki);
+
+	angle coll_h_pre_mono = eck.coll_h_pre_mono;
+	angle coll_v_pre_mono = eck.coll_v_pre_mono;
+
+	if(eck.bGuide)
+	{
+		coll_h_pre_mono = lam*(eck.guide_div_h/angs);
+		coll_v_pre_mono = lam*(eck.guide_div_v/angs);
+	}
+
 
 	if(eck.dsample_sense < 0) { twotheta = -twotheta; ki_Q = -ki_Q; kf_Q = -kf_Q; }
 
@@ -195,8 +220,8 @@ CNResults calc_eck(const EckParams& eck)
 					eck.mono_w, eck.mono_h,
 					eck.dist_src_mono, eck.dist_mono_sample,
 					eck.ki, thetam,
-					eck.coll_h_pre_mono, eck.coll_h_pre_sample,
-					eck.coll_v_pre_mono, eck.coll_v_pre_sample,
+					coll_h_pre_mono, eck.coll_h_pre_sample,
+					coll_v_pre_mono, eck.coll_v_pre_sample,
 					eck.mono_mosaic, eck.mono_mosaic_v,
 					mono_curvh, mono_curvv,
 					eck.pos_x , eck.pos_y, eck.pos_z,

@@ -52,7 +52,7 @@ CNResults calc_pop(const PopParams& pop)
 	{
 		twotheta = -twotheta;
 		ki_Q = -ki_Q;
-		kf_Q = -kf_Q; 
+		kf_Q = -kf_Q;
 	}
 
 
@@ -78,6 +78,7 @@ CNResults calc_pop(const PopParams& pop)
 		coll_h_pre_mono = lam*(pop.guide_div_h/angs);
 		coll_v_pre_mono = lam*(pop.guide_div_v/angs);
 	}
+
 
 	// collimator covariance matrix G, [pop75], Appendix 1
 	t_mat G = ublas::zero_matrix<t_real>(8,8);
@@ -173,11 +174,23 @@ CNResults calc_pop(const PopParams& pop)
 	}
 
 
+	// --------------------------------------------------------------------
+	// mono/ana focus
+	length mono_curvh = pop.mono_curvh, mono_curvv = pop.mono_curvv;
+	length ana_curvh = pop.ana_curvh, ana_curvv = pop.ana_curvv;
+
+	if(pop.bMonoIsOptimallyCurvedH) mono_curvh = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, 2.*thetam, false);
+	if(pop.bMonoIsOptimallyCurvedV) mono_curvv = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, 2.*thetam, true);
+	if(pop.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, 2.*thetaa, false);
+	if(pop.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, 2.*thetaa, true);
+
 	t_real dCurvMonoH=0., dCurvMonoV=0., dCurvAnaH=0., dCurvAnaV=0.;
-	if(pop.bMonoIsCurvedH) dCurvMonoH = 1./(pop.mono_curvh/cm) * pop.dmono_sense;
-	if(pop.bMonoIsCurvedV) dCurvMonoV = 1./(pop.mono_curvv/cm) * pop.dmono_sense;
-	if(pop.bAnaIsCurvedH) dCurvAnaH = 1./(pop.ana_curvh/cm) * pop.dana_sense;
-	if(pop.bAnaIsCurvedV) dCurvAnaV = 1./(pop.ana_curvv/cm) * pop.dana_sense;
+	if(pop.bMonoIsCurvedH) dCurvMonoH = 1./(mono_curvh/cm) * pop.dmono_sense;
+	if(pop.bMonoIsCurvedV) dCurvMonoV = 1./(mono_curvv/cm) * pop.dmono_sense;
+	if(pop.bAnaIsCurvedH) dCurvAnaH = 1./(ana_curvh/cm) * pop.dana_sense;
+	if(pop.bAnaIsCurvedV) dCurvAnaV = 1./(ana_curvv/cm) * pop.dana_sense;
+	// --------------------------------------------------------------------
+
 
 
 	// T matrix, [pop75], Appendix 2

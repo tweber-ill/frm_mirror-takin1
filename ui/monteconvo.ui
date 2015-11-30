@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>487</width>
-    <height>514</height>
+    <width>548</width>
+    <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -120,6 +120,9 @@
             <property name="toolTip">
              <string>k (rlu)</string>
             </property>
+            <property name="prefix">
+             <string>k = </string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -155,6 +158,9 @@
             <property name="toolTip">
              <string>l (rlu)</string>
             </property>
+            <property name="prefix">
+             <string>l = </string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -173,6 +179,9 @@
            <widget class="QDoubleSpinBox" name="spinStartE">
             <property name="toolTip">
              <string>E (meV)</string>
+            </property>
+            <property name="prefix">
+             <string>E = </string>
             </property>
             <property name="decimals">
              <number>4</number>
@@ -193,6 +202,9 @@
             <property name="toolTip">
              <string>l (rlu)</string>
             </property>
+            <property name="prefix">
+             <string>l = </string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -211,6 +223,9 @@
            <widget class="QDoubleSpinBox" name="spinStopE">
             <property name="toolTip">
              <string>E (meV)</string>
+            </property>
+            <property name="prefix">
+             <string>E = </string>
             </property>
             <property name="decimals">
              <number>4</number>
@@ -234,6 +249,12 @@
             <property name="toolTip">
              <string>h (rlu)</string>
             </property>
+            <property name="prefix">
+             <string>h = </string>
+            </property>
+            <property name="suffix">
+             <string/>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -256,6 +277,9 @@
             <property name="toolTip">
              <string>h (rlu)</string>
             </property>
+            <property name="prefix">
+             <string>h = </string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -277,6 +301,9 @@
            <widget class="QDoubleSpinBox" name="spinStopK">
             <property name="toolTip">
              <string>k (rlu)</string>
+            </property>
+            <property name="prefix">
+             <string>k = </string>
             </property>
             <property name="decimals">
              <number>4</number>
@@ -343,21 +370,22 @@
           <string>Configuration</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
-          <item row="0" column="2">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="comboFixedK">
+            <property name="currentIndex">
+             <number>1</number>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>10</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+            <item>
+             <property name="text">
+              <string>ki = const.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>kf = const.</string>
+             </property>
+            </item>
+           </widget>
           </item>
           <item row="0" column="1">
            <widget class="QComboBox" name="comboAlgo">
@@ -394,16 +422,10 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="1" column="3">
+           <widget class="QLabel" name="label_11">
             <property name="text">
-             <string>Algorithm:</string>
+             <string>k_fix (1/Å):</string>
             </property>
            </widget>
           </item>
@@ -423,37 +445,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="3">
-           <widget class="QLabel" name="label_11">
-            <property name="text">
-             <string>k_fix (1/Å):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="comboFixedK">
-            <property name="currentIndex">
-             <number>1</number>
-            </property>
-            <item>
-             <property name="text">
-              <string>ki = const.</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>kf = const.</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Mode:</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="4">
            <widget class="QDoubleSpinBox" name="spinKfix">
             <property name="decimals">
@@ -465,6 +456,104 @@
             <property name="value">
              <double>2.662000000000000</double>
             </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Algorithm:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>10</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>M. Focus:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>A. Focus:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="comboFocMono">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Horizontal</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Vertical</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Both</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="4">
+           <widget class="QComboBox" name="comboFocAna">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Horizontal</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Vertical</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Both</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -656,6 +745,8 @@
   <tabstop>spinNeutrons</tabstop>
   <tabstop>comboFixedK</tabstop>
   <tabstop>spinKfix</tabstop>
+  <tabstop>comboFocMono</tabstop>
+  <tabstop>comboFocAna</tabstop>
   <tabstop>comboSqw</tabstop>
   <tabstop>btnSqwParams</tabstop>
   <tabstop>editSqw</tabstop>

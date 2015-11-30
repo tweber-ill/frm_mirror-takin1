@@ -13,6 +13,7 @@
 
 #include "pop.h"
 
+
 struct EckParams : public PopParams
 {
 	units::quantity<units::si::plane_angle> mono_mosaic_v;
@@ -20,6 +21,7 @@ struct EckParams : public PopParams
 
 	units::quantity<units::si::length> pos_x, pos_y, pos_z;
 };
+
 
 extern CNResults calc_eck(const EckParams& eck);
 
