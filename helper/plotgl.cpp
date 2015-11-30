@@ -25,7 +25,7 @@
 
 
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings)
-		: QGLWidget(pParent), m_pSettings(pSettings),
+		: QGLWidget(pParent), m_pSettings(pSettings), m_bEnabled(true),
 			m_mutex(QMutex::Recursive),
 			m_matProj(tl::unit_matrix<tl::t_mat4>(4)), m_matView(tl::unit_matrix<tl::t_mat4>(4))
 {
@@ -48,9 +48,7 @@ PlotGl::~PlotGl()
 
 void PlotGl::SetEnabled(bool b)
 {
-	m_mutex.lock();
-	m_bEnabled = b;
-	m_mutex.unlock();
+	m_bEnabled.store(b);
 }
 
 void PlotGl::SetColor(double r, double g, double b, double a)
@@ -168,9 +166,7 @@ void PlotGl::paintGLThread()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_mutex.lock();
-	bool bEnabled = m_bEnabled;
-	m_mutex.unlock();
+	bool bEnabled = m_bEnabled.load();
 	if(!bEnabled) return;
 
 	glMatrixMode(GL_MODELVIEW);
@@ -339,7 +335,6 @@ void PlotGl::resizeEvent(QResizeEvent *evt)
 	m_iW = size().width();
 	m_iH = size().height();
 
-std::cout << m_iW << " " << m_iH << std::endl;
 	m_bDoResize = 1;
 	m_mutex.unlock();
 }
@@ -379,7 +374,7 @@ void PlotGl::SetObjectUseLOD(int iObjIdx, bool bLOD)
 }
 
 void PlotGl::PlotSphere(const ublas::vector<double>& vecPos,
-						double dRadius, int iObjIdx)
+	double dRadius, int iObjIdx)
 {
 	if(iObjIdx < 0)
 	{
@@ -406,9 +401,9 @@ void PlotGl::PlotSphere(const ublas::vector<double>& vecPos,
 }
 
 void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
-				const ublas::vector<double>& offsets,
-				const ublas::matrix<double>& rot,
-				int iObjIdx)
+	const ublas::vector<double>& offsets,
+	const ublas::matrix<double>& rot,
+	int iObjIdx)
 {
 	if(iObjIdx < 0)
 	{
@@ -503,10 +498,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	m_dMouseY = -(2.*pEvt->POS_F().y()/double(m_iH) - 1.);
 	//std::cout << m_dMouseX << ", " << m_dMouseY << std::endl;
 
-	m_mutex.lock();
-	bool bEnabled = m_bEnabled;
-	m_mutex.unlock();
-
+	bool bEnabled = m_bEnabled.load();
 	if(bEnabled)
 		mouseSelectObj(m_dMouseX, m_dMouseY);
 }

@@ -17,6 +17,7 @@
 #include <QMutex>
 #include <QSettings>
 #include <vector>
+#include <atomic>
 
 #include "tlibs/gfx/gl.h"
 
@@ -48,7 +49,7 @@ class PlotGl : public QGLWidget, QThread
 {
 protected:
 	QSettings *m_pSettings = 0;
-	bool m_bEnabled = 1;
+	std::atomic<bool> m_bEnabled;
 	QMutex m_mutex;
 
 	static constexpr double m_dFOV = 45./180.*M_PI;

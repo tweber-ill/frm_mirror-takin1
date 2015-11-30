@@ -65,6 +65,10 @@ void EllipseDlg3D::hideEvent(QHideEvent *event)
 void EllipseDlg3D::showEvent(QShowEvent *event)
 {
 	QDialog::showEvent(event);
+
+	for(unsigned int i=0; i<m_pPlots.size(); ++i)
+		if(m_pPlots[i])
+			m_pPlots[i]->SetEnabled(1);
 }
 
 
