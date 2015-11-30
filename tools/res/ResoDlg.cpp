@@ -29,7 +29,7 @@
 
 
 ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
-			: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
+	: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
 	setupUi(this);
 	btnSave->setIcon(load_icon("res/document-save.svg"));
@@ -145,9 +145,9 @@ void ResoDlg::SaveRes()
 	if(m_pSettings)
 		m_pSettings->value("reso/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getSaveFileName(this,
-								"Save resolution configuration",
-								strDirLast,
-								"TAZ files (*.taz *.TAZ)");
+		"Save resolution configuration",
+		strDirLast,
+		"TAZ files (*.taz *.TAZ)");
 
 	if(qstrFile == "")
 		return;
@@ -174,9 +174,9 @@ void ResoDlg::LoadRes()
 	if(m_pSettings)
 		strDirLast = m_pSettings->value("reso/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getOpenFileName(this,
-							"Open resolution configuration...",
-							strDirLast,
-							"TAZ files (*.taz *.TAZ)");
+		"Open resolution configuration...",
+		strDirLast,
+		"TAZ files (*.taz *.TAZ)");
 	if(qstrFile == "")
 		return;
 
@@ -322,11 +322,11 @@ void ResoDlg::Calc()
 		// --------------------------------------------------------------------------------
 
 		const std::string& strAA_1 = tl::get_spec_char_utf8("AA")
-						+ tl::get_spec_char_utf8("sup-")
-						+ tl::get_spec_char_utf8("sup1");
+			+ tl::get_spec_char_utf8("sup-")
+			+ tl::get_spec_char_utf8("sup1");
 		const std::string& strAA_3 = tl::get_spec_char_utf8("AA")
-						+ tl::get_spec_char_utf8("sup-")
-						+ tl::get_spec_char_utf8("sup3");
+			+ tl::get_spec_char_utf8("sup-")
+			+ tl::get_spec_char_utf8("sup3");
 
 		std::ostringstream ostrRes;
 
@@ -651,7 +651,15 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	m_pop.E = parms.dE * tl::one_meV;
 
 
-	m_dAngleQVec0 = parms.dAngleQVec0;
+	//m_dAngleQVec0 = parms.dAngleQVec0;
+	//std::cout << "qvec0 in rlu: " << m_dAngleQVec0 << std::endl;
+
+	ublas::vector<double> vecHKL = -tl::make_vec({parms.Q_rlu[0], parms.Q_rlu[1], parms.Q_rlu[2]});
+	ublas::vector<double> vecQ = ublas::prod(m_matUB, vecHKL);
+	vecQ.resize(2,1);
+	m_dAngleQVec0 = -tl::vec_angle(vecQ);
+	//std::cout << "qvec0 in 1/A: " << m_dAngleQVec0 << std::endl;
+
 
 	m_pop.angle_ki_Q = /*M_PI*tl::radians - */tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
 	m_pop.angle_kf_Q = /*M_PI*tl::radians - */tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
@@ -703,8 +711,15 @@ void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 	//m_vecOrient1 /= ublas::norm_2(m_vecOrient1);
 	//m_vecOrient2 /= ublas::norm_2(m_vecOrient2);
 
-	m_matUB = tl::get_UB(lattice, m_vecOrient1, m_vecOrient2);
-	m_bHasUB = tl::inverse(m_matUB, m_matUBinv);
+	m_matB = tl::get_B(lattice, 1);
+	m_matU = tl::get_U(m_vecOrient1, m_vecOrient2, &m_matB);
+	m_matUB = ublas::prod(m_matU, m_matB);
+
+	bool bHasB = tl::inverse(m_matB, m_matBinv);
+	bool bHasU = tl::inverse(m_matU, m_matUinv);
+	m_matUBinv = ublas::prod(m_matBinv, m_matUinv);
+
+	m_bHasUB = bHasB && bHasU;
 }
 
 
@@ -724,15 +739,15 @@ void ResoDlg::CalcElli4d()
 	std::ostringstream ostrElli;
 	ostrElli << "Ellipsoid volume: " << m_ell4d.vol << "\n\n";
 	ostrElli << "Ellipsoid offsets:\n"
-			<< "\tQx = " << m_ell4d.x_offs << "\n"
-			<< "\tQy = " << m_ell4d.y_offs << "\n"
-			<< "\tQz = " << m_ell4d.z_offs << "\n"
-			<< "\tE = " << m_ell4d.w_offs << "\n\n";
+		<< "\tQx = " << m_ell4d.x_offs << "\n"
+		<< "\tQy = " << m_ell4d.y_offs << "\n"
+		<< "\tQz = " << m_ell4d.z_offs << "\n"
+		<< "\tE = " << m_ell4d.w_offs << "\n\n";
 	ostrElli << "Ellipsoid HWHMs (unsorted):\n"
-			<< "\t" << m_ell4d.x_hwhm << "\n"
-			<< "\t" << m_ell4d.y_hwhm << "\n"
-			<< "\t" << m_ell4d.z_hwhm << "\n"
-			<< "\t" << m_ell4d.w_hwhm << "\n\n";
+		<< "\t" << m_ell4d.x_hwhm << "\n"
+		<< "\t" << m_ell4d.y_hwhm << "\n"
+		<< "\t" << m_ell4d.z_hwhm << "\n"
+		<< "\t" << m_ell4d.w_hwhm << "\n\n";
 
 	labelElli->setText(QString::fromUtf8(ostrElli.str().c_str()));
 }
@@ -764,18 +779,24 @@ void ResoDlg::MCGenerate()
 	McNeutronOpts opts;
 	opts.bCenter = bCenter;
 	opts.coords = McNeutronCoords(comboMCCoords->currentIndex());
+	opts.matU = m_matU;
+	opts.matB = m_matB;
 	opts.matUB = m_matUB;
+	opts.matUinv = m_matUinv;
+	opts.matBinv = m_matBinv;
 	opts.matUBinv = m_matUBinv;
-	opts.matUB.resize(4,4,1);
-	opts.matUBinv.resize(4,4,1);
 
-	for(int i0=0; i0<3; ++i0)
+	ublas::matrix<double>* pMats[] = {&opts.matU, &opts.matB, &opts.matUB, 
+		&opts.matUinv, &opts.matBinv, &opts.matUBinv};
+
+	for(ublas::matrix<double> *pMat : pMats)
 	{
-		opts.matUB(i0,3) = opts.matUB(3,i0) = 0.;
-		opts.matUBinv(i0,3) = opts.matUBinv(3,i0) = 0.;
+		pMat->resize(4,4,1);
+
+		for(int i0=0; i0<3; ++i0)
+			(*pMat)(i0,3) = (*pMat)(3,i0) = 0.;
+		(*pMat)(3,3) = 1.;
 	}
-	opts.matUB(3,3) = opts.matUB(3,3) = 1.;
-	opts.matUBinv(3,3) = opts.matUBinv(3,3) = 1.;
 
 
 	opts.dAngleQVec0 = m_dAngleQVec0;
@@ -788,25 +809,25 @@ void ResoDlg::MCGenerate()
 	{
 		ofstr << "# coord_sys: direct\n";
 		ofstr << "# columns: " << std::setw(13) << m_ell4d.x_lab
-				<< std::setw(24) << m_ell4d.y_lab
-				<< std::setw(24) << m_ell4d.z_lab
-				<< std::setw(24) << m_ell4d.w_lab << "\n";
+			<< std::setw(24) << m_ell4d.y_lab
+			<< std::setw(24) << m_ell4d.z_lab
+			<< std::setw(24) << m_ell4d.w_lab << "\n";
 	}
 	else if(opts.coords == McNeutronCoords::ANGS)
 	{
 		ofstr << "# coord_sys: angstrom\n";
 		ofstr << "# columns: " << std::setw(13) << "Qx (1/A)"
-				<< std::setw(24) << "Qy (1/A)"
-				<< std::setw(24) << "Qz (1/A)"
-				<< std::setw(24) << "E (meV)" << "\n";
+			<< std::setw(24) << "Qy (1/A)"
+			<< std::setw(24) << "Qz (1/A)"
+			<< std::setw(24) << "E (meV)" << "\n";
 	}
 	else if(opts.coords == McNeutronCoords::RLU)
 	{
 		ofstr << "# coord_sys: rlu\n";
 		ofstr << "# columns: " << std::setw(13) << "h (rlu)"
-				<< std::setw(24) << "k (rlu)"
-				<< std::setw(24) << "l (rlu)"
-				<< std::setw(24) << "E (meV)" << "\n";
+			<< std::setw(24) << "k (rlu)"
+			<< std::setw(24) << "l (rlu)"
+			<< std::setw(24) << "E (meV)" << "\n";
 	}
 	else
 	{

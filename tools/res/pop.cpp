@@ -47,14 +47,14 @@ CNResults calc_pop(const PopParams& pop)
 	angle ki_Q = pop.angle_ki_Q;
 	angle kf_Q = pop.angle_kf_Q;
 	//kf_Q = ki_Q + twotheta;
-	
-	if(pop.dsample_sense < 0) 
-	{ 
-		twotheta = -twotheta; 
-		ki_Q = -ki_Q; 
+
+	if(pop.dsample_sense < 0)
+	{
+		twotheta = -twotheta;
+		ki_Q = -ki_Q;
 		kf_Q = -kf_Q; 
 	}
-	
+
 
 	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
 	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
@@ -72,7 +72,7 @@ CNResults calc_pop(const PopParams& pop)
 
 	angle coll_h_pre_mono = pop.coll_h_pre_mono;
 	angle coll_v_pre_mono = pop.coll_v_pre_mono;
-	
+
 	if(pop.bGuide)
 	{
 		coll_h_pre_mono = lam*(pop.guide_div_h/angs);
@@ -287,9 +287,9 @@ CNResults calc_pop(const PopParams& pop)
 		return res;
 	}
 
-	
+
 	// -------------------------------------------------------------------------
-	
+
 
 	res.reso = M*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 	res.reso_v = ublas::zero_vector<t_real>(4);

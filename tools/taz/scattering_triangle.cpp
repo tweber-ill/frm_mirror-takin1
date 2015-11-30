@@ -451,7 +451,7 @@ double ScatteringTriangle::GetKf() const
 double ScatteringTriangle::GetE() const
 {
 	const double dKi = GetKi();
-	double dKf = GetKf();
+	const double dKf = GetKf();
 	const double dE = tl::get_energy_transfer(dKi/tl::angstrom, dKf/tl::angstrom) / tl::one_eV * 1000.;
 	return dE;
 }
@@ -479,16 +479,18 @@ double ScatteringTriangle::Getq() const
 double ScatteringTriangle::GetAngleQVec0() const
 {
 	ublas::vector<double> vecQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-						- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 	vecQ /= ublas::norm_2(vecQ);
 	vecQ = -vecQ;
+
+	// TODO: Q is in rlu! check angle for non-cubic case!
 	return tl::vec_angle(vecQ);
 }
 
 double ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 {
 	/*ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+			- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	vecKi /= ublas::norm_2(vecKi);
 
 	const double dAngle = vec_angle(vecKi) - GetAngleQVec0();*/
@@ -514,7 +516,7 @@ double ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 {
 	/*ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+			- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	vecKf /= ublas::norm_2(vecKf);
 
 	const double dAngle = vec_angle(vecKf) - GetAngleQVec0();*/
@@ -539,7 +541,7 @@ double ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 double ScatteringTriangle::GetTheta(bool bPosSense) const
 {
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-						- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	vecKi /= ublas::norm_2(vecKi);
 
 	double dTh = tl::vec_angle(vecKi) - M_PI/2.;
@@ -554,9 +556,9 @@ double ScatteringTriangle::GetTheta(bool bPosSense) const
 double ScatteringTriangle::GetTwoTheta(bool bPosSense) const
 {
 	ublas::vector<double> vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	ublas::vector<double> vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0))
-								- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 
 	vecKi /= ublas::norm_2(vecKi);
 	vecKf /= ublas::norm_2(vecKf);
@@ -916,7 +918,7 @@ ublas::vector<double> ScatteringTriangle::GetHKLFromPlanePos(double x, double y)
 		return ublas::vector<double>();
 
 	ublas::vector<double> vec = x*tl::get_column(m_matPlane, 0)
-								+ y*tl::get_column(m_matPlane, 1);
+		+ y*tl::get_column(m_matPlane, 1);
 	return m_recip.GetHKL(vec);
 }
 
@@ -926,10 +928,10 @@ ublas::vector<double> ScatteringTriangle::GetQVecPlane(bool bSmallQ) const
 
 	if(bSmallQ)
 		vecQPlane = qpoint_to_vec(mapFromItem(m_pNodeGq,0,0))
-						- qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0));
+			- qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0));
 	else
 		vecQPlane = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0))
-						- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
+			- qpoint_to_vec(mapFromItem(m_pNodeKfQ,0,0));
 
 	vecQPlane[1] = -vecQPlane[1];
 	vecQPlane /= m_dScaleFactor;
@@ -1246,9 +1248,9 @@ void ScatteringTriangleScene::emitAllParams()
 	ublas::vector<double> vec1 = tl::get_column(matPlane, 1);
 	ublas::vector<double> vecUp = tl::get_column(matPlane, 2);
 
-	tl::set_eps_0(vecQ, g_dEpsGfx); tl::set_eps_0(vecQrlu, g_dEpsGfx);
-	tl::set_eps_0(vecq, g_dEpsGfx); tl::set_eps_0(vecqrlu, g_dEpsGfx);
-	tl::set_eps_0(vecG, g_dEpsGfx); tl::set_eps_0(vecGrlu, g_dEpsGfx);
+	tl::set_eps_0(vecQ, g_dEps); tl::set_eps_0(vecQrlu, g_dEps);
+	tl::set_eps_0(vecq, g_dEps); tl::set_eps_0(vecqrlu, g_dEps);
+	tl::set_eps_0(vecG, g_dEps); tl::set_eps_0(vecGrlu, g_dEps);
 
 	/*std::cout << "Q = " << vecQrlu << std::endl;
 	std::cout << "q = " << vecqrlu << std::endl;
@@ -1498,7 +1500,7 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		const double dY = -pEvt->scenePos().y()/m_pTri->GetScaleFactor();
 
 		ublas::vector<double> vecHKL = m_pTri->GetHKLFromPlanePos(dX, dY);
-		tl::set_eps_0(vecHKL, g_dEpsGfx);
+		tl::set_eps_0(vecHKL, g_dEps);
 
 		if(vecHKL.size()==3)
 		{

@@ -185,22 +185,42 @@ bool TASReso::SetLattice(t_real a, t_real b, t_real c,
 {
 	tl::Lattice<t_real> latt(a, b, c, alpha, beta, gamma);
 
-	m_opts.matUB = tl::get_UB(latt, vec1, vec2);
-	if(!tl::inverse(m_opts.matUB, m_opts.matUBinv))
+	t_mat matB = tl::get_B(latt, 1);
+	t_mat matU = tl::get_U(vec1, vec2, &matB);
+	t_mat matUB = ublas::prod(matU, matB);
+
+	t_mat matBinv, matUinv;
+	bool bHasB = tl::inverse(matB, matBinv);
+	bool bHasU = tl::inverse(matU, matUinv);
+	t_mat matUBinv = ublas::prod(matBinv, matUinv);
+
+	bool bHasUB = bHasB && bHasU;
+
+	if(!bHasUB)
 	{
 		tl::log_err("Cannot invert UB matrix");
 		return false;
 	}
-	m_opts.matUB.resize(4,4, true);
-	m_opts.matUBinv.resize(4,4, true);
 
-	for(int i0=0; i0<3; ++i0)
+
+	m_opts.matU = matU;
+	m_opts.matB = matB;
+	m_opts.matUB = matUB;
+	m_opts.matUinv = matUinv;
+	m_opts.matBinv = matBinv;
+	m_opts.matUBinv = matUBinv;
+
+	ublas::matrix<double>* pMats[] = {&m_opts.matU, &m_opts.matB, &m_opts.matUB, 
+		&m_opts.matUinv, &m_opts.matBinv, &m_opts.matUBinv};
+
+	for(ublas::matrix<double> *pMat : pMats)
 	{
-		m_opts.matUB(i0,3) = m_opts.matUB(3,i0) = 0.;
-		m_opts.matUBinv(i0,3) = m_opts.matUBinv(3,i0) = 0.;
+		pMat->resize(4,4,1);
+
+		for(int i0=0; i0<3; ++i0)
+			(*pMat)(i0,3) = (*pMat)(3,i0) = 0.;
+		(*pMat)(3,3) = 1.;
 	}
-	m_opts.matUB(3,3) = m_opts.matUB(3,3) = 1.;
-	m_opts.matUBinv(3,3) = m_opts.matUBinv(3,3) = 1.;
 
 	return true;
 }

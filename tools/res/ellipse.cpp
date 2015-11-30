@@ -72,7 +72,7 @@ t_vec Ellipse::operator()(t_real t) const
 }
 
 void Ellipse::GetCurvePoints(std::vector<t_real>& x, std::vector<t_real>& y,
-							unsigned int iPoints, t_real *pLRTB)
+	unsigned int iPoints, t_real *pLRTB)
 {
 	x.resize(iPoints);
 	y.resize(iPoints);
@@ -118,8 +118,8 @@ static const std::string g_strLabels[] = {"Q_{para} (1/A)", "Q_{ortho} (1/A)", "
  * iRem1, iRem2: dimensions to remove
  */
 Ellipse calc_res_ellipse(const t_mat& reso,
-									const t_vec& Q_avg,
-									int iX, int iY, int iInt, int iRem1, int iRem2)
+	const t_vec& Q_avg,
+	int iX, int iY, int iInt, int iRem1, int iRem2)
 {
 	Ellipse ell;
 	ell.quad.SetDim(4);
@@ -229,8 +229,8 @@ Ellipse calc_res_ellipse(const t_mat& reso,
 // --------------------------------------------------------------------------------
 
 Ellipsoid calc_res_ellipsoid(const t_mat& reso,
-							const t_vec& Q_avg,
-							int iX, int iY, int iZ, int iInt, int iRem)
+	const t_vec& Q_avg,
+	int iX, int iY, int iZ, int iInt, int iRem)
 {
 	Ellipsoid ell;
 
@@ -319,9 +319,16 @@ Ellipsoid4d calc_res_ellipsoid4d(const t_mat& reso, const t_vec& Q_avg)
 }
 
 
+/**
+ * Ellipsoid E in Q||... coord. system in 1/A
+ *
+ * matQVec0: trafo from Q||... to orient1, orient2 system in 1/A
+ * Uinv * matQVec0: trafo from Q||... system to lab 1/A system
+ * Binv * Uinv * matQVec0: trafo from Q||... system to crystal rlu system
+ */
 void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
-				const McNeutronOpts& opts,
-				std::vector<t_vec>& vecResult)
+	const McNeutronOpts& opts,
+	std::vector<t_vec>& vecResult)
 {
 	static bool bInited = 0;
 	if(!bInited)

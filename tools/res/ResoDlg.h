@@ -71,6 +71,7 @@ protected:
 
 	// -------------------------------------------------------------------------
 	ublas::vector<double> m_vecOrient1, m_vecOrient2;
+	ublas::matrix<double> m_matU, m_matB, m_matUinv, m_matBinv;
 	ublas::matrix<double> m_matUB, m_matUBinv;
 	bool m_bHasUB = 0;
 	double m_dAngleQVec0 = 0.;

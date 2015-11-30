@@ -85,7 +85,8 @@ enum class McNeutronCoords
 struct McNeutronOpts
 {
 	McNeutronCoords coords = McNeutronCoords::RLU;
-	ublas::matrix<double> matUB, matUBinv;
+	ublas::matrix<double> matU, matB, matUB;
+	ublas::matrix<double> matUinv, matBinv, matUBinv;
 	double dAngleQVec0;
 
 	bool bCenter;
