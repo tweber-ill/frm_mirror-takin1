@@ -171,9 +171,10 @@ void PlotGl::paintGLThread()
 
 	glMatrixMode(GL_MODELVIEW);
 	GLdouble glmat[16];
-	m_mutex.lock();
-	tl::to_gl_array(m_matView, glmat);
-	m_mutex.unlock();
+	{
+		std::lock_guard<QMutex> _lck(m_mutex);
+		tl::to_gl_array(m_matView, glmat);
+	}
 	glLoadMatrixd(glmat);
 
 
@@ -200,7 +201,7 @@ void PlotGl::paintGLThread()
 	glEnable(GL_LIGHT0);
 	glDisable(GL_TEXTURE_2D);
 
-	m_mutex.lock();
+	std::unique_lock<QMutex> _lck(m_mutex);
 	unsigned int iPltIdx=0;
 	for(const PlotObjGl& obj : m_vecObjs)
 	{
@@ -267,7 +268,7 @@ void PlotGl::paintGLThread()
 
 		++iPltIdx;
 	}
-	m_mutex.unlock();
+	_lck.unlock();
 
 	glPushMatrix();
 		if(m_pFont && m_pFont->IsOk())
@@ -302,10 +303,9 @@ void PlotGl::run()
 	{
 		if(m_bDoResize)
 		{
-			m_mutex.lock();
+			std::lock_guard<QMutex> _lck(m_mutex);
 			resizeGLThread(m_iW, m_iH);
 			m_bDoResize = 0;
-			m_mutex.unlock();
 		}
 
 		if(isVisible())
@@ -331,46 +331,45 @@ void PlotGl::paintEvent(QPaintEvent *evt)
 
 void PlotGl::resizeEvent(QResizeEvent *evt)
 {
-	m_mutex.lock();
+	std::lock_guard<QMutex> _lck(m_mutex);
+
 	m_iW = size().width();
 	m_iH = size().height();
 
 	m_bDoResize = 1;
-	m_mutex.unlock();
 }
 
 void PlotGl::clear()
 {
-	m_mutex.lock();
+	std::lock_guard<QMutex> _lck(m_mutex);
 	m_vecObjs.clear();
-	m_mutex.unlock();
 }
 
 void PlotGl::SetObjectColor(int iObjIdx, const std::vector<double>& vecCol)
 {
-	m_mutex.lock();
+	std::lock_guard<QMutex> _lck(m_mutex);
+
 	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
 		return;
 	m_vecObjs[iObjIdx].vecColor = vecCol;
-	m_mutex.unlock();
 }
 
 void PlotGl::SetObjectLabel(int iObjIdx, const std::string& strLab)
 {
-	m_mutex.lock();
+	std::lock_guard<QMutex> _lck(m_mutex);
+
 	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
 		return;
 	m_vecObjs[iObjIdx].strLabel = strLab;
-	m_mutex.unlock();
 }
 
 void PlotGl::SetObjectUseLOD(int iObjIdx, bool bLOD)
 {
-	m_mutex.lock();
+	std::lock_guard<QMutex> _lck(m_mutex);
+
 	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
 		return;
 	m_vecObjs[iObjIdx].bUseLOD = bLOD;
-	m_mutex.unlock();
 }
 
 void PlotGl::PlotSphere(const ublas::vector<double>& vecPos,
@@ -382,22 +381,22 @@ void PlotGl::PlotSphere(const ublas::vector<double>& vecPos,
 		iObjIdx = 0;
 	}
 
-	m_mutex.lock();
+	{
+		std::lock_guard<QMutex> _lck(m_mutex);
 
-	if(iObjIdx >= int(m_vecObjs.size()))
-		m_vecObjs.resize(iObjIdx+1);
-	PlotObjGl& obj = m_vecObjs[iObjIdx];
+		if(iObjIdx >= int(m_vecObjs.size()))
+			m_vecObjs.resize(iObjIdx+1);
+		PlotObjGl& obj = m_vecObjs[iObjIdx];
 
-	obj.plttype = PLOT_SPHERE;
-	if(obj.vecParams.size() != 4)
-		obj.vecParams.resize(4);
+		obj.plttype = PLOT_SPHERE;
+		if(obj.vecParams.size() != 4)
+			obj.vecParams.resize(4);
 
-	obj.vecParams[0] = vecPos[0];
-	obj.vecParams[1] = vecPos[1];
-	obj.vecParams[2] = vecPos[2];
-	obj.vecParams[3] = dRadius;
-
-	m_mutex.unlock();
+		obj.vecParams[0] = vecPos[0];
+		obj.vecParams[1] = vecPos[1];
+		obj.vecParams[2] = vecPos[2];
+		obj.vecParams[3] = dRadius;
+	}
 }
 
 void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
@@ -411,29 +410,29 @@ void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
 		iObjIdx = 0;
 	}
 
-	m_mutex.lock();
+	{
+		std::lock_guard<QMutex> _lck(m_mutex);
 
-	if(iObjIdx >= int(m_vecObjs.size()))
-		m_vecObjs.resize(iObjIdx+1);
-	PlotObjGl& obj = m_vecObjs[iObjIdx];
+		if(iObjIdx >= int(m_vecObjs.size()))
+			m_vecObjs.resize(iObjIdx+1);
+		PlotObjGl& obj = m_vecObjs[iObjIdx];
 
-	obj.plttype = PLOT_ELLIPSOID;
-	if(obj.vecParams.size() != 15)
-		obj.vecParams.resize(15);
+		obj.plttype = PLOT_ELLIPSOID;
+		if(obj.vecParams.size() != 15)
+			obj.vecParams.resize(15);
 
-	obj.vecParams[0] = widths[0];
-	obj.vecParams[1] = widths[1];
-	obj.vecParams[2] = widths[2];
-	obj.vecParams[3] = offsets[0];
-	obj.vecParams[4] = offsets[1];
-	obj.vecParams[5] = offsets[2];
+		obj.vecParams[0] = widths[0];
+		obj.vecParams[1] = widths[1];
+		obj.vecParams[2] = widths[2];
+		obj.vecParams[3] = offsets[0];
+		obj.vecParams[4] = offsets[1];
+		obj.vecParams[5] = offsets[2];
 
-	unsigned int iNum = 6;
-	for(unsigned int i=0; i<3; ++i)
-		for(unsigned int j=0; j<3; ++j)
-			obj.vecParams[iNum++] = rot(j,i);
-
-	m_mutex.unlock();
+		unsigned int iNum = 6;
+		for(unsigned int i=0; i<3; ++i)
+			for(unsigned int j=0; j<3; ++j)
+				obj.vecParams[iNum++] = rot(j,i);
+	}
 }
 
 void PlotGl::mousePressEvent(QMouseEvent *event)
@@ -524,16 +523,17 @@ void PlotGl::updateViewMatrix()
 			{  0, 0, 1, -2},
 			{  0, 0, 0,  1}});
 
-	m_mutex.lock();
-	m_matView = ublas::prod(matTrans, matRot1);
-	m_matView = ublas::prod(m_matView, matRot0);
-	m_matView = ublas::prod(m_matView, matScale);
-	m_mutex.unlock();
+	{
+		std::lock_guard<QMutex> _lck(m_mutex);
+		m_matView = ublas::prod(matTrans, matRot1);
+		m_matView = ublas::prod(m_matView, matRot0);
+		m_matView = ublas::prod(m_matView, matScale);
+	}
 }
 
 void PlotGl::mouseSelectObj(double dX, double dY)
 {
-	m_mutex.lock();
+	std::lock_guard<QMutex> _lck(m_mutex);
 	tl::Line<double> ray = tl::screen_ray(dX, dY, m_matProj, m_matView);
 
 	for(PlotObjGl& obj : m_vecObjs)
@@ -575,16 +575,15 @@ void PlotGl::mouseSelectObj(double dX, double dY)
 
 		delete pQuad;
 	}
-	m_mutex.unlock();
 }
 
 void PlotGl::SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ)
 {
-	m_mutex.lock();
+	std::lock_guard<QMutex> _lck(m_mutex);
+
 	m_strLabels[0] = pcLabX;
 	m_strLabels[1] = pcLabY;
 	m_strLabels[2] = pcLabZ;
-	m_mutex.unlock();
 }
 
 
