@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>548</width>
+    <width>620</width>
     <height>539</height>
    </rect>
   </property>
@@ -608,6 +608,12 @@
           </item>
           <item row="1" column="2">
            <widget class="QToolButton" name="btnBrowseSqw">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="toolTip">
              <string>Browse for S(q,w) files</string>
             </property>
@@ -618,6 +624,12 @@
           </item>
           <item row="0" column="2">
            <widget class="QToolButton" name="btnSqwParams">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="toolTip">
              <string>Parameters...</string>
             </property>

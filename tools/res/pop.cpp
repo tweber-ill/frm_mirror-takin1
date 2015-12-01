@@ -23,6 +23,7 @@ typedef ublas::matrix<t_real> t_mat;
 typedef ublas::vector<t_real> t_vec;
 
 using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
+using tl::inv_length;
 static const auto cm = tl::cm;
 static const auto angs = tl::angstrom;
 static const auto rads = tl::radians;
@@ -66,7 +67,7 @@ CNResults calc_pop(const PopParams& pop)
 	B(2,2) = 1.; B(2,5) = -1.;
 	B(3,0) = 2.*pop.ki*angs * tl::KSQ2E;
 	B(3,3) = -2.*pop.kf*angs * tl::KSQ2E;
-
+	//std::cout << "k^2 to E factor: " << tl::KSQ2E << std::endl;
 	//std::cout << "B = " << B << std::endl;
 
 
@@ -124,42 +125,34 @@ CNResults calc_pop(const PopParams& pop)
 
 	// S matrix, [pop75], Appendix 2
 	// mono
-	t_mat S1I = ublas::zero_matrix<t_real>(3,3);
-	S1I(0,0) = 1./12. * pop.mono_thick*pop.mono_thick /cm/cm;
-	S1I(1,1) = 1./12. * pop.mono_w*pop.mono_w /cm/cm;
-	S1I(2,2) = 1./12. * pop.mono_h*pop.mono_h /cm/cm;
-
-	// ana
-	t_mat S3I = ublas::zero_matrix<t_real>(3,3);
-	S3I(0,0) = 1./12. * pop.ana_thick*pop.ana_thick /cm/cm;
-	S3I(1,1) = 1./12. * pop.ana_w*pop.ana_w /cm/cm;
-	S3I(2,2) = 1./12. * pop.ana_h*pop.ana_h /cm/cm;
-
-
-	t_real dMult = 1./12.;
-	if(!pop.bSampleCub) dMult = 1./16.;
-
-	// sample
-	t_mat S2I = ublas::zero_matrix<t_real>(3,3);
-	S2I(0,0) = dMult * pop.sample_w_perpq *pop.sample_w_perpq /cm/cm;
-	S2I(1,1) = dMult * pop.sample_w_q*pop.sample_w_q /cm/cm;
-	S2I(2,2) = 1./12. * pop.sample_h*pop.sample_h /cm/cm;
-
-
-	dMult = 1./12.;
-	if(!pop.bSrcRect) dMult = 1./16.;
-
 	t_mat SI = ublas::zero_matrix<t_real>(13,13);
+
+	// source
+	t_real dMult = 1./12.;
+	if(!pop.bSrcRect) dMult = 1./16.;
 	SI(0,0) = dMult * pop.src_w*pop.src_w /cm/cm;
 	SI(1,1) = dMult * pop.src_h*pop.src_h /cm/cm;
-	tl::submatrix_copy(SI, S1I, 2, 2);
-	tl::submatrix_copy(SI, S2I, 5, 5);
-	tl::submatrix_copy(SI, S3I, 8, 8);
+	
+	// mono
+	SI(2+0,2+0) = 1./12. * pop.mono_thick*pop.mono_thick /cm/cm;
+	SI(2+1,2+1) = 1./12. * pop.mono_w*pop.mono_w /cm/cm;
+	SI(2+2,2+2) = 1./12. * pop.mono_h*pop.mono_h /cm/cm;
 
+	// sample
+	dMult = 1./12.;
+	if(!pop.bSampleCub) dMult = 1./16.;
+	SI(5+0,5+0) = dMult * pop.sample_w_perpq *pop.sample_w_perpq /cm/cm;
+	SI(5+1,5+1) = dMult * pop.sample_w_q*pop.sample_w_q /cm/cm;
+	SI(5+2,5+2) = 1./12. * pop.sample_h*pop.sample_h /cm/cm;
 
+	// ana
+	SI(8+0,8+0) = 1./12. * pop.ana_thick*pop.ana_thick /cm/cm;
+	SI(8+1,8+1) = 1./12. * pop.ana_w*pop.ana_w /cm/cm;
+	SI(8+2,8+2) = 1./12. * pop.ana_h*pop.ana_h /cm/cm;
+
+	// det
 	dMult = 1./12.;
 	if(!pop.bDetRect) dMult = 1./16.;
-
 	SI(11,11) = dMult * pop.det_w*pop.det_w /cm/cm;
 	SI(12,12) = dMult * pop.det_h*pop.det_h /cm/cm;
 
@@ -184,11 +177,13 @@ CNResults calc_pop(const PopParams& pop)
 	if(pop.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, 2.*thetaa, false);
 	if(pop.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, 2.*thetaa, true);
 
-	t_real dCurvMonoH=0., dCurvMonoV=0., dCurvAnaH=0., dCurvAnaV=0.;
-	if(pop.bMonoIsCurvedH) dCurvMonoH = 1./(mono_curvh/cm) * pop.dmono_sense;
-	if(pop.bMonoIsCurvedV) dCurvMonoV = 1./(mono_curvv/cm) * pop.dmono_sense;
-	if(pop.bAnaIsCurvedH) dCurvAnaH = 1./(ana_curvh/cm) * pop.dana_sense;
-	if(pop.bAnaIsCurvedV) dCurvAnaV = 1./(ana_curvv/cm) * pop.dana_sense;
+	inv_length inv_mono_curvh = 0./cm, inv_mono_curvv = 0./cm;
+	inv_length inv_ana_curvh = 0./cm, inv_ana_curvv = 0./cm;
+
+	if(pop.bMonoIsCurvedH) inv_mono_curvh = 1./mono_curvh * pop.dmono_sense;
+	if(pop.bMonoIsCurvedV) inv_mono_curvv = 1./mono_curvv * pop.dmono_sense;
+	if(pop.bAnaIsCurvedH) inv_ana_curvh = 1./ana_curvh * pop.dana_sense;
+	if(pop.bAnaIsCurvedV) inv_ana_curvv = 1./ana_curvv * pop.dana_sense;
 	// --------------------------------------------------------------------
 
 
@@ -202,13 +197,13 @@ CNResults calc_pop(const PopParams& pop)
 	T(0,3) = 0.5 * units::sin(thetam) *
 				(1./(pop.dist_src_mono/cm) +
 				 1./(pop.dist_mono_sample/cm) -
-				 2.*dCurvMonoH/(units::sin(thetam)));
+				 2.*inv_mono_curvh*cm/(units::sin(thetam)));
 	T(0,5) = 0.5 * units::sin(0.5*twotheta) / (pop.dist_mono_sample/cm);
 	T(0,6) = 0.5 * units::cos(0.5*twotheta) / (pop.dist_mono_sample/cm);
 	T(1,1) = -0.5/(pop.dist_src_mono/cm * units::sin(thetam));
 	T(1,4) = 0.5 * (1./(pop.dist_src_mono/cm) +
 						1./(pop.dist_mono_sample/cm) -
-						2.*units::sin(thetam)*dCurvMonoV)
+						2.*units::sin(thetam)*inv_mono_curvv*cm)
 					/ (units::sin(thetam));
 	T(1,7) = -0.5/(pop.dist_mono_sample/cm * units::sin(thetam));
 	T(2,5) = 0.5*units::sin(0.5*twotheta) / (pop.dist_sample_ana/cm);
@@ -218,12 +213,12 @@ CNResults calc_pop(const PopParams& pop)
 	T(2,9) = 0.5*units::sin(thetaa) * (
 					1./(pop.dist_sample_ana/cm) +
 					1./(pop.dist_ana_det/cm) -
-					2.*dCurvAnaH / (units::sin(thetaa)));
+					2.*inv_ana_curvh*cm / (units::sin(thetaa)));
 	T(2,11) = 0.5/(pop.dist_ana_det/cm);
 	T(3,7) = -0.5/(pop.dist_sample_ana/cm*units::sin(thetaa));
 	T(3,10) = 0.5*(1./(pop.dist_sample_ana/cm) +
 					1./(pop.dist_ana_det/cm) -
-					2.*units::sin(thetaa)*dCurvAnaV)
+					2.*units::sin(thetaa)*inv_ana_curvv*cm)
 					/ (units::sin(thetaa));
 	T(3,12) = -0.5/(pop.dist_ana_det/cm*units::sin(thetaa));
 
