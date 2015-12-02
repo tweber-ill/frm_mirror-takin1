@@ -147,11 +147,11 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 CNResults calc_eck(const EckParams& eck)
 {
-	angle twotheta = eck.twotheta;
-	angle thetaa = eck.thetaa;
-	angle thetam = eck.thetam;
-	angle ki_Q = eck.angle_ki_Q;
-	angle kf_Q = eck.angle_kf_Q;
+	angle twotheta = eck.twotheta * eck.dsample_sense;
+	angle thetaa = eck.thetaa * eck.dana_sense;
+	angle thetam = eck.thetam * eck.dmono_sense;
+	angle ki_Q = eck.angle_ki_Q * eck.dsample_sense;
+	angle kf_Q = eck.angle_kf_Q * eck.dsample_sense;
 	//kf_Q = ki_Q + twotheta;
 
 
@@ -160,10 +160,10 @@ CNResults calc_eck(const EckParams& eck)
 	length mono_curvh = eck.mono_curvh, mono_curvv = eck.mono_curvv;
 	length ana_curvh = eck.ana_curvh, ana_curvv = eck.ana_curvv;
 
-	if(eck.bMonoIsOptimallyCurvedH) mono_curvh = tl::foc_curv(eck.dist_src_mono, eck.dist_mono_sample, 2.*thetam, false);
-	if(eck.bMonoIsOptimallyCurvedV) mono_curvv = tl::foc_curv(eck.dist_src_mono, eck.dist_mono_sample, 2.*thetam, true);
-	if(eck.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, 2.*thetaa, false);
-	if(eck.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, 2.*thetaa, true);
+	if(eck.bMonoIsOptimallyCurvedH) mono_curvh = tl::foc_curv(eck.dist_src_mono, eck.dist_mono_sample, units::abs(2.*thetam), false);
+	if(eck.bMonoIsOptimallyCurvedV) mono_curvv = tl::foc_curv(eck.dist_src_mono, eck.dist_mono_sample, units::abs(2.*thetam), true);
+	if(eck.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, units::abs(2.*thetaa), false);
+	if(eck.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, units::abs(2.*thetaa), true);
 
 	mono_curvh = eck.mono_curvh * eck.dmono_sense;
 	mono_curvv = eck.mono_curvv * eck.dmono_sense;
@@ -173,10 +173,10 @@ CNResults calc_eck(const EckParams& eck)
 	inv_length inv_mono_curvh = 0./cm, inv_mono_curvv = 0./cm;
 	inv_length inv_ana_curvh = 0./cm, inv_ana_curvv = 0./cm;
 
-	if(eck.bMonoIsCurvedH) inv_mono_curvh = 1./mono_curvh * eck.dmono_sense;
-	if(eck.bMonoIsCurvedV) inv_mono_curvv = 1./mono_curvv * eck.dmono_sense;
-	if(eck.bAnaIsCurvedH) inv_ana_curvh = 1./ana_curvh * eck.dana_sense;
-	if(eck.bAnaIsCurvedV) inv_ana_curvv = 1./ana_curvv * eck.dana_sense;
+	if(eck.bMonoIsCurvedH) inv_mono_curvh = 1./mono_curvh;
+	if(eck.bMonoIsCurvedV) inv_mono_curvv = 1./mono_curvv;
+	if(eck.bAnaIsCurvedH) inv_ana_curvh = 1./ana_curvh;
+	if(eck.bAnaIsCurvedV) inv_ana_curvv = 1./ana_curvv;
 	// --------------------------------------------------------------------
 
 
@@ -191,8 +191,6 @@ CNResults calc_eck(const EckParams& eck)
 		coll_v_pre_mono = lam*(eck.guide_div_v/angs);
 	}
 
-
-	if(eck.dsample_sense < 0) { twotheta = -twotheta; ki_Q = -ki_Q; kf_Q = -kf_Q; }
 
 	//std::cout << "thetaM = " << t_real(thetam/rads/M_PI*180.) << " deg"<< std::endl;
 	//std::cout << "thetaA = " << t_real(thetaa/rads/M_PI*180.) << " deg"<< std::endl;
@@ -289,8 +287,7 @@ CNResults calc_eck(const EckParams& eck)
 	t_real s0 = (eck.ki*eck.ki - eck.kf*eck.kf) / (2. * eck.Q*eck.Q);
 	wavenumber kperp = units::sqrt(units::abs(eck.Q*eck.Q*(0.5 + s0)*(0.5 + s0) -
 												eck.ki*eck.ki));
-	if(eck.dsample_sense*twotheta/rads < 0.)
-		kperp = -kperp;
+	kperp *= eck.dsample_sense;
 
 	//std::cout << "s0 = " << s0 << std::endl;
 	//std::cout << "kperp = " << t_real(kperp*angs) << " / A" << std::endl;

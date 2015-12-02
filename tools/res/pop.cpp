@@ -43,18 +43,15 @@ CNResults calc_pop(const PopParams& pop)
 
 	length lam = tl::k2lam(pop.ki);
 	angle twotheta = pop.twotheta;
-	angle thetaa = pop.thetaa;
-	angle thetam = pop.thetam;
+	angle thetaa = pop.thetaa * pop.dana_sense;
+	angle thetam = pop.thetam * pop.dmono_sense;
 	angle ki_Q = pop.angle_ki_Q;
 	angle kf_Q = pop.angle_kf_Q;
 	//kf_Q = ki_Q + twotheta;
-
-	if(pop.dsample_sense < 0)
-	{
-		twotheta = -twotheta;
-		ki_Q = -ki_Q;
-		kf_Q = -kf_Q;
-	}
+	
+	twotheta *= pop.dsample_sense;
+	ki_Q *= pop.dsample_sense;
+	kf_Q *= pop.dsample_sense;
 
 
 	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
@@ -172,10 +169,10 @@ CNResults calc_pop(const PopParams& pop)
 	length mono_curvh = pop.mono_curvh, mono_curvv = pop.mono_curvv;
 	length ana_curvh = pop.ana_curvh, ana_curvv = pop.ana_curvv;
 
-	if(pop.bMonoIsOptimallyCurvedH) mono_curvh = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, 2.*thetam, false);
-	if(pop.bMonoIsOptimallyCurvedV) mono_curvv = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, 2.*thetam, true);
-	if(pop.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, 2.*thetaa, false);
-	if(pop.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, 2.*thetaa, true);
+	if(pop.bMonoIsOptimallyCurvedH) mono_curvh = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, units::abs(2.*thetam), false);
+	if(pop.bMonoIsOptimallyCurvedV) mono_curvv = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, units::abs(2.*thetam), true);
+	if(pop.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(2.*thetaa), false);
+	if(pop.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(2.*thetaa), true);
 
 	inv_length inv_mono_curvh = 0./cm, inv_mono_curvv = 0./cm;
 	inv_length inv_ana_curvh = 0./cm, inv_ana_curvv = 0./cm;
@@ -299,7 +296,7 @@ CNResults calc_pop(const PopParams& pop)
 	// -------------------------------------------------------------------------
 
 
-	res.reso = M*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
+	res.reso = M * tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 	res.reso_v = ublas::zero_vector<t_real>(4);
 	res.reso_s = 0.;
 

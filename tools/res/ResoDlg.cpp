@@ -202,21 +202,20 @@ void ResoDlg::Calc()
 	m_bEll4dCurrent = 0;
 	if(m_bDontCalc) return;
 
-	tl::length angstrom = 1e-10 * tl::meters;
-
 	EckParams& cn = m_pop;
 	CNResults &res = m_res;
 
 	// CN
-	cn.mono_d = spinMonod->value() * angstrom;
+	cn.mono_d = spinMonod->value() * tl::angstrom;
 	cn.mono_mosaic = spinMonoMosaic->value() / (180.*60.) * M_PI * tl::radians;
-	cn.ana_d = spinAnad->value() * angstrom;
+	cn.ana_d = spinAnad->value() * tl::angstrom;
 	cn.ana_mosaic = spinAnaMosaic->value() / (180.*60.) * M_PI * tl::radians;
 	cn.sample_mosaic = spinSampleMosaic->value() / (180.*60.) * M_PI * tl::radians;
 
 	cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
 	cn.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
 	cn.dsample_sense = (radioSampleScatterPlus->isChecked() ? +1. : -1.);
+	//std::cout << "sample sense: " << cn.dsample_sense << std::endl;
 	//if(spinQ->value() < 0.)
 	//	cn.dsample_sense = -cn.dsample_sense;
 
@@ -240,7 +239,7 @@ void ResoDlg::Calc()
 	cn.E = editE->text().toDouble() * tl::one_meV;
 	//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
 	//std::cout << "E = " << editE->text().toStdString() << std::endl;
-	cn.Q = editQ->text().toDouble() / angstrom;
+	cn.Q = editQ->text().toDouble() / tl::angstrom;
 
 
 	// Pop
@@ -627,29 +626,12 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	double dQ = parms.dQ;
-	if(parms.d2Theta < 0.)
-		dQ = -dQ;
-
-	editQ->setText(std::to_string(dQ).c_str());
-	editE->setText(std::to_string(parms.dE).c_str());
-	editKi->setText(std::to_string(parms.dki).c_str());
-	editKf->setText(std::to_string(parms.dkf).c_str());
-
-	//m_pop.vec0 = tl::make_vec({parms.orient_0[0], parms.orient_0[1], parms.orient_0[2]});
-	//m_pop.vec1 = tl::make_vec({parms.orient_1[0], parms.orient_1[1], parms.orient_1[2]});
-	//m_pop.vecUp = tl::make_vec({parms.orient_up[0], parms.orient_up[1], parms.orient_up[2]});
-
-	m_pop.thetas = parms.dTheta * tl::radians;
-	m_pop.twotheta = parms.d2Theta * tl::radians;
-
+	m_pop.twotheta = units::abs(parms.d2Theta * tl::radians);
 	//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
 	m_pop.ki = parms.dki / tl::angstrom;
 	m_pop.kf = parms.dkf / tl::angstrom;
-	m_pop.Q = dQ / tl::angstrom;
 	m_pop.E = parms.dE * tl::one_meV;
-
 
 	//m_dAngleQVec0 = parms.dAngleQVec0;
 	//std::cout << "qvec0 in rlu: " << m_dAngleQVec0 << std::endl;
@@ -658,14 +640,16 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	ublas::vector<double> vecQ = ublas::prod(m_matUB, vecHKL);
 	vecQ.resize(2,1);
 	m_dAngleQVec0 = -tl::vec_angle(vecQ);
+	double dQ = ublas::norm_2(vecQ);
+	m_pop.Q = dQ / tl::angstrom;
+
 	//std::cout << "qvec0 in 1/A: " << m_dAngleQVec0 << std::endl;
 
 
-	m_pop.angle_ki_Q = /*M_PI*tl::radians - */tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
-	m_pop.angle_kf_Q = /*M_PI*tl::radians - */tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, parms.d2Theta > 0.);
-
-	m_pop.angle_ki_Q = units::abs(m_pop.angle_ki_Q);
-	m_pop.angle_kf_Q = units::abs(m_pop.angle_kf_Q);
+	m_pop.angle_ki_Q = /*M_PI*tl::radians -*/ tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, 1);
+	m_pop.angle_kf_Q = /*M_PI*tl::radians -*/ tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, 1);
+	//m_pop.angle_ki_Q = units::abs(m_pop.angle_ki_Q);
+	//m_pop.angle_kf_Q = units::abs(m_pop.angle_kf_Q);
 
 	/*std::cout << "ki = " << double(m_pop.ki*tl::angstrom) << std::endl;
 	std::cout << "kf = " << double(m_pop.kf*tl::angstrom) << std::endl;
@@ -674,7 +658,12 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	std::cout << "kiQ = " << double(m_pop.angle_ki_Q/M_PI/tl::radians * 180.) << std::endl;
 	std::cout << "kfQ = " << double(m_pop.angle_kf_Q/M_PI/tl::radians * 180.) << std::endl;*/
 
-	//m_pop.Q_vec = ::make_vec({parms.Q[0], parms.Q[1], parms.Q[2]});
+
+	editQ->setText(std::to_string(dQ).c_str());
+	editE->setText(std::to_string(parms.dE).c_str());
+	editKi->setText(std::to_string(parms.dki).c_str());
+	editKf->setText(std::to_string(parms.dkf).c_str());
+
 	m_bDontCalc = bOldDontCalc;
 	Calc();
 }
@@ -686,12 +675,10 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	m_pop.thetam = parms.dMonoT * tl::radians;
-	m_pop.thetaa = parms.dAnaT * tl::radians;
+	m_pop.thetam = units::abs(parms.dMonoT * tl::radians);
+	m_pop.thetaa = units::abs(parms.dAnaT * tl::radians);
 
-	m_pop.thetas = parms.dSampleT * tl::radians;
 	m_pop.twotheta = parms.dSampleTT * tl::radians;
-
 	m_pop.twotheta = units::abs(m_pop.twotheta);
 
 	//std::cout << parms.dMonoT/M_PI*180. << ", " << parms.dAnaT/M_PI*180. << std::endl;

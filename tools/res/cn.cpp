@@ -59,18 +59,15 @@ CNResults calc_cn(const CNParams& cn)
 	// transformation matrix
 
 	angle twotheta = cn.twotheta;
-	angle thetaa = cn.thetaa;
-	angle thetam = cn.thetam;
+	angle thetaa = cn.thetaa * cn.dana_sense;
+	angle thetam = cn.thetam * cn.dmono_sense;
 	angle ki_Q = cn.angle_ki_Q;
 	angle kf_Q = cn.angle_kf_Q;
 	//kf_Q = twotheta + ki_Q;
 
-	if(cn.dsample_sense < 0)
-	{
-		twotheta = -twotheta;
-		ki_Q = -ki_Q;
-		kf_Q = -kf_Q;
-	}
+	twotheta *= cn.dsample_sense;
+	ki_Q *= cn.dsample_sense;
+	kf_Q *= cn.dsample_sense;
 
 
 	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);

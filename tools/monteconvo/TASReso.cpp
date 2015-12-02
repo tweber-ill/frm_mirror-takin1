@@ -249,6 +249,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	m_reso.Q = ublas::norm_2(vecQ) / tl::angstrom;
 	m_reso.E = E * tl::meV;
 
+	//tl::log_info("kfix = ", m_dKFix);
 	tl::wavenumber kother = tl::get_other_k(m_reso.E, m_dKFix/tl::angstrom, m_bKiFix);
 	if(m_bKiFix)
 	{
@@ -260,20 +261,24 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		m_reso.ki = kother;
 		m_reso.kf = m_dKFix / tl::angstrom;
 	}
+	
 	//tl::log_info("ki = ", m_reso.ki, ", kf = ", m_reso.kf);
 	//tl::log_info("Q = ", m_reso.Q, ", E = ", m_reso.E/tl::meV, " meV");
 
-
-	m_reso.thetam = tl::get_mono_twotheta(m_reso.ki, m_reso.mono_d, m_reso.dmono_sense>=0.)*0.5;
-	m_reso.thetaa = tl::get_mono_twotheta(m_reso.kf, m_reso.ana_d, m_reso.dana_sense>=0.)*0.5;
+	m_reso.thetam = units::abs(tl::get_mono_twotheta(m_reso.ki, m_reso.mono_d, /*m_reso.dmono_sense>=0.*/1)*0.5);
+	m_reso.thetaa = units::abs(tl::get_mono_twotheta(m_reso.kf, m_reso.ana_d, /*m_reso.dana_sense>=0.*/1)*0.5);
 	m_reso.twotheta = units::abs(tl::get_sample_twotheta(m_reso.ki, m_reso.kf, m_reso.Q, 1));
-	m_reso.thetas = m_reso.twotheta * 0.5;
 
-	m_reso.angle_ki_Q = tl::get_angle_ki_Q(m_reso.ki, m_reso.kf, m_reso.Q, m_reso.dsample_sense>=0.);
-	m_reso.angle_kf_Q = tl::get_angle_kf_Q(m_reso.ki, m_reso.kf, m_reso.Q, m_reso.dsample_sense>=0.);
+	//tl::log_info("thetam = ", tl::r2d(m_reso.thetam/tl::radians));
+	//tl::log_info("thetaa = ", tl::r2d(m_reso.thetaa/tl::radians));
+	//tl::log_info("twothetas = ", tl::r2d(m_reso.twotheta/tl::radians));
 
-	m_reso.angle_ki_Q = units::abs(m_reso.angle_ki_Q);
-	m_reso.angle_kf_Q = units::abs(m_reso.angle_kf_Q);
+	m_reso.angle_ki_Q = tl::get_angle_ki_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
+	m_reso.angle_kf_Q = tl::get_angle_kf_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
+	
+	//tl::log_info("kiQ = ", tl::r2d(m_reso.angle_ki_Q/tl::radians));
+	//m_reso.angle_ki_Q = units::abs(m_reso.angle_ki_Q);
+	//m_reso.angle_kf_Q = units::abs(m_reso.angle_kf_Q);
 
 
 	if(m_foc == ResoFocus::FOC_NONE)
@@ -292,6 +297,28 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		
 		//tl::log_info("Mono focus (h,v): ", m_reso.bMonoIsOptimallyCurvedH, ", ", m_reso.bMonoIsOptimallyCurvedV);
 		//tl::log_info("Ana focus (h,v): ", m_reso.bAnaIsOptimallyCurvedH, ", ", m_reso.bAnaIsOptimallyCurvedV);
+
+		// remove collimators
+		/*if(m_reso.bMonoIsCurvedH)
+		{
+			m_reso.coll_h_pre_mono = 99999. * tl::radians;
+			m_reso.coll_h_pre_sample = 99999. * tl::radians;
+		}
+		if(m_reso.bMonoIsCurvedV)
+		{
+			m_reso.coll_v_pre_mono = 99999. * tl::radians;
+			m_reso.coll_v_pre_sample = 99999. * tl::radians;
+		}
+		if(m_reso.bAnaIsCurvedH)
+		{
+			m_reso.coll_h_post_sample = 99999. * tl::radians;
+			m_reso.coll_h_post_ana = 99999. * tl::radians;
+		}
+		if(m_reso.bAnaIsCurvedV)
+		{
+			m_reso.coll_v_post_sample = 99999. * tl::radians;
+			m_reso.coll_v_post_ana = 99999. * tl::radians;
+		}*/
 	}
 
 

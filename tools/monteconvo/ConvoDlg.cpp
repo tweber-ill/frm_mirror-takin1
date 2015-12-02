@@ -4,7 +4,6 @@
  * @date aug-2015
  * @license GPLv2
  */
-
 #include "ConvoDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"

@@ -55,9 +55,9 @@ struct CNParams
 	units::quantity<units::si::wavenumber> ki, kf, Q;
 	units::quantity<units::si::energy> E;
 
-	units::quantity<units::si::plane_angle> thetaa, thetam, thetas;
-
+	units::quantity<units::si::plane_angle> thetaa, thetam;
 	units::quantity<units::si::plane_angle> twotheta;
+
 	units::quantity<units::si::plane_angle> angle_ki_Q;
 	units::quantity<units::si::plane_angle> angle_kf_Q;
 
