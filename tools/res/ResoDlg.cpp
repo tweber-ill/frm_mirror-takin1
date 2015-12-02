@@ -381,6 +381,26 @@ void ResoDlg::Calc()
 		if(groupSim->isChecked())
 			RefreshSimCmd();
 
+		// calculate rlu quadric if a sample is defined
+		if(m_bHasUB)
+		{
+			ublas::matrix<double> matQVec0 = tl::rotation_matrix_2d(-m_dAngleQVec0);
+			matQVec0.resize(4,4, true);
+			matQVec0(2,2) = matQVec0(3,3) = 1.;
+			matQVec0(2,0) = matQVec0(2,1) = matQVec0(2,3) = 0.;
+			matQVec0(3,0) = matQVec0(3,1) = matQVec0(3,2) = 0.;
+			matQVec0(0,2) = matQVec0(0,3) = 0.;
+			matQVec0(1,2) = matQVec0(1,3) = 0.;
+			
+			//ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
+			ublas::matrix<double> matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
+
+			m_Q_avgHKL = ublas::prod(matUBinvQVec0, m_res.Q_avg);
+			m_resoHKL = tl::transform(m_res.reso, matUBinvQVec0);
+			//std::cout << m_Q_avgHKL << std::endl;
+			//std::cout << m_resoHKL << std::endl;
+		}
+
 		EmitResults();
 	}
 	else
@@ -448,7 +468,9 @@ void ResoDlg::RefreshSimCmd()
 
 void ResoDlg::EmitResults()
 {
-	emit ResoResults(m_res.reso, m_res.Q_avg);
+	emit ResoResults(m_res.reso, m_res.Q_avg, 
+		m_resoHKL, m_Q_avgHKL, 
+		comboAlgo->currentIndex());
 }
 
 void ResoDlg::WriteLastConfig()
@@ -705,6 +727,14 @@ void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 	bool bHasB = tl::inverse(m_matB, m_matBinv);
 	bool bHasU = tl::inverse(m_matU, m_matUinv);
 	m_matUBinv = ublas::prod(m_matBinv, m_matUinv);
+
+	for(auto* pmat : {&m_matB, &m_matU, &m_matUB, &m_matUBinv})
+	{
+		pmat->resize(4,4,1);
+		(*pmat)(3,0) = (*pmat)(3,1) = (*pmat)(3,2) = 0.;
+		(*pmat)(0,3) = (*pmat)(1,3) = (*pmat)(2,3) = 0.;
+		(*pmat)(3,3) = 1.;
+	}
 
 	m_bHasUB = bHasB && bHasU;
 }

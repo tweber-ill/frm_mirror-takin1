@@ -221,7 +221,10 @@ static EllipseDlg* show_ellipses(const Resolution& res)
 {
 	EllipseDlg* pdlg = new EllipseDlg(0);
 	pdlg->show();
-	pdlg->SetParams(res.res, res.Q_avg);
+
+	matrix<double> matDummy;
+	vector<double> vecDummy;
+	pdlg->SetParams(res.res, res.Q_avg, matDummy, vecDummy, -1);
 
 	return pdlg;
 }
@@ -237,7 +240,7 @@ int main(int argc, char **argv)
 			<< "\t-r\t<file> contains resolution matrix\n"
 			<< "\t-c\t<file> contains covariance matrix\n"
 			<< "\t<n/a>\t<file> contains Q or ki,kf list";
-			
+
 		tl::log_err("No input file given.\n", ostr.str());
 		return -1;
 	}

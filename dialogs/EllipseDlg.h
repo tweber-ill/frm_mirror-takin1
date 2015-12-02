@@ -28,8 +28,12 @@
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
 
+
 class EllipseDlg : public QDialog, Ui::EllipseDlg
 { Q_OBJECT
+	private:
+		const char* m_pcTitle = "Resolution Ellipses";
+	
 	protected:
 		std::vector<QwtPlot*> m_vecPlots;
 		std::vector<QwtPlotCurve*> m_vecPlotCurves;
@@ -57,7 +61,12 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		void cursorMoved(const QPointF& pt);
 
 	public slots:
-		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
+		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
+			const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+			int iAlgo);
+
+	public:
+		void SetTitle(const char* pcTitle);
 };
 
 #endif

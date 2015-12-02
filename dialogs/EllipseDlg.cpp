@@ -16,6 +16,8 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 			: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
+	setWindowTitle(m_pcTitle);
+
 	m_vecPlots = {plot1,plot2,plot3,plot4};
 
 	QColor colorBck(240, 240, 240, 255);
@@ -136,6 +138,17 @@ EllipseDlg::~EllipseDlg()
 	m_vecPlotCurves.clear();
 }
 
+
+void EllipseDlg::SetTitle(const char* pcTitle)
+{
+	QString strTitle = m_pcTitle;
+	strTitle += " (";
+	strTitle += pcTitle;
+	strTitle += ")";
+	this->setWindowTitle(strTitle);
+}
+
+
 void EllipseDlg::cursorMoved(const QPointF& pt)
 {
 	std::string strX = std::to_string(pt.x());
@@ -147,7 +160,10 @@ void EllipseDlg::cursorMoved(const QPointF& pt)
 	this->labelStatus->setText(ostr.str().c_str());
 }
 
-void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg)
+
+void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg,
+	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& _Q_avgHKL,
+	int iAlgo)
 {
 	try
 	{
@@ -287,11 +303,21 @@ void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vecto
 			rect.setTop(std::max(dBBProj[2], dBBSlice[2]));
 			rect.setBottom(std::min(dBBProj[3], dBBSlice[3]));
 			m_vecZoomers[iEll]->setZoomBase(rect);
+
+
+			switch(iAlgo)
+			{
+				case 0: SetTitle("Cooper-Nathans"); break;
+				case 1: SetTitle("Popovici"); break;
+				case 2: SetTitle("Eckold-Sobolev"); break;
+				default: SetTitle(""); break;
+			}
 		}
 	}
 	catch(const std::exception& ex)
 	{
 		tl::log_err("Cannot calculate ellipses.");
+		SetTitle("Error");
 	}
 }
 

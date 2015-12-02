@@ -40,7 +40,9 @@ class EllipseDlg3D : public QDialog
 		void showEvent(QShowEvent *event);
 
 	public slots:
-		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
+		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
+			const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+			int iAlgo);
 };
 
 #endif

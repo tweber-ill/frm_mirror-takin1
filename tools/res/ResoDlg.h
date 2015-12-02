@@ -29,6 +29,7 @@
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"
 
+
 // parameters that are not already in RealParams or RecipParams
 struct ResoParams
 {
@@ -45,6 +46,7 @@ struct SampleParams
 	double dAngles[3];
 	double dPlane1[3], dPlane2[3];
 };
+
 
 class ResoDlg : public QDialog, Ui::ResoDlg
 {Q_OBJECT
@@ -80,6 +82,9 @@ protected:
 
 	EckParams m_pop;
 	CNResults m_res;
+	ublas::matrix<double> m_resoHKL;
+	ublas::vector<double> m_Q_avgHKL;
+
 	bool m_bDontCalc;
 
 	bool m_bEll4dCurrent = 0;
@@ -123,7 +128,9 @@ public:
 	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 
 signals:
-	void ResoResults(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
+	void ResoResults(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
+		const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+		int iAlgo);
 };
 
 #endif

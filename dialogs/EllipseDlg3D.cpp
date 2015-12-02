@@ -96,7 +96,9 @@ EllipseDlg3D::ProjRotatedVec(const ublas::matrix<double>& rot,
 	return vecCoord;
 }
 
-void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg)
+void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg,
+	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+	int iAlgo)
 {
 	const int iX[] = {0, 0};
 	const int iY[] = {1, 1};
