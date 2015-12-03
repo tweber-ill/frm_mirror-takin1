@@ -99,6 +99,8 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 	}
 
 
+	QObject::connect(comboCoord, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
+
 	if(m_pSettings && m_pSettings->contains("reso/ellipse_geo"))
 		restoreGeometry(m_pSettings->value("reso/ellipse_geo").toByteArray());
 }
@@ -161,21 +163,36 @@ void EllipseDlg::cursorMoved(const QPointF& pt)
 }
 
 
-void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg,
-	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& _Q_avgHKL,
-	int iAlgo)
+void EllipseDlg::Calc()
 {
+	const int iCoord = comboCoord->currentIndex();
+	
+	const ublas::matrix<double> *pReso = nullptr;
+	const ublas::vector<double> *pQavg = nullptr;
+	
+	switch(iCoord)
+	{
+		case 0: pReso = &m_reso; pQavg = &m_Q_avg; break;	// Q|| Qperp system
+		case 1: pReso = &m_resoHKL; pQavg = &m_Q_avgHKL; break;	// rlu system
+		default: tl::log_err("Unknown coordinate system selected."); return;
+	}
+
+
+	int iAlgo = m_iAlgo;
+	const ublas::matrix<double>& reso = *pReso;
+	const ublas::vector<double>& _Q_avg = *pQavg;
+
 	try
 	{
 		static const int iParams[2][4][5] =
 		{
-			{
+			{	// projected
 				{0, 3, 1, 2, -1},
 				{1, 3, 0, 2, -1},
 				{2, 3, 0, 1, -1},
 				{0, 1, 3, 2, -1}
 			},
-			{
+			{	// sliced
 				{0, 3, -1, 2, 1},
 				{1, 3, -1, 2, 0},
 				{2, 3, -1, 1, 0},
@@ -292,8 +309,12 @@ void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vecto
 			//std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
 			m_vecPlots[iEll]->setToolTip(QString::fromUtf8(ostrSlope.str().c_str()));
 
-			pPlot->setAxisTitle(QwtPlot::xBottom, m_elliProj[iEll].x_lab.c_str());
-			pPlot->setAxisTitle(QwtPlot::yLeft, m_elliProj[iEll].y_lab.c_str());
+			//const std::string& strLabX = m_elliProj[iEll].x_lab;
+			//const std::string& strLabY = m_elliProj[iEll].y_lab;
+			const std::string& strLabX = ellipse_labels(iParams[0][iEll][0], iCoord);
+			const std::string& strLabY = ellipse_labels(iParams[0][iEll][1], iCoord);
+			pPlot->setAxisTitle(QwtPlot::xBottom, strLabX.c_str());
+			pPlot->setAxisTitle(QwtPlot::yLeft, strLabY.c_str());
 
 			pPlot->replot();
 
@@ -321,6 +342,19 @@ void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vecto
 	}
 }
 
+void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
+	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+	int iAlgo)
+{
+	m_reso = reso;
+	m_resoHKL = resoHKL;
+	m_Q_avg = Q_avg;
+	m_Q_avgHKL = Q_avgHKL;
+	m_iAlgo = iAlgo;
+	
+	Calc();
+}
+
 void EllipseDlg::accept()
 {
 	if(m_pSettings)
@@ -333,5 +367,6 @@ void EllipseDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
 }
+
 
 #include "EllipseDlg.moc"

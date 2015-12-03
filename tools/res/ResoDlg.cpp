@@ -391,12 +391,20 @@ void ResoDlg::Calc()
 			matQVec0(3,0) = matQVec0(3,1) = matQVec0(3,2) = 0.;
 			matQVec0(0,2) = matQVec0(0,3) = 0.;
 			matQVec0(1,2) = matQVec0(1,3) = 0.;
+			ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
 			
 			//ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
 			ublas::matrix<double> matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
+			ublas::matrix<double> matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
+
+			// B matrix is not necessarily orthogonal
+			//m_resoHKL = tl::transform(m_res.reso, matUBinvQVec0, 0);
+			m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
+			m_resoHKL = ublas::prod(matQVec0invUB, m_resoHKL);
 
 			m_Q_avgHKL = ublas::prod(matUBinvQVec0, m_res.Q_avg);
-			m_resoHKL = tl::transform(m_res.reso, matUBinvQVec0);
+
+			//std::cout << tl::r2d(m_dAngleQVec0) << std::endl;
 			//std::cout << m_Q_avgHKL << std::endl;
 			//std::cout << m_resoHKL << std::endl;
 		}

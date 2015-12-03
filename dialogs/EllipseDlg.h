@@ -48,6 +48,11 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		std::vector<std::vector<double> > m_vecYCurvePoints;
 
 		QSettings *m_pSettings = 0;
+		
+	protected:
+		ublas::matrix<double> m_reso, m_resoHKL;
+		ublas::vector<double> m_Q_avg, m_Q_avgHKL;
+		int m_iAlgo = -1;
 
 	public:
 		EllipseDlg(QWidget* pParent=0, QSettings* pSett=0);
@@ -64,6 +69,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
 			const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
 			int iAlgo);
+		void Calc();
 
 	public:
 		void SetTitle(const char* pcTitle);

@@ -70,6 +70,7 @@ struct Ellipsoid4d
 };
 
 extern std::ostream& operator<<(std::ostream& ostr, const Ellipse& ell);
+extern const std::string& ellipse_labels(int iCoord, int iCoordSys=0);
 extern Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iInt, int iRem1=-1, int iRem2=-1);
 extern Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iZ, int iInt, int iRem=-1);
 extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);

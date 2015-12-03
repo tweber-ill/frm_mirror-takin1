@@ -295,13 +295,13 @@ CNResults calc_eck(const EckParams& eck)
 	// trafo, equ 52 in [eck14]
 	t_mat T = ublas::identity_matrix<t_real>(6);
 	T(0,3) = T(1,4) = T(2,5) = -1.;
-	T(3,0) = codata::hbar*codata::hbar*eck.Q/codata::m_n * (0.5 + s0)	/ meV / angs;
-	T(3,3) = codata::hbar*codata::hbar*eck.Q/codata::m_n * (0.5 - s0)	/ meV / angs;
-	T(3,1) = codata::hbar*codata::hbar*kperp/codata::m_n				/ meV / angs;
-	T(3,4) = -1. * codata::hbar*codata::hbar*kperp/codata::m_n			/ meV / angs;
+	T(3,0) = 2.*tl::KSQ2E*eck.Q * (0.5 + s0) * tl::angstrom;
+	T(3,3) = 2.*tl::KSQ2E*eck.Q * (0.5 - s0) * tl::angstrom;
+	T(3,1) = 2.*tl::KSQ2E*kperp * tl::angstrom;
+	T(3,4) = -2.*tl::KSQ2E*kperp * tl::angstrom;
 	T(4,1) = T(5,2) = 0.5 - s0;
 	T(4,4) = T(5,5) = 0.5 + s0;
-
+	
 	t_mat Tinv;
 	if(!tl::inverse(T, Tinv))
 	{
