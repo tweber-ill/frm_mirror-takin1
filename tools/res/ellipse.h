@@ -69,8 +69,17 @@ struct Ellipsoid4d
 	std::string x_lab, y_lab, z_lab, w_lab;
 };
 
+enum class EllipseCoordSys : int
+{
+	AUTO = -1,
+
+	Q_AVG = 0,	// Q|| Qperp system (1/A)
+	RLU,		// absolute hkl system (rlu)
+	RLU_ORIENT	// system using scattering plane (rlu)
+};
+
 extern std::ostream& operator<<(std::ostream& ostr, const Ellipse& ell);
-extern const std::string& ellipse_labels(int iCoord, int iCoordSys=0);
+extern const std::string& ellipse_labels(int iCoord, EllipseCoordSys = EllipseCoordSys::Q_AVG);
 extern Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iInt, int iRem1=-1, int iRem2=-1);
 extern Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iZ, int iInt, int iRem=-1);
 extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);

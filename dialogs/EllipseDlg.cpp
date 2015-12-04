@@ -165,16 +165,21 @@ void EllipseDlg::cursorMoved(const QPointF& pt)
 
 void EllipseDlg::Calc()
 {
-	const int iCoord = comboCoord->currentIndex();
-	
+	const EllipseCoordSys coord = static_cast<EllipseCoordSys>(comboCoord->currentIndex());
+
 	const ublas::matrix<double> *pReso = nullptr;
 	const ublas::vector<double> *pQavg = nullptr;
-	
-	switch(iCoord)
+
+	switch(coord)
 	{
-		case 0: pReso = &m_reso; pQavg = &m_Q_avg; break;	// Q|| Qperp system
-		case 1: pReso = &m_resoHKL; pQavg = &m_Q_avgHKL; break;	// rlu system
-		default: tl::log_err("Unknown coordinate system selected."); return;
+		case EllipseCoordSys::Q_AVG:	// Q|| Qperp system in 1/A
+			pReso = &m_reso; pQavg = &m_Q_avg;
+			break;
+		case EllipseCoordSys::RLU:	// rlu system
+			pReso = &m_resoHKL; pQavg = &m_Q_avgHKL;
+			break;
+		default:
+			tl::log_err("Unknown coordinate system selected."); return;
 	}
 
 
@@ -311,8 +316,8 @@ void EllipseDlg::Calc()
 
 			//const std::string& strLabX = m_elliProj[iEll].x_lab;
 			//const std::string& strLabY = m_elliProj[iEll].y_lab;
-			const std::string& strLabX = ellipse_labels(iParams[0][iEll][0], iCoord);
-			const std::string& strLabY = ellipse_labels(iParams[0][iEll][1], iCoord);
+			const std::string& strLabX = ellipse_labels(iParams[0][iEll][0], coord);
+			const std::string& strLabY = ellipse_labels(iParams[0][iEll][1], coord);
 			pPlot->setAxisTitle(QwtPlot::xBottom, strLabX.c_str());
 			pPlot->setAxisTitle(QwtPlot::yLeft, strLabY.c_str());
 

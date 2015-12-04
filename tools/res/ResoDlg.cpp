@@ -392,7 +392,7 @@ void ResoDlg::Calc()
 			matQVec0(0,2) = matQVec0(0,3) = 0.;
 			matQVec0(1,2) = matQVec0(1,3) = 0.;
 			ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
-			
+
 			//ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
 			ublas::matrix<double> matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
 			ublas::matrix<double> matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
