@@ -74,6 +74,7 @@ protected:
 	// -------------------------------------------------------------------------
 	ublas::vector<double> m_vecOrient1, m_vecOrient2;
 	ublas::matrix<double> m_matU, m_matB, m_matUinv, m_matBinv;
+	ublas::matrix<double> m_matUrlu, m_matUinvrlu;
 	ublas::matrix<double> m_matUB, m_matUBinv;
 	bool m_bHasUB = 0;
 	double m_dAngleQVec0 = 0.;
@@ -82,8 +83,8 @@ protected:
 
 	EckParams m_pop;
 	CNResults m_res;
-	ublas::matrix<double> m_resoHKL;
-	ublas::vector<double> m_Q_avgHKL;
+	ublas::matrix<double> m_resoHKL, m_resoOrient;
+	ublas::vector<double> m_Q_avgHKL, m_Q_avgOrient;
 
 	bool m_bDontCalc;
 
@@ -130,6 +131,7 @@ public:
 signals:
 	void ResoResults(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
 		const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+		const ublas::matrix<double>& resoHKL_orient, const ublas::vector<double>& Q_avgHKL_orient,
 		int iAlgo);
 };
 

@@ -74,7 +74,7 @@ void EllipseDlg3D::showEvent(QShowEvent *event)
 
 ublas::vector<double>
 EllipseDlg3D::ProjRotatedVec(const ublas::matrix<double>& rot,
-														const ublas::vector<double>& vec)
+	const ublas::vector<double>& vec)
 {
 	ublas::vector<double> vecCoord(3);
 
@@ -98,6 +98,7 @@ EllipseDlg3D::ProjRotatedVec(const ublas::matrix<double>& rot,
 
 void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg,
 	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+	const ublas::matrix<double>& resoHKL_orient, const ublas::vector<double>& Q_avgHKL_orient,
 	int iAlgo)
 {
 	const int iX[] = {0, 0};

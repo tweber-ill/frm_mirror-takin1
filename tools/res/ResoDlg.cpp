@@ -384,6 +384,9 @@ void ResoDlg::Calc()
 		// calculate rlu quadric if a sample is defined
 		if(m_bHasUB)
 		{
+			// hkl crystal system:
+			// Qavg system in 1/A -> rotate back to orient system in 1/A ->
+			// transform to hkl rlu system
 			ublas::matrix<double> matQVec0 = tl::rotation_matrix_2d(-m_dAngleQVec0);
 			matQVec0.resize(4,4, true);
 			matQVec0(2,2) = matQVec0(3,3) = 1.;
@@ -401,12 +404,24 @@ void ResoDlg::Calc()
 			//m_resoHKL = tl::transform(m_res.reso, matUBinvQVec0, 0);
 			m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
 			m_resoHKL = ublas::prod(matQVec0invUB, m_resoHKL);
-
 			m_Q_avgHKL = ublas::prod(matUBinvQVec0, m_res.Q_avg);
 
 			//std::cout << tl::r2d(m_dAngleQVec0) << std::endl;
 			//std::cout << m_Q_avgHKL << std::endl;
 			//std::cout << m_resoHKL << std::endl;
+
+
+
+			// system of scattering plane: (orient1, orient2, up)
+			// Qavg system in 1/A -> rotate back to orient system in 1/A ->
+			// transform to hkl rlu system -> rotate forward to orient system in rlu
+			ublas::matrix<double> matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
+			ublas::matrix<double> matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
+
+			m_resoOrient = ublas::prod(m_res.reso, matToOrient);
+			m_resoOrient = ublas::prod(matToOrientinv, m_resoOrient);
+			m_Q_avgOrient = ublas::prod(matToOrient, m_res.Q_avg);
+			//std::cout << m_Q_avgOrient << std::endl;
 		}
 
 		EmitResults();
@@ -476,8 +491,9 @@ void ResoDlg::RefreshSimCmd()
 
 void ResoDlg::EmitResults()
 {
-	emit ResoResults(m_res.reso, m_res.Q_avg, 
-		m_resoHKL, m_Q_avgHKL, 
+	emit ResoResults(m_res.reso, m_res.Q_avg,
+		m_resoHKL, m_Q_avgHKL,
+		m_resoOrient, m_Q_avgOrient,
 		comboAlgo->currentIndex());
 }
 
@@ -730,13 +746,15 @@ void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 
 	m_matB = tl::get_B(lattice, 1);
 	m_matU = tl::get_U(m_vecOrient1, m_vecOrient2, &m_matB);
+	m_matUrlu = tl::get_U(m_vecOrient1, m_vecOrient2);
 	m_matUB = ublas::prod(m_matU, m_matB);
 
 	bool bHasB = tl::inverse(m_matB, m_matBinv);
 	bool bHasU = tl::inverse(m_matU, m_matUinv);
+	bool bHasUrlu = tl::inverse(m_matUrlu, m_matUinvrlu);
 	m_matUBinv = ublas::prod(m_matBinv, m_matUinv);
 
-	for(auto* pmat : {&m_matB, &m_matU, &m_matUB, &m_matUBinv})
+	for(auto* pmat : {&m_matB, &m_matU, &m_matUB, &m_matUBinv, &m_matUrlu, &m_matUinvrlu})
 	{
 		pmat->resize(4,4,1);
 		(*pmat)(3,0) = (*pmat)(3,1) = (*pmat)(3,2) = 0.;
@@ -744,7 +762,7 @@ void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 		(*pmat)(3,3) = 1.;
 	}
 
-	m_bHasUB = bHasB && bHasU;
+	m_bHasUB = bHasB && bHasU && bHasUrlu;
 }
 
 
@@ -811,7 +829,7 @@ void ResoDlg::MCGenerate()
 	opts.matBinv = m_matBinv;
 	opts.matUBinv = m_matUBinv;
 
-	ublas::matrix<double>* pMats[] = {&opts.matU, &opts.matB, &opts.matUB, 
+	ublas::matrix<double>* pMats[] = {&opts.matU, &opts.matB, &opts.matUB,
 		&opts.matUinv, &opts.matBinv, &opts.matUBinv};
 
 	for(ublas::matrix<double> *pMat : pMats)

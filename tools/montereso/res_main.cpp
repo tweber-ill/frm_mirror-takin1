@@ -224,7 +224,9 @@ static EllipseDlg* show_ellipses(const Resolution& res)
 
 	matrix<double> matDummy;
 	vector<double> vecDummy;
-	pdlg->SetParams(res.res, res.Q_avg, matDummy, vecDummy, -1);
+	pdlg->SetParams(res.res, res.Q_avg,
+		matDummy, vecDummy, matDummy, vecDummy,
+		-1);
 
 	return pdlg;
 }

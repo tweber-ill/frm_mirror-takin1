@@ -33,7 +33,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 { Q_OBJECT
 	private:
 		const char* m_pcTitle = "Resolution Ellipses";
-	
+
 	protected:
 		std::vector<QwtPlot*> m_vecPlots;
 		std::vector<QwtPlotCurve*> m_vecPlotCurves;
@@ -48,10 +48,10 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		std::vector<std::vector<double> > m_vecYCurvePoints;
 
 		QSettings *m_pSettings = 0;
-		
+
 	protected:
-		ublas::matrix<double> m_reso, m_resoHKL;
-		ublas::vector<double> m_Q_avg, m_Q_avgHKL;
+		ublas::matrix<double> m_reso, m_resoHKL, m_resoOrient;
+		ublas::vector<double> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
 		int m_iAlgo = -1;
 
 	public:
@@ -68,6 +68,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 	public slots:
 		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
 			const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+			const ublas::matrix<double>& resoOrient, const ublas::vector<double>& Q_avgOrient,
 			int iAlgo);
 		void Calc();
 

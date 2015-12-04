@@ -172,11 +172,14 @@ void EllipseDlg::Calc()
 
 	switch(coord)
 	{
-		case EllipseCoordSys::Q_AVG:	// Q|| Qperp system in 1/A
+		case EllipseCoordSys::Q_AVG:		// Q|| Qperp system in 1/A
 			pReso = &m_reso; pQavg = &m_Q_avg;
 			break;
-		case EllipseCoordSys::RLU:	// rlu system
+		case EllipseCoordSys::RLU:			// rlu system
 			pReso = &m_resoHKL; pQavg = &m_Q_avgHKL;
+			break;
+		case EllipseCoordSys::RLU_ORIENT:	// rlu system
+			pReso = &m_resoOrient; pQavg = &m_Q_avgOrient;
 			break;
 		default:
 			tl::log_err("Unknown coordinate system selected."); return;
@@ -349,14 +352,17 @@ void EllipseDlg::Calc()
 
 void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
 	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+	const ublas::matrix<double>& resoOrient, const ublas::vector<double>& Q_avgOrient,
 	int iAlgo)
 {
 	m_reso = reso;
 	m_resoHKL = resoHKL;
+	m_resoOrient = resoOrient;
 	m_Q_avg = Q_avg;
 	m_Q_avgHKL = Q_avgHKL;
+	m_Q_avgOrient = Q_avgOrient;
 	m_iAlgo = iAlgo;
-	
+
 	Calc();
 }
 

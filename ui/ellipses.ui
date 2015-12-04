@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>552</height>
+    <width>906</width>
+    <height>921</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -71,12 +71,17 @@
         </property>
         <item>
          <property name="text">
-          <string>Q∥ Q⟂ System</string>
+          <string>Q∥ Q⟂ System (Å⁻¹)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>rlu System</string>
+          <string>hkl System (rlu)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Scattering Plane System (rlu)</string>
          </property>
         </item>
        </widget>
