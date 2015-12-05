@@ -100,7 +100,9 @@ protected:
 
 protected:
 	tl::Kd<double> m_kd;
-	unsigned int m_iNumqs = 1000;
+	unsigned int m_iNumqs = 250;
+	unsigned int m_iNumArc = 50;
+	double m_dArcMax = 10.;
 
 	ublas::vector<double> m_vecBragg;
 

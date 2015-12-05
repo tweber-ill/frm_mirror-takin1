@@ -218,9 +218,38 @@ void SqwPhonon::create()
 		double dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
 		double dETA2 = disp(dq, m_dTA2_amp, m_dTA2_freq);
 
-		lst.push_back(std::vector<double>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, 1., m_dLA_E_HWHM, m_dLA_q_HWHM}));
-		lst.push_back(std::vector<double>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, 1., m_dTA1_E_HWHM, m_dTA1_q_HWHM}));
-		lst.push_back(std::vector<double>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, 1., m_dTA2_E_HWHM, m_dTA2_q_HWHM}));
+
+		// only generate exact phonon branches, no arcs
+		if(m_iNumArc==0 || m_iNumArc==1)
+		{
+			lst.push_back(std::vector<double>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, 1., m_dLA_E_HWHM, m_dLA_q_HWHM}));
+			lst.push_back(std::vector<double>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, 1., m_dTA1_E_HWHM, m_dTA1_q_HWHM}));
+			lst.push_back(std::vector<double>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, 1., m_dTA2_E_HWHM, m_dTA2_q_HWHM}));
+		}
+		else
+		{
+			const double dArcMax = std::abs(tl::d2r(m_dArcMax));
+			for(double dph=-dArcMax; dph<=dArcMax; dph+=1./double(m_iNumArc))
+			{
+				// ta2
+				ublas::vector<double> vecArcTA2TA1 = tl::arc(vecQTA2, vecQTA1, dph);
+				ublas::vector<double> vecArcTA2LA = tl::arc(vecQTA2, vecQLA, dph);
+				lst.push_back(std::vector<double>({vecArcTA2TA1[0], vecArcTA2TA1[1], vecArcTA2TA1[2], dETA2, 1., m_dTA2_E_HWHM, m_dTA2_q_HWHM}));
+				lst.push_back(std::vector<double>({vecArcTA2LA[0], vecArcTA2LA[1], vecArcTA2LA[2], dETA2, 1., m_dTA2_E_HWHM, m_dTA2_q_HWHM}));
+
+				// ta1
+				ublas::vector<double> vecArcTA1TA2 = tl::arc(vecQTA1, vecQTA2, dph);
+				ublas::vector<double> vecArcTA1LA = tl::arc(vecQTA1, vecQLA, dph);
+				lst.push_back(std::vector<double>({vecArcTA1TA2[0], vecArcTA1TA2[1], vecArcTA1TA2[2], dETA1, 1., m_dTA1_E_HWHM, m_dTA1_q_HWHM}));
+				lst.push_back(std::vector<double>({vecArcTA1LA[0], vecArcTA1LA[1], vecArcTA1LA[2], dETA1, 1., m_dTA1_E_HWHM, m_dTA1_q_HWHM}));
+
+				// la
+				ublas::vector<double> vecArcLATA1 = tl::arc(vecQLA, vecQTA1, dph);
+				ublas::vector<double> vecArcLATA2 = tl::arc(vecQLA, vecQTA2, dph);
+				lst.push_back(std::vector<double>({vecArcLATA1[0], vecArcLATA1[1], vecArcLATA1[2], dELA, 1., m_dLA_E_HWHM, m_dLA_q_HWHM}));
+				lst.push_back(std::vector<double>({vecArcLATA2[0], vecArcLATA2[1], vecArcLATA2[2], dELA, 1., m_dLA_E_HWHM, m_dLA_q_HWHM}));
+			}
+		}
 	}
 
 	tl::log_info("Generated ", lst.size(), " S(q,w) points.");
@@ -265,6 +294,8 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 			continue;
 
 		if(vecToks[0] == "num_qs") m_iNumqs = tl::str_to_var<unsigned int>(vecToks[1]);
+		if(vecToks[0] == "num_arc") m_iNumArc = tl::str_to_var<unsigned int>(vecToks[1]);
+		if(vecToks[0] == "arc_max") m_dArcMax = tl::str_to_var<double>(vecToks[1]);
 
 		else if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
 		else if(vecToks[0] == "TA1") m_vecTA1 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
@@ -341,6 +372,8 @@ std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
 	std::vector<SqwBase::t_var> vecVars;
 
 	vecVars.push_back(SqwBase::t_var{"num_qs", "uint", tl::var_to_str(m_iNumqs)});
+	vecVars.push_back(SqwBase::t_var{"num_arc", "uint", tl::var_to_str(m_iNumArc)});
+	vecVars.push_back(SqwBase::t_var{"arc_max", "double", tl::var_to_str(m_dArcMax)});
 
 	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
 	vecVars.push_back(SqwBase::t_var{"TA1", "vector", vec_to_str(m_vecTA1)});
@@ -372,6 +405,8 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 		const std::string& strVal = std::get<2>(var);
 
 		if(strVar == "num_qs") m_iNumqs = tl::str_to_var<decltype(m_iNumqs)>(strVal);
+		if(strVar == "num_arc") m_iNumArc = tl::str_to_var<decltype(m_iNumArc)>(strVal);
+		if(strVar == "arc_max") m_dArcMax = tl::str_to_var<decltype(m_dArcMax)>(strVal);
 
 		else if(strVar == "G") m_vecLA = m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
 		else if(strVar == "TA1") m_vecTA1 = str_to_vec<decltype(m_vecTA1)>(strVal);

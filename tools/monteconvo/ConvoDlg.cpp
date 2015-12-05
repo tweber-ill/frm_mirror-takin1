@@ -25,7 +25,7 @@
 
 
 ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
-	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint), 
+	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint),
 		m_pSett(pSett)
 {
 	setupUi(this);
@@ -316,7 +316,7 @@ void ConvoDlg::Start()
 
 		const int iFocMono = comboFocMono->currentIndex();
 		const int iFocAna = comboFocAna->currentIndex();
-		
+
 		unsigned ifocMode = unsigned(ResoFocus::FOC_NONE);
 		if(iFocMono == 1) ifocMode |= unsigned(ResoFocus::FOC_MONO_H);	// horizontal
 		else if(iFocMono == 2) ifocMode |= unsigned(ResoFocus::FOC_MONO_V);	// vertical
