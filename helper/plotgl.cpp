@@ -315,7 +315,7 @@ void PlotGl::run()
 		}
 
 		timespec ts;
-		long fps = isVisible() ? 60 : 6;
+		long fps = isVisible() ? 30 : 3;
 		ts.tv_nsec = 1000000000 / fps;
 		ts.tv_sec = 0;
 		dTime += double(ts.tv_nsec) * 1e-9;

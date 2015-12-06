@@ -10,6 +10,7 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <QComboBox>
 
 #include <vector>
 
@@ -18,6 +19,7 @@
 #include "tools/res/ellipse.h"
 #include "tools/res/pop.h"
 
+
 class EllipseDlg3D : public QDialog
 {Q_OBJECT
 	protected:
@@ -25,11 +27,17 @@ class EllipseDlg3D : public QDialog
 		std::vector<Ellipsoid> m_elliProj;
 		std::vector<Ellipsoid> m_elliSlice;
 
-		QSettings *m_pSettings = 0;
+		QComboBox *m_pComboCoord = nullptr;
+		QSettings *m_pSettings = nullptr;
 
+		ublas::matrix<double> m_reso, m_resoHKL, m_resoOrient;
+		ublas::vector<double> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
+		int m_iAlgo = -1;
+
+	protected:
 		ublas::vector<double>
 		ProjRotatedVec(const ublas::matrix<double>& rot,
-								const ublas::vector<double>& vec);
+			const ublas::vector<double>& vec);
 
 	public:
 		EllipseDlg3D(QWidget* pParent, QSettings *pSett=0);
@@ -44,6 +52,7 @@ class EllipseDlg3D : public QDialog
 			const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
 			const ublas::matrix<double>& resoOrient, const ublas::vector<double>& Q_avgOrient,
 			int iAlgo);
+		void Calc();
 };
 
 #endif

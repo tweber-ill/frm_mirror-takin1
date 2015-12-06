@@ -10,10 +10,11 @@
 //#include <QtGui/QSplitter>
 
 EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
-		: QDialog(pParent), m_pSettings(pSett)
+	: QDialog(pParent), m_pSettings(pSett)
 {
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Resolution Ellipsoids");
+	setSizeGripEnabled(1);
 
 	PlotGl* pPlotLeft = new PlotGl(this, m_pSettings);
 	pPlotLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -23,20 +24,30 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	pPlotRight->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_pPlots.push_back(pPlotRight);
 
-	QGridLayout *gridLayout = new QGridLayout(this);
-	gridLayout->addWidget(pPlotLeft, 0, 0, 1, 1);
-	gridLayout->addWidget(pPlotRight, 0, 1, 1, 1);
+	m_pComboCoord = new QComboBox(this);
+	m_pComboCoord->insertItem(0, "(Q perpendicular, Q parallel, Q up) System (1/A)");
+	m_pComboCoord->insertItem(1, "Crystal (hkl) System (rlu)");
+	m_pComboCoord->insertItem(2, "Scattering Plane System (rlu)");
+
+	QGridLayout *pgridLayout = new QGridLayout(this);
+	pgridLayout->setContentsMargins(4, 4, 4, 4);
+	pgridLayout->addWidget(pPlotLeft, 0, 0, 1, 1);
+	pgridLayout->addWidget(pPlotRight, 0, 1, 1, 1);
+	pgridLayout->addWidget(m_pComboCoord, 1, 0, 1, 1);
 
 	/*QSplitter *pSplitter = new QSplitter(this);
 	pSplitter->setOrientation(Qt::Horizontal);
 	pSplitter->addWidget(pPlotLeft);
 	pSplitter->addWidget(pPlotRight);
-	gridLayout->addWidget(pSplitter, 0, 0, 1, 1);*/
+	pgridLayout->addWidget(pSplitter, 0, 0, 1, 1);*/
 
 	m_elliProj.resize(2);
 	m_elliSlice.resize(2);
 
 	resize(640,480);
+
+
+	QObject::connect(m_pComboCoord, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
 
 
 	if(m_pSettings && m_pSettings->contains("reso/ellipsoid3d_geo"))
@@ -96,11 +107,35 @@ EllipseDlg3D::ProjRotatedVec(const ublas::matrix<double>& rot,
 	return vecCoord;
 }
 
-void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& _Q_avg,
-	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
-	const ublas::matrix<double>& resoHKL_orient, const ublas::vector<double>& Q_avgHKL_orient,
-	int iAlgo)
+
+void EllipseDlg3D::Calc()
 {
+	const EllipseCoordSys coord = static_cast<EllipseCoordSys>(m_pComboCoord->currentIndex());
+
+	const ublas::matrix<double> *pReso = nullptr;
+	const ublas::vector<double> *pQavg = nullptr;
+
+	switch(coord)
+	{
+		case EllipseCoordSys::Q_AVG:		// Q|| Qperp system in 1/A
+			pReso = &m_reso; pQavg = &m_Q_avg;
+			break;
+		case EllipseCoordSys::RLU:			// rlu system
+			pReso = &m_resoHKL; pQavg = &m_Q_avgHKL;
+			break;
+		case EllipseCoordSys::RLU_ORIENT:	// rlu system
+			pReso = &m_resoOrient; pQavg = &m_Q_avgOrient;
+			break;
+		default:
+			tl::log_err("Unknown coordinate system selected."); return;
+	}
+
+
+	int iAlgo = m_iAlgo;
+	const ublas::matrix<double>& reso = *pReso;
+	const ublas::vector<double>& _Q_avg = *pQavg;
+
+
 	const int iX[] = {0, 0};
 	const int iY[] = {1, 1};
 	const int iZ[] = {3, 2};
@@ -138,6 +173,12 @@ void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vec
 		vecOffsSlice[1] = m_elliSlice[i].y_offs;
 		vecOffsSlice[2] = m_elliSlice[i].z_offs;
 
+		/*if(i==1)
+		{
+			std::cout << "widths: " << vecWProj << std::endl;
+			std::cout << "offs: " << vecOffsProj << std::endl;
+			std::cout << "rot: " << m_elliProj[i].rot << std::endl;
+		}*/
 		m_pPlots[i]->PlotEllipsoid(vecWProj, vecOffsProj, m_elliProj[i].rot, 1);
 		m_pPlots[i]->PlotEllipsoid(vecWSlice, vecOffsSlice, m_elliSlice[i].rot, 0);
 
@@ -145,8 +186,28 @@ void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vec
 		m_pPlots[i]->SetObjectUseLOD(0, 0);
 
 		m_pPlots[i]->SetMinMax(ProjRotatedVec(m_elliProj[i].rot, vecWProj), &vecOffsProj);
-		m_pPlots[i]->SetLabels(m_elliProj[i].x_lab.c_str(), m_elliProj[i].y_lab.c_str(), m_elliProj[i].z_lab.c_str());
+
+		const std::string& strX = ellipse_labels(iX[i], coord);
+		const std::string& strY = ellipse_labels(iY[i], coord);
+		const std::string& strZ = ellipse_labels(iZ[i], coord);
+		m_pPlots[i]->SetLabels(strX.c_str(), strY.c_str(), strZ.c_str());
 	}
+}
+
+void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
+	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
+	const ublas::matrix<double>& resoOrient, const ublas::vector<double>& Q_avgOrient,
+	int iAlgo)
+{
+	m_reso = reso;
+	m_resoHKL = resoHKL;
+	m_resoOrient = resoOrient;
+	m_Q_avg = Q_avg;
+	m_Q_avgHKL = Q_avgHKL;
+	m_Q_avgOrient = Q_avgOrient;
+	m_iAlgo = iAlgo;
+
+	Calc();
 }
 
 #include "EllipseDlg3D.moc"

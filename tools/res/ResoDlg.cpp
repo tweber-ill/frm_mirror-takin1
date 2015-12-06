@@ -394,16 +394,14 @@ void ResoDlg::Calc()
 			matQVec0(3,0) = matQVec0(3,1) = matQVec0(3,2) = 0.;
 			matQVec0(0,2) = matQVec0(0,3) = 0.;
 			matQVec0(1,2) = matQVec0(1,3) = 0.;
-			ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
+			const ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
 
-			//ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
-			ublas::matrix<double> matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
-			ublas::matrix<double> matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
-
-			// B matrix is not necessarily orthogonal
-			//m_resoHKL = tl::transform(m_res.reso, matUBinvQVec0, 0);
-			m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
-			m_resoHKL = ublas::prod(matQVec0invUB, m_resoHKL);
+			const ublas::matrix<double> matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
+			const ublas::matrix<double> matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
+			// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
+			m_resoHKL = tl::transform(m_res.reso, matQVec0invUB, 1);
+			//m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
+			//m_resoHKL = ublas::prod(matQVec0invUB, m_resoHKL);
 			m_Q_avgHKL = ublas::prod(matUBinvQVec0, m_res.Q_avg);
 
 			//std::cout << tl::r2d(m_dAngleQVec0) << std::endl;
@@ -411,15 +409,16 @@ void ResoDlg::Calc()
 			//std::cout << m_resoHKL << std::endl;
 
 
-
 			// system of scattering plane: (orient1, orient2, up)
 			// Qavg system in 1/A -> rotate back to orient system in 1/A ->
 			// transform to hkl rlu system -> rotate forward to orient system in rlu
-			ublas::matrix<double> matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
-			ublas::matrix<double> matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
+			const ublas::matrix<double> matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
+			const ublas::matrix<double> matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
 
-			m_resoOrient = ublas::prod(m_res.reso, matToOrient);
-			m_resoOrient = ublas::prod(matToOrientinv, m_resoOrient);
+			// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
+			m_resoOrient = tl::transform(m_res.reso, matToOrientinv, 1);
+			//m_resoOrient = ublas::prod(m_res.reso, matToOrient);
+			//m_resoOrient = ublas::prod(matToOrientinv, m_resoOrient);
 			m_Q_avgOrient = ublas::prod(matToOrient, m_res.Q_avg);
 			//std::cout << m_Q_avgOrient << std::endl;
 		}

@@ -190,7 +190,8 @@ Ellipse calc_res_ellipse(const t_mat& reso,
 
 	/*std::cout << "matrix: " << ell.quad.GetQ() << std::endl;
 	for(t_real dEval : evals)
-		std::cout << "Evals: " << dEval << ", ";
+		std::cout << "evals: " << dEval << ", ";
+	std::cout << "\nevecs: " << matRot << std::endl;
 	std::cout << std::endl;*/
 
 	ell.phi = tl::rotation_angle(matRot)[0];
@@ -290,6 +291,7 @@ Ellipsoid calc_res_ellipsoid(const t_mat& reso,
 	tl::QuadEllipsoid<t_real> quad(3);
 	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
 
+	//tl::log_info("Principal axes: ", quad.GetQ());
 	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
 	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
 	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
