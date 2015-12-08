@@ -123,7 +123,8 @@ endif
 INC = ${QT_INC} ${QWT_INC} -I . -I/usr/local/include \
 	-I/opt/include -I/opt/local/include \
 	-I/usr/include/freetype2 -I/usr/include/lapacke \
-	-I/usr/include/python2.7
+	-I/usr/include/python2.7 \
+	-I/usr/include/root
 LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib \
 	-L/opt/lib -L/opt/local/lib
 
@@ -206,6 +207,8 @@ OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/xml.o obj/rand.o obj/tasreso.o \
 	obj/loadtxt.o
 
+OBJ_CONVOFIT = obj/convofit.o obj/loadinstr.o ${OBJ_MONTECONVO}
+
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
@@ -246,7 +249,7 @@ endif
 
 .PHONY: all clean
 
-all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist sfact
+all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist sfact convofit
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -264,6 +267,10 @@ monteconvo: ${OBJ_MONTECONVO} obj/mconv_main.o
 xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/globals.o obj/SqwParamDlg.o ${PY_OBJS}
 	${CC} ${FLAGS} -o bin/xmonteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${PY_LIBS}
 	${STRIP} xmonteconvo
+
+convofit: ${OBJ_CONVOFIT}
+	${CC} ${FLAGS} -o bin/convofit $+ ${STD_LIBS} ${BASIC_LIBS}
+	${STRIP} convofit
 
 posextract: obj/posextract.o obj/loadinstr.o obj/log.o
 	${CC} ${FLAGS} -o bin/posextract $+ ${STD_LIBS} ${BASIC_LIBS}
@@ -414,6 +421,9 @@ obj/sqw_py.o: tools/monteconvo/sqw_py.cpp tools/monteconvo/sqw_py.h
 obj/tasreso.o: tools/monteconvo/TASReso.cpp tools/monteconvo/TASReso.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/posextract.o: tools/posextract/posextract.cpp
+	${CC} ${FLAGS} -c -o $@ $<
+
+obj/convofit.o: tools/convofit/convofit.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/scanviewer_main.o: tools/scanviewer/main.cpp

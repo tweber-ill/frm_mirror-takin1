@@ -5,12 +5,14 @@
  * @license GPLv2
  */
 
-// gcc -o convofit convofit.cpp ../../tlibs/helper/log.cpp ../../tlibs/file/loadinstr.cpp -I../.. -std=c++11 -lboost_iostreams -lstdc++ -lm
-
 #include "tlibs/file/loadinstr.h"
 #include "tlibs/helper/log.h"
 #include "tlibs/math/math.h"
 #include "tlibs/math/neutrons.hpp"
+#include "tlibs/fit/minuit.h"
+
+#include "../monteconvo/TASReso.h"
+#include "../monteconvo/sqw.h"
 
 #include <memory>
 #include <iostream>
@@ -31,9 +33,17 @@ struct Sample
 	double alpha, beta, gamma;
 };
 
+struct Plane
+{
+	double vec1[3];
+	double vec2[3];
+};
+
 struct Scan
 {
 	Sample sample;
+	Plane plane;
+
 	std::vector<ScanPoint> vecPoints;
 
 	std::vector<double> vecCts, vecMon;
@@ -87,6 +97,15 @@ bool load_file(const char* pcFile, Scan& scan)
 
 	tl::log_info("Sample lattice: ", scan.sample.a, " ", scan.sample.b, " ", scan.sample.c);
 	tl::log_info("Sample angles: ", tl::r2d(scan.sample.alpha), " ", tl::r2d(scan.sample.beta), " ", tl::r2d(scan.sample.gamma));
+	
+	
+	const std::array<double, 3> vec1 = pInstr->GetScatterPlane0();
+	const std::array<double, 3> vec2 = pInstr->GetScatterPlane1();
+	scan.plane.vec1[0] = vec1[0]; scan.plane.vec1[1] = vec1[1]; scan.plane.vec1[2] = vec1[2];
+	scan.plane.vec2[0] = vec2[0]; scan.plane.vec2[1] = vec2[1]; scan.plane.vec2[2] = vec2[2];
+	
+	tl::log_info("Scattering plane: [", vec1[0], vec1[1], vec1[2], "], "
+		"[", vec2[0], vec2[1], vec2[2], "]");
 
 
 	const std::size_t iNumPts = pInstr->GetScanCount();
@@ -116,6 +135,69 @@ bool load_file(const char* pcFile, Scan& scan)
 // ----------------------------------------------------------------------------
 
 
+class SqwFuncModel : public tl::MinuitFuncModel
+{
+protected:
+	std::unique_ptr<SqwBase> m_pSqw;
+
+public:
+	SqwFuncModel(SqwBase* pSqw);
+	SqwFuncModel() = delete;
+	virtual ~SqwFuncModel() = default;
+
+	virtual bool SetParams(const std::vector<double>& vecParams) override;
+	virtual double operator()(double x) const override;
+
+	virtual SqwFuncModel* copy() const override;
+	virtual std::string print(bool bFillInSyms=true) const override { return ""; }
+
+	virtual const char* GetModelName() const override { return "SqwFuncModel"; }
+	virtual std::vector<std::string> GetParamNames() const override;
+	virtual std::vector<double> GetParamValues() const override;
+	virtual std::vector<double> GetParamErrors() const override;
+};
+
+SqwFuncModel::SqwFuncModel(SqwBase* pSqw)
+	: m_pSqw(pSqw)
+{}
+
+double SqwFuncModel::operator()(double x) const
+{
+	return 0.;
+}
+
+SqwFuncModel* SqwFuncModel::copy() const
+{
+	// cannot rebuild kd tree in phonon model with only a shallow copy
+	return new SqwFuncModel(m_pSqw->shallow_copy());
+}
+
+bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
+{
+	return true;
+}
+
+std::vector<std::string> SqwFuncModel::GetParamNames() const
+{
+	std::vector<std::string> vecNames;
+	return vecNames;
+}
+
+std::vector<double> SqwFuncModel::GetParamValues() const
+{
+	std::vector<double> vecVals;
+	return vecVals;
+}
+
+std::vector<double> SqwFuncModel::GetParamErrors() const
+{
+	std::vector<double> vecErrs;
+	return vecErrs;
+}
+
+// ----------------------------------------------------------------------------
+
+
 
 int main()
 {
@@ -123,6 +205,15 @@ int main()
 	Scan sc;
 	if(!load_file(pcFile, sc))
 		return -1;
+
+	const char* pcRes = "/home/tweber/Projekte/tastools/test/mira.taz";
+	TASReso reso;
+	if(!reso.LoadRes(pcRes))
+		return -1;
+	reso.SetLattice(sc.sample.a, sc.sample.b, sc.sample.c,
+		sc.sample.alpha, sc.sample.beta, sc.sample.gamma,
+		tl::make_vec({sc.plane.vec1[0], sc.plane.vec1[1], sc.plane.vec1[2]}), 
+		tl::make_vec({sc.plane.vec2[0], sc.plane.vec2[1], sc.plane.vec2[2]}));
 
 	return 0;
 }

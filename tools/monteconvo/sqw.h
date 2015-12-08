@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <list>
 #include <tuple>
+#include <memory>
 #include <boost/numeric/ublas/vector.hpp>
 #include "tlibs/math/kd.h"
 
@@ -21,8 +22,8 @@ namespace ublas = boost::numeric::ublas;
 class SqwBase
 {
 public:
-	// name, type, value
-	using t_var = std::tuple<std::string, std::string, std::string>;
+	// name, type, value, fittable
+	using t_var = std::tuple<std::string, std::string, std::string/*, bool*/>;
 
 protected:
 	bool m_bOk = false;
@@ -33,6 +34,8 @@ public:
 
 	virtual std::vector<t_var> GetVars() const = 0;
 	virtual void SetVars(const std::vector<t_var>&) = 0;
+	
+	virtual SqwBase* shallow_copy() const = 0;
 
 	virtual ~SqwBase() {}
 };
@@ -63,6 +66,9 @@ public:
 
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
+	
+	// TODO
+	virtual SqwBase* shallow_copy() const { return nullptr; }
 };
 
 
@@ -84,6 +90,9 @@ public:
 
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
+
+	// TODO
+	virtual SqwBase* shallow_copy() const { return nullptr; }
 };
 
 
@@ -92,6 +101,9 @@ public:
 
 class SqwPhonon : public SqwBase
 {
+private:
+	SqwPhonon() {};
+	
 protected:
 	static double disp(double dq, double da, double df);
 
@@ -99,7 +111,7 @@ protected:
 	void destroy();
 
 protected:
-	tl::Kd<double> m_kd;
+	std::shared_ptr<tl::Kd<double>> m_kd;
 	unsigned int m_iNumqs = 250;
 	unsigned int m_iNumArc = 50;
 	double m_dArcMax = 10.;
@@ -114,13 +126,16 @@ protected:
 	double m_dTA1_amp, m_dTA1_freq, m_dTA1_E_HWHM, m_dTA1_q_HWHM;
 	double m_dTA2_amp, m_dTA2_freq, m_dTA2_E_HWHM, m_dTA2_q_HWHM;
 
+	double m_dT = 100.;
+
 public:
 	SqwPhonon(const ublas::vector<double>& vecBragg,
 		const ublas::vector<double>& vecTA1,
 		const ublas::vector<double>& vecTA2,
 		double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM,
 		double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM,
-		double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM);
+		double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM,
+		double dT);
 	SqwPhonon(const char* pcFile);
 
 	virtual ~SqwPhonon() = default;
@@ -135,6 +150,8 @@ public:
 
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
+
+	virtual SqwBase* shallow_copy() const override;
 };
 
 #endif
