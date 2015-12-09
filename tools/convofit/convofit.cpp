@@ -139,9 +139,16 @@ class SqwFuncModel : public tl::MinuitFuncModel
 {
 protected:
 	std::unique_ptr<SqwBase> m_pSqw;
+	TASReso m_reso;
+	unsigned int m_iNumNeutrons = 1000;
+
+	ublas::vector<double> m_vecScanOrigin;	// hklE
+	ublas::vector<double> m_vecScanDir;		// hklE
+
+	double m_dScale = 1.;
 
 public:
-	SqwFuncModel(SqwBase* pSqw);
+	SqwFuncModel(SqwBase* pSqw, const TASReso& reso);
 	SqwFuncModel() = delete;
 	virtual ~SqwFuncModel() = default;
 
@@ -155,43 +162,96 @@ public:
 	virtual std::vector<std::string> GetParamNames() const override;
 	virtual std::vector<double> GetParamValues() const override;
 	virtual std::vector<double> GetParamErrors() const override;
+	
+	void SetReso(const TASReso& reso) { m_reso = reso; }
+	void SetNumNeutrons(unsigned int iNum) { m_iNumNeutrons = iNum; }
+
+	void SetScanOrigin(double h, double k, double l, double E)
+	{ m_vecScanOrigin = tl::make_vec({h,k,l,E}); }
+	void SetScanDir(double h, double k, double l, double E)
+	{ m_vecScanDir = tl::make_vec({h,k,l,E}); }
 };
 
-SqwFuncModel::SqwFuncModel(SqwBase* pSqw)
-	: m_pSqw(pSqw)
+SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const TASReso& reso)
+	: m_pSqw(pSqw), m_reso(reso)
 {}
 
 double SqwFuncModel::operator()(double x) const
 {
-	return 0.;
+	TASReso reso = m_reso;
+	const ublas::vector<double> vecScanPos = m_vecScanOrigin + x*m_vecScanDir;
+
+	if(!reso.SetHKLE(vecScanPos[0],vecScanPos[1],vecScanPos[2],vecScanPos[3]))
+	{
+		std::ostringstream ostrErr;
+		ostrErr << "Invalid crystal position: ("
+			<< vecScanPos[0] << " " << vecScanPos[1] << " " << vecScanPos[2] 
+			<< ") rlu, " << vecScanPos[3] << " meV.";
+		//throw tl::Err(ostrErr.str().c_str());
+		tl::log_err(ostrErr.str());
+		return 0.;
+	}
+
+
+	std::vector<ublas::vector<double>> vecNeutrons;
+	Ellipsoid4d elli = reso.GenerateMC(m_iNumNeutrons, vecNeutrons);
+
+	double dS = 0.;
+	double dhklE_mean[4] = {0., 0., 0., 0.};
+
+	for(const ublas::vector<double>& vecHKLE : vecNeutrons)
+	{
+		dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
+
+		for(int i=0; i<4; ++i)
+			dhklE_mean[i] += vecHKLE[i];
+	}
+
+	dS /= double(m_iNumNeutrons);
+	for(int i=0; i<4; ++i)
+		dhklE_mean[i] /= double(m_iNumNeutrons);
+
+	return dS*m_dScale;
 }
 
 SqwFuncModel* SqwFuncModel::copy() const
 {
 	// cannot rebuild kd tree in phonon model with only a shallow copy
-	return new SqwFuncModel(m_pSqw->shallow_copy());
+	SqwFuncModel* pMod = new SqwFuncModel(m_pSqw->shallow_copy(), m_reso);
+	pMod->m_vecScanOrigin = this->m_vecScanOrigin;
+	pMod->m_vecScanDir = this->m_vecScanDir;
+	pMod->m_dScale = this->m_dScale;
+	return pMod;
 }
 
 bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
 {
+	m_dScale = vecParams[0];
+
 	return true;
 }
 
 std::vector<std::string> SqwFuncModel::GetParamNames() const
 {
-	std::vector<std::string> vecNames;
+	std::vector<std::string> vecNames = {"scale"};
+
+
 	return vecNames;
 }
 
 std::vector<double> SqwFuncModel::GetParamValues() const
 {
-	std::vector<double> vecVals;
+	std::vector<double> vecVals = {m_dScale};
+
+
 	return vecVals;
 }
 
 std::vector<double> SqwFuncModel::GetParamErrors() const
 {
-	std::vector<double> vecErrs;
+	std::vector<double> vecErrs = {m_dScale/100.};
+
+
 	return vecErrs;
 }
 
