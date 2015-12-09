@@ -207,7 +207,7 @@ OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/xml.o obj/rand.o obj/tasreso.o \
 	obj/loadtxt.o
 
-OBJ_CONVOFIT = obj/convofit.o obj/loadinstr.o ${OBJ_MONTECONVO}
+OBJ_CONVOFIT = obj/convofit.o obj/loadinstr.o obj/minuit.o ${OBJ_MONTECONVO}
 
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
@@ -269,7 +269,7 @@ xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/globals.o ob
 	${STRIP} xmonteconvo
 
 convofit: ${OBJ_CONVOFIT}
-	${CC} ${FLAGS} -o bin/convofit $+ ${STD_LIBS} ${BASIC_LIBS}
+	${CC} ${FLAGS} -o bin/convofit $+ -L/usr/lib64/root -lMinuit2 ${STD_LIBS} ${BASIC_LIBS}
 	${STRIP} convofit
 
 posextract: obj/posextract.o obj/loadinstr.o obj/log.o
@@ -382,6 +382,8 @@ obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
 obj/loadtxt.o: tlibs/file/loadtxt.cpp tlibs/file/loadtxt.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/recent.o: tlibs/file/recent.cpp tlibs/file/recent.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/minuit.o: tlibs/fit/minuit.cpp tlibs/fit/minuit.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/cn.o: tools/res/cn.cpp tools/res/cn.h

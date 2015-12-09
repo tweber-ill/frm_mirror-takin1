@@ -17,6 +17,12 @@
 #include <memory>
 #include <iostream>
 
+#include <Minuit2/FunctionMinimum.h>
+#include <Minuit2/MnMigrad.h>
+#include <Minuit2/MnPrint.h>
+
+namespace minuit = ROOT::Minuit2;
+
 
 // ----------------------------------------------------------------------------
 
@@ -43,11 +49,17 @@ struct Scan
 {
 	Sample sample;
 	Plane plane;
+	bool bKiFixed=0;
+	double dKFix = 2.662;
 
 	std::vector<ScanPoint> vecPoints;
 
+	std::vector<double> vecX;
 	std::vector<double> vecCts, vecMon;
 	std::vector<double> vecCtsErr, vecMonErr;
+	
+	double vecScanOrigin[4];
+	double vecScanDir[4];
 
 
 	ScanPoint InterpPoint(std::size_t i, std::size_t N) const
@@ -73,7 +85,7 @@ struct Scan
 
 bool load_file(const char* pcFile, Scan& scan)
 {
-	tl::log_info("Loading \"", pcFile, "\"");
+	tl::log_info("Loading \"", pcFile, "\".");
 
 	std::shared_ptr<tl::FileInstr> pInstr(tl::FileInstr::LoadInstr(pcFile));
 	if(!pInstr)
@@ -106,15 +118,24 @@ bool load_file(const char* pcFile, Scan& scan)
 	
 	tl::log_info("Scattering plane: [", vec1[0], vec1[1], vec1[2], "], "
 		"[", vec2[0], vec2[1], vec2[2], "]");
+	
+	
+	scan.bKiFixed = pInstr->IsKiFixed();
+	scan.dKFix = pInstr->GetKFix();
+	if(scan.bKiFixed)
+		tl::log_info("ki = ", scan.dKFix);
+	else
+		tl::log_info("kf = ", scan.dKFix);
+
+
 
 
 	const std::size_t iNumPts = pInstr->GetScanCount();
 	for(std::size_t iPt=0; iPt<iNumPts; ++iPt)
 	{
-		ScanPoint pt;
-
 		const std::array<double, 5> sc = pInstr->GetScanHKLKiKf(iPt);
 
+		ScanPoint pt;
 		pt.h = sc[0]; pt.k = sc[1]; pt.l = sc[2];
 		pt.ki = sc[3]/tl::angstrom; pt.kf = sc[4]/tl::angstrom;
 		pt.Ei = tl::k2E(pt.ki); pt.Ef = tl::k2E(pt.kf);
@@ -128,6 +149,56 @@ bool load_file(const char* pcFile, Scan& scan)
 
 		scan.vecPoints.emplace_back(std::move(pt));
 	}
+
+
+
+	const ScanPoint& ptBegin = *scan.vecPoints.cbegin();
+	const ScanPoint& ptEnd = *scan.vecPoints.crbegin();
+	
+	scan.vecScanOrigin[0] = ptBegin.h;
+	scan.vecScanOrigin[1] = ptBegin.k;
+	scan.vecScanOrigin[2] = ptBegin.l;
+	scan.vecScanOrigin[3] = ptBegin.E / tl::meV;
+
+	scan.vecScanDir[0] = ptEnd.h - ptBegin.h;
+	scan.vecScanDir[1] = ptEnd.k - ptBegin.k;
+	scan.vecScanDir[2] = ptEnd.l - ptBegin.l;
+	scan.vecScanDir[3] = (ptEnd.E - ptBegin.E) / tl::meV;
+	
+	for(unsigned int i=0; i<4; ++i)
+	{
+		if(!tl::float_equal(scan.vecScanDir[i], 0., 0.01))
+		{
+			scan.vecScanDir[i] /= scan.vecScanDir[i];
+			scan.vecScanOrigin[i] = 0.;
+		}
+	}
+	
+	tl::log_info("Scan origin: (", scan.vecScanOrigin[0], " ", scan.vecScanOrigin[1], " ", scan.vecScanOrigin[2], " ", scan.vecScanOrigin[3], ")");
+	tl::log_info("Scan dir: [", scan.vecScanDir[0], " ", scan.vecScanDir[1], " ", scan.vecScanDir[2], " ", scan.vecScanDir[3], "]");
+
+
+
+	unsigned int iScIdx = 0;
+	for(iScIdx=0; iScIdx<4; ++iScIdx)
+		if(!tl::float_equal(scan.vecScanDir[iScIdx], 0.))
+			break;
+	
+	if(iScIdx >= 4)
+	{
+		tl::log_err("No scan variable found!");
+		return false;
+	}
+
+	for(std::size_t iPt=0; iPt<iNumPts; ++iPt)
+	{
+		const ScanPoint& pt = scan.vecPoints[iPt];
+
+		double dPos[] = { pt.h, pt.k, pt.l, pt.E/tl::meV };
+		scan.vecX.push_back(dPos[iScIdx]);
+		//tl::log_info("Added pos: ", *scan.vecX.rbegin());
+	}
+
 
 	return true;
 }
@@ -211,6 +282,7 @@ double SqwFuncModel::operator()(double x) const
 	for(int i=0; i<4; ++i)
 		dhklE_mean[i] /= double(m_iNumNeutrons);
 
+	tl::log_debug("Scan position: ", vecScanPos, ", S = ", dS*m_dScale);
 	return dS*m_dScale;
 }
 
@@ -262,18 +334,51 @@ std::vector<double> SqwFuncModel::GetParamErrors() const
 int main()
 {
 	const char* pcFile = "/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0188.scn";
+	const char* pcRes = "/home/tweber/Projekte/tastools/test/mira.taz";
+	const char* pcSqw = "/home/tweber/Projekte/tastools/test/MgV2O4_phonons.dat";
+	
 	Scan sc;
 	if(!load_file(pcFile, sc))
 		return -1;
 
-	const char* pcRes = "/home/tweber/Projekte/tastools/test/mira.taz";
+
 	TASReso reso;
+	tl::log_info("Loading instrument file \"", pcRes, "\".");
 	if(!reso.LoadRes(pcRes))
 		return -1;
 	reso.SetLattice(sc.sample.a, sc.sample.b, sc.sample.c,
 		sc.sample.alpha, sc.sample.beta, sc.sample.gamma,
 		tl::make_vec({sc.plane.vec1[0], sc.plane.vec1[1], sc.plane.vec1[2]}), 
 		tl::make_vec({sc.plane.vec2[0], sc.plane.vec2[1], sc.plane.vec2[2]}));
+	reso.SetKiFix(sc.bKiFixed);
+	reso.SetKFix(sc.dKFix);
+	reso.SetAlgo(ResoAlgo::POP);
+
+
+	tl::log_info("Loading S(q,w) file \"", pcSqw, "\".");
+	SqwPhonon *pSqw = new SqwPhonon(pcSqw);
+	if(!pSqw->IsOk())
+		return -1;
+	SqwFuncModel mod(pSqw, reso);
+	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
+	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
+
+
+	double dSigma = 1.;
+	tl::Chi2Function chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
+	chi2fkt.SetSigma(dSigma);
+
+
+	minuit::MnUserParameters params;
+	params.Add("scale", 10000., 1000.);
+	
+	minuit::MnStrategy strat(0);
+	minuit::MnMigrad migrad(chi2fkt, params, strat);
+	minuit::FunctionMinimum mini = migrad();
+	bool bValidFit = mini.IsValid() && mini.HasValidParameters();
+	tl::log_info("Fit valid: ", bValidFit);
+	
+	std::cout << mini.UserState().Value("scale") << " +- " << mini.UserState().Error("scale") << std::endl;
 
 	return 0;
 }
