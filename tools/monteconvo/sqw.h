@@ -22,8 +22,8 @@ namespace ublas = boost::numeric::ublas;
 class SqwBase
 {
 public:
-	// name, type, value, fittable
-	using t_var = std::tuple<std::string, std::string, std::string/*, bool*/>;
+	// name, type, value
+	using t_var = std::tuple<std::string, std::string, std::string>;
 
 protected:
 	bool m_bOk = false;

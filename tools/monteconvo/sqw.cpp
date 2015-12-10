@@ -444,7 +444,8 @@ std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
 
 void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 {
-	bool bRecreateTree = 1;
+	if(vecVars.size() == 0)
+		return;
 	
 	for(const SqwBase::t_var& var : vecVars)
 	{
@@ -461,24 +462,35 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 
 		else if(strVar == "LA_amp") m_dLA_amp = tl::str_to_var<decltype(m_dLA_amp)>(strVal);
 		else if(strVar == "LA_freq") m_dLA_freq = tl::str_to_var<decltype(m_dLA_freq)>(strVal);
-		else if(strVar == "LA_E_HWHM") { m_dLA_E_HWHM = tl::str_to_var<decltype(m_dLA_E_HWHM)>(strVal); bRecreateTree = 0; }
-		else if(strVar == "LA_q_HWHM") { m_dLA_q_HWHM = tl::str_to_var<decltype(m_dLA_q_HWHM)>(strVal); bRecreateTree = 0; }
+		else if(strVar == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<decltype(m_dLA_E_HWHM)>(strVal);
+		else if(strVar == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var<decltype(m_dLA_q_HWHM)>(strVal);
 
 		else if(strVar == "TA1_amp") m_dTA1_amp = tl::str_to_var<decltype(m_dTA1_amp)>(strVal);
 		else if(strVar == "TA1_freq") m_dTA1_freq = tl::str_to_var<decltype(m_dTA1_freq)>(strVal);
-		else if(strVar == "TA1_E_HWHM") { m_dTA1_E_HWHM = tl::str_to_var<decltype(m_dTA1_E_HWHM)>(strVal); bRecreateTree = 0; }
-		else if(strVar == "TA1_q_HWHM") { m_dTA1_q_HWHM = tl::str_to_var<decltype(m_dTA1_q_HWHM)>(strVal); bRecreateTree = 0; }
+		else if(strVar == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var<decltype(m_dTA1_E_HWHM)>(strVal);
+		else if(strVar == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var<decltype(m_dTA1_q_HWHM)>(strVal);
 
 		else if(strVar == "TA2_amp") m_dTA2_amp = tl::str_to_var<decltype(m_dTA2_amp)>(strVal);
 		else if(strVar == "TA2_freq") m_dTA2_freq = tl::str_to_var<decltype(m_dTA2_freq)>(strVal);
-		else if(strVar == "TA2_E_HWHM") { m_dTA2_E_HWHM = tl::str_to_var<decltype(m_dTA2_E_HWHM)>(strVal); bRecreateTree = 0; }
-		else if(strVar == "TA2_q_HWHM") { m_dTA2_q_HWHM = tl::str_to_var<decltype(m_dTA2_q_HWHM)>(strVal); bRecreateTree = 0; }
+		else if(strVar == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var<decltype(m_dTA2_E_HWHM)>(strVal);
+		else if(strVar == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<decltype(m_dTA2_q_HWHM)>(strVal);
 
-		else if(strVar == "T") { m_dT = tl::str_to_var<decltype(m_dT)>(strVal); bRecreateTree = 0; }
+		else if(strVar == "T") m_dT = tl::str_to_var<decltype(m_dT)>(strVal);
+	}
+
+	bool bRecreateTree = 0;
+
+	for(const SqwBase::t_var& var : vecVars)
+	{
+		const std::string& strVar = std::get<0>(var);
+		if(strVar != "T" && strVar.find("HWHM")==std::string::npos)
+			bRecreateTree = 1;
 	}
 
 	if(bRecreateTree)
 		create();
+	
+	//std::cout << "hwhm = " << m_dTA2_E_HWHM << std::endl;
 }
 
 SqwBase* SqwPhonon::shallow_copy() const

@@ -216,7 +216,13 @@ protected:
 	ublas::vector<double> m_vecScanOrigin;	// hklE
 	ublas::vector<double> m_vecScanDir;		// hklE
 
-	double m_dScale = 1.;
+	double m_dScale = 1., m_dOffs = 0.;
+
+	std::vector<std::string> m_vecModelParamNames;
+	std::vector<double> m_vecModelParams;
+
+protected:
+	void SetModelParams();
 
 public:
 	SqwFuncModel(SqwBase* pSqw, const TASReso& reso);
@@ -241,7 +247,14 @@ public:
 	{ m_vecScanOrigin = tl::make_vec({h,k,l,E}); }
 	void SetScanDir(double h, double k, double l, double E)
 	{ m_vecScanDir = tl::make_vec({h,k,l,E}); }
+	
+	void AddModelParams(const std::string& strName, double dInitValue=0.)
+	{
+		m_vecModelParamNames.push_back(strName);
+		m_vecModelParams.push_back(dInitValue);
+	}
 };
+
 
 SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const TASReso& reso)
 	: m_pSqw(pSqw), m_reso(reso)
@@ -282,8 +295,8 @@ double SqwFuncModel::operator()(double x) const
 	for(int i=0; i<4; ++i)
 		dhklE_mean[i] /= double(m_iNumNeutrons);
 
-	tl::log_debug("Scan position: ", vecScanPos, ", S = ", dS*m_dScale);
-	return dS*m_dScale;
+	tl::log_debug("Scan position: ", vecScanPos, ", S = ", dS*m_dScale + m_dOffs);
+	return dS*m_dScale + m_dOffs;
 }
 
 SqwFuncModel* SqwFuncModel::copy() const
@@ -292,38 +305,66 @@ SqwFuncModel* SqwFuncModel::copy() const
 	SqwFuncModel* pMod = new SqwFuncModel(m_pSqw->shallow_copy(), m_reso);
 	pMod->m_vecScanOrigin = this->m_vecScanOrigin;
 	pMod->m_vecScanDir = this->m_vecScanDir;
+	pMod->m_iNumNeutrons = this->m_iNumNeutrons;
 	pMod->m_dScale = this->m_dScale;
+	pMod->m_dOffs = this->m_dOffs;
+	pMod->m_vecModelParamNames = this->m_vecModelParamNames;
+	pMod->m_vecModelParams = this->m_vecModelParams;
 	return pMod;
+}
+
+void SqwFuncModel::SetModelParams()
+{
+	const std::size_t iNumParams = m_vecModelParams.size();
+	std::vector<SqwBase::t_var> vecVars;
+	vecVars.reserve(iNumParams);
+
+	for(std::size_t iParam=0; iParam<iNumParams; ++iParam)
+	{
+		std::string strVal = tl::var_to_str(m_vecModelParams[iParam]);
+		SqwBase::t_var var = std::make_tuple(m_vecModelParamNames[iParam], "double", strVal);
+		vecVars.push_back(var);
+	}
+	
+	m_pSqw->SetVars(vecVars);
 }
 
 bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
 {
 	m_dScale = vecParams[0];
+	m_dOffs = vecParams[1];
+	
+	for(std::size_t iParam=2; iParam<vecParams.size(); ++iParam)
+		m_vecModelParams[iParam-2] = vecParams[iParam];
 
+	SetModelParams();
 	return true;
 }
 
 std::vector<std::string> SqwFuncModel::GetParamNames() const
 {
-	std::vector<std::string> vecNames = {"scale"};
+	std::vector<std::string> vecNames = {"scale", "offs"};
 
+	for(const std::string& str : m_vecModelParamNames)
+		vecNames.push_back(str);
 
 	return vecNames;
 }
 
 std::vector<double> SqwFuncModel::GetParamValues() const
 {
-	std::vector<double> vecVals = {m_dScale};
+	std::vector<double> vecVals = {m_dScale, m_dOffs};
 
+	for(double d : m_vecModelParams)
+		vecVals.push_back(d);
 
 	return vecVals;
 }
 
 std::vector<double> SqwFuncModel::GetParamErrors() const
 {
-	std::vector<double> vecErrs = {m_dScale/100.};
-
-
+	// ignore
+	std::vector<double> vecErrs;
 	return vecErrs;
 }
 
@@ -333,7 +374,7 @@ std::vector<double> SqwFuncModel::GetParamErrors() const
 
 int main()
 {
-	const char* pcFile = "/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0188.scn";
+	const char* pcFile = "/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0130.scn";
 	const char* pcRes = "/home/tweber/Projekte/tastools/test/mira.taz";
 	const char* pcSqw = "/home/tweber/Projekte/tastools/test/MgV2O4_phonons.dat";
 	
@@ -362,7 +403,8 @@ int main()
 	SqwFuncModel mod(pSqw, reso);
 	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
 	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
-
+	mod.SetNumNeutrons(2500);
+	mod.AddModelParams("TA2_E_HWHM", 0.5);
 
 	double dSigma = 1.;
 	tl::Chi2Function chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
@@ -370,15 +412,21 @@ int main()
 
 
 	minuit::MnUserParameters params;
-	params.Add("scale", 10000., 1000.);
-	
-	minuit::MnStrategy strat(0);
+	params.Add("scale", 9000., 1000.);
+	//params.Fix("scale");
+	params.Add("offs", 50., 10.);
+	params.Fix("offs");
+	params.Add("TA2_E_HWHM", 0.7, 0.4);
+
+	minuit::MnStrategy strat(1);
 	minuit::MnMigrad migrad(chi2fkt, params, strat);
 	minuit::FunctionMinimum mini = migrad();
 	bool bValidFit = mini.IsValid() && mini.HasValidParameters();
 	tl::log_info("Fit valid: ", bValidFit);
 	
-	std::cout << mini.UserState().Value("scale") << " +- " << mini.UserState().Error("scale") << std::endl;
+	std::cout << "scale = " << mini.UserState().Value("scale") << " +- " << mini.UserState().Error("scale") << std::endl;
+	std::cout << "offs = " << mini.UserState().Value("offs") << " +- " << mini.UserState().Error("offs") << std::endl;
+	std::cout << "TA2_E_HWHM = " << mini.UserState().Value("TA2_E_HWHM") << " +- " << mini.UserState().Error("TA2_E_HWHM") << std::endl;
 
 	return 0;
 }
