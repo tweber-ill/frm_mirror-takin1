@@ -491,6 +491,8 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 		create();
 	
 	//std::cout << "hwhm = " << m_dTA2_E_HWHM << std::endl;
+	//std::cout << "T = " << m_dT << std::endl;
+	//std::cout << "amp = " << m_dTA2_amp << std::endl;
 }
 
 SqwBase* SqwPhonon::shallow_copy() const

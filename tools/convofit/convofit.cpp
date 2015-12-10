@@ -20,6 +20,7 @@
 
 #include <Minuit2/FunctionMinimum.h>
 #include <Minuit2/MnMigrad.h>
+#include <Minuit2/MnSimplex.h>
 #include <Minuit2/MnPrint.h>
 
 namespace minuit = ROOT::Minuit2;
@@ -52,6 +53,7 @@ struct Scan
 	Plane plane;
 	bool bKiFixed=0;
 	double dKFix = 2.662;
+	double dTemp = 100.;
 
 	std::vector<ScanPoint> vecPoints;
 
@@ -125,8 +127,14 @@ bool load_file(const char* pcFile, Scan& scan)
 	const std::string strMonVar = pInstr->GetMonVar();
 	scan.vecCts = pInstr->GetCol(strCountVar);
 	scan.vecMon = pInstr->GetCol(strMonVar);
-	scan.vecCtsErr = tl::apply_fkt(scan.vecCts, std::sqrt);
-	scan.vecMonErr = tl::apply_fkt(scan.vecMon, std::sqrt);
+	std::function<double(double)> err = [](double d)->double 
+	{
+		//if(tl::float_equal(d, 0.))	// error 0 causes problems with minuit
+		//	return d/100.;
+		return std::sqrt(d);
+	};
+	scan.vecCtsErr = tl::apply_fkt(scan.vecCts, err);
+	scan.vecMonErr = tl::apply_fkt(scan.vecMon, err);
 
 	const std::array<double, 3> latt = pInstr->GetSampleLattice();
 	const std::array<double, 3> ang = pInstr->GetSampleAngles();
@@ -155,6 +163,14 @@ bool load_file(const char* pcFile, Scan& scan)
 		tl::log_info("kf = ", scan.dKFix);
 
 
+	const tl::FileInstr::t_vecVals& vecTemp = pInstr->GetCol("TT");
+	if(vecTemp.size() == 0)
+	{
+		tl::log_err("Sample temperature column not found.");
+		return false;
+	}
+	scan.dTemp = tl::mean_value(vecTemp);
+	tl::log_info("Sample temperature: ", scan.dTemp);
 
 
 	const std::size_t iNumPts = pInstr->GetScanCount();
@@ -267,6 +283,8 @@ public:
 	virtual std::vector<double> GetParamValues() const override;
 	virtual std::vector<double> GetParamErrors() const override;
 	
+	void SetOtherParams(double dTemperature);
+	
 	void SetReso(const TASReso& reso) { m_reso = reso; }
 	void SetNumNeutrons(unsigned int iNum) { m_iNumNeutrons = iNum; }
 
@@ -344,6 +362,15 @@ SqwFuncModel* SqwFuncModel::copy() const
 	return pMod;
 }
 
+void SqwFuncModel::SetOtherParams(double dTemperature)
+{
+	std::vector<SqwBase::t_var> vecVars;
+
+	vecVars.push_back(std::make_tuple("T", "double", tl::var_to_str(dTemperature)));
+	
+	m_pSqw->SetVars(vecVars);
+}
+
 void SqwFuncModel::SetModelParams()
 {
 	const std::size_t iNumParams = m_vecModelParams.size();
@@ -367,6 +394,10 @@ bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
 	
 	for(std::size_t iParam=2; iParam<vecParams.size(); ++iParam)
 		m_vecModelParams[iParam-2] = vecParams[iParam];
+	
+	//tl::log_debug("Params:");
+	//for(double d : vecParams)
+	//	tl::log_debug(d);
 
 	SetModelParams();
 	return true;
@@ -451,7 +482,7 @@ bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::siz
 int main()
 {
 	const char* pcFile = "/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0130.scn";
-	const char* pcRes = "/home/tweber/Projekte/tastools/test/mira.taz";
+	const char* pcRes = "/home/tweber/Auswertungen/instruments/in22.taz";
 	const char* pcSqw = "/home/tweber/Projekte/tastools/test/MgV2O4_phonons.dat";
 	
 	Scan sc;
@@ -481,7 +512,9 @@ int main()
 	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
 	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
 	mod.SetNumNeutrons(1000);
+	mod.SetOtherParams(sc.dTemp);
 	mod.AddModelParams("TA2_E_HWHM", 0.5);
+	//mod.AddModelParams("TA2_amp", 12.5);
 
 	double dSigma = 1.;
 	tl::Chi2Function chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
@@ -489,17 +522,19 @@ int main()
 
 
 	minuit::MnUserParameters params;
-	params.Add("scale", 9000., 1000.);
+	params.Add("scale", 15000., 5000.);
 	//params.Fix("scale");
-	params.Add("offs", 50., 10.);
+	params.Add("offs", 25., 10.);
 	params.Fix("offs");
-	params.Add("TA2_E_HWHM", 0.7, 0.4);
+	params.Add("TA2_E_HWHM", 0.5, 0.5);
+	//params.Add("TA2_amp", 12.5, 1.);
 
-	minuit::MnStrategy strat(1);
-	minuit::MnMigrad migrad(chi2fkt, params, strat);
-	minuit::FunctionMinimum mini = migrad();
-	bool bValidFit = mini.IsValid() && mini.HasValidParameters();
+	minuit::MnStrategy strat(0);
+	//minuit::MnMigrad minimiser(chi2fkt, params, strat);
+	minuit::MnSimplex minimiser(chi2fkt, params, strat);
+	minuit::FunctionMinimum mini = minimiser();
 	const minuit::MnUserParameterState& state = mini.UserState();
+	bool bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();
 	mod.SetParams(state);
 
 
@@ -508,19 +543,17 @@ int main()
 	std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax = std::minmax_element(sc.vecX.begin(), sc.vecX.end());
 	mod.Save(pcModOut, *xminmax.first, *xminmax.second, 256);
 	save_file(pcDatOut, sc);
-	
-	
+
+
+	std::cout << mini << std::endl;
 	tl::log_info("Fit valid: ", bValidFit);
-	std::cout << "scale = " << state.Value("scale") << " +- " << state.Error("scale") << std::endl;
-	std::cout << "offs = " << state.Value("offs") << " +- " << state.Error("offs") << std::endl;
-	std::cout << "TA2_E_HWHM = " << state.Value("TA2_E_HWHM") << " +- " << state.Error("TA2_E_HWHM") << std::endl;
 
 	
 	std::ostringstream ostr;
 	ostr << "gnuplot -p -e \"plot \\\"" 
 		<< pcModOut << "\\\" using 1:2 w lines lw 1.5 lt 1, \\\""
 		<< pcDatOut << "\\\" using 1:2:3 w yerrorbars ps 1 pt 7\"\n";
-		
+
 	std::system(ostr.str().c_str());
 	return 0;
 }
