@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <iostream>
+#include <fstream>
 
 #include <Minuit2/FunctionMinimum.h>
 #include <Minuit2/MnMigrad.h>
@@ -82,6 +83,32 @@ struct Scan
 		return pt;
 	}
 };
+
+
+bool save_file(const char* pcFile, const Scan& sc)
+{
+	std::ofstream ofstr(pcFile);
+	if(!ofstr)
+		return false;
+
+	ofstr << std::left << std::setw(20) << "# x" 
+		<< std::left << std::setw(20) << "counts" 
+		<< std::left << std::setw(20) << "count errors"
+		<< std::left << std::setw(20) << "monitor"
+		<< std::left << std::setw(20) << "monitor errors" << "\n";
+
+	const std::size_t iNum = sc.vecX.size();
+	for(std::size_t i=0; i<iNum; ++i)
+	{
+		ofstr << std::left << std::setw(20) << sc.vecX[i] 
+			<< std::left << std::setw(20) << sc.vecCts[i] 
+			<< std::left << std::setw(20) << sc.vecCtsErr[i]
+			<< std::left << std::setw(20) << sc.vecMon[i]
+			<< std::left << std::setw(20) << sc.vecMonErr[i] << "\n";
+	}
+	
+	return true;
+}
 
 bool load_file(const char* pcFile, Scan& scan)
 {
@@ -253,6 +280,10 @@ public:
 		m_vecModelParamNames.push_back(strName);
 		m_vecModelParams.push_back(dInitValue);
 	}
+	
+	void SetParams(const minuit::MnUserParameterState& state);
+
+	bool Save(const char *pcFile, double dXMin, double dXMax, std::size_t) const;
 };
 
 
@@ -368,6 +399,51 @@ std::vector<double> SqwFuncModel::GetParamErrors() const
 	return vecErrs;
 }
 
+void SqwFuncModel::SetParams(const minuit::MnUserParameterState& state)
+{
+	std::vector<double> vecNewVals;
+	
+	const std::vector<std::string> vecNames = GetParamNames();
+	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
+	{
+		const std::string& strName = vecNames[iParam];
+		
+		const double dVal = state.Value(strName);
+		//const double dErr = state.Error(strName);
+		
+		vecNewVals.push_back(dVal);
+	}
+	
+	SetParams(vecNewVals);
+}
+
+bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::size_t iNum=512) const
+{
+	std::ofstream ofstr(pcFile);
+	if(!ofstr)
+	{
+		tl::log_err("Cannot open \"", pcFile, "\".");
+		return false;
+	}
+	
+	const std::vector<std::string> vecNames = GetParamNames();
+	const std::vector<double> vecVals = GetParamValues();
+	
+	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
+		ofstr << "# " << vecNames[iParam] << " = " << vecVals[iParam] << "\n";
+
+	for(std::size_t i=0; i<iNum; ++i)
+	{
+		double dX = tl::lerp(dXMin, dXMax, double(i)/double(iNum-1));
+		double dY = (*this)(dX);
+		
+		ofstr << std::left << std::setw(20) << dX 
+			<< std::left << std::setw(20) << dY << "\n";
+	}
+	
+	return true;
+}
+
 // ----------------------------------------------------------------------------
 
 
@@ -394,6 +470,7 @@ int main()
 	reso.SetKiFix(sc.bKiFixed);
 	reso.SetKFix(sc.dKFix);
 	reso.SetAlgo(ResoAlgo::POP);
+	reso.SetOptimalFocus(ResoFocus(unsigned(ResoFocus::FOC_MONO_V) | unsigned(ResoFocus::FOC_ANA_H)));
 
 
 	tl::log_info("Loading S(q,w) file \"", pcSqw, "\".");
@@ -403,7 +480,7 @@ int main()
 	SqwFuncModel mod(pSqw, reso);
 	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
 	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
-	mod.SetNumNeutrons(2500);
+	mod.SetNumNeutrons(1000);
 	mod.AddModelParams("TA2_E_HWHM", 0.5);
 
 	double dSigma = 1.;
@@ -422,11 +499,28 @@ int main()
 	minuit::MnMigrad migrad(chi2fkt, params, strat);
 	minuit::FunctionMinimum mini = migrad();
 	bool bValidFit = mini.IsValid() && mini.HasValidParameters();
-	tl::log_info("Fit valid: ", bValidFit);
-	
-	std::cout << "scale = " << mini.UserState().Value("scale") << " +- " << mini.UserState().Error("scale") << std::endl;
-	std::cout << "offs = " << mini.UserState().Value("offs") << " +- " << mini.UserState().Error("offs") << std::endl;
-	std::cout << "TA2_E_HWHM = " << mini.UserState().Value("TA2_E_HWHM") << " +- " << mini.UserState().Error("TA2_E_HWHM") << std::endl;
+	const minuit::MnUserParameterState& state = mini.UserState();
+	mod.SetParams(state);
 
+
+	const char *pcModOut = "/home/tweber/tmp/mod.dat";
+	const char* pcDatOut = "/home/tweber/tmp/sc.dat";
+	std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax = std::minmax_element(sc.vecX.begin(), sc.vecX.end());
+	mod.Save(pcModOut, *xminmax.first, *xminmax.second, 256);
+	save_file(pcDatOut, sc);
+	
+	
+	tl::log_info("Fit valid: ", bValidFit);
+	std::cout << "scale = " << state.Value("scale") << " +- " << state.Error("scale") << std::endl;
+	std::cout << "offs = " << state.Value("offs") << " +- " << state.Error("offs") << std::endl;
+	std::cout << "TA2_E_HWHM = " << state.Value("TA2_E_HWHM") << " +- " << state.Error("TA2_E_HWHM") << std::endl;
+
+	
+	std::ostringstream ostr;
+	ostr << "gnuplot -p -e \"plot \\\"" 
+		<< pcModOut << "\\\" using 1:2 w lines lw 1.5 lt 1, \\\""
+		<< pcDatOut << "\\\" using 1:2:3 w yerrorbars ps 1 pt 7\"\n";
+		
+	std::system(ostr.str().c_str());
 	return 0;
 }
