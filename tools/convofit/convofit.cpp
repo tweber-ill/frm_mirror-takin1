@@ -260,9 +260,11 @@ protected:
 	ublas::vector<double> m_vecScanDir;		// hklE
 
 	double m_dScale = 1., m_dOffs = 0.;
+	double m_dScaleErr = 0.1, m_dOffsErr = 0.;
 
 	std::vector<std::string> m_vecModelParamNames;
 	std::vector<double> m_vecModelParams;
+	std::vector<double> m_vecModelErrs;
 
 protected:
 	void SetModelParams();
@@ -273,6 +275,7 @@ public:
 	virtual ~SqwFuncModel() = default;
 
 	virtual bool SetParams(const std::vector<double>& vecParams) override;
+	virtual bool SetErrs(const std::vector<double>& vecErrs);
 	virtual double operator()(double x) const override;
 
 	virtual SqwFuncModel* copy() const override;
@@ -293,13 +296,15 @@ public:
 	void SetScanDir(double h, double k, double l, double E)
 	{ m_vecScanDir = tl::make_vec({h,k,l,E}); }
 	
-	void AddModelParams(const std::string& strName, double dInitValue=0.)
+	void AddModelFitParams(const std::string& strName, double dInitValue=0., double dErr=0.)
 	{
 		m_vecModelParamNames.push_back(strName);
 		m_vecModelParams.push_back(dInitValue);
+		m_vecModelErrs.push_back(dErr);
 	}
 	
-	void SetParams(const minuit::MnUserParameterState& state);
+	minuit::MnUserParameters GetMinuitParams() const;
+	void SetMinuitParams(const minuit::MnUserParameterState& state);
 
 	bool Save(const char *pcFile, double dXMin, double dXMax, std::size_t) const;
 };
@@ -357,8 +362,11 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_iNumNeutrons = this->m_iNumNeutrons;
 	pMod->m_dScale = this->m_dScale;
 	pMod->m_dOffs = this->m_dOffs;
+	pMod->m_dScaleErr = this->m_dScaleErr;
+	pMod->m_dOffsErr = this->m_dOffsErr;
 	pMod->m_vecModelParamNames = this->m_vecModelParamNames;
 	pMod->m_vecModelParams = this->m_vecModelParams;
+	pMod->m_vecModelErrs = this->m_vecModelErrs;
 	return pMod;
 }
 
@@ -403,6 +411,18 @@ bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
 	return true;
 }
 
+bool SqwFuncModel::SetErrs(const std::vector<double>& vecErrs)
+{
+	m_dScaleErr = vecErrs[0];
+	m_dOffsErr = vecErrs[1];
+	
+	for(std::size_t iParam=2; iParam<vecErrs.size(); ++iParam)
+		m_vecModelErrs[iParam-2] = vecErrs[iParam];
+	
+	//SetModelParams();
+	return true;
+}
+
 std::vector<std::string> SqwFuncModel::GetParamNames() const
 {
 	std::vector<std::string> vecNames = {"scale", "offs"};
@@ -425,14 +445,18 @@ std::vector<double> SqwFuncModel::GetParamValues() const
 
 std::vector<double> SqwFuncModel::GetParamErrors() const
 {
-	// ignore
-	std::vector<double> vecErrs;
+	std::vector<double> vecErrs = {m_dScaleErr, m_dOffsErr};
+
+	for(double d : m_vecModelErrs)
+		vecErrs.push_back(d);
+
 	return vecErrs;
 }
 
-void SqwFuncModel::SetParams(const minuit::MnUserParameterState& state)
+void SqwFuncModel::SetMinuitParams(const minuit::MnUserParameterState& state)
 {
 	std::vector<double> vecNewVals;
+	std::vector<double> vecNewErrs;
 	
 	const std::vector<std::string> vecNames = GetParamNames();
 	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
@@ -440,12 +464,33 @@ void SqwFuncModel::SetParams(const minuit::MnUserParameterState& state)
 		const std::string& strName = vecNames[iParam];
 		
 		const double dVal = state.Value(strName);
-		//const double dErr = state.Error(strName);
+		const double dErr = state.Error(strName);
 		
 		vecNewVals.push_back(dVal);
+		vecNewErrs.push_back(dErr);
 	}
 	
 	SetParams(vecNewVals);
+	SetErrs(vecNewErrs);
+}
+
+minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
+{
+	minuit::MnUserParameters params;
+	
+	params.Add("scale", m_dScale, m_dScaleErr);
+	params.Add("offs", m_dOffs, m_dOffsErr);
+
+	for(std::size_t iParam=0; iParam<m_vecModelParamNames.size(); ++iParam)
+	{
+		const std::string& strParam = m_vecModelParamNames[iParam];
+		double dHint = m_vecModelParams[iParam];
+		double dErr = m_vecModelErrs[iParam];
+		
+		params.Add(strParam, dHint, dErr);
+	}
+	
+	return params;
 }
 
 bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::size_t iNum=512) const
@@ -481,7 +526,8 @@ bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::siz
 
 int main()
 {
-	const char* pcFile = "/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0130.scn";
+	//const char* pcFile = "/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0160.scn";
+	const char* pcFile = "/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0173.scn";
 	const char* pcRes = "/home/tweber/Auswertungen/instruments/in22.taz";
 	const char* pcSqw = "/home/tweber/Projekte/tastools/test/MgV2O4_phonons.dat";
 	
@@ -513,29 +559,36 @@ int main()
 	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
 	mod.SetNumNeutrons(1000);
 	mod.SetOtherParams(sc.dTemp);
-	mod.AddModelParams("TA2_E_HWHM", 0.5);
-	//mod.AddModelParams("TA2_amp", 12.5);
+	mod.AddModelFitParams("TA2_E_HWHM", 0.4, 0.4);
+	mod.AddModelFitParams("TA2_amp", 12.5, 1.);
 
 	double dSigma = 1.;
 	tl::Chi2Function chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
 	chi2fkt.SetSigma(dSigma);
 
 
-	minuit::MnUserParameters params;
-	params.Add("scale", 15000., 5000.);
+	minuit::MnUserParameters params = mod.GetMinuitParams();
+	params.SetValue("scale", 30000.);
+	params.SetError("scale", 5000.);
 	//params.Fix("scale");
-	params.Add("offs", 25., 10.);
+
+	params.SetValue("offs", 25.);
+	params.SetError("offs", 10.);
 	params.Fix("offs");
-	params.Add("TA2_E_HWHM", 0.5, 0.5);
-	//params.Add("TA2_amp", 12.5, 1.);
+
 
 	minuit::MnStrategy strat(0);
+	/*strat.SetGradientStepTolerance(1.);
+	strat.SetGradientTolerance(0.2);
+	strat.SetHessianStepTolerance(1.);
+	strat.SetHessianG2Tolerance(0.2);*/
+
 	//minuit::MnMigrad minimiser(chi2fkt, params, strat);
 	minuit::MnSimplex minimiser(chi2fkt, params, strat);
 	minuit::FunctionMinimum mini = minimiser();
 	const minuit::MnUserParameterState& state = mini.UserState();
 	bool bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();
-	mod.SetParams(state);
+	mod.SetMinuitParams(state);
 
 
 	const char *pcModOut = "/home/tweber/tmp/mod.dat";
@@ -545,8 +598,9 @@ int main()
 	save_file(pcDatOut, sc);
 
 
-	std::cout << mini << std::endl;
-	tl::log_info("Fit valid: ", bValidFit);
+	std::ostringstream ostrMini;
+	ostrMini << mini << "\n";
+	tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
 
 	
 	std::ostringstream ostr;
