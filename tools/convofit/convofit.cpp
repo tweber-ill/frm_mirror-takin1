@@ -533,171 +533,181 @@ int main(int argc, char** argv)
 	if(argc <= 1)
 	{
 		tl::log_info("Usage:");
-		tl::log_info("\t", argv[0], " <job file>");
-		return -1;
-	}
-	
-	tl::Prop<std::string> prop;
-	if(!prop.Load(argv[1], tl::PropType::INFO))
-	{
-		tl::log_err("Cannot load job file \"", argv[1], "\".");
+		tl::log_info("\t", argv[0], " <job file 1> <job file 2> ...");
 		return -1;
 	}
 
-	std::string strScFile = prop.Query<std::string>("input/scan_file");
-	std::string strResFile = prop.Query<std::string>("input/instrument_file");
-	std::string strSqwMod = prop.Query<std::string>("input/sqw_model");
-	std::string strSqwFile = prop.Query<std::string>("input/sqw_file");
-
-	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
-	
-	std::string strMinimiser = prop.Query<std::string>("fitter/minimiser");
-	int iStrat = prop.Query<int>("fitter/strategy", 0);
-	double dSigma = prop.Query<double>("fitter/sigma", 1.);
-
-	std::string strScOutFile = prop.Query<std::string>("output/scan_file");
-	std::string strModOutFile = prop.Query<std::string>("output/model_file");
-	bool bPlot = prop.Query<bool>("output/plot", 0);
-
-	if(strScOutFile=="" || strModOutFile=="")
+	for(int iArg=1; iArg<argc; ++iArg)
 	{
-		tl::log_err("Not output files selected.");
-		return -1;
-	}
-
-
-	std::string strFitParams = prop.Query<std::string>("fit_parameters/params");
-	std::string strFitValues = prop.Query<std::string>("fit_parameters/values");
-	std::string strFitErrors = prop.Query<std::string>("fit_parameters/errors");
-	std::string strFitFixed = prop.Query<std::string>("fit_parameters/fixed");
-
-	std::vector<std::string> vecFitParams;
-	tl::get_tokens<std::string, std::string>(strFitParams, " \t\n,;", vecFitParams);
-	std::vector<double> vecFitValues;
-	tl::get_tokens<double, std::string>(strFitValues, " \t\n,;", vecFitValues);
-	std::vector<double> vecFitErrors;
-	tl::get_tokens<double, std::string>(strFitErrors, " \t\n,;", vecFitErrors);
-	std::vector<bool> vecFitFixed;
-	tl::get_tokens<bool, std::string>(strFitFixed, " \t\n,;", vecFitFixed);
-
-	if(vecFitParams.size() != vecFitValues.size() || 
-		vecFitParams.size() != vecFitErrors.size() || 
-		vecFitParams.size() != vecFitFixed.size())
-	{
-		tl::log_err("Fit parameter size mismatch.");
-		return -1;
-	}
-
-
-
-	Scan sc;
-	if(!load_file(strScFile.c_str(), sc))
-		return -1;
-
-
-	TASReso reso;
-	tl::log_info("Loading instrument file \"", strResFile, "\".");
-	if(!reso.LoadRes(strResFile.c_str()))
-		return -1;
-	reso.SetLattice(sc.sample.a, sc.sample.b, sc.sample.c,
-		sc.sample.alpha, sc.sample.beta, sc.sample.gamma,
-		tl::make_vec({sc.plane.vec1[0], sc.plane.vec1[1], sc.plane.vec1[2]}), 
-		tl::make_vec({sc.plane.vec2[0], sc.plane.vec2[1], sc.plane.vec2[2]}));
-	reso.SetKiFix(sc.bKiFixed);
-	reso.SetKFix(sc.dKFix);
-	reso.SetAlgo(ResoAlgo::POP);
-	reso.SetOptimalFocus(ResoFocus(unsigned(ResoFocus::FOC_MONO_V) | unsigned(ResoFocus::FOC_ANA_H)));
-
-
-	tl::log_info("Loading S(q,w) file \"", strSqwFile, "\".");
-	SqwBase *pSqw = nullptr;
-	
-	if(strSqwMod == "phonons")
-		pSqw = new SqwPhonon(strSqwFile.c_str());
-	else
-	{
-		tl::log_err("Invalid S(q,w) model selected: \"", strSqwMod, "\".");
-		return -1;
-	}
-
-	if(!pSqw->IsOk())
-		return -1;
-	SqwFuncModel mod(pSqw, reso);
-	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
-	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
-	mod.SetNumNeutrons(iNumNeutrons);
-	mod.SetOtherParams(sc.dTemp);
-
-	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
-	{
-		const std::string& strParam = vecFitParams[iParam];
-		double dVal = vecFitValues[iParam];
-		double dErr = vecFitErrors[iParam];
-
-		// not a S(q,w) model parameter
-		if(strParam=="scale" || strParam=="offs")
-			continue;
-
-		mod.AddModelFitParams(strParam, dVal, dErr);
-	}
-
-	tl::Chi2Function chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
-	chi2fkt.SetSigma(dSigma);
-
-
-	minuit::MnUserParameters params = mod.GetMinuitParams();
-	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
-	{
-		const std::string& strParam = vecFitParams[iParam];
-		double dVal = vecFitValues[iParam];
-		double dErr = vecFitErrors[iParam];
-		bool bFix = vecFitFixed[iParam];
+		std::string strJob = argv[iArg];
+		tl::log_info("Executing job file ", iArg, ": \"", strJob, "\".");
 		
-		params.SetValue(strParam, dVal);
-		params.SetError(strParam, dErr);
-		if(bFix) params.Fix(strParam);
+		tl::Prop<std::string> prop;
+		if(!prop.Load(argv[1], tl::PropType::INFO))
+		{
+			tl::log_err("Cannot load job file \"", argv[1], "\".");
+			return -1;
+		}
+
+		std::string strScFile = prop.Query<std::string>("input/scan_file");
+		std::string strResFile = prop.Query<std::string>("input/instrument_file");
+		std::string strSqwMod = prop.Query<std::string>("input/sqw_model");
+		std::string strSqwFile = prop.Query<std::string>("input/sqw_file");
+
+		unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
+		
+		std::string strMinimiser = prop.Query<std::string>("fitter/minimiser");
+		int iStrat = prop.Query<int>("fitter/strategy", 0);
+		double dSigma = prop.Query<double>("fitter/sigma", 1.);
+
+		std::string strScOutFile = prop.Query<std::string>("output/scan_file");
+		std::string strModOutFile = prop.Query<std::string>("output/model_file");
+		bool bPlot = prop.Query<bool>("output/plot", 0);
+
+		if(strScOutFile=="" || strModOutFile=="")
+		{
+			tl::log_err("Not output files selected.");
+			return -1;
+		}
+
+
+		std::string strFitParams = prop.Query<std::string>("fit_parameters/params");
+		std::string strFitValues = prop.Query<std::string>("fit_parameters/values");
+		std::string strFitErrors = prop.Query<std::string>("fit_parameters/errors");
+		std::string strFitFixed = prop.Query<std::string>("fit_parameters/fixed");
+
+		std::vector<std::string> vecFitParams;
+		tl::get_tokens<std::string, std::string>(strFitParams, " \t\n,;", vecFitParams);
+		std::vector<double> vecFitValues;
+		tl::get_tokens<double, std::string>(strFitValues, " \t\n,;", vecFitValues);
+		std::vector<double> vecFitErrors;
+		tl::get_tokens<double, std::string>(strFitErrors, " \t\n,;", vecFitErrors);
+		std::vector<bool> vecFitFixed;
+		tl::get_tokens<bool, std::string>(strFitFixed, " \t\n,;", vecFitFixed);
+
+		if(vecFitParams.size() != vecFitValues.size() || 
+			vecFitParams.size() != vecFitErrors.size() || 
+			vecFitParams.size() != vecFitFixed.size())
+		{
+			tl::log_err("Fit parameter size mismatch.");
+			return -1;
+		}
+
+
+
+		Scan sc;
+		if(!load_file(strScFile.c_str(), sc))
+			return -1;
+
+
+		TASReso reso;
+		tl::log_info("Loading instrument file \"", strResFile, "\".");
+		if(!reso.LoadRes(strResFile.c_str()))
+			return -1;
+		reso.SetLattice(sc.sample.a, sc.sample.b, sc.sample.c,
+			sc.sample.alpha, sc.sample.beta, sc.sample.gamma,
+			tl::make_vec({sc.plane.vec1[0], sc.plane.vec1[1], sc.plane.vec1[2]}), 
+			tl::make_vec({sc.plane.vec2[0], sc.plane.vec2[1], sc.plane.vec2[2]}));
+		reso.SetKiFix(sc.bKiFixed);
+		reso.SetKFix(sc.dKFix);
+		reso.SetAlgo(ResoAlgo::POP);
+		reso.SetOptimalFocus(ResoFocus(unsigned(ResoFocus::FOC_MONO_V) | unsigned(ResoFocus::FOC_ANA_H)));
+
+
+		tl::log_info("Loading S(q,w) file \"", strSqwFile, "\".");
+		SqwBase *pSqw = nullptr;
+		
+		if(strSqwMod == "phonons")
+			pSqw = new SqwPhonon(strSqwFile.c_str());
+		else
+		{
+			tl::log_err("Invalid S(q,w) model selected: \"", strSqwMod, "\".");
+			return -1;
+		}
+
+		if(!pSqw->IsOk())
+			return -1;
+		SqwFuncModel mod(pSqw, reso);
+		mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
+		mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
+		mod.SetNumNeutrons(iNumNeutrons);
+		mod.SetOtherParams(sc.dTemp);
+
+		for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
+		{
+			const std::string& strParam = vecFitParams[iParam];
+			double dVal = vecFitValues[iParam];
+			double dErr = vecFitErrors[iParam];
+
+			// not a S(q,w) model parameter
+			if(strParam=="scale" || strParam=="offs")
+				continue;
+
+			mod.AddModelFitParams(strParam, dVal, dErr);
+		}
+
+		tl::Chi2Function chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
+		chi2fkt.SetSigma(dSigma);
+
+
+		minuit::MnUserParameters params = mod.GetMinuitParams();
+		for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
+		{
+			const std::string& strParam = vecFitParams[iParam];
+			double dVal = vecFitValues[iParam];
+			double dErr = vecFitErrors[iParam];
+			bool bFix = vecFitFixed[iParam];
+			
+			params.SetValue(strParam, dVal);
+			params.SetError(strParam, dErr);
+			if(bFix) params.Fix(strParam);
+		}
+
+
+		minuit::MnStrategy strat(iStrat);
+		/*strat.SetGradientStepTolerance(1.);
+		strat.SetGradientTolerance(0.2);
+		strat.SetHessianStepTolerance(1.);
+		strat.SetHessianG2Tolerance(0.2);*/
+
+		std::unique_ptr<minuit::MnApplication> pmini;
+		if(strMinimiser == "simplex")
+			pmini.reset(new minuit::MnSimplex(chi2fkt, params, strat));
+		else if(strMinimiser == "migrad")
+			pmini.reset(new minuit::MnMigrad(chi2fkt, params, strat));
+		else
+		{
+			tl::log_err("Invalid minimiser selected: \"", strMinimiser, "\".");
+			return -1;
+		}
+		minuit::FunctionMinimum mini = (*pmini)();
+		const minuit::MnUserParameterState& state = mini.UserState();
+		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();
+		mod.SetMinuitParams(state);
+
+
+		std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax = std::minmax_element(sc.vecX.begin(), sc.vecX.end());
+		mod.Save(strModOutFile.c_str(), *xminmax.first, *xminmax.second, 256);
+		save_file(strScOutFile.c_str(), sc);
+
+
+		std::ostringstream ostrMini;
+		ostrMini << mini << "\n";
+		tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
+
+		if(bPlot)
+		{
+			std::ostringstream ostr;
+			ostr << "gnuplot -p -e \"plot \\\"" 
+				<< strModOutFile.c_str() << "\\\" using 1:2 w lines lw 1.5 lt 1, \\\""
+				<< strScOutFile.c_str() << "\\\" using 1:2:3 w yerrorbars ps 1 pt 7\"\n";
+
+			std::system(ostr.str().c_str());
+		}
+
+		if(argc > 2)
+			tl::log_info("================================================================================");
 	}
 
-
-	minuit::MnStrategy strat(iStrat);
-	/*strat.SetGradientStepTolerance(1.);
-	strat.SetGradientTolerance(0.2);
-	strat.SetHessianStepTolerance(1.);
-	strat.SetHessianG2Tolerance(0.2);*/
-
-	std::unique_ptr<minuit::MnApplication> pmini;
-	if(strMinimiser == "simplex")
-		pmini.reset(new minuit::MnSimplex(chi2fkt, params, strat));
-	else if(strMinimiser == "migrad")
-		pmini.reset(new minuit::MnMigrad(chi2fkt, params, strat));
-	else
-	{
-		tl::log_err("Invalid minimiser selected: \"", strMinimiser, "\".");
-		return -1;
-	}
-	minuit::FunctionMinimum mini = (*pmini)();
-	const minuit::MnUserParameterState& state = mini.UserState();
-	bool bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();
-	mod.SetMinuitParams(state);
-
-
-	std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax = std::minmax_element(sc.vecX.begin(), sc.vecX.end());
-	mod.Save(strModOutFile.c_str(), *xminmax.first, *xminmax.second, 256);
-	save_file(strScOutFile.c_str(), sc);
-
-
-	std::ostringstream ostrMini;
-	ostrMini << mini << "\n";
-	tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
-
-	if(bPlot)
-	{
-		std::ostringstream ostr;
-		ostr << "gnuplot -p -e \"plot \\\"" 
-			<< strModOutFile.c_str() << "\\\" using 1:2 w lines lw 1.5 lt 1, \\\""
-			<< strScOutFile.c_str() << "\\\" using 1:2:3 w yerrorbars ps 1 pt 7\"\n";
-
-		std::system(ostr.str().c_str());
-	}
 	return 0;
 }
