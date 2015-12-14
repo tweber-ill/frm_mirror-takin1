@@ -14,7 +14,7 @@
 
 #include "tlibs/math/lattice.h"
 #include "tlibs/math/linalg.h"
-#include "tlibs/file/xml.h"
+#include "tlibs/file/prop.h"
 #include "tools/taz/tasoptions.h"
 #include "RecipParamDlg.h"
 
@@ -48,7 +48,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 
 	public:
 		void ClearList();
-		
+
 	protected:
 		bool GotoPos(QListWidgetItem* pItem, bool bApply);
 		bool ApplyCurPos();
@@ -70,7 +70,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 	public slots:
 		void CalcMonoAna();
 		void CalcSample();
-		
+
 		void AddPosToList(double dh, double dk, double dl, double dki, double dkf);
 
 	public:
@@ -85,7 +85,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		void SetMonoSense(bool bSense) { m_bSenseM = bSense; }
 		void SetSampleSense(bool bSense) { m_bSenseS = bSense; }
 		void SetAnaSense(bool bSense) { m_bSenseA = bSense; }
-		
+
 		bool GotoPos(unsigned int iItem);
 
 	protected slots:
@@ -101,7 +101,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 
 	public:
 		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
-		void Load(tl::Xml& xml, const std::string& strXmlRoot);
+		void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
 };
 
 #endif

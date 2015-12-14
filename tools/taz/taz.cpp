@@ -25,7 +25,6 @@
 #include "tlibs/string/spec_char.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/flags.h"
-#include "tlibs/file/xml.h"
 #include "tlibs/file/recent.h"
 #include "tlibs/helper/log.h"
 

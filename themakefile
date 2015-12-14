@@ -192,7 +192,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o obj/FormfactorDlg.o \
 	obj/FilePreviewDlg.o obj/AtomsDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
-	obj/xml.o obj/crystalsys.o obj/formfact.o \
+	obj/crystalsys.o obj/formfact.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/loadinstr.o obj/recent.o obj/globals.o \
 	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
@@ -204,14 +204,14 @@ OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
 
 OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ellipse.o \
-	obj/xml.o obj/rand.o obj/tasreso.o \
+	obj/rand.o obj/tasreso.o \
 	obj/loadtxt.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/loadinstr.o obj/minuit.o ${OBJ_MONTECONVO}
 
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
-	obj/xml.o obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
@@ -222,7 +222,7 @@ OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup_clp.o obj/crystals
 OBJ_GENTAB = obj/gentab.o
 
 OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals_noqt.o \
-	obj/formfact.o obj/xml.o obj/log.o
+	obj/formfact.o obj/log.o
 
 
 ifeq ($(USE_3D), 1)
@@ -354,8 +354,6 @@ obj/sics.o: tools/taz/sics.cpp tools/taz/sics.h
 obj/tlibs_ver.o: tlibs/version.cpp tlibs/version.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/spec_char.o: tlibs/string/spec_char.cpp tlibs/string/spec_char.h
-	${CC} ${FLAGS} -c -o $@ $<
-obj/xml.o: tlibs/file/xml.cpp tlibs/file/xml.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/log.o: tlibs/helper/log.cpp tlibs/helper/log.h
 	${CC} ${FLAGS} -c -o $@ $<

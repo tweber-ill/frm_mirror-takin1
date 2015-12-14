@@ -25,24 +25,24 @@ void TazDlg::New()
 	crys.dLattice[0] = crys.dLattice[1] = crys.dLattice[2] = 5.;
 	crys.dLatticeAngles[0] = crys.dLatticeAngles[1] = crys.dLatticeAngles[2] = 90.;
 	crys.bChangedLattice = crys.bChangedLatticeAngles = 1;
-	
+
 	crys.dPlane1[0] = 1.; crys.dPlane1[1] = 0.; crys.dPlane1[2] = 0.;
 	crys.dPlane2[0] = 0.; crys.dPlane2[1] = 1.; crys.dPlane2[2] = 0.;
 	crys.bChangedPlane1 = crys.bChangedPlane2 = 1;
-	
+
 	crys.strSampleName = " ";
 	crys.strSpacegroup = "";
 	crys.bChangedSpacegroup = 1;
-	
+
 	triag.dAnaD = triag.dMonoD = 3.355;
 	triag.bChangedAnaD = triag.bChangedMonoD = 1;
 	triag.dAnaTwoTheta = triag.dMonoTwoTheta = M_PI/2.;
 	triag.bChangedAnaTwoTheta = triag.bChangedMonoTwoTheta = 1;
-	
+
 	triag.dTwoTheta = M_PI/2.;
 	triag.dAngleKiVec0 = M_PI/4.;
 	triag.bChangedTwoTheta = triag.bChangedAngleKiVec0 = 1;
-	
+
 	m_vecAtoms.clear();
 	m_strCurFile = "";
 	setWindowTitle(s_strTitle.c_str());
@@ -80,8 +80,8 @@ bool TazDlg::Load(const char* pcFile)
 	std::string strDir = tl::get_dir(strFile1);
 
 
-	tl::Xml xml;
-	if(!xml.Load(strFile1.c_str()))
+	tl::Prop<std::string> xml;
+	if(!xml.Load(strFile1.c_str(), tl::PropType::XML))
 	{
 		QMessageBox::critical(this, "Error", "Could not load configuration file.");
 		return false;
@@ -106,7 +106,7 @@ bool TazDlg::Load(const char* pcFile)
 
 		for(unsigned int iEditBox=0; iEditBox<pVec->size(); ++iEditBox)
 		{
-			std::string str = xml.QueryString((strXmlRoot+(*pvecName)[iEditBox]).c_str(), "0", &bOk);
+			std::string str = xml.Query<std::string>((strXmlRoot+(*pvecName)[iEditBox]).c_str(), "0", &bOk);
 			tl::trim(str);
 			if(bOk)
 				(*pVec)[iEditBox]->setText(str.c_str());
@@ -115,7 +115,7 @@ bool TazDlg::Load(const char* pcFile)
 		++iIdxEdit;
 	}
 
-	std::string strDescr = xml.QueryString((strXmlRoot+"sample/descr").c_str(), "", &bOk);
+	std::string strDescr = xml.Query<std::string>((strXmlRoot+"sample/descr").c_str(), "", &bOk);
 	if(bOk)
 		editDescr->setText(strDescr.c_str());
 
@@ -204,7 +204,7 @@ bool TazDlg::Load(const char* pcFile)
 	if(bOk)
 		m_pShowRealQDir->setChecked(bRealQEnabled!=0);
 
-	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
+	std::string strSpaceGroup = xml.Query<std::string>((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
 	tl::trim(strSpaceGroup);
 	if(bOk)
 	{
@@ -229,7 +229,7 @@ bool TazDlg::Load(const char* pcFile)
 			atom.vecPos.resize(3,0);
 
 			std::string strNr = tl::var_to_str(iAtom);
-			atom.strAtomName = xml.QueryString((strXmlRoot + "sample/atoms/" + strNr + "/name").c_str(), "");
+			atom.strAtomName = xml.Query<std::string>((strXmlRoot + "sample/atoms/" + strNr + "/name").c_str(), "");
 			atom.vecPos[0] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/x").c_str(), 0.);
 			atom.vecPos[1] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/y").c_str(), 0.);
 			atom.vecPos[2] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/z").c_str(), 0.);
@@ -391,7 +391,9 @@ bool TazDlg::Save()
 	if(m_pGotoDlg) m_pGotoDlg->Save(mapConf, strXmlRoot);
 
 
-	if(!tl::Xml::SaveMap(m_strCurFile.c_str(), mapConf))
+	tl::Prop<std::string> xml;
+	xml.Add(mapConf);
+	if(!xml.Save(m_strCurFile.c_str(), tl::PropType::XML))
 	{
 		QMessageBox::critical(this, "Error", "Could not save configuration file.");
 		return false;

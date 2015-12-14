@@ -21,7 +21,7 @@
 #include "pop.h"
 #include "eck.h"
 #include "tlibs/math/linalg.h"
-#include "tlibs/file/xml.h"
+#include "tlibs/file/prop.h"
 #ifndef NO_3D
 	#include "helper/plotgl.h"
 #endif
@@ -125,7 +125,7 @@ public slots:
 	void SampleParamsChanged(const SampleParams& parms);
 
 public:
-	void Load(tl::Xml& xml, const std::string& strXmlRoot);
+	void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
 	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 
 signals:

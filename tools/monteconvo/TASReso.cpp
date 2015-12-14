@@ -7,7 +7,7 @@
 
 #include "TASReso.h"
 #include "tlibs/math/lattice.h"
-#include "tlibs/file/xml.h"
+#include "tlibs/file/prop.h"
 #include "tlibs/helper/log.h"
 
 #include <boost/units/io.hpp>
@@ -47,8 +47,8 @@ bool TASReso::LoadLattice(const char* pcXmlFile)
 {
 	const std::string strXmlRoot("taz/");
 
-	tl::Xml xml;
-	if(!xml.Load(pcXmlFile))
+	tl::Prop<std::string> xml;
+	if(!xml.Load(pcXmlFile, tl::PropType::XML))
 	{
 		tl::log_err("Cannot load crystal file \"", pcXmlFile, "\".");
 		return false;
@@ -81,8 +81,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 {
 	const std::string strXmlRoot("taz/");
 
-	tl::Xml xml;
-	if(!xml.Load(pcXmlFile))
+	tl::Prop<std::string> xml;
+	if(!xml.Load(pcXmlFile, tl::PropType::XML))
 	{
 		tl::log_err("Cannot load resolution file \"", pcXmlFile, "\".");
 		return false;

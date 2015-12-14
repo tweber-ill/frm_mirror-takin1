@@ -158,7 +158,9 @@ void ResoDlg::SaveRes()
 	std::map<std::string, std::string> mapConf;
 	Save(mapConf, strXmlRoot);
 
-	bool bOk = tl::Xml::SaveMap(strFile.c_str(), mapConf);
+	tl::Prop<std::string> xml;
+	xml.Add(mapConf);
+	bool bOk = xml.Save(strFile.c_str(), tl::PropType::XML);
 	if(!bOk)
 		QMessageBox::critical(this, "Error", "Could not save resolution file.");
 
@@ -184,8 +186,8 @@ void ResoDlg::LoadRes()
 	std::string strFile = qstrFile.toStdString();
 	std::string strDir = tl::get_dir(strFile);
 
-	tl::Xml xml;
-	if(!xml.Load(strFile.c_str()))
+	tl::Prop<std::string> xml;
+	if(!xml.Load(strFile.c_str(), tl::PropType::XML))
 	{
 		QMessageBox::critical(this, "Error", "Could not load resolution file.");
 		return;
@@ -605,7 +607,7 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 	mapConf[strXmlRoot + "reso/use_guide"] = groupGuide->isChecked() ? "1" : "0";
 }
 
-void ResoDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
+void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;

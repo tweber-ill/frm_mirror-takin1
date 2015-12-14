@@ -10,10 +10,9 @@
 #include <sstream>
 
 #include "../../tlibs/string/string.h"
+#include "../../tlibs/file/prop.h"
 
 #include <boost/version.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 namespace prop = boost::property_tree;
 namespace algo = boost::algorithm;
 
@@ -39,23 +38,14 @@ namespace clipper { namespace data
 namespace dat = clipper::data;
 
 
-using t_prop = prop::basic_ptree<std::string, std::string>;
-
-// in later boost versions, the template arg is now the string type, not the char type
-#if BOOST_VERSION >= 105700
-	using t_writer = typename t_prop::key_type;
-#else
-	using t_writer = typename t_prop::key_type::value_type;
-#endif
-
-
 bool gen_formfacts()
 {
-	t_prop prop;
+	tl::Prop<std::string> prop;
+	prop.SetSeparator('.');
 
-	prop.add("ffacts.source", "Form factor coefficients from Clipper");
-	prop.add("ffacts.source_url", "http://www.ysbl.york.ac.uk/~cowtan/clipper/");
-	prop.add("ffacts.num_atoms", tl::var_to_str(dat::numsfdata));
+	prop.Add("ffacts.source", "Form factor coefficients from Clipper");
+	prop.Add("ffacts.source_url", "http://www.ysbl.york.ac.uk/~cowtan/clipper/");
+	prop.Add("ffacts.num_atoms", tl::var_to_str(dat::numsfdata));
 
 	for(unsigned int iFF=0; iFF<dat::numsfdata; ++iFF)
 	{
@@ -70,10 +60,10 @@ bool gen_formfacts()
 			strB += tl::var_to_str(dat::sfdata[iFF].b[i]) + " ";
 		}
 
-		prop.add(strAtom + ".name", std::string(dat::sfdata[iFF].atomname));
-		prop.add(strAtom + ".a", strA);
-		prop.add(strAtom + ".b", strB);
-		prop.add(strAtom + ".c", tl::var_to_str(dat::sfdata[iFF].c));
+		prop.Add(strAtom + ".name", std::string(dat::sfdata[iFF].atomname));
+		prop.Add(strAtom + ".a", strA);
+		prop.Add(strAtom + ".b", strB);
+		prop.Add(strAtom + ".c", tl::var_to_str(dat::sfdata[iFF].c));
 	}
 
 
@@ -84,8 +74,7 @@ bool gen_formfacts()
 		return false;
 	}
 
-	prop::write_xml(ofstr, prop, prop::xml_writer_settings<t_writer>('\t',1));
-	return true;
+	return prop.Save(ofstr, tl::PropType::XML);
 }
 
 // ============================================================================
@@ -132,10 +121,11 @@ bool gen_scatlens()
 	tl::get_tokens_seq<std::string, std::string>(strTable, "<tr>", vecRows, 0);
 
 
-	prop::ptree prop;
-	prop.add("scatlens.source", "Scattering lengths and cross-sections from NIST");
-	prop.add("scatlens.source_url", "https://www.ncnr.nist.gov/resources/n-lengths/list.html");
-	prop.add("scatlens.num_atoms", tl::var_to_str(vecRows.size()));
+	tl::Prop<std::string> prop;
+	prop.SetSeparator('.');
+	prop.Add("scatlens.source", "Scattering lengths and cross-sections from NIST");
+	prop.Add("scatlens.source_url", "https://www.ncnr.nist.gov/resources/n-lengths/list.html");
+	prop.Add("scatlens.num_atoms", tl::var_to_str(vecRows.size()));
 
 	unsigned int iAtom = 0;
 	for(const std::string& strRow : vecRows)
@@ -160,14 +150,14 @@ bool gen_scatlens()
 		std::string strXsecScat = vecCol[7]; formatnumber(strXsecScat);
 		std::string strXsecAbsTherm = vecCol[8]; formatnumber(strXsecAbsTherm);
 
-		prop.add(strAtom + ".name", strName);
-		prop.add(strAtom + ".coh", strCoh);
-		prop.add(strAtom + ".incoh", strIncoh);
+		prop.Add(strAtom + ".name", strName);
+		prop.Add(strAtom + ".coh", strCoh);
+		prop.Add(strAtom + ".incoh", strIncoh);
 
-		prop.add(strAtom + ".xsec_coh", strXsecCoh);
-		prop.add(strAtom + ".xsec_incoh", strXsecIncoh);
-		prop.add(strAtom + ".xsec_scat", strXsecScat);
-		prop.add(strAtom + ".xsec_abs", strXsecAbsTherm);
+		prop.Add(strAtom + ".xsec_coh", strXsecCoh);
+		prop.Add(strAtom + ".xsec_incoh", strXsecIncoh);
+		prop.Add(strAtom + ".xsec_scat", strXsecScat);
+		prop.Add(strAtom + ".xsec_abs", strXsecAbsTherm);
 
 		++iAtom;
 	}
@@ -180,7 +170,7 @@ bool gen_scatlens()
 		return false;
 	}
 
-	prop::write_xml(ofstr, prop, prop::xml_writer_settings<t_writer>('\t',1));
+	prop.Save(ofstr, tl::PropType::XML);
 	return true;
 }
 

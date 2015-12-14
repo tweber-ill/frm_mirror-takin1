@@ -581,7 +581,10 @@ void PowderDlg::SavePowder()
 	std::map<std::string, std::string> mapConf;
 	Save(mapConf, strXmlRoot);
 
-	bool bOk = tl::Xml::SaveMap(strFile.c_str(), mapConf);
+	tl::Prop<std::string> xml;
+	xml.Add(mapConf);
+
+	bool bOk = xml.Save(strFile.c_str(), tl::PropType::XML);
 	if(!bOk)
 		QMessageBox::critical(this, "Error", "Could not save powder file.");
 
@@ -607,8 +610,8 @@ void PowderDlg::LoadPowder()
 	std::string strFile = qstrFile.toStdString();
 	std::string strDir = tl::get_dir(strFile);
 
-	tl::Xml xml;
-	if(!xml.Load(strFile.c_str()))
+	tl::Prop<std::string> xml;
+	if(!xml.Load(strFile.c_str(), tl::PropType::XML))
 	{
 		QMessageBox::critical(this, "Error", "Could not load powder file.");
 		return;
@@ -652,7 +655,7 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 	}
 }
 
-void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
+void PowderDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	m_bDontCalc = 1;
 	bool bOk=0;
@@ -668,7 +671,7 @@ void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 	spinOrder->setValue(xml.Query<int>((strXmlRoot + "powder/maxhkl").c_str(), 10, &bOk));
 	spinLam->setValue(xml.Query<double>((strXmlRoot + "powder/lambda").c_str(), 5., &bOk));
 
-	std::string strSpaceGroup = xml.QueryString((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
+	std::string strSpaceGroup = xml.Query<std::string>((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
 	tl::trim(strSpaceGroup);
 	if(bOk)
 	{
@@ -692,7 +695,7 @@ void PowderDlg::Load(tl::Xml& xml, const std::string& strXmlRoot)
 			atom.vecPos.resize(3,0);
 
 			std::string strNr = tl::var_to_str(iAtom);
-			atom.strAtomName = xml.QueryString((strXmlRoot + "sample/atoms/" + strNr + "/name").c_str(), "");
+			atom.strAtomName = xml.Query<std::string>((strXmlRoot + "sample/atoms/" + strNr + "/name").c_str(), "");
 			atom.vecPos[0] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/x").c_str(), 0.);
 			atom.vecPos[1] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/y").c_str(), 0.);
 			atom.vecPos[2] = xml.Query<double>((strXmlRoot + "sample/atoms/" + strNr + "/z").c_str(), 0.);

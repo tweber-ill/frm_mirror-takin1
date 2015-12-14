@@ -9,7 +9,7 @@
 #include "globals.h"
 #include "tlibs/math/math.h"
 #include "tlibs/helper/log.h"
-#include "tlibs/file/xml.h"
+#include "tlibs/file/prop.h"
 #include "tlibs/string/string.h"
 
 
@@ -17,8 +17,8 @@
 
 void FormfactList::Init()
 {
-	tl::Xml xml;
-	if(!xml.Load(find_resource("res/ffacts.xml").c_str()))
+	tl::Prop<std::string> xml;
+	if(!xml.Load(find_resource("res/ffacts.xml").c_str(), tl::PropType::XML))
 		return;
 
 	unsigned int iNumDat = xml.Query<unsigned int>("ffacts/num_atoms", 0);
@@ -28,11 +28,11 @@ void FormfactList::Init()
 		elem_type ffact;
 		std::string strAtom = "ffacts/atom_" + tl::var_to_str(iSf);
 
-		ffact.strAtom = xml.QueryString((strAtom + "/name").c_str(), "");
+		ffact.strAtom = xml.Query<std::string>((strAtom + "/name").c_str(), "");
 		tl::get_tokens<value_type, std::string, std::vector<value_type>>
-			(xml.QueryString((strAtom + "/a").c_str(), ""), " \t", ffact.a);
+			(xml.Query<std::string>((strAtom + "/a").c_str(), ""), " \t", ffact.a);
 		tl::get_tokens<value_type, std::string, std::vector<value_type>>
-			(xml.QueryString((strAtom + "/b").c_str(), ""), " \t", ffact.b);
+			(xml.Query<std::string>((strAtom + "/b").c_str(), ""), " \t", ffact.b);
 		ffact.c = xml.Query<value_type>((strAtom + "/c").c_str(), 0.);
 
 		if(!bIonStart && ffact.strAtom.find_first_of("+-") != std::string::npos)
@@ -44,8 +44,8 @@ void FormfactList::Init()
 			s_vecIons.push_back(std::move(ffact));
 	}
 
-	s_strSrc = xml.QueryString("ffacts/source", "");
-	s_strSrcUrl = xml.QueryString("ffacts/source_url", "");
+	s_strSrc = xml.Query<std::string>("ffacts/source", "");
+	s_strSrcUrl = xml.Query<std::string>("ffacts/source_url", "");
 }
 
 std::vector<Formfact<double>> FormfactList::s_vecAtoms;
@@ -103,8 +103,8 @@ const FormfactList::elem_type* FormfactList::Find(const std::string& strElem) co
 
 void ScatlenList::Init()
 {
-	tl::Xml xml;
-	if(!xml.Load(find_resource("res/scatlens.xml").c_str()))
+	tl::Prop<std::string> xml;
+	if(!xml.Load(find_resource("res/scatlens.xml").c_str(), tl::PropType::XML))
 		return;
 
 	const unsigned int iNumDat = xml.Query<unsigned int>("scatlens/num_atoms", 0);
@@ -114,7 +114,7 @@ void ScatlenList::Init()
 		ScatlenList::elem_type slen;
 		std::string strAtom = "scatlens/atom_" + tl::var_to_str(iSl);
 
-		slen.strAtom = xml.QueryString((strAtom + "/name").c_str(), "");
+		slen.strAtom = xml.Query<std::string>((strAtom + "/name").c_str(), "");
 		slen.coh = xml.Query<ScatlenList::value_type>((strAtom + "/coh").c_str(), 0.);
 		slen.incoh = xml.Query<ScatlenList::value_type>((strAtom + "/incoh").c_str(), 0.);
 
@@ -130,8 +130,8 @@ void ScatlenList::Init()
 			s_vecElems.push_back(std::move(slen));
 	}
 
-	s_strSrc = xml.QueryString("scatlens/source", "");
-	s_strSrcUrl = xml.QueryString("scatlens/source_url", "");
+	s_strSrc = xml.Query<std::string>("scatlens/source", "");
+	s_strSrcUrl = xml.Query<std::string>("scatlens/source_url", "");
 }
 
 std::vector<ScatlenList::elem_type> ScatlenList::s_vecElems;

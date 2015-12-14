@@ -22,7 +22,7 @@
 	#include "helper/spacegroup.h"
 #endif
 
-#include "tlibs/file/xml.h"
+#include "tlibs/file/prop.h"
 #include "AtomsDlg.h"
 
 #include <qwt_plot.h>
@@ -94,7 +94,7 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 
 		void ShowAtomDlg();
 		void ApplyAtoms(const std::vector<AtomPos>&);
-		
+
 		void cursorMoved(const QPointF& pt);
 
 	protected:
@@ -104,7 +104,7 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		const SpaceGroup* GetCurSpaceGroup() const;
 
 		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
-		void Load(tl::Xml& xml, const std::string& strXmlRoot);
+		void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
 };
 
 #endif
