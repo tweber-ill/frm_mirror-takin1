@@ -1,0 +1,58 @@
+; convofit job file
+
+input
+{
+;	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0160.scn"
+	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0173.scn"
+	instrument_file	"/home/tweber/Auswertungen/instruments/in22.taz"
+
+	sqw_model	"phonons"
+	sqw_file	"/home/tweber/Projekte/tastools/test/MgV2O4_phonons.dat"
+}
+
+
+montecarlo
+{
+	neutrons	1000
+}
+
+
+
+fitter
+{
+	minimiser	"simplex"	; "simplex" or "migrad"
+	strategy	0		; 0 (low), 1 (medium) or 2 (high)
+
+	sigma		1.
+}
+
+
+; don't remove "scale" and "offs"!
+fit_parameters
+{
+	params		"scale "\
+			"offs "\
+			"TA2_E_HWHM "\
+			"TA2_amp "
+
+	values		"30000 "\
+			"25 "\
+			"0.4 "\
+			"12.5 "
+
+	errors		"5000 "\
+			"10 "\
+			"0.4 "\
+			"1. "
+
+	fixed		"0 1 0 0"
+}
+
+
+output
+{
+	scan_file	"/home/tweber/tmp/sc.dat"
+	model_file	"/home/tweber/tmp/mod.dat"
+
+	plot	1
+}
