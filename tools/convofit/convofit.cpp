@@ -543,9 +543,9 @@ int main(int argc, char** argv)
 		tl::log_info("Executing job file ", iArg, ": \"", strJob, "\".");
 		
 		tl::Prop<std::string> prop;
-		if(!prop.Load(argv[1], tl::PropType::INFO))
+		if(!prop.Load(strJob.c_str(), tl::PropType::INFO))
 		{
-			tl::log_err("Cannot load job file \"", argv[1], "\".");
+			tl::log_err("Cannot load job file \"", strJob, "\".");
 			return -1;
 		}
 
