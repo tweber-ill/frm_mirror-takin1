@@ -54,7 +54,7 @@ struct Scan
 	Plane plane;
 	bool bKiFixed=0;
 	double dKFix = 2.662;
-	double dTemp = 100.;
+	double dTemp = 100., dTempErr=0.;
 
 	std::vector<ScanPoint> vecPoints;
 
@@ -93,6 +93,22 @@ bool save_file(const char* pcFile, const Scan& sc)
 	std::ofstream ofstr(pcFile);
 	if(!ofstr)
 		return false;
+	
+	ofstr.precision(16);
+
+	ofstr << "# scan_origin: " 
+		<< sc.vecScanOrigin[0] << " "
+		<< sc.vecScanOrigin[1] << " "
+		<< sc.vecScanOrigin[2] << " "
+		<< sc.vecScanOrigin[3] << "\n";
+	ofstr << "# scan_dir: " 
+		<< sc.vecScanDir[0] << " "
+		<< sc.vecScanDir[1] << " "
+		<< sc.vecScanDir[2] << " "
+		<< sc.vecScanDir[3] << "\n";
+	ofstr << "# T: " << sc.dTemp << " +- " << sc.dTempErr << "\n";
+	
+	ofstr << "#\n";
 
 	ofstr << std::left << std::setw(20) << "# x" 
 		<< std::left << std::setw(20) << "counts" 
@@ -171,7 +187,8 @@ bool load_file(const char* pcFile, Scan& scan)
 		return false;
 	}
 	scan.dTemp = tl::mean_value(vecTemp);
-	tl::log_info("Sample temperature: ", scan.dTemp);
+	scan.dTempErr = tl::std_dev(vecTemp);
+	tl::log_info("Sample temperature: ", scan.dTemp, " +- ", scan.dTempErr);
 
 
 	const std::size_t iNumPts = pInstr->GetScanCount();
@@ -503,6 +520,8 @@ bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::siz
 		return false;
 	}
 	
+	ofstr.precision(16);
+
 	const std::vector<std::string> vecNames = GetParamNames();
 	const std::vector<double> vecVals = GetParamValues();
 	const std::vector<double> vecErrs = GetParamErrors();
