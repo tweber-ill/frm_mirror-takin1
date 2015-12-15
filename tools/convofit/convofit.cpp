@@ -556,9 +556,18 @@ int main(int argc, char** argv)
 
 		unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
 		
+		std::string strResAlgo = prop.Query<std::string>("resolution/algorithm", "pop");
+		bool bResFocMonoV = prop.Query<bool>("resolution/focus_mono_v", 0);
+		bool bResFocMonoH = prop.Query<bool>("resolution/focus_mono_h", 0);
+		bool bResFocAnaV = prop.Query<bool>("resolution/focus_ana_v", 0);
+		bool bResFocAnaH = prop.Query<bool>("resolution/focus_ana_h", 0);
+		
 		std::string strMinimiser = prop.Query<std::string>("fitter/minimiser");
 		int iStrat = prop.Query<int>("fitter/strategy", 0);
 		double dSigma = prop.Query<double>("fitter/sigma", 1.);
+
+		unsigned int iMaxFuncCalls = prop.Query<unsigned>("fitter/max_funccalls", 0);
+		double dTolerance = prop.Query<double>("fitter/tolerance", 0.5);
 
 		std::string strScOutFile = prop.Query<std::string>("output/scan_file");
 		std::string strModOutFile = prop.Query<std::string>("output/model_file");
@@ -610,8 +619,29 @@ int main(int argc, char** argv)
 			tl::make_vec({sc.plane.vec2[0], sc.plane.vec2[1], sc.plane.vec2[2]}));
 		reso.SetKiFix(sc.bKiFixed);
 		reso.SetKFix(sc.dKFix);
-		reso.SetAlgo(ResoAlgo::POP);
-		reso.SetOptimalFocus(ResoFocus(unsigned(ResoFocus::FOC_MONO_V) | unsigned(ResoFocus::FOC_ANA_H)));
+		
+		if(strResAlgo == "pop")
+			reso.SetAlgo(ResoAlgo::POP);
+		else if(strResAlgo == "cn")
+			reso.SetAlgo(ResoAlgo::CN);
+		else if(strResAlgo == "eck")
+			reso.SetAlgo(ResoAlgo::ECK);
+		else
+		{
+			tl::log_err("Invalid resolution algorithm selected: \"", strResAlgo, "\".");
+			return -1;
+		}
+		
+		if(bResFocMonoV || bResFocMonoH || bResFocAnaV || bResFocAnaH)
+		{
+			unsigned iFoc = 0;
+			if(bResFocMonoV) iFoc |= unsigned(ResoFocus::FOC_MONO_V);
+			if(bResFocMonoH) iFoc |= unsigned(ResoFocus::FOC_MONO_H);
+			if(bResFocAnaV) iFoc |= unsigned(ResoFocus::FOC_ANA_V);
+			if(bResFocAnaH) iFoc |= unsigned(ResoFocus::FOC_ANA_H);
+			
+			reso.SetOptimalFocus(ResoFocus(iFoc));
+		}
 
 
 		tl::log_info("Loading S(q,w) file \"", strSqwFile, "\".");
@@ -680,13 +710,15 @@ int main(int argc, char** argv)
 			tl::log_err("Invalid minimiser selected: \"", strMinimiser, "\".");
 			return -1;
 		}
-		minuit::FunctionMinimum mini = (*pmini)();
+		
+		minuit::FunctionMinimum mini = (*pmini)(iMaxFuncCalls, dTolerance);
 		const minuit::MnUserParameterState& state = mini.UserState();
 		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();
 		mod.SetMinuitParams(state);
 
 
-		std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax = std::minmax_element(sc.vecX.begin(), sc.vecX.end());
+		std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax
+			= std::minmax_element(sc.vecX.begin(), sc.vecX.end());
 		mod.Save(strModOutFile.c_str(), *xminmax.first, *xminmax.second, 256);
 		save_file(strScOutFile.c_str(), sc);
 

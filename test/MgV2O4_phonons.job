@@ -2,8 +2,8 @@
 
 input
 {
-;	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0160.scn"
-	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0173.scn"
+	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0160.scn"
+;	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0173.scn"
 	instrument_file	"/home/tweber/Auswertungen/instruments/in22.taz"
 
 	sqw_model	"phonons"
@@ -18,10 +18,24 @@ montecarlo
 
 
 
+resolution
+{
+	algorithm	"pop"		; "cn", "pop" or "eck"
+
+	focus_mono_v	1
+	focus_mono_h	0
+	focus_ana_v	1
+	focus_ana_h	1
+}
+
+
 fitter
 {
 	minimiser	"simplex"	; "simplex" or "migrad"
 	strategy	0		; 0 (low), 1 (medium) or 2 (high)
+
+	max_funccalls	0
+	tolerance	25.
 
 	sigma		1.
 }
