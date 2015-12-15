@@ -8,6 +8,8 @@
 #ifndef __MCONV_SQW_H__
 #define __MCONV_SQW_H__
 
+//#define USE_RTREE
+
 #include <string>
 #include <unordered_map>
 #include <list>
@@ -16,8 +18,12 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include "tlibs/math/kd.h"
 
-namespace ublas = boost::numeric::ublas;
+#ifdef USE_RTREE
+	#include "tlibs/math/rt.h"
+	#define RT_ELEMS 64
+#endif
 
+namespace ublas = boost::numeric::ublas;
 
 class SqwBase
 {
@@ -111,7 +117,11 @@ protected:
 	void destroy();
 
 protected:
+#ifdef USE_RTREE
+	std::shared_ptr<tl::Rt<double, 3, RT_ELEMS>> m_rt;
+#else
 	std::shared_ptr<tl::Kd<double>> m_kd;
+#endif
 	unsigned int m_iNumqs = 250;
 	unsigned int m_iNumArc = 50;
 	double m_dArcMax = 10.;

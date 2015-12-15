@@ -113,7 +113,7 @@ ifeq ($(DO_DEBUG), 0)
 	#FLAGS += -fexpensive-optimizations
 	STRIP = strip
 else
-	FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall -fPIC ${DEFINES}
+	FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall -Weffc++ -fPIC ${DEFINES}
 	STRIP = echo Retaining debug symbols of 
 endif
 

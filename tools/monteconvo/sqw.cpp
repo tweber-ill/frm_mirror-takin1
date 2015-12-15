@@ -187,9 +187,12 @@ double SqwPhonon::disp(double dq, double da, double df)
 
 void SqwPhonon::create()
 {
-	if(!m_kd) 
-		m_kd = std::make_shared<tl::Kd<double>>();
-	
+#ifdef USE_RTREE
+	if(!m_rt) m_rt = std::make_shared<tl::Rt<double,3,RT_ELEMS>>();
+#else
+	if(!m_kd) m_kd = std::make_shared<tl::Kd<double>>();
+#endif
+
 	const bool bSaveOnlyIndices = 1;
 	destroy();
 
@@ -271,15 +274,24 @@ void SqwPhonon::create()
 	}
 
 	tl::log_info("Generated ", lst.size(), " S(q,w) points.");
+#ifdef USE_RTREE
+	m_rt->Load(lst);
+	tl::log_info("Generated R* tree.");
+#else
 	m_kd->Load(lst, 3);
 	tl::log_info("Generated k-d tree.");
+#endif
 
 	m_bOk = 1;
 }
 
 void SqwPhonon::destroy()
 {
+#ifdef USE_RTREE
+	m_rt->Unload();
+#else
 	m_kd->Unload();
+#endif
 }
 
 SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
@@ -345,10 +357,14 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 double SqwPhonon::operator()(double dh, double dk, double dl, double dE) const
 {
 	std::vector<double> vechklE = {dh, dk, dl, dE};
-	if(!m_kd->IsPointInGrid(vechklE))
-		return 0.;
-
+#ifdef USE_RTREE
+	if(!m_rt->IsPointInGrid(vechklE)) return 0.;
+	std::vector<double> vec = m_rt->GetNearestNode(vechklE);
+#else
+	if(!m_kd->IsPointInGrid(vechklE)) return 0.;
 	std::vector<double> vec = m_kd->GetNearestNode(vechklE);
+#endif
+
 	//std::cout << "query: " << dh << " " << dk << " " << dl << " " << dE << std::endl;
 	//std::cout << "nearest: " << vec[0] << " " << vec[1] << " " << vec[2] << " " << vec[3] << std::endl;
 
@@ -499,7 +515,11 @@ SqwBase* SqwPhonon::shallow_copy() const
 {
 	SqwPhonon *pCpy = new SqwPhonon();
 
+#ifdef USE_RTREE
+	pCpy->m_rt = m_rt;
+#else
 	pCpy->m_kd = m_kd;
+#endif
 	pCpy->m_iNumqs = m_iNumqs;
 	pCpy->m_iNumArc = m_iNumArc;
 	pCpy->m_dArcMax = m_dArcMax;
