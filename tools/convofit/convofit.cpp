@@ -61,7 +61,7 @@ struct Scan
 	std::vector<double> vecX;
 	std::vector<double> vecCts, vecMon;
 	std::vector<double> vecCtsErr, vecMonErr;
-	
+
 	double vecScanOrigin[4];
 	double vecScanDir[4];
 
@@ -93,7 +93,7 @@ bool save_file(const char* pcFile, const Scan& sc)
 	std::ofstream ofstr(pcFile);
 	if(!ofstr)
 		return false;
-	
+
 	ofstr.precision(16);
 
 	ofstr << "# scan_origin: " 
@@ -107,7 +107,7 @@ bool save_file(const char* pcFile, const Scan& sc)
 		<< sc.vecScanDir[2] << " "
 		<< sc.vecScanDir[3] << "\n";
 	ofstr << "# T: " << sc.dTemp << " +- " << sc.dTempErr << "\n";
-	
+
 	ofstr << "#\n";
 
 	ofstr << std::left << std::setw(20) << "# x" 
@@ -125,7 +125,7 @@ bool save_file(const char* pcFile, const Scan& sc)
 			<< std::left << std::setw(20) << sc.vecMon[i]
 			<< std::left << std::setw(20) << sc.vecMonErr[i] << "\n";
 	}
-	
+
 	return true;
 }
 
@@ -161,17 +161,17 @@ bool load_file(const char* pcFile, Scan& scan)
 
 	tl::log_info("Sample lattice: ", scan.sample.a, " ", scan.sample.b, " ", scan.sample.c);
 	tl::log_info("Sample angles: ", tl::r2d(scan.sample.alpha), " ", tl::r2d(scan.sample.beta), " ", tl::r2d(scan.sample.gamma));
-	
-	
+
+
 	const std::array<double, 3> vec1 = pInstr->GetScatterPlane0();
 	const std::array<double, 3> vec2 = pInstr->GetScatterPlane1();
 	scan.plane.vec1[0] = vec1[0]; scan.plane.vec1[1] = vec1[1]; scan.plane.vec1[2] = vec1[2];
 	scan.plane.vec2[0] = vec2[0]; scan.plane.vec2[1] = vec2[1]; scan.plane.vec2[2] = vec2[2];
-	
+
 	tl::log_info("Scattering plane: [", vec1[0], vec1[1], vec1[2], "], "
 		"[", vec2[0], vec2[1], vec2[2], "]");
-	
-	
+
+
 	scan.bKiFixed = pInstr->IsKiFixed();
 	scan.dKFix = pInstr->GetKFix();
 	if(scan.bKiFixed)
@@ -215,7 +215,7 @@ bool load_file(const char* pcFile, Scan& scan)
 
 	const ScanPoint& ptBegin = *scan.vecPoints.cbegin();
 	const ScanPoint& ptEnd = *scan.vecPoints.crbegin();
-	
+
 	scan.vecScanOrigin[0] = ptBegin.h;
 	scan.vecScanOrigin[1] = ptBegin.k;
 	scan.vecScanOrigin[2] = ptBegin.l;
@@ -225,7 +225,7 @@ bool load_file(const char* pcFile, Scan& scan)
 	scan.vecScanDir[1] = ptEnd.k - ptBegin.k;
 	scan.vecScanDir[2] = ptEnd.l - ptBegin.l;
 	scan.vecScanDir[3] = (ptEnd.E - ptBegin.E) / tl::meV;
-	
+
 	for(unsigned int i=0; i<4; ++i)
 	{
 		if(!tl::float_equal(scan.vecScanDir[i], 0., 0.01))
@@ -234,7 +234,7 @@ bool load_file(const char* pcFile, Scan& scan)
 			scan.vecScanOrigin[i] = 0.;
 		}
 	}
-	
+
 	tl::log_info("Scan origin: (", scan.vecScanOrigin[0], " ", scan.vecScanOrigin[1], " ", scan.vecScanOrigin[2], " ", scan.vecScanOrigin[3], ")");
 	tl::log_info("Scan dir: [", scan.vecScanDir[0], " ", scan.vecScanDir[1], " ", scan.vecScanDir[2], " ", scan.vecScanDir[3], "]");
 
@@ -244,7 +244,7 @@ bool load_file(const char* pcFile, Scan& scan)
 	for(iScIdx=0; iScIdx<4; ++iScIdx)
 		if(!tl::float_equal(scan.vecScanDir[iScIdx], 0.))
 			break;
-	
+
 	if(iScIdx >= 4)
 	{
 		tl::log_err("No scan variable found!");
@@ -303,9 +303,9 @@ public:
 	virtual std::vector<std::string> GetParamNames() const override;
 	virtual std::vector<double> GetParamValues() const override;
 	virtual std::vector<double> GetParamErrors() const override;
-	
+
 	void SetOtherParams(double dTemperature);
-	
+
 	void SetReso(const TASReso& reso) { m_reso = reso; }
 	void SetNumNeutrons(unsigned int iNum) { m_iNumNeutrons = iNum; }
 
@@ -313,14 +313,14 @@ public:
 	{ m_vecScanOrigin = tl::make_vec({h,k,l,E}); }
 	void SetScanDir(double h, double k, double l, double E)
 	{ m_vecScanDir = tl::make_vec({h,k,l,E}); }
-	
+
 	void AddModelFitParams(const std::string& strName, double dInitValue=0., double dErr=0.)
 	{
 		m_vecModelParamNames.push_back(strName);
 		m_vecModelParams.push_back(dInitValue);
 		m_vecModelErrs.push_back(dErr);
 	}
-	
+
 	minuit::MnUserParameters GetMinuitParams() const;
 	void SetMinuitParams(const minuit::MnUserParameterState& state);
 
@@ -393,7 +393,7 @@ void SqwFuncModel::SetOtherParams(double dTemperature)
 	std::vector<SqwBase::t_var> vecVars;
 
 	vecVars.push_back(std::make_tuple("T", "double", tl::var_to_str(dTemperature)));
-	
+
 	m_pSqw->SetVars(vecVars);
 }
 
@@ -409,7 +409,7 @@ void SqwFuncModel::SetModelParams()
 		SqwBase::t_var var = std::make_tuple(m_vecModelParamNames[iParam], "double", strVal);
 		vecVars.push_back(var);
 	}
-	
+
 	m_pSqw->SetVars(vecVars);
 }
 
@@ -417,10 +417,10 @@ bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
 {
 	m_dScale = vecParams[0];
 	m_dOffs = vecParams[1];
-	
+
 	for(std::size_t iParam=2; iParam<vecParams.size(); ++iParam)
 		m_vecModelParams[iParam-2] = vecParams[iParam];
-	
+
 	//tl::log_debug("Params:");
 	//for(double d : vecParams)
 	//	tl::log_debug(d);
@@ -433,10 +433,10 @@ bool SqwFuncModel::SetErrs(const std::vector<double>& vecErrs)
 {
 	m_dScaleErr = vecErrs[0];
 	m_dOffsErr = vecErrs[1];
-	
+
 	for(std::size_t iParam=2; iParam<vecErrs.size(); ++iParam)
 		m_vecModelErrs[iParam-2] = vecErrs[iParam];
-	
+
 	//SetModelParams();
 	return true;
 }
@@ -475,19 +475,19 @@ void SqwFuncModel::SetMinuitParams(const minuit::MnUserParameterState& state)
 {
 	std::vector<double> vecNewVals;
 	std::vector<double> vecNewErrs;
-	
+
 	const std::vector<std::string> vecNames = GetParamNames();
 	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
 	{
 		const std::string& strName = vecNames[iParam];
-		
+
 		const double dVal = state.Value(strName);
 		const double dErr = state.Error(strName);
-		
+
 		vecNewVals.push_back(dVal);
 		vecNewErrs.push_back(dErr);
 	}
-	
+
 	SetParams(vecNewVals);
 	SetErrs(vecNewErrs);
 }
@@ -495,7 +495,7 @@ void SqwFuncModel::SetMinuitParams(const minuit::MnUserParameterState& state)
 minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
 {
 	minuit::MnUserParameters params;
-	
+
 	params.Add("scale", m_dScale, m_dScaleErr);
 	params.Add("offs", m_dOffs, m_dOffsErr);
 
@@ -504,10 +504,10 @@ minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
 		const std::string& strParam = m_vecModelParamNames[iParam];
 		double dHint = m_vecModelParams[iParam];
 		double dErr = m_vecModelErrs[iParam];
-		
+
 		params.Add(strParam, dHint, dErr);
 	}
-	
+
 	return params;
 }
 
@@ -519,13 +519,13 @@ bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::siz
 		tl::log_err("Cannot open \"", pcFile, "\".");
 		return false;
 	}
-	
+
 	ofstr.precision(16);
 
 	const std::vector<std::string> vecNames = GetParamNames();
 	const std::vector<double> vecVals = GetParamValues();
 	const std::vector<double> vecErrs = GetParamErrors();
-	
+
 	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
 		ofstr << "# " << vecNames[iParam] << " = " 
 			<< vecVals[iParam] << " +- " 
@@ -535,11 +535,11 @@ bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::siz
 	{
 		double dX = tl::lerp(dXMin, dXMax, double(i)/double(iNum-1));
 		double dY = (*this)(dX);
-		
+
 		ofstr << std::left << std::setw(20) << dX 
 			<< std::left << std::setw(20) << dY << "\n";
 	}
-	
+
 	return true;
 }
 
@@ -560,7 +560,7 @@ int main(int argc, char** argv)
 	{
 		std::string strJob = argv[iArg];
 		tl::log_info("Executing job file ", iArg, ": \"", strJob, "\".");
-		
+
 		tl::Prop<std::string> prop;
 		if(!prop.Load(strJob.c_str(), tl::PropType::INFO))
 		{
@@ -574,13 +574,13 @@ int main(int argc, char** argv)
 		std::string strSqwFile = prop.Query<std::string>("input/sqw_file");
 
 		unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
-		
+
 		std::string strResAlgo = prop.Query<std::string>("resolution/algorithm", "pop");
 		bool bResFocMonoV = prop.Query<bool>("resolution/focus_mono_v", 0);
 		bool bResFocMonoH = prop.Query<bool>("resolution/focus_mono_h", 0);
 		bool bResFocAnaV = prop.Query<bool>("resolution/focus_ana_v", 0);
 		bool bResFocAnaH = prop.Query<bool>("resolution/focus_ana_h", 0);
-		
+
 		std::string strMinimiser = prop.Query<std::string>("fitter/minimiser");
 		int iStrat = prop.Query<int>("fitter/strategy", 0);
 		double dSigma = prop.Query<double>("fitter/sigma", 1.);
@@ -638,7 +638,7 @@ int main(int argc, char** argv)
 			tl::make_vec({sc.plane.vec2[0], sc.plane.vec2[1], sc.plane.vec2[2]}));
 		reso.SetKiFix(sc.bKiFixed);
 		reso.SetKFix(sc.dKFix);
-		
+
 		if(strResAlgo == "pop")
 			reso.SetAlgo(ResoAlgo::POP);
 		else if(strResAlgo == "cn")
@@ -650,7 +650,7 @@ int main(int argc, char** argv)
 			tl::log_err("Invalid resolution algorithm selected: \"", strResAlgo, "\".");
 			return -1;
 		}
-		
+
 		if(bResFocMonoV || bResFocMonoH || bResFocAnaV || bResFocAnaH)
 		{
 			unsigned iFoc = 0;
@@ -658,14 +658,14 @@ int main(int argc, char** argv)
 			if(bResFocMonoH) iFoc |= unsigned(ResoFocus::FOC_MONO_H);
 			if(bResFocAnaV) iFoc |= unsigned(ResoFocus::FOC_ANA_V);
 			if(bResFocAnaH) iFoc |= unsigned(ResoFocus::FOC_ANA_H);
-			
+
 			reso.SetOptimalFocus(ResoFocus(iFoc));
 		}
 
 
 		tl::log_info("Loading S(q,w) file \"", strSqwFile, "\".");
 		SqwBase *pSqw = nullptr;
-		
+
 		if(strSqwMod == "phonons")
 			pSqw = new SqwPhonon(strSqwFile.c_str());
 		else
@@ -706,7 +706,7 @@ int main(int argc, char** argv)
 			double dVal = vecFitValues[iParam];
 			double dErr = vecFitErrors[iParam];
 			bool bFix = vecFitFixed[iParam];
-			
+
 			params.SetValue(strParam, dVal);
 			params.SetError(strParam, dErr);
 			if(bFix) params.Fix(strParam);
@@ -729,7 +729,7 @@ int main(int argc, char** argv)
 			tl::log_err("Invalid minimiser selected: \"", strMinimiser, "\".");
 			return -1;
 		}
-		
+
 		minuit::FunctionMinimum mini = (*pmini)(iMaxFuncCalls, dTolerance);
 		const minuit::MnUserParameterState& state = mini.UserState();
 		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();

@@ -92,6 +92,16 @@ void SqwElast::SetVars(const std::vector<SqwBase::t_var>&)
 {
 }
 
+SqwBase* SqwElast::shallow_copy() const
+{
+	SqwElast *pElast = new SqwElast();
+	
+	pElast->m_bLoadedFromFile = m_bLoadedFromFile;
+	pElast->m_lstPeaks = m_lstPeaks;	// not a shallow copy!
+	pElast->m_bOk = m_bOk;
+	return pElast;
+}
+
 //------------------------------------------------------------------------------
 
 
@@ -103,6 +113,8 @@ SqwKdTree::SqwKdTree(const char* pcFile)
 
 bool SqwKdTree::open(const char* pcFile)
 {
+	m_kd = std::make_shared<tl::Kd<double>>();
+	
 	std::ifstream ifstr(pcFile);
 	if(!ifstr.is_open())
 		return false;
@@ -138,11 +150,11 @@ bool SqwKdTree::open(const char* pcFile)
 	}
 
 	tl::log_info("Loaded ",  iCurPoint, " S(q,w) points.");
-	m_kd.Load(lstPoints, 4);
+	m_kd->Load(lstPoints, 4);
 	tl::log_info("Generated k-d tree.");
 
 	//std::ofstream ofstrkd("kd.dbg");
-	//m_kd.GetRootNode()->print(ofstrkd);
+	//m_kd->GetRootNode()->print(ofstrkd);
 	return true;
 }
 
@@ -150,10 +162,10 @@ bool SqwKdTree::open(const char* pcFile)
 double SqwKdTree::operator()(double dh, double dk, double dl, double dE) const
 {
 	std::vector<double> vechklE = {dh, dk, dl, dE};
-	if(!m_kd.IsPointInGrid(vechklE))
+	if(!m_kd->IsPointInGrid(vechklE))
 		return 0.;
 
-	std::vector<double> vec = m_kd.GetNearestNode(vechklE);
+	std::vector<double> vec = m_kd->GetNearestNode(vechklE);
 
 	/*double dDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.) +
 			std::pow(vec[1]-vechklE[1], 2.) +
@@ -176,6 +188,17 @@ void SqwKdTree::SetVars(const std::vector<SqwBase::t_var>&)
 {
 }
 
+SqwBase* SqwKdTree::shallow_copy() const
+{
+	SqwKdTree *pTree = new SqwKdTree();
+
+	pTree->m_mapParams = m_mapParams;
+	pTree->m_kd = m_kd;
+	pTree->m_bOk = m_bOk;
+	
+	return pTree;
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -188,9 +211,9 @@ double SqwPhonon::disp(double dq, double da, double df)
 void SqwPhonon::create()
 {
 #ifdef USE_RTREE
-	if(!m_rt) m_rt = std::make_shared<tl::Rt<double,3,RT_ELEMS>>();
+	m_rt = std::make_shared<tl::Rt<double,3,RT_ELEMS>>();
 #else
-	if(!m_kd) m_kd = std::make_shared<tl::Kd<double>>();
+	m_kd = std::make_shared<tl::Kd<double>>();
 #endif
 
 	const bool bSaveOnlyIndices = 1;
@@ -545,6 +568,7 @@ SqwBase* SqwPhonon::shallow_copy() const
 	pCpy->m_dTA2_q_HWHM = m_dTA2_q_HWHM;
 
 	pCpy->m_dT = m_dT;
-
+	
+	pCpy->m_bOk = m_bOk;
 	return pCpy;
 }

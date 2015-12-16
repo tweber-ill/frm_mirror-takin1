@@ -2,8 +2,8 @@
 
 input
 {
-	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0160.scn"
-;	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0173.scn"
+;	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0160.scn"
+	scan_file	"/home/tweber/Messdaten/IN22-2015/data/scn-mod/MgV2O4_0173.scn"
 	instrument_file	"/home/tweber/Auswertungen/instruments/in22.taz"
 
 	sqw_model	"phonons"

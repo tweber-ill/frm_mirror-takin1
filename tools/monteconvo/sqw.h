@@ -25,6 +25,7 @@
 
 namespace ublas = boost::numeric::ublas;
 
+
 class SqwBase
 {
 public:
@@ -73,8 +74,7 @@ public:
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 	
-	// TODO
-	virtual SqwBase* shallow_copy() const { return nullptr; }
+	virtual SqwBase* shallow_copy() const;
 };
 
 
@@ -85,7 +85,7 @@ class SqwKdTree : public SqwBase
 {
 protected:
 	std::unordered_map<std::string, std::string> m_mapParams;
-	tl::Kd<double> m_kd;
+	std::shared_ptr<tl::Kd<double>> m_kd;
 
 public:
 	SqwKdTree(const char* pcFile = nullptr);
@@ -97,8 +97,7 @@ public:
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 
-	// TODO
-	virtual SqwBase* shallow_copy() const { return nullptr; }
+	virtual SqwBase* shallow_copy() const;
 };
 
 
