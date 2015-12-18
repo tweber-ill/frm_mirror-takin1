@@ -311,7 +311,7 @@ void PowderDlg::CalcPeaks()
 				}
 
 
-				const std::complex<double> b = pElem->GetCoherent() / 10.;
+				const std::complex<double> b = pElem->GetCoherent()/* / 10.*/;
 
 				for(ublas::vector<double> vecThisAtom : vecSymPos)
 				{

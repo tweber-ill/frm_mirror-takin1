@@ -121,7 +121,7 @@ void gen_atoms_sfact()
 				<< vecElems[iAtom] << "." << std::endl;
 			return;
 		}
-		std::complex<double> b = pElem->GetCoherent() / 10.;
+		std::complex<double> b = pElem->GetCoherent() /*/ 10.*/;
 
 		dSigAbs += tl::macro_xsect(pElem->GetXSecCoherent().real()*tl::barns, 
 			vecNumAtoms[iAtom],

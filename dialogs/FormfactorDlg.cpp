@@ -58,7 +58,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPicker->setEnabled(1);
 
 	plotF->setAxisTitle(QwtPlot::xBottom, "Scattering Wavenumber Q (1/A)");
-	plotF->setAxisTitle(QwtPlot::yLeft, "Atomic Form Factor f");
+	plotF->setAxisTitle(QwtPlot::yLeft, "Atomic Form Factor f (e-)");
 
 
 	// scattering lengths

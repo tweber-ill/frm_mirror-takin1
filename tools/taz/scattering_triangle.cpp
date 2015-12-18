@@ -771,7 +771,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 			}
 
 
-			const std::complex<double> b = pElem->GetCoherent() / 10.;
+			const std::complex<double> b = pElem->GetCoherent() /*/ 10.*/;
 			//std::cout << "b = " << b << std::endl;
 
 			for(ublas::vector<double> vecThisAtom : vecSymPos)

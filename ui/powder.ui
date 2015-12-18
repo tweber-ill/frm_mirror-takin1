@@ -281,17 +281,17 @@
             </column>
             <column>
              <property name="text">
-              <string>|F_n|</string>
+              <string>|F_n| (fm)</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>I_n</string>
+              <string>I_n (fm²)</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>|F_xray|</string>
+              <string>|F_xray| (e-)</string>
              </property>
             </column>
             <column>
