@@ -6,7 +6,7 @@
  */
 #include "ResoDlg.h"
 #include "tlibs/string/spec_char.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 
 #ifdef Q_WS_X11
 	extern "C" int XInitThreads();

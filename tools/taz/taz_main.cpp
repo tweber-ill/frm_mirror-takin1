@@ -6,7 +6,7 @@
  */
 #include "taz.h"
 #include "tlibs/string/spec_char.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
 #include "helper/globals.h"

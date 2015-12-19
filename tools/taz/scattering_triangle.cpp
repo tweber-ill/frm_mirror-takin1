@@ -8,7 +8,7 @@
 #include "tlibs/helper/flags.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/string/spec_char.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "helper/globals.h"
 #include "helper/formfact.h"
 #include "scattering_triangle.h"

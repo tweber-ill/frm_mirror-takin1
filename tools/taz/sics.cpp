@@ -7,7 +7,7 @@
 
 #include "sics.h"
 #include "tlibs/string/string.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "tlibs/helper/misc.h"
 #include "tlibs/time/chrono.h"
 #include <boost/algorithm/string.hpp>

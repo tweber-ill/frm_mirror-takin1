@@ -26,7 +26,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/helper/flags.h"
 #include "tlibs/file/recent.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 
 
 const std::string TazDlg::s_strTitle = "Takin";

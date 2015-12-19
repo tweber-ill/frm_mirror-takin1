@@ -6,7 +6,7 @@
  */
 
 #include "res.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
 #include "dialogs/EllipseDlg.h"
 

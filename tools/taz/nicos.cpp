@@ -7,7 +7,7 @@
 
 #include "nicos.h"
 #include "tlibs/string/string.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "tlibs/helper/py.h"
 
 

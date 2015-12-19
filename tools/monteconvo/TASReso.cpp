@@ -8,7 +8,7 @@
 #include "TASReso.h"
 #include "tlibs/math/lattice.h"
 #include "tlibs/file/prop.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 
 #include <boost/units/io.hpp>
 

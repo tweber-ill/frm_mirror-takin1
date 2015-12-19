@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include "tlibs/string/string.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "tlibs/file/loadtxt.h"
 #include "TASReso.h"
 #include "sqw.h"

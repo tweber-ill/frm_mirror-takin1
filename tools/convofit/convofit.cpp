@@ -7,7 +7,7 @@
 
 #include "tlibs/file/loadinstr.h"
 #include "tlibs/file/prop.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "tlibs/math/math.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/fit/minuit.h"

@@ -6,7 +6,7 @@
  */
 
 #include "globals.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 
 #include <boost/filesystem.hpp>
 

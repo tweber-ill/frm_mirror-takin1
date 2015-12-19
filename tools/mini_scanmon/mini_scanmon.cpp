@@ -4,8 +4,8 @@
  * @date 2015
  * @license GPLv2
  *
- * clang -O2 -o mini_scanmon mini_scanmon.cpp dialog_indirect.cpp ../../tlibs/net/tcp.cpp ../../tlibs/helper/log.cpp -std=c++11 -lstdc++ -lm -lboost_system -lboost_iostreams -lpthread
- * clang -O2 -o mini_scanmon mini_scanmon.cpp dialog.cpp ../../tlibs/net/tcp.cpp ../../tlibs/helper/log.cpp -std=c++11 -lstdc++ -lboost_system -lm -lpthread -ldialog
+ * clang -O2 -o mini_scanmon mini_scanmon.cpp dialog_indirect.cpp ../../tlibs/net/tcp.cpp ../../tlibs/log/log.cpp -std=c++11 -lstdc++ -lm -lboost_system -lboost_iostreams -lpthread
+ * clang -O2 -o mini_scanmon mini_scanmon.cpp dialog.cpp ../../tlibs/net/tcp.cpp ../../tlibs/log/log.cpp -std=c++11 -lstdc++ -lboost_system -lm -lpthread -ldialog
  */
 
 #include <iostream>
@@ -13,7 +13,7 @@
 #include <fstream>
 
 #include "../../tlibs/net/tcp.h"
-#include "../../tlibs/helper/log.h"
+#include "../../tlibs/log/log.h"
 #include "../../tlibs/string/string.h"
 #include "dialog.h"
 

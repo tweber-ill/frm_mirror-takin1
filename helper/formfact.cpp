@@ -8,7 +8,7 @@
 #include "formfact.h"
 #include "globals.h"
 #include "tlibs/math/math.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "tlibs/file/prop.h"
 #include "tlibs/string/string.h"
 

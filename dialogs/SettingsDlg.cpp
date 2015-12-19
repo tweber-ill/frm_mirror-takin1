@@ -7,7 +7,7 @@
 
 #include "SettingsDlg.h"
 #include "tlibs/string/string.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #ifndef NO_3D
 	#include "tlibs/gfx/gl.h"
 #endif

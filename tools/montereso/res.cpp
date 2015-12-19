@@ -13,7 +13,7 @@
 #include "../res/cn.h"
 
 #include "tlibs/math/neutrons.hpp"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 
 #include <algorithm>
 #include <boost/algorithm/minmax_element.hpp>

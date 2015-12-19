@@ -7,7 +7,7 @@
 
 #include "sqw.h"
 #include "tlibs/string/string.h"
-#include "tlibs/helper/log.h"
+#include "tlibs/log/log.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/neutrons.hpp"
 #include <fstream>

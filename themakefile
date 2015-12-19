@@ -355,7 +355,7 @@ obj/tlibs_ver.o: tlibs/version.cpp tlibs/version.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/spec_char.o: tlibs/string/spec_char.cpp tlibs/string/spec_char.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/log.o: tlibs/helper/log.cpp tlibs/helper/log.h
+obj/log.o: tlibs/log/log.cpp tlibs/log/log.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tcp.o: tlibs/net/tcp.cpp tlibs/net/tcp.h
 	${CC} ${FLAGS} -c -o $@ $<
