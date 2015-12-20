@@ -261,7 +261,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		m_reso.ki = kother;
 		m_reso.kf = m_dKFix / tl::angstrom;
 	}
-	
+
 	//tl::log_info("ki = ", m_reso.ki, ", kf = ", m_reso.kf);
 	//tl::log_info("Q = ", m_reso.Q, ", E = ", m_reso.E/tl::meV, " meV");
 
@@ -275,7 +275,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 	m_reso.angle_ki_Q = tl::get_angle_ki_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
 	m_reso.angle_kf_Q = tl::get_angle_kf_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
-	
+
 	//tl::log_info("kiQ = ", tl::r2d(m_reso.angle_ki_Q/tl::radians));
 	//m_reso.angle_ki_Q = units::abs(m_reso.angle_ki_Q);
 	//m_reso.angle_kf_Q = units::abs(m_reso.angle_kf_Q);
@@ -285,7 +285,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	{
 		m_reso.bMonoIsCurvedH = m_reso.bMonoIsCurvedV = 0;
 		m_reso.bAnaIsCurvedH = m_reso.bAnaIsCurvedV = 0;
-		
+
 		//tl::log_info("No focus.");
 	}
 	else
@@ -294,7 +294,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV = (unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V));
 		m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH = (unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H));
 		m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV = (unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V));
-		
+
 		//tl::log_info("Mono focus (h,v): ", m_reso.bMonoIsOptimallyCurvedH, ", ", m_reso.bMonoIsOptimallyCurvedV);
 		//tl::log_info("Ana focus (h,v): ", m_reso.bAnaIsOptimallyCurvedH, ", ", m_reso.bAnaIsOptimallyCurvedV);
 
@@ -359,6 +359,12 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		return false;
 	}
 
+	if(!m_res.bOk)
+	{
+		tl::log_err("Error calculating resolution: ", m_res.strErr);
+		tl::log_debug("R0: ", m_res.dR0);
+		tl::log_debug("res: ", m_res.reso);
+	}
 	//tl::log_info("Resolution matrix: ", m_res.reso);
 	return m_res.bOk;
 }

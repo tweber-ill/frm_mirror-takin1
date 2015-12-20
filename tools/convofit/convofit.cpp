@@ -226,12 +226,18 @@ bool load_file(const char* pcFile, Scan& scan)
 	scan.vecScanDir[2] = ptEnd.l - ptBegin.l;
 	scan.vecScanDir[3] = (ptEnd.E - ptBegin.E) / tl::meV;
 
+	const double dEps = 0.01;
+
 	for(unsigned int i=0; i<4; ++i)
 	{
-		if(!tl::float_equal(scan.vecScanDir[i], 0., 0.01))
+		if(!tl::float_equal(scan.vecScanDir[i], 0., dEps))
 		{
 			scan.vecScanDir[i] /= scan.vecScanDir[i];
 			scan.vecScanOrigin[i] = 0.;
+		}
+		else
+		{
+			scan.vecScanDir[i] = 0.;
 		}
 	}
 
@@ -242,7 +248,7 @@ bool load_file(const char* pcFile, Scan& scan)
 
 	unsigned int iScIdx = 0;
 	for(iScIdx=0; iScIdx<4; ++iScIdx)
-		if(!tl::float_equal(scan.vecScanDir[iScIdx], 0.))
+		if(!tl::float_equal(scan.vecScanDir[iScIdx], 0., dEps))
 			break;
 
 	if(iScIdx >= 4)

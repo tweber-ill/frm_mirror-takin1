@@ -347,8 +347,7 @@ Ellipsoid4d calc_res_ellipsoid4d(const t_mat& reso, const t_vec& Q_avg)
  * Binv * Uinv * matQVec0: trafo from Q||... system to crystal rlu system
  */
 void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
-	const McNeutronOpts& opts,
-	std::vector<t_vec>& vecResult)
+	const McNeutronOpts& opts, std::vector<t_vec>& vecResult)
 {
 	static bool bInited = 0;
 	if(!bInited)

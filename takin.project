@@ -46,12 +46,10 @@
       <File Name="tlibs/gfx/gnuplot.h" ExcludeProjConfig="Debug;Release"/>
     </VirtualDirectory>
     <VirtualDirectory Name="helper">
-      <File Name="tlibs/helper/log.h"/>
       <File Name="tlibs/helper/flags.cpp" ExcludeProjConfig="Debug;Release"/>
       <File Name="tlibs/helper/flags.h" ExcludeProjConfig="Debug;Release"/>
       <File Name="tlibs/helper/misc.h"/>
       <File Name="tlibs/helper/exception.h"/>
-      <File Name="tlibs/helper/log.cpp"/>
       <File Name="tlibs/helper/traits.h"/>
       <File Name="tlibs/helper/py.h"/>
       <File Name="tlibs/helper/hash.h"/>
@@ -89,6 +87,12 @@
     </VirtualDirectory>
     <File Name="tlibs/version.cpp"/>
     <File Name="tlibs/version.h"/>
+    <VirtualDirectory Name="log">
+      <File Name="tlibs/log/debug.cpp"/>
+      <File Name="tlibs/log/debug.h"/>
+      <File Name="tlibs/log/log.cpp"/>
+      <File Name="tlibs/log/log.h"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="tools">
     <VirtualDirectory Name="res">

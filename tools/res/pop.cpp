@@ -48,7 +48,7 @@ CNResults calc_pop(const PopParams& pop)
 	angle ki_Q = pop.angle_ki_Q;
 	angle kf_Q = pop.angle_kf_Q;
 	//kf_Q = ki_Q + twotheta;
-	
+
 	twotheta *= pop.dsample_sense;
 	ki_Q *= pop.dsample_sense;
 	kf_Q *= pop.dsample_sense;
@@ -129,7 +129,7 @@ CNResults calc_pop(const PopParams& pop)
 	if(!pop.bSrcRect) dMult = 1./16.;
 	SI(0,0) = dMult * pop.src_w*pop.src_w /cm/cm;
 	SI(1,1) = dMult * pop.src_h*pop.src_h /cm/cm;
-	
+
 	// mono
 	SI(2+0,2+0) = 1./12. * pop.mono_thick*pop.mono_thick /cm/cm;
 	SI(2+1,2+1) = 1./12. * pop.mono_w*pop.mono_w /cm/cm;
@@ -174,13 +174,21 @@ CNResults calc_pop(const PopParams& pop)
 	if(pop.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(2.*thetaa), false);
 	if(pop.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(2.*thetaa), true);
 
+	mono_curvh *= pop.dmono_sense; mono_curvv *= pop.dmono_sense;
+	ana_curvh *= pop.dana_sense; ana_curvv *= pop.dana_sense;
+
 	inv_length inv_mono_curvh = 0./cm, inv_mono_curvv = 0./cm;
 	inv_length inv_ana_curvh = 0./cm, inv_ana_curvv = 0./cm;
 
-	if(pop.bMonoIsCurvedH) inv_mono_curvh = 1./mono_curvh * pop.dmono_sense;
-	if(pop.bMonoIsCurvedV) inv_mono_curvv = 1./mono_curvv * pop.dmono_sense;
-	if(pop.bAnaIsCurvedH) inv_ana_curvh = 1./ana_curvh * pop.dana_sense;
-	if(pop.bAnaIsCurvedV) inv_ana_curvv = 1./ana_curvv * pop.dana_sense;
+	if(pop.bMonoIsCurvedH) inv_mono_curvh = 1./mono_curvh;
+	if(pop.bMonoIsCurvedV) inv_mono_curvv = 1./mono_curvv;
+	if(pop.bAnaIsCurvedH) inv_ana_curvh = 1./ana_curvh;
+	if(pop.bAnaIsCurvedV) inv_ana_curvv = 1./ana_curvv;
+
+	//if(pop.bMonoIsCurvedH) tl::log_debug("mono curv h: ", mono_curvh);
+	//if(pop.bMonoIsCurvedV) tl::log_debug("mono curv v: ", mono_curvv);
+	//if(pop.bAnaIsCurvedH) tl::log_debug("ana curv h: ", ana_curvh);
+	//if(pop.bAnaIsCurvedV) tl::log_debug("ana curv v: ", ana_curvv);
 	// --------------------------------------------------------------------
 
 

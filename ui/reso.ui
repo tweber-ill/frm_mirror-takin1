@@ -597,6 +597,9 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="minimum">
+             <double>-99999.000000000000000</double>
+            </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
             </property>
@@ -612,6 +615,9 @@
            <widget class="QDoubleSpinBox" name="spinAnaCurvV">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <double>-99999.000000000000000</double>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -870,6 +876,9 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="minimum">
+             <double>-99999.000000000000000</double>
+            </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
             </property>
@@ -889,6 +898,9 @@
            <widget class="QDoubleSpinBox" name="spinMonoCurvV">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <double>-99999.000000000000000</double>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>

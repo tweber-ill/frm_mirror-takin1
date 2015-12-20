@@ -143,7 +143,7 @@ void ResoDlg::SaveRes()
 
 	QString strDirLast = ".";
 	if(m_pSettings)
-		m_pSettings->value("reso/last_dir", ".").toString();
+		strDirLast = m_pSettings->value("reso/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getSaveFileName(this,
 		"Save resolution configuration",
 		strDirLast,
