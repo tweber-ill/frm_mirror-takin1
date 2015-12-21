@@ -41,7 +41,7 @@ public:
 
 	virtual std::vector<t_var> GetVars() const = 0;
 	virtual void SetVars(const std::vector<t_var>&) = 0;
-	
+
 	virtual SqwBase* shallow_copy() const = 0;
 
 	virtual ~SqwBase() {}
@@ -73,7 +73,7 @@ public:
 
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
-	
+
 	virtual SqwBase* shallow_copy() const;
 };
 
@@ -108,7 +108,7 @@ class SqwPhonon : public SqwBase
 {
 private:
 	SqwPhonon() {};
-	
+
 protected:
 	static double disp(double dq, double da, double df);
 
@@ -131,9 +131,9 @@ protected:
 	ublas::vector<double> m_vecTA1;
 	ublas::vector<double> m_vecTA2;
 
-	double m_dLA_amp, m_dLA_freq, m_dLA_E_HWHM, m_dLA_q_HWHM;
-	double m_dTA1_amp, m_dTA1_freq, m_dTA1_E_HWHM, m_dTA1_q_HWHM;
-	double m_dTA2_amp, m_dTA2_freq, m_dTA2_E_HWHM, m_dTA2_q_HWHM;
+	double m_dLA_amp, m_dLA_freq, m_dLA_E_HWHM, m_dLA_q_HWHM, m_dLA_S0;
+	double m_dTA1_amp, m_dTA1_freq, m_dTA1_E_HWHM, m_dTA1_q_HWHM, m_dTA1_S0;
+	double m_dTA2_amp, m_dTA2_freq, m_dTA2_E_HWHM, m_dTA2_q_HWHM, m_dTA2_S0;
 
 	double m_dT = 100.;
 
@@ -141,9 +141,9 @@ public:
 	SqwPhonon(const ublas::vector<double>& vecBragg,
 		const ublas::vector<double>& vecTA1,
 		const ublas::vector<double>& vecTA2,
-		double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM,
-		double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM,
-		double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM,
+		double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM, double dLA_S0,
+		double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM, double dTA1_S0,
+		double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM, double dTA2_S0,
 		double dT);
 	SqwPhonon(const char* pcFile);
 
