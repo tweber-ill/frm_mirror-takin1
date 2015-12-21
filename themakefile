@@ -208,6 +208,7 @@ OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/loadtxt.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/loadinstr.o obj/minuit.o ${OBJ_MONTECONVO}
+OBJ_CONVOSERIES = obj/scanseries.o obj/log.o
 
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
@@ -249,7 +250,7 @@ endif
 
 .PHONY: all clean
 
-all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist sfact convofit
+all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist sfact convofit convoseries
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -271,6 +272,8 @@ xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/globals.o ob
 convofit: ${OBJ_CONVOFIT}
 	${CC} ${FLAGS} -o bin/convofit $+ -L/usr/lib64/root -lMinuit2 ${STD_LIBS} ${BASIC_LIBS}
 	${STRIP} convofit
+convoseries: ${OBJ_CONVOSERIES}
+	${CC} ${FLAGS} -o bin/convoseries $+ -lboost_system -lboost_filesystem ${STD_LIBS}
 
 posextract: obj/posextract.o obj/loadinstr.o obj/log.o
 	${CC} ${FLAGS} -o bin/posextract $+ ${STD_LIBS} ${BASIC_LIBS}
@@ -424,6 +427,8 @@ obj/posextract.o: tools/posextract/posextract.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/convofit.o: tools/convofit/convofit.cpp
+	${CC} ${FLAGS} -c -o $@ $<
+obj/scanseries.o: tools/convofit/scanseries.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/scanviewer_main.o: tools/scanviewer/main.cpp

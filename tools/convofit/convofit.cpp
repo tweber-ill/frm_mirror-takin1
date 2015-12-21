@@ -96,62 +96,91 @@ bool save_file(const char* pcFile, const Scan& sc)
 
 	ofstr.precision(16);
 
-	ofstr << "# scan_origin: " 
+	ofstr << "# scan_origin = " 
 		<< sc.vecScanOrigin[0] << " "
 		<< sc.vecScanOrigin[1] << " "
 		<< sc.vecScanOrigin[2] << " "
 		<< sc.vecScanOrigin[3] << "\n";
-	ofstr << "# scan_dir: " 
+	ofstr << "# scan_dir = " 
 		<< sc.vecScanDir[0] << " "
 		<< sc.vecScanDir[1] << " "
 		<< sc.vecScanDir[2] << " "
 		<< sc.vecScanDir[3] << "\n";
-	ofstr << "# T: " << sc.dTemp << " +- " << sc.dTempErr << "\n";
+	ofstr << "# T = " << sc.dTemp << " +- " << sc.dTempErr << "\n";
 
 	ofstr << "#\n";
 
-	ofstr << std::left << std::setw(20) << "# x" 
-		<< std::left << std::setw(20) << "counts" 
-		<< std::left << std::setw(20) << "count errors"
-		<< std::left << std::setw(20) << "monitor"
-		<< std::left << std::setw(20) << "monitor errors" << "\n";
+	ofstr << std::left << std::setw(21) << "# x" 
+		<< std::left << std::setw(21) << "counts" 
+		<< std::left << std::setw(21) << "count errors"
+		<< std::left << std::setw(21) << "monitor"
+		<< std::left << std::setw(21) << "monitor errors" << "\n";
 
 	const std::size_t iNum = sc.vecX.size();
 	for(std::size_t i=0; i<iNum; ++i)
 	{
-		ofstr << std::left << std::setw(20) << sc.vecX[i] 
-			<< std::left << std::setw(20) << sc.vecCts[i] 
-			<< std::left << std::setw(20) << sc.vecCtsErr[i]
-			<< std::left << std::setw(20) << sc.vecMon[i]
+		ofstr << std::left << std::setw(20) << sc.vecX[i] << " "
+			<< std::left << std::setw(20) << sc.vecCts[i] << " " 
+			<< std::left << std::setw(20) << sc.vecCtsErr[i] << " "
+			<< std::left << std::setw(20) << sc.vecMon[i] << " "
 			<< std::left << std::setw(20) << sc.vecMonErr[i] << "\n";
 	}
 
 	return true;
 }
 
-bool load_file(const char* pcFile, Scan& scan)
+bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1)
 {
-	tl::log_info("Loading \"", pcFile, "\".");
+	if(!vecFiles.size()) return 0;
+	tl::log_info("Loading \"", vecFiles[0], "\".");
 
-	std::shared_ptr<tl::FileInstr> pInstr(tl::FileInstr::LoadInstr(pcFile));
+	std::unique_ptr<tl::FileInstr> pInstr(tl::FileInstr::LoadInstr(vecFiles[0].c_str()));
 	if(!pInstr)
 	{
-		tl::log_err("Cannot load \"", pcFile, "\".");
+		tl::log_err("Cannot load \"", vecFiles[0], "\".");
 		return false;
 	}
+
+	for(std::size_t iFile=1; iFile<vecFiles.size(); ++iFile)
+	{
+		tl::log_info("Loading \"", vecFiles[iFile], "\" for merging.");
+		std::unique_ptr<tl::FileInstr> pInstrM(tl::FileInstr::LoadInstr(vecFiles[iFile].c_str()));
+		if(!pInstrM)
+		{
+			tl::log_err("Cannot load \"", vecFiles[iFile], "\".");
+			continue;
+		}
+
+		pInstr->MergeWith(pInstrM.get());
+	}
+
 
 	const std::string strCountVar = pInstr->GetCountVar();
 	const std::string strMonVar = pInstr->GetMonVar();
 	scan.vecCts = pInstr->GetCol(strCountVar);
 	scan.vecMon = pInstr->GetCol(strMonVar);
-	std::function<double(double)> err = [](double d)->double 
+	std::function<double(double)> funcErr = [](double d) -> double 
 	{
 		//if(tl::float_equal(d, 0.))	// error 0 causes problems with minuit
 		//	return d/100.;
 		return std::sqrt(d);
 	};
-	scan.vecCtsErr = tl::apply_fkt(scan.vecCts, err);
-	scan.vecMonErr = tl::apply_fkt(scan.vecMon, err);
+	scan.vecCtsErr = tl::apply_fkt(scan.vecCts, funcErr);
+	scan.vecMonErr = tl::apply_fkt(scan.vecMon, funcErr);
+
+	if(bNormToMon)
+	{
+		for(std::size_t iPos=0; iPos<scan.vecCts.size(); ++iPos)
+		{
+			double y = scan.vecCts[iPos];
+			double dy = scan.vecCtsErr[iPos];
+			double m = scan.vecMon[iPos];
+			double dm  = scan.vecMonErr[iPos];
+
+			scan.vecCts[iPos] /= m;
+			scan.vecCtsErr[iPos] = std::sqrt(dy/m * dy/m  +  y*dm/(m*m) * y*dm/(m*m));
+		}
+	}
 
 	const std::array<double, 3> latt = pInstr->GetSampleLattice();
 	const std::array<double, 3> ang = pInstr->GetSampleAngles();
@@ -268,6 +297,12 @@ bool load_file(const char* pcFile, Scan& scan)
 
 
 	return true;
+}
+
+bool load_file(const char* pcFile, Scan& scan, bool bNormToMon=1)
+{
+	std::vector<std::string> vec{pcFile};
+	return load_file(vec, scan, bNormToMon);
 }
 
 // ----------------------------------------------------------------------------
@@ -578,6 +613,11 @@ int main(int argc, char** argv)
 		std::string strResFile = prop.Query<std::string>("input/instrument_file");
 		std::string strSqwMod = prop.Query<std::string>("input/sqw_model");
 		std::string strSqwFile = prop.Query<std::string>("input/sqw_file");
+		bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
+
+		std::vector<std::string> vecScFiles;
+		tl::get_tokens<std::string, std::string>(strScFile, ";", vecScFiles);
+		for(std::string& strFile : vecScFiles) tl::trim(strFile);
 
 		unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
 
@@ -630,7 +670,7 @@ int main(int argc, char** argv)
 
 
 		Scan sc;
-		if(!load_file(strScFile.c_str(), sc))
+		if(!load_file(vecScFiles, sc, bNormToMon))
 			return -1;
 
 
