@@ -19,3 +19,6 @@ TA2_freq	1.57
 TA2_E_HWHM	0.5
 TA2_q_HWHM	0.5
 TA2_S0		1
+
+inc_amp		1
+inc_sig		0.1

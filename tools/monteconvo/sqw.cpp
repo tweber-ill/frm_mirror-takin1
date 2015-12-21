@@ -384,6 +384,9 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 		else if(vecToks[0] == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<double>(vecToks[1]);
 		else if(vecToks[0] == "TA2_S0") m_dTA2_S0 = tl::str_to_var<double>(vecToks[1]);
 
+		else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var<double>(vecToks[1]);
+
 		else if(vecToks[0] == "T") m_dT = tl::str_to_var<double>(vecToks[1]);
 	}
 
@@ -443,8 +446,13 @@ double SqwPhonon::operator()(double dh, double dk, double dl, double dE) const
 		+ std::pow(vec[1]-vechklE[1], 2.)
 		+ std::pow(vec[2]-vechklE[2], 2.));
 
-	return dS * std::abs(tl::DHO_model(dE, dT, dE0, dE_HWHM, 1., 0.)) 
-		* tl::gauss_model(dqDist, 0., dQ_HWHM*tl::HWHM2SIGMA, 1., 0.);
+	double dInc = 0.;
+	if(!tl::float_equal(m_dIncAmp, 0.))
+		dInc = tl::gauss_model(dE, 0., m_dIncSig, m_dIncAmp, 0.);
+
+	return dS * std::abs(tl::DHO_model(dE, dT, dE0, dE_HWHM, 1., 0.))
+		* tl::gauss_model(dqDist, 0., dQ_HWHM*tl::HWHM2SIGMA, 1., 0.)
+		+ dInc;
 }
 
 
@@ -501,6 +509,9 @@ std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
 	vecVars.push_back(SqwBase::t_var{"TA2_q_HWHM", "double", tl::var_to_str(m_dTA2_q_HWHM)});
 	vecVars.push_back(SqwBase::t_var{"TA2_S0", "double", tl::var_to_str(m_dTA2_S0)});
 
+	vecVars.push_back(SqwBase::t_var{"inc_amp", "double", tl::var_to_str(m_dIncAmp)});
+	vecVars.push_back(SqwBase::t_var{"inc_sig", "double", tl::var_to_str(m_dIncSig)});
+
 	vecVars.push_back(SqwBase::t_var{"T", "double", tl::var_to_str(m_dT)});
 
 	return vecVars;
@@ -542,6 +553,9 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 		else if(strVar == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<decltype(m_dTA2_q_HWHM)>(strVal);
 		else if(strVar == "TA2_S0") m_dTA2_S0 = tl::str_to_var<decltype(m_dTA2_S0)>(strVal);
 
+		else if(strVar == "inc_amp") m_dIncAmp = tl::str_to_var<decltype(m_dIncAmp)>(strVal);
+		else if(strVar == "inc_sig") m_dIncSig = tl::str_to_var<decltype(m_dIncSig)>(strVal);
+
 		else if(strVar == "T") m_dT = tl::str_to_var<decltype(m_dT)>(strVal);
 	}
 
@@ -550,7 +564,9 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 	for(const SqwBase::t_var& var : vecVars)
 	{
 		const std::string& strVar = std::get<0>(var);
-		if(strVar != "T" && strVar.find("HWHM")==std::string::npos)
+		if(strVar != "T" && strVar.find("HWHM") == std::string::npos &&
+			strVar.find("inc") == std::string::npos &&
+			strVar.find("S0") == std::string::npos)
 			bRecreateTree = 1;
 	}
 
@@ -597,6 +613,9 @@ SqwBase* SqwPhonon::shallow_copy() const
 	pCpy->m_dTA2_E_HWHM = m_dTA2_E_HWHM;
 	pCpy->m_dTA2_q_HWHM = m_dTA2_q_HWHM;
 	pCpy->m_dTA2_S0 = m_dTA2_S0;
+
+	pCpy->m_dIncAmp = m_dIncAmp;
+	pCpy->m_dIncSig = m_dIncSig;
 
 	pCpy->m_dT = m_dT;
 

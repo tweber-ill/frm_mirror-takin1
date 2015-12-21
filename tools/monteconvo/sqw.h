@@ -131,10 +131,11 @@ protected:
 	ublas::vector<double> m_vecTA1;
 	ublas::vector<double> m_vecTA2;
 
-	double m_dLA_amp, m_dLA_freq, m_dLA_E_HWHM, m_dLA_q_HWHM, m_dLA_S0;
-	double m_dTA1_amp, m_dTA1_freq, m_dTA1_E_HWHM, m_dTA1_q_HWHM, m_dTA1_S0;
-	double m_dTA2_amp, m_dTA2_freq, m_dTA2_E_HWHM, m_dTA2_q_HWHM, m_dTA2_S0;
+	double m_dLA_amp=20., m_dLA_freq=M_PI/2., m_dLA_E_HWHM=0.1, m_dLA_q_HWHM=0.1, m_dLA_S0=1.;
+	double m_dTA1_amp=15., m_dTA1_freq=M_PI/2., m_dTA1_E_HWHM=0.1, m_dTA1_q_HWHM=0.1, m_dTA1_S0=1.;
+	double m_dTA2_amp=10., m_dTA2_freq=M_PI/2., m_dTA2_E_HWHM=0.1, m_dTA2_q_HWHM=0.1, m_dTA2_S0=1.;
 
+	double m_dIncAmp=0., m_dIncSig=0.1;
 	double m_dT = 100.;
 
 public:
