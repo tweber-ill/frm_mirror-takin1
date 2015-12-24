@@ -159,6 +159,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1)
 	const std::string strMonVar = pInstr->GetMonVar();
 	scan.vecCts = pInstr->GetCol(strCountVar);
 	scan.vecMon = pInstr->GetCol(strMonVar);
+
 	std::function<double(double)> funcErr = [](double d) -> double 
 	{
 		//if(tl::float_equal(d, 0.))	// error 0 causes problems with minuit
@@ -294,6 +295,26 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1)
 		scan.vecX.push_back(dPos[iScIdx]);
 		//tl::log_info("Added pos: ", *scan.vecX.rbegin());
 	}
+
+
+
+	/*decltype(scan.vecX) vecXNew;
+	decltype(scan.vecCts) vecCtsNew, vecMonNew, vecCtsErrNew, vecMonErrNew;
+	for(std::size_t i=0; i<scan.vecX.size(); ++i)
+	{
+		if(scan.vecX[i] <= 2.) continue;
+
+		vecXNew.push_back(scan.vecX[i]);
+		vecCtsNew.push_back(scan.vecCts[i]);
+		vecMonNew.push_back(scan.vecMon[i]);
+		vecCtsErrNew.push_back(scan.vecCtsErr[i]);
+		vecMonErrNew.push_back(scan.vecMonErr[i]);
+	}
+	scan.vecX = vecXNew;
+	scan.vecCts = vecCtsNew;
+	scan.vecMon = vecMonNew;
+	scan.vecCtsErr = vecCtsErrNew;
+	scan.vecMonErr = vecMonErrNew;*/
 
 
 	return true;
@@ -714,6 +735,12 @@ int main(int argc, char** argv)
 
 		if(strSqwMod == "phonons")
 			pSqw = new SqwPhonon(strSqwFile.c_str());
+		else if(strSqwMod == "elastic")
+			pSqw = new SqwElast(strSqwFile.c_str());
+		else if(strSqwMod == "tree")
+			pSqw = new SqwKdTree(strSqwFile.c_str());
+//		else if(strSqwMod == "py")
+//			pSqw = new SqwPy(strSqwFile.c_str());
 		else
 		{
 			tl::log_err("Invalid S(q,w) model selected: \"", strSqwMod, "\".");
