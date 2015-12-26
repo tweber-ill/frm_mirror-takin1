@@ -169,7 +169,7 @@ else
 endif
 
 ifeq ($(USE_GIL), 1)
-	GIL_LIBS = -lpng
+	GIL_LIBS = -lpng -ljpeg
 else
 	GIL_LIBS =
 endif

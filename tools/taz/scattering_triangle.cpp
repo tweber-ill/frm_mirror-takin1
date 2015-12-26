@@ -1397,9 +1397,7 @@ void ScatteringTriangleScene::setSnapq(bool bSnap)
 
 #ifdef USE_GIL
 
-#define int_p_NULL nullptr
-#include <boost/gil/gil_all.hpp>
-#include <boost/gil/extension/io/png_io.hpp>
+#include "tlibs/gfx/gil.h"
 namespace gil = boost::gil;
 
 bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
@@ -1409,8 +1407,9 @@ bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
 	const int iW = 720;
 	const int iH = 720;
 
-	std::unique_ptr<gil::rgb8_pixel_t[]> _ptrPix(new gil::rgb8_pixel_t[iH * iW]);
-	gil::rgb8_view_t view = gil::interleaved_view(iW, iH, _ptrPix.get(), iW*sizeof(gil::rgb8_pixel_t));
+	gil::rgb8_view_t view;
+	std::vector<gil::rgb8_pixel_t> vecPix;
+	tl::create_imgview(iW, iH, vecPix, view);
 
 	const int iMaxPeaks = m_pTri->GetMaxPeaks();
 	int iXMid = sceneRect().left() + (sceneRect().right()-sceneRect().left())/2;
@@ -1419,6 +1418,8 @@ bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
 	int _iY=0;
 	for(int iY=iYMid-iH/2; iY<iYMid+iH/2; ++iY, ++_iY)
 	{
+		auto iterRow = view.row_begin(_iY);
+
 		int _iX=0;
 		double dY = iY;
 		for(int iX=iXMid-iW/2; iX<iXMid+iW/2; ++iX, ++_iX)
@@ -1453,25 +1454,22 @@ bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
 			iG += bIsDirectBeam ? -(unsigned int)dBraggAmp : (unsigned int)dBraggAmp;
 			iB += bIsDirectBeam ? -(unsigned int)dBraggAmp : (unsigned int)dBraggAmp;
 
-			if(iR > 255) iR = 255; if(iG > 255) iG = 255; if(iB > 255) iB = 255;
-			if(iR < 0) iR = 0; if(iG < 0) iG = 0; if(iB < 0) iB = 0;
+			iR = tl::clamp(iR, 0, 255);
+			iG = tl::clamp(iG, 0, 255);
+			iB = tl::clamp(iB, 0, 255);
 
-			decltype(view)::x_iterator iterX = view.row_begin(_iY);
-			iterX[_iX] = gil::rgb8_pixel_t((unsigned char)iR, (unsigned char)iG, (unsigned char)iB);
+			/*view(_iX, _iY) =*/ iterRow[_iX] = gil::rgb8_pixel_t((unsigned char)iR, (unsigned char)iG, (unsigned char)iB);
 		}
 
 		//tl::log_info("BZ export: Line ", _iY+1, " of ", iH);
 	}
 
-	try
+	if(!tl::save_view(pcFile, &view))
 	{
-		gil::png_write_view(pcFile, view);
-	}
-	catch(const std::ios_base::failure& ex)
-	{
-		tl::log_err(ex.what());
+		tl::log_err("Cannot write image \"", pcFile, "\".");
 		return false;
 	}
+
 	return true;
 }
 

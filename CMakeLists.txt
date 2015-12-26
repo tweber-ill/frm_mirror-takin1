@@ -16,6 +16,7 @@ find_package(Qt4 REQUIRED)
 find_package(PythonInterp 2.7 REQUIRED)
 find_package(PythonLibs 2.7 REQUIRED)
 find_package(PNG REQUIRED)
+find_package(JPEG REQUIRED)
 find_package(Qwt REQUIRED)
 find_package(Clipper)
 
@@ -44,7 +45,7 @@ include_directories("${PROJECT_SOURCE_DIR}" ".")
 include_directories("${Boost_INCLUDE_DIRS}/..")
 include_directories("${tlibs_INCLUDE_DIRS}/..")
 include_directories("${PYTHON_INCLUDE_DIRS}")
-include_directories("${PNG_INCLUDE_DIRS}")
+include_directories("${PNG_INCLUDE_DIRS} ${JPEG_INCLUDE_DIRS}")
 include_directories("${QWT_INCLUDE_DIRS}")
 
 
@@ -89,9 +90,12 @@ add_executable(takin tools/taz/taz_main.cpp
 )
 
 
-target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES} Threads::Threads
+target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES} 
+	Threads::Threads
 	Qt4::QtCore Qt4::QtGui Qt4::QtSvg #Qt4::QtOpenGL
-	${PYTHON_LIBRARIES} ${PNG_LIBRARIES} ${QWT_LIBRARIES} ${Clipper_LIBRARIES}
+	${PYTHON_LIBRARIES} 
+	${PNG_LIBRARIES} ${JPEG_LIBRARIES} 
+	${QWT_LIBRARIES} ${Clipper_LIBRARIES}
 )
 
 
