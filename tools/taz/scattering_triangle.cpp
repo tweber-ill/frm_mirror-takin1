@@ -184,6 +184,12 @@ void ScatteringTriangle::SetBZVisible(bool bVisible)
 	this->update();
 }
 
+void ScatteringTriangle::SetEwaldSphereVisible(bool bVisible)
+{
+	m_bShowEwaldSphere = bVisible;
+	this->update();
+}
+
 void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	// Brillouin zone
@@ -425,6 +431,15 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			QPointF ptText = *vecPoints[i] + ptDirOut;
 			painter->drawText(ptText, QString::fromWCharArray(ostrAngle.str().c_str()));
 		}
+	}
+
+
+	// Ewald sphere
+	if(m_bShowEwaldSphere)
+	{
+		double dKiLen = lineKi.length();
+		painter->setPen(Qt::darkCyan);
+		painter->drawEllipse(ptKiKf, dKiLen, dKiLen);
 	}
 }
 

@@ -226,7 +226,7 @@ void TazDlg::CalcPeaks()
 		double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
 
 		std::wostringstream ostrSample;
-		ostrSample.precision(8);
+		ostrSample.precision(g_iPrecGfx);
 		ostrSample << "Sample";
 		ostrSample << " - ";
 		ostrSample << "Unit Cell Vol.: ";

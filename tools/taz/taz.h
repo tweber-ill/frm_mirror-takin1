@@ -74,6 +74,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		QAction *m_pSnapSmallq = nullptr;
 		QAction *m_pGoto = nullptr;
 		QAction *m_pBZ = nullptr;
+		QAction *m_pEwaldSphere = nullptr;
 		QAction *m_pShowRealQDir = nullptr;
 
 		std::vector<QLineEdit*> m_vecEdits_real;
@@ -186,6 +187,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void EnableSmallq(bool bEnable);
 		void EnableBZ(bool bEnable);
 		void EnableRealQDir(bool bEnable);
+		void ShowEwaldSphere(bool bEnable);
 
 		void RecipContextMenu(const QPoint&);
 		void RealContextMenu(const QPoint&);

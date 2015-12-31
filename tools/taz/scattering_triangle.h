@@ -119,6 +119,7 @@ class ScatteringTriangle : public QGraphicsItem
 		double m_dAngleRot = 0.;
 
 		bool m_bqVisible = 0;
+		bool m_bShowEwaldSphere = 1;
 
 	protected:
 		QRectF boundingRect() const;
@@ -172,6 +173,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		void SetqVisible(bool bVisible);
 		void SetBZVisible(bool bVisible);
+		void SetEwaldSphereVisible(bool bVisible);
 
 		const tl::Powder<int>& GetPowder() const { return m_powder; }
 		const tl::Kd<double>& GetKdLattice() const { return m_kdLattice; }

@@ -48,6 +48,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	const bool bSmallqVisible = 0;
 	const bool bBZVisible = 0;
+	const bool bEwald = 1;
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
@@ -324,6 +325,13 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pBZ->setChecked(bBZVisible);
 	m_pMenuViewRecip->addAction(m_pBZ);
 
+	m_pEwaldSphere = new QAction(this);
+	m_pEwaldSphere->setText("Show Ewald Sphere");
+	//m_pEwaldSphere->setIcon(load_icon("res/brillouin.svg"));
+	m_pEwaldSphere->setCheckable(1);
+	m_pEwaldSphere->setChecked(bEwald);
+	m_pMenuViewRecip->addAction(m_pEwaldSphere);
+
 	m_pMenuViewRecip->addSeparator();
 
 #if !defined NO_3D
@@ -542,6 +550,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
 	QObject::connect(m_pBZ, SIGNAL(toggled(bool)), this, SLOT(EnableBZ(bool)));
+	QObject::connect(m_pEwaldSphere, SIGNAL(toggled(bool)), this, SLOT(ShowEwaldSphere(bool)));
 	QObject::connect(m_pShowRealQDir, SIGNAL(toggled(bool)), this, SLOT(EnableRealQDir(bool)));
 
 	QObject::connect(m_pSnapSmallq, SIGNAL(toggled(bool)), &m_sceneRecip, SLOT(setSnapq(bool)));
@@ -626,6 +635,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pRecipTools->addAction(m_pGoto);
 	pRecipTools->addAction(m_pSmallq);
 	pRecipTools->addAction(m_pBZ);
+	//pRecipTools->addAction(m_pEwaldSphere);
 	addToolBar(pRecipTools);
 
 	QToolBar *pResoTools = new QToolBar(this);
@@ -672,6 +682,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_sceneRecip.GetTriangle()->SetqVisible(bSmallqVisible);
 	m_sceneRecip.GetTriangle()->SetBZVisible(bBZVisible);
+	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(bEwald);
 	m_sceneRecip.emitUpdate();
 	//m_sceneRecip.emitAllParams();
 
@@ -902,6 +913,11 @@ void TazDlg::EnableSmallq(bool bEnable)
 void TazDlg::EnableBZ(bool bEnable)
 {
 	m_sceneRecip.GetTriangle()->SetBZVisible(bEnable);
+}
+
+void TazDlg::ShowEwaldSphere(bool bEnable)
+{
+	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(bEnable);
 }
 
 void TazDlg::EnableRealQDir(bool bEnable)
