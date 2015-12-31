@@ -38,6 +38,8 @@
       <File Name="tlibs/file/recent.cpp"/>
       <File Name="tlibs/file/recent.h"/>
       <File Name="tlibs/file/prop.h"/>
+      <File Name="tlibs/file/x3d.cpp"/>
+      <File Name="tlibs/file/x3d.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="gfx">
       <File Name="tlibs/gfx/gl.cpp"/>
@@ -125,6 +127,7 @@
       <File Name="tools/taz/taz_file.cpp"/>
       <File Name="tools/taz/sics.cpp"/>
       <File Name="tools/taz/sics.h"/>
+      <File Name="tools/taz/taz_export.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="monteconvo">
       <File Name="tools/monteconvo/sqw.cpp"/>

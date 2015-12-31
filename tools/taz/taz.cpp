@@ -374,6 +374,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	pRealExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pRealExport);
 
+#ifdef USE_CLP
+	QAction *pExportUC = new QAction(this);
+	pExportUC->setText("Export Unit Cell Model...");
+	pExportUC->setIcon(load_icon("res/image-x-generic.svg"));
+	m_pMenuViewReal->addAction(pExportUC);
+#endif
 
 
 	// --------------------------------------------------------------------------------
@@ -551,6 +557,11 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
+
+#ifdef USE_CLP
+	QObject::connect(pExportUC, SIGNAL(triggered()), this, SLOT(ExportUCModel()));
+#endif
+
 #ifdef USE_GIL
 	QObject::connect(pBZExport, SIGNAL(triggered()), this, SLOT(ExportBZImage()));
 #endif
@@ -969,72 +980,6 @@ void TazDlg::RealContextMenu(const QPoint& _pt)
 	QPoint pt = this->m_pviewReal->mapToGlobal(_pt);
 	m_pMenuViewReal->exec(pt);
 }
-
-
-
-
-//--------------------------------------------------------------------------------
-// image exports
-
-#include <QtSvg/QSvgGenerator>
-
-void TazDlg::ExportReal() { ExportSceneSVG(m_sceneReal); }
-void TazDlg::ExportRecip() { ExportSceneSVG(m_sceneRecip); }
-
-void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
-{
-	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
-	QString strFile = QFileDialog::getSaveFileName(this,
-								"Export SVG",
-								strDirLast,
-								"SVG files (*.svg *.SVG)");
-	if(strFile == "")
-		return;
-
-
-	QRectF rect = scene.sceneRect();
-
-	QSvgGenerator svg;
-	svg.setFileName(strFile);
-	svg.setSize(QSize(rect.width(), rect.height()));
-	//svg.setResolution(300);
-	svg.setViewBox(QRectF(0, 0, rect.width(), rect.height()));
-	svg.setDescription("Created with Takin");
-
-	QPainter painter;
-	painter.begin(&svg);
-	scene.render(&painter);
-	painter.end();
-
-
-	std::string strDir = tl::get_dir(strFile.toStdString());
-	m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
-}
-
-#ifdef USE_GIL
-void TazDlg::ExportBZImage()
-{
-	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
-	QString strFile = QFileDialog::getSaveFileName(this,
-								"Export PNG",
-								strDirLast,
-								"PNG files (*.png *.PNG)");
-	if(strFile == "")
-		return;
-
-	bool bOk = m_sceneRecip.ExportBZAccurate(strFile.toStdString().c_str());
-	if(!bOk)
-		QMessageBox::critical(this, "Error", "Could not export image.");
-
-	if(bOk)
-	{
-		std::string strDir = tl::get_dir(strFile.toStdString());
-		m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
-	}
-}
-#else
-void TazDlg::ExportBZImage() {}
-#endif
 
 
 

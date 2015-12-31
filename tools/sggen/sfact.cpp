@@ -1,4 +1,4 @@
-// gcc -o sfact sfact.cpp -std=c++11 -lstdc++ -lm -I../.. -I/usr/include/QtGui/ ../../helper/spacegroup_clp.cpp ../../helper/crystalsys.cpp ../../helper/globals.cpp ../../helper/formfact.cpp ../../tlibs/file/xml.cpp ../../tlibs/helper/log.cpp -DUSE_CLP -DNO_QT -lclipper-core -lboost_system -lboost_filesystem
+// gcc -o sfact sfact.cpp -std=c++11 -lstdc++ -lm -I../.. -I/usr/include/QtGui/ ../../helper/spacegroup_clp.cpp ../../helper/crystalsys.cpp ../../helper/globals.cpp ../../helper/formfact.cpp ../../tlibs/log/log.cpp -DUSE_CLP -DNO_QT -lclipper-core -lboost_system -lboost_filesystem
 
 /**
  * generates structure factors
@@ -98,6 +98,7 @@ void gen_atoms_sfact()
 	clipper::Spacegroup sg(dsc);
 	std::vector<t_mat> vecTrafos;
 	get_symtrafos(sg, vecTrafos);
+	std::cout << vecTrafos.size() << " symmetry operations in spacegroup." << std::endl;
 
 	std::vector<unsigned int> vecNumAtoms;
 	std::vector<t_vec> vecAllAtoms;
@@ -112,6 +113,9 @@ void gen_atoms_sfact()
 		const t_vec& vecAtom = vecAtoms[iAtom];
 		std::vector<t_vec> vecPos = tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom);
 		vecNumAtoms.push_back(vecPos.size());
+		std::cout << "Generated " << vecPos.size() << " " << vecElems[iAtom] << " atoms." << std::endl;
+		for(const t_vec& vec : vecPos)
+			std::cout << vec << std::endl;
 
 		const ScatlenList::elem_type* pElem = lst.Find(vecElems[iAtom]);
 
@@ -121,6 +125,7 @@ void gen_atoms_sfact()
 				<< vecElems[iAtom] << "." << std::endl;
 			return;
 		}
+
 		std::complex<double> b = pElem->GetCoherent() /*/ 10.*/;
 
 		dSigAbs += tl::macro_xsect(pElem->GetXSecCoherent().real()*tl::barns, 

@@ -101,6 +101,7 @@ void gen_atoms()
 	tl::X3d x3d;
 
 	std::cout << std::endl;
+	//const t_vec vecOffs = tl::make_vec({0.5, 0.5, 0.5, 0.});
 	for(int iAtom=0; iAtom<vecAtoms.size(); ++iAtom)
 	{
 		const t_vec& vecAtom = vecAtoms[iAtom];
@@ -109,7 +110,7 @@ void gen_atoms()
 		std::cout << "Atom " << (iAtom+1) << ":\n";
 		for(int iPos=0; iPos<vecPos.size(); ++iPos)
 		{
-			const t_vec& vec = vecPos[iPos];
+			const t_vec& vec = vecPos[iPos] /*+ vecOffs*/;
 
 			//std::cout << "\t(" << (iPos+1) << ") " << vec << "\n";
 

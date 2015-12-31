@@ -236,7 +236,7 @@ void TazDlg::CalcPeaks()
 
 
 		const char* pcCryTy = "<not set>";
-		SpaceGroup *pSpaceGroup = 0;
+		SpaceGroup *pSpaceGroup = nullptr;
 		int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
 		if(iSpaceGroupIdx != 0)
 			pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();

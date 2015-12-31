@@ -186,7 +186,7 @@ OBJ_COMMON = obj/log.o obj/rand.o obj/linalg2.o \
 	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
 
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
-	obj/taz_file.o \
+	obj/taz_file.o obj/taz_export.o \
 	obj/scattering_triangle.o obj/tas_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o obj/FormfactorDlg.o \
@@ -197,7 +197,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/loadinstr.o obj/recent.o obj/globals.o \
 	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
-	obj/scanviewer.o \
+	obj/scanviewer.o obj/x3d.o \
 	obj/tlibs_ver.o obj/AboutDlg.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
@@ -313,6 +313,8 @@ obj/taz_nonet.o: tools/taz/taz_nonet.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/taz_file.o: tools/taz/taz_file.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
+obj/taz_export.o: tools/taz/taz_export.cpp tools/taz/taz.h
+	${CC} ${FLAGS} -c -o $@ $<
 obj/recip3d.o: tools/taz/recip3d.cpp tools/taz/recip3d.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scattering_triangle.h tlibs/math/lattice.h
@@ -381,6 +383,8 @@ obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/loadtxt.o: tlibs/file/loadtxt.cpp tlibs/file/loadtxt.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/x3d.o: tlibs/file/x3d.cpp tlibs/file/x3d.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/recent.o: tlibs/file/recent.cpp tlibs/file/recent.h
 	${CC} ${FLAGS} -c -o $@ $<
