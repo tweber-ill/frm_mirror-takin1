@@ -82,12 +82,6 @@ void TazDlg::ExportUCModel()
 	using t_vec = ublas::vector<double>;
 
 
-	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
-	QString strFile = QFileDialog::getSaveFileName(this,
-		"Export X3D", strDirLast, "X3D files (*.x3d *.X3D)");
-	if(strFile == "")
-		return;
-
 	if(m_vecAtoms.size() == 0)
 	{
 		QMessageBox::critical(this, "Error", "No atom positions defined for unit cell.");
@@ -143,6 +137,14 @@ void TazDlg::ExportUCModel()
 		{ 0., 0., 1., 0.},
 		{ 0., 1., 0., 0.},
 		{ 0., 0., 0., 1.}	});
+
+
+
+	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
+	QString strFile = QFileDialog::getSaveFileName(this,
+		"Export X3D", strDirLast, "X3D files (*.x3d *.X3D)");
+	if(strFile == "")
+		return;
 
 
 	tl::X3d x3d;

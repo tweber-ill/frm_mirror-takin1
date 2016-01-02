@@ -47,7 +47,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	//log_debug("In ", __func__, ".");
 
 	const bool bSmallqVisible = 0;
-	const bool bBZVisible = 0;
+	const bool bBZVisible = 1;
 	const bool bEwald = 1;
 
 	this->setupUi(this);

@@ -160,7 +160,7 @@ class ScatteringTriangle : public QGraphicsItem
 		void ClearPeaks();
 		void CalcPeaks(const tl::Lattice<double>& lattice,
 						const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
-						const tl::Plane<double>& plane,
+						const tl::Plane<double>& plane, const tl::Plane<double>& planeRLU,
 						const SpaceGroup* pSpaceGroup=nullptr,
 						bool bIsPowder=0,
 						const std::vector<AtomPos>* pvecAtomPos=nullptr);

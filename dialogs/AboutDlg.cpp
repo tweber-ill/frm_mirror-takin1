@@ -18,7 +18,7 @@
 #include <sstream>
 
 
-#define TAKIN_VER "0.9.4"
+#define TAKIN_VER "0.9.5"
 
 
 AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)

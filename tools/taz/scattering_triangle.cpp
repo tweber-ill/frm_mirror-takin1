@@ -15,8 +15,9 @@
 
 #include <QToolTip>
 #include <iostream>
-#include <cmath>
 #include <sstream>
+#include <cmath>
+#include <tuple>
 
 namespace units = boost::units;
 namespace co = boost::units::si::constants::codata;
@@ -198,8 +199,8 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		QPen penOrg = painter->pen();
 		painter->setPen(Qt::lightGray);
 
-		const ublas::vector<double>& vecCentral = m_bz.GetCentralReflex();
-
+		const ublas::vector<double>& vecCentral = m_bz.GetCentralReflex() * m_dScaleFactor*m_dZoom;
+		//std::cout << vecCentral << std::endl;
 		for(const RecipPeak* pPeak : m_vecPeaks)
 		{
 			QPointF peakPos = pPeak->pos();
@@ -686,7 +687,8 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
 
 void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
-	const tl::Plane<double>& plane, const SpaceGroup* pSpaceGroup,
+	const tl::Plane<double>& plane, const tl::Plane<double>& planeRLU,
+	const SpaceGroup* pSpaceGroup,
 	bool bIsPowder, const std::vector<AtomPos>* pvecAtomPos)
 {
 	ClearPeaks();
@@ -702,6 +704,9 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	const ublas::matrix<double> matA = m_lattice.GetMetric();
 	const ublas::matrix<double> matB = m_recip.GetMetric();
 
+	ublas::vector<double> dir0RLU = planeRLU.GetDir0();
+	ublas::vector<double> dir1RLU = planeRLU.GetDir1();
+
 	ublas::vector<double> dir0 = plane.GetDir0();
 	//ublas::vector<double> dir1 = plane.GetDir1();
 	ublas::vector<double> dir1 = tl::cross_3(plane.GetNorm(), dir0);
@@ -715,6 +720,36 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 		tl::log_err("Invalid scattering plane.");
 		return;
 	}
+
+
+	// -------------------------------------------------------------------------
+	// central peak for BZ calculation
+	//const int iCent[] = {0,0,0};
+
+	std::vector<std::tuple<int, int>> vecPeaksToTry =
+	{
+		std::make_tuple(1, 2), std::make_tuple(1, 3), std::make_tuple(1, 4), std::make_tuple(1, 5), std::make_tuple(1, 6),
+		std::make_tuple(2, 1), std::make_tuple(2, 3), std::make_tuple(2, 4), std::make_tuple(2, 5), std::make_tuple(2, 6),
+		std::make_tuple(3, 1), std::make_tuple(3, 2), std::make_tuple(3, 4), std::make_tuple(3, 5), std::make_tuple(3, 6),
+	};
+
+	ublas::vector<int> veciCent;
+	for(const std::tuple<int, int>& tup : vecPeaksToTry)
+	{
+		veciCent.clear();
+
+		ublas::vector<double> vecdCent = std::get<0>(tup)*dir0RLU + std::get<1>(tup)*dir1RLU;
+		veciCent = tl::convert_vec<double, int>(vecdCent);
+		if(pSpaceGroup && !pSpaceGroup->HasReflection(veciCent[0], veciCent[1], veciCent[2]))
+			continue;
+		break;
+	}
+	//std::cout << veciCent << std::endl;
+
+	if(!veciCent.size())
+		veciCent = tl::make_vec({0.,0.,0.});
+	// -------------------------------------------------------------------------
+
 
 	dir0 /= dDir0Len;
 	dir1 /= dDir1Len;
@@ -828,32 +863,14 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 				//const double dG = ublas::norm_2(vecPeak);
 
 
-				double dF = -1.;
-				std::string strStructfact;
-#ifdef USE_CLP
-				if(vecScatlens.size())
-				{
-					std::complex<double> cF =
-						tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
-							(vecAllAtoms, vecPeak, vecScatlens);
-					double dFsq = (std::conj(cF)*cF).real();
-					dF = std::sqrt(dFsq);
-					tl::set_eps_0(dF, g_dEpsGfx);
-
-					std::ostringstream ostrStructfact;
-					ostrStructfact.precision(g_iPrecGfx);
-					ostrStructfact << "F = " << dF;
-					strStructfact = ostrStructfact.str();
-				}
-#endif
-
 				if(bIsPowder)
 					m_powder.AddPeak(ih, ik, il);
 
-				if(!bIsPowder || (ih==0 && ik==0 && il==0))		// (000), i.e. direct beam, also needed for powder
+				// (000), i.e. direct beam, also needed for powder
+				if(!bIsPowder || (ih==0 && ik==0 && il==0))
 				{
 					// add peak in 1/A and rlu units
-					lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l, dF});
+					lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/});
 
 					double dDist = 0.;
 					ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
@@ -863,6 +880,26 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 						ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
 						double dX = vecCoord[0];
 						double dY = -vecCoord[1];
+
+						double dF = -1.;
+						std::string strStructfact;
+#ifdef USE_CLP
+						if(vecScatlens.size())
+						{
+							std::complex<double> cF =
+								tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
+									(vecAllAtoms, vecPeak, vecScatlens);
+							double dFsq = (std::conj(cF)*cF).real();
+							dF = std::sqrt(dFsq);
+							tl::set_eps_0(dF, g_dEpsGfx);
+
+							std::ostringstream ostrStructfact;
+							ostrStructfact.precision(g_iPrecGfx);
+							ostrStructfact << "F = " << dF;
+							strStructfact = ostrStructfact.str();
+						}
+#endif
+
 
 						RecipPeak *pPeak = new RecipPeak();
 						if(ih==0 && ik==0 && il==0)
@@ -886,27 +923,20 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 						m_vecPeaks.push_back(pPeak);
 						m_scene.addItem(pPeak);
 
-						const int iCent[] = {0,0,0};
 
 						// 1st BZ
-						if(ih==iCent[0] && ik==iCent[1] && il==iCent[2])
+						if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
 						{
-							ublas::vector<double> vecCentral(2);
-							vecCentral[0] = dX;
-							vecCentral[1] = dY;
-
+							ublas::vector<double> vecCentral = tl::make_vec({dX, dY});
 							//log_debug("Central ", ih, ik, il, ": ", vecCentral);
 							m_bz.SetCentralReflex(vecCentral);
 						}
 						// TODO: check if 2 next neighbours is sufficient for all space groups
-						else if(std::abs(ih-iCent[0])<=2
-								&& std::abs(ik-iCent[1])<=2
-								&& std::abs(il-iCent[2])<=2)
+						else if(std::abs(ih-veciCent[0])<=2
+								&& std::abs(ik-veciCent[1])<=2
+								&& std::abs(il-veciCent[2])<=2)
 						{
-							ublas::vector<double> vecN(2);
-							vecN[0] = dX;
-							vecN[1] = dY;
-
+							ublas::vector<double> vecN = tl::make_vec({dX, dY});
 							//log_debug("Reflex: ", vecN);
 							m_bz.AddReflex(vecN);
 						}
