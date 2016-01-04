@@ -129,7 +129,17 @@ bool save_file(const char* pcFile, const Scan& sc)
 	return true;
 }
 
-bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1)
+
+struct Filter
+{
+	bool bLower = 0;
+	bool bUpper = 0;
+
+	double dLower = 0.;
+	double dUpper = 0.;
+};
+
+bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1, const Filter& filter = Filter())
 {
 	if(!vecFiles.size()) return 0;
 	tl::log_info("Loading \"", vecFiles[0], "\".");
@@ -298,11 +308,13 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1)
 
 
 
-	/*decltype(scan.vecX) vecXNew;
+	// filter
+	decltype(scan.vecX) vecXNew;
 	decltype(scan.vecCts) vecCtsNew, vecMonNew, vecCtsErrNew, vecMonErrNew;
 	for(std::size_t i=0; i<scan.vecX.size(); ++i)
 	{
-		if(scan.vecX[i] <= 2.) continue;
+		if(filter.bLower && scan.vecX[i] <= filter.dLower) continue;
+		if(filter.bUpper && scan.vecX[i] >= filter.dUpper) continue;
 
 		vecXNew.push_back(scan.vecX[i]);
 		vecCtsNew.push_back(scan.vecCts[i]);
@@ -310,17 +322,17 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1)
 		vecCtsErrNew.push_back(scan.vecCtsErr[i]);
 		vecMonErrNew.push_back(scan.vecMonErr[i]);
 	}
-	scan.vecX = vecXNew;
-	scan.vecCts = vecCtsNew;
-	scan.vecMon = vecMonNew;
-	scan.vecCtsErr = vecCtsErrNew;
-	scan.vecMonErr = vecMonErrNew;*/
+	scan.vecX = std::move(vecXNew);
+	scan.vecCts = std::move(vecCtsNew);
+	scan.vecMon = std::move(vecMonNew);
+	scan.vecCtsErr = std::move(vecCtsErrNew);
+	scan.vecMonErr = std::move(vecMonErrNew);
 
 
 	return true;
 }
 
-bool load_file(const char* pcFile, Scan& scan, bool bNormToMon=1)
+bool load_file(const char* pcFile, Scan& scan, bool bNormToMon=1, const Filter& filter=Filter())
 {
 	std::vector<std::string> vec{pcFile};
 	return load_file(vec, scan, bNormToMon);
@@ -635,6 +647,13 @@ int main(int argc, char** argv)
 		std::string strSqwMod = prop.Query<std::string>("input/sqw_model");
 		std::string strSqwFile = prop.Query<std::string>("input/sqw_file");
 		bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
+
+		Filter filter;
+		filter.bLower = prop.Exists("input/filter_lower");
+		filter.bUpper = prop.Exists("input/filter_upper");
+		if(filter.bLower) filter.dLower = prop.Query<double>("fitter/filter_lower", 0);
+		if(filter.bUpper) filter.dUpper = prop.Query<double>("fitter/filter_upper", 0);
+
 
 		std::vector<std::string> vecScFiles;
 		tl::get_tokens<std::string, std::string>(strScFile, ";", vecScFiles);
