@@ -8,6 +8,7 @@
 #include "taz.h"
 #include "tlibs/math/atoms.h"
 #include "tlibs/file/x3d.h"
+#include "tlibs/log/log.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -103,12 +104,15 @@ void TazDlg::ExportUCModel()
 	pSpaceGroup->GetSymTrafos(vecTrafos);
 
 	std::vector<t_vec> vecAtoms;
+	std::vector<std::string> vecAtomNames;
 	for(const AtomPos& atom : m_vecAtoms)
 	{
 		t_vec vecAtomPos = atom.vecPos;
 		vecAtomPos.resize(4, 1);
 		vecAtomPos[3] = 1.;
 		vecAtoms.push_back(std::move(vecAtomPos));
+
+		vecAtomNames.push_back(atom.strAtomName);
 	}
 
 
@@ -148,11 +152,16 @@ void TazDlg::ExportUCModel()
 
 
 	tl::X3d x3d;
+	std::ostringstream ostrComment;
 
 	for(std::size_t iAtom=0; iAtom<vecAtoms.size(); ++iAtom)
 	{
 		const t_vec& vecAtom = vecAtoms[iAtom];
+		const std::string& strAtomName = vecAtomNames[iAtom];
+
 		std::vector<t_vec> vecPos = tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom);
+		ostrComment << "Unit cell contains " << vecPos.size() << " " << strAtomName
+			<< " atoms (color: " << vecColors[iAtom % vecColors.size()] <<  ").\n";
 
 		for(std::size_t iPos=0; iPos<vecPos.size(); ++iPos)
 		{
@@ -186,6 +195,9 @@ void TazDlg::ExportUCModel()
 	//tl::X3dCube *pCube = new tl::X3dCube(a,b,c);
 	//pCube->SetColor(tl::make_vec({1., 1., 1., 0.75}));
 	//x3d.GetScene().AddChild(pCube);
+
+	tl::log_info(ostrComment.str());
+	x3d.SetComment(std::string("\nCreated with Takin.\n\n") + ostrComment.str());
 
 	bool bOk = x3d.Save(strFile.toStdString().c_str());
 
