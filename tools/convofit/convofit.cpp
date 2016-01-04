@@ -335,7 +335,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1,
 bool load_file(const char* pcFile, Scan& scan, bool bNormToMon=1, const Filter& filter=Filter())
 {
 	std::vector<std::string> vec{pcFile};
-	return load_file(vec, scan, bNormToMon);
+	return load_file(vec, scan, bNormToMon, filter);
 }
 
 // ----------------------------------------------------------------------------
@@ -651,8 +651,8 @@ int main(int argc, char** argv)
 		Filter filter;
 		filter.bLower = prop.Exists("input/filter_lower");
 		filter.bUpper = prop.Exists("input/filter_upper");
-		if(filter.bLower) filter.dLower = prop.Query<double>("fitter/filter_lower", 0);
-		if(filter.bUpper) filter.dUpper = prop.Query<double>("fitter/filter_upper", 0);
+		if(filter.bLower) filter.dLower = prop.Query<double>("input/filter_lower", 0);
+		if(filter.bUpper) filter.dUpper = prop.Query<double>("input/filter_upper", 0);
 
 
 		std::vector<std::string> vecScFiles;
@@ -710,7 +710,7 @@ int main(int argc, char** argv)
 
 
 		Scan sc;
-		if(!load_file(vecScFiles, sc, bNormToMon))
+		if(!load_file(vecScFiles, sc, bNormToMon, filter))
 			return -1;
 
 
