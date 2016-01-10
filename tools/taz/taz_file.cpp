@@ -204,6 +204,10 @@ bool TazDlg::Load(const char* pcFile)
 	if(bOk)
 		m_pEwaldSphere->setChecked(bEwaldEnabled!=0);
 
+	int bWSEnabled = xml.Query<int>((strXmlRoot + "real/enable_ws").c_str(), 0, &bOk);
+	if(bOk)
+		m_pWS->setChecked(bWSEnabled!=0);
+
 	int bRealQEnabled = xml.Query<int>((strXmlRoot + "real/enable_realQDir").c_str(), 0, &bOk);
 	if(bOk)
 		m_pShowRealQDir->setChecked(bRealQEnabled!=0);
@@ -366,6 +370,9 @@ bool TazDlg::Save()
 
 	bool bEwaldEnabled = m_pEwaldSphere->isChecked();
 	mapConf[strXmlRoot + "recip/ewald_sphere"] = (bEwaldEnabled ? "1" : "0");
+
+	bool bWSEnabled = m_pWS->isChecked();
+	mapConf[strXmlRoot + "real/enable_ws"] = (bWSEnabled ? "1" : "0");
 
 	bool bRealQDir = m_pShowRealQDir->isChecked();
 	mapConf[strXmlRoot + "real/enable_realQDir"] = (bRealQDir ? "1" : "0");

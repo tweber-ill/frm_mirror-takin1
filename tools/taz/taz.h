@@ -20,6 +20,7 @@
 
 #include "ui/ui_taz.h"
 #include "scattering_triangle.h"
+#include "real_lattice.h"
 #include "tas_layout.h"
 
 #include "dialogs/RecipParamDlg.h"
@@ -74,6 +75,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		QAction *m_pSnapSmallq = nullptr;
 		QAction *m_pGoto = nullptr;
 		QAction *m_pBZ = nullptr;
+		QAction *m_pWS = nullptr;
 		QAction *m_pEwaldSphere = nullptr;
 		QAction *m_pShowRealQDir = nullptr;
 
@@ -111,11 +113,15 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		QMenu *m_pMenuRecent = nullptr;
 		QMenu *m_pMenuRecentImport = nullptr;
 
+		// reciprocal lattice
 		ScatteringTriangleView *m_pviewRecip = nullptr;
 		ScatteringTriangleScene m_sceneRecip;
 
+		// real lattice
 		TasLayoutView *m_pviewReal = nullptr;
 		TasLayoutScene m_sceneReal;
+		LatticeView *m_pviewRealLattice = nullptr;
+		LatticeScene m_sceneRealLattice;
 
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
@@ -186,6 +192,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void UpdateAnaSense();
 		void EnableSmallq(bool bEnable);
 		void EnableBZ(bool bEnable);
+		void EnableWS(bool bEnable);
 		void EnableRealQDir(bool bEnable);
 		void ShowEwaldSphere(bool bEnable);
 
@@ -208,6 +215,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ExportReal();
 		void ExportRecip();
 		void ExportBZImage();
+		void ExportWSImage();
 		void ExportUCModel();
 
 		void RepopulateSpaceGroups();

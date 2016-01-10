@@ -55,6 +55,7 @@ echo -e "building mocs..."
 declare -a hfiles=(
         "${TAKINROOT}/tools/taz/taz.h"
         "${TAKINROOT}/tools/taz/scattering_triangle.h"
+        "${TAKINROOT}/tools/taz/real_lattice.h"
         "${TAKINROOT}/tools/taz/tas_layout.h"
         "${TAKINROOT}/tools/taz/recip3d.h"
         "${TAKINROOT}/tools/taz/nicos.h"

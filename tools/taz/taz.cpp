@@ -14,7 +14,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include <QApplication>
-#include <QHBoxLayout>
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -48,6 +47,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	const bool bSmallqVisible = 0;
 	const bool bBZVisible = 1;
+	const bool bWSVisible = 1;
 	const bool bEwald = 1;
 
 	this->setupUi(this);
@@ -75,7 +75,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pStatusBar->addWidget(m_pStatusMsg, 1);
 	pStatusBar->addPermanentWidget(m_pCoordQStatusMsg, 0);
 	pStatusBar->addPermanentWidget(m_pCoordCursorStatusMsg, 0);
-	m_pCoordQStatusMsg->setMinimumWidth(325);
+	m_pCoordQStatusMsg->setMinimumWidth(350);
 	m_pCoordQStatusMsg->setAlignment(Qt::AlignCenter);
 	m_pCoordCursorStatusMsg->setMinimumWidth(325);
 	m_pCoordCursorStatusMsg->setAlignment(Qt::AlignCenter);
@@ -98,6 +98,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	{
 		editScatX0, editScatX1, editScatX2,
 		editScatY0, editScatY1, editScatY2,
+
+		editRealX0, editRealX1, editRealX2,
+		editRealY0, editRealY1, editRealY2,
 	};
 	m_vecEdits_monoana =
 	{
@@ -122,7 +125,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	{
 		"plane/x0", "plane/x1", "plane/x2",
 		"plane/y0", "plane/y1", "plane/y2",
-		"plane/delta"
+
+		"plane/real_x0", "plane/real_x1", "plane/real_x2",
+		"plane/real_y0", "plane/real_y1", "plane/real_y2",
 	};
 	m_vecEditNames_monoana =
 	{
@@ -133,18 +138,18 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_vecCheckBoxNamesSenses = {"tas/sense_m", "tas/sense_s", "tas/sense_a"};
 
 
-	QHBoxLayout *pLayoutRecip = new QHBoxLayout(groupRecip);
-	pLayoutRecip->setContentsMargins(QMargins(4,4,4,4));
 	m_pviewRecip = new ScatteringTriangleView(groupRecip);
-	pLayoutRecip->addWidget(m_pviewRecip);
+	groupRecip->addTab(m_pviewRecip, "Reciprocal Lattice");
 
-	QHBoxLayout *pLayoutReal = new QHBoxLayout(groupReal);
-	pLayoutReal->setContentsMargins(QMargins(4,4,4,4));
+	m_pviewRealLattice = new LatticeView(groupReal);
+	groupReal->addTab(m_pviewRealLattice, "Real Lattice");
+
 	m_pviewReal = new TasLayoutView(groupReal);
-	pLayoutReal->addWidget(m_pviewReal);
+	groupReal->addTab(m_pviewReal, "Instrument Layout");
 
 
 	m_pviewRecip->setScene(&m_sceneRecip);
+	m_pviewRealLattice->setScene(&m_sceneRealLattice);
 	m_pviewReal->setScene(&m_sceneReal);
 
 
@@ -157,6 +162,8 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(double)),
 					&m_sceneRecip, SLOT(scaleChanged(double)));
+	QObject::connect(m_pviewRealLattice, SIGNAL(scaleChanged(double)),
+					&m_sceneRealLattice, SLOT(scaleChanged(double)));
 	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(double)),
 					&m_sceneReal, SLOT(scaleChanged(double)));
 
@@ -375,12 +382,26 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pShowRealQDir->setChecked(m_sceneReal.GetTasLayout()->GetRealQVisible());
 	m_pMenuViewReal->addAction(m_pShowRealQDir);
 
+	m_pWS = new QAction(this);
+	m_pWS->setText("Show Wigner-Seitz Cell");
+	m_pWS->setIcon(load_icon("res/brillouin.svg"));
+	m_pWS->setCheckable(1);
+	m_pWS->setChecked(bWSVisible);
+	m_pMenuViewReal->addAction(m_pWS);
+
 	m_pMenuViewReal->addSeparator();
 
 	QAction *pRealExport = new QAction(this);
 	pRealExport->setText("Export Image...");
 	pRealExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pRealExport);
+
+#ifdef USE_GIL
+	QAction *pWSExport = new QAction(this);
+	pWSExport->setText("Export Wigner-Seitz Cell Image...");
+	pWSExport->setIcon(load_icon("res/image-x-generic.svg"));
+	m_pMenuViewReal->addAction(pWSExport);
+#endif
 
 #ifdef USE_CLP
 	QAction *pExportUC = new QAction(this);
@@ -550,6 +571,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
 	QObject::connect(m_pBZ, SIGNAL(toggled(bool)), this, SLOT(EnableBZ(bool)));
+	QObject::connect(m_pWS, SIGNAL(toggled(bool)), this, SLOT(EnableWS(bool)));
 	QObject::connect(m_pEwaldSphere, SIGNAL(toggled(bool)), this, SLOT(ShowEwaldSphere(bool)));
 	QObject::connect(m_pShowRealQDir, SIGNAL(toggled(bool)), this, SLOT(EnableRealQDir(bool)));
 
@@ -573,6 +595,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 #ifdef USE_GIL
 	QObject::connect(pBZExport, SIGNAL(triggered()), this, SLOT(ExportBZImage()));
+	QObject::connect(pWSExport, SIGNAL(triggered()), this, SLOT(ExportWSImage()));
 #endif
 
 	QObject::connect(pResoParams, SIGNAL(triggered()), this, SLOT(ShowResoParams()));
@@ -611,10 +634,13 @@ TazDlg::TazDlg(QWidget* pParent)
 	// --------------------------------------------------------------------------------
 	// context menus
 	m_pviewRecip->setContextMenuPolicy(Qt::CustomContextMenu);
+	m_pviewRealLattice->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_pviewReal->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	QObject::connect(m_pviewRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
 					this, SLOT(RecipContextMenu(const QPoint&)));
+	QObject::connect(m_pviewRealLattice, SIGNAL(customContextMenuRequested(const QPoint&)),
+					this, SLOT(RealContextMenu(const QPoint&)));
 	QObject::connect(m_pviewReal, SIGNAL(customContextMenuRequested(const QPoint&)),
 					this, SLOT(RealContextMenu(const QPoint&)));
 
@@ -669,6 +695,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_sceneRecip.GetTriangle()->SetMaxPeaks(iMaxPeaks);
 	m_sceneRecip.GetTriangle()->SetPlaneDistTolerance(s_dPlaneDistTolerance);
 
+	m_sceneRealLattice.GetLattice()->SetMaxPeaks(iMaxPeaks);
+	m_sceneRealLattice.GetLattice()->SetPlaneDistTolerance(s_dPlaneDistTolerance);
+
 #if !defined NO_3D
 	if(m_pRecip3d)
 	{
@@ -683,11 +712,14 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_sceneRecip.GetTriangle()->SetqVisible(bSmallqVisible);
 	m_sceneRecip.GetTriangle()->SetBZVisible(bBZVisible);
 	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(bEwald);
+	m_sceneRealLattice.GetLattice()->SetWSVisible(bWSVisible);
 	m_sceneRecip.emitUpdate();
 	//m_sceneRecip.emitAllParams();
 
-	m_pviewReal->centerOn(m_sceneReal.GetTasLayout());
-	m_pviewRecip->centerOn(m_sceneRecip.GetTriangle());
+
+	m_pviewReal->centerOn(/*m_sceneReal.GetTasLayout()*/ 0., 0.);
+	m_pviewRecip->centerOn(/*m_sceneRecip.GetTriangle()*/ 300., 0.);
+	m_pviewRealLattice->centerOn(250.,0.);
 }
 
 TazDlg::~TazDlg()
@@ -700,6 +732,7 @@ TazDlg::~TazDlg()
 	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
 
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
+	if(m_pviewRealLattice) { delete m_pviewRealLattice; m_pviewRealLattice = 0; }
 	if(m_pviewReal) { delete m_pviewReal; m_pviewReal = 0; }
 }
 
@@ -915,6 +948,11 @@ void TazDlg::EnableBZ(bool bEnable)
 	m_sceneRecip.GetTriangle()->SetBZVisible(bEnable);
 }
 
+void TazDlg::EnableWS(bool bEnable)
+{
+	m_sceneRealLattice.GetLattice()->SetWSVisible(bEnable);
+}
+
 void TazDlg::ShowEwaldSphere(bool bEnable)
 {
 	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(bEnable);
@@ -928,12 +966,16 @@ void TazDlg::EnableRealQDir(bool bEnable)
 // Q position
 void TazDlg::recipParamsChanged(const RecipParams& params)
 {
+	double dQx = -params.Q_rlu[0], dQy = -params.Q_rlu[1], dQz = -params.Q_rlu[2];
+	double dE = params.dE;
+
+	tl::set_eps_0(dQx); tl::set_eps_0(dQy); tl::set_eps_0(dQz);
+	tl::set_eps_0(dE);
+
 	std::ostringstream ostrPos;
 	ostrPos.precision(g_iPrecGfx);
-	ostrPos << "Q = (" << -params.Q_rlu[0] << ", "
-		<< -params.Q_rlu[1] << ", "
-		<< -params.Q_rlu[2]  << ") rlu";
-	ostrPos << ", E = " << params.dE << " meV";
+	ostrPos << "Q = (" << dQx << ", " << dQy << ", " << dQz  << ") rlu";
+	ostrPos << ", E = " << dE << " meV";
 
 	ostrPos << ", BZ: ("
 		<< params.G_rlu_accurate[0] << ", "
@@ -947,6 +989,9 @@ void TazDlg::recipParamsChanged(const RecipParams& params)
 void TazDlg::RecipCoordsChanged(double dh, double dk, double dl,
 	bool bHasNearest, double dNearestH, double dNearestK, double dNearestL)
 {
+	tl::set_eps_0(dh); tl::set_eps_0(dk); tl::set_eps_0(dl);
+	tl::set_eps_0(dNearestH); tl::set_eps_0(dNearestK); tl::set_eps_0(dNearestL);
+
 	std::ostringstream ostrPos;
 	ostrPos.precision(g_iPrecGfx);
 	ostrPos << "Cur: (" << dh << ", " << dk << ", " << dl  << ") rlu";

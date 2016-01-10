@@ -66,6 +66,7 @@ add_executable(takin tools/taz/taz_main.cpp
 	tools/taz/taz.cpp tools/taz/tas_layout.cpp tools/taz/taz_crys.cpp 
 	tools/taz/taz_file.cpp tools/taz/taz_export.cpp
 	tools/taz/tas_layout.cpp tools/taz/scattering_triangle.cpp
+	tools/taz/real_lattice.cpp
 	tools/taz/nicos.cpp tools/taz/sics.cpp tools/taz/taz_net.cpp
 
 	tools/res/cn.cpp tools/res/pop.cpp tools/res/eck.cpp

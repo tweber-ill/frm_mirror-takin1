@@ -66,8 +66,28 @@ void TazDlg::ExportBZImage()
 		m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
 	}
 }
+
+void TazDlg::ExportWSImage()
+{
+	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
+	QString strFile = QFileDialog::getSaveFileName(this,
+		"Export PNG", strDirLast, "PNG files (*.png *.PNG)");
+	if(strFile == "")
+		return;
+
+	bool bOk = m_sceneRealLattice.ExportWSAccurate(strFile.toStdString().c_str());
+	if(!bOk)
+		QMessageBox::critical(this, "Error", "Could not export image.");
+
+	if(bOk)
+	{
+		std::string strDir = tl::get_dir(strFile.toStdString());
+		m_settings.setValue("main/last_dir_export", QString(strDir.c_str()));
+	}
+}
 #else
 void TazDlg::ExportBZImage() {}
+void TazDlg::ExportWSImage() {}
 #endif
 
 

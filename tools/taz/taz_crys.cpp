@@ -124,8 +124,7 @@ void TazDlg::CalcPeaks()
 		tl::Lattice<double> recip_unrot = lattice.GetRecip();
 
 
-
-
+		//----------------------------------------------------------------------
 		// scattering plane
 		double dX0 = editScatX0->text().toDouble();
 		double dX1 = editScatX1->text().toDouble();
@@ -165,6 +164,50 @@ void TazDlg::CalcPeaks()
 			tl::log_err("Invalid scattering plane.");
 			return;
 		}
+		//----------------------------------------------------------------------
+
+
+
+		//----------------------------------------------------------------------
+		// view plane for real lattice
+		// scattering plane
+		double dX0R = editRealX0->text().toDouble();
+		double dX1R = editRealX1->text().toDouble();
+		double dX2R = editRealX2->text().toDouble();
+		ublas::vector<double> vecPlaneXR = dX0R*lattice.GetVec(0) +
+			dX1R*lattice.GetVec(1) + dX2R*lattice.GetVec(2);
+
+		double dY0R = editRealY0->text().toDouble();
+		double dY1R = editRealY1->text().toDouble();
+		double dY2R = editRealY2->text().toDouble();
+		ublas::vector<double> vecPlaneYR = dY0R*lattice.GetVec(0) +
+			dY1R*lattice.GetVec(1) + dY2R*lattice.GetVec(2);
+
+		//----------------------------------------------------------------------
+		// show integer up vector
+		unsigned int iMaxDecR = 4;	// TODO: determine max. # of entered decimals
+		ublas::vector<int> ivecUpR = tl::cross_3(
+			tl::make_vec<ublas::vector<int>>({int(dX0R*std::pow(10, iMaxDecR)),
+				int(dX1R*std::pow(10, iMaxDecR)),
+				int(dX2R*std::pow(10, iMaxDecR))}),
+			tl::make_vec<ublas::vector<int>>({int(dY0R*std::pow(10, iMaxDecR)),
+				int(dY1R*std::pow(10, iMaxDecR)),
+				int(dY2R*std::pow(10, iMaxDecR))}));
+		ivecUpR = tl::get_gcd_vec(ivecUpR);
+		editRealZ0->setText(std::to_string(ivecUpR[0]).c_str());
+		editRealZ1->setText(std::to_string(ivecUpR[1]).c_str());
+		editRealZ2->setText(std::to_string(ivecUpR[2]).c_str());
+		//----------------------------------------------------------------------
+
+		ublas::vector<double> vecX0R = ublas::zero_vector<double>(3);
+		tl::Plane<double> planeReal(vecX0R, vecPlaneXR, vecPlaneYR);
+		if(!planeReal.IsValid())
+		{
+			tl::log_err("Invalid view plane for real lattice.");
+			return;
+		}
+		//----------------------------------------------------------------------
+
 
 
 		/*
@@ -208,7 +251,6 @@ void TazDlg::CalcPeaks()
 		const tl::Lattice<double>& recip = recip_unrot;		// anyway not rotated anymore
 
 
-
 		if(m_bUpdateRecipEdits)
 		{
 			editARecip->setText(dtoqstr(recip.GetA(), g_iPrec));
@@ -228,12 +270,11 @@ void TazDlg::CalcPeaks()
 
 		std::wostringstream ostrSample;
 		ostrSample.precision(g_iPrecGfx);
-		ostrSample << "Sample";
-		ostrSample << " - ";
-		ostrSample << "Unit Cell Vol.: ";
+		ostrSample << "Unit Cell Volume: ";
 		ostrSample << "Real: " << dVol << " " << strAA << strThree;
 		ostrSample << ", Recip.: " << dVol_recip << " " << strAA << strMinus << strThree;
-		groupSample->setTitle(QString::fromWCharArray(ostrSample.str().c_str()));
+		//tl::log_info(tl::wstr_to_str(ostrSample.str()));
+		m_pStatusMsg->setText(QString::fromWCharArray(ostrSample.str().c_str()));
 
 
 		const char* pcCryTy = "<not set>";
@@ -252,6 +293,8 @@ void TazDlg::CalcPeaks()
 		if(m_sceneRecip.getSnapq())
 			m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();
+
+		m_sceneRealLattice.GetLattice()->CalcPeaks(lattice, planeReal);
 
 #ifndef NO_3D
 		if(m_pRecip3d)

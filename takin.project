@@ -128,6 +128,8 @@
       <File Name="tools/taz/sics.cpp"/>
       <File Name="tools/taz/sics.h"/>
       <File Name="tools/taz/taz_export.cpp"/>
+      <File Name="tools/taz/real_lattice.cpp"/>
+      <File Name="tools/taz/real_lattice.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="monteconvo">
       <File Name="tools/monteconvo/sqw.cpp"/>
