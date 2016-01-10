@@ -220,7 +220,7 @@ OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 
 OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup_clp.o obj/crystalsys.o
 
-OBJ_GENTAB = obj/gentab.o
+OBJ_GENTAB = obj/gentab.o obj/spacegroup_clp.o obj/crystalsys_noqt.o
 
 OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals_noqt.o \
 	obj/formfact.o obj/log.o

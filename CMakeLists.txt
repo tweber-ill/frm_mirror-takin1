@@ -57,8 +57,10 @@ add_definitions(-std=c++11)
 
 
 if(Clipper_FOUND)
-	add_executable(gentab tools/gentab/gentab.cpp)
-	target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES})
+	add_executable(gentab tools/gentab/gentab.cpp
+		${SG_FILES} helper/crystalsys.cpp)
+	target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES} 
+		Qt4::QtCore Qt4::QtGui)
 endif()
 
 

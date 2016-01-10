@@ -9,12 +9,18 @@
 #include <iostream>
 #include <sstream>
 
+#ifndef USE_CLP
+	#define USE_CLP
+#endif
 #include "../../tlibs/string/string.h"
 #include "../../tlibs/file/prop.h"
+#include "../../helper/spacegroup_clp.h"
 
+#include <boost/numeric/ublas/io.hpp>
 #include <boost/version.hpp>
 namespace prop = boost::property_tree;
 namespace algo = boost::algorithm;
+namespace ublas = boost::numeric::ublas;
 
 
 // ============================================================================
@@ -25,13 +31,13 @@ namespace algo = boost::algorithm;
 // that lives in clipper/clipper/core/atomsf.cpp
 namespace clipper { namespace data
 {
-        extern const struct SFData
-        {
-                const char atomname[8];
-                const double a[5], c, b[5], d;  // d is always 0
-        } sfdata[];
+	extern const struct SFData
+	{
+		const char atomname[8];
+		const double a[5], c, b[5], d;  // d is always 0
+	} sfdata[];
 
-        const unsigned int numsfdata = 212;
+	const unsigned int numsfdata = 212;
 }}
 // ----------------------------------------------------------------------------
 
@@ -178,6 +184,62 @@ bool gen_scatlens()
 // ============================================================================
 
 
+bool gen_spacegroups()
+{
+	tl::Prop<std::string> prop;
+	prop.SetSeparator('.');
+
+	const unsigned int iNumSGs = 230;
+	prop.Add("sgroups.source", "Space group data from Clipper");
+	prop.Add("sgroups.source_url", "http://www.ysbl.york.ac.uk/~cowtan/clipper/");
+	prop.Add("sgroups.num_groups", tl::var_to_str(iNumSGs));
+
+	for(unsigned int iSG=1; iSG<=iNumSGs; ++iSG)
+	{
+		SpaceGroup sg(iSG);
+
+		std::ostringstream ostr;
+		ostr << "sgroups.group_" << (iSG-1);
+		std::string strGroup = ostr.str();
+
+		prop.Add(strGroup + ".number", tl::var_to_str(iSG));
+		prop.Add(strGroup + ".name", sg.GetName());
+		prop.Add(strGroup + ".pointgroup", get_pointgroup(sg.GetName()));
+		prop.Add(strGroup + ".lauegroup", sg.GetLaueGroup());
+		prop.Add(strGroup + ".crystalsys", sg.GetCrystalSystem());
+		prop.Add(strGroup + ".crystalsysname", sg.GetCrystalSystemName());
+
+		std::vector<ublas::matrix<double>> vecTrafos;
+		sg.GetSymTrafos(vecTrafos);
+		prop.Add(strGroup + ".num_trafos", tl::var_to_str(vecTrafos.size()));
+		unsigned int iTrafo = 0;
+		for(const ublas::matrix<double>& matTrafo : vecTrafos)
+		{
+			std::ostringstream ostrTrafo;
+			ostrTrafo << strGroup << ".trafo_" << iTrafo;
+			std::string strTrafo = ostrTrafo.str();
+
+			prop.Add(strTrafo /*+ ".matrix"*/, tl::var_to_str(matTrafo));
+
+			++iTrafo;
+		}
+	}
+
+
+	std::ofstream ofstr("res/sgroups.xml");
+	if(!ofstr)
+	{
+		std::cerr << "Error: Cannot write \"res/sgroups.xml\"." << std::endl;
+		return false;
+	}
+
+	return prop.Save(ofstr, tl::PropType::XML);
+}
+
+
+// ============================================================================
+
+
 int main()
 {
 	std::cout << "Generating form factor coefficient table ... ";
@@ -186,6 +248,10 @@ int main()
 
 	std::cout << "Generating scattering length table ... ";
 	if(gen_scatlens())
+		std::cout << "OK" << std::endl;
+
+	std::cout << "Generating space group table ... ";
+	if(gen_spacegroups())
 		std::cout << "OK" << std::endl;
 
 	return 0;
