@@ -19,6 +19,7 @@
 #include <QStatusBar>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QScrollBar>
 
 #include "tlibs/math/lattice.h"
 #include "tlibs/string/spec_char.h"
@@ -59,6 +60,7 @@ TazDlg::TazDlg(QWidget* pParent)
 		QByteArray geo = m_settings.value("main/geo").toByteArray();
 		restoreGeometry(geo);
 	}
+
 /*
 	if(m_settings.contains("main/width") && m_settings.contains("main/height"))
 	{
@@ -146,6 +148,9 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pviewReal = new TasLayoutView(groupReal);
 	groupReal->addTab(m_pviewReal, "Instrument Layout");
+
+	if(m_settings.contains("main/real_tab"))
+		groupReal->setCurrentIndex(m_settings.value("main/real_tab").value<int>());
 
 
 	m_pviewRecip->setScene(&m_sceneRecip);
@@ -709,17 +714,13 @@ TazDlg::TazDlg(QWidget* pParent)
 	UpdateDs();
 	CalcPeaks();
 
+
 	m_sceneRecip.GetTriangle()->SetqVisible(bSmallqVisible);
 	m_sceneRecip.GetTriangle()->SetBZVisible(bBZVisible);
 	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(bEwald);
 	m_sceneRealLattice.GetLattice()->SetWSVisible(bWSVisible);
 	m_sceneRecip.emitUpdate();
 	//m_sceneRecip.emitAllParams();
-
-
-	m_pviewReal->centerOn(/*m_sceneReal.GetTasLayout()*/ 0., 0.);
-	m_pviewRecip->centerOn(/*m_sceneRecip.GetTriangle()*/ 300., 0.);
-	m_pviewRealLattice->centerOn(250.,0.);
 }
 
 TazDlg::~TazDlg()
@@ -770,11 +771,38 @@ void TazDlg::DeleteDialogs()
 }
 
 
+void TazDlg::showEvent(QShowEvent *pEvt)
+{
+	QMainWindow::showEvent(pEvt);
+
+	static bool bInitialShow = 1;
+	if(bInitialShow)
+	{
+		bInitialShow = 0;
+
+		m_pviewReal->centerOn(m_sceneReal.GetTasLayout());
+		m_pviewRecip->centerOn(m_sceneRecip.GetTriangle()->GetGfxMid());
+		m_pviewRealLattice->centerOn(0.,0.);
+
+		/*for(QScrollBar* pSB : {
+			m_pviewRealLattice->horizontalScrollBar(),
+			m_pviewRealLattice->verticalScrollBar(),
+			m_pviewReal->horizontalScrollBar(),
+			m_pviewReal->verticalScrollBar(),
+			m_pviewRecip->horizontalScrollBar(),
+			m_pviewRecip->verticalScrollBar() })
+			pSB->setValue(pSB->minimum() + (pSB->maximum()-pSB->minimum())/2);*/
+	}
+}
+
 void TazDlg::closeEvent(QCloseEvent* pEvt)
 {
 	//m_settings.setValue("main/width", this->width());
 	//m_settings.setValue("main/height", this->height());
 	m_settings.setValue("main/geo", saveGeometry());
+	m_settings.setValue("main/real_tab", groupReal->currentIndex());
+
+	QMainWindow::closeEvent(pEvt);
 }
 
 

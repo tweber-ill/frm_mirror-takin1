@@ -203,6 +203,7 @@ class ScatteringTriangle : public QGraphicsItem
 		bool KeepAbsKiKf(double dQx, double dQy);
 
 		const tl::Lattice<double>& GetRecipLattice() const { return m_recip; }
+		QPointF GetGfxMid() const;
 };
 
 

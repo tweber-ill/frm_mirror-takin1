@@ -191,6 +191,15 @@ void ScatteringTriangle::SetEwaldSphereVisible(bool bVisible)
 	this->update();
 }
 
+QPointF ScatteringTriangle::GetGfxMid() const
+{
+	QPointF ptKiQ = mapFromItem(m_pNodeKiQ, 0, 0);
+	QPointF ptKfQ = mapFromItem(m_pNodeKfQ, 0, 0);
+	QPointF ptKiKf = mapFromItem(m_pNodeKiKf, 0, 0);
+
+	return (ptKiQ + ptKfQ + ptKiKf) / 3.;
+}
+
 void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	// Brillouin zone

@@ -169,6 +169,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void InitReso();
 		void InitGoto();
 
+		virtual void showEvent(QShowEvent *pEvt) override;
 		virtual void closeEvent(QCloseEvent* pEvt) override;
 
 	public:

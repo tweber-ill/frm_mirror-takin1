@@ -342,7 +342,7 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="tabSampleReal" native="true">
+          <widget class="QWidget" name="tabSampleReal">
            <attribute name="title">
             <string>Real Lattice</string>
            </attribute>
@@ -447,7 +447,7 @@
             <item row="0" column="0">
              <widget class="QLabel" name="label_11">
               <property name="text">
-               <string>a* (Å⁻¹):</string>
+               <string>a (Å⁻¹):</string>
               </property>
              </widget>
             </item>
@@ -457,7 +457,7 @@
             <item row="0" column="2">
              <widget class="QLabel" name="label_14">
               <property name="text">
-               <string>α* (°):</string>
+               <string>α (°):</string>
               </property>
              </widget>
             </item>
@@ -474,7 +474,7 @@
             <item row="1" column="0">
              <widget class="QLabel" name="label_12">
               <property name="text">
-               <string>b* (Å⁻¹):</string>
+               <string>b (Å⁻¹):</string>
               </property>
              </widget>
             </item>
@@ -484,7 +484,7 @@
             <item row="1" column="2">
              <widget class="QLabel" name="label_15">
               <property name="text">
-               <string>β* (°):</string>
+               <string>β (°):</string>
               </property>
              </widget>
             </item>
@@ -501,7 +501,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="label_13">
               <property name="text">
-               <string>c* (Å⁻¹):</string>
+               <string>c (Å⁻¹):</string>
               </property>
              </widget>
             </item>
@@ -511,7 +511,7 @@
             <item row="2" column="2">
              <widget class="QLabel" name="label_16">
               <property name="text">
-               <string>γ* (°):</string>
+               <string>γ (°):</string>
               </property>
              </widget>
             </item>
@@ -540,7 +540,7 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="tabScatteringPlane" native="true">
+          <widget class="QWidget" name="tabScatteringPlane">
            <attribute name="title">
             <string>Sc. Plane</string>
            </attribute>
