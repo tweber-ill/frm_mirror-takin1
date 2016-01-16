@@ -130,15 +130,11 @@ void TazDlg::CalcPeaks()
 		double dX1 = editScatX1->text().toDouble();
 		double dX2 = editScatX2->text().toDouble();
 		ublas::vector<double> vecPlaneXRLU = tl::make_vec({dX0, dX1, dX2});
-		ublas::vector<double> vecPlaneX = dX0*recip_unrot.GetVec(0) +
-			dX1*recip_unrot.GetVec(1) + dX2*recip_unrot.GetVec(2);
 
 		double dY0 = editScatY0->text().toDouble();
 		double dY1 = editScatY1->text().toDouble();
 		double dY2 = editScatY2->text().toDouble();
 		ublas::vector<double> vecPlaneYRLU = tl::make_vec({dY0, dY1, dY2});
-		ublas::vector<double> vecPlaneY = dY0*recip_unrot.GetVec(0) +
-			dY1*recip_unrot.GetVec(1) + dY2*recip_unrot.GetVec(2);
 
 		//----------------------------------------------------------------------
 		// show integer up vector
@@ -158,8 +154,7 @@ void TazDlg::CalcPeaks()
 
 		ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
 		tl::Plane<double> planeRLU(vecX0, vecPlaneXRLU, vecPlaneYRLU);
-		tl::Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
-		if(!plane.IsValid())
+		if(!planeRLU.IsValid())
 		{
 			tl::log_err("Invalid scattering plane.");
 			return;
@@ -288,8 +283,8 @@ void TazDlg::CalcPeaks()
 
 		editCrystalSystem->setText(pcCryTy);
 
-		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, recip_unrot,
-			plane, planeRLU, pSpaceGroup, bPowder, &m_vecAtoms);
+		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip,
+			planeRLU, pSpaceGroup, bPowder, &m_vecAtoms);
 		if(m_sceneRecip.getSnapq())
 			m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();
@@ -298,7 +293,7 @@ void TazDlg::CalcPeaks()
 
 #ifndef NO_3D
 		if(m_pRecip3d)
-			m_pRecip3d->CalcPeaks(lattice, recip, recip_unrot, plane, pSpaceGroup);
+			m_pRecip3d->CalcPeaks(lattice, recip, planeRLU, pSpaceGroup);
 #endif
 	}
 	catch(const std::exception& ex)

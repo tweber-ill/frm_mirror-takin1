@@ -31,10 +31,8 @@ public:
 	Recip3DDlg(QWidget* pParent, QSettings* = 0);
 	virtual ~Recip3DDlg();
 
-	void CalcPeaks(const tl::Lattice<double>& lattice,
-					const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
-					const tl::Plane<double>& plane,
-					const SpaceGroup* pSpaceGroup=0);
+	void CalcPeaks(const tl::Lattice<double>& lattice, const tl::Lattice<double>& recip,
+					const tl::Plane<double>& planeRLU, const SpaceGroup* pSpaceGroup=0);
 
 	void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 	void SetMaxPeaks(double dMax) { m_dMaxPeaks = dMax; }

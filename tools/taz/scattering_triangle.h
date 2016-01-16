@@ -106,7 +106,7 @@ class ScatteringTriangle : public QGraphicsItem
 		double m_dPlaneDistTolerance = 0.01;
 		int m_iMaxPeaks = 7;
 
-		tl::Lattice<double> m_lattice, m_recip, m_recip_unrot;
+		tl::Lattice<double> m_lattice, m_recip;
 		ublas::matrix<double> m_matPlane, m_matPlane_inv;
 		std::vector<RecipPeak*> m_vecPeaks;
 
@@ -116,7 +116,8 @@ class ScatteringTriangle : public QGraphicsItem
 		bool m_bShowBZ = 1;
 		tl::Brillouin2D<double> m_bz;
 
-		double m_dAngleRot = 0.;
+		//tl::Lattice<double> m_recip_unrot;
+		//double m_dAngleRot = 0.;
 
 		bool m_bqVisible = 0;
 		bool m_bShowEwaldSphere = 1;
@@ -159,8 +160,8 @@ class ScatteringTriangle : public QGraphicsItem
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_recip.IsInited(); }
 		void ClearPeaks();
 		void CalcPeaks(const tl::Lattice<double>& lattice,
-						const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
-						const tl::Plane<double>& plane, const tl::Plane<double>& planeRLU,
+						const tl::Lattice<double>& recip,
+						const tl::Plane<double>& planeRLU,
 						const SpaceGroup* pSpaceGroup=nullptr,
 						bool bIsPowder=0,
 						const std::vector<AtomPos>* pvecAtomPos=nullptr);

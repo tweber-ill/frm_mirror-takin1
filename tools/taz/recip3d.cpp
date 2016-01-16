@@ -32,11 +32,19 @@ Recip3DDlg::~Recip3DDlg()
 }
 
 
-void Recip3DDlg::CalcPeaks(const tl::Lattice<double>& lattice,
-							const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
-							const tl::Plane<double>& plane,
-							const SpaceGroup* pSpaceGroup)
+void Recip3DDlg::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Lattice<double>& recip,
+							const tl::Plane<double>& planeRLU, const SpaceGroup* pSpaceGroup)
 {
+	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
+	ublas::vector<double> vecPlaneX = planeRLU.GetDir0()[0]*recip.GetVec(0) +
+		planeRLU.GetDir0()[1]*recip.GetVec(1) +
+		planeRLU.GetDir0()[2]*recip.GetVec(2);
+	ublas::vector<double> vecPlaneY = planeRLU.GetDir1()[0]*recip.GetVec(0) +
+		planeRLU.GetDir1()[1]*recip.GetVec(1) +
+		planeRLU.GetDir1()[2]*recip.GetVec(2);
+	tl::Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
+
+
 	const unsigned int iObjCnt = (unsigned int)((m_dMaxPeaks*2 + 1)*
 												(m_dMaxPeaks*2 + 1)*
 												(m_dMaxPeaks*2 + 1));

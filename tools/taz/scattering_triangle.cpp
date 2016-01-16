@@ -570,7 +570,7 @@ double ScatteringTriangle::GetTheta(bool bPosSense) const
 	vecKi /= ublas::norm_2(vecKi);
 
 	double dTh = tl::vec_angle(vecKi) - M_PI/2.;
-	dTh += m_dAngleRot;
+	//dTh += m_dAngleRot;
 	if(!bPosSense)
 		dTh = -dTh;
 
@@ -695,8 +695,7 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, double dAngle)
 }
 
 void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
-	const tl::Lattice<double>& recip, const tl::Lattice<double>& recip_unrot,
-	const tl::Plane<double>& plane, const tl::Plane<double>& planeRLU,
+	const tl::Lattice<double>& recip, const tl::Plane<double>& planeRLU,
 	const SpaceGroup* pSpaceGroup,
 	bool bIsPowder, const std::vector<AtomPos>* pvecAtomPos)
 {
@@ -706,7 +705,16 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 	m_lattice = lattice;
 	m_recip = recip;
-	m_recip_unrot = recip_unrot;
+	//m_recip_unrot = recip_unrot;
+
+	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
+	ublas::vector<double> vecPlaneX = planeRLU.GetDir0()[0]*recip.GetVec(0) +
+		planeRLU.GetDir0()[1]*recip.GetVec(1) +
+		planeRLU.GetDir0()[2]*recip.GetVec(2);
+	ublas::vector<double> vecPlaneY = planeRLU.GetDir1()[0]*recip.GetVec(0) +
+		planeRLU.GetDir1()[1]*recip.GetVec(1) +
+		planeRLU.GetDir1()[2]*recip.GetVec(2);
+	tl::Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
 
 	m_powder.SetRecipLattice(&m_recip);
 
@@ -773,7 +781,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 
 	// crystal rotation angle
-	try
+	/*try
 	{
 		ublas::vector<double> vecUnrotX = plane.GetDroppedPerp(m_recip_unrot.GetVec(0));
 		ublas::vector<double> vecRotX = plane.GetDroppedPerp(m_recip.GetVec(0));
@@ -787,7 +795,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	{
 		tl::log_err(ex.what());
 		return;
-	}
+	}*/
 
 
 

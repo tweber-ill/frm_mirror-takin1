@@ -395,7 +395,7 @@ set yrange [%%MINY%%:%%MAXY%%]
 
 plot "-" using 1:2:3 pt 7 with yerrorbars title "Data"
 %%POINTS%%
-e)RAWSTR";
+end)RAWSTR";
 
 
 	std::vector<double> vecYErr = m_vecY;
