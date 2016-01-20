@@ -16,12 +16,7 @@
 #include <string>
 #include <vector>
 
-#ifdef USE_CLP
-	#include "helper/spacegroup_clp.h"
-#else
-	#include "helper/spacegroup.h"
-#endif
-
+#include "helper/spacegroup_clp.h"
 #include "tlibs/file/prop.h"
 #include "AtomsDlg.h"
 

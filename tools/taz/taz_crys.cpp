@@ -542,8 +542,6 @@ void TazDlg::ApplyAtoms(const std::vector<AtomPos>& vecAtoms)
 	CalcPeaks();
 }
 
-#ifdef USE_CLP
-
 void TazDlg::ShowSgListDlg()
 {
 	if(!m_pSgListDlg)
@@ -551,9 +549,3 @@ void TazDlg::ShowSgListDlg()
 	m_pSgListDlg->show();
 	m_pSgListDlg->activateWindow();
 }
-
-#else
-
-void TazDlg::ShowSgListDlg() {}
-
-#endif

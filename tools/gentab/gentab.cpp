@@ -9,9 +9,6 @@
 #include <iostream>
 #include <sstream>
 
-#ifndef USE_CLP
-	#define USE_CLP
-#endif
 #include "../../tlibs/string/string.h"
 #include "../../tlibs/file/prop.h"
 #include "../../helper/spacegroup_clp.h"

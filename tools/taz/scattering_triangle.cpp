@@ -801,8 +801,8 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 	//const ublas::matrix<double> matB = recip.GetMetric();
 
+	// --------------------------------------------------------------------
 	// structure factors
-#ifdef USE_CLP
 	ScatlenList lstsl;
 	//FormfactList lstff;
 
@@ -855,7 +855,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 		//for(const std::complex<double>& b : vecScatlens)
 		//	std::cout << b << std::endl;
 	}
-#endif
+	// --------------------------------------------------------------------
 
 
 	std::list<std::vector<double>> lstPeaksForKd;
@@ -900,7 +900,9 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 						double dF = -1.;
 						std::string strStructfact;
-#ifdef USE_CLP
+
+						// --------------------------------------------------------------------
+						// structure factors
 						if(vecScatlens.size())
 						{
 							std::complex<double> cF =
@@ -915,7 +917,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 							ostrStructfact << "F = " << dF;
 							strStructfact = ostrStructfact.str();
 						}
-#endif
+						// --------------------------------------------------------------------
 
 
 						RecipPeak *pPeak = new RecipPeak();

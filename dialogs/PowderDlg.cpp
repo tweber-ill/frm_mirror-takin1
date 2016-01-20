@@ -275,7 +275,8 @@ void PowderDlg::CalcPeaks()
 		const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 
 
-#ifdef USE_CLP
+		// ----------------------------------------------------------------------------
+		// structure factor stuff
 		ScatlenList lstsl;
 		FormfactList lstff;
 
@@ -323,7 +324,7 @@ void PowderDlg::CalcPeaks()
 				}
 			}
 		}
-#endif
+		// ----------------------------------------------------------------------------
 
 
 		std::map<std::string, PowderLine> mapPeaks;
@@ -352,7 +353,9 @@ void PowderDlg::CalcPeaks()
 					ublas::vector<double> vechkl = tl::make_vec({double(ih), double(ik), double(il)});
 					double dF = -1., dI = -1.;
 					double dFx = -1., dIx = -1.;
-#ifdef USE_CLP
+
+					// ----------------------------------------------------------------------------
+					// structure factor stuff
 					if(vecScatlens.size())
 					{
 						std::complex<double> cF =
@@ -401,7 +404,8 @@ void PowderDlg::CalcPeaks()
 						double dLor = tl::lorentz_factor(dAngle)*tl::lorentz_pol_factor(dAngle);
 						dIx = dFxsq*dLor;
 					}
-#endif
+					// ----------------------------------------------------------------------------
+
 
 					bool bHasPeak = 0;
 					if(bWantUniquePeaks)

@@ -95,8 +95,6 @@ void TazDlg::ExportWSImage() {}
 //--------------------------------------------------------------------------------
 // 3d model exports
 
-#ifdef USE_CLP
-
 void TazDlg::ExportUCModel()
 {
 	using t_mat = ublas::matrix<double>;
@@ -231,9 +229,3 @@ void TazDlg::ExportUCModel()
 		QMessageBox::critical(this, "Error", "Error exporting x3d file.");
 	}
 }
-
-#else
-
-void TazDlg::ExportUCModel() {}
-
-#endif

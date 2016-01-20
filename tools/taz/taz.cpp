@@ -408,12 +408,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pMenuViewReal->addAction(pWSExport);
 #endif
 
-#ifdef USE_CLP
 	QAction *pExportUC = new QAction(this);
 	pExportUC->setText("Export Unit Cell Model...");
 	pExportUC->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pExportUC);
-#endif
 
 
 	// --------------------------------------------------------------------------------
@@ -475,11 +473,9 @@ TazDlg::TazDlg(QWidget* pParent)
 		pMenuCalc->addAction(pFormfactor);
 	}
 
-#ifdef USE_CLP
 	QAction *pSgList = new QAction(this);
 	pSgList->setText("Space Group Types...");
 	pMenuCalc->addAction(pSgList);
-#endif
 
 	pMenuCalc->addSeparator();
 
@@ -594,9 +590,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
 
-#ifdef USE_CLP
 	QObject::connect(pExportUC, SIGNAL(triggered()), this, SLOT(ExportUCModel()));
-#endif
 
 #ifdef USE_GIL
 	QObject::connect(pBZExport, SIGNAL(triggered()), this, SLOT(ExportBZImage()));
@@ -621,9 +615,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pNetCache, SIGNAL(triggered()), this, SLOT(ShowNetCache()));
 #endif
 
-#ifdef USE_CLP
 	QObject::connect(pSgList, SIGNAL(triggered()), this, SLOT(ShowSgListDlg()));
-#endif
 
 	if(pFormfactor)
 		QObject::connect(pFormfactor, SIGNAL(triggered()), this, SLOT(ShowFormfactorDlg()));
@@ -763,10 +755,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pSicsCache) { delete m_pSicsCache; m_pSicsCache = 0; }
 #endif
 
-#ifdef USE_CLP
 	if(m_pSgListDlg) { delete m_pSgListDlg; m_pSgListDlg = 0; }
-#endif
-
 	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }
 }
 

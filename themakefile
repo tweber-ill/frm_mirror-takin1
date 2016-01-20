@@ -11,7 +11,6 @@ USE_IOSTR = 1
 USE_BOOST_REGEX = 0
 USE_GIL = 1
 USE_PY = 1
-USE_CLP = 1
 
 BOOST_SUFFIX = 
 #BOOST_SUFFIX = -mt
@@ -56,13 +55,6 @@ ifeq ($(USE_GIL), 1)
 else
 	DEFINES += -DNO_GIL
 endif
-
-ifeq ($(USE_CLP), 1)
-	DEFINES += -DUSE_CLP
-else
-	DEFINES += -DNO_CLP
-endif
-
 
 DEFINES += -DQWT_VER=$(QWT_VER)
 DEFINES += -DQT_VER=$(QT_VER)
@@ -237,12 +229,8 @@ else
 	OBJ_TAZ += obj/taz_nonet.o
 endif
 
-ifeq ($(USE_CLP), 1)
-	OBJ_TAZ += obj/SgListDlg.o obj/spacegroup_clp.o
-	LIBS_TAZ += -lclipper-core
-else
-	OBJ_TAZ += obj/spacegroup.o
-endif
+OBJ_TAZ += obj/SgListDlg.o obj/spacegroup_clp.o
+LIBS_TAZ += -lclipper-core
 
 
 # -----------------------------------------------------------------------------
@@ -367,8 +355,6 @@ obj/log.o: tlibs/log/log.cpp tlibs/log/log.h
 obj/tcp.o: tlibs/net/tcp.cpp tlibs/net/tcp.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/linalg2.o: tlibs/math/linalg2.cpp tlibs/math/linalg2.h tlibs/math/geo.h
-	${CC} ${FLAGS} -c -o $@ $<
-obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/spacegroup_clp.o: helper/spacegroup_clp.cpp helper/spacegroup_clp.h
 	${CC} ${FLAGS} -c -o $@ $<

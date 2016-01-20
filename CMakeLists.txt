@@ -18,7 +18,7 @@ find_package(PythonLibs 2.7 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(Qwt REQUIRED)
-find_package(Clipper)
+find_package(Clipper REQUIRED)
 
 
 #message("Project source dir: ${PROJECT_SOURCE_DIR}")
@@ -33,12 +33,6 @@ add_definitions(-DQT_VER=4 -DQWT_VER=${QWT_MAJOR_VERSION})
 add_definitions(-DNO_LAPACK -DNO_3D -DNO_CLP)
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_definitions(${Boost_CXX_FLAGS})
-if(Clipper_FOUND)
-	add_definitions(-DUSE_CLP)
-	set(SG_FILES  helper/spacegroup_clp.cpp tools/sglist/SgListDlg.cpp)
-else()
-	set(SG_FILES  helper/spacegroup.cpp)
-endif()
 
 
 include_directories("${PROJECT_SOURCE_DIR}" ".")
@@ -56,16 +50,14 @@ add_definitions(-std=c++11)
 #add_definitions(-march=native -s)
 
 
-if(Clipper_FOUND)
-	add_executable(gentab tools/gentab/gentab.cpp
-		${SG_FILES} helper/crystalsys.cpp)
-	target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES} 
-		Qt4::QtCore Qt4::QtGui)
-endif()
+add_executable(gentab tools/gentab/gentab.cpp
+	helper/spacegroup_clp.cpp tools/sglist/SgListDlg.cpp helper/crystalsys.cpp)
+target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES}
+	Qt4::QtCore Qt4::QtGui)
 
 
 add_executable(takin tools/taz/taz_main.cpp
-	tools/taz/taz.cpp tools/taz/tas_layout.cpp tools/taz/taz_crys.cpp 
+	tools/taz/taz.cpp tools/taz/tas_layout.cpp tools/taz/taz_crys.cpp
 	tools/taz/taz_file.cpp tools/taz/taz_export.cpp
 	tools/taz/tas_layout.cpp tools/taz/scattering_triangle.cpp
 	tools/taz/real_lattice.cpp
@@ -87,7 +79,7 @@ add_executable(takin tools/taz/taz_main.cpp
 	dialogs/EllipseDlg.cpp dialogs/FormfactorDlg.cpp
 	dialogs/AtomsDlg.cpp dialogs/AboutDlg.cpp
 
-	${SG_FILES}
+	helper/spacegroup_clp.cpp tools/sglist/SgListDlg.cpp
 	helper/globals.cpp helper/crystalsys.cpp
 	helper/formfact.cpp
 #	helper/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp
@@ -103,13 +95,11 @@ target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES}
 )
 
 
-if(Clipper_FOUND)
-	add_dependencies(takin gentab)
+add_dependencies(takin gentab)
 
-	add_custom_command(TARGET gentab POST_BUILD
-		COMMAND cd ${CMAKE_BINARY_DIR} && ./gentab
-		MAIN_DEPENDENCY gentab)
-endif()
+add_custom_command(TARGET gentab POST_BUILD
+	COMMAND cd ${CMAKE_BINARY_DIR} && ./gentab
+	MAIN_DEPENDENCY gentab)
 
 
 # pre-build

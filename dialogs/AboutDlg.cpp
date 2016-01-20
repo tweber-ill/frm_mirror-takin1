@@ -61,13 +61,8 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 
 	ostrLibs << "<dt>Uses tLibs version " << TLIBS_VERSION << "</dt>";
 
-#ifdef USE_CLP
 	ostrLibs << "<dt>Uses Clipper crystallography library</dt>";
 	ostrLibs << "<dd><a href=\"http://www.ysbl.york.ac.uk/~cowtan/clipper\">http://www.ysbl.york.ac.uk/~cowtan/clipper</a></dd>";
-#else
-	ostrLibs << "<dt>Uses space group calculations ported from Nicos version 2</dt>";
-	ostrLibs << "<dd><a href=\"http://www.nicos-controls.org\">http://www.nicos-controls.org</a></dd>";
-#endif
 
 	ostrLibs << "<dt>Uses resolution algorithms ported from Rescal version 5</dt>";
 	ostrLibs << "<dd><a href=\"http://www.ill.eu/en/html/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab\">http://www.ill.eu/en/html/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab</a></dd>";

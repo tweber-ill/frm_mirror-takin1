@@ -15,12 +15,7 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/kd.h"
 #include "dialogs/AtomsDlg.h"
-
-#ifdef USE_CLP
-	#include "helper/spacegroup_clp.h"
-#else
-	#include "helper/spacegroup.h"
-#endif
+#include "helper/spacegroup_clp.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>

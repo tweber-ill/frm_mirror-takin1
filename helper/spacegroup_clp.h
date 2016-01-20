@@ -8,10 +8,6 @@
 #ifndef __TAKIN_SGCLP_H__
 #define __TAKIN_SGCLP_H__
 
-#ifndef USE_CLP
-	#error USE_CLP is not defined!
-#endif
-
 #include <string>
 #include <sstream>
 #include <iomanip>

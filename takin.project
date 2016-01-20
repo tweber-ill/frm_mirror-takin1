@@ -193,8 +193,6 @@
   <VirtualDirectory Name="helper">
     <File Name="helper/plotgl.cpp"/>
     <File Name="helper/plotgl.h"/>
-    <File Name="helper/spacegroup.cpp" ExcludeProjConfig="Debug"/>
-    <File Name="helper/spacegroup.h" ExcludeProjConfig="Debug"/>
     <File Name="helper/globals.cpp"/>
     <File Name="helper/globals.h"/>
     <File Name="helper/crystalsys.h"/>

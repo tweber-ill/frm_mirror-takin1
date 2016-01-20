@@ -40,7 +40,6 @@
 #include "dialogs/AtomsDlg.h"
 #include "dialogs/AboutDlg.h"
 
-
 #if !defined NO_NET
 	#include "dialogs/SrvDlg.h"
 	#include "dialogs/NetCacheDlg.h"
@@ -53,13 +52,8 @@
 	#include "dialogs/EllipseDlg3D.h"
 #endif
 
-#ifdef USE_CLP
-	#include "../sglist/SgListDlg.h"
-	#include "helper/spacegroup_clp.h"
-#else
-	#include "helper/spacegroup.h"
-#endif
-
+#include "../sglist/SgListDlg.h"
+#include "helper/spacegroup_clp.h"
 #include "tlibs/math/lattice.h"
 
 
@@ -161,9 +155,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		EllipseDlg3D *m_pEllipseDlg3D = nullptr;
 #endif
 
-#ifdef USE_CLP
 		SgListDlg *m_pSgListDlg = nullptr;
-#endif
 
 	protected:
 		void InitReso();
