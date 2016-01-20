@@ -177,23 +177,15 @@ void TazDlg::ExportUCModel()
 		const t_vec& vecAtom = vecAtoms[iAtom];
 		const std::string& strAtomName = vecAtomNames[iAtom];
 
-		std::vector<t_vec> vecPos = tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom);
+		const double dUCSize = 1.;
+		std::vector<t_vec> vecPos =
+			tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom, -dUCSize*0.5, dUCSize*0.5);
 		ostrComment << "Unit cell contains " << vecPos.size() << " " << strAtomName
 			<< " atoms (color: " << vecColors[iAtom % vecColors.size()] <<  ").\n";
 
 		for(std::size_t iPos=0; iPos<vecPos.size(); ++iPos)
 		{
-			const t_vec& vec = vecPos[iPos];
-
-			t_vec vecCoord = vec;
-			const double dUCSize = 1.;
-			for(std::size_t iComp=0; iComp<vecCoord.size(); ++iComp)
-			{
-				while(vecCoord[iComp] > dUCSize*0.5)
-					vecCoord[iComp] -= dUCSize;
-				while(vecCoord[iComp] < -dUCSize*0.5)
-					vecCoord[iComp] += dUCSize;
-			}
+			t_vec vecCoord = vecPos[iPos];
 
 			vecCoord.resize(3,1);
 			vecCoord = matA * vecCoord;

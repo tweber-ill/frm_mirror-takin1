@@ -78,7 +78,7 @@ class RealLattice : public QGraphicsItem
 		bool m_bReady = 0;
 		LatticeScene &m_scene;
 
-		double m_dScaleFactor = 32.;	// pixels per A for zoom == 1.
+		double m_dScaleFactor = 48.;	// pixels per A for zoom == 1.
 		double m_dZoom = 1.;
 		double m_dPlaneDistTolerance = 0.01;
 		int m_iMaxPeaks = 7;

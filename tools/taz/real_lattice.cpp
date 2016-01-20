@@ -167,7 +167,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 	ClearPeaks();
 	m_kdLattice.Unload();
 	m_lattice = lattice;
-	
+
 	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
 	ublas::vector<double> vecPlaneX = planeFrac.GetDir0()[0]*lattice.GetVec(0) +
 		planeFrac.GetDir0()[1]*lattice.GetVec(1) +
@@ -230,25 +230,17 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 			const std::string& strElem = (*pvecAtomPos)[iAtom].strAtomName;
 			//std::cout << strElem << ": " << vecAtom << std::endl;
 
+			const double dUCSize = 1.;
 			std::vector<ublas::vector<double>> vecSymPos =
 				tl::generate_atoms<ublas::matrix<double>, ublas::vector<double>, std::vector>
-					(vecSymTrafos, vecAtom);
+					(vecSymTrafos, vecAtom, -dUCSize/2., dUCSize/2.);
 
 			for(ublas::vector<double> vecThisAtomFrac : vecSymPos)
 			{
 				vecThisAtomFrac.resize(3,1);
-				const double dUCSize = 1.;
-				for(int iComp=0; iComp<vecThisAtomFrac.size(); ++iComp)
-				{
-					while(vecThisAtomFrac[iComp] > dUCSize*0.5)
-						vecThisAtomFrac[iComp] -= dUCSize;
-					while(vecThisAtomFrac[iComp] < -dUCSize*0.5)
-						vecThisAtomFrac[iComp] += dUCSize;
-				}
-
 				// frac -> angstr.
 				ublas::vector<double> vecThisAtom = matA * vecThisAtomFrac;
-				
+
 				LatticeAtom *pAtom = new LatticeAtom();
 				m_vecAtoms.push_back(pAtom);
 
@@ -263,7 +255,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 				pAtom->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 				pAtom->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
 				pAtom->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE_ATOM);
-				
+
 				std::ostringstream ostrTip;
 				ostrTip.precision(g_iPrecGfx);
 				ostrTip << pAtom->m_strElem;
@@ -277,7 +269,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 					<< vecThisAtom[2] << ") " << strAA;
 				ostrTip << "\nDistance to Plane: " << pAtom->m_dProjDist << " " << strAA;
 				pAtom->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
-	
+
 				m_scene.addItem(pAtom);
 			}
 		}
