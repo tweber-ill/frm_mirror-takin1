@@ -317,6 +317,7 @@ void PowderDlg::CalcPeaks()
 				for(ublas::vector<double> vecThisAtom : vecSymPos)
 				{
 					vecThisAtom.resize(3,1);
+					// converts from fractional coordinates
 					vecThisAtom = matA*vecThisAtom;
 					vecAllAtoms.push_back(std::move(vecThisAtom));
 					vecScatlens.push_back(b);

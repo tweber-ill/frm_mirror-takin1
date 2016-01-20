@@ -14,6 +14,8 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/kd.h"
 #include "tasoptions.h"
+#include "dialogs/AtomsDlg.h"
+#include "helper/spacegroup_clp.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -28,13 +30,7 @@
 namespace ublas = boost::numeric::ublas;
 
 
-#define LATTICE_NODE_TYPE_KEY	0
-
-enum LatticeNodeType
-{
-	NODE_LATTICE,
-	NODE_REAL_OTHER
-};
+class RealLattice;
 
 class LatticePoint : public QGraphicsItem
 {
@@ -53,6 +49,28 @@ class LatticePoint : public QGraphicsItem
 		void SetColor(const QColor& col) { m_color = col; }
 };
 
+
+class LatticeAtom : public QGraphicsItem
+{
+	friend class RealLattice;
+
+	protected:
+		QColor m_color = Qt::cyan;
+		QRectF boundingRect() const;
+		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+	protected:
+		std::string m_strElem;
+		ublas::vector<double> m_vecPos;
+		ublas::vector<double> m_vecProj;
+		double m_dProjDist = 0.;
+
+	public:
+		LatticeAtom();
+		void SetColor(const QColor& col) { m_color = col; }
+};
+
+
 class LatticeScene;
 class RealLattice : public QGraphicsItem
 {
@@ -68,6 +86,7 @@ class RealLattice : public QGraphicsItem
 		tl::Lattice<double> m_lattice;
 		ublas::matrix<double> m_matPlane, m_matPlane_inv;
 		std::vector<LatticePoint*> m_vecPeaks;
+		std::vector<LatticeAtom*> m_vecAtoms;
 
 		tl::Kd<double> m_kdLattice;
 
@@ -91,7 +110,8 @@ class RealLattice : public QGraphicsItem
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_lattice.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<double>& plane);
+		void CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<double>& planeFrac,
+			const SpaceGroup* pSpaceGroup=nullptr, const std::vector<AtomPos>* pvecAtomPos=nullptr);
 
 		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }

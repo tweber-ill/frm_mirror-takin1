@@ -844,6 +844,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 			for(ublas::vector<double> vecThisAtom : vecSymPos)
 			{
 				vecThisAtom.resize(3,1);
+				// converts from fractional coordinates
 				vecThisAtom = matA * vecThisAtom;
 				vecAllAtoms.push_back(std::move(vecThisAtom));
 				vecScatlens.push_back(b);
@@ -928,7 +929,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 						pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
 						std::ostringstream ostrTip;
-						ostrTip << "(" << ih << " " << ik << " " << il << ")";
+						ostrTip << "(" << ih << " " << ik << " " << il << ") rlu";
 						if(strStructfact.length())
 							ostrTip << "\n" << strStructfact;
 

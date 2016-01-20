@@ -180,6 +180,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	// cursor position
 	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(double, double, double, bool, double, double, double)),
 					this, SLOT(RecipCoordsChanged(double, double, double, bool, double, double, double)));
+	QObject::connect(&m_sceneRealLattice, SIGNAL(coordsChanged(double, double, double, bool, double, double, double)),
+					this, SLOT(RealCoordsChanged(double, double, double, bool, double, double, double)));
 
 	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)),
 					this, SLOT(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)));
@@ -1014,6 +1016,23 @@ void TazDlg::RecipCoordsChanged(double dh, double dk, double dl,
 	ostrPos << "Cur: (" << dh << ", " << dk << ", " << dl  << ") rlu";
 	if(bHasNearest)
 		ostrPos << ", BZ: ("
+			<< dNearestH << ", " << dNearestK << ", " << dNearestL << ")";
+
+	m_pCoordCursorStatusMsg->setText(ostrPos.str().c_str());
+}
+
+// cursor position
+void TazDlg::RealCoordsChanged(double dh, double dk, double dl,
+	bool bHasNearest, double dNearestH, double dNearestK, double dNearestL)
+{
+	tl::set_eps_0(dh); tl::set_eps_0(dk); tl::set_eps_0(dl);
+	tl::set_eps_0(dNearestH); tl::set_eps_0(dNearestK); tl::set_eps_0(dNearestL);
+
+	std::ostringstream ostrPos;
+	ostrPos.precision(g_iPrecGfx);
+	ostrPos << "Cur: (" << dh << ", " << dk << ", " << dl  << ") frac";
+	if(bHasNearest)
+		ostrPos << ", WS: ("
 			<< dNearestH << ", " << dNearestK << ", " << dNearestL << ")";
 
 	m_pCoordCursorStatusMsg->setText(ostrPos.str().c_str());

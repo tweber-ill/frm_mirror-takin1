@@ -162,21 +162,18 @@ void TazDlg::CalcPeaks()
 		//----------------------------------------------------------------------
 
 
-
 		//----------------------------------------------------------------------
 		// view plane for real lattice
 		// scattering plane
 		double dX0R = editRealX0->text().toDouble();
 		double dX1R = editRealX1->text().toDouble();
 		double dX2R = editRealX2->text().toDouble();
-		ublas::vector<double> vecPlaneXR = dX0R*lattice.GetVec(0) +
-			dX1R*lattice.GetVec(1) + dX2R*lattice.GetVec(2);
+		ublas::vector<double> vecPlaneXR = tl::make_vec({dX0R, dX1R, dX2R});
 
 		double dY0R = editRealY0->text().toDouble();
 		double dY1R = editRealY1->text().toDouble();
 		double dY2R = editRealY2->text().toDouble();
-		ublas::vector<double> vecPlaneYR = dY0R*lattice.GetVec(0) +
-			dY1R*lattice.GetVec(1) + dY2R*lattice.GetVec(2);
+		ublas::vector<double> vecPlaneYR = tl::make_vec({dY0R, dY1R, dY2R});
 
 		//----------------------------------------------------------------------
 		// show integer up vector
@@ -195,8 +192,8 @@ void TazDlg::CalcPeaks()
 		//----------------------------------------------------------------------
 
 		ublas::vector<double> vecX0R = ublas::zero_vector<double>(3);
-		tl::Plane<double> planeReal(vecX0R, vecPlaneXR, vecPlaneYR);
-		if(!planeReal.IsValid())
+		tl::Plane<double> planeRealFrac(vecX0R, vecPlaneXR, vecPlaneYR);
+		if(!planeRealFrac.IsValid())
 		{
 			tl::log_err("Invalid view plane for real lattice.");
 			return;
@@ -283,13 +280,12 @@ void TazDlg::CalcPeaks()
 
 		editCrystalSystem->setText(pcCryTy);
 
-		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip,
-			planeRLU, pSpaceGroup, bPowder, &m_vecAtoms);
+		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, planeRLU, pSpaceGroup, bPowder, &m_vecAtoms);
 		if(m_sceneRecip.getSnapq())
 			m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();
 
-		m_sceneRealLattice.GetLattice()->CalcPeaks(lattice, planeReal);
+		m_sceneRealLattice.GetLattice()->CalcPeaks(lattice, planeRealFrac, pSpaceGroup, &m_vecAtoms);
 
 #ifndef NO_3D
 		if(m_pRecip3d)

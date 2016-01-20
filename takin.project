@@ -214,7 +214,7 @@
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
-    <Configuration Name="Debug" CompilerType="clang( tags/RELEASE_34/final )" DebuggerType="LLDB Debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+    <Configuration Name="Debug" CompilerType="clang( tags/RELEASE_34/final )" DebuggerType="" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g;-W;-std=c++11;-Wall" C_Options="-g;-W" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <IncludePath Value="/usr/include/qt4"/>
@@ -270,6 +270,7 @@
         <Library Value="freetype"/>
         <Library Value="fontconfig"/>
         <Library Value="png"/>
+        <Library Value="jpeg"/>
         <Library Value="clipper-core"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
@@ -307,7 +308,7 @@
         <SearchPaths/>
       </Completion>
     </Configuration>
-    <Configuration Name="Release" CompilerType="clang( tags/RELEASE_34/final )" DebuggerType="LLDB Debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+    <Configuration Name="Release" CompilerType="clang( tags/RELEASE_34/final )" DebuggerType="" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-O2;-march=native;-W;-std=c++11;-Wall" C_Options="-O2;-W" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <IncludePath Value="/usr/include/qt4"/>
@@ -363,6 +364,7 @@
         <Library Value="freetype"/>
         <Library Value="fontconfig"/>
         <Library Value="png"/>
+        <Library Value="jpeg"/>
         <Library Value="clipper-core"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>

@@ -7,6 +7,7 @@
 
 #include "tlibs/helper/flags.h"
 #include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/atoms.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
 #include "helper/globals.h"
@@ -21,6 +22,20 @@
 namespace units = boost::units;
 namespace co = boost::units::si::constants::codata;
 
+
+#define REAL_LATTICE_NODE_TYPE_KEY	0
+
+enum LatticeNodeType
+{
+	NODE_REAL_LATTICE,
+	NODE_REAL_LATTICE_ATOM,
+
+	NODE_REAL_LATTICE_OTHER
+};
+
+
+
+// --------------------------------------------------------------------------------
 
 LatticePoint::LatticePoint()
 {
@@ -48,6 +63,36 @@ void LatticePoint::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWi
 		painter->drawText(rect, Qt::AlignHCenter|Qt::AlignTop, m_strLabel);
 	}
 }
+
+// --------------------------------------------------------------------------------
+
+LatticeAtom::LatticeAtom()
+{
+	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+	//setCursor(Qt::ArrowCursor);
+	setFlag(QGraphicsItem::ItemIsMovable, false);
+}
+
+QRectF LatticeAtom::boundingRect() const
+{
+	return QRectF(-35., -10., 70., 50.);
+}
+
+void LatticeAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+{
+	painter->setBrush(m_color);
+	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
+
+	if(m_strElem != "")
+	{
+		painter->setPen(m_color);
+		QRectF rect = boundingRect();
+		rect.setTop(rect.top()+16.5);
+		//painter->drawRect(rect);
+		painter->drawText(rect, Qt::AlignHCenter|Qt::AlignTop, m_strElem.c_str());
+	}
+}
+
 
 // --------------------------------------------------------------------------------
 
@@ -116,11 +161,22 @@ void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 	}
 }
 
-void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<double>& plane)
+void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<double>& planeFrac,
+	const SpaceGroup* pSpaceGroup, const std::vector<AtomPos>* pvecAtomPos)
 {
 	ClearPeaks();
 	m_kdLattice.Unload();
 	m_lattice = lattice;
+	
+	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
+	ublas::vector<double> vecPlaneX = planeFrac.GetDir0()[0]*lattice.GetVec(0) +
+		planeFrac.GetDir0()[1]*lattice.GetVec(1) +
+		planeFrac.GetDir0()[2]*lattice.GetVec(2);
+	ublas::vector<double> vecPlaneY = planeFrac.GetDir1()[0]*lattice.GetVec(0) +
+		planeFrac.GetDir1()[1]*lattice.GetVec(1) +
+		planeFrac.GetDir1()[2]*lattice.GetVec(2);
+	tl::Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
+
 
 	const ublas::matrix<double> matA = m_lattice.GetMetric();
 
@@ -155,6 +211,81 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 	}
 
 
+	// --------------------------------------------------------------------
+	// atom positions in unit cell
+	std::vector<ublas::matrix<double>> vecSymTrafos;
+	if(pSpaceGroup)
+		pSpaceGroup->GetSymTrafos(vecSymTrafos);
+	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
+
+	if(vecSymTrafos.size() && pvecAtomPos && pvecAtomPos->size())
+	{
+		const std::string strAA = tl::get_spec_char_utf8("AA");
+
+		for(unsigned int iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
+		{
+			ublas::vector<double> vecAtom = (*pvecAtomPos)[iAtom].vecPos;
+			// homogeneous coordinates
+			vecAtom.resize(4,1); vecAtom[3] = 1.;
+			const std::string& strElem = (*pvecAtomPos)[iAtom].strAtomName;
+			//std::cout << strElem << ": " << vecAtom << std::endl;
+
+			std::vector<ublas::vector<double>> vecSymPos =
+				tl::generate_atoms<ublas::matrix<double>, ublas::vector<double>, std::vector>
+					(vecSymTrafos, vecAtom);
+
+			for(ublas::vector<double> vecThisAtomFrac : vecSymPos)
+			{
+				vecThisAtomFrac.resize(3,1);
+				const double dUCSize = 1.;
+				for(int iComp=0; iComp<vecThisAtomFrac.size(); ++iComp)
+				{
+					while(vecThisAtomFrac[iComp] > dUCSize*0.5)
+						vecThisAtomFrac[iComp] -= dUCSize;
+					while(vecThisAtomFrac[iComp] < -dUCSize*0.5)
+						vecThisAtomFrac[iComp] += dUCSize;
+				}
+
+				// frac -> angstr.
+				ublas::vector<double> vecThisAtom = matA * vecThisAtomFrac;
+				
+				LatticeAtom *pAtom = new LatticeAtom();
+				m_vecAtoms.push_back(pAtom);
+
+				pAtom->m_strElem = strElem;
+				pAtom->m_vecPos = std::move(vecThisAtom);
+				pAtom->m_vecProj = plane.GetDroppedPerp(pAtom->m_vecPos/*, &pAtom->m_dProjDist*/);
+				pAtom->m_dProjDist = plane.GetDist(pAtom->m_vecPos);
+
+				ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
+				double dX = vecCoord[0], dY = -vecCoord[1];
+
+				pAtom->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+				pAtom->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
+				pAtom->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE_ATOM);
+				
+				std::ostringstream ostrTip;
+				ostrTip.precision(g_iPrecGfx);
+				ostrTip << pAtom->m_strElem;
+				ostrTip << "\n(" 
+					<< vecThisAtomFrac[0] << ", " 
+					<< vecThisAtomFrac[1] << ", " 
+					<< vecThisAtomFrac[2] << ") frac";
+				ostrTip << "\n(" 
+					<< vecThisAtom[0] << ", " 
+					<< vecThisAtom[1] << ", " 
+					<< vecThisAtom[2] << ") " << strAA;
+				ostrTip << "\nDistance to Plane: " << pAtom->m_dProjDist << " " << strAA;
+				pAtom->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
+	
+				m_scene.addItem(pAtom);
+			}
+		}
+	}
+	// --------------------------------------------------------------------
+
+
+
 	std::list<std::vector<double>> lstPeaksForKd;
 
 	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
@@ -176,21 +307,20 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 				if(tl::float_equal(dDist, 0., m_dPlaneDistTolerance))
 				{
 					ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
-					double dX = vecCoord[0];
-					double dY = -vecCoord[1];
+					double dX = vecCoord[0], dY = -vecCoord[1];
 
 					LatticePoint *pPeak = new LatticePoint();
 					if(ih==0 && ik==0 && il==0)
 						pPeak->SetColor(Qt::green);
 					pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 					pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
-					pPeak->setData(LATTICE_NODE_TYPE_KEY, NODE_LATTICE);
+					pPeak->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE);
 
 					std::ostringstream ostrTip;
 					ostrTip << "(" << ih << " " << ik << " " << il << ")";
 					pPeak->SetLabel(ostrTip.str().c_str());
 
-					//std::string strAA = ::get_spec_char_utf8("AA")+::get_spec_char_utf8("sup-")+::get_spec_char_utf8("sup1");
+					//std::string strAA = ::get_spec_char_utf8("AA");
 					//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
 					pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 
@@ -246,10 +376,21 @@ void RealLattice::ClearPeaks()
 		{
 			m_scene.removeItem(pPeak);
 			delete pPeak;
-			pPeak = 0;
+			pPeak = nullptr;
 		}
 	}
 	m_vecPeaks.clear();
+	
+	for(LatticeAtom*& pAtom : m_vecAtoms)
+	{
+		if(pAtom)
+		{
+			m_scene.removeItem(pAtom);
+			delete pAtom;
+			pAtom = nullptr;
+		}
+	}
+	m_vecAtoms.clear();
 }
 
 // --------------------------------------------------------------------------------
@@ -415,7 +556,7 @@ void LatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		QGraphicsItem* pCurItem = mouseGrabberItem();
 		if(pCurItem)
 		{
-			const int iNodeType = pCurItem->data(LATTICE_NODE_TYPE_KEY).toInt();
+			const int iNodeType = pCurItem->data(REAL_LATTICE_NODE_TYPE_KEY).toInt();
 
 			// nothing there yet...
 		}
