@@ -74,7 +74,7 @@ public:
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 
-	virtual SqwBase* shallow_copy() const;
+	virtual SqwBase* shallow_copy() const override;
 };
 
 
@@ -97,7 +97,7 @@ public:
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 
-	virtual SqwBase* shallow_copy() const;
+	virtual SqwBase* shallow_copy() const override;
 };
 
 

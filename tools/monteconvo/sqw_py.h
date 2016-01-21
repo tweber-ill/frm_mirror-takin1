@@ -31,7 +31,7 @@ public:
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 
 	// TODO
-	virtual SqwBase* shallow_copy() const { return nullptr; }
+	virtual SqwBase* shallow_copy() const override { return nullptr; }
 };
 
 #endif
