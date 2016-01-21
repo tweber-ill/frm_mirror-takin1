@@ -925,7 +925,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 						pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
 						std::ostringstream ostrTip;
-						ostrTip << "(" << ih << " " << ik << " " << il << ") rlu";
+						ostrTip << "(" << ih << " " << ik << " " << il << ")";
 						if(strStructfact.length())
 							ostrTip << "\n" << strStructfact;
 
