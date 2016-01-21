@@ -22,6 +22,9 @@
 namespace units = boost::units;
 namespace co = boost::units::si::constants::codata;
 
+using t_vec = ublas::vector<double>;
+using t_mat = ublas::matrix<double>;
+
 
 #define REAL_LATTICE_NODE_TYPE_KEY	0
 
@@ -136,7 +139,7 @@ void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 		QPen penOrg = painter->pen();
 		painter->setPen(Qt::lightGray);
 
-		const ublas::vector<double>& vecCentral = m_ws.GetCentralReflex() * m_dScaleFactor*m_dZoom;
+		const t_vec& vecCentral = m_ws.GetCentralReflex() * m_dScaleFactor*m_dZoom;
 		//std::cout << vecCentral << std::endl;
 		for(const LatticePoint* pPeak : m_vecPeaks)
 		{
@@ -146,8 +149,8 @@ void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 			const tl::Brillouin2D<double>::t_vertices<double>& verts = m_ws.GetVertices();
 			for(const tl::Brillouin2D<double>::t_vecpair<double>& vertpair : verts)
 			{
-				const ublas::vector<double>& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
-				const ublas::vector<double>& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
+				const t_vec& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
+				const t_vec& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
 
 				QPointF pt1 = vec_to_qpoint(vec1 - vecCentral) + peakPos;
 				QPointF pt2 = vec_to_qpoint(vec2 - vecCentral) + peakPos;
@@ -168,23 +171,23 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 	m_kdLattice.Unload();
 	m_lattice = lattice;
 
-	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
-	ublas::vector<double> vecPlaneX = planeFrac.GetDir0()[0]*lattice.GetVec(0) +
+	t_vec vecX0 = ublas::zero_vector<double>(3);
+	t_vec vecPlaneX = planeFrac.GetDir0()[0]*lattice.GetVec(0) +
 		planeFrac.GetDir0()[1]*lattice.GetVec(1) +
 		planeFrac.GetDir0()[2]*lattice.GetVec(2);
-	ublas::vector<double> vecPlaneY = planeFrac.GetDir1()[0]*lattice.GetVec(0) +
+	t_vec vecPlaneY = planeFrac.GetDir1()[0]*lattice.GetVec(0) +
 		planeFrac.GetDir1()[1]*lattice.GetVec(1) +
 		planeFrac.GetDir1()[2]*lattice.GetVec(2);
 	tl::Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
 
 
-	const ublas::matrix<double> matA = m_lattice.GetMetric();
+	const t_mat matA = m_lattice.GetMetric();
 
-	ublas::vector<double> dir0 = plane.GetDir0();
-	ublas::vector<double> dir1 = tl::cross_3(plane.GetNorm(), dir0);
-
-	double dDir0Len = ublas::norm_2(dir0);
-	double dDir1Len = ublas::norm_2(dir1);
+	std::vector<t_vec> vecOrth = 
+		tl::gram_schmidt<t_vec>(
+			{plane.GetDir0(), plane.GetDir1(), plane.GetNorm()}, 1);
+	m_matPlane = tl::column_matrix(vecOrth);
+	double dDir0Len = ublas::norm_2(vecOrth[0]), dDir1Len = ublas::norm_2(vecOrth[1]);
 
 	if(tl::float_equal(dDir0Len, 0.) || tl::float_equal(dDir1Len, 0.)
 		|| tl::is_nan_or_inf<double>(dDir0Len) || tl::is_nan_or_inf<double>(dDir1Len))
@@ -193,16 +196,6 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 		return;
 	}
 
-
-	// -------------------------------------------------------------------------
-	// central peak for WS cell calculation
-	ublas::vector<int> veciCent = tl::make_vec({0.,0.,0.});
-
-
-	dir0 /= dDir0Len;
-	dir1 /= dDir1Len;
-
-	m_matPlane = tl::column_matrix({dir0, dir1, plane.GetNorm()});
 	bool bInv = tl::inverse(m_matPlane, m_matPlane_inv);
 	if(!bInv)
 	{
@@ -211,9 +204,14 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 	}
 
 
+	// central peak for WS cell calculation
+	ublas::vector<int> veciCent = tl::make_vec({0.,0.,0.});
+
+	
+
 	// --------------------------------------------------------------------
 	// atom positions in unit cell
-	std::vector<ublas::matrix<double>> vecSymTrafos;
+	std::vector<t_mat> vecSymTrafos;
 	if(pSpaceGroup)
 		pSpaceGroup->GetSymTrafos(vecSymTrafos);
 	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
@@ -224,22 +222,22 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 
 		for(unsigned int iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
 		{
-			ublas::vector<double> vecAtom = (*pvecAtomPos)[iAtom].vecPos;
+			t_vec vecAtom = (*pvecAtomPos)[iAtom].vecPos;
 			// homogeneous coordinates
 			vecAtom.resize(4,1); vecAtom[3] = 1.;
 			const std::string& strElem = (*pvecAtomPos)[iAtom].strAtomName;
 			//std::cout << strElem << ": " << vecAtom << std::endl;
 
 			const double dUCSize = 1.;
-			std::vector<ublas::vector<double>> vecSymPos =
-				tl::generate_atoms<ublas::matrix<double>, ublas::vector<double>, std::vector>
+			std::vector<t_vec> vecSymPos =
+				tl::generate_atoms<t_mat, t_vec, std::vector>
 					(vecSymTrafos, vecAtom, -dUCSize/2., dUCSize/2.);
 
-			for(ublas::vector<double> vecThisAtomFrac : vecSymPos)
+			for(t_vec vecThisAtomFrac : vecSymPos)
 			{
 				vecThisAtomFrac.resize(3,1);
 				// frac -> angstr.
-				ublas::vector<double> vecThisAtom = matA * vecThisAtomFrac;
+				t_vec vecThisAtom = matA * vecThisAtomFrac;
 
 				LatticeAtom *pAtom = new LatticeAtom();
 				m_vecAtoms.push_back(pAtom);
@@ -249,7 +247,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 				pAtom->m_vecProj = plane.GetDroppedPerp(pAtom->m_vecPos/*, &pAtom->m_dProjDist*/);
 				pAtom->m_dProjDist = plane.GetDist(pAtom->m_vecPos);
 
-				ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
+				t_vec vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
 				double dX = vecCoord[0], dY = -vecCoord[1];
 
 				pAtom->setFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -288,17 +286,17 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 				const double k = double(ik);
 				const double l = double(il);
 
-				const ublas::vector<double> vecPeak = m_lattice.GetPos(h,k,l);
+				const t_vec vecPeak = m_lattice.GetPos(h,k,l);
 
 				// add peak in A and in fractional units
 				lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
 
 				double dDist = 0.;
-				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
+				t_vec vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
 				if(tl::float_equal(dDist, 0., m_dPlaneDistTolerance))
 				{
-					ublas::vector<double> vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
+					t_vec vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
 					double dX = vecCoord[0], dY = -vecCoord[1];
 
 					LatticePoint *pPeak = new LatticePoint();
@@ -323,7 +321,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 					// Wigner-Seitz cell
 					if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
 					{
-						ublas::vector<double> vecCentral = tl::make_vec({dX, dY});
+						t_vec vecCentral = tl::make_vec({dX, dY});
 						//log_debug("Central ", ih, ik, il, ": ", vecCentral);
 						m_ws.SetCentralReflex(vecCentral);
 					}
@@ -332,7 +330,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 							&& std::abs(ik-veciCent[1])<=2
 							&& std::abs(il-veciCent[2])<=2)
 					{
-						ublas::vector<double> vecN = tl::make_vec({dX, dY});
+						t_vec vecN = tl::make_vec({dX, dY});
 						//log_debug("Reflex: ", vecN);
 						m_ws.AddReflex(vecN);
 					}
@@ -348,12 +346,12 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 	this->update();
 }
 
-ublas::vector<double> RealLattice::GetHKLFromPlanePos(double x, double y) const
+t_vec RealLattice::GetHKLFromPlanePos(double x, double y) const
 {
 	if(!HasPeaks())
-		return ublas::vector<double>();
+		return t_vec();
 
-	ublas::vector<double> vec = x*tl::get_column(m_matPlane, 0)
+	t_vec vec = x*tl::get_column(m_matPlane, 0)
 		+ y*tl::get_column(m_matPlane, 1);
 	return m_lattice.GetHKL(vec);
 }
@@ -441,13 +439,13 @@ bool LatticeScene::ExportWSAccurate(const char* pcFile) const
 		for(int iX=iXMid-iW/2; iX<iXMid+iW/2; ++iX, ++_iX)
 		{
 			double dX = iX;
-			ublas::vector<double> vecHKL = m_pLatt->GetHKLFromPlanePos(dX, -dY);
+			t_vec vecHKL = m_pLatt->GetHKLFromPlanePos(dX, -dY);
 			if(vecHKL.size()!=3) return false;
 			vecHKL /= m_pLatt->GetScaleFactor();
 
 			const std::vector<double>* pvecNearest = nullptr;
 			const tl::Kd<double>& kd = m_pLatt->GetKdLattice();
-			ublas::vector<double> vecHKLA = m_pLatt->GetRealLattice().GetPos(vecHKL[0], vecHKL[1], vecHKL[2]);
+			t_vec vecHKLA = m_pLatt->GetRealLattice().GetPos(vecHKL[0], vecHKL[1], vecHKL[2]);
 
 			if(kd.GetRootNode())
 			{
@@ -512,7 +510,7 @@ void LatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		const double dX = pEvt->scenePos().x()/m_pLatt->GetScaleFactor();
 		const double dY = -pEvt->scenePos().y()/m_pLatt->GetScaleFactor();
 
-		ublas::vector<double> vecHKL = m_pLatt->GetHKLFromPlanePos(dX, dY);
+		t_vec vecHKL = m_pLatt->GetHKLFromPlanePos(dX, dY);
 		tl::set_eps_0(vecHKL, g_dEps);
 
 		if(vecHKL.size()==3)
@@ -525,7 +523,7 @@ void LatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 
 			const tl::Kd<double>& kd = m_pLatt->GetKdLattice();
 			const tl::Lattice<double>& lattice = m_pLatt->GetRealLattice();
-			ublas::vector<double> vecHKLA = lattice.GetPos(vecHKL[0], vecHKL[1], vecHKL[2]);
+			t_vec vecHKLA = lattice.GetPos(vecHKL[0], vecHKL[1], vecHKL[2]);
 
 			if(kd.GetRootNode())
 			{

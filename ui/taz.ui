@@ -542,7 +542,7 @@
           </property>
           <widget class="QWidget" name="tabScatteringPlane">
            <attribute name="title">
-            <string>Sc. Plane</string>
+            <string>Recip. Plane</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_2">
             <property name="margin">
