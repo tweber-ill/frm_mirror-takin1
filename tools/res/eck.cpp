@@ -165,8 +165,8 @@ CNResults calc_eck(const EckParams& eck)
 	if(eck.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, units::abs(2.*thetaa), false);
 	if(eck.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, units::abs(2.*thetaa), true);
 
-	mono_curvh *= eck.dmono_sense; mono_curvv *= eck.dmono_sense;
-	ana_curvh *= eck.dana_sense; ana_curvv *= eck.dana_sense;
+	//mono_curvh *= eck.dmono_sense; mono_curvv *= eck.dmono_sense;
+	//ana_curvh *= eck.dana_sense; ana_curvv *= eck.dana_sense;
 
 	inv_length inv_mono_curvh = 0./cm, inv_mono_curvv = 0./cm;
 	inv_length inv_ana_curvh = 0./cm, inv_ana_curvv = 0./cm;
