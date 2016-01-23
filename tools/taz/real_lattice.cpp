@@ -84,6 +84,7 @@ QRectF LatticeAtom::boundingRect() const
 void LatticeAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	painter->setBrush(m_color);
+	painter->setPen(Qt::darkCyan);
 	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
 
 	if(m_strElem != "")
@@ -183,7 +184,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 
 	const t_mat matA = m_lattice.GetMetric();
 
-	std::vector<t_vec> vecOrth = 
+	std::vector<t_vec> vecOrth =
 		tl::gram_schmidt<t_vec>(
 			{plane.GetDir0(), plane.GetDir1(), plane.GetNorm()}, 1);
 	m_matPlane = tl::column_matrix(vecOrth);
@@ -207,8 +208,8 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 	// central peak for WS cell calculation
 	ublas::vector<int> veciCent = tl::make_vec({0.,0.,0.});
 
-	
 
+	const std::string strAA = tl::get_spec_char_utf8("AA");
 	// --------------------------------------------------------------------
 	// atom positions in unit cell
 	std::vector<t_mat> vecSymTrafos;
@@ -216,10 +217,11 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 		pSpaceGroup->GetSymTrafos(vecSymTrafos);
 	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
 
+	std::vector<QColor> colors = {QColor(127,0,0), QColor(0,127,0), QColor(0,0,127),
+		QColor(127,127,0), QColor(0,127,127), QColor(127,0,127)};
+
 	if(vecSymTrafos.size() && pvecAtomPos && pvecAtomPos->size())
 	{
-		const std::string strAA = tl::get_spec_char_utf8("AA");
-
 		for(unsigned int iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
 		{
 			t_vec vecAtom = (*pvecAtomPos)[iAtom].vecPos;
@@ -254,19 +256,22 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 				pAtom->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
 				pAtom->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE_ATOM);
 
+				tl::set_eps_0(vecThisAtom);
+				tl::set_eps_0(vecThisAtomFrac);
 				std::ostringstream ostrTip;
 				ostrTip.precision(g_iPrecGfx);
 				ostrTip << pAtom->m_strElem;
-				ostrTip << "\n(" 
-					<< vecThisAtomFrac[0] << ", " 
-					<< vecThisAtomFrac[1] << ", " 
+				ostrTip << "\n("
+					<< vecThisAtomFrac[0] << ", "
+					<< vecThisAtomFrac[1] << ", "
 					<< vecThisAtomFrac[2] << ") frac";
-				ostrTip << "\n(" 
-					<< vecThisAtom[0] << ", " 
-					<< vecThisAtom[1] << ", " 
+				ostrTip << "\n("
+					<< vecThisAtom[0] << ", "
+					<< vecThisAtom[1] << ", "
 					<< vecThisAtom[2] << ") " << strAA;
 				ostrTip << "\nDistance to Plane: " << pAtom->m_dProjDist << " " << strAA;
 				pAtom->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
+				pAtom->SetColor(colors[iAtom % colors.size()]);
 
 				m_scene.addItem(pAtom);
 			}
@@ -282,11 +287,8 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
 			for(int il=-m_iMaxPeaks; il<=m_iMaxPeaks; ++il)
 			{
-				const double h = double(ih);
-				const double k = double(ik);
-				const double l = double(il);
-
-				const t_vec vecPeak = m_lattice.GetPos(h,k,l);
+				const double h = double(ih), k = double(ik), l = double(il);
+				t_vec vecPeak = m_lattice.GetPos(h,k,l);
 
 				// add peak in A and in fractional units
 				lstPeaksForKd.push_back(std::vector<double>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
@@ -307,10 +309,17 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 					pPeak->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE);
 
 					std::ostringstream ostrTip;
+					ostrTip.precision(g_iPrecGfx);
+
 					ostrTip << "(" << ih << " " << ik << " " << il << ")";
 					pPeak->SetLabel(ostrTip.str().c_str());
 
-					//std::string strAA = ::get_spec_char_utf8("AA");
+					tl::set_eps_0(vecPeak);
+					ostrTip << " frac\n";
+					ostrTip << "("
+							<< vecPeak[0] << ", "
+							<< vecPeak[1] << ", "
+							<< vecPeak[2] << ") " << strAA;
 					//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
 					pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 
@@ -370,7 +379,7 @@ void RealLattice::ClearPeaks()
 		}
 	}
 	m_vecPeaks.clear();
-	
+
 	for(LatticeAtom*& pAtom : m_vecAtoms)
 	{
 		if(pAtom)

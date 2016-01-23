@@ -727,7 +727,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	t_vec dir0RLU = planeRLU.GetDir0();
 	t_vec dir1RLU = planeRLU.GetDir1();
 
-	std::vector<t_vec> vecOrth = 
+	std::vector<t_vec> vecOrth =
 		tl::gram_schmidt<t_vec>(
 			{plane.GetDir0(), plane.GetDir1(), plane.GetNorm()}, 1);
 	m_matPlane = tl::column_matrix(vecOrth);
@@ -854,7 +854,9 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	}
 	// --------------------------------------------------------------------
 
-
+	const std::string strAA = tl::get_spec_char_utf8("AA") +
+		tl::get_spec_char_utf8("sup-") +
+		tl::get_spec_char_utf8("sup1");
 	std::list<std::vector<double>> lstPeaksForKd;
 
 	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
@@ -872,7 +874,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 				}
 
 
-				const t_vec vecPeak = m_recip.GetPos(h,k,l);
+				t_vec vecPeak = m_recip.GetPos(h,k,l);
 				//t_vec vecPeak = matB * tl::make_vec({h,k,l});
 				//const double dG = ublas::norm_2(vecPeak);
 
@@ -925,6 +927,8 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 						pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
 						std::ostringstream ostrTip;
+						ostrTip.precision(g_iPrecGfx);
+
 						ostrTip << "(" << ih << " " << ik << " " << il << ")";
 						if(strStructfact.length())
 							ostrTip << "\n" << strStructfact;
@@ -932,7 +936,13 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 						if(ih!=0 || ik!=0 || il!=0)
 							pPeak->SetLabel(ostrTip.str().c_str());
 
-						//std::string strAA = ::get_spec_char_utf8("AA")+::get_spec_char_utf8("sup-")+::get_spec_char_utf8("sup1");
+						tl::set_eps_0(vecPeak);
+						ostrTip << " rlu\n";
+						ostrTip << "("
+								<< vecPeak[0] << ", "
+								<< vecPeak[1] << ", "
+								<< vecPeak[2] << ") " << strAA;
+
 						//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
 						pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 

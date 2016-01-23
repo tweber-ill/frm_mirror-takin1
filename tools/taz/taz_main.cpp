@@ -11,6 +11,7 @@
 #include "dialogs/NetCacheDlg.h"
 #include "helper/globals.h"
 
+#include <memory>
 #include <QMetaType>
 
 
@@ -56,19 +57,20 @@ int main(int argc, char** argv)
 		qRegisterMetaType<std::string>("std::string");
 		qRegisterMetaType<CacheVal>("CacheVal");
 
-		QApplication app(argc, argv);
+
+		std::unique_ptr<QApplication> app(new QApplication(argc, argv));
 
 		::setlocale(LC_ALL, "C");
 		QLocale::setDefault(QLocale::English);
 
-		TazDlg dlg(0);
+		std::unique_ptr<TazDlg> dlg(new TazDlg(0));
 		if(argc > 1)
-			dlg.Load(argv[1]);
-		dlg.show();
-		int iRet = app.exec();
+			dlg->Load(argv[1]);
+		dlg->show();
+		int iRet = app->exec();
+
 
 		tl::deinit_spec_chars();
-
 		tl::log_info("Shutting down Takin.");
 		return iRet;
 	}
