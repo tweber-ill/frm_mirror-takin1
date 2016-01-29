@@ -64,8 +64,8 @@ DEFINES += -DQT_VER=$(QT_VER)
 
 
 ifeq ($(QT_VER), 5)
-	QT_INC = -I/usr/include/qt5 -I/usr/include/qt5/QtCore \
-		-I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
+	QT_INC = -I/opt/local/libexec/qt5/include -I/opt/local/libexec/qt5/include/QtCore -I/opt/local/libexec/qt5/include/QtGui -I/opt/local/libexec/qt5/include/QtOpenGL \
+		-I/usr/include/qt5 -I/usr/include/qt5/QtCore -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
 		-I/usr/include/QtOpenGL
 	QT_LIB = -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
 		-lQt5Widgets -lQt5Gui -lQt5Core -lQt5Svg -lQt5Concurrent
@@ -73,9 +73,8 @@ ifeq ($(QT_VER), 5)
 		QT_LIB += -lQt5OpenGL
 	endif
 else
-	QT_INC = -I/usr/include/qt4 \
-		-I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui \
-		-I/usr/include/qt4/QtOpenGL \
+	QT_INC = -I/opt/local/libexec/qt4/include -I/opt/local/libexec/qt4/include/QtCore -I/opt/local/libexec/qt4/include/QtGui -I/opt/local/libexec/qt4/include/QtOpenGL \
+		-I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtOpenGL \
 		-I/usr/include/QtCore -I/usr/include/QtGui -I/usr/include/QtOpenGL
 	QT_LIB =  -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
 		-lQtCore -lQtGui -lQtSvg
@@ -86,16 +85,32 @@ endif
 
 ifeq ($(QWT_VER), 6)
 	ifeq ($(QT_VER), 5)
-		QWT_INC = -I/usr/include/qt5/qwt -I/usr/include/qwt-qt5
+		QWT_INC = -I/opt/local/libexec/qt5/include/qwt \
+			-I/usr/include/qt5/qwt -I/usr/include/qwt-qt5
 		QWT_LIB = -lqwt-qt5
 	else
-		QWT_INC = -I/usr/include/qwt6 -I/usr/include/qwt -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
+		QWT_INC = -I/opt/local/libexec/qt4/include/qwt \
+			-I/usr/include/qwt6 -I/usr/include/qwt -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
 		QWT_LIB = -L/usr/local/qwt/lib -lqwt
 	endif
 else
 	QWT_INC = -I/usr/include/qwt5 -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
 	QWT_LIB = -L/usr/local/qwt/lib -lqwt${QWT5_SUFFIX}
 endif
+
+
+
+INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/usr/local/include \
+	-I/opt/include -I/opt/local/include \
+	-I/usr/include/freetype2 -I/usr/include/lapacke \
+	-I/usr/include/python2.7 \
+	-I/usr/include/root -I/usr/include
+LIB_DIRS = -L/opt/local/lib -L/usr/lib64 -L/usr/lib64/root -L/usr/lib/x86_64-linux-gnu \
+	-L/usr/local/lib -L/opt/lib
+
+
+STD_LIBS = -lstdc++ -lm
+STD_LIBS += -lpthread
 
 
 ifeq ($(DO_DEBUG), 0)
@@ -112,23 +127,9 @@ endif
 
 
 
-INC = ${QT_INC} ${QWT_INC} -I . -I/usr/local/include \
-	-I/opt/include -I/opt/local/include \
-	-I/usr/include/freetype2 -I/usr/include/lapacke \
-	-I/usr/include/python2.7 \
-	-I/usr/include/root
-LIB_DIRS = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib \
-	-L/opt/lib -L/opt/local/lib
-
-
-STD_LIBS = -lstdc++ -lm
-STD_LIBS += -lpthread
-
-
-
 ifeq ($(USE_LAPACK), 1)
 	DEFINES += -DUSE_LAPACK
-	LAPACK_LIBS = -L/usr/local/lib64 -llapacke -llapack
+	LAPACK_LIBS = -llapacke -llapack
 	#LAPACK_LIBS += -lblas -lgfortran
 else
 	DEFINES += -DNO_LAPACK
@@ -167,8 +168,8 @@ else
 endif
 
 
-LIBS_TAZ = -L/usr/lib64 ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${GL_LIBS} ${PY_LIBS} ${GIL_LIBS}
-LIBS_RESO = -L/usr/lib64 ${QWT_LIB} ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS}
+LIBS_TAZ = ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${GL_LIBS} ${PY_LIBS} ${GIL_LIBS}
+LIBS_RESO = ${QWT_LIB} ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS}
 
 
 # -----------------------------------------------------------------------------
@@ -210,9 +211,9 @@ OBJ_RESO = obj/log.o obj/rand.o \
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 	obj/loadinstr.o obj/log.o
 
-OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup_clp.o obj/crystalsys.o
+OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup_clp.o obj/crystalsys.o obj/log.o
 
-OBJ_GENTAB = obj/gentab.o obj/spacegroup_clp.o obj/crystalsys_noqt.o
+OBJ_GENTAB = obj/gentab.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/log.o
 
 OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals_noqt.o \
 	obj/formfact.o obj/log.o
@@ -242,48 +243,48 @@ all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist 
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
-	${CC} ${FLAGS} -o bin/takin $+ ${LIBS_TAZ} ${LIBS_RESO}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/takin $+ ${LIBS_TAZ} ${LIBS_RESO}
 	${STRIP} bin/takin
 
 montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
-	${CC} ${FLAGS} -o bin/montereso $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${LAPACK_LIBS}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/montereso $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${LAPACK_LIBS}
 	${STRIP} montereso
 
 monteconvo: ${OBJ_MONTECONVO} obj/mconv_main.o
-	${CC} ${FLAGS} -o bin/monteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/monteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB}
 	${STRIP} monteconvo
 
 xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/globals.o obj/SqwParamDlg.o ${PY_OBJS}
-	${CC} ${FLAGS} -o bin/xmonteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${PY_LIBS}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/xmonteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${PY_LIBS}
 	${STRIP} xmonteconvo
 
 convofit: ${OBJ_CONVOFIT}
-	${CC} ${FLAGS} -o bin/convofit $+ -L/usr/lib64/root -lMinuit2 ${STD_LIBS} ${BASIC_LIBS}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/convofit $+ -lMinuit2 ${STD_LIBS} ${BASIC_LIBS}
 	${STRIP} convofit
 convoseries: ${OBJ_CONVOSERIES}
-	${CC} ${FLAGS} -o bin/convoseries $+ -lboost_system -lboost_filesystem ${STD_LIBS}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/convoseries $+ ${BASIC_LIBS} ${STD_LIBS}
 
 posextract: obj/posextract.o obj/loadinstr.o obj/log.o
-	${CC} ${FLAGS} -o bin/posextract $+ ${STD_LIBS} ${BASIC_LIBS}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/posextract $+ ${STD_LIBS} ${BASIC_LIBS}
 	${STRIP} posextract
 
 reso: ${OBJ_RESO}
-	${CC} ${FLAGS} -o bin/reso $+ ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS} -lX11
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/reso $+ ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS} -lX11
 	${STRIP} reso
 
 scanviewer: ${OBJ_SCANVIEWER}
-	${CC} ${FLAGS} -o bin/scanviewer $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/scanviewer $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB}
 	${STRIP} scanviewer
 
 sglist: ${OBJ_SGLIST}
-	${CC} ${FLAGS} -o bin/sglist $+ ${STD_LIBS} ${QT_LIB} -lclipper-core
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/sglist $+ ${STD_LIBS} ${QT_LIB} -lclipper-core
 	${STRIP} sglist
 
 gentab: ${OBJ_GENTAB}
-	${CC} ${FLAGS} -o bin/gentab $+ ${STD_LIBS} -lclipper-core
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/gentab $+ ${STD_LIBS} -lclipper-core
 
 sfact: ${OBJ_SFACT}
-	${CC} ${FLAGS} -o bin/sfact $+ ${STD_LIBS} ${BASIC_LIBS} -lclipper-core
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/sfact $+ ${STD_LIBS} ${BASIC_LIBS} -lclipper-core
 
 
 # -----------------------------------------------------------------------------

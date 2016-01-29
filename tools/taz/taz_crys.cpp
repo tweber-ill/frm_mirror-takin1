@@ -315,13 +315,12 @@ void TazDlg::RepopulateSpaceGroups()
 
 		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
 		if(strFilter!="" &&
-				!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
-									t_striterrange(strFilter.begin(), strFilter.end())))
+			!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
+			t_striterrange(strFilter.begin(), strFilter.end())))
 			continue;
 
 		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
-									strName.c_str(),
-									QVariant::fromValue((void*)&pair.second));
+			strName.c_str(), QVariant::fromValue((void*)&pair.second));
 	}
 }
 
@@ -336,7 +335,7 @@ void TazDlg::ShowSpurions()
 		m_pSpuri = new SpurionDlg(this, &m_settings);
 
 		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-						m_pSpuri, SLOT(paramsChanged(const RecipParams&)));
+			m_pSpuri, SLOT(paramsChanged(const RecipParams&)));
 
 		m_sceneRecip.emitAllParams();
 	}

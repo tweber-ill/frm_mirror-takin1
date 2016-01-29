@@ -1369,7 +1369,7 @@ void ScatteringTriangleScene::emitAllParams()
 	emit paramsChanged(parms);
 }
 
-// check for elastic spurions
+// check for spurions
 void ScatteringTriangleScene::CheckForSpurions()
 {
 	typedef units::quantity<units::si::energy> energy;
@@ -1381,10 +1381,10 @@ void ScatteringTriangleScene::CheckForSpurions()
 	energy Ei = tl::k2E(m_pTri->GetKi()/tl::angstrom);
 	energy Ef = tl::k2E(m_pTri->GetKf()/tl::angstrom);
 
-	// elastic ones
+	// elastic currat-axe spurions
 	tl::ElasticSpurion spuris = tl::check_elastic_spurion(vecKi, vecKf, vecq);
 
-	// inelastic ones
+	// inelastic higher-order spurions
 	std::vector<tl::InelasticSpurion<double>> vecInelCKI = tl::check_inelastic_spurions(1, Ei, Ef, E, 5);
 	std::vector<tl::InelasticSpurion<double>> vecInelCKF = tl::check_inelastic_spurions(0, Ei, Ef, E, 5);
 
@@ -1545,7 +1545,7 @@ bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const
 }
 
 #else
-void ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const {}
+bool ScatteringTriangleScene::ExportBZAccurate(const char* pcFile) const { return 0; }
 #endif
 
 
@@ -1687,6 +1687,7 @@ ScatteringTriangleView::ScatteringTriangleView(QWidget* pParent)
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
 	setMouseTracking(1);
+	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
 
 ScatteringTriangleView::~ScatteringTriangleView()
@@ -1694,20 +1695,14 @@ ScatteringTriangleView::~ScatteringTriangleView()
 
 void ScatteringTriangleView::wheelEvent(QWheelEvent *pEvt)
 {
-	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-
-	const double dDelta = pEvt->delta()/100.;
-
 #if QT_VER>=5
-	double dScale = dDelta>0. ? 1.1 : 1./1.1;
+	const double dDelta = pEvt->angleDelta()/8. / 150.;
 #else
-	double dScale = dDelta;
-	if(dDelta < 0.)
-		dScale = -1./dDelta;
+	const double dDelta = pEvt->delta()/8. / 150.;
 #endif
 
+	const double dScale = std::pow(2., dDelta);
 	this->scale(dScale, dScale);
-
 	m_dTotalScale *= dScale;
 	emit scaleChanged(m_dTotalScale);
 }

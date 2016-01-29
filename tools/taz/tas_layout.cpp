@@ -619,6 +619,7 @@ TasLayoutView::TasLayoutView(QWidget* pParent)
 				QPainter::HighQualityAntialiasing);
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
+	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
 
 TasLayoutView::~TasLayoutView()
@@ -626,20 +627,14 @@ TasLayoutView::~TasLayoutView()
 
 void TasLayoutView::wheelEvent(QWheelEvent *pEvt)
 {
-	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-
-	double dDelta = pEvt->delta()/100.;
-
 #if QT_VER>=5
-        double dScale = dDelta>0. ? 1.1 : 1./1.1;
+	const double dDelta = pEvt->angleDelta()/8. / 150.;
 #else
-	double dScale = dDelta;
-	if(dDelta < 0.)
-		dScale = -1./dDelta;
+	const double dDelta = pEvt->delta()/8. / 150.;
 #endif
 
+	const double dScale = std::pow(2., dDelta);
 	this->scale(dScale, dScale);
-
 	m_dTotalScale *= dScale;
 	emit scaleChanged(m_dTotalScale);
 }

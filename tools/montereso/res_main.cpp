@@ -10,6 +10,7 @@
 #include "tlibs/string/string.h"
 #include "dialogs/EllipseDlg.h"
 
+#include <clocale>
 #include <fstream>
 #include <vector>
 #include <unordered_map>
@@ -234,7 +235,7 @@ static EllipseDlg* show_ellipses(const Resolution& res)
 
 int main(int argc, char **argv)
 {
-	::setlocale(LC_ALL, "C");
+	std::setlocale(LC_ALL, "C");
 	if(argc <= 1)
 	{
 		std::ostringstream ostr;

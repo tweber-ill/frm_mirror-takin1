@@ -11,6 +11,7 @@
 
 #include "../../tlibs/string/string.h"
 #include "../../tlibs/file/prop.h"
+#include "../../tlibs/log/log.h"
 #include "../../helper/spacegroup_clp.h"
 
 #include <boost/numeric/ublas/io.hpp>
@@ -73,7 +74,7 @@ bool gen_formfacts()
 	std::ofstream ofstr("res/ffacts.xml");
 	if(!ofstr)
 	{
-		std::cerr << "Error: Cannot write \"res/ffacts.xml\"." << std::endl;
+		tl::log_err("Error: Cannot write \"res/ffacts.xml\".");
 		return false;
 	}
 
@@ -103,7 +104,7 @@ bool gen_scatlens()
 	std::ifstream ifstr("tmp/scatlens.html");
 	if(!ifstr)
 	{
-		std::cerr << "Error: Cannot open \"tmp/scatlens.html\"." << std::endl;
+		tl::log_err("Error: Cannot open \"tmp/scatlens.html\".");
 		return false;
 	}
 
@@ -169,7 +170,7 @@ bool gen_scatlens()
 	std::ofstream ofstr("res/scatlens.xml");
 	if(!ofstr)
 	{
-		std::cerr << "Error: Cannot write \"res/scatlens.xml\"." << std::endl;
+		tl::log_err("Error: Cannot write \"res/scatlens.xml\".");
 		return false;
 	}
 
@@ -226,7 +227,7 @@ bool gen_spacegroups()
 	std::ofstream ofstr("res/sgroups.xml");
 	if(!ofstr)
 	{
-		std::cerr << "Error: Cannot write \"res/sgroups.xml\"." << std::endl;
+		tl::log_err("Error: Cannot write \"res/sgroups.xml\".");
 		return false;
 	}
 

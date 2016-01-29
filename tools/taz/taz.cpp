@@ -729,6 +729,8 @@ TazDlg::~TazDlg()
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
 	if(m_pviewRealLattice) { delete m_pviewRealLattice; m_pviewRealLattice = 0; }
 	if(m_pviewReal) { delete m_pviewReal; m_pviewReal = 0; }
+
+	comboSpaceGroups->clear();
 }
 
 void TazDlg::DeleteDialogs()

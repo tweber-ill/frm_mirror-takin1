@@ -4,6 +4,8 @@
  * @date 2013, 2014
  * @copyright GPLv2
  */
+
+#include <clocale>
 #include "ResoDlg.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
@@ -25,7 +27,7 @@ int main(int argc, char** argv)
 		tl::init_spec_chars();
 		QApplication app(argc, argv);
 
-		::setlocale(LC_ALL, "C");
+		std::setlocale(LC_ALL, "C");
 		QLocale::setDefault(QLocale::English);
 
 		ResoDlg dlg(0);

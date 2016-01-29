@@ -56,6 +56,7 @@ class SpaceGroup
 
 typedef std::map<std::string, SpaceGroup> t_mapSpaceGroups;
 extern const t_mapSpaceGroups* get_space_groups();
+extern void init_space_groups();
 
 
 template<class T=clipper::ftype>

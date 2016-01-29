@@ -7,6 +7,7 @@
 
 #include "spacegroup_clp.h"
 #include <ctype.h>
+#include "tlibs/log/log.h"
 
 
 SpaceGroup::SpaceGroup(unsigned int iNum)
@@ -58,8 +59,14 @@ void SpaceGroup::GetSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) con
 
 static t_mapSpaceGroups g_mapSpaceGroups;
 
-static void init_space_groups()
+void init_space_groups()
 {
+	if(!g_mapSpaceGroups.empty())
+	{
+		tl::log_warn("Space Groups have already been initialised.");
+		return;
+	}
+
 	typedef t_mapSpaceGroups::value_type t_val;
 
 	for(int iSg=1; iSg<=230; ++iSg)
@@ -72,7 +79,10 @@ static void init_space_groups()
 const t_mapSpaceGroups* get_space_groups()
 {
 	if(g_mapSpaceGroups.empty())
+	{
+		tl::log_warn("Space Groups had not been initialised properly.");
 		init_space_groups();
+	}
 
 	return &g_mapSpaceGroups;
 }

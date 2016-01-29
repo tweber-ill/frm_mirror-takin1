@@ -5,6 +5,7 @@
  * @license GPLv2
  */
 
+#include <clocale>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -254,7 +255,7 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 int main(int argc, char** argv)
 {
 	QApplication app(argc, argv, 0);
-	::setlocale(LC_ALL, "C");
+	std::setlocale(LC_ALL, "C");
 	QLocale::setDefault(QLocale::English);
 
 	if(argc == 3)

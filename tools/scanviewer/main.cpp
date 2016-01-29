@@ -5,6 +5,7 @@
  * @copyright GPLv2
  */
 
+#include <clocale>
 #include <QLocale>
 #include <QApplication>
 #include "scanviewer.h"
@@ -13,7 +14,7 @@ int main(int argc, char** argv)
 {
 	QApplication app(argc, argv);
 
-	::setlocale(LC_ALL, "C");
+	std::setlocale(LC_ALL, "C");
 	QLocale::setDefault(QLocale::English);
 
 	ScanViewerDlg dlg(0);

@@ -4,13 +4,16 @@
  * @date feb-2014
  * @license GPLv2
  */
+
 #include "taz.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
 #include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
 #include "helper/globals.h"
+#include "helper/spacegroup_clp.h"
 
+#include <clocale>
 #include <memory>
 #include <QMetaType>
 
@@ -43,13 +46,13 @@ int main(int argc, char** argv)
 		if(!g_bHasFormfacts)
 			tl::log_warn("Form factor coefficient table not found.");
 
+		init_space_groups();
+		tl::init_spec_chars();
 
 		#if defined Q_WS_X11 && !defined NO_3D
 			XInitThreads();
 			QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
 		#endif
-
-		tl::init_spec_chars();
 
 		// qt needs to be able to copy these structs when emitting signals from a different thread
 		qRegisterMetaType<TriangleOptions>("TriangleOptions");
@@ -60,7 +63,7 @@ int main(int argc, char** argv)
 
 		std::unique_ptr<QApplication> app(new QApplication(argc, argv));
 
-		::setlocale(LC_ALL, "C");
+		std::setlocale(LC_ALL, "C");
 		QLocale::setDefault(QLocale::English);
 
 		std::unique_ptr<TazDlg> dlg(new TazDlg(0));

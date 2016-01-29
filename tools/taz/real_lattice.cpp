@@ -497,7 +497,7 @@ bool LatticeScene::ExportWSAccurate(const char* pcFile) const
 }
 
 #else
-void LatticeScene::ExportWSAccurate(const char* pcFile) const {}
+bool LatticeScene::ExportWSAccurate(const char* pcFile) const { return 0; }
 #endif
 
 
@@ -600,6 +600,7 @@ LatticeView::LatticeView(QWidget* pParent)
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
 	setMouseTracking(1);
+	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
 
 LatticeView::~LatticeView()
@@ -607,20 +608,14 @@ LatticeView::~LatticeView()
 
 void LatticeView::wheelEvent(QWheelEvent *pEvt)
 {
-	this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-
-	const double dDelta = pEvt->delta()/100.;
-
 #if QT_VER>=5
-	double dScale = dDelta>0. ? 1.1 : 1./1.1;
+	const double dDelta = pEvt->angleDelta()/8. / 150.;
 #else
-	double dScale = dDelta;
-	if(dDelta < 0.)
-		dScale = -1./dDelta;
+	const double dDelta = pEvt->delta()/8. / 150.;
 #endif
 
+	double dScale = std::pow(2., dDelta);
 	this->scale(dScale, dScale);
-
 	m_dTotalScale *= dScale;
 	emit scaleChanged(m_dTotalScale);
 }
