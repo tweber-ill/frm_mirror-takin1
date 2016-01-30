@@ -81,8 +81,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
-	m_vecCheckBoxes = {checkAnaCurvH, checkAnaCurvV, checkMonoCurvH, checkMonoCurvV};
-	m_vecCheckNames = {"reso/pop_ana_use_curvh", "reso/pop_ana_use_curvv", "reso/pop_mono_use_curvh", "reso/pop_mono_use_curvv"};
+	m_vecCheckBoxes = {};
+	m_vecCheckNames = {};
 
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
@@ -95,16 +95,20 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 						"reso/sample_scatter_sense", "reso/pop_sample_cuboid",
 						"reso/pop_source_rect", "reso/pop_det_rect"};
 
-	m_vecComboBoxes = {comboAlgo};
-	m_vecComboNames = {"reso/algo"};
+	m_vecComboBoxes = {comboAlgo,
+						comboAnaHori, comboAnaVert,
+						comboMonoHori, comboMonoVert};
+	m_vecComboNames = {"reso/algo",
+					"reso/pop_ana_use_curvh", "reso/pop_ana_use_curvv",
+					"reso/pop_mono_use_curvh", "reso/pop_mono_use_curvv"};
 
 	ReadLastConfig();
 
 	QObject::connect(groupGuide, SIGNAL(toggled(bool)), this, SLOT(Calc()));
 
-	QCheckBox* pCheckBoxes[] = {checkAnaCurvH, checkAnaCurvV, checkMonoCurvH, checkMonoCurvV};
-	for(QCheckBox* pbox : pCheckBoxes)
-		QObject::connect(pbox, SIGNAL(toggled(bool)), this, SLOT(Calc()));
+	QComboBox* pComboBoxes[] = {comboAnaHori, comboAnaVert, comboMonoHori, comboMonoVert};
+	for(QComboBox* pbox : pComboBoxes)
+		QObject::connect(pbox, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
 
 	for(QDoubleSpinBox* pSpinBox : m_vecSpinBoxes)
 		QObject::connect(pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(Calc()));
@@ -250,16 +254,50 @@ void ResoDlg::Calc()
 	cn.mono_thick = spinMonoThick->value()*0.01*tl::meters;
 	cn.mono_curvh = spinMonoCurvH->value()*0.01*tl::meters;
 	cn.mono_curvv = spinMonoCurvV->value()*0.01*tl::meters;
-	cn.bMonoIsCurvedH = checkMonoCurvH->isChecked();
-	cn.bMonoIsCurvedV = checkMonoCurvV->isChecked();
+	cn.bMonoIsCurvedH = cn.bMonoIsCurvedV = 0;
+	cn.bMonoIsOptimallyCurvedH = cn.bMonoIsOptimallyCurvedV = 0;
+	spinMonoCurvH->setEnabled(0); spinMonoCurvV->setEnabled(0);
+
+	if(comboMonoHori->currentIndex()==2)
+	{
+		cn.bMonoIsCurvedH = 1;
+		spinMonoCurvH->setEnabled(1);
+	}
+	else if(comboMonoHori->currentIndex()==1)
+		cn.bMonoIsCurvedH = cn.bMonoIsOptimallyCurvedH = 1;
+
+	if(comboMonoVert->currentIndex()==2)
+	{
+		cn.bMonoIsCurvedV = 1;
+		spinMonoCurvV->setEnabled(1);
+	}
+	else if(comboMonoVert->currentIndex()==1)
+		cn.bMonoIsCurvedV = cn.bMonoIsOptimallyCurvedV = 1;
 
 	cn.ana_w = spinAnaW->value()*0.01*tl::meters;
 	cn.ana_h = spinAnaH->value()*0.01*tl::meters;
 	cn.ana_thick = spinAnaThick->value()*0.01*tl::meters;
 	cn.ana_curvh = spinAnaCurvH->value()*0.01*tl::meters;
 	cn.ana_curvv = spinAnaCurvV->value()*0.01*tl::meters;
-	cn.bAnaIsCurvedH = checkAnaCurvH->isChecked();
-	cn.bAnaIsCurvedV = checkAnaCurvV->isChecked();
+	cn.bAnaIsCurvedH = cn.bAnaIsCurvedV = 0;
+	cn.bAnaIsOptimallyCurvedH = cn.bAnaIsOptimallyCurvedV = 0;
+	spinAnaCurvH->setEnabled(0); spinAnaCurvV->setEnabled(0);
+
+	if(comboAnaHori->currentIndex()==2)
+	{
+		cn.bAnaIsCurvedH = 1;
+		spinAnaCurvH->setEnabled(1);
+	}
+	else if(comboAnaHori->currentIndex()==1)
+		cn.bAnaIsCurvedH = cn.bAnaIsOptimallyCurvedH = 1;
+
+	if(comboAnaVert->currentIndex()==2)
+	{
+		cn.bAnaIsCurvedV = 1;
+		spinAnaCurvV->setEnabled(1);
+	}
+	else if(comboAnaVert->currentIndex()==1)
+		cn.bAnaIsCurvedV = cn.bAnaIsOptimallyCurvedV = 1;
 
 	cn.bSampleCub = radioSampleCub->isChecked();
 	cn.sample_w_q = spinSampleW_Q->value()*0.01*tl::meters;

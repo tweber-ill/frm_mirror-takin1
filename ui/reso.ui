@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>810</width>
-    <height>478</height>
+    <width>796</width>
+    <height>460</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -91,12 +91,15 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_29">
             <property name="text">
-             <string>d-spacing (Å):</string>
+             <string>d-spacing:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="spinMonod">
+            <property name="suffix">
+             <string> Å</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -111,12 +114,15 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_30">
             <property name="text">
-             <string>Mosaic (arc min):</string>
+             <string>Mosaic:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinMonoMosaic">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -192,12 +198,15 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_32">
             <property name="text">
-             <string>d-spacing (Å):</string>
+             <string>d-spacing:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="spinAnad">
+            <property name="suffix">
+             <string> Å</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -212,12 +221,15 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_33">
             <property name="text">
-             <string>Mosaic (arc min):</string>
+             <string>Mosaic:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinAnaMosaic">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -293,12 +305,15 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_28">
             <property name="text">
-             <string>Mosaic (arc min):</string>
+             <string>Mosaic:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="spinSampleMosaic">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -345,12 +360,15 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_22">
             <property name="text">
-             <string>Before Mono (arc min):</string>
+             <string>Before Mono:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="spinHCollMono">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="maximum">
              <double>99990000.000000000000000</double>
             </property>
@@ -362,12 +380,15 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_23">
             <property name="text">
-             <string>Before Sample (arc min):</string>
+             <string>Before Sample:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinHCollBSample">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="maximum">
              <double>99990000.000000000000000</double>
             </property>
@@ -379,12 +400,15 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_24">
             <property name="text">
-             <string>After Sample (arc min):</string>
+             <string>After Sample:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QDoubleSpinBox" name="spinHCollASample">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="maximum">
              <double>99990000.000000000000000</double>
             </property>
@@ -396,12 +420,15 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_25">
             <property name="text">
-             <string>After Analyser (arc min):</string>
+             <string>After Analyser:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
            <widget class="QDoubleSpinBox" name="spinHCollAna">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="maximum">
              <double>99990000.000000000000000</double>
             </property>
@@ -428,12 +455,15 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_35">
             <property name="text">
-             <string>Before Mono (arc min):</string>
+             <string>Before Mono:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="spinVCollMono">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="maximum">
              <double>9999.000000000000000</double>
             </property>
@@ -445,12 +475,15 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_36">
             <property name="text">
-             <string>Before Sample (arc min):</string>
+             <string>Before Sample:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinVCollBSample">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="maximum">
              <double>9999.000000000000000</double>
             </property>
@@ -462,12 +495,15 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_37">
             <property name="text">
-             <string>After Sample (arc min):</string>
+             <string>After Sample:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QDoubleSpinBox" name="spinVCollASample">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="maximum">
              <double>99990000.000000000000000</double>
             </property>
@@ -479,12 +515,15 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_38">
             <property name="text">
-             <string>After Analyser (arc min):</string>
+             <string>After Analyser:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
            <widget class="QDoubleSpinBox" name="spinVCollAna">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="maximum">
              <double>99990000.000000000000000</double>
             </property>
@@ -508,16 +547,25 @@
          <property name="title">
           <string>Analyser</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_23">
+         <layout class="QGridLayout" name="gridLayout_11">
           <item row="0" column="0">
            <widget class="QLabel" name="label_51">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Width (cm):</string>
+             <string>Width:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="spinAnaW">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -534,13 +582,22 @@
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_52">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Height (cm):</string>
+             <string>Height:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinAnaH">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -557,13 +614,22 @@
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_53">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Thickness (cm):</string>
+             <string>Thickness:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QDoubleSpinBox" name="spinAnaThick">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -579,17 +645,28 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QCheckBox" name="checkAnaCurvH">
-            <property name="text">
-             <string>Horiz. curv. (cm):</string>
+           <widget class="QComboBox" name="comboAnaHori">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="checkAnaCurvV">
-            <property name="text">
-             <string>Vert. curv. (cm):</string>
-            </property>
+            <item>
+             <property name="text">
+              <string>Flat Horiz. Curv.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Opt. Horiz. Curv.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Horiz. Curv.:</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="3" column="1">
@@ -597,6 +674,9 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="minimum">
              <double>-99999.000000000000000</double>
             </property>
@@ -609,6 +689,31 @@
             <property name="value">
              <double>1.000000000000000</double>
             </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QComboBox" name="comboAnaVert">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Flat Vert. Curv.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Opt. Vert. Curv.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Vert. Curv.:</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="4" column="1">
@@ -616,6 +721,9 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="minimum">
              <double>-99999.000000000000000</double>
             </property>
@@ -630,8 +738,24 @@
             </property>
            </widget>
           </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_57">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Dist. to Detector:</string>
+            </property>
+           </widget>
+          </item>
           <item row="5" column="1">
            <widget class="QDoubleSpinBox" name="spinDistAnaDet">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -643,13 +767,6 @@
             </property>
             <property name="value">
              <double>2.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_57">
-            <property name="text">
-             <string>Dist. to Detector (cm):</string>
             </property>
            </widget>
           </item>
@@ -680,7 +797,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>Horiz. div. (arc min / Å):</string>
+             <string>Horiz. div.:</string>
             </property>
            </widget>
           </item>
@@ -688,6 +805,9 @@
            <widget class="QDoubleSpinBox" name="spinGuideDivH">
             <property name="enabled">
              <bool>true</bool>
+            </property>
+            <property name="suffix">
+             <string> arcmin/Å</string>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -700,7 +820,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>Vert. div. (arc min / Å):</string>
+             <string>Vert. div.:</string>
             </property>
            </widget>
           </item>
@@ -708,6 +828,9 @@
            <widget class="QDoubleSpinBox" name="spinGuideDivV">
             <property name="enabled">
              <bool>true</bool>
+            </property>
+            <property name="suffix">
+             <string> arcmin/Å</string>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -723,6 +846,9 @@
           <string>Detector</string>
          </property>
          <layout class="QFormLayout" name="formLayout_21">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
           <item row="0" column="0">
            <widget class="QRadioButton" name="radioDetRect">
             <property name="text">
@@ -733,22 +859,18 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QRadioButton" name="radioDetCirc">
-            <property name="text">
-             <string>Circular</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_46">
             <property name="text">
-             <string>Width (cm):</string>
+             <string>Width:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinDetW">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -766,12 +888,15 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_47">
             <property name="text">
-             <string>Height (cm):</string>
+             <string>Height:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QDoubleSpinBox" name="spinDetH">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -786,6 +911,13 @@
             </property>
            </widget>
           </item>
+          <item row="0" column="1">
+           <widget class="QRadioButton" name="radioDetCirc">
+            <property name="text">
+             <string>Circular</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -794,16 +926,25 @@
          <property name="title">
           <string>Monochromator</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_22">
+         <layout class="QGridLayout" name="gridLayout_10">
           <item row="0" column="0">
            <widget class="QLabel" name="label_48">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Width (cm):</string>
+             <string>Width:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="spinMonoW">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -820,13 +961,22 @@
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_49">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Height (cm):</string>
+             <string>Height:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinMonoH">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -843,13 +993,22 @@
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_50">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Thickness (cm):</string>
+             <string>Thickness:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QDoubleSpinBox" name="spinMonoThick">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -865,16 +1024,37 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QCheckBox" name="checkMonoCurvH">
-            <property name="text">
-             <string>Horiz. curv. (cm):</string>
+           <widget class="QComboBox" name="comboMonoHori">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
+            <item>
+             <property name="text">
+              <string>Flat Horiz. Curv.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Opt. Horiz. Curv.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Horiz. Curv.:</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="3" column="1">
            <widget class="QDoubleSpinBox" name="spinMonoCurvH">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="suffix">
+             <string> cm</string>
             </property>
             <property name="minimum">
              <double>-99999.000000000000000</double>
@@ -888,16 +1068,37 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QCheckBox" name="checkMonoCurvV">
-            <property name="text">
-             <string>Vert. curv. (cm):</string>
+           <widget class="QComboBox" name="comboMonoVert">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
+            <item>
+             <property name="text">
+              <string>Flat Vert. Curv.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Opt. Vert. Curv.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Vert. Curv.:</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="4" column="1">
            <widget class="QDoubleSpinBox" name="spinMonoCurvV">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="suffix">
+             <string> cm</string>
             </property>
             <property name="minimum">
              <double>-99999.000000000000000</double>
@@ -910,8 +1111,24 @@
             </property>
            </widget>
           </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_55">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Dist. to Sample:</string>
+            </property>
+           </widget>
+          </item>
           <item row="5" column="1">
            <widget class="QDoubleSpinBox" name="spinDistMonoSample">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -926,13 +1143,6 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_55">
-            <property name="text">
-             <string>Dist. to Sample (cm):</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -942,6 +1152,9 @@
           <string>Source</string>
          </property>
          <layout class="QFormLayout" name="formLayout_18">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
           <item row="0" column="0">
            <widget class="QRadioButton" name="radioSrcRect">
             <property name="text">
@@ -952,22 +1165,18 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QRadioButton" name="radioSrcCirc">
-            <property name="text">
-             <string>Circular</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_39">
             <property name="text">
-             <string>Width (cm):</string>
+             <string>Width:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinSrcW">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -985,12 +1194,15 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_40">
             <property name="text">
-             <string>Height (cm):</string>
+             <string>Height:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QDoubleSpinBox" name="spinSrcH">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -1008,12 +1220,15 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_54">
             <property name="text">
-             <string>Dist. to Mono (cm):</string>
+             <string>Dist. to Mono:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
            <widget class="QDoubleSpinBox" name="spinDistSrcMono">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -1025,6 +1240,13 @@
             </property>
             <property name="value">
              <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QRadioButton" name="radioSrcCirc">
+            <property name="text">
+             <string>Circular</string>
             </property>
            </widget>
           </item>
@@ -1057,12 +1279,15 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_43">
             <property name="text">
-             <string>Width along Q (cm):</string>
+             <string>Width along Q:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinSampleW_Q">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -1080,12 +1305,15 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_44">
             <property name="text">
-             <string>Width perp. Q (cm):</string>
+             <string>Width perp. Q:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QDoubleSpinBox" name="spinSampleW_perpQ">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -1103,12 +1331,15 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_45">
             <property name="text">
-             <string>Height (cm):</string>
+             <string>Height:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
            <widget class="QDoubleSpinBox" name="spinSampleH">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -1126,12 +1357,15 @@
           <item row="4" column="0">
            <widget class="QLabel" name="label_56">
             <property name="text">
-             <string>Dist. to Ana. (cm):</string>
+             <string>Dist. to Ana.:</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
            <widget class="QDoubleSpinBox" name="spinDistSampleAna">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -1173,6 +1407,9 @@
           </property>
           <item row="1" column="0" colspan="2">
            <widget class="QDoubleSpinBox" name="spinAnaMosaicV">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -1187,7 +1424,7 @@
           <item row="0" column="0" colspan="2">
            <widget class="QLabel" name="label_62">
             <property name="text">
-             <string>Vertical Mosaic (arc min):</string>
+             <string>Vertical Mosaic:</string>
             </property>
            </widget>
           </item>
@@ -1206,12 +1443,15 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_58">
             <property name="text">
-             <string>x Position (cm):</string>
+             <string>x Position:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="spinSamplePosX">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -1232,12 +1472,15 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_60">
             <property name="text">
-             <string>y Position (cm):</string>
+             <string>y Position:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="spinSamplePosY">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -1258,12 +1501,15 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_61">
             <property name="text">
-             <string>z Position (cm):</string>
+             <string>z Position:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QDoubleSpinBox" name="spinSamplePosZ">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
             <property name="decimals">
              <number>5</number>
             </property>
@@ -1301,6 +1547,9 @@
           </property>
           <item row="1" column="0" colspan="2">
            <widget class="QDoubleSpinBox" name="spinMonoMosaicV">
+            <property name="suffix">
+             <string> arcmin</string>
+            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -1315,7 +1564,7 @@
           <item row="0" column="0" colspan="2">
            <widget class="QLabel" name="label_59">
             <property name="text">
-             <string>Vertical Mosaic (arc min):</string>
+             <string>Vertical Mosaic:</string>
             </property>
            </widget>
           </item>
@@ -1703,9 +1952,9 @@ Resolution Matrix:
   <tabstop>spinMonoW</tabstop>
   <tabstop>spinMonoH</tabstop>
   <tabstop>spinMonoThick</tabstop>
-  <tabstop>checkMonoCurvH</tabstop>
+  <tabstop>comboMonoHori</tabstop>
   <tabstop>spinMonoCurvH</tabstop>
-  <tabstop>checkMonoCurvV</tabstop>
+  <tabstop>comboMonoVert</tabstop>
   <tabstop>spinMonoCurvV</tabstop>
   <tabstop>spinDistMonoSample</tabstop>
   <tabstop>radioSampleCub</tabstop>
@@ -1717,9 +1966,9 @@ Resolution Matrix:
   <tabstop>spinAnaW</tabstop>
   <tabstop>spinAnaH</tabstop>
   <tabstop>spinAnaThick</tabstop>
-  <tabstop>checkAnaCurvH</tabstop>
+  <tabstop>comboAnaHori</tabstop>
   <tabstop>spinAnaCurvH</tabstop>
-  <tabstop>checkAnaCurvV</tabstop>
+  <tabstop>comboAnaVert</tabstop>
   <tabstop>spinAnaCurvV</tabstop>
   <tabstop>spinDistAnaDet</tabstop>
   <tabstop>radioSrcRect</tabstop>
@@ -1747,14 +1996,15 @@ Resolution Matrix:
   <tabstop>checkElli4dAutoCalc</tabstop>
   <tabstop>btnCalcElli4d</tabstop>
   <tabstop>spinMCNeutrons</tabstop>
+  <tabstop>comboMCCoords</tabstop>
   <tabstop>checkMCCenter</tabstop>
   <tabstop>btnMCGenerate</tabstop>
   <tabstop>groupSim</tabstop>
   <tabstop>editSim</tabstop>
-  <tabstop>btnSave</tabstop>
-  <tabstop>btnLoad</tabstop>
   <tabstop>buttonBox</tabstop>
+  <tabstop>btnSave</tabstop>
   <tabstop>tabWidget</tabstop>
+  <tabstop>btnLoad</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -1787,70 +2037,6 @@ Resolution Matrix:
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkMonoCurvH</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinMonoCurvH</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>344</x>
-     <y>151</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>459</x>
-     <y>152</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkMonoCurvV</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinMonoCurvV</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>341</x>
-     <y>177</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>459</x>
-     <y>178</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkAnaCurvH</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinAnaCurvH</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>596</x>
-     <y>151</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>712</x>
-     <y>152</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkAnaCurvV</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinAnaCurvV</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>593</x>
-     <y>177</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>712</x>
-     <y>178</y>
     </hint>
    </hints>
   </connection>

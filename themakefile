@@ -67,7 +67,7 @@ ifeq ($(QT_VER), 5)
 	QT_INC = -I/opt/local/libexec/qt5/include -I/opt/local/libexec/qt5/include/QtCore -I/opt/local/libexec/qt5/include/QtGui -I/opt/local/libexec/qt5/include/QtOpenGL \
 		-I/usr/include/qt5 -I/usr/include/qt5/QtCore -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
 		-I/usr/include/QtOpenGL
-	QT_LIB = -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
+	QT_LIB = -L/opt/local/libexec/qt5/lib -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
 		-lQt5Widgets -lQt5Gui -lQt5Core -lQt5Svg -lQt5Concurrent
 	ifeq ($(USE_3D), 1)
 		QT_LIB += -lQt5OpenGL
@@ -76,7 +76,7 @@ else
 	QT_INC = -I/opt/local/libexec/qt4/include -I/opt/local/libexec/qt4/include/QtCore -I/opt/local/libexec/qt4/include/QtGui -I/opt/local/libexec/qt4/include/QtOpenGL \
 		-I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtOpenGL \
 		-I/usr/include/QtCore -I/usr/include/QtGui -I/usr/include/QtOpenGL
-	QT_LIB =  -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
+	QT_LIB = -L/opt/local/libexec/qt4/lib -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
 		-lQtCore -lQtGui -lQtSvg
         ifeq ($(USE_3D), 1)
                 QT_LIB += -lQtOpenGL
