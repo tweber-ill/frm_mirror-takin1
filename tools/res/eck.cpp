@@ -36,15 +36,15 @@ static const auto meV = tl::meV;
 
 static std::tuple<t_mat, t_vec, t_real, t_real, t_real>
 get_mono_vals(const length& src_w, const length& src_h,
-			const length& mono_w, const length& mono_h,
-			const length& dist_src_mono, const length& dist_mono_sample,
-			const wavenumber& ki, const angle& thetam,
-			const angle& coll_h_pre_mono, const angle& coll_h_pre_sample,
-			const angle& coll_v_pre_mono, const angle& coll_v_pre_sample,
-			const angle& mono_mosaic, const angle& mono_mosaic_v,
-			const inv_length& inv_mono_curvh, const inv_length& inv_mono_curvv,
-			const length& pos_x , const length& pos_y, const length& pos_z,
-			t_real dRefl)
+	const length& mono_w, const length& mono_h,
+	const length& dist_src_mono, const length& dist_mono_sample,
+	const wavenumber& ki, const angle& thetam,
+	const angle& coll_h_pre_mono, const angle& coll_h_pre_sample,
+	const angle& coll_v_pre_mono, const angle& coll_v_pre_sample,
+	const angle& mono_mosaic, const angle& mono_mosaic_v,
+	const inv_length& inv_mono_curvh, const inv_length& inv_mono_curvv,
+	const length& pos_x , const length& pos_y, const length& pos_z,
+	t_real dRefl)
 {
 	// A matrix: formula 26 in [eck14]
 	t_mat A = ublas::identity_matrix<t_real>(3);
@@ -91,11 +91,11 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 	// B vector: formula 27 in [eck14]
 	t_vec B(3);
-	B(0) = 8.*std::log(2.)*pos_y/(ki*angs) * units::tan(thetam) *
-		( 2.*dist_src_mono/(src_w*src_w) +
+	B(0) = 8.*std::log(2.)*pos_y / (ki*angs) * units::tan(thetam) *
+		( 2.*dist_src_mono / (src_w*src_w) +
 		  inv_mono_curvh/((mono_mosaic/rads)*(mono_mosaic/rads)*std::fabs(units::sin(thetam)))
 		);
-	B(1) = 8.*std::log(2.)*pos_y/(ki*angs) *
+	B(1) = 8.*std::log(2.)*pos_y / (ki*angs) *
 		( -dist_mono_sample/(mono_w*std::fabs(units::sin(thetam)) * mono_w*std::fabs(units::sin(thetam))) +
 		  (inv_mono_curvh/((mono_mosaic/rads)*(mono_mosaic/rads) * std::fabs(units::sin(thetam)))) *
 			(1. - inv_mono_curvh*dist_mono_sample/(std::fabs(units::sin(thetam)))) +
@@ -106,13 +106,13 @@ get_mono_vals(const length& src_w, const length& src_h,
 	t_vec Bv(2);
 	Bv(0) = 4.*std::log(2.)*pos_z / (ki*angs) *
 		( -2.*dist_mono_sample / (src_h*src_h) +		// typo in paper?
-		  inv_mono_curvv/(mono_mosaic_v/rads*mono_mosaic_v/rads*std::fabs(units::sin(thetam))) -
-		  2.*inv_mono_curvv*inv_mono_curvv*dist_mono_sample/(mono_mosaic_v/rads*mono_mosaic_v/rads) -
+		  inv_mono_curvv/((mono_mosaic_v/rads)*(mono_mosaic_v/rads) * std::fabs(units::sin(thetam))) -
+		  2.*inv_mono_curvv*inv_mono_curvv*dist_mono_sample/((mono_mosaic_v/rads)*(mono_mosaic_v/rads)) -
 		  2.*dist_mono_sample / (mono_h*mono_h)			// typo in paper?
 		);
 	Bv(1) = 4.*std::log(2.)*pos_z / (ki*angs) *
-		( -2.*dist_mono_sample / (src_h*src_h) -		// typo in paper?
-		  inv_mono_curvv/(mono_mosaic_v/rads*mono_mosaic_v/rads*std::fabs(units::sin(thetam)))
+		(-1.) * ( 2.*dist_mono_sample / (src_h*src_h) +		// typo in paper?
+		  inv_mono_curvv/((mono_mosaic_v/rads)*(mono_mosaic_v/rads)*std::fabs(units::sin(thetam)))
 		);
 
 
@@ -221,16 +221,16 @@ CNResults calc_eck(const EckParams& eck)
 	std::launch lpol = /*std::launch::deferred |*/ std::launch::async;
 	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futMono
 		= std::async(lpol, get_mono_vals,
-					eck.src_w, eck.src_h,
-					eck.mono_w, eck.mono_h,
-					eck.dist_src_mono, eck.dist_mono_sample,
-					eck.ki, thetam,
-					coll_h_pre_mono, eck.coll_h_pre_sample,
-					coll_v_pre_mono, eck.coll_v_pre_sample,
-					eck.mono_mosaic, eck.mono_mosaic_v,
-					inv_mono_curvh, inv_mono_curvv,
-					eck.pos_x , eck.pos_y, eck.pos_z,
-					eck.dmono_refl);
+			eck.src_w, eck.src_h,
+			eck.mono_w, eck.mono_h,
+			eck.dist_src_mono, eck.dist_mono_sample,
+			eck.ki, thetam,
+			coll_h_pre_mono, eck.coll_h_pre_sample,
+			coll_v_pre_mono, eck.coll_v_pre_sample,
+			eck.mono_mosaic, eck.mono_mosaic_v,
+			inv_mono_curvh, inv_mono_curvv,
+			eck.pos_x , eck.pos_y, eck.pos_z,
+			eck.dmono_refl);
 
 	//--------------------------------------------------------------------------
 
@@ -243,16 +243,16 @@ CNResults calc_eck(const EckParams& eck)
 					+eck.pos_y*units::cos(twotheta);
 	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futAna
 		= std::async(lpol, get_mono_vals,
-					eck.det_w, eck.det_h,
-					eck.ana_w, eck.ana_h,
-					eck.dist_ana_det, eck.dist_sample_ana,
-					eck.kf, -thetaa,
-					eck.coll_h_post_ana, eck.coll_h_post_sample,
-					eck.coll_v_post_ana, eck.coll_v_post_sample,
-					eck.ana_mosaic, eck.ana_mosaic_v,
-					inv_ana_curvh, inv_ana_curvv,
-					eck.pos_x, pos_y2, eck.pos_z,
-					eck.dana_effic);
+			eck.det_w, eck.det_h,
+			eck.ana_w, eck.ana_h,
+			eck.dist_ana_det, eck.dist_sample_ana,
+			eck.kf, -thetaa,
+			eck.coll_h_post_ana, eck.coll_h_post_sample,
+			eck.coll_v_post_ana, eck.coll_v_post_sample,
+			eck.ana_mosaic, eck.ana_mosaic_v,
+			inv_ana_curvh, inv_ana_curvv,
+			eck.pos_x, pos_y2, eck.pos_z,
+			eck.dana_effic);
 
 	//--------------------------------------------------------------------------
 	// get mono & ana results
@@ -288,8 +288,7 @@ CNResults calc_eck(const EckParams& eck)
 
 	// equ 4 & equ 53 in [eck14]
 	t_real s0 = (eck.ki*eck.ki - eck.kf*eck.kf) / (2. * eck.Q*eck.Q);
-	wavenumber kperp = units::sqrt(units::abs(eck.Q*eck.Q*(0.5 + s0)*(0.5 + s0) -
-												eck.ki*eck.ki));
+	wavenumber kperp = units::sqrt(units::abs(eck.Q*eck.Q*(0.5 + s0)*(0.5 + s0) - eck.ki*eck.ki));
 	kperp *= eck.dsample_sense;
 
 	//std::cout << "s0 = " << s0 << std::endl;

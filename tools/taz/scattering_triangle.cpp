@@ -1696,7 +1696,7 @@ ScatteringTriangleView::~ScatteringTriangleView()
 void ScatteringTriangleView::wheelEvent(QWheelEvent *pEvt)
 {
 #if QT_VER>=5
-	const double dDelta = pEvt->angleDelta()/8. / 150.;
+	const double dDelta = pEvt->angleDelta().y()/8. / 150.;
 #else
 	const double dDelta = pEvt->delta()/8. / 150.;
 #endif

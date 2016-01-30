@@ -14,6 +14,11 @@ else
 #	UIC="$(which uic-qt5)"
 #	MOC="$(which moc-qt5)"
 
+	if [ $? -ne 0 ]; then
+		UIC="$(which uic)"
+		MOC="$(which moc)"
+	fi
+
 	TAKINROOT=.
 	FORCE=1		# force rebuild when manually called
 fi

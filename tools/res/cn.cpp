@@ -42,12 +42,12 @@ CNResults calc_cn(const CNParams& cn)
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = cn.E / meV;
 
-
-	const length lam = tl::k2lam(cn.ki);
-
 	angle coll_h_pre_mono = cn.coll_h_pre_mono;
 	angle coll_v_pre_mono = cn.coll_v_pre_mono;
+
 /*
+	const length lam = tl::k2lam(cn.ki);
+
 	if(cn.bGuide)
 	{
 		coll_h_pre_mono = lam*(cn.guide_div_h/angs);
@@ -161,9 +161,8 @@ CNResults calc_cn(const CNParams& cn)
 
 	t_vec vec1 = tl::get_column<t_vec>(N, 1);
 	t_mat NP = N - ublas::outer_prod(vec1,vec1)
-										/(1./((cn.sample_mosaic/rads * cn.Q*angs)
-										*(cn.sample_mosaic/rads * cn.Q*angs))
-											+ N(1,1));
+		/ (1./((cn.sample_mosaic/rads * cn.Q*angs)
+		* (cn.sample_mosaic/rads * cn.Q*angs)) + N(1,1));
 	NP(2,2) = N(2,2);
 	NP *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
