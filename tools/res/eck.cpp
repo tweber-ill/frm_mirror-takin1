@@ -48,87 +48,126 @@ get_mono_vals(const length& src_w, const length& src_h,
 {
 	// A matrix: formula 26 in [eck14]
 	t_mat A = ublas::identity_matrix<t_real>(3);
-	A(0,0) = 4.*std::log(2.)/(ki*angs*ki*angs) * units::tan(thetam)*units::tan(thetam) *
-		( units::pow<2>(2./(coll_h_pre_mono/rads)) +
-		  units::pow<2>(2.*dist_src_mono/src_w) +
-		  units::pow<2>(1./(mono_mosaic/rads))
+	{
+		const auto A_t0 = 1. / mono_mosaic;
+		const auto A_tx = inv_mono_curvh*dist_mono_sample / units::abs(units::sin(thetam));
+		const auto A_t1 = A_t0*A_tx;
+
+		A(0,0) = 4.*std::log(2.)/(ki*angs*ki*angs) * units::tan(thetam)*units::tan(thetam) *
+		(
+/*a*/			+ units::pow<2>(2./coll_h_pre_mono) *rads*rads
+/*b*/			+ units::pow<2>(2.*dist_src_mono/src_w)
+/*c*/			+ A_t0*A_t0 *rads*rads
 		);
-	A(0,1) = A(1,0) = 4.*std::log(2.)/(ki*angs*ki*angs) * units::tan(thetam) *
-		( 2.*units::pow<2>(1./(coll_h_pre_mono/rads)) +
-		  2.*dist_src_mono*(dist_src_mono-dist_mono_sample)/(src_w*src_w) +
-		  units::pow<2>(1./(mono_mosaic/rads)) *
-			(1. - inv_mono_curvh*dist_mono_sample/std::fabs(units::sin(thetam)))
+		A(0,1) = A(1,0) = 4.*std::log(2.)/(ki*angs*ki*angs) * units::tan(thetam) *
+		(
+/*w*/			+ 2.*units::pow<2>(1./coll_h_pre_mono) *rads*rads
+/*x*/			+ 2.*dist_src_mono*(dist_src_mono-dist_mono_sample)/(src_w*src_w)
+/*y*/			+ A_t0*A_t0 * rads*rads
+/*z*/			- A_t0*A_t1 *rads*rads
 		);
-	A(1,1) = 4.*std::log(2.)/(ki*angs*ki*angs) *
-		( units::pow<2>(1./(coll_h_pre_mono/rads)) +
-		  units::pow<2>(1./(coll_h_pre_sample/rads)) +
-		  units::pow<2>((dist_src_mono-dist_mono_sample)/src_w) +
-		  units::pow<2>(dist_mono_sample/(mono_w*std::fabs(units::sin(thetam)))) +
-		  units::pow<2>(1./(mono_mosaic/rads)) *
-			units::pow<2>(1. - inv_mono_curvh*dist_mono_sample/std::fabs(units::sin(thetam)))
+		A(1,1) = 4.*std::log(2.)/(ki*angs*ki*angs) *
+		(
+/*1*/			+ units::pow<2>(1./coll_h_pre_mono) *rads*rads
+/*2*/			+ units::pow<2>(1./coll_h_pre_sample) *rads*rads
+/*3*/			+ units::pow<2>((dist_src_mono-dist_mono_sample)/src_w)
+/*4*/			+ units::pow<2>(dist_mono_sample/(mono_w*units::abs(units::sin(thetam))))
+
+/*5*/			+ A_t0*A_t0 *rads*rads
+/*6*/			- 2.*A_t0*A_t1 *rads*rads
+/*7*/			+ A_t1*A_t1 *rads*rads
 		);
+	}
 
 	// Av matrix: formula 38 in [eck14]
+	// some typos in paper leading to the (false) result of a better Qz resolution when focusing
+	// => trying to match terms in Av with corresponding terms in A
+	// corresponding pre-mono terms commented out in Av, as they are not considered there
 	t_mat Av(2,2);
-	Av(0,0) = 4.*std::log(2.)/(ki*angs*ki*angs) *
-		( units::pow<2>(1./(coll_v_pre_sample/rads)) +
-		  units::pow<2>(dist_mono_sample/src_h) +
-		  units::pow<2>(dist_mono_sample/mono_h) +
-		  units::pow<2>(1./(2.*mono_mosaic_v/rads*units::sin(thetam))) +
-		  dist_mono_sample*inv_mono_curvv/(mono_mosaic_v/rads*mono_mosaic_v/rads*std::fabs(units::sin(thetam)))
-		);
-	Av(0,1) = Av(1,0) = 4.*std::log(2.)/(ki*angs*ki*angs) *
-		( dist_src_mono*dist_mono_sample/(src_h*src_h) -
-		  units::pow<2>(1./(2.*mono_mosaic_v/rads*units::sin(thetam))) +
-		  dist_mono_sample*inv_mono_curvv/(2.*mono_mosaic_v/rads*mono_mosaic_v/rads*std::fabs(units::sin(thetam)))
-		);
-	Av(1,1) = 4.*std::log(2.)/(ki*angs*ki*angs) *
-		( units::pow<2>(1./(coll_v_pre_mono/rads)) +
-		  units::pow<2>(dist_src_mono/src_h) +
-		  units::pow<2>(1./(2.*mono_mosaic_v/rads*units::sin(thetam)))
-		);
+	{
+		const auto Av_t0 = 0.5 / (mono_mosaic_v*units::abs(units::sin(thetam)));
+		const auto Av_t1 = inv_mono_curvv*dist_mono_sample / mono_mosaic_v;
 
+		Av(0,0) = 4.*std::log(2.)/(ki*angs*ki*angs) *
+		(
+/*1*/	//		+ units::pow<2>(1./coll_v_pre_mono) *rads*rads		// missing in paper?
+/*2*/			+ units::pow<2>(1./coll_v_pre_sample) *rads*rads
+/*~3*/			+ units::pow<2>(dist_mono_sample/src_h)
+/*4*/			+ units::pow<2>(dist_mono_sample/mono_h)
+
+/*5*/			+ Av_t0*Av_t0 * rads*rads 				// typo in paper?
+/*6*/			- 2.*Av_t0*Av_t1 * rads*rads
+/*7*/			+ Av_t1*Av_t1 * rads*rads 				// missing in paper?
+		);
+		Av(0,1) = Av(1,0) = 4.*std::log(2.)/(ki*angs*ki*angs) *
+		(
+/*w*/	//		- units::pow<2>(1./coll_v_pre_mono) *rads*rads		// missing in paper?
+/*~x*/			+ dist_src_mono*dist_mono_sample/(src_h*src_h)
+/*y*/			- Av_t0*Av_t0 * rads*rads
+/*z*/			+ Av_t0*Av_t1 * rads*rads
+		);
+		Av(1,1) = 4.*std::log(2.)/(ki*angs*ki*angs) *
+		(
+/*a*/			+ units::pow<2>(1./(coll_v_pre_mono)) *rads*rads
+/*b*/			+ units::pow<2>(dist_src_mono/src_h)
+/*c*/			+ Av_t0*Av_t0 *rads*rads
+		);
+	}
 
 	// B vector: formula 27 in [eck14]
 	t_vec B(3);
-	B(0) = 8.*std::log(2.)*pos_y / (ki*angs) * units::tan(thetam) *
-		( 2.*dist_src_mono / (src_w*src_w) +
-		  inv_mono_curvh/((mono_mosaic/rads)*(mono_mosaic/rads)*std::fabs(units::sin(thetam)))
+	{
+		const auto B_t0 = inv_mono_curvh / (mono_mosaic*mono_mosaic*units::abs(units::sin(thetam)));
+
+		B(0) = 8.*std::log(2.)*pos_y / (ki*angs) * units::tan(thetam) *
+		(
+/*i*/			+ 2.*dist_src_mono / (src_w*src_w)
+/*j*/			+ B_t0 *rads*rads
 		);
-	B(1) = 8.*std::log(2.)*pos_y / (ki*angs) *
-		( -dist_mono_sample/(mono_w*std::fabs(units::sin(thetam)) * mono_w*std::fabs(units::sin(thetam))) +
-		  (inv_mono_curvh/((mono_mosaic/rads)*(mono_mosaic/rads) * std::fabs(units::sin(thetam)))) *
-			(1. - inv_mono_curvh*dist_mono_sample/(std::fabs(units::sin(thetam)))) +
-		  (dist_src_mono-dist_mono_sample)/(src_w*src_w)
+		B(1) = 8.*std::log(2.)*pos_y / (ki*angs) *
+		(
+/*r*/			- dist_mono_sample / (units::pow<2>(mono_w*units::abs(units::sin(thetam))))
+/*s*/			+ B_t0 * rads*rads
+/*t*/			- B_t0 * rads*rads * inv_mono_curvh*dist_mono_sample / (units::abs(units::sin(thetam)))
+/*u*/			+ (dist_src_mono-dist_mono_sample) / (src_w*src_w)
 		);
+	}
 
 	// Bv vector: formula 39 in [eck14]
 	t_vec Bv(2);
-	Bv(0) = 4.*std::log(2.)*pos_z / (ki*angs) *
-		( -2.*dist_mono_sample / (src_h*src_h) +		// typo in paper?
-		  inv_mono_curvv/((mono_mosaic_v/rads)*(mono_mosaic_v/rads) * std::fabs(units::sin(thetam))) -
-		  2.*inv_mono_curvv*inv_mono_curvv*dist_mono_sample/((mono_mosaic_v/rads)*(mono_mosaic_v/rads)) -
-		  2.*dist_mono_sample / (mono_h*mono_h)			// typo in paper?
+	{
+		const auto Bv_t0 = inv_mono_curvv/(mono_mosaic_v*mono_mosaic_v);
+
+		Bv(0) = 8.*std::log(2.)*pos_z / (ki*angs) * (-1.) *
+		(
+/*r*/			+ dist_mono_sample / (mono_h*mono_h)		// typo in paper?
+/*~s*/			- 0.5*Bv_t0 *rads*rads / units::abs(units::sin(thetam))
+/*~t*/			+ Bv_t0 * rads*rads * inv_mono_curvv*dist_mono_sample
+/*~u*/			+ dist_mono_sample / (src_h*src_h)		// typo in paper?
 		);
-	Bv(1) = 4.*std::log(2.)*pos_z / (ki*angs) *
-		(-1.) * ( 2.*dist_mono_sample / (src_h*src_h) +		// typo in paper?
-		  inv_mono_curvv/((mono_mosaic_v/rads)*(mono_mosaic_v/rads)*std::fabs(units::sin(thetam)))
+		Bv(1) = 8.*std::log(2.)*pos_z / (ki*angs) * (-1.) *
+		(
+/*i*/			+ dist_src_mono / (src_h*src_h)			// typo in paper?
+/*j*/			- 0.5*Bv_t0/units::abs(units::sin(thetam)) * rads*rads
 		);
+	}
 
 
 	// C scalar: formula 28 in [eck14]
 	t_real C = 4.*std::log(2.)*pos_y*pos_y *
-		( 1./(src_w*src_w) +
-		  units::pow<2>(1./(mono_w*std::fabs(units::sin(thetam)))) +
-		  units::pow<2>(inv_mono_curvh/(mono_mosaic/rads * std::fabs(units::sin(thetam))))
-		);
+	(
+		1./(src_w*src_w) +
+		units::pow<2>(1./(mono_w*units::abs(units::sin(thetam)))) +
+		units::pow<2>(inv_mono_curvh/(mono_mosaic * units::abs(units::sin(thetam)))) *rads*rads
+	);
 
 	// Cv scalar: formula 40 in [eck14]
 	t_real Cv = 4.*std::log(2.)*pos_z*pos_z *
-		( 1./(src_h*src_h) +
-		  1./(mono_h*mono_h) +
-		  units::pow<2>(inv_mono_curvv/(mono_mosaic_v/rads))
-		);
+	(
+		1./(src_h*src_h) +
+		1./(mono_h*mono_h) +
+		units::pow<2>(inv_mono_curvv/mono_mosaic_v) *rads*rads
+	);
 
 
 	// z components, [eck14], equ. 42
