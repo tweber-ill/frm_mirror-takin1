@@ -39,7 +39,6 @@ TazDlg::TazDlg(QWidget* pParent)
 		  m_pStatusMsg(new QLabel(this)),
 		  m_pCoordQStatusMsg(new QLabel(this)),
 		  m_pCoordCursorStatusMsg(new QLabel(this)),
-		  m_pmapSpaceGroups(get_space_groups()),
 		  m_dlgRecipParam(this, &m_settings),
 		  m_dlgRealParam(this, &m_settings),
 		  m_pGotoDlg(new GotoDlg(this, &m_settings))
@@ -705,6 +704,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	}
 #endif
 
+	m_bReady = 1;
 	UpdateDs();
 	CalcPeaks();
 

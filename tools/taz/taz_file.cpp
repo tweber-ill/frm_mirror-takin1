@@ -12,6 +12,7 @@
 
 #include <QMessageBox>
 #include <QFileDialog>
+#include <boost/scope_exit.hpp>
 
 
 //--------------------------------------------------------------------------------
@@ -72,6 +73,17 @@ bool TazDlg::LoadFile(const QString& strFile)
 
 bool TazDlg::Load(const char* pcFile)
 {
+	m_bReady = 0;
+	BOOST_SCOPE_EXIT(&m_bReady, &m_sceneReal, &m_sceneRecip)
+	{ 
+		m_bReady = 1; 
+		m_sceneReal.GetTasLayout()->SetReady(true);
+		m_sceneReal.SetEmitChanges(true);
+
+		m_sceneRecip.GetTriangle()->SetReady(true);
+		m_sceneRecip.SetEmitChanges(true);
+	} BOOST_SCOPE_EXIT_END
+
 	Disconnect();
 
 	const std::string strXmlRoot("taz/");
@@ -91,6 +103,11 @@ bool TazDlg::Load(const char* pcFile)
 
 
 	bool bOk = 0;
+	m_sceneReal.SetEmitChanges(false);
+	m_sceneReal.GetTasLayout()->SetReady(false);
+	m_sceneRecip.SetEmitChanges(false);
+	m_sceneRecip.GetTriangle()->SetReady(false);
+
 
 	// edit boxes
 	std::vector<std::vector<QLineEdit*>*> vecEdits
@@ -139,8 +156,6 @@ bool TazDlg::Load(const char* pcFile)
 
 
 	// TAS Layout
-	m_sceneReal.SetEmitChanges(false);
-	m_sceneReal.GetTasLayout()->SetReady(false);
 	double dRealScale = xml.Query<double>((strXmlRoot + "real/pixels_per_cm").c_str(), 0., &bOk);
 	if(bOk)
 		m_sceneReal.GetTasLayout()->SetScaleFactor(dRealScale);
@@ -157,15 +172,10 @@ bool TazDlg::Load(const char* pcFile)
 		pNode->setPos(dValX, dValY);
 		++iNodeReal;
 	}
-	m_sceneReal.GetTasLayout()->SetReady(true);
-	m_sceneReal.SetEmitChanges(true);
-	//m_sceneReal.emitUpdate();
 
 
 
 	// scattering triangle
-	m_sceneRecip.SetEmitChanges(false);
-	m_sceneRecip.GetTriangle()->SetReady(false);
 	double dRecipScale = xml.Query<double>((strXmlRoot + "recip/pixels_per_A-1").c_str(), 0., &bOk);
 	if(bOk)
 		m_sceneRecip.GetTriangle()->SetScaleFactor(dRecipScale);
@@ -182,9 +192,6 @@ bool TazDlg::Load(const char* pcFile)
 		pNode->setPos(dValX, dValY);
 		++iNodeRecip;
 	}
-	m_sceneRecip.GetTriangle()->SetReady(true);
-	m_sceneRecip.SetEmitChanges(true);
-	m_sceneRecip.emitUpdate();
 
 
 
@@ -273,7 +280,20 @@ bool TazDlg::Load(const char* pcFile)
 	recent.SaveList();
 	recent.FillMenu(m_pMenuRecent, m_pMapperRecent);
 
+
+
+	m_bReady = 1;
+
+	m_sceneReal.GetTasLayout()->SetReady(true);
+	m_sceneReal.SetEmitChanges(true);
+	//m_sceneReal.emitUpdate();
+
+	m_sceneRecip.GetTriangle()->SetReady(true);
+	m_sceneRecip.SetEmitChanges(true);
+
 	CalcPeaks();
+	m_sceneRecip.emitUpdate();
+
 	return true;
 }
 

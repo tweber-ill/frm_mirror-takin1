@@ -92,6 +92,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 	protected:
 		static constexpr double s_dPlaneDistTolerance = tl::get_plane_dist_tolerance<double>();
 
+		bool m_bReady = false;
 		QSettings m_settings;
 		SettingsDlg *m_pSettingsDlg = nullptr;
 
@@ -122,7 +123,6 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		std::vector<AtomPos> m_vecAtoms;
 		CrystalSystem m_crystalsys = CRYS_NOT_SET;
-		const t_mapSpaceGroups* m_pmapSpaceGroups;
 
 		RecipParamDlg m_dlgRecipParam;
 		RealParamDlg m_dlgRealParam;

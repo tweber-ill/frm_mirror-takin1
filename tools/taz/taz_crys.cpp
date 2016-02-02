@@ -79,6 +79,8 @@ void TazDlg::CheckCrystalType()
 
 void TazDlg::CalcPeaksRecip()
 {
+	if(!m_bReady) return;
+	
 	double a = editARecip->text().toDouble();
 	double b = editBRecip->text().toDouble();
 	double c = editCRecip->text().toDouble();
@@ -104,7 +106,7 @@ void TazDlg::CalcPeaksRecip()
 
 void TazDlg::CalcPeaks()
 {
-	if(!m_sceneRecip.GetTriangle())
+	if(!m_bReady || !m_sceneRecip.GetTriangle() || !m_sceneRealLattice.GetLattice())
 		return;
 
 	try
@@ -301,7 +303,8 @@ void TazDlg::CalcPeaks()
 
 void TazDlg::RepopulateSpaceGroups()
 {
-	if(!m_pmapSpaceGroups)
+	const t_mapSpaceGroups* pmapSpaceGroups = get_space_groups();
+	if(!pmapSpaceGroups)
 		return;
 
 	for(int iCnt=comboSpaceGroups->count()-1; iCnt>0; --iCnt)
@@ -309,7 +312,7 @@ void TazDlg::RepopulateSpaceGroups()
 
 	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
 
-	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
+	for(const t_mapSpaceGroups::value_type& pair : *pmapSpaceGroups)
 	{
 		const std::string& strName = pair.second.GetName();
 
