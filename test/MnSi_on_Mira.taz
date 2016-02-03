@@ -40,7 +40,7 @@
 	<recip>
 		<Gq_x>103.3418636</Gq_x>
 		<Gq_y>-103.3418636</Gq_y>
-		<enable_bz>0</enable_bz>
+		<enable_bz>1</enable_bz>
 		<enable_q>0</enable_q>
 		<ewald_sphere>1</ewald_sphere>
 		<kfQ_x>103.3418636</kfQ_x>
