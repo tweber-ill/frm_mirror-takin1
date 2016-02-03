@@ -326,23 +326,23 @@ CNResults calc_eck(const EckParams& eck)
 
 
 	// equ 4 & equ 53 in [eck14]
-	t_real s0 = (eck.ki*eck.ki - eck.kf*eck.kf) / (2. * eck.Q*eck.Q);
-	wavenumber kperp = units::sqrt(units::abs(eck.Q*eck.Q*(0.5 + s0)*(0.5 + s0) - eck.ki*eck.ki));
+	const t_real dE = (eck.ki*eck.ki - eck.kf*eck.kf) / (2.*eck.Q*eck.Q);
+	const wavenumber kipara = eck.Q*(0.5+dE);
+	const wavenumber kfpara = eck.Q-kipara;
+	wavenumber kperp = units::sqrt(units::abs(kipara*kipara - eck.ki*eck.ki));
 	kperp *= eck.dsample_sense;
 
-	//std::cout << "s0 = " << s0 << std::endl;
-	//std::cout << "kperp = " << t_real(kperp*angs) << " / A" << std::endl;
+	const auto ksq2E = tl::co::hbar*tl::co::hbar / (2.*tl::co::m_n);
 
 	// trafo, equ 52 in [eck14]
 	t_mat T = ublas::identity_matrix<t_real>(6);
 	T(0,3) = T(1,4) = T(2,5) = -1.;
-	T(3,0) = 2.*tl::KSQ2E*eck.Q * (0.5 + s0) * tl::angstrom;
-	T(3,3) = 2.*tl::KSQ2E*eck.Q * (0.5 - s0) * tl::angstrom;
-	T(3,1) = 2.*tl::KSQ2E*kperp * tl::angstrom;
-	T(3,4) = -2.*tl::KSQ2E*kperp * tl::angstrom;
-	T(4,1) = T(5,2) = 0.5 - s0;
-	T(4,4) = T(5,5) = 0.5 + s0;
-
+	T(3,0) = 2.*ksq2E * kipara / tl::meV / tl::angstrom;
+	T(3,3) = 2.*ksq2E * kfpara / tl::meV / tl::angstrom;
+	T(3,1) = 2.*ksq2E * kperp / tl::meV / tl::angstrom;
+	T(3,4) = -2.*ksq2E * kperp / tl::meV / tl::angstrom;
+	T(4,1) = T(5,2) = (0.5 - dE);
+	T(4,4) = T(5,5) = (0.5 + dE);
 	t_mat Tinv;
 	if(!tl::inverse(T, Tinv))
 	{
@@ -350,8 +350,7 @@ CNResults calc_eck(const EckParams& eck)
 		res.strErr = "Matrix T cannot be inverted.";
 		return res;
 	}
-
-	//std::cout << "T = " << T << std::endl;
+	//std::cout << "Trafo matrix (Eck) = " << T << std::endl;
 	//std::cout << "Tinv = " << Tinv << std::endl;
 
 	// equ 54 in [eck14]
@@ -378,7 +377,7 @@ CNResults calc_eck(const EckParams& eck)
 	t_vec V1 = ublas::prod(vecBF, Tinv);
 
 
-	t_real W1 = C+D+G+H;
+	t_real W1 = C + D + G + H;
 	t_real Z1 = dReflM*dReflA;
 
 
@@ -405,7 +404,7 @@ CNResults calc_eck(const EckParams& eck)
 
 
 	// quadratic part of quadric (matrix U)
-	res.reso = 0.5*0.5*U*tl::SIGMA2FWHM*tl::SIGMA2FWHM;
+	res.reso = 2. * U /** tl::SIGMA2FWHM*tl::SIGMA2FWHM*/;
 	// linear (vector V) and constant (scalar W) part of quadric
 	res.reso_v = V;
 	res.reso_s = W;

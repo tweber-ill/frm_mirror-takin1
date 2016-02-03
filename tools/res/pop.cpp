@@ -197,34 +197,32 @@ CNResults calc_pop(const PopParams& pop)
 	t_mat T = ublas::zero_matrix<t_real>(4,13);
 	T(0,0) = -0.5 / (pop.dist_src_mono / cm);
 	T(0,2) = 0.5 * units::cos(thetam) *
-				(1./(pop.dist_mono_sample/cm) -
-				 1./(pop.dist_src_mono/cm));
+		(1./(pop.dist_mono_sample/cm) - 1./(pop.dist_src_mono/cm));
 	T(0,3) = 0.5 * units::sin(thetam) *
-				(1./(pop.dist_src_mono/cm) +
-				 1./(pop.dist_mono_sample/cm) -
-				 2.*inv_mono_curvh*cm/(units::sin(thetam)));
+		(1./(pop.dist_src_mono/cm) + 1./(pop.dist_mono_sample/cm) -
+		2.*inv_mono_curvh*cm/(units::sin(thetam)));
 	T(0,5) = 0.5 * units::sin(0.5*twotheta) / (pop.dist_mono_sample/cm);
 	T(0,6) = 0.5 * units::cos(0.5*twotheta) / (pop.dist_mono_sample/cm);
 	T(1,1) = -0.5/(pop.dist_src_mono/cm * units::sin(thetam));
 	T(1,4) = 0.5 * (1./(pop.dist_src_mono/cm) +
-						1./(pop.dist_mono_sample/cm) -
-						2.*units::sin(thetam)*inv_mono_curvv*cm)
-					/ (units::sin(thetam));
+		1./(pop.dist_mono_sample/cm) -
+		2.*units::sin(thetam)*inv_mono_curvv*cm)
+		/ (units::sin(thetam));
 	T(1,7) = -0.5/(pop.dist_mono_sample/cm * units::sin(thetam));
 	T(2,5) = 0.5*units::sin(0.5*twotheta) / (pop.dist_sample_ana/cm);
 	T(2,6) = -0.5*units::cos(0.5*twotheta) / (pop.dist_sample_ana/cm);
 	T(2,8) = 0.5*units::cos(thetaa) * (1./(pop.dist_ana_det/cm) -
-						1/(pop.dist_sample_ana/cm));
+		1/(pop.dist_sample_ana/cm));
 	T(2,9) = 0.5*units::sin(thetaa) * (
-					1./(pop.dist_sample_ana/cm) +
-					1./(pop.dist_ana_det/cm) -
-					2.*inv_ana_curvh*cm / (units::sin(thetaa)));
+		1./(pop.dist_sample_ana/cm) +
+		1./(pop.dist_ana_det/cm) -
+		2.*inv_ana_curvh*cm / (units::sin(thetaa)));
 	T(2,11) = 0.5/(pop.dist_ana_det/cm);
 	T(3,7) = -0.5/(pop.dist_sample_ana/cm*units::sin(thetaa));
 	T(3,10) = 0.5*(1./(pop.dist_sample_ana/cm) +
-					1./(pop.dist_ana_det/cm) -
-					2.*units::sin(thetaa)*inv_ana_curvv*cm)
-					/ (units::sin(thetaa));
+		1./(pop.dist_ana_det/cm) -
+		2.*units::sin(thetaa)*inv_ana_curvv*cm)
+		/ (units::sin(thetaa));
 	T(3,12) = -0.5/(pop.dist_ana_det/cm*units::sin(thetaa));
 
 
@@ -255,8 +253,7 @@ CNResults calc_pop(const PopParams& pop)
 
 
 	// [pop75], equ. 20
-	t_mat FT = ublas::prod(F,T);
-	t_mat M0 = S + ublas::prod(ublas::trans(T),FT);
+	t_mat M0 = S + tl::transform(F, T, 1);
 	t_mat M0i;
 	if(!tl::inverse(M0, M0i))
 	{
@@ -265,8 +262,7 @@ CNResults calc_pop(const PopParams& pop)
 		return res;
 	}
 
-	t_mat M0iD = ublas::prod(M0i, ublas::trans(D));
-	t_mat M1 = ublas::prod(D, M0iD);
+	t_mat M1 = tl::transform_inv(M0i, D, 1);
 	t_mat M1i;
 	if(!tl::inverse(M1, M1i))
 	{
@@ -314,8 +310,7 @@ CNResults calc_pop(const PopParams& pop)
 	{
 		// resolution volume, [pop75], equ. 13a & 16
 		// [D] = 1/cm, [SI] = cm^2
-		t_mat DSi = ublas::prod(D, SI);
-		t_mat DSiDt = ublas::prod(DSi, ublas::trans(D));
+		t_mat DSiDt = tl::transform_inv(SI, D, 1);
 		t_mat DSiDti;
 		if(!tl::inverse(DSiDt, DSiDti))
 		{
@@ -329,9 +324,7 @@ CNResults calc_pop(const PopParams& pop)
 		dP0 /= std::sqrt(dDetDSiDti);
 
 		// [T] = 1/cm, [F] = 1/rad^2
-		t_mat TtF = ublas::prod(ublas::trans(T), F);
-		t_mat TtFT = ublas::prod(TtF, T);
-		t_mat K = S + TtFT;
+		t_mat K = S + tl::transform(F, T, 1);;
 
 		t_real dDetS = tl::determinant(S);
 		t_real dDetF = tl::determinant(F);

@@ -77,10 +77,10 @@ CNResults calc_cn(const CNParams& cn)
 	tl::submatrix_copy(U, Ti, 0, 0);
 	tl::submatrix_copy(U, Tf, 0, 3);
 	U(2,2) = 1.; U(2,5) = -1.;
-	U(3,0) = 2.*cn.ki * angs * tl::KSQ2E;
-	U(3,3) = -2.*cn.kf * angs * tl::KSQ2E;
+	U(3,0) = 2.*cn.ki * tl::KSQ2E * angs;
+	U(3,3) = -2.*cn.kf * tl::KSQ2E * angs;
 	U(4,0) = 1.; U(5,2) = 1.;
-	//tl::log_info("U = ", U);
+	//tl::log_info("Trafo matrix (CN) = ", U);
 
 	t_mat V(6,6);
 	if(!tl::inverse(U, V))
@@ -140,21 +140,20 @@ CNResults calc_cn(const CNParams& cn)
 	tl::submatrix_copy(M, m34, 3, 3);
 
 	M(2,2) = 1./(cn.ki*cn.ki * angs*angs) *
-		(
-			1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/rads/rads) +
-			1./((2.*units::sin(thetam)*cn.mono_mosaic/rads)*(2.*units::sin(thetam)*cn.mono_mosaic/rads) +
-				coll_v_pre_mono*coll_v_pre_mono/rads/rads)
-		);
+	(
+		1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/rads/rads) +
+		1./((2.*units::sin(thetam)*cn.mono_mosaic/rads)*(2.*units::sin(thetam)*cn.mono_mosaic/rads) +
+			coll_v_pre_mono*coll_v_pre_mono/rads/rads)
+	);
 	M(5,5) = 1./(cn.kf*cn.kf * angs*angs) *
-		(
-			1./(cn.coll_v_post_sample*cn.coll_v_post_sample/rads/rads) +
-			1./((2.*units::sin(thetaa)*cn.ana_mosaic/rads)*(2.*units::sin(thetaa)*cn.ana_mosaic/rads) +
-				cn.coll_v_post_ana*cn.coll_v_post_ana/rads/rads)
-		);
+	(
+		1./(cn.coll_v_post_sample*cn.coll_v_post_sample/rads/rads) +
+		1./((2.*units::sin(thetaa)*cn.ana_mosaic/rads)*(2.*units::sin(thetaa)*cn.ana_mosaic/rads) +
+			cn.coll_v_post_ana*cn.coll_v_post_ana/rads/rads)
+	);
 	// -------------------------------------------------------------------------
 
-	t_mat M1 = ublas::prod(M, V);
-	t_mat N = ublas::prod(ublas::trans(V), M1);
+	t_mat N = tl::transform(M, V, 1);
 
 	N = ellipsoid_gauss_int(N, 5);
 	N = ellipsoid_gauss_int(N, 4);
