@@ -1,4 +1,4 @@
-// gcc -o sggen sggen.cpp -std=c++11 -lstdc++ -lm -I../.. -I/usr/include/QtGui/ ../../helper/spacegroup_clp.cpp ../../helper/crystalsys.cpp -DNO_QT -lclipper-core ../../tlibs/file/x3d.cpp
+// gcc -o sggen sggen.cpp -std=c++11 -lstdc++ -lm -I../.. -I/usr/include/QtGui/ ../../helper/spacegroup_clp.cpp ../../helper/crystalsys.cpp -DNO_QT -lclipper-core ../../tlibs/file/x3d.cpp ../../tlibs/log/log.cpp
 
 /**
  * generates atom positions based on space group
