@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "helper/spacegroup_clp.h"
+#include "helper/spacegroup.h"
 #include "tlibs/file/prop.h"
 #include "AtomsDlg.h"
 

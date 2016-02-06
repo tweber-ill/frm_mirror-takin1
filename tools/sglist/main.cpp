@@ -8,10 +8,19 @@
 #include <clocale>
 #include <QLocale>
 #include <QApplication>
+#include <iostream>
 #include "SgListDlg.h"
+#include "helper/spacegroup.h"
+
 
 int main(int argc, char** argv)
 {
+	if(!init_space_groups())
+	{
+		std::cerr << "Space group table not found!" << std::endl;
+		return -1;
+	}
+
 	QApplication app(argc, argv);
 
 	std::setlocale(LC_ALL, "C");

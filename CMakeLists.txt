@@ -79,7 +79,7 @@ add_executable(takin tools/taz/taz_main.cpp
 	dialogs/EllipseDlg.cpp dialogs/FormfactorDlg.cpp
 	dialogs/AtomsDlg.cpp dialogs/AboutDlg.cpp
 
-	helper/spacegroup_clp.cpp tools/sglist/SgListDlg.cpp
+	helper/spacegroup.cpp tools/sglist/SgListDlg.cpp
 	helper/globals.cpp helper/crystalsys.cpp
 	helper/formfact.cpp
 #	helper/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp
@@ -91,7 +91,7 @@ target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES}
 	Qt4::QtCore Qt4::QtGui Qt4::QtSvg #Qt4::QtOpenGL
 	${PYTHON_LIBRARIES} 
 	${PNG_LIBRARIES} ${JPEG_LIBRARIES} 
-	${QWT_LIBRARIES} ${Clipper_LIBRARIES}
+	${QWT_LIBRARIES}
 )
 
 

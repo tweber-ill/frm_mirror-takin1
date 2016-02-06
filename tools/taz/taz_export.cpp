@@ -118,8 +118,7 @@ void TazDlg::ExportUCModel()
 		return;
 	}
 
-	std::vector<t_mat> vecTrafos;
-	pSpaceGroup->GetSymTrafos(vecTrafos);
+	const std::vector<t_mat>& vecTrafos = pSpaceGroup->GetTrafos();
 
 	std::vector<t_vec> vecAtoms;
 	std::vector<std::string> vecAtomNames;

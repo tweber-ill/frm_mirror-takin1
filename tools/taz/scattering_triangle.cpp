@@ -805,12 +805,12 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 	std::vector<t_vec> vecAllAtoms;
 	std::vector<std::complex<double>> vecScatlens;
 
-	std::vector<t_mat> vecSymTrafos;
+	const std::vector<t_mat>* pvecSymTrafos = nullptr;
 	if(pSpaceGroup)
-		pSpaceGroup->GetSymTrafos(vecSymTrafos);
+		pvecSymTrafos = &pSpaceGroup->GetTrafos();
 	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
 
-	if(vecSymTrafos.size() && /*g_bHasFormfacts &&*/ g_bHasScatlens && pvecAtomPos && pvecAtomPos->size())
+	if(pvecSymTrafos && pvecSymTrafos->size() && /*g_bHasFormfacts &&*/ g_bHasScatlens && pvecAtomPos && pvecAtomPos->size())
 	{
 		for(unsigned int iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
 		{
@@ -822,7 +822,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 
 			std::vector<t_vec> vecSymPos =
 				tl::generate_atoms<t_mat, t_vec, std::vector>
-					(vecSymTrafos, vecAtom);
+					(*pvecSymTrafos, vecAtom);
 
 			const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
 			if(!pElem)

@@ -47,7 +47,7 @@ bool gen_formfacts()
 	tl::Prop<std::string> prop;
 	prop.SetSeparator('.');
 
-	prop.Add("ffacts.source", "Form factor coefficients from Clipper");
+	prop.Add("ffacts.source", "Form factor coefficients extracted from Clipper");
 	prop.Add("ffacts.source_url", "http://www.ysbl.york.ac.uk/~cowtan/clipper/");
 	prop.Add("ffacts.num_atoms", tl::var_to_str(dat::numsfdata));
 
@@ -127,7 +127,7 @@ bool gen_scatlens()
 
 	tl::Prop<std::string> prop;
 	prop.SetSeparator('.');
-	prop.Add("scatlens.source", "Scattering lengths and cross-sections from NIST");
+	prop.Add("scatlens.source", "Scattering lengths and cross-sections extracted from NIST table");
 	prop.Add("scatlens.source_url", "https://www.ncnr.nist.gov/resources/n-lengths/list.html");
 	prop.Add("scatlens.num_atoms", tl::var_to_str(vecRows.size()));
 
@@ -188,13 +188,13 @@ bool gen_spacegroups()
 	prop.SetSeparator('.');
 
 	const unsigned int iNumSGs = 230;
-	prop.Add("sgroups.source", "Space group data from Clipper");
+	prop.Add("sgroups.source", "Space group data extracted from Clipper");
 	prop.Add("sgroups.source_url", "http://www.ysbl.york.ac.uk/~cowtan/clipper/");
 	prop.Add("sgroups.num_groups", tl::var_to_str(iNumSGs));
 
 	for(unsigned int iSG=1; iSG<=iNumSGs; ++iSG)
 	{
-		SpaceGroup sg(iSG);
+		SpaceGroupClp sg(iSG);
 
 		std::ostringstream ostr;
 		ostr << "sgroups.group_" << (iSG-1);
@@ -202,10 +202,10 @@ bool gen_spacegroups()
 
 		prop.Add(strGroup + ".number", tl::var_to_str(iSG));
 		prop.Add(strGroup + ".name", sg.GetName());
-		prop.Add(strGroup + ".pointgroup", get_pointgroup(sg.GetName()));
+		//prop.Add(strGroup + ".pointgroup", get_pointgroup(sg.GetName()));
 		prop.Add(strGroup + ".lauegroup", sg.GetLaueGroup());
-		prop.Add(strGroup + ".crystalsys", sg.GetCrystalSystem());
-		prop.Add(strGroup + ".crystalsysname", sg.GetCrystalSystemName());
+		//prop.Add(strGroup + ".crystalsys", sg.GetCrystalSystem());
+		//prop.Add(strGroup + ".crystalsysname", sg.GetCrystalSystemName());
 
 		std::vector<ublas::matrix<double>> vecTrafos;
 		sg.GetSymTrafos(vecTrafos);

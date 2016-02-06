@@ -212,15 +212,15 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 	const std::string strAA = tl::get_spec_char_utf8("AA");
 	// --------------------------------------------------------------------
 	// atom positions in unit cell
-	std::vector<t_mat> vecSymTrafos;
+	const std::vector<t_mat>* pvecSymTrafos = nullptr;
 	if(pSpaceGroup)
-		pSpaceGroup->GetSymTrafos(vecSymTrafos);
+		pvecSymTrafos = &pSpaceGroup->GetTrafos();
 	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
 
 	std::vector<QColor> colors = {QColor(127,0,0), QColor(0,127,0), QColor(0,0,127),
 		QColor(127,127,0), QColor(0,127,127), QColor(127,0,127)};
 
-	if(vecSymTrafos.size() && pvecAtomPos && pvecAtomPos->size())
+	if(pvecSymTrafos && pvecSymTrafos->size() && pvecAtomPos && pvecAtomPos->size())
 	{
 		for(unsigned int iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
 		{
@@ -233,7 +233,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 			const double dUCSize = 1.;
 			std::vector<t_vec> vecSymPos =
 				tl::generate_atoms<t_mat, t_vec, std::vector>
-					(vecSymTrafos, vecAtom, -dUCSize/2., dUCSize/2.);
+					(*pvecSymTrafos, vecAtom, -dUCSize/2., dUCSize/2.);
 
 			for(t_vec vecThisAtomFrac : vecSymPos)
 			{

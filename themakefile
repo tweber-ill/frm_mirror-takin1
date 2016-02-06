@@ -211,9 +211,10 @@ OBJ_RESO = obj/log.o obj/rand.o \
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 	obj/loadinstr.o obj/log.o
 
-OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup_clp.o obj/crystalsys.o obj/log.o
+OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup.o obj/crystalsys.o \
+	obj/log.o obj/globals.o
 
-OBJ_GENTAB = obj/gentab.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/log.o
+OBJ_GENTAB = obj/spacegroup_clp.o obj/gentab.o obj/crystalsys_noqt.o obj/log.o
 
 OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals_noqt.o \
 	obj/formfact.o obj/log.o
@@ -230,8 +231,8 @@ else
 	OBJ_TAZ += obj/taz_nonet.o
 endif
 
-OBJ_TAZ += obj/SgListDlg.o obj/spacegroup_clp.o
-LIBS_TAZ += -lclipper-core
+OBJ_TAZ += obj/SgListDlg.o obj/spacegroup.o
+#LIBS_TAZ += 
 
 
 # -----------------------------------------------------------------------------
@@ -277,7 +278,7 @@ scanviewer: ${OBJ_SCANVIEWER}
 	${STRIP} scanviewer
 
 sglist: ${OBJ_SGLIST}
-	${CC} ${FLAGS} ${LIB_DIRS} -o bin/sglist $+ ${STD_LIBS} ${QT_LIB} -lclipper-core
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/sglist $+ ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS}
 	${STRIP} sglist
 
 gentab: ${OBJ_GENTAB}
@@ -358,6 +359,8 @@ obj/tcp.o: tlibs/net/tcp.cpp tlibs/net/tcp.h
 obj/linalg2.o: tlibs/math/linalg2.cpp tlibs/math/linalg2.h tlibs/math/geo.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/spacegroup_clp.o: helper/spacegroup_clp.cpp helper/spacegroup_clp.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/crystalsys.o: helper/crystalsys.cpp helper/crystalsys.h
 	${CC} ${FLAGS} -c -o $@ $<

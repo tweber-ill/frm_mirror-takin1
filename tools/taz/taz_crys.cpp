@@ -80,7 +80,7 @@ void TazDlg::CheckCrystalType()
 void TazDlg::CalcPeaksRecip()
 {
 	if(!m_bReady) return;
-	
+
 	double a = editARecip->text().toDouble();
 	double b = editBRecip->text().toDouble();
 	double c = editCRecip->text().toDouble();
@@ -271,16 +271,16 @@ void TazDlg::CalcPeaks()
 		m_pStatusMsg->setText(QString::fromWCharArray(ostrSample.str().c_str()));
 
 
-		const char* pcCryTy = "<not set>";
+		std::string strCryTy = "<not set>";
 		SpaceGroup *pSpaceGroup = nullptr;
 		int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
 		if(iSpaceGroupIdx != 0)
 			pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
 
 		if(pSpaceGroup)
-			pcCryTy = pSpaceGroup->GetCrystalSystemName();
+			strCryTy = pSpaceGroup->GetCrystalSystemName();
 
-		editCrystalSystem->setText(pcCryTy);
+		editCrystalSystem->setText(strCryTy.c_str());
 
 		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, planeRLU, pSpaceGroup, bPowder, &m_vecAtoms);
 		if(m_sceneRecip.getSnapq())

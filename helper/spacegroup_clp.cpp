@@ -1,5 +1,5 @@
 /*
- * Wrapper for clipper spacegroups (alternate spacegroup implementation)
+ * Wrapper for clipper spacegroups
  * @author Tobias Weber
  * @date oct-2015
  * @license GPLv2
@@ -10,7 +10,7 @@
 #include "tlibs/log/log.h"
 
 
-SpaceGroup::SpaceGroup(unsigned int iNum)
+SpaceGroupClp::SpaceGroupClp(unsigned int iNum)
 	: m_psg(new clipper::Spacegroup(clipper::Spgr_descr(iNum)))
 {
 	m_strName = m_psg->symbol_hm();
@@ -20,18 +20,18 @@ SpaceGroup::SpaceGroup(unsigned int iNum)
 	m_crystalsys = get_crystal_system_from_laue_group(m_strLaue.c_str());
 }
 
-SpaceGroup::~SpaceGroup()
+SpaceGroupClp::~SpaceGroupClp()
 {
 	if(m_psg) { delete m_psg; m_psg = nullptr; }
 }
 
-SpaceGroup::SpaceGroup(const SpaceGroup& sg)
+SpaceGroupClp::SpaceGroupClp(const SpaceGroupClp& sg)
 	: m_psg(new clipper::Spacegroup(sg.m_psg->descr())),
 	m_strName(sg.GetName()), m_strLaue(sg.GetLaueGroup()),
 	m_crystalsys(sg.GetCrystalSystem())
 {}
 
-SpaceGroup::SpaceGroup(SpaceGroup&& sg)
+SpaceGroupClp::SpaceGroupClp(SpaceGroupClp&& sg)
 {
 	m_psg = sg.m_psg;
 	sg.m_psg = nullptr;
@@ -41,7 +41,18 @@ SpaceGroup::SpaceGroup(SpaceGroup&& sg)
 	m_crystalsys = std::move(sg.m_crystalsys);
 }
 
-bool SpaceGroup::HasReflection(int h, int k, int l) const
+// direct calculation of allowed bragg peaks
+bool SpaceGroupClp::HasReflection(int h, int k, int l) const
+{
+	if(!m_psg) return false;
+
+	std::vector<ublas::matrix<double>> vecTrafos;
+	GetSymTrafos(vecTrafos);
+	return is_reflection_allowed(h,k,l, vecTrafos);
+}
+
+// using clipper
+bool SpaceGroupClp::HasReflection2(int h, int k, int l) const
 {
 	if(!m_psg) return false;
 
@@ -49,7 +60,7 @@ bool SpaceGroup::HasReflection(int h, int k, int l) const
 	return !hkl.sys_abs();
 }
 
-void SpaceGroup::GetSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const
+void SpaceGroupClp::GetSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const
 {
 	get_symtrafos<clipper::ftype>(*m_psg, vecTrafos);
 }
@@ -71,7 +82,7 @@ void init_space_groups()
 
 	for(int iSg=1; iSg<=230; ++iSg)
 	{
-		SpaceGroup sg(iSg);
+		SpaceGroupClp sg(iSg);
 		g_mapSpaceGroups.insert(t_val(sg.GetName(), std::move(sg)));
 	}
 }

@@ -285,11 +285,11 @@ void PowderDlg::CalcPeaks()
 		std::vector<double> vecFormfacts;
 		std::vector<std::string> vecElems;
 
-		std::vector<ublas::matrix<double>> vecSymTrafos;
+		const std::vector<ublas::matrix<double>>* pvecSymTrafos = nullptr;
 		if(pSpaceGroup)
-			pSpaceGroup->GetSymTrafos(vecSymTrafos);
+			pvecSymTrafos = &pSpaceGroup->GetTrafos();
 
-		if(vecSymTrafos.size() && g_bHasFormfacts && g_bHasScatlens && m_vecAtoms.size())
+		if(pvecSymTrafos && pvecSymTrafos->size() && g_bHasFormfacts && g_bHasScatlens && m_vecAtoms.size())
 		{
 			for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
 			{
@@ -300,7 +300,7 @@ void PowderDlg::CalcPeaks()
 
 				std::vector<ublas::vector<double>> vecSymPos =
 					tl::generate_atoms<ublas::matrix<double>, ublas::vector<double>, std::vector>
-						(vecSymTrafos, vecAtom);
+						(*pvecSymTrafos, vecAtom);
 
 				const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
 				if(!pElem)
@@ -519,15 +519,15 @@ const SpaceGroup* PowderDlg::GetCurSpaceGroup() const
 void PowderDlg::SpaceGroupChanged()
 {
 	m_crystalsys = CrystalSystem::CRYS_NOT_SET;
-	const char* pcCryTy = "<not set>";
+	std::string strCryTy = "<not set>";
 
 	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 	if(pSpaceGroup)
 	{
 		m_crystalsys = pSpaceGroup->GetCrystalSystem();
-		pcCryTy = pSpaceGroup->GetCrystalSystemName();
+		strCryTy = pSpaceGroup->GetCrystalSystemName();
 	}
-	editCrystalSystem->setText(pcCryTy);
+	editCrystalSystem->setText(strCryTy.c_str());
 
 	CheckCrystalType();
 	CalcPeaks();

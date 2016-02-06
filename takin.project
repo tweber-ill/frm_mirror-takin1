@@ -201,6 +201,9 @@
     <File Name="helper/spacegroup_clp.h"/>
     <File Name="helper/formfact.h"/>
     <File Name="helper/formfact.cpp"/>
+    <File Name="helper/sghelper.h"/>
+    <File Name="helper/spacegroup.cpp"/>
+    <File Name="helper/spacegroup.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>

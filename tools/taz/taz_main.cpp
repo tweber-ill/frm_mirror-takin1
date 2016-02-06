@@ -11,7 +11,7 @@
 #include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
 #include "helper/globals.h"
-#include "helper/spacegroup_clp.h"
+#include "helper/spacegroup.h"
 
 #include <clocale>
 #include <memory>
@@ -46,8 +46,13 @@ int main(int argc, char** argv)
 		if(!g_bHasFormfacts)
 			tl::log_warn("Form factor coefficient table not found.");
 
-		init_space_groups();
+		if(!init_space_groups())
+		{
+			tl::log_err("Space group table not found!");
+			return -1;
+		}
 		tl::init_spec_chars();
+
 
 		#if defined Q_WS_X11 && !defined NO_3D
 			XInitThreads();

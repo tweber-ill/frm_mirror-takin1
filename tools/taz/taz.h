@@ -53,7 +53,7 @@
 #endif
 
 #include "../sglist/SgListDlg.h"
-#include "helper/spacegroup_clp.h"
+#include "helper/spacegroup.h"
 #include "tlibs/math/lattice.h"
 
 
