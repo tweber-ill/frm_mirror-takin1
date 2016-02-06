@@ -49,30 +49,51 @@ bool init_space_groups()
 		unsigned int iNumTrafos = xml.Query<unsigned int>((strGroup+"/num_trafos").c_str());
 
 		std::vector<t_mat> vecTrafos;
+		std::vector<t_mat> vecInvTrafos, vecPrimTrafos, vecCenterTrafos;
 		vecTrafos.reserve(iNumTrafos);
+
 		for(unsigned int iTrafo=0; iTrafo<iNumTrafos; ++iTrafo)
 		{
 			std::ostringstream ostrTrafo;
 			ostrTrafo << strGroup << "/trafo_" << iTrafo;
 			std::string strTrafo = ostrTrafo.str();
 
-			std::istringstream istrMat(tl::trimmed(xml.Query<std::string>(strTrafo.c_str())));
+			std::string strTrafoVal = xml.Query<std::string>(strTrafo.c_str());
+			std::pair<std::string, std::string> pairSg = tl::split_first(strTrafoVal, std::string(";"), 1);
+
+			std::istringstream istrMat(pairSg.first);
 			t_mat mat;
 			istrMat >> mat;
 
-			vecTrafos.push_back(mat);
+			for(typename std::string::value_type c : pairSg.second)
+			{
+				if(std::tolower(c)=='p') vecPrimTrafos.push_back(mat);
+				if(std::tolower(c)=='i') vecInvTrafos.push_back(mat);
+				if(std::tolower(c)=='c') vecCenterTrafos.push_back(mat);
+			}
+
+			vecTrafos.push_back(std::move(mat));
 		}
 
 		SpaceGroup sg;
 		sg.SetNr(iSgNr);
 		sg.SetName(strName);
 		sg.SetLaueGroup(strLaue);
-		sg.SetTrafos(vecTrafos);
+		sg.SetTrafos(std::move(vecTrafos));
+		sg.SetInvTrafos(std::move(vecInvTrafos));
+		sg.SetPrimTrafos(std::move(vecPrimTrafos));
+		sg.SetCenterTrafos(std::move(vecCenterTrafos));
 
-		t_val pairSg(sg.GetName(), std::move(sg));
-		const SpaceGroup *ptheSg = &g_mapSpaceGroups.insert(std::move(pairSg)).first->second;
-		g_vecSpaceGroups.push_back(ptheSg);
+		g_mapSpaceGroups.insert(t_val(sg.GetName(), std::move(sg)));
 	}
+
+	g_vecSpaceGroups.reserve(g_mapSpaceGroups.size());
+	for(const t_val& pairSg : g_mapSpaceGroups)
+		g_vecSpaceGroups.push_back(&pairSg.second);
+
+	std::sort(g_vecSpaceGroups.begin(), g_vecSpaceGroups.end(),
+		[](const SpaceGroup* sg1, const SpaceGroup* sg2) -> bool
+		{ return sg1->GetNr() <= sg2->GetNr(); });
 
 	return true;
 }

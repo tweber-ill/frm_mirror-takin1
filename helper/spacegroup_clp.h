@@ -44,6 +44,9 @@ public:
 	const char* GetCrystalSystemName() const { return get_crystal_system_name(m_crystalsys); }
 
 	void GetSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const;
+	void GetInvertingSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const;
+	void GetPrimitiveSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const;
+	void GetCenteringSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const;
 };
 
 
@@ -74,19 +77,47 @@ ublas::matrix<T> symop_to_matrix(const clipper::Symop& symop)
 }
 
 
-template<class T=clipper::ftype>
-void get_symtrafos(const clipper::Spacegroup& sg, std::vector<ublas::matrix<T>>& vecTrafos)
+enum class SymTrafoType
 {
-	const int iNumSymOps = sg.num_symops();
+	ALL,
+
+	PRIMITIVE,
+	INVERTING,
+	CENTERING
+};
+
+template<class T=clipper::ftype>
+void get_symtrafos(const clipper::Spacegroup& sg,
+	std::vector<ublas::matrix<T>>& vecTrafos, SymTrafoType ty=SymTrafoType::ALL)
+{
+	int iNumSymOps = 0;
+
+	if(ty == SymTrafoType::ALL)
+		iNumSymOps = sg.num_symops();
+	else if(ty == SymTrafoType::INVERTING)
+		iNumSymOps = sg.num_inversion_symops();
+	else if(ty == SymTrafoType::PRIMITIVE)
+		iNumSymOps = sg.num_primitive_symops();
+	else if(ty == SymTrafoType::CENTERING)
+		iNumSymOps = sg.num_centering_symops();
 
 	vecTrafos.clear();
 	vecTrafos.reserve(iNumSymOps);
 
 	for(int iSymOp=0; iSymOp<iNumSymOps; ++iSymOp)
 	{
-		const clipper::Symop& symop = sg.symop(iSymOp);
-		ublas::matrix<T> mat = symop_to_matrix<T>(symop);
+		const clipper::Symop* symop = nullptr;
 
+		if(ty == SymTrafoType::ALL)
+			symop = &sg.symop(iSymOp);
+		else if(ty == SymTrafoType::INVERTING)
+			symop = &sg.inversion_symop(iSymOp);
+		else if(ty == SymTrafoType::PRIMITIVE)
+			symop = &sg.primitive_symop(iSymOp);
+		else if(ty == SymTrafoType::CENTERING)
+			symop = &sg.centering_symop(iSymOp);
+
+		ublas::matrix<T> mat = symop_to_matrix<T>(*symop);
 		vecTrafos.push_back(mat);
 	}
 }

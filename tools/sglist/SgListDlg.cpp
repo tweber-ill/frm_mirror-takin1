@@ -72,8 +72,8 @@ void SgListDlg::SetupSpacegroups()
 	// actually: space group TYPE, not space group...
 	for(unsigned int iSG=0; iSG<pvecSG->size(); ++iSG)
 	{
-		const SpaceGroup* sg = pvecSG->at(iSG);
-		unsigned int iSgNr = sg->GetNr();
+		const SpaceGroup* psg = pvecSG->at(iSG);
+		unsigned int iSgNr = psg->GetNr();
 
 		// list headers
 		if(iSgNr==1) listSGs->addItem(create_header_item("Triclinic"));
@@ -86,7 +86,7 @@ void SgListDlg::SetupSpacegroups()
 
 
 		std::ostringstream ostrSg;
-		ostrSg << "No. " << iSgNr << ": " << sg->GetName();
+		ostrSg << "No. " << iSgNr << ": " << psg->GetName();
 
 		QListWidgetItem* pItem = new QListWidgetItem(ostrSg.str().c_str());
 		pItem->setData(Qt::UserRole, iSG);
@@ -114,80 +114,91 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	if(iSG >= pvecSG->size())
 		return;
 
-	const SpaceGroup* sg = pvecSG->at(iSG);
-	unsigned int iSgNr = sg->GetNr();
+	const SpaceGroup* psg = pvecSG->at(iSG);
+	unsigned int iSgNr = psg->GetNr();
 
-	const std::string& strHM = sg->GetName();
-	const std::string& strPointGroup = sg->GetPointGroup();
-	const std::string& strLaue = sg->GetLaueGroup();
-	const std::string& strCrysSys = sg->GetCrystalSystemName();
+	const std::string& strHM = psg->GetName();
+	const std::string& strPointGroup = psg->GetPointGroup();
+	const std::string& strLaue = psg->GetLaueGroup();
+	const std::string& strCrysSys = psg->GetCrystalSystemName();
 
 	editNr->setText(tl::var_to_str(iSgNr).c_str());
 	editHM->setText(strHM.c_str());
-	//editHall->setText(sg.symbol_hall().c_str());
+	//editHall->setText(psg.symbol_hall().c_str());
 	editLaue->setText(("PG: " + strPointGroup + ", LG: " + strLaue +
 		" (" + strCrysSys + ")").c_str());
 
 	bool bShowMatrices = checkMatrices->isChecked();
-	{
-		const std::vector<SpaceGroup::t_mat>& vecTrafos = sg->GetTrafos();
 
+	// all trafos
+	const std::vector<SpaceGroup::t_mat>& vecTrafos = psg->GetTrafos();
+	{
 		std::ostringstream ostr;
 		ostr << "All Symmetry Operations (" << vecTrafos.size() << ")";
 		listSymOps->addItem(create_header_item(ostr.str().c_str()));
 
 		for(unsigned int iSymOp=0; iSymOp<vecTrafos.size(); ++iSymOp)
 		{
-			const SpaceGroup::t_mat& mat = vecTrafos[iSymOp];
+			if(bShowMatrices)
+				listSymOps->addItem(print_matrix(vecTrafos[iSymOp]).c_str());
+			else
+				listSymOps->addItem(get_trafo_desc(vecTrafos[iSymOp]).c_str());
+		}
+	}
 
-			if(bShowMatrices)
-				listSymOps->addItem(print_matrix(mat).c_str());
-			else
-				listSymOps->addItem(get_trafo_desc(mat).c_str());
-		}
-	}
-	/*if(sg.num_primitive_symops())
+
+	// primitive trafos
+	const std::vector<SpaceGroup::t_mat>& vecPrim = psg->GetPrimTrafos();
+
+	if(vecPrim.size())
 	{
 		std::ostringstream ostr;
-		ostr << "Primitive Symmetry Operations (" << sg.num_primitive_symops() << ")";
+		ostr << "Primitive Symmetry Operations (" << (vecPrim.size()) << ")";
 		listSymOps->addItem(create_header_item(ostr.str().c_str()));
-		for(int iSymOp=0; iSymOp<sg.num_primitive_symops(); ++iSymOp)
+		for(unsigned int iSymOp=0; iSymOp<vecPrim.size(); ++iSymOp)
 		{
-			const clipper::Symop& symop = sg.primitive_symop(iSymOp);
 			if(bShowMatrices)
-				listSymOps->addItem(print_matrix(symop_to_matrix(symop)).c_str());
+				listSymOps->addItem(print_matrix(vecPrim[iSymOp]).c_str());
 			else
-				listSymOps->addItem(symop.format().c_str());
+				listSymOps->addItem(get_trafo_desc(vecPrim[iSymOp]).c_str());
 		}
 	}
-	if(sg.num_inversion_symops())
+
+
+	// inverting trafos
+	const std::vector<SpaceGroup::t_mat>& vecInv = psg->GetInvTrafos();
+
+	if(vecInv.size())
 	{
 		std::ostringstream ostr;
-		ostr << "Inverting Symmetry Operations (" << (sg.num_inversion_symops()) << ")";
+		ostr << "Inverting Symmetry Operations (" << (vecInv.size()) << ")";
 		listSymOps->addItem(create_header_item(ostr.str().c_str()));
-		for(int iSymOp=0; iSymOp<sg.num_inversion_symops(); ++iSymOp)
+		for(unsigned int iSymOp=0; iSymOp<vecInv.size(); ++iSymOp)
 		{
-			const clipper::Symop& symop = sg.inversion_symop(iSymOp);
 			if(bShowMatrices)
-				listSymOps->addItem(print_matrix(symop_to_matrix(symop)).c_str());
+				listSymOps->addItem(print_matrix(vecInv[iSymOp]).c_str());
 			else
-				listSymOps->addItem(symop.format().c_str());
+				listSymOps->addItem(get_trafo_desc(vecInv[iSymOp]).c_str());
 		}
 	}
-	if(sg.num_centering_symops())
+
+	// centering trafos
+	const std::vector<SpaceGroup::t_mat>& vecCenter = psg->GetCenterTrafos();
+
+	if(vecCenter.size())
 	{
 		std::ostringstream ostr;
-		ostr << "Centering Symmetry Operations (" << (sg.num_centering_symops()) << ")";
+		ostr << "Centering Symmetry Operations (" << (vecCenter.size()) << ")";
 		listSymOps->addItem(create_header_item(ostr.str().c_str()));
-		for(int iSymOp=0; iSymOp<sg.num_centering_symops(); ++iSymOp)
+		for(unsigned int iSymOp=0; iSymOp<vecCenter.size(); ++iSymOp)
 		{
-			const clipper::Symop& symop = sg.centering_symop(iSymOp);
 			if(bShowMatrices)
-				listSymOps->addItem(print_matrix(symop_to_matrix(symop)).c_str());
+				listSymOps->addItem(print_matrix(vecCenter[iSymOp]).c_str());
 			else
-				listSymOps->addItem(symop.format().c_str());
+				listSymOps->addItem(get_trafo_desc(vecCenter[iSymOp]).c_str());
 		}
-	}*/
+	}
+
 
 	RecalcBragg();
 }
@@ -208,8 +219,8 @@ void SgListDlg::RecalcBragg()
 	if(iSG >= pvecSG->size())
 		return;
 
-	const SpaceGroup* sg = pvecSG->at(iSG);
-	const bool bForbidden = !sg->HasReflection(h,k,l);;
+	const SpaceGroup* psg = pvecSG->at(iSG);
+	const bool bForbidden = !psg->HasReflection(h,k,l);;
 
 	QFont font = spinH->font();
 	font.setStrikeOut(bForbidden);

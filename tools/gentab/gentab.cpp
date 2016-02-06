@@ -207,17 +207,32 @@ bool gen_spacegroups()
 		//prop.Add(strGroup + ".crystalsys", sg.GetCrystalSystem());
 		//prop.Add(strGroup + ".crystalsysname", sg.GetCrystalSystemName());
 
-		std::vector<ublas::matrix<double>> vecTrafos;
+
+		std::vector<ublas::matrix<double>> vecTrafos, vecInv, vecPrim, vecCenter;
 		sg.GetSymTrafos(vecTrafos);
+		sg.GetInvertingSymTrafos(vecInv);
+		sg.GetPrimitiveSymTrafos(vecPrim);
+		sg.GetCenteringSymTrafos(vecCenter);
+
+
 		prop.Add(strGroup + ".num_trafos", tl::var_to_str(vecTrafos.size()));
 		unsigned int iTrafo = 0;
 		for(const ublas::matrix<double>& matTrafo : vecTrafos)
 		{
+			bool bIsInv = is_mat_in_container(vecInv, matTrafo);
+			bool bIsPrim = is_mat_in_container(vecPrim, matTrafo);
+			bool bIsCenter = is_mat_in_container(vecCenter, matTrafo);
+
+			std::string strOpts = "; ";
+			if(bIsPrim) strOpts += "p";
+			if(bIsInv) strOpts += "i";
+			if(bIsCenter) strOpts += "c";
+
 			std::ostringstream ostrTrafo;
 			ostrTrafo << strGroup << ".trafo_" << iTrafo;
 			std::string strTrafo = ostrTrafo.str();
 
-			prop.Add(strTrafo /*+ ".matrix"*/, tl::var_to_str(matTrafo));
+			prop.Add(strTrafo, tl::var_to_str(matTrafo) + strOpts);
 
 			++iTrafo;
 		}

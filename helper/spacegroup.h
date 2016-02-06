@@ -33,7 +33,9 @@ protected:
 	std::string m_strLaue, m_strPoint;
 	CrystalSystem m_crystalsys;
 	std::string m_strCrystalSysName;
+
 	std::vector<t_mat> m_vecTrafos;
+	std::vector<t_mat> m_vecInvTrafos, m_vecPrimTrafos, m_vecCenterTrafos;
 
 public:
 	SpaceGroup() = default;
@@ -41,12 +43,16 @@ public:
 	SpaceGroup(const SpaceGroup& sg)
 		: m_iNr(sg.m_iNr), m_strName(sg.m_strName), m_strLaue(sg.m_strLaue),
 		m_strPoint(sg.m_strPoint), m_crystalsys(sg.m_crystalsys),
-		m_strCrystalSysName(sg.m_strCrystalSysName), m_vecTrafos(sg.m_vecTrafos)
+		m_strCrystalSysName(sg.m_strCrystalSysName), m_vecTrafos(sg.m_vecTrafos),
+		m_vecInvTrafos(sg.m_vecInvTrafos), m_vecPrimTrafos(sg.m_vecPrimTrafos),
+		m_vecCenterTrafos(sg.m_vecCenterTrafos)
 	{}
 	SpaceGroup(SpaceGroup&& sg)
 		: m_iNr(sg.m_iNr), m_strName(std::move(sg.m_strName)), m_strLaue(std::move(sg.m_strLaue)),
 		m_strPoint(std::move(sg.m_strPoint)), m_crystalsys(std::move(sg.m_crystalsys)),
-		m_strCrystalSysName(std::move(sg.m_strCrystalSysName)), m_vecTrafos(std::move(sg.m_vecTrafos))
+		m_strCrystalSysName(std::move(sg.m_strCrystalSysName)), m_vecTrafos(std::move(sg.m_vecTrafos)),
+		m_vecInvTrafos(std::move(sg.m_vecInvTrafos)), m_vecPrimTrafos(std::move(sg.m_vecPrimTrafos)),
+		m_vecCenterTrafos(std::move(sg.m_vecCenterTrafos))
 	{}
 
 	bool HasReflection(int h, int k, int l) const
@@ -83,6 +89,17 @@ public:
 	void SetTrafos(std::vector<t_mat>&& vecTrafos) { m_vecTrafos = std::move(vecTrafos); }
 	void SetTrafos(const std::vector<t_mat>& vecTrafos) { m_vecTrafos = vecTrafos; }
 	const std::vector<t_mat>& GetTrafos() const { return m_vecTrafos; }
+
+	void SetInvTrafos(std::vector<t_mat>&& vecTrafos) { m_vecInvTrafos = std::move(vecTrafos); }
+	void SetInvTrafos(const std::vector<t_mat>& vecTrafos) { m_vecInvTrafos = vecTrafos; }
+	void SetPrimTrafos(std::vector<t_mat>&& vecTrafos) { m_vecPrimTrafos = std::move(vecTrafos); }
+	void SetPrimTrafos(const std::vector<t_mat>& vecTrafos) { m_vecPrimTrafos = vecTrafos; }
+	void SetCenterTrafos(std::vector<t_mat>&& vecTrafos) { m_vecCenterTrafos = std::move(vecTrafos); }
+	void SetCenterTrafos(const std::vector<t_mat>& vecTrafos) { m_vecCenterTrafos = vecTrafos; }
+
+	const std::vector<t_mat>& GetInvTrafos() const { return m_vecInvTrafos; }
+	const std::vector<t_mat>& GetPrimTrafos() const { return m_vecPrimTrafos; }
+	const std::vector<t_mat>& GetCenterTrafos() const { return m_vecCenterTrafos; }
 };
 
 

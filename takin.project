@@ -197,8 +197,8 @@
     <File Name="helper/globals.h"/>
     <File Name="helper/crystalsys.h"/>
     <File Name="helper/crystalsys.cpp"/>
-    <File Name="helper/spacegroup_clp.cpp"/>
-    <File Name="helper/spacegroup_clp.h"/>
+    <File Name="helper/spacegroup_clp.cpp" ExcludeProjConfig="Debug"/>
+    <File Name="helper/spacegroup_clp.h" ExcludeProjConfig="Debug"/>
     <File Name="helper/formfact.h"/>
     <File Name="helper/formfact.cpp"/>
     <File Name="helper/sghelper.h"/>

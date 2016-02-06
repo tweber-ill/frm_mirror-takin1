@@ -39,6 +39,33 @@ std::string print_matrix(const ublas::matrix<T>& mat)
 	return ostr.str();
 }
 
+template<template<class...> class t_cont = std::vector,
+	class t_mat = ublas::matrix<double>>
+bool is_mat_in_container(const t_cont<t_mat>& cont, const t_mat& mat)
+{
+	using t_real = typename t_mat::value_type;
+	t_real dEps = 1e-4;
+
+	for(const t_mat& matCur : cont)
+	{
+		if(tl::mat_equal(matCur, mat, dEps))
+			return true;
+	}
+
+	return false;
+}
+
+/*template<class t_mat = ublas::matrix<double>>
+bool is_inverting(const t_mat& mat)
+{
+	for(typename t_mat::size_type i=0; i<3; ++i)
+		for(typename t_mat::size_type j=0; j<3; ++j)
+			if(mat(i,j) > 0.)
+				return false;
+
+	return true;
+}*/
+
 template<class T=double>
 std::string get_trafo_desc(const ublas::matrix<T>& mat)
 {
@@ -77,10 +104,7 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 
 			if(bHasElem)
 			{
-				if(dVal >= 0.)
-					ostr << " + ";
-				else
-					ostr << " - ";
+				if(dVal >= 0.) ostr << " + "; else ostr << " - ";
 
 				if(tl::float_equal(std::fabs(dVal), 1.))
 					ostr << "y";
@@ -104,10 +128,7 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 
 			if(bHasElem)
 			{
-				if(dVal >= 0.)
-					ostr << " + ";
-				else
-					ostr << " - ";
+				if(dVal >= 0.) ostr << " + "; else ostr << " - ";
 
 				if(tl::float_equal(std::fabs(dVal), 1.))
 					ostr << "z";
@@ -132,17 +153,11 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 
 			if(bHasElem)
 			{
-				if(dVal >= 0.)
-					ostr << " + ";
-				else
-					ostr << " - ";
-
+				if(dVal >= 0.) ostr << " + "; else ostr << " - ";
 				ostr << std::fabs(dVal);
 			}
 			else
-			{
 				ostr << dVal;
-			}
 		}
 
 		if(i<2)

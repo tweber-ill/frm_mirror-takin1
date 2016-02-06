@@ -62,8 +62,21 @@ bool SpaceGroupClp::HasReflection2(int h, int k, int l) const
 
 void SpaceGroupClp::GetSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const
 {
-	get_symtrafos<clipper::ftype>(*m_psg, vecTrafos);
+	get_symtrafos<clipper::ftype>(*m_psg, vecTrafos, SymTrafoType::ALL);
 }
+void SpaceGroupClp::GetInvertingSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const
+{
+	get_symtrafos<clipper::ftype>(*m_psg, vecTrafos, SymTrafoType::INVERTING);
+}
+void SpaceGroupClp::GetPrimitiveSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const
+{
+	get_symtrafos<clipper::ftype>(*m_psg, vecTrafos, SymTrafoType::PRIMITIVE);
+}
+void SpaceGroupClp::GetCenteringSymTrafos(std::vector<ublas::matrix<double>>& vecTrafos) const
+{
+	get_symtrafos<clipper::ftype>(*m_psg, vecTrafos, SymTrafoType::CENTERING);
+}
+
 
 // -----------------------------------------------------------------------------
 
