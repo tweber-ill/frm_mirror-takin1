@@ -35,7 +35,7 @@ protected:
 	std::string m_strCrystalSysName;
 
 	std::vector<t_mat> m_vecTrafos;
-	std::vector<t_mat> m_vecInvTrafos, m_vecPrimTrafos, m_vecCenterTrafos;
+	std::vector<unsigned int> m_vecInvTrafos, m_vecPrimTrafos, m_vecCenterTrafos;
 
 public:
 	SpaceGroup() = default;
@@ -90,16 +90,16 @@ public:
 	void SetTrafos(const std::vector<t_mat>& vecTrafos) { m_vecTrafos = vecTrafos; }
 	const std::vector<t_mat>& GetTrafos() const { return m_vecTrafos; }
 
-	void SetInvTrafos(std::vector<t_mat>&& vecTrafos) { m_vecInvTrafos = std::move(vecTrafos); }
-	void SetInvTrafos(const std::vector<t_mat>& vecTrafos) { m_vecInvTrafos = vecTrafos; }
-	void SetPrimTrafos(std::vector<t_mat>&& vecTrafos) { m_vecPrimTrafos = std::move(vecTrafos); }
-	void SetPrimTrafos(const std::vector<t_mat>& vecTrafos) { m_vecPrimTrafos = vecTrafos; }
-	void SetCenterTrafos(std::vector<t_mat>&& vecTrafos) { m_vecCenterTrafos = std::move(vecTrafos); }
-	void SetCenterTrafos(const std::vector<t_mat>& vecTrafos) { m_vecCenterTrafos = vecTrafos; }
+	void SetInvTrafos(std::vector<unsigned int>&& vecTrafos) { m_vecInvTrafos = std::move(vecTrafos); }
+	void SetInvTrafos(const std::vector<unsigned int>& vecTrafos) { m_vecInvTrafos = vecTrafos; }
+	void SetPrimTrafos(std::vector<unsigned int>&& vecTrafos) { m_vecPrimTrafos = std::move(vecTrafos); }
+	void SetPrimTrafos(const std::vector<unsigned int>& vecTrafos) { m_vecPrimTrafos = vecTrafos; }
+	void SetCenterTrafos(std::vector<unsigned int>&& vecTrafos) { m_vecCenterTrafos = std::move(vecTrafos); }
+	void SetCenterTrafos(const std::vector<unsigned int>& vecTrafos) { m_vecCenterTrafos = vecTrafos; }
 
-	const std::vector<t_mat>& GetInvTrafos() const { return m_vecInvTrafos; }
-	const std::vector<t_mat>& GetPrimTrafos() const { return m_vecPrimTrafos; }
-	const std::vector<t_mat>& GetCenterTrafos() const { return m_vecCenterTrafos; }
+	const std::vector<unsigned int>& GetInvTrafos() const { return m_vecInvTrafos; }
+	const std::vector<unsigned int>& GetPrimTrafos() const { return m_vecPrimTrafos; }
+	const std::vector<unsigned int>& GetCenterTrafos() const { return m_vecCenterTrafos; }
 };
 
 
@@ -108,6 +108,7 @@ typedef std::map<std::string, SpaceGroup> t_mapSpaceGroups;
 extern const t_mapSpaceGroups* get_space_groups();
 extern const t_vecSpaceGroups* get_space_groups_vec();
 extern bool init_space_groups();
+extern const std::string& get_sgsource(bool bUrl=0);
 
 
 #endif

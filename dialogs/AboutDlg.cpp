@@ -14,6 +14,7 @@
 
 #include "tlibs/string/string.h"
 #include "../helper/formfact.h"
+#include "../helper/spacegroup.h"
 #include "../helper/globals.h"
 #include <sstream>
 
@@ -81,9 +82,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	// -------------------------------------------------------------------------
 
 
-	FormfactList lstff;
-	ScatlenList lstsl;
-
 	std::ostringstream ostrConst;
 	ostrConst << "<html><body>";
 
@@ -92,15 +90,18 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrConst << "<dt>Physical constants from Boost Units</dt>";
 	ostrConst << "<dd><a href=\"http://www.boost.org/doc/libs/release/libs/units/\">http://www.boost.org/doc/libs/release/libs/units/</a></dd>";
 
+	ostrConst << "<dt>" << get_sgsource(0) <<"</dt>";
+	ostrConst << "<dd><a href=\"" << get_sgsource(1) << "\">" << get_sgsource(1) << "</a></dd>";
+
 	if(g_bHasFormfacts)
 	{
-		ostrConst << "<dt>" << lstff.GetSource() <<"</dt>";
-		ostrConst << "<dd><a href=\"" << lstff.GetSourceUrl() << "\">" << lstff.GetSourceUrl() << "</a></dd>";
+		ostrConst << "<dt>" << FormfactList::GetSource() <<"</dt>";
+		ostrConst << "<dd><a href=\"" << FormfactList::GetSourceUrl() << "\">" << FormfactList::GetSourceUrl() << "</a></dd>";
 	}
 	if(g_bHasScatlens)
 	{
-		ostrConst << "<dt>" << lstsl.GetSource() <<"</dt>";
-		ostrConst << "<dd><a href=\"" << lstsl.GetSourceUrl() << "\">" << lstsl.GetSourceUrl() << "</a></dd>";
+		ostrConst << "<dt>" << ScatlenList::GetSource() <<"</dt>";
+		ostrConst << "<dd><a href=\"" << ScatlenList::GetSourceUrl() << "\">" << ScatlenList::GetSourceUrl() << "</a></dd>";
 	}
 
 	ostrConst << "</dl>";

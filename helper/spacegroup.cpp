@@ -12,6 +12,7 @@
 
 static t_mapSpaceGroups g_mapSpaceGroups;
 static t_vecSpaceGroups g_vecSpaceGroups;
+static std::string s_strSrc, s_strUrl;
 
 bool init_space_groups()
 {
@@ -49,7 +50,7 @@ bool init_space_groups()
 		unsigned int iNumTrafos = xml.Query<unsigned int>((strGroup+"/num_trafos").c_str());
 
 		std::vector<t_mat> vecTrafos;
-		std::vector<t_mat> vecInvTrafos, vecPrimTrafos, vecCenterTrafos;
+		std::vector<unsigned int> vecInvTrafos, vecPrimTrafos, vecCenterTrafos;
 		vecTrafos.reserve(iNumTrafos);
 
 		for(unsigned int iTrafo=0; iTrafo<iNumTrafos; ++iTrafo)
@@ -67,9 +68,9 @@ bool init_space_groups()
 
 			for(typename std::string::value_type c : pairSg.second)
 			{
-				if(std::tolower(c)=='p') vecPrimTrafos.push_back(mat);
-				if(std::tolower(c)=='i') vecInvTrafos.push_back(mat);
-				if(std::tolower(c)=='c') vecCenterTrafos.push_back(mat);
+				if(std::tolower(c)=='p') vecPrimTrafos.push_back(iTrafo);
+				if(std::tolower(c)=='i') vecInvTrafos.push_back(iTrafo);
+				if(std::tolower(c)=='c') vecCenterTrafos.push_back(iTrafo);
 			}
 
 			vecTrafos.push_back(std::move(mat));
@@ -95,6 +96,10 @@ bool init_space_groups()
 		[](const SpaceGroup* sg1, const SpaceGroup* sg2) -> bool
 		{ return sg1->GetNr() <= sg2->GetNr(); });
 
+
+	s_strSrc = xml.Query<std::string>("sgroups/source", "");
+	s_strUrl = xml.Query<std::string>("sgroups/source_url", "");
+
 	return true;
 }
 
@@ -118,4 +123,9 @@ const t_vecSpaceGroups* get_space_groups_vec()
 	}
 
 	return &g_vecSpaceGroups;
+}
+
+extern const std::string& get_sgsource(bool bUrl)
+{
+	return bUrl ? s_strUrl : s_strSrc ;
 }

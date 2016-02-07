@@ -71,8 +71,8 @@ class FormfactList
 
 		const elem_type* Find(const std::string& strElem) const;
 
-		const std::string& GetSource() const { return s_strSrc; }
-		const std::string& GetSourceUrl() const { return s_strSrcUrl; }
+		static const std::string& GetSource() { return s_strSrc; }
+		static const std::string& GetSourceUrl() { return s_strSrcUrl; }
 };
 
 
@@ -139,8 +139,8 @@ class ScatlenList
 
 		const elem_type* Find(const std::string& strElem) const;
 
-		const std::string& GetSource() const { return s_strSrc; }
-		const std::string& GetSourceUrl() const { return s_strSrcUrl; }
+		static const std::string& GetSource() { return s_strSrc; }
+		static const std::string& GetSourceUrl() { return s_strSrcUrl; }
 };
 
 

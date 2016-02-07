@@ -148,7 +148,7 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 
 
 	// primitive trafos
-	const std::vector<SpaceGroup::t_mat>& vecPrim = psg->GetPrimTrafos();
+	const std::vector<unsigned int>& vecPrim = psg->GetPrimTrafos();
 
 	if(vecPrim.size())
 	{
@@ -158,15 +158,15 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 		for(unsigned int iSymOp=0; iSymOp<vecPrim.size(); ++iSymOp)
 		{
 			if(bShowMatrices)
-				listSymOps->addItem(print_matrix(vecPrim[iSymOp]).c_str());
+				listSymOps->addItem(print_matrix(vecTrafos[vecPrim[iSymOp]]).c_str());
 			else
-				listSymOps->addItem(get_trafo_desc(vecPrim[iSymOp]).c_str());
+				listSymOps->addItem(get_trafo_desc(vecTrafos[vecPrim[iSymOp]]).c_str());
 		}
 	}
 
 
 	// inverting trafos
-	const std::vector<SpaceGroup::t_mat>& vecInv = psg->GetInvTrafos();
+	const std::vector<unsigned int>& vecInv = psg->GetInvTrafos();
 
 	if(vecInv.size())
 	{
@@ -176,14 +176,14 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 		for(unsigned int iSymOp=0; iSymOp<vecInv.size(); ++iSymOp)
 		{
 			if(bShowMatrices)
-				listSymOps->addItem(print_matrix(vecInv[iSymOp]).c_str());
+				listSymOps->addItem(print_matrix(vecTrafos[vecInv[iSymOp]]).c_str());
 			else
-				listSymOps->addItem(get_trafo_desc(vecInv[iSymOp]).c_str());
+				listSymOps->addItem(get_trafo_desc(vecTrafos[vecInv[iSymOp]]).c_str());
 		}
 	}
 
 	// centering trafos
-	const std::vector<SpaceGroup::t_mat>& vecCenter = psg->GetCenterTrafos();
+	const std::vector<unsigned int>& vecCenter = psg->GetCenterTrafos();
 
 	if(vecCenter.size())
 	{
@@ -193,9 +193,9 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 		for(unsigned int iSymOp=0; iSymOp<vecCenter.size(); ++iSymOp)
 		{
 			if(bShowMatrices)
-				listSymOps->addItem(print_matrix(vecCenter[iSymOp]).c_str());
+				listSymOps->addItem(print_matrix(vecTrafos[vecCenter[iSymOp]]).c_str());
 			else
-				listSymOps->addItem(get_trafo_desc(vecCenter[iSymOp]).c_str());
+				listSymOps->addItem(get_trafo_desc(vecTrafos[vecCenter[iSymOp]]).c_str());
 		}
 	}
 
