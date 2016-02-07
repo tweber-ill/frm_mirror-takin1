@@ -39,6 +39,23 @@ std::string print_matrix(const ublas::matrix<T>& mat)
 	return ostr.str();
 }
 
+template<class T=double>
+std::string print_vector(const ublas::vector<T>& vec)
+{
+	std::ostringstream ostr;
+	ostr.precision(4);
+
+	ostr << "(";
+	for(int i=0; i<int(vec.size()); ++i)
+	{
+		ostr << std::setw(8) << vec[i];
+		//if(i!=int(vec.size())-1) ostr << ", ";
+	}
+	ostr << ")";
+
+	return ostr.str();
+}
+
 template<template<class...> class t_cont = std::vector,
 	class t_mat = ublas::matrix<double>>
 bool is_mat_in_container(const t_cont<t_mat>& cont, const t_mat& mat)
@@ -51,7 +68,21 @@ bool is_mat_in_container(const t_cont<t_mat>& cont, const t_mat& mat)
 		if(tl::mat_equal(matCur, mat, dEps))
 			return true;
 	}
+	return false;
+}
 
+template<template<class...> class t_cont = std::vector,
+	class t_vec = ublas::vector<double>>
+bool is_vec_in_container(const t_cont<t_vec>& cont, const t_vec& vec)
+{
+	using t_real = typename t_vec::value_type;
+	t_real dEps = 1e-4;
+
+	for(const t_vec& vecCur : cont)
+	{
+		if(tl::vec_equal(vecCur, vec, dEps))
+			return true;
+	}
 	return false;
 }
 

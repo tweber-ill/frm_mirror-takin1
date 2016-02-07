@@ -29,6 +29,8 @@ protected slots:
 	void RecalcBragg();
 	void SearchSG(const QString& qstr);
 
+	void CalcTrafo();
+
 public:
 	SgListDlg(QWidget* pParent = nullptr);
 	virtual ~SgListDlg();

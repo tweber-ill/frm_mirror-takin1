@@ -27,6 +27,9 @@ SgListDlg::SgListDlg(QWidget *pParent)
 	for(QSpinBox* pSpin : {spinH, spinK, spinL})
 		QObject::connect(pSpin, SIGNAL(valueChanged(int)), this, SLOT(RecalcBragg()));
 
+	for(QDoubleSpinBox* pSpin : {spinX, spinY, spinZ, spinW})
+		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcTrafo()));
+
 	QObject::connect(editFilter, SIGNAL(textEdited(const QString&)),
 		this, SLOT(SearchSG(const QString&)));
 
@@ -102,6 +105,7 @@ void SgListDlg::UpdateSG()
 void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 {
 	listSymOps->clear();
+	listTrafo->clear();
 	for(QLineEdit *pEdit : {editHM, /*editHall,*/ editLaue, editNr/*, editAxisSym*/})
 		pEdit->setText("");
 	if(!pItem) return;
@@ -201,6 +205,7 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 
 
 	RecalcBragg();
+	CalcTrafo();
 }
 
 void SgListDlg::RecalcBragg()
@@ -235,5 +240,42 @@ void SgListDlg::SearchSG(const QString& qstr)
 		listSGs->setCurrentItem(lstItems[0], QItemSelectionModel::SelectCurrent);
 }
 
+
+void SgListDlg::CalcTrafo()
+{
+	listTrafo->clear();
+
+	const QListWidgetItem* pItem = listSGs->currentItem();
+	if(!pItem)
+		return;
+
+	const t_vecSpaceGroups* pvecSG = get_space_groups_vec();
+	const unsigned int iSG = pItem->data(Qt::UserRole).toUInt();
+	if(iSG >= pvecSG->size())
+		return;
+	const SpaceGroup* psg = pvecSG->at(iSG);
+
+	ublas::vector<double> vecIn =
+		tl::make_vec({spinX->value(), spinY->value(), spinZ->value(), spinW->value()});
+
+	const std::vector<SpaceGroup::t_mat>& vecTrafos = psg->GetTrafos();
+	std::vector<ublas::vector<double>> vecUnique;
+
+	listTrafo->addItem(create_header_item("All Transformation Results"));
+	for(const SpaceGroup::t_mat& mat : vecTrafos)
+	{
+		ublas::vector<double> vec = ublas::prod(mat, vecIn);
+		listTrafo->addItem(print_vector(vec).c_str());
+
+		if(!is_vec_in_container(vecUnique, vec))
+			vecUnique.push_back(vec);
+	}
+
+	listTrafo->addItem(create_header_item("Unique Transformation Results"));
+	for(const ublas::vector<double>& vec : vecUnique)
+	{
+		listTrafo->addItem(print_vector(vec).c_str());
+	}
+}
 
 #include "SgListDlg.moc"
