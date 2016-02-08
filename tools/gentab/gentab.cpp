@@ -9,9 +9,9 @@
 #include <iostream>
 #include <sstream>
 
-#include "../../tlibs/string/string.h"
-#include "../../tlibs/file/prop.h"
-#include "../../tlibs/log/log.h"
+#include "tlibs/string/string.h"
+#include "tlibs/file/prop.h"
+#include "tlibs/log/log.h"
 #include "../../helper/spacegroup_clp.h"
 
 #include <boost/numeric/ublas/io.hpp>

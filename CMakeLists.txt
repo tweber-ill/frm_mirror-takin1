@@ -51,8 +51,9 @@ add_definitions(-std=c++11)
 
 
 add_executable(gentab tools/gentab/gentab.cpp
-	helper/spacegroup_clp.cpp tools/sglist/SgListDlg.cpp helper/crystalsys.cpp)
-target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES}
+	helper/spacegroup_clp.cpp helper/crystalsys.cpp)
+
+target_link_libraries(gentab ${Boost_LIBRARIES} ${Clipper_LIBRARIES} ${tlibs_LIBRARIES}
 	Qt4::QtCore Qt4::QtGui)
 
 
