@@ -30,7 +30,7 @@ ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem)
 	: m_pParentItem(pSupItem)
 {
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	setCursor(Qt::CrossCursor);
 
 	setData(TRIANGLE_NODE_TYPE_KEY, NODE_OTHER);
@@ -73,8 +73,8 @@ QVariant ScatteringTriangleNode::itemChange(GraphicsItemChange change, const QVa
 
 RecipPeak::RecipPeak()
 {
-	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 	//setCursor(Qt::ArrowCursor);
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	setFlag(QGraphicsItem::ItemIsMovable, false);
 }
 
@@ -102,9 +102,9 @@ void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 
 
 ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
-				: m_scene(scene)
+	: m_scene(scene)
 {
-	this->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
 	m_pNodeKiQ = new ScatteringTriangleNode(this);
 	m_pNodeKiKf = new ScatteringTriangleNode(this);
@@ -120,11 +120,6 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable);
 	m_pNodeGq->setFlag(QGraphicsItem::ItemIsMovable);
 
-	m_pNodeKiQ->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-	m_pNodeGq->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-
 	m_pNodeKiQ->setPos(0., 0.);
 	m_pNodeKiKf->setPos(80., -150.);
 	m_pNodeKfQ->setPos(160., 0.);
@@ -136,7 +131,6 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_scene.addItem(m_pNodeGq);
 
 	setAcceptedMouseButtons(0);
-
 	m_bReady = 1;
 }
 
@@ -167,12 +161,13 @@ void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)
 QRectF ScatteringTriangle::boundingRect() const
 {
 	return QRectF(-1000.*m_dZoom, -1000.*m_dZoom,
-			2000.*m_dZoom, 2000.*m_dZoom);
+		2000.*m_dZoom, 2000.*m_dZoom);
 }
 
 void ScatteringTriangle::SetZoom(double dZoom)
 {
-	m_dZoom = dZoom; m_scene.update();
+	m_dZoom = dZoom;
+	m_scene.update();
 }
 
 void ScatteringTriangle::SetqVisible(bool bVisible)
@@ -613,7 +608,7 @@ double ScatteringTriangle::GetMonoTwoTheta(double dMonoD, bool bPosSense) const
 double ScatteringTriangle::GetAnaTwoTheta(double dAnaD, bool bPosSense) const
 {
 	t_vec vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0))
-									- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
+		- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	double dKf = ublas::norm_2(vecKf) / m_dScaleFactor;
 	return tl::get_mono_twotheta(dKf/tl::angstrom, dAnaD*tl::angstrom, bPosSense) / units::si::radians;
 }
@@ -922,7 +917,6 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 						RecipPeak *pPeak = new RecipPeak();
 						if(ih==0 && ik==0 && il==0)
 							pPeak->SetColor(Qt::green);
-						pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 						pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
 						pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
@@ -1209,12 +1203,12 @@ bool ScatteringTriangle::KeepAbsKiKf(double dQx, double dQy)
 
 		t_vec vecKiQ = qpoint_to_vec(mapFromItem(m_pNodeKiQ,0,0));
 		t_vec vecKi = vecKiQ
-									- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+			- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 
 		t_vec vecKf = vecCurKfQ
-									- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+			- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 		t_vec vecNewKf = vecNewKfQ
-									- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
+			- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 
 		t_vec vecCurQ = vecKiQ - vecCurKfQ;
 		t_vec vecNewQ = vecKiQ - vecNewKfQ;

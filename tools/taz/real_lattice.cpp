@@ -42,9 +42,9 @@ enum LatticeNodeType
 
 LatticePoint::LatticePoint()
 {
-	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 	//setCursor(Qt::ArrowCursor);
 	setFlag(QGraphicsItem::ItemIsMovable, false);
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 }
 
 QRectF LatticePoint::boundingRect() const
@@ -71,9 +71,9 @@ void LatticePoint::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWi
 
 LatticeAtom::LatticeAtom()
 {
-	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 	//setCursor(Qt::ArrowCursor);
 	setFlag(QGraphicsItem::ItemIsMovable, false);
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 }
 
 QRectF LatticeAtom::boundingRect() const
@@ -102,9 +102,9 @@ void LatticeAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 
 
 RealLattice::RealLattice(LatticeScene& scene)
-				: m_scene(scene)
+	: m_scene(scene)
 {
-	this->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	setAcceptedMouseButtons(0);
 	m_bReady = 1;
 }
@@ -252,7 +252,6 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 				t_vec vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
 				double dX = vecCoord[0], dY = -vecCoord[1];
 
-				pAtom->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 				pAtom->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
 				pAtom->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE_ATOM);
 
@@ -304,7 +303,6 @@ void RealLattice::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<
 					LatticePoint *pPeak = new LatticePoint();
 					if(ih==0 && ik==0 && il==0)
 						pPeak->SetColor(Qt::green);
-					pPeak->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 					pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
 					pPeak->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE);
 

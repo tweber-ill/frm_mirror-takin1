@@ -14,7 +14,7 @@
 TasLayoutNode::TasLayoutNode(TasLayout* pSupItem) : m_pParentItem(pSupItem)
 {
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	setCursor(Qt::CrossCursor);
 }
 
@@ -43,19 +43,13 @@ QVariant TasLayoutNode::itemChange(GraphicsItemChange change, const QVariant &va
 
 TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 {
-	this->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
 	m_pSrc = new TasLayoutNode(this);
 	m_pMono = new TasLayoutNode(this);
 	m_pSample = new TasLayoutNode(this);
 	m_pAna = new TasLayoutNode(this);
 	m_pDet = new TasLayoutNode(this);
-
-	m_pSrc->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-	m_pMono->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-	m_pSample->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-	m_pAna->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-	m_pDet->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
 	m_pSrc->setToolTip("Source");
 	m_pMono->setToolTip("Monochromator");

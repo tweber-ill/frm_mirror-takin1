@@ -357,7 +357,7 @@ TazDlg::TazDlg(QWidget* pParent)
 #endif
 
 	QAction *pRecipExport = new QAction(this);
-	pRecipExport->setText("Export Image...");
+	pRecipExport->setText("Export Lattice Graphics...");
 	pRecipExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pRecipExport);
 
@@ -397,8 +397,13 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pMenuViewReal->addSeparator();
 
+	QAction *pRealLatticeExport = new QAction(this);
+	pRealLatticeExport->setText("Export Lattice Graphics...");
+	pRealLatticeExport->setIcon(load_icon("res/image-x-generic.svg"));
+	m_pMenuViewReal->addAction(pRealLatticeExport);
+
 	QAction *pRealExport = new QAction(this);
-	pRealExport->setText("Export Image...");
+	pRealExport->setText("Export Instrument Graphics...");
 	pRealExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pRealExport);
 
@@ -590,6 +595,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
+	QObject::connect(pRealLatticeExport, SIGNAL(triggered()), this, SLOT(ExportRealLattice()));
 
 	QObject::connect(pExportUC, SIGNAL(triggered()), this, SLOT(ExportUCModel()));
 

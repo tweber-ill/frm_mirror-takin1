@@ -107,6 +107,7 @@ class TasLayout : public QGraphicsItem
 		void AllowChanges(bool bAllow) { m_bAllowChanges = bAllow; };
 
 		void SetZoom(double dZoom);
+		double GetZoom() const { return m_dZoom; }
 
 	public:
 		std::vector<TasLayoutNode*> GetNodes();

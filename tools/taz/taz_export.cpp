@@ -18,8 +18,35 @@
 //--------------------------------------------------------------------------------
 // image exports
 
-void TazDlg::ExportReal() { ExportSceneSVG(m_sceneReal); }
-void TazDlg::ExportRecip() { ExportSceneSVG(m_sceneRecip); }
+void TazDlg::ExportReal()
+{
+	TasLayout *pTas = m_sceneReal.GetTasLayout();
+
+	const double dZoom = pTas->GetZoom();
+	pTas->SetZoom(1.);
+	ExportSceneSVG(m_sceneReal);
+	pTas->SetZoom(dZoom);
+}
+
+void TazDlg::ExportRealLattice()
+{
+	RealLattice *pLatt = m_sceneRealLattice.GetLattice();
+
+	const double dZoom = pLatt->GetZoom();
+	pLatt->SetZoom(1.);
+	ExportSceneSVG(m_sceneRealLattice);
+	pLatt->SetZoom(dZoom);
+}
+
+void TazDlg::ExportRecip()
+{
+	ScatteringTriangle *pTri = m_sceneRecip.GetTriangle();
+
+	const double dZoom = pTri->GetZoom();
+	pTri->SetZoom(1.);
+	ExportSceneSVG(m_sceneRecip);
+	pTri->SetZoom(dZoom);
+}
 
 void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 {
