@@ -86,15 +86,15 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	plotN->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plotN->xBottom, plotN->yLeft,
 #if QWT_VER<6
-									QwtPlotPicker::PointSelection,
+		QwtPlotPicker::PointSelection,
 #endif
-									QwtPlotPicker::NoRubberBand,
+		QwtPlotPicker::NoRubberBand,
 #if QWT_VER>=6
-									QwtPlotPicker::AlwaysOff,
+		QwtPlotPicker::AlwaysOff,
 #else
-									QwtPlotPicker::AlwaysOn,
+		QwtPlotPicker::AlwaysOn,
 #endif
-									plotN->canvas());
+		plotN->canvas());
 
 #if QWT_VER>=6
 	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
@@ -106,15 +106,15 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	plotX->canvas()->setMouseTracking(1);
 	m_pPickerX = new QwtPlotPicker(plotX->xBottom, plotX->yLeft,
 #if QWT_VER<6
-									QwtPlotPicker::PointSelection,
+		QwtPlotPicker::PointSelection,
 #endif
-									QwtPlotPicker::NoRubberBand,
+		QwtPlotPicker::NoRubberBand,
 #if QWT_VER>=6
-									QwtPlotPicker::AlwaysOff,
+		QwtPlotPicker::AlwaysOff,
 #else
-									QwtPlotPicker::AlwaysOn,
+		QwtPlotPicker::AlwaysOn,
 #endif
-									plotX->canvas());
+		plotX->canvas());
 
 #if QWT_VER>=6
 	m_pPickerX->setStateMachine(new QwtPickerTrackerMachine());
@@ -419,29 +419,33 @@ void PowderDlg::CalcPeaks()
 					// using angle and F as hash for the set
 					std::ostringstream ostrAngle;
 					ostrAngle.precision(iPrec);
-					ostrAngle << (dAngle/M_PI*180.) << " " << dF;
+					ostrAngle << tl::r2d(dAngle) << " " << dF;
+					std::string strAngle = ostrAngle.str();
+					//std::cout << strAngle << std::endl;
 
 					std::ostringstream ostrPeak;
 					ostrPeak << "(" << /*std::abs*/(ih) << /*std::abs*/(ik) << /*std::abs*/(il) << ")";
 
 					if(mapPeaks[ostrAngle.str()].strPeaks.length()!=0)
-						mapPeaks[ostrAngle.str()].strPeaks += ", ";
-					mapPeaks[ostrAngle.str()].strPeaks += ostrPeak.str();
-					mapPeaks[ostrAngle.str()].dAngle = dAngle;
-					mapPeaks[ostrAngle.str()].dQ = dQ;
+						mapPeaks[strAngle].strPeaks += ", ";
 
-					mapPeaks[ostrAngle.str()].h = /*std::abs*/(ih);
-					mapPeaks[ostrAngle.str()].k = /*std::abs*/(ik);
-					mapPeaks[ostrAngle.str()].l = /*std::abs*/(il);
+					mapPeaks[strAngle].strPeaks += ostrPeak.str();
+					mapPeaks[strAngle].dAngle = dAngle;
+					mapPeaks[strAngle].dQ = dQ;
 
-					mapPeaks[ostrAngle.str()].dFn = dF;
-					mapPeaks[ostrAngle.str()].dIn = dI;
-					mapPeaks[ostrAngle.str()].dFx = dFx;
-					mapPeaks[ostrAngle.str()].dIx = dIx;
+					mapPeaks[strAngle].h = /*std::abs*/(ih);
+					mapPeaks[strAngle].k = /*std::abs*/(ik);
+					mapPeaks[strAngle].l = /*std::abs*/(il);
+
+					mapPeaks[strAngle].dFn = dF;
+					mapPeaks[strAngle].dIn = dI;
+					mapPeaks[strAngle].dFx = dFx;
+					mapPeaks[strAngle].dIx = dIx;
 				}
 
 		//std::cout << powder << std::endl;
 		std::vector<const PowderLine*> vecPowderLines;
+		//std::cout << "number of peaks: " << mapPeaks.size() << std::endl;
 		vecPowderLines.reserve(mapPeaks.size());
 
 
@@ -459,8 +463,8 @@ void PowderDlg::CalcPeaks()
 
 
 		std::sort(vecPowderLines.begin(), vecPowderLines.end(),
-					[](const PowderLine* pLine1, const PowderLine* pLine2) -> bool
-						{ return pLine1->dAngle <= pLine2->dAngle; });
+			[](const PowderLine* pLine1, const PowderLine* pLine2) -> bool
+				{ return pLine1->dAngle < pLine2->dAngle; });
 
 
 		const int iNumRows = vecPowderLines.size();

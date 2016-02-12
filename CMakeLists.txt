@@ -16,7 +16,8 @@ find_package(Qt4 REQUIRED)
 find_package(PythonInterp 2.7 REQUIRED)
 find_package(PythonLibs 2.7 REQUIRED)
 find_package(PNG REQUIRED)
-find_package(JPEG REQUIRED)
+#find_package(JPEG REQUIRED)
+#find_package(TIFF REQUIRED)
 find_package(Qwt REQUIRED)
 find_package(Clipper REQUIRED)
 
@@ -31,6 +32,7 @@ message("Qt moc: ${QT_MOC_EXECUTABLE}\nQt uic: ${QT_UIC_EXECUTABLE}")
 add_definitions(-DUSE_NET -DUSE_IOSTR -DUSE_BOOST_REX -DUSE_PY -DUSE_GIL)
 add_definitions(-DQT_VER=4 -DQWT_VER=${QWT_MAJOR_VERSION})
 add_definitions(-DNO_LAPACK -DNO_3D -DNO_CLP)
+add_definitions(-DNO_JPEG -DNO_TIFF)
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_definitions(${Boost_CXX_FLAGS})
 
@@ -39,7 +41,8 @@ include_directories("${PROJECT_SOURCE_DIR}" ".")
 include_directories("${Boost_INCLUDE_DIRS}/..")
 include_directories("${tlibs_INCLUDE_DIRS}/..")
 include_directories("${PYTHON_INCLUDE_DIRS}")
-include_directories("${PNG_INCLUDE_DIRS} ${JPEG_INCLUDE_DIRS}")
+include_directories("${PNG_INCLUDE_DIRS}")
+#include_directories("${JPEG_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS}")
 include_directories("${QWT_INCLUDE_DIRS}")
 
 
@@ -87,11 +90,12 @@ add_executable(takin tools/taz/taz_main.cpp
 )
 
 
-target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES} 
+target_link_libraries(takin ${Boost_LIBRARIES} ${tlibs_LIBRARIES}
 	Threads::Threads
 	Qt4::QtCore Qt4::QtGui Qt4::QtSvg #Qt4::QtOpenGL
-	${PYTHON_LIBRARIES} 
-	${PNG_LIBRARIES} ${JPEG_LIBRARIES} 
+	${PYTHON_LIBRARIES}
+	${PNG_LIBRARIES}
+#	${JPEG_LIBRARIES} ${TIFF_LIBRARIES}
 	${QWT_LIBRARIES}
 )
 

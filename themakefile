@@ -20,7 +20,7 @@ QWT5_SUFFIX =
 # -----------------------------------------------------------------------------
 
 
-DEFINES = 
+DEFINES = -DNO_JPEG -DNO_TIFF 
 
 ifeq ($(USE_3D), 1)
 	DEFINES += -DUSE_3D
@@ -162,7 +162,7 @@ else
 endif
 
 ifeq ($(USE_GIL), 1)
-	GIL_LIBS = -lpng -ljpeg
+	GIL_LIBS = -lpng #-ljpeg -ltiff
 else
 	GIL_LIBS =
 endif
