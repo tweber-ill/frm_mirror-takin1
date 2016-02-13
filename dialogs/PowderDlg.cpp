@@ -15,6 +15,7 @@
 
 #include "helper/globals.h"
 #include "helper/formfact.h"
+#include "helper/qthelper.h"
 
 #include <vector>
 #include <string>
@@ -64,6 +65,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	m_pGrid = new QwtPlotGrid();
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plotN);
+
 	m_pGridX = new QwtPlotGrid();
 	m_pGridX->setPen(penGrid);
 	m_pGridX->attach(plotX);
@@ -77,6 +79,16 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	m_pCurveX->setPen(penCurve);
 	m_pCurveX->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 	m_pCurveX->attach(plotX);
+
+#if QWT_VER>=6
+	m_pZoomer = new QwtPlotZoomer(plotN->canvas());
+	m_pZoomer->setMaxStackDepth(-1);
+	m_pZoomer->setEnabled(1);
+
+	m_pZoomerX = new QwtPlotZoomer(plotX->canvas());
+	m_pZoomerX->setMaxStackDepth(-1);
+	m_pZoomerX->setEnabled(1);
+#endif
 
 	plotN->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
 	plotN->setAxisTitle(QwtPlot::yLeft, "Intensity");
@@ -150,6 +162,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SpaceGroupChanged()));
 
+	connect(btnSaveTable, SIGNAL(clicked()), this, SLOT(SaveTable()));
 	connect(btnSave, SIGNAL(clicked()), this, SLOT(SavePowder()));
 	connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadPowder()));
 	connect(btnAtoms, SIGNAL(clicked()), this, SLOT(ShowAtomDlg()));
@@ -171,6 +184,15 @@ PowderDlg::~PowderDlg()
 		{
 			delete *pGrid;
 			*pGrid = nullptr;
+		}
+	}
+
+	for(QwtPlotZoomer** pZoom : {&m_pZoomer, &m_pZoomerX})
+	{
+		if(*pZoom)
+		{
+			delete *pZoom;
+			*pZoom = nullptr;
 		}
 	}
 }
@@ -241,6 +263,9 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 	m_pCurve->setRawData(m_vecTT.data(), m_vecInt.data(), m_vecTT.size());
 	m_pCurveX->setRawData(m_vecTTx.data(), m_vecIntx.data(), m_vecTTx.size());
 #endif
+
+	set_zoomer_base(m_pZoomer, m_vecTT, m_vecInt);
+	set_zoomer_base(m_pZoomerX, m_vecTTx, m_vecIntx);
 
 	plotN->replot();
 	plotX->replot();
@@ -716,6 +741,20 @@ void PowderDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 	m_bDontCalc = 0;
 	CalcPeaks();
+}
+
+
+void PowderDlg::SaveTable()
+{
+	QString strDirLast = m_pSettings ? m_pSettings->value("powder/last_dir_table", ".").toString() : ".";
+	QString strFile = QFileDialog::getSaveFileName(this,
+		"Save Table", strDirLast, "Data files (*.dat *.DAT)");
+
+	if(strFile != "")
+	{
+		if(!save_table(strFile.toStdString().c_str(), tablePowderLines))
+			QMessageBox::critical(this, "Error", "Could not save table data.");
+	}
 }
 
 

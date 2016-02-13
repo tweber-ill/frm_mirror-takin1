@@ -17,19 +17,22 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
+#include <qwt_plot_zoomer.h>
 #include <qwt_legend.h>
+
 
 class DWDlg : public QDialog, Ui::DWDlg
 { Q_OBJECT
 protected:
 	QSettings *m_pSettings = nullptr;
-	
+
 	// dw stuff
 	std::vector<double> m_vecQ, m_vecDeb;
 
 	QwtPlotCurve *m_pCurve = nullptr;
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
+	QwtPlotZoomer* m_pZoomer = nullptr;
 
 
 	// ana stuff
@@ -38,6 +41,7 @@ protected:
 	QwtPlotCurve *m_pCurveAna = nullptr;
 	QwtPlotGrid *m_pGridAna = nullptr;
 	QwtPlotPicker *m_pPickerAna = nullptr;
+	QwtPlotZoomer* m_pZoomerAna = nullptr;
 
 
 	// bose stuff
@@ -48,6 +52,7 @@ protected:
 	QwtPlotGrid *m_pGridBose = nullptr;
 	QwtPlotPicker *m_pPickerBose = nullptr;
 	QwtLegend *m_pLegendBose = nullptr;
+	QwtPlotZoomer* m_pZoomerBose = nullptr;
 
 
 	// lorentz stuff
@@ -56,6 +61,7 @@ protected:
 	QwtPlotCurve *m_pCurveLor = nullptr;
 	QwtPlotGrid *m_pGridLor = nullptr;
 	QwtPlotPicker *m_pPickerLor = nullptr;
+	QwtPlotZoomer* m_pZoomerLor = nullptr;
 
 
 

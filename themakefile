@@ -187,7 +187,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/crystalsys.o obj/formfact.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
-	obj/loadinstr.o obj/recent.o obj/globals.o \
+	obj/loadinstr.o obj/recent.o obj/globals.o obj/qthelper.o \
 	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
 	obj/scanviewer.o obj/x3d.o \
@@ -209,7 +209,7 @@ OBJ_RESO = obj/log.o obj/rand.o \
 	obj/ellipse.o obj/linalg2.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
-	obj/loadinstr.o obj/log.o
+	obj/loadinstr.o obj/log.o obj/qthelper.o
 
 OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup.o obj/crystalsys.o \
 	obj/log.o obj/globals.o
@@ -324,6 +324,8 @@ obj/AtomsDlg.o: dialogs/AtomsDlg.cpp dialogs/AtomsDlg.h
 obj/SettingsDlg.o: dialogs/SettingsDlg.cpp dialogs/SettingsDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/globals.o: helper/globals.cpp helper/globals.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/qthelper.o: helper/qthelper.cpp helper/qthelper.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<

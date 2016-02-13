@@ -85,7 +85,7 @@ add_executable(takin tools/taz/taz_main.cpp
 
 	helper/spacegroup.cpp tools/sglist/SgListDlg.cpp
 	helper/globals.cpp helper/crystalsys.cpp
-	helper/formfact.cpp
+	helper/formfact.cpp helper/qthelper.cpp
 #	helper/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp
 )
 

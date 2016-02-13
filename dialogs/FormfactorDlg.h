@@ -17,6 +17,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
+#include <qwt_plot_zoomer.h>
 #include <qwt_legend.h>
 
 
@@ -31,6 +32,7 @@ protected:
 	QwtPlotCurve *m_pCurve = nullptr;
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
+	QwtPlotZoomer *m_pZoomer = nullptr;
 
 	// scattering lengths
 	std::vector<double> m_vecElem, m_vecSc;
@@ -38,6 +40,7 @@ protected:
 	QwtPlotCurve *m_pCurveSc = nullptr;
 	QwtPlotGrid *m_pGridSc = nullptr;
 	QwtPlotPicker *m_pPickerSc = nullptr;
+	QwtPlotZoomer *m_pZoomerSc = nullptr;
 
 
 protected:

@@ -7,8 +7,8 @@
 
 #include "FormfactorDlg.h"
 #include "helper/formfact.h"
+#include "helper/qthelper.h"
 #include "tlibs/string/spec_char.h"
-
 #include <qwt_picker_machine.h>
 
 
@@ -30,6 +30,12 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plotF);
 
+#if QWT_VER>=6
+	m_pZoomer = new QwtPlotZoomer(plotF->canvas());
+	m_pZoomer->setMaxStackDepth(-1);
+	m_pZoomer->setEnabled(1);
+#endif
+
 	m_pCurve = new QwtPlotCurve("Atomic Form Factor");
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
@@ -41,15 +47,15 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	plotF->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plotF->xBottom, plotF->yLeft,
 #if QWT_VER<6
-									QwtPlotPicker::PointSelection,
+		QwtPlotPicker::PointSelection,
 #endif
-									QwtPlotPicker::NoRubberBand,
+		QwtPlotPicker::NoRubberBand,
 #if QWT_VER>=6
-									QwtPlotPicker::AlwaysOff,
+		QwtPlotPicker::AlwaysOff,
 #else
-									QwtPlotPicker::AlwaysOn,
+		QwtPlotPicker::AlwaysOn,
 #endif
-									plotF->canvas());
+		plotF->canvas());
 
 #if QWT_VER>=6
 	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
@@ -68,6 +74,12 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	m_pGridSc->setPen(penGrid);
 	m_pGridSc->attach(plotSc);
 
+#if QWT_VER>=6
+	m_pZoomerSc = new QwtPlotZoomer(plotSc->canvas());
+	m_pZoomerSc->setMaxStackDepth(-1);
+	m_pZoomerSc->setEnabled(1);
+#endif
+
 	m_pCurveSc = new QwtPlotCurve("Scattering Lengths");
 	m_pCurveSc->setPen(penCurve);
 	m_pCurveSc->setRenderHint(QwtPlotItem::RenderAntialiased, true);
@@ -76,15 +88,15 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	plotSc->canvas()->setMouseTracking(1);
 	m_pPickerSc = new QwtPlotPicker(plotSc->xBottom, plotSc->yLeft,
 #if QWT_VER<6
-									QwtPlotPicker::PointSelection,
+		QwtPlotPicker::PointSelection,
 #endif
-									QwtPlotPicker::NoRubberBand,
+		QwtPlotPicker::NoRubberBand,
 #if QWT_VER>=6
-									QwtPlotPicker::AlwaysOff,
+		QwtPlotPicker::AlwaysOff,
 #else
-									QwtPlotPicker::AlwaysOn,
+		QwtPlotPicker::AlwaysOn,
 #endif
-									plotSc->canvas());
+		plotSc->canvas());
 
 #if QWT_VER>=6
 	m_pPickerSc->setStateMachine(new QwtPickerTrackerMachine());
@@ -130,6 +142,13 @@ FormfactorDlg::~FormfactorDlg()
 		{
 			delete (*pGrid);
 			*pGrid = nullptr;
+		}
+
+	for(QwtPlotZoomer** pZoomer : {&m_pZoomer, &m_pZoomerSc})
+		if(*pZoomer)
+		{
+			delete (*pZoomer);
+			*pZoomer = nullptr;
 		}
 }
 
@@ -232,6 +251,7 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	m_pCurve->setRawData(m_vecQ.data(), m_vecFF.data(), m_vecQ.size());
 #endif
 
+	set_zoomer_base(m_pZoomer, m_vecQ, m_vecFF);
 	plotF->replot();
 }
 
@@ -259,6 +279,7 @@ void FormfactorDlg::PlotScatteringLengths()
 	m_pCurveSc->setRawData(m_vecElem.data(), m_vecSc.data(), m_vecElem.size());
 #endif
 
+	set_zoomer_base(m_pZoomerSc, m_vecElem, m_vecSc);
 	plotSc->replot();
 }
 

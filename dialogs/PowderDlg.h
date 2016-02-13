@@ -24,6 +24,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
+#include <qwt_plot_zoomer.h>
 //#include <qwt_legend.h>
 
 
@@ -54,10 +55,12 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		QwtPlotCurve *m_pCurve = nullptr;
 		QwtPlotGrid *m_pGrid = nullptr;
 		QwtPlotPicker *m_pPicker = nullptr;
+		QwtPlotZoomer* m_pZoomer = nullptr;
 
 		QwtPlotCurve *m_pCurveX = nullptr;
 		QwtPlotGrid *m_pGridX = nullptr;
 		QwtPlotPicker *m_pPickerX = nullptr;
+		QwtPlotZoomer* m_pZoomerX = nullptr;
 
 
 	protected:
@@ -84,6 +87,7 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		void SpaceGroupChanged();
 		void RepopulateSpaceGroups();
 
+		void SaveTable();
 		void SavePowder();
 		void LoadPowder();
 

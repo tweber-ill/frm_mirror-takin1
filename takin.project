@@ -204,6 +204,8 @@
     <File Name="helper/sghelper.h"/>
     <File Name="helper/spacegroup.cpp"/>
     <File Name="helper/spacegroup.h"/>
+    <File Name="helper/qthelper.cpp"/>
+    <File Name="helper/qthelper.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
@@ -244,6 +246,8 @@
         <Preprocessor Value="USE_GIL"/>
         <Preprocessor Value="USE_CLP"/>
         <Preprocessor Value="DEBUG"/>
+        <Preprocessor Value="NO_TIFF"/>
+        <Preprocessor Value="NO_JPEG"/>
       </Compiler>
       <Linker Options="" Required="yes">
         <LibraryPath Value="/usr/lib64/qt4"/>
@@ -338,6 +342,8 @@
         <Preprocessor Value="USE_GIL"/>
         <Preprocessor Value="USE_CLP"/>
         <Preprocessor Value="NDEBUG"/>
+        <Preprocessor Value="NO_TIFF"/>
+        <Preprocessor Value="NO_JPEG"/>
       </Compiler>
       <Linker Options="-s" Required="yes">
         <LibraryPath Value="/usr/lib64/qt4"/>

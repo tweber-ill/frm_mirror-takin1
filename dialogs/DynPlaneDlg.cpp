@@ -9,6 +9,7 @@
 
 #include "tlibs/string/string.h"
 #include "tlibs/math/neutrons.hpp"
+#include "helper/qthelper.h"
 
 #include <boost/units/io.hpp>
 #include <qwt_picker_machine.h>
@@ -26,6 +27,12 @@ DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plot);
 
+#if QWT_VER>=6
+	m_pZoomer = new QwtPlotZoomer(plot->canvas());
+	m_pZoomer->setMaxStackDepth(-1);
+	m_pZoomer->setEnabled(1);
+#endif
+
 	m_pCurve = new QwtPlotCurve("Kinematic Plane (top)");
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
@@ -37,15 +44,15 @@ DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 	plot->canvas()->setMouseTracking(1);
 	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
 #if QWT_VER<6
-									QwtPlotPicker::PointSelection,
+		QwtPlotPicker::PointSelection,
 #endif
-									QwtPlotPicker::NoRubberBand,
+		QwtPlotPicker::NoRubberBand,
 #if QWT_VER>=6
-									QwtPlotPicker::AlwaysOff,
+		QwtPlotPicker::AlwaysOff,
 #else
-									QwtPlotPicker::AlwaysOn,
+		QwtPlotPicker::AlwaysOn,
 #endif
-									plot->canvas());
+		plot->canvas());
 
 #if QWT_VER>=6
 	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
@@ -85,6 +92,12 @@ DynPlaneDlg::~DynPlaneDlg()
 	{
 		delete m_pGrid;
 		m_pGrid = nullptr;
+	}
+
+	if(m_pZoomer)
+	{
+		delete m_pZoomer;
+		m_pZoomer = nullptr;
 	}
 }
 
@@ -155,6 +168,7 @@ void DynPlaneDlg::Calc()
 	m_pCurve->setRawData(m_vecQ.data(), m_vecE.data(), m_vecQ.size());
 #endif
 
+	set_zoomer_base(m_pZoomer, m_vecQ, m_vecE);
 	plot->replot();
 }
 

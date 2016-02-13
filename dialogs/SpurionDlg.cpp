@@ -9,6 +9,7 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
+#include "helper/qthelper.h"
 
 #include <sstream>
 #include <iostream>
@@ -28,6 +29,12 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 	penGrid.setStyle(Qt::DashLine);
 	m_pBraggGrid->setPen(penGrid);
 	m_pBraggGrid->attach(plotbragg);
+
+#if QWT_VER>=6
+	m_pZoomerBragg = new QwtPlotZoomer(plotbragg->canvas());
+	m_pZoomerBragg->setMaxStackDepth(-1);
+	m_pZoomerBragg->setEnabled(1);
+#endif
 
 	m_pBraggCurve = new QwtPlotCurve("Bragg tail");
 	QPen penCurve;
@@ -93,6 +100,12 @@ SpurionDlg::~SpurionDlg()
 	{
 		delete m_pBraggGrid;
 		m_pBraggGrid = nullptr;
+	}
+
+	if(m_pZoomerBragg)
+	{
+		delete m_pZoomerBragg;
+		m_pZoomerBragg = nullptr;
 	}
 }
 
@@ -222,6 +235,7 @@ void SpurionDlg::CalcBragg()
 	m_pBraggCurve->setRawData(m_vecQ.data(), m_vecE.data(), m_vecQ.size());
 #endif
 
+	set_zoomer_base(m_pZoomerBragg, m_vecQ, m_vecE);
 	plotbragg->replot();
 }
 

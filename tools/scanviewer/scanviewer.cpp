@@ -16,8 +16,10 @@
 #include <algorithm>
 #include <iterator>
 #include <boost/filesystem.hpp>
+
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
+#include "helper/qthelper.h"
 
 namespace fs = boost::filesystem;
 
@@ -323,37 +325,7 @@ void ScanViewerDlg::PlotScan()
 	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
 #endif
 
-	if(m_pZoomer)
-	{
-		const auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
-		const auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-		//tl::log_debug("min: ", *minmaxX.first, " ", *minmaxY.first);
-		//tl::log_debug("max: ", *minmaxX.second, " ", *minmaxY.second);
-
-		double dminmax[] = {*minmaxX.first, *minmaxX.second,
-			*minmaxY.first, *minmaxY.second};
-
-		if(tl::float_equal(dminmax[0], dminmax[1]))
-		{
-			dminmax[0] -= dminmax[0]/10.;
-			dminmax[1] += dminmax[1]/10.;
-		}
-		if(tl::float_equal(dminmax[2], dminmax[3]))
-		{
-			dminmax[2] -= dminmax[2]/10.;
-			dminmax[3] += dminmax[3]/10.;
-		}
-
-		QRectF rect;
-		rect.setLeft(dminmax[0]);
-		rect.setRight(dminmax[1]);
-		rect.setBottom(dminmax[3]);
-		rect.setTop(dminmax[2]);
-
-		m_pZoomer->zoom(rect);
-		m_pZoomer->setZoomBase(rect);
-	}
-
+	set_zoomer_base(m_pZoomer, m_vecX, m_vecY);
 	plot->replot();
 	GenerateExternal(comboExport->currentIndex());
 }
