@@ -66,18 +66,21 @@ int main(int argc, char** argv)
 {
 	if(argc<=1)
 	{
-		std::cerr << "Usage, e.g.:\n";
-		std::cerr << "\t" << argv[0] << " T TA2_E_HWHM TA2_amp" << std::endl;
+		std::cerr << "Usage:\n";
+		std::cerr << "\t" << argv[0] << " <out dir>  <var1> <var2> ..." << std::endl;
+		std::cerr << "\te.g." << argv[0] << " out  T TA2_E_HWHM TA2_amp" << std::endl;
 		return -1;
 	}
 
+	std::string strOutDir = argv[1];
+
 	std::vector<std::string> vecCols;
-	for(int iArg=1; iArg<argc; ++iArg)
+	for(int iArg=2; iArg<argc; ++iArg)
 		vecCols.push_back(argv[iArg]);
 
 
 
-	const char* pcOut = "out/result.dat";
+	const char* pcOut = (strOutDir + "/result.dat").c_str();
 	std::ofstream ofstr(pcOut);
 	if(!ofstr)
 	{
@@ -100,9 +103,9 @@ int main(int argc, char** argv)
 	for(unsigned iNr=1; 1; ++iNr)
 	{
 		std::ostringstream ostrScFile;
-		ostrScFile << "out/sc" << iNr << ".dat";
+		ostrScFile << strOutDir << "/sc" << iNr << ".dat";
 		std::ostringstream ostrModFile;
-		ostrModFile << "out/mod" << iNr << ".dat";
+		ostrModFile << strOutDir <<  "/mod" << iNr << ".dat";
 
 
 		if(!tl::file_exists(ostrScFile.str().c_str()) ||
