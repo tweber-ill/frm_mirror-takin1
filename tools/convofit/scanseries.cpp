@@ -16,6 +16,8 @@
 
 using t_map = std::map<std::string, std::pair<double, double>>;
 
+
+// reads property maps from data files
 bool get_fileprops(const char* pcFile, t_map& mapProps)
 {
 	std::ifstream ifstr(pcFile);
@@ -42,19 +44,44 @@ bool get_fileprops(const char* pcFile, t_map& mapProps)
 		if(!strKey.size())
 			continue;
 
-		std::pair<std::string, std::string> strValErr =
-			tl::split_first(_strVal, std::string("+-"), 1, 1);
 
-		std::string& strVal = strValErr.first;
-		std::string& strErr = strValErr.second;
+		std::vector<double> vecHKLE;
+		tl::get_tokens<double>(_strVal, std::string(" \t"), vecHKLE);
 
-		//std::cout << strKey << ": " << strVal << ", " << strErr << std::endl;
-		if(strVal.length())
+		// value & error pair
+		if(_strVal.find("+-") != std::string::npos)
 		{
-			double dVal = tl::str_to_var<double>(strVal);
-			double dErr = tl::str_to_var<double>(strErr);
+			std::pair<std::string, std::string> strValErr =
+				tl::split_first(_strVal, std::string("+-"), 1, 1);
 
-			mapProps.insert(t_map::value_type(strKey, {dVal, dErr}));
+			std::string& strVal = strValErr.first;
+			std::string& strErr = strValErr.second;
+
+			//std::cout << strKey << ": " << strVal << ", " << strErr << std::endl;
+			if(strVal.length())
+			{
+				double dVal = tl::str_to_var<double>(strVal);
+				double dErr = tl::str_to_var<double>(strErr);
+
+				mapProps.insert(t_map::value_type(strKey, {dVal, dErr}));
+			}
+		}
+		// hklE values -> split them, e.g. "scan_dir = 0 0 0 1" -> "scan_dir_h = 0", ...
+		else if(vecHKLE.size()==3 || vecHKLE.size()==4)
+		{
+			std::vector<std::string> vecSuffixes = {"_h", "_k", "_l", "_E"};
+
+			std::size_t iNumCoords = std::min(vecSuffixes.size(), vecHKLE.size());
+			for(unsigned int iCoord=0; iCoord<iNumCoords; ++iCoord)
+			{
+				std::string strNewKey = strKey + vecSuffixes[iCoord];
+				mapProps.insert(t_map::value_type(strNewKey, {vecHKLE[iCoord], 0.}));
+			}
+		}
+		else
+		{
+			tl::log_warn("Unknown key: \"", strKey, "\".");
+			continue;
 		}
 	}
 
@@ -80,11 +107,11 @@ int main(int argc, char** argv)
 
 
 
-	const char* pcOut = (strOutDir + "/result.dat").c_str();
-	std::ofstream ofstr(pcOut);
+	std::string strOut = strOutDir + "/result.dat";
+	std::ofstream ofstr(strOut);
 	if(!ofstr)
 	{
-		tl::log_err("Cannot open \"", pcOut, "\".");
+		tl::log_err("Cannot open output file \"", strOut, "\".");
 		return -1;
 	}
 	ofstr.precision(16);
@@ -113,6 +140,7 @@ int main(int argc, char** argv)
 			break;
 
 		tl::log_info("Processing dataset ", iNr, ".");
+
 		t_map map;
 		get_fileprops(ostrScFile.str().c_str(), map);
 		get_fileprops(ostrModFile.str().c_str(), map);
@@ -127,6 +155,6 @@ int main(int argc, char** argv)
 		ofstr << "\n";
 	}
 
-	tl::log_info("Wrote \"", pcOut, "\".");
+	tl::log_info("Wrote \"", strOut, "\".");
 	return 0;
 }
