@@ -10,6 +10,7 @@
 
 #include "../res/eck.h"
 #include "../res/ellipse.h"
+#include "../res/mc.h"
 
 enum class ResoAlgo
 {
@@ -36,7 +37,7 @@ protected:
 	ResoAlgo m_algo = ResoAlgo::CN;
 	ResoFocus m_foc = ResoFocus::FOC_NONE;
 
-	McNeutronOpts m_opts;
+	McNeutronOpts<ublas::matrix<double>> m_opts;
 	EckParams m_reso;
 	CNResults m_res;
 

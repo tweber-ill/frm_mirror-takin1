@@ -9,6 +9,7 @@
 #include "tlibs/math/lattice.h"
 #include "tlibs/file/prop.h"
 #include "tlibs/log/log.h"
+#include "tlibs/helper/thread.h"
 
 #include <boost/units/io.hpp>
 
@@ -372,6 +373,31 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 Ellipsoid4d TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& vecNeutrons) const
 {
 	Ellipsoid4d ell4d = calc_res_ellipsoid4d(m_res.reso, m_res.Q_avg);;
-	mc_neutrons(ell4d, iNum, m_opts, vecNeutrons);
+	if(vecNeutrons.size() != iNum)
+		vecNeutrons.resize(iNum);
+
+	unsigned int iNumThreads = std::thread::hardware_concurrency();
+	std::size_t iNumPerThread = iNum / iNumThreads;
+	std::size_t iRemaining = iNum % iNumThreads;
+
+	tl::ThreadPool<void()> tp(iNumThreads);
+	for(unsigned iThread=0; iThread<iNumThreads; ++iThread)
+	{
+		std::vector<t_vec>::iterator iterBegin = vecNeutrons.begin() + iNumPerThread*iThread;
+		std::size_t iNumNeutr = iNumPerThread;
+		if(iThread == iNumThreads-1)
+			iNumNeutr = iNumPerThread + iRemaining;
+
+		tp.AddTask([iterBegin, iNumNeutr, this, &ell4d]()
+			{ mc_neutrons(ell4d, iNumNeutr, this->m_opts, iterBegin); });
+	}
+
+	tp.StartTasks();
+
+	auto& lstFut = tp.GetFutures();
+	for(auto& fut : lstFut)
+		fut.get();
+
+	//mc_neutrons(ell4d, iNum, m_opts, vecNeutrons.begin());
 	return ell4d;
 }

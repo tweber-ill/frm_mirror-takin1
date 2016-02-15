@@ -85,27 +85,6 @@ extern Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, const ubl
 extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
 
 
-enum class McNeutronCoords
-{
-	DIRECT = 0,
-	ANGS = 1,
-	RLU = 2
-};
-
-struct McNeutronOpts
-{
-	McNeutronCoords coords = McNeutronCoords::RLU;
-	ublas::matrix<double> matU, matB, matUB;
-	ublas::matrix<double> matUinv, matBinv, matUBinv;
-	double dAngleQVec0;
-
-	bool bCenter;
-};
-
-extern void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
-						const McNeutronOpts& opts,
-						std::vector<ublas::vector<double>>& vecResult);
-
 
 /*
  * this is a 1:1 C++ reimplementation of 'rc_int' from 'mcresplot' and 'rescal5'

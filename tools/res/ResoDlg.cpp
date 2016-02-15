@@ -21,6 +21,7 @@
 #include "tlibs/math/lattice.h"
 
 #include "helper/globals.h"
+#include "mc.h"
 
 #include <QPainter>
 #include <QFileDialog>
@@ -42,41 +43,41 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	groupGuide->setChecked(false);
 
 	m_vecSpinBoxes = {spinMonod, spinMonoMosaic, spinAnad,
-						spinAnaMosaic, spinSampleMosaic,
-						spinHCollMono, spinHCollBSample,
-						spinHCollASample, spinHCollAna, spinVCollMono,
-						spinVCollBSample, spinVCollASample, spinVCollAna,
-						spinMonoRefl, spinAnaEffic,
+		spinAnaMosaic, spinSampleMosaic,
+		spinHCollMono, spinHCollBSample,
+		spinHCollASample, spinHCollAna, spinVCollMono,
+		spinVCollBSample, spinVCollASample, spinVCollAna,
+		spinMonoRefl, spinAnaEffic,
 
-						spinMonoW, spinMonoH, spinMonoThick, spinMonoCurvH, spinMonoCurvV,
-						spinSampleW_Q, spinSampleW_perpQ, spinSampleH,
-						spinAnaW, spinAnaH, spinAnaThick, spinAnaCurvH, spinAnaCurvV,
-						spinSrcW, spinSrcH,
-						spinGuideDivH, spinGuideDivV,
-						spinDetW, spinDetH,
-						spinDistMonoSample, spinDistSampleAna, spinDistAnaDet, spinDistSrcMono,
+		spinMonoW, spinMonoH, spinMonoThick, spinMonoCurvH, spinMonoCurvV,
+		spinSampleW_Q, spinSampleW_perpQ, spinSampleH,
+		spinAnaW, spinAnaH, spinAnaThick, spinAnaCurvH, spinAnaCurvV,
+		spinSrcW, spinSrcH,
+		spinGuideDivH, spinGuideDivV,
+		spinDetW, spinDetH,
+		spinDistMonoSample, spinDistSampleAna, spinDistAnaDet, spinDistSrcMono,
 
-						spinMonoMosaicV, spinAnaMosaicV,
-						spinSamplePosX, spinSamplePosY, spinSamplePosZ};
+		spinMonoMosaicV, spinAnaMosaicV,
+		spinSamplePosX, spinSamplePosY, spinSamplePosZ};
 
 	m_vecSpinNames = {"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
-					"reso/ana_mosaic", "reso/sample_mosaic",
-					"reso/h_coll_mono", "reso/h_coll_before_sample",
-					"reso/h_coll_after_sample", "reso/h_coll_ana",
-					"reso/v_coll_mono", "reso/v_coll_before_sample",
-					"reso/v_coll_after_sample", "reso/v_coll_ana",
-					"reso/mono_refl", "reso/ana_effic",
+		"reso/ana_mosaic", "reso/sample_mosaic",
+		"reso/h_coll_mono", "reso/h_coll_before_sample",
+		"reso/h_coll_after_sample", "reso/h_coll_ana",
+		"reso/v_coll_mono", "reso/v_coll_before_sample",
+		"reso/v_coll_after_sample", "reso/v_coll_ana",
+		"reso/mono_refl", "reso/ana_effic",
 
-					"reso/pop_mono_w", "reso/pop_mono_h", "reso/pop_mono_thick", "reso/pop_mono_curvh", "reso/pop_mono_curvv",
-					"reso/pop_sample_wq", "reso/pop_sampe_wperpq", "reso/pop_sample_h",
-					"reso/pop_ana_w", "reso/pop_ana_h", "reso/pop_ana_thick", "reso/pop_ana_curvh", "reso/pop_ana_curvv",
-					"reso/pop_src_w", "reso/pop_src_h",
-					"reso/pop_guide_divh", "reso/pop_guide_divv",
-					"reso/pop_det_w", "reso/pop_det_h",
-					"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det", "reso/pop_dist_src_mono",
+		"reso/pop_mono_w", "reso/pop_mono_h", "reso/pop_mono_thick", "reso/pop_mono_curvh", "reso/pop_mono_curvv",
+		"reso/pop_sample_wq", "reso/pop_sampe_wperpq", "reso/pop_sample_h",
+		"reso/pop_ana_w", "reso/pop_ana_h", "reso/pop_ana_thick", "reso/pop_ana_curvh", "reso/pop_ana_curvv",
+		"reso/pop_src_w", "reso/pop_src_h",
+		"reso/pop_guide_divh", "reso/pop_guide_divv",
+		"reso/pop_det_w", "reso/pop_det_h",
+		"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det", "reso/pop_dist_src_mono",
 
-					"reso/eck_mono_mosaic_v", "reso/eck_ana_mosaic_v",
-					"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z"};
+		"reso/eck_mono_mosaic_v", "reso/eck_ana_mosaic_v",
+		"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z"};
 
 	m_vecEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
@@ -858,7 +859,7 @@ void ResoDlg::MCGenerate()
 	}
 
 	std::vector<ublas::vector<double>> vecNeutrons;
-	McNeutronOpts opts;
+	McNeutronOpts<ublas::matrix<double>> opts;
 	opts.bCenter = bCenter;
 	opts.coords = McNeutronCoords(comboMCCoords->currentIndex());
 	opts.matU = m_matU;
@@ -882,7 +883,8 @@ void ResoDlg::MCGenerate()
 
 
 	opts.dAngleQVec0 = m_dAngleQVec0;
-	mc_neutrons(m_ell4d, iNeutrons, opts, vecNeutrons);
+	vecNeutrons.resize(iNeutrons);
+	mc_neutrons(m_ell4d, iNeutrons, opts, vecNeutrons.begin());
 
 
 	ofstr.precision(16);
