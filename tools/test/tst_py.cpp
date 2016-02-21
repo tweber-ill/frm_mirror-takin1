@@ -39,6 +39,7 @@ int main()
 
 	std::vector<t_var> vecVars = sqw.GetVars();
 	std::get<2>(vecVars[0]) = "987.6";
+	std::get<2>(vecVars[1]) = "np.array([[1., 2.]])";
 	sqw.SetVars(vecVars);
 
 	print_vars(sqw);

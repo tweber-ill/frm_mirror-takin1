@@ -1,7 +1,8 @@
 import numpy as np
 
 a = 12.3
-b = 45.6
+b = np.array([12., 34., 56.])
+str = "Test"
 
 def Sqw(h,k,l,E):
 	print("in tstsqw.py: in Sqw")

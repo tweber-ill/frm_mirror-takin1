@@ -137,8 +137,9 @@ void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 				continue;
 
 			// cast new value to variable type
-			auto tyVar = dict.items()[i][1].attr("__class__");
-			dict[strName] = tyVar(strNewVal);
+			//auto tyVar = dict.items()[i][1].attr("__class__");
+			//dict[strName] = tyVar(strNewVal);
+			dict[strName] = py::eval(py::str(strNewVal), dict);
 		}
 	}
 	catch(const py::error_already_set& ex)
