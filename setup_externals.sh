@@ -1,7 +1,9 @@
 #!/bin/bash
 
-GTAR=tar
-#GTAR=/opt/local/bin/gnutar
+GTAR="$(which gnutar)"
+if [ $? -ne 0 ]; then
+	GTAR="$(which tar)"
+fi
 
 FINDQWT=http://cmake.org/Wiki/images/2/27/FindQwt.cmake
 TANGOICONS=http://tango.freedesktop.org/releases/tango-icon-theme-0.8.90.tar.gz

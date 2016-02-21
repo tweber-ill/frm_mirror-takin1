@@ -8,7 +8,8 @@
 #include "sqw_py.h"
 #include "tlibs/string/string.h"
 
-SqwPy::SqwPy(const char* pcFile)
+
+SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 {
 	std::string strFile = pcFile;
 	std::string strDir = tl::get_dir(strFile);
@@ -47,7 +48,7 @@ SqwPy::~SqwPy()
 
 double SqwPy::operator()(double dh, double dk, double dl, double dE) const
 {
-	std::lock_guard<decltype(m_mtx)> lock(m_mtx);
+	std::lock_guard<std::mutex> lock(*m_pmtx);
 	try
 	{
 		return py::extract<double>(m_Sqw(dh, dk, dl, dE));
@@ -64,35 +65,97 @@ double SqwPy::operator()(double dh, double dk, double dl, double dE) const
 
 std::vector<SqwBase::t_var> SqwPy::GetVars() const
 {
-	py::dict dict = py::extract<py::dict>(m_mod.attr("__dict__"));
-
 	std::vector<SqwBase::t_var> vecVars;
 
-	for(py::ssize_t i=0; i<py::len(dict.items()); ++i)
+	try
 	{
-		std::string strName = py::extract<std::string>(dict.items()[i][0]);
-		if(strName.length() == 0) continue;
-		if(strName[0] == '_') continue;
+		py::dict dict = py::extract<py::dict>(m_mod.attr("__dict__"));
 
-		std::string strType = py::extract<std::string>(dict.items()[i][1]
-			.attr("__class__").attr("__name__"));
-		if(strType=="module" || strType=="NoneType" || strType=="type")
-			continue;
-		if(strType.find("func") != std::string::npos)
-			continue;
+		for(py::ssize_t i=0; i<py::len(dict.items()); ++i)
+		{
+			// name
+			std::string strName = py::extract<std::string>(dict.items()[i][0]);
+			if(strName.length() == 0) continue;
+			if(strName[0] == '_') continue;
 
-		SqwBase::t_var var;
-		std::get<0>(var) = std::move(strName);
-		std::get<1>(var) = std::move(strType);
+			// type
+			std::string strType = py::extract<std::string>(dict.items()[i][1]
+				.attr("__class__").attr("__name__"));
+			if(strType=="module" || strType=="NoneType" || strType=="type")
+				continue;
+			if(strType.find("func") != std::string::npos)
+				continue;
 
-		vecVars.push_back(var);
+			// value
+			std::string strValue = py::extract<std::string>(dict.items()[i][1]
+				.attr("__repr__")());
+
+			SqwBase::t_var var;
+			std::get<0>(var) = std::move(strName);
+			std::get<1>(var) = std::move(strType);
+			std::get<2>(var) = std::move(strValue);
+
+			vecVars.push_back(var);
+		}
+	}
+	catch(const py::error_already_set& ex)
+	{
+		PyErr_Print();
+		PyErr_Clear();
 	}
 
 	return vecVars;
 }
 
 
-void SqwPy::SetVars(const std::vector<SqwBase::t_var>&)
+void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 {
+	try
+	{
+		py::dict dict = py::extract<py::dict>(m_mod.attr("__dict__"));
 
+		for(py::ssize_t i=0; i<py::len(dict.items()); ++i)
+		{
+			// variable name
+			std::string strName = py::extract<std::string>(dict.items()[i][0]);
+			if(strName.length() == 0) continue;
+			if(strName[0] == '_') continue;
+
+			// look for the variable name in vecVars
+			bool bFound = 0;
+			std::string strNewVal;
+			for(const SqwBase::t_var& var : vecVars)
+			{
+				if(std::get<0>(var) == strName)
+				{
+					bFound = 1;
+					strNewVal = std::get<2>(var);
+					break;
+				}
+			}
+			if(!bFound)
+				continue;
+
+			// cast new value to variable type
+			auto tyVar = dict.items()[i][1].attr("__class__");
+			dict[strName] = tyVar(strNewVal);
+		}
+	}
+	catch(const py::error_already_set& ex)
+	{
+		PyErr_Print();
+		PyErr_Clear();
+	}
+}
+
+
+SqwBase* SqwPy::shallow_copy() const
+{
+	SqwPy* pSqw = new SqwPy();
+	pSqw->m_pmtx = this->m_pmtx;
+	pSqw->m_sys = this->m_sys;
+	pSqw->m_mod = this->m_mod;
+	pSqw->m_Sqw = this->m_Sqw;
+
+	return pSqw;
 }

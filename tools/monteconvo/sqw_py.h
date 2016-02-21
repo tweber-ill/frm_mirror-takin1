@@ -10,6 +10,7 @@
 
 #include "sqw.h"
 #include <mutex>
+#include <memory>
 #include <boost/python.hpp>
 namespace py = boost::python;
 
@@ -17,11 +18,12 @@ namespace py = boost::python;
 class SqwPy : public SqwBase
 {
 protected:
-	mutable std::mutex m_mtx;
+	mutable std::shared_ptr<std::mutex> m_pmtx;
 	py::object m_sys, m_mod;
 	py::object m_Sqw;
 
 public:
+	SqwPy() = default;
 	SqwPy(const char* pcFile);
 	virtual ~SqwPy();
 
@@ -30,8 +32,7 @@ public:
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 
-	// TODO
-	virtual SqwBase* shallow_copy() const override { return nullptr; }
+	virtual SqwBase* shallow_copy() const override;
 };
 
 #endif

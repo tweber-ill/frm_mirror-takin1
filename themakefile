@@ -101,10 +101,8 @@ endif
 
 
 INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/usr/local/include \
-	-I/opt/include -I/opt/local/include \
-	-I/usr/include/freetype2 -I/usr/include/lapacke \
-	-I/usr/include/python2.7 \
-	-I/usr/include/root -I/usr/include
+	-I/opt/include -I/usr/include/freetype2 -I/usr/include/lapacke \
+	-I/usr/include/python2.7 -I/usr/include/root -I/usr/include
 LIB_DIRS = -L/opt/local/lib -L/usr/lib64 -L/usr/lib64/root -L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib -L/opt/lib
 

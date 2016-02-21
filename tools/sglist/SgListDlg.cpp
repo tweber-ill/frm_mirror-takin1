@@ -255,24 +255,24 @@ void SgListDlg::CalcTrafo()
 		return;
 	const SpaceGroup* psg = pvecSG->at(iSG);
 
-	ublas::vector<double> vecIn =
+	SpaceGroup::t_vec vecIn =
 		tl::make_vec({spinX->value(), spinY->value(), spinZ->value(), spinW->value()});
 
 	const std::vector<SpaceGroup::t_mat>& vecTrafos = psg->GetTrafos();
-	std::vector<ublas::vector<double>> vecUnique;
+	std::vector<SpaceGroup::t_vec> vecUnique;
 
 	listTrafo->addItem(create_header_item("All Transformation Results"));
 	for(const SpaceGroup::t_mat& mat : vecTrafos)
 	{
-		ublas::vector<double> vec = ublas::prod(mat, vecIn);
+		SpaceGroup::t_vec vec = ublas::prod(mat, vecIn);
 		listTrafo->addItem(print_vector(vec).c_str());
 
-		if(!is_vec_in_container(vecUnique, vec))
+		if(!is_vec_in_container<std::vector, SpaceGroup::t_vec>(vecUnique, vec))
 			vecUnique.push_back(vec);
 	}
 
 	listTrafo->addItem(create_header_item("Unique Transformation Results"));
-	for(const ublas::vector<double>& vec : vecUnique)
+	for(const SpaceGroup::t_vec& vec : vecUnique)
 	{
 		listTrafo->addItem(print_vector(vec).c_str());
 	}

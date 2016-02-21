@@ -1,13 +1,13 @@
 find_path(Clipper_INCLUDE_DIRS
 	NAMES clipper.h
 	PATH_SUFFIXES clipper
-	HINTS /usr/include/clipper /usr/local/include/clipper
+	HINTS /usr/include/clipper /usr/local/include/clipper /opt/local/include/clipper
 	DOC "Clipper include directories"
 )
 
 find_library(Clipper_LIBRARIES
 	NAMES libclipper-core.so
-	HINTS /usr/lib64/ /usr/lib/ /usr/local/lib64 /usr/local/lib
+	HINTS /usr/lib64/ /usr/lib/ /usr/local/lib64 /usr/local/lib /opt/local/lib
 	DOC "Clipper library"
 )
 
