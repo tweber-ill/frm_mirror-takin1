@@ -15,6 +15,7 @@
 
 #include "../monteconvo/TASReso.h"
 #include "../monteconvo/sqw.h"
+#include "../monteconvo/sqw_py.h"
 
 #include <memory>
 #include <iostream>
@@ -746,8 +747,8 @@ bool run_job(const std::string& strJob)
 		pSqw = new SqwElast(strSqwFile.c_str());
 	else if(strSqwMod == "tree")
 		pSqw = new SqwKdTree(strSqwFile.c_str());
-//		else if(strSqwMod == "py")
-//			pSqw = new SqwPy(strSqwFile.c_str());
+	else if(strSqwMod == "py")
+		pSqw = new SqwPy(strSqwFile.c_str());
 	else
 	{
 		tl::log_err("Invalid S(q,w) model selected: \"", strSqwMod, "\".");

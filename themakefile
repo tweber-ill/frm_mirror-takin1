@@ -198,7 +198,7 @@ OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/rand.o obj/tasreso.o \
 	obj/loadtxt.o
 
-OBJ_CONVOFIT = obj/convofit.o obj/loadinstr.o obj/minuit.o ${OBJ_MONTECONVO}
+OBJ_CONVOFIT = obj/convofit.o obj/loadinstr.o obj/minuit.o ${OBJ_MONTECONVO} ${PY_OBJS}
 OBJ_CONVOSERIES = obj/scanseries.o obj/log.o
 
 OBJ_RESO = obj/log.o obj/rand.o \
@@ -258,7 +258,7 @@ xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/globals.o ob
 	${STRIP} xmonteconvo
 
 convofit: ${OBJ_CONVOFIT}
-	${CC} ${FLAGS} ${LIB_DIRS} -o bin/convofit $+ -lMinuit2 ${STD_LIBS} ${BASIC_LIBS}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/convofit $+ -lMinuit2 ${STD_LIBS} ${BASIC_LIBS} ${PY_LIBS}
 	${STRIP} convofit
 convoseries: ${OBJ_CONVOSERIES}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/convoseries $+ ${BASIC_LIBS} ${STD_LIBS}

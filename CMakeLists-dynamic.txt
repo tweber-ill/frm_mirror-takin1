@@ -123,10 +123,12 @@ add_custom_target(prebuild-script
 )
 
 # post-build
-add_custom_command(TARGET takin POST_BUILD
-	COMMAND strip -v ${CMAKE_BINARY_DIR}/bin/takin
-	MAIN_DEPENDENCY takin
-)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+	add_custom_command(TARGET takin POST_BUILD
+		COMMAND strip -v $<TARGET_FILE:takin>
+		MAIN_DEPENDENCY takin
+	)
+endif()
 
 add_dependencies(takin prebuild-script)
 add_dependencies(takin gentab)
@@ -152,11 +154,12 @@ target_link_libraries(convofit
 	${Boost_LIBRARIES} ${Minuit2_LIBRARIES} ${PYTHON_LIBRARIES}
 )
 
-add_custom_command(TARGET convofit POST_BUILD
-	COMMAND strip -v ${CMAKE_BINARY_DIR}/bin/convofit
-	MAIN_DEPENDENCY convofit
-)
-
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+	add_custom_command(TARGET convofit POST_BUILD
+		COMMAND strip -v $<TARGET_FILE:convofit>
+		MAIN_DEPENDENCY convofit
+	)
+endif()
 # -----------------------------------------------------------------------------
 
 add_executable(convoseries
@@ -167,10 +170,12 @@ target_link_libraries(convoseries
 	${tlibs_LIBRARIES} ${Boost_LIBRARIES}
 )
 
-add_custom_command(TARGET convoseries POST_BUILD
-	COMMAND strip -v ${CMAKE_BINARY_DIR}/bin/convoseries
-	MAIN_DEPENDENCY convoseries
-)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+	add_custom_command(TARGET convoseries POST_BUILD
+		COMMAND strip -v $<TARGET_FILE:convoseries>
+		MAIN_DEPENDENCY convoseries
+	)
+endif()
 # -----------------------------------------------------------------------------
 
 
