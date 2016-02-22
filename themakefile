@@ -116,7 +116,7 @@ ifeq ($(DO_DEBUG), 0)
 	FLAGS += -DQT_NO_DEBUG
 	FLAGS += ${DEFINES}
 	#FLAGS += -fexpensive-optimizations
-	STRIP = strip
+	STRIP = strip -v 
 else
 	FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall -Weffc++ -fPIC ${DEFINES}
 	STRIP = echo Retaining debug symbols of 

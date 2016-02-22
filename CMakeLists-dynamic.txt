@@ -5,20 +5,21 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_BUILD_TYPE Release)
 
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" "." "${PROJECT_SOURCE_DIR}/tlibs")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" ".")
 set(CMAKE_BINARY_DIR "${CMAKE_SOURCE_DIR}")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 find_package(Boost REQUIRED COMPONENTS iostreams system filesystem regex python REQUIRED)
 find_package(Threads REQUIRED)
+find_package(tlibs REQUIRED)
 find_package(Qt4 REQUIRED)
-find_package(PNG REQUIRED)
-find_package(Qwt REQUIRED)
-#find_package(Freetype REQUIRED)
-find_package(Clipper REQUIRED)
 find_package(PythonInterp 2.7 REQUIRED)
 find_package(PythonLibs 2.7 REQUIRED)
-find_package(Minuit2 REQUIRED)
+find_package(PNG REQUIRED)
+#find_package(JPEG REQUIRED)
+#find_package(TIFF REQUIRED)
+find_package(Qwt REQUIRED)
+find_package(Clipper REQUIRED)
 
 
 #message("Project source dir: ${PROJECT_SOURCE_DIR}")
@@ -38,12 +39,11 @@ add_definitions(${Boost_CXX_FLAGS})
 
 include_directories("${PROJECT_SOURCE_DIR}" ".")
 include_directories("${Boost_INCLUDE_DIRS}/..")
+include_directories("${tlibs_INCLUDE_DIRS}/..")
 include_directories("${PYTHON_INCLUDE_DIRS}")
 include_directories("${PNG_INCLUDE_DIRS}")
 #include_directories("${JPEG_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS}")
 include_directories("${QWT_INCLUDE_DIRS}")
-#include_directories("${FREETYPE_INCLUDE_DIRS}")
-include_directories("${Minuit2_INCLUDE_DIRS}")
 
 
 set(CMAKE_AUTOMOC OFF)
@@ -60,11 +60,10 @@ add_definitions(-std=c++11)
 add_executable(gentab 
 	tools/gentab/gentab.cpp
 	helper/spacegroup_clp.cpp helper/crystalsys.cpp
-	tlibs/log/log.cpp
 )
 
 target_link_libraries(gentab 
-	${Boost_LIBRARIES} ${Clipper_LIBRARIES}
+	${Boost_LIBRARIES} ${Clipper_LIBRARIES} ${tlibs_LIBRARIES}
 	Qt4::QtCore Qt4::QtGui
 )
 
@@ -106,25 +105,16 @@ add_executable(takin
 	helper/globals.cpp helper/crystalsys.cpp
 	helper/formfact.cpp helper/qthelper.cpp
 #	helper/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp
-
-
-	# statically link tlibs externals
-	tlibs/file/loadinstr.cpp  tlibs/file/recent.cpp  tlibs/file/x3d.cpp
-	tlibs/log/log.cpp tlibs/log/debug.cpp
-	tlibs/math/rand.cpp
-	tlibs/net/tcp.cpp
-	tlibs/string/spec_char.cpp
-	tlibs/helper/flags.cpp  tlibs/version.cpp
 )
 
 target_link_libraries(takin 
-	${Boost_LIBRARIES}
+	${Boost_LIBRARIES} ${tlibs_LIBRARIES}
 	Threads::Threads
 	Qt4::QtCore Qt4::QtGui Qt4::QtSvg #Qt4::QtOpenGL
 	${PYTHON_LIBRARIES}
 	${PNG_LIBRARIES}
+#	${JPEG_LIBRARIES} ${TIFF_LIBRARIES}
 	${QWT_LIBRARIES}
-	#${FREETYPE_LIBRARY}
 )
 
 # pre-build
@@ -155,17 +145,10 @@ add_executable(convofit
 	tools/monteconvo/sqw.cpp tools/monteconvo/sqw_py.cpp
 
 	tools/convofit/convofit.cpp
-
-
-	# statically link tlibs externals
-	tlibs/log/log.cpp
-	tlibs/math/rand.cpp
-	tlibs/file/loadinstr.cpp
-	tlibs/fit/minuit.cpp
 )
 
 target_link_libraries(convofit
-	Threads::Threads
+	${tlibs_LIBRARIES} Threads::Threads
 	${Boost_LIBRARIES} ${Minuit2_LIBRARIES} ${PYTHON_LIBRARIES}
 )
 
@@ -178,13 +161,10 @@ add_custom_command(TARGET convofit POST_BUILD
 
 add_executable(convoseries
 	tools/convofit/scanseries.cpp
-	
-	# statically link tlibs externals
-	tlibs/log/log.cpp
 )
 
 target_link_libraries(convoseries
-	${Boost_LIBRARIES}
+	${tlibs_LIBRARIES} ${Boost_LIBRARIES}
 )
 
 add_custom_command(TARGET convoseries POST_BUILD
