@@ -21,6 +21,9 @@ find_package(PNG REQUIRED)
 find_package(Qwt REQUIRED)
 find_package(Clipper REQUIRED)
 
+list(APPEND CMAKE_MODULE_PATH "${tlibs_SHARED_DIRS}")
+find_package(Minuit2 REQUIRED)
+
 
 #message("Project source dir: ${PROJECT_SOURCE_DIR}")
 #message("CMake source dir: ${CMAKE_SOURCE_DIR}")
@@ -44,6 +47,7 @@ include_directories("${PYTHON_INCLUDE_DIRS}")
 include_directories("${PNG_INCLUDE_DIRS}")
 #include_directories("${JPEG_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS}")
 include_directories("${QWT_INCLUDE_DIRS}")
+include_directories("${Minuit2_INCLUDE_DIRS}")
 
 
 set(CMAKE_AUTOMOC OFF)

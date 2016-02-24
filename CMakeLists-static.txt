@@ -15,11 +15,10 @@ find_package(Qt4 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Qwt REQUIRED)
 #find_package(Freetype REQUIRED)
-find_package(Clipper REQUIRED)
 find_package(PythonInterp 2.7 REQUIRED)
 find_package(PythonLibs 2.7 REQUIRED)
 find_package(Minuit2 REQUIRED)
-
+find_package(Clipper REQUIRED)
 
 #message("Project source dir: ${PROJECT_SOURCE_DIR}")
 #message("CMake source dir: ${CMAKE_SOURCE_DIR}")
