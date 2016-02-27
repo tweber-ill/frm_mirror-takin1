@@ -72,8 +72,7 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrLibs << "<dd><a href=\"http://tango.freedesktop.org\">http://tango.freedesktop.org</a></dd>";
 
 	ostrLibs << "</dl>";
-
-	ostrLibs << "<p>See the LICENSES file in the Takin root directory.</p>";
+	//ostrLibs << "<p>See the LICENSES file in the Takin root directory.</p>";
 	ostrLibs << "</body></html>";
 
 	labelLibraries->setText(ostrLibs.str().c_str());
@@ -107,6 +106,19 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrConst << "</dl>";
 	ostrConst << "</body></html>";
 	labelConst->setText(ostrConst.str().c_str());
+
+
+
+	std::string strLicensesFile = find_resource("LICENSES");
+	std::ifstream ifstrLicenses(strLicensesFile);
+	std::string strLicenses;
+	while(ifstrLicenses)
+	{
+		std::string strLic;
+		std::getline(ifstrLicenses, strLic);
+		strLicenses += strLic + "\n";
+	}
+	editAllLicenses->setPlainText(strLicenses.c_str());
 }
 
 

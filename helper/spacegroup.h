@@ -57,7 +57,7 @@ public:
 
 	bool HasReflection(int h, int k, int l) const
 	{
-		return is_reflection_allowed(h,k,l, m_vecTrafos);
+		return is_reflection_allowed<std::vector, t_mat, t_vec>(h,k,l, m_vecTrafos);
 	}
 
 	void SetNr(unsigned int iNr) { m_iNr = iNr; }
