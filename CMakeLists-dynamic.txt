@@ -1,3 +1,10 @@
+#
+# Takin
+# @author tweber
+# @date 2013-2016
+# @license GPLv2
+#
+
 project(takin)
 cmake_minimum_required(VERSION 3.0)
 
