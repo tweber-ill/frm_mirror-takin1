@@ -19,7 +19,7 @@
 #include <sstream>
 
 
-#define TAKIN_VER "0.9.5"
+#define TAKIN_VER "0.9.6"
 
 
 AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
@@ -92,14 +92,17 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrConst << "<dt>" << get_sgsource(0) <<"</dt>";
 	ostrConst << "<dd><a href=\"" << get_sgsource(1) << "\">" << get_sgsource(1) << "</a></dd>";
 
+	FormfactList ff;	// ensure that the static vars are inited
+	ScatlenList sl;
+
 	if(g_bHasFormfacts)
 	{
-		ostrConst << "<dt>" << FormfactList::GetSource() <<"</dt>";
+		ostrConst << "<dt>" << FormfactList::GetSource() << "</dt>";
 		ostrConst << "<dd><a href=\"" << FormfactList::GetSourceUrl() << "\">" << FormfactList::GetSourceUrl() << "</a></dd>";
 	}
 	if(g_bHasScatlens)
 	{
-		ostrConst << "<dt>" << ScatlenList::GetSource() <<"</dt>";
+		ostrConst << "<dt>" << ScatlenList::GetSource() << "</dt>";
 		ostrConst << "<dd><a href=\"" << ScatlenList::GetSourceUrl() << "\">" << ScatlenList::GetSourceUrl() << "</a></dd>";
 	}
 
