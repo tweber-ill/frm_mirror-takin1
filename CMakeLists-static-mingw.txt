@@ -22,9 +22,6 @@ find_package(Qt4 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Qwt REQUIRED)
 
-#message("Project source dir: ${PROJECT_SOURCE_DIR}")
-#message("CMake source dir: ${CMAKE_SOURCE_DIR}")
-#message("Binary dir: ${CMAKE_BINARY_DIR}")
 message("Install path prefix: ${CMAKE_INSTALL_PREFIX}")
 message("Using qwt version ${QWT_MAJOR_VERSION}")
 message("Qt moc: ${QT_MOC_EXECUTABLE}\nQt uic: ${QT_UIC_EXECUTABLE}")
@@ -48,7 +45,8 @@ set(CMAKE_AUTOMOC OFF)
 set(CMAKE_AUTOUIC OFF)
 
 add_definitions(-std=c++11)
-#add_definitions(-march=native -s)
+add_definitions(-O3 -s)
+#add_definitions(-march=native)
 
 
 
