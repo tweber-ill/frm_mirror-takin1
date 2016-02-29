@@ -1,5 +1,12 @@
-* emitUpdate of recip/real blocks real/recip update 	-> 	use common update for both
+* emitUpdate of recip/real blocks real/recip update -> use common update for both
 * show Q_perp in main view (for resolution stuff)
-* allow saving of scan sequences
 * allow display of dispersions together with ellipses
-* convolution stuff
+
+
+
+-------------------------------------------------------------------------------
+mingw stuff
+
+use tools: mingw64-cmake, mingw64-make
+needed libraries: /usr/x86_64-w64-mingw32/sys-root/mingw/bin/
+qt plugins: /usr/x86_64-w64-mingw32/sys-root/mingw/lib/qt4/plugins

@@ -129,7 +129,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	//QObject::connect(btnOpenExt, SIGNAL(clicked()), this, SLOT(openExternally()));
 #endif
 
-	QString strDir = m_settings.value("last_dir", fs::current_path().native().c_str()).toString();
+	QString strDir = m_settings.value("last_dir", tl::wstr_to_str(fs::current_path().native()).c_str()).toString();
 	editPath->setText(strDir);
 
 	m_bDoUpdate = 1;
@@ -681,7 +681,7 @@ void ScanViewerDlg::ChangedPath()
 	fs::path dir(strPath);
 	if(fs::exists(dir) && fs::is_directory(dir))
 	{
-		m_strCurDir = dir.native();
+		m_strCurDir = tl::wstr_to_str(dir.native());
 		tl::trim(m_strCurDir);
 		if(*(m_strCurDir.begin()+m_strCurDir.length()-1) != fs::path::preferred_separator)
 			m_strCurDir += fs::path::preferred_separator;
@@ -704,9 +704,9 @@ void ScanViewerDlg::UpdateFileList()
 		std::copy_if(dir_begin, dir_end, std::insert_iterator<decltype(lst)>(lst, lst.end()),
 			[this](const fs::path& p) -> bool
 			{
-				std::string strExt = p.extension().native();
+				std::string strExt = tl::wstr_to_str(p.extension().native());
 				if(strExt == ".bz2" || strExt == ".gz" || strExt == ".z")
-					strExt = "." + tl::get_fileext2(p.filename().native());
+					strExt = "." + tl::wstr_to_str(tl::get_fileext2(p.filename().native()));
 
 				if(this->m_vecExts.size() == 0)
 					return true;
@@ -715,7 +715,7 @@ void ScanViewerDlg::UpdateFileList()
 			});
 
 		for(const fs::path& d : lst)
-			listFiles->addItem(d.filename().native().c_str());
+			listFiles->addItem(tl::wstr_to_str(d.filename().native()).c_str());
 	}
 	catch(const std::exception& ex)
 	{}

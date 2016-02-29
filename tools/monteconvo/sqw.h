@@ -16,6 +16,7 @@
 #include <tuple>
 #include <memory>
 #include <boost/numeric/ublas/vector.hpp>
+#include "tlibs/math/math.h"
 #include "tlibs/math/kd.h"
 
 #ifdef USE_RTREE

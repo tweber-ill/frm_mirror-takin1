@@ -187,7 +187,7 @@ void FormfactorDlg::SetupAtoms()
 		else if(iFF==86) listAtoms->addItem(create_header_item("Period 7", 1));
 
 		const Formfact<double>& ff = lstff.GetAtom(iFF);
-		const std::string& strAtom = ff.GetAtomName();
+		const std::string& strAtom = ff.GetAtomIdent();
 
 		std::ostringstream ostrAtom;
 		ostrAtom << (iFF+1) << " " << strAtom;
@@ -201,7 +201,7 @@ void FormfactorDlg::SetupAtoms()
 	for(unsigned int iFF=0; iFF<lstff.GetNumIons(); ++iFF)
 	{
 		const Formfact<double>& ff = lstff.GetIon(iFF);
-		const std::string& strAtom = ff.GetAtomName();
+		const std::string& strAtom = ff.GetAtomIdent();
 
 		std::ostringstream ostrAtom;
 		ostrAtom << strAtom;
@@ -311,7 +311,7 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 			return;
 		}
 
-		const std::string& strName = lst.GetElem(unsigned(iElem-1)).GetAtomName();
+		const std::string& strName = lst.GetElem(unsigned(iElem-1)).GetAtomIdent();
 		std::complex<double> b_coh = lst.GetElem(unsigned(iElem-1)).GetCoherent();
 		std::complex<double> b_inc = lst.GetElem(unsigned(iElem-1)).GetIncoherent();
 

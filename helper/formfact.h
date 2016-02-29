@@ -35,7 +35,7 @@ struct Formfact
 		T c;
 
 	public:
-		const std::string& GetAtomName() const { return strAtom; }
+		const std::string& GetAtomIdent() const { return strAtom; }
 
 		T GetFormfact(T G) const
 		{
@@ -100,7 +100,7 @@ struct Scatlen
 		value_type xsec_abs;
 
 	public:
-		const std::string& GetAtomName() const { return strAtom; }
+		const std::string& GetAtomIdent() const { return strAtom; }
 
 		const value_type& GetCoherent() const { return coh; }
 		const value_type& GetIncoherent() const { return incoh; }

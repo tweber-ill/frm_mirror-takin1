@@ -74,8 +74,8 @@ const FormfactList::elem_type* FormfactList::Find(const std::string& strElem) co
 	t_iter iter = std::find_if(s_vecAtoms.begin(), s_vecAtoms.end(),
 		[&strElem](const elem_type& elem)->bool
 		{
-			//std::cout << elem.GetAtomName() << std::endl;
-			return elem.GetAtomName() == strElem;
+			//std::cout << elem.GetAtomIdent() << std::endl;
+			return elem.GetAtomIdent() == strElem;
 		});
 	if(iter != s_vecAtoms.end())
 		return &*iter;
@@ -84,8 +84,8 @@ const FormfactList::elem_type* FormfactList::Find(const std::string& strElem) co
 	iter = std::find_if(s_vecIons.begin(), s_vecIons.end(),
 		[&strElem](const elem_type& elem)->bool
 		{
-			//std::cout << elem.GetAtomName() << std::endl;
-			return elem.GetAtomName() == strElem;
+			//std::cout << elem.GetAtomIdent() << std::endl;
+			return elem.GetAtomIdent() == strElem;
 		});
 	if(iter != s_vecIons.end())
 		return &*iter;
@@ -159,8 +159,8 @@ const ScatlenList::elem_type* ScatlenList::Find(const std::string& strElem) cons
 	t_iter iter = std::find_if(s_vecElems.begin(), s_vecElems.end(),
 		[&strElem](const elem_type& elem)->bool
 		{
-			//std::cout << elem.GetAtomName() << std::endl;
-			return elem.GetAtomName() == strElem;
+			//std::cout << elem.GetAtomIdent() << std::endl;
+			return elem.GetAtomIdent() == strElem;
 		});
 	if(iter != s_vecElems.end())
 		return &*iter;
@@ -169,8 +169,8 @@ const ScatlenList::elem_type* ScatlenList::Find(const std::string& strElem) cons
 	iter = std::find_if(s_vecIsotopes.begin(), s_vecIsotopes.end(),
 		[&strElem](const elem_type& elem)->bool
 		{
-			//std::cout << elem.GetAtomName() << std::endl;
-			return elem.GetAtomName() == strElem;
+			//std::cout << elem.GetAtomIdent() << std::endl;
+			return elem.GetAtomIdent() == strElem;
 		});
 	if(iter != s_vecIsotopes.end())
 		return &*iter;
@@ -193,11 +193,11 @@ int main()
 	const ScatlenList::elem_type& elem = lst.GetElem(0);
 	const ScatlenList::elem_type& isot = lst.GetIsotope(3);
 
-	std::cout << elem.GetAtomName() << std::endl;
+	std::cout << elem.GetAtomIdent() << std::endl;
 	std::cout << elem.GetCoherent() << std::endl;
 	std::cout << elem.GetIncoherent() << std::endl;
 
-	std::cout << isot.GetAtomName() << std::endl;
+	std::cout << isot.GetAtomIdent() << std::endl;
 	std::cout << isot.GetCoherent() << std::endl;
 	std::cout << isot.GetIncoherent() << std::endl;
 

@@ -41,8 +41,8 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		std::vector<QwtPlotPicker*> m_vecPickers;
 		std::vector<QwtPlotZoomer*> m_vecZoomers;
 
-		std::vector<Ellipse> m_elliProj;
-		std::vector<Ellipse> m_elliSlice;
+		std::vector<struct Ellipse> m_elliProj;
+		std::vector<struct Ellipse> m_elliSlice;
 
 		std::vector<std::vector<double> > m_vecXCurvePoints;
 		std::vector<std::vector<double> > m_vecYCurvePoints;

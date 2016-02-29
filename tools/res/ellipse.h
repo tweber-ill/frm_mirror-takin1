@@ -38,8 +38,7 @@ struct Ellipse
 
 	ublas::vector<double> operator()(double t) const;
 	void GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
-						unsigned int iPoints=512,
-						double *pLRTB=0);
+		unsigned int iPoints=512, double *pLRTB=0);
 };
 
 struct Ellipsoid
@@ -78,11 +77,11 @@ enum class EllipseCoordSys : int
 	RLU_ORIENT	// system using scattering plane (rlu)
 };
 
-extern std::ostream& operator<<(std::ostream& ostr, const Ellipse& ell);
+extern std::ostream& operator<<(std::ostream& ostr, const struct Ellipse& ell);
 extern const std::string& ellipse_labels(int iCoord, EllipseCoordSys = EllipseCoordSys::Q_AVG);
-extern Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iInt, int iRem1=-1, int iRem2=-1);
-extern Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iZ, int iInt, int iRem=-1);
-extern Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
+extern struct Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iInt, int iRem1=-1, int iRem2=-1);
+extern struct Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iZ, int iInt, int iRem=-1);
+extern struct Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
 
 
 

@@ -8,6 +8,13 @@
 #ifndef __TAZ_H__
 #define __TAZ_H__
 
+#if !defined NO_NET
+	#include "dialogs/SrvDlg.h"
+	#include "dialogs/NetCacheDlg.h"
+	#include "nicos.h"
+	#include "sics.h"
+#endif
+
 //#include <QDialog>
 #include <QMainWindow>
 #include <QMenu>
@@ -39,13 +46,6 @@
 #include "dialogs/FormfactorDlg.h"
 #include "dialogs/AtomsDlg.h"
 #include "dialogs/AboutDlg.h"
-
-#if !defined NO_NET
-	#include "dialogs/SrvDlg.h"
-	#include "dialogs/NetCacheDlg.h"
-	#include "nicos.h"
-	#include "sics.h"
-#endif
 
 #if !defined NO_3D
 	#include "recip3d.h"

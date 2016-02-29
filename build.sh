@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+MAKE=make
 GCC=$(which gcc 2>/dev/null)
 
 if [ "$GCC" != "" ]	# don't check version if only e.g. clang is available
@@ -51,4 +51,4 @@ else
 fi
 
 echo -e "\nBuilding using $CPUCNT processes..."
-make -j${CPUCNT} -f themakefile
+${MAKE} -j${CPUCNT} -f themakefile
