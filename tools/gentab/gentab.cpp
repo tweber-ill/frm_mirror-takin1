@@ -12,13 +12,19 @@
 #include "tlibs/string/string.h"
 #include "tlibs/file/prop.h"
 #include "tlibs/log/log.h"
+#include "tlibs/math/linalg.h"
 #include "../../helper/spacegroup_clp.h"
 
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/version.hpp>
+
 namespace prop = boost::property_tree;
 namespace algo = boost::algorithm;
 namespace ublas = boost::numeric::ublas;
+
+using t_real = double;
+using t_cplx = std::complex<t_real>;
+using t_mat = ublas::matrix<t_real>;
 
 
 // ============================================================================
@@ -32,7 +38,7 @@ namespace clipper { namespace data
 	extern const struct SFData
 	{
 		const char atomname[8];
-		const double a[5], c, b[5], d;  // d is always 0
+		const t_real a[5], c, b[5], d;  // d is always 0
 	} sfdata[];
 
 	const unsigned int numsfdata = 212;
@@ -83,7 +89,7 @@ bool gen_formfacts()
 
 // ============================================================================
 
-void formatnumber(std::string& str)
+t_cplx get_number(std::string str)
 {
 	tl::string_rm<std::string>(str, "(", ")");
 
@@ -97,6 +103,16 @@ void formatnumber(std::string& str)
 
 	tl::trim(str);
 	if(str == "---") str = "";
+
+
+	t_cplx c;
+	std::istringstream istr(str);
+	istr >> c;
+
+	t_real dR = c.real(), dI = c.imag();
+	tl::set_eps_0(dR); tl::set_eps_0(dI);
+	c.real(dR); c.imag(dI);
+	return c;
 }
 
 bool gen_scatlens()
@@ -145,23 +161,24 @@ bool gen_scatlens()
 		std::vector<std::string> vecCol;
 		tl::get_tokens_seq<std::string, std::string>(strRow, "<td>", vecCol, 0);
 
-		std::string strName = vecCol[1];  tl::trim(strName);
-		std::string strCoh = vecCol[3];   formatnumber(strCoh);
-		std::string strIncoh = vecCol[4]; formatnumber(strIncoh);
+		std::string strName = vecCol[1];
+		tl::trim(strName);
 
-		std::string strXsecCoh = vecCol[5]; formatnumber(strXsecCoh);
-		std::string strXsecIncoh = vecCol[6]; formatnumber(strXsecIncoh);
-		std::string strXsecScat = vecCol[7]; formatnumber(strXsecScat);
-		std::string strXsecAbsTherm = vecCol[8]; formatnumber(strXsecAbsTherm);
+		t_cplx cCoh = get_number(vecCol[3]);
+		t_cplx cIncoh = get_number(vecCol[4]);
+		t_real dXsecCoh = get_number(vecCol[5]).real();
+		t_real dXsecIncoh = get_number(vecCol[6]).real();
+		t_real dXsecScat = get_number(vecCol[7]).real();
+		t_real dXsecAbsTherm = get_number(vecCol[8]).real();
 
 		prop.Add(strAtom + ".name", strName);
-		prop.Add(strAtom + ".coh", strCoh);
-		prop.Add(strAtom + ".incoh", strIncoh);
+		prop.Add(strAtom + ".coh", tl::var_to_str(cCoh));
+		prop.Add(strAtom + ".incoh", tl::var_to_str(cIncoh));
 
-		prop.Add(strAtom + ".xsec_coh", strXsecCoh);
-		prop.Add(strAtom + ".xsec_incoh", strXsecIncoh);
-		prop.Add(strAtom + ".xsec_scat", strXsecScat);
-		prop.Add(strAtom + ".xsec_abs", strXsecAbsTherm);
+		prop.Add(strAtom + ".xsec_coh", tl::var_to_str(dXsecCoh));
+		prop.Add(strAtom + ".xsec_incoh", tl::var_to_str(dXsecIncoh));
+		prop.Add(strAtom + ".xsec_scat", tl::var_to_str(dXsecScat));
+		prop.Add(strAtom + ".xsec_abs", tl::var_to_str(dXsecAbsTherm));
 
 		++iAtom;
 	}
@@ -208,7 +225,7 @@ bool gen_spacegroups()
 		//prop.Add(strGroup + ".crystalsysname", sg.GetCrystalSystemName());
 
 
-		std::vector<ublas::matrix<double>> vecTrafos, vecInv, vecPrim, vecCenter;
+		std::vector<t_mat> vecTrafos, vecInv, vecPrim, vecCenter;
 		sg.GetSymTrafos(vecTrafos);
 		sg.GetInvertingSymTrafos(vecInv);
 		sg.GetPrimitiveSymTrafos(vecPrim);
@@ -217,7 +234,7 @@ bool gen_spacegroups()
 
 		prop.Add(strGroup + ".num_trafos", tl::var_to_str(vecTrafos.size()));
 		unsigned int iTrafo = 0;
-		for(const ublas::matrix<double>& matTrafo : vecTrafos)
+		for(const t_mat& matTrafo : vecTrafos)
 		{
 			bool bIsInv = is_mat_in_container(vecInv, matTrafo);
 			bool bIsPrim = is_mat_in_container(vecPrim, matTrafo);
