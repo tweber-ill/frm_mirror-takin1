@@ -250,6 +250,8 @@ QRectF TasLayout::boundingRect() const
 
 void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+	painter->setFont(g_fontGfx);
+	
 	const bool bDisplayLengths = 0;
 
 	QPointF ptSrc = mapFromItem(m_pSrc, 0, 0) * m_dZoom;

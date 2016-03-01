@@ -26,7 +26,10 @@ extern std::string find_resource(const std::string& strFile);
 
 #ifndef NO_QT
 	#include <QIcon>
+	#include <QFont>
+	
 	extern QIcon load_icon(const std::string& strIcon);
+	extern QFont g_fontGfx, g_fontGL;
 #endif
 
 

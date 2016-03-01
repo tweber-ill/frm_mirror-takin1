@@ -14,6 +14,7 @@
 #include "helper/globals.h"
 
 #include <QFileDialog>
+#include <QFontDialog>
 #include <iostream>
 #include <limits>
 
@@ -26,9 +27,8 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 {
 	setupUi(this);
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
-	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectFont()));
-
-	std::string strDefFont = "/usr/share/fonts/dejavu/DejaVuSansMono.ttf";
+	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectGLFont()));
+	connect(btnGfxFont, SIGNAL(clicked()), this, SLOT(SelectGfxFont()));
 
 	m_vecEdits =
 	{
@@ -55,7 +55,8 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		//t_tupEdit("net/stheta_aux_alias", "nicos/sth/alias", editRotAlias),
 
 
-		t_tupEdit("gl/font", strDefFont, editGLFont)
+		t_tupEdit("gl/font", "", editGLFont),
+		t_tupEdit("main/font_gfx", "", editGfxFont)
 	};
 
 	m_vecChecks =
@@ -163,6 +164,8 @@ void SettingsDlg::LoadSettings()
 		int iVal = m_pSettings->value(strKey.c_str(), iDef).toInt();
 		pSpin->setValue(iVal);
 	}
+	
+	SetGlobals();
 }
 
 void SettingsDlg::SaveSettings()
@@ -193,31 +196,56 @@ void SettingsDlg::SaveSettings()
 		m_pSettings->setValue(strKey.c_str(), pSpin->value());
 	}
 
+	SetGlobals();
+}
 
+
+void SettingsDlg::SetGlobals() const
+{
 	g_iPrec = spinPrecGen->value();
 	g_iPrecGfx = spinPrecGfx->value();
 
 	g_dEps = std::pow(10., -g_iPrec);
 	g_dEpsGfx = std::pow(10., -g_iPrecGfx);
+	
+
+	QString strGfxFont = editGfxFont->text();
+	if(strGfxFont.length() != 0)
+	{
+		QFont font;
+		if(font.fromString(strGfxFont))
+			g_fontGfx = font;
+	}
+	
+	QString strGLFont = editGLFont->text();
+	if(strGLFont.length() != 0)
+	{
+		QFont font;
+		if(font.fromString(strGLFont))
+			g_fontGL = font;
+	}
 }
 
 
-void SettingsDlg::SelectFont()
+void SettingsDlg::SelectGLFont()
 {
-	if(!m_pSettings) return;
-
-	QString strDirLast = m_pSettings->value("gl/last_font_dir", ".").toString();
-	QString strFile = QFileDialog::getOpenFileName(this,
-							"Select Font...",
-							strDirLast,
-							"TTF files (*.ttf *.TTF)");
-	if(strFile != "")
+	bool bOk;
+	QFont fontNew = QFontDialog::getFont(&bOk, g_fontGL, this);
+	if(bOk)
 	{
-		//m_pSettings->setValue("gl/font", strFile);
-		editGLFont->setText(strFile);
+		g_fontGL = fontNew;
+		editGLFont->setText(fontNew.toString());
+	}
+}
 
-		std::string strDir = tl::get_dir(strFile.toStdString());
-		m_pSettings->setValue("gl/last_font_dir", QString(strDir.c_str()));
+void SettingsDlg::SelectGfxFont()
+{
+	bool bOk;
+	QFont fontNew = QFontDialog::getFont(&bOk, g_fontGfx, this);
+	if(bOk)
+	{
+		g_fontGfx = fontNew;
+		editGfxFont->setText(fontNew.toString());
 	}
 }
 

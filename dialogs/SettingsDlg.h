@@ -44,13 +44,15 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		void SaveSettings();
 
 		void SetDefaults(bool bOverwrite=0);
+		void SetGlobals() const;
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);
 
 	protected slots:
 		void ButtonBoxClicked(QAbstractButton* pBtn);
-		void SelectFont();
+		void SelectGLFont();
+		void SelectGfxFont();
 };
 
 #endif

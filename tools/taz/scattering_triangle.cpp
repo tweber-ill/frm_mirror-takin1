@@ -85,6 +85,7 @@ QRectF RecipPeak::boundingRect() const
 
 void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+	painter->setFont(g_fontGfx);
 	painter->setBrush(m_color);
 	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
 
@@ -200,6 +201,8 @@ QPointF ScatteringTriangle::GetGfxMid() const
 
 void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+	painter->setFont(g_fontGfx);
+	
 	// Brillouin zone
 	if(m_bShowBZ && m_bz.IsValid())
 	{

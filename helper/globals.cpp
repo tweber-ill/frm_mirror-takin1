@@ -21,7 +21,12 @@ double g_dEpsGfx = 1e-4;
 bool g_bHasFormfacts = 0;
 bool g_bHasScatlens = 0;
 
+#ifndef NO_QT
+	QFont g_fontGfx, g_fontGL;
+#endif
+
 // -----------------------------------------------------------------------------
+
 
 static const std::vector<std::string> s_vecInstallPaths =
 {

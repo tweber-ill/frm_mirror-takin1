@@ -54,6 +54,7 @@ QRectF LatticePoint::boundingRect() const
 
 void LatticePoint::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+	painter->setFont(g_fontGfx);
 	painter->setBrush(m_color);
 	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
 
@@ -83,6 +84,7 @@ QRectF LatticeAtom::boundingRect() const
 
 void LatticeAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+	painter->setFont(g_fontGfx);
 	painter->setBrush(m_color);
 	painter->setPen(Qt::darkCyan);
 	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
@@ -134,6 +136,8 @@ void RealLattice::SetWSVisible(bool bVisible)
 
 void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+	painter->setFont(g_fontGfx);
+	
 	// Wigner-Seitz cell
 	if(m_bShowWS && m_ws.IsValid())
 	{
