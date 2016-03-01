@@ -6,6 +6,7 @@
  */
 
 #include "plotgl.h"
+#include "globals.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/math.h"
 #include "tlibs/string/string.h"
@@ -25,9 +26,9 @@
 
 
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings)
-		: QGLWidget(pParent), m_pSettings(pSettings), m_bEnabled(true),
-			m_mutex(QMutex::Recursive),
-			m_matProj(tl::unit_matrix<tl::t_mat4>(4)), m_matView(tl::unit_matrix<tl::t_mat4>(4))
+	: QGLWidget(pParent), m_pSettings(pSettings), m_bEnabled(true),
+		m_mutex(QMutex::Recursive),
+		m_matProj(tl::unit_matrix<tl::t_mat4>(4)), m_matView(tl::unit_matrix<tl::t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
 	m_dMouseScale = 25.;
@@ -115,14 +116,7 @@ void PlotGl::initializeGLThread()
 	}
 
 	glActiveTexture(GL_TEXTURE0);
-
-	std::string strFont = DEF_FONT;
-	if(m_pSettings)
-	{
-		if(m_pSettings->contains("gl/font"))
-			strFont = m_pSettings->value("gl/font").toString().toStdString();
-	}
-	m_pFont = new tl::GlFontMap(strFont.c_str(), 12);
+	m_pFont = new tl::GlFontMap(g_fontGL.freetypeFace());
 
 #if QT_VER>=5
 	QWidget::
