@@ -130,6 +130,7 @@
       <File Name="tools/taz/taz_export.cpp"/>
       <File Name="tools/taz/real_lattice.cpp"/>
       <File Name="tools/taz/real_lattice.h"/>
+      <File Name="tools/taz/net.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="monteconvo">
       <File Name="tools/monteconvo/sqw.cpp"/>

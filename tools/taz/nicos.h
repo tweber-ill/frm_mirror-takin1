@@ -8,20 +8,14 @@
 #ifndef __NICOS_H__
 #define __NICOS_H__
 
+#include "net.h"
 #include "tlibs/net/tcp.h"
-#include "tasoptions.h"
 
-#include "dialogs/NetCacheDlg.h"
-
-#include <QObject>
-#include <QString>
 #include <QSettings>
-
 #include <map>
 #include <vector>
-#include <string>
 
-class NicosCache : public QObject
+class NicosCache : public NetCache
 { Q_OBJECT
 	protected:
 		QSettings* m_pSettings = 0;
@@ -41,24 +35,16 @@ class NicosCache : public QObject
 		NicosCache(QSettings* pSettings=0);
 		virtual ~NicosCache();
 
-		void connect(const std::string& strHost, const std::string& strPort,
-			const std::string& strUser, const std::string& strPass);
-		void disconnect();
+		virtual void connect(const std::string& strHost, const std::string& strPort,
+			const std::string& strUser, const std::string& strPass) override;
+		virtual void disconnect() override;
+		virtual void refresh() override;
 
 		void AddKey(const std::string& strKey);
 		void ClearKeys();
 
 		void RefreshKeys();
 		void RegisterKeys();
-
-	signals:
-		void connected(const QString& strHost, const QString& strSrv);
-		void disconnected();
-
-		void vars_changed(const CrystalOptions& crys, const TriangleOptions& triag);
-
-		void updated_cache_value(const std::string& strKey, const CacheVal& val);
-		void cleared_cache();
 
 	protected:
 		// Nicos device names

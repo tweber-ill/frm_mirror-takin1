@@ -55,6 +55,9 @@ void SicsCache::disconnect()
 	m_tcp.disconnect();
 }
 
+void SicsCache::refresh()
+{}
+
 void SicsCache::start_poller()
 {
 	m_bPollerActive.store(true);

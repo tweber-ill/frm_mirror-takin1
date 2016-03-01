@@ -93,6 +93,11 @@ void NicosCache::disconnect()
 	m_tcp.disconnect();
 }
 
+void NicosCache::refresh()
+{
+	RefreshKeys();
+}
+
 void NicosCache::AddKey(const std::string& strKey)
 {
 	// connection is asynchronous -> cannot yet request data from server
@@ -285,4 +290,5 @@ void NicosCache::slot_receive(const std::string& str)
 		emit vars_changed(crys, triag);
 }
 
+#include "net.moc"
 #include "nicos.moc"

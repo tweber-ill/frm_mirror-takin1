@@ -8,23 +8,17 @@
 #ifndef __SICS_CONN_H__
 #define __SICS_CONN_H__
 
+#include "net.h"
 #include "tlibs/net/tcp.h"
-#include "tasoptions.h"
 
-#include "dialogs/NetCacheDlg.h"
-
-#include <QObject>
-#include <QString>
 #include <QSettings>
-
 #include <map>
 #include <vector>
-#include <string>
 #include <thread>
 #include <atomic>
 
 
-class SicsCache : public QObject
+class SicsCache : public NetCache
 { Q_OBJECT
 	protected:
 		QSettings* m_pSettings = 0;
@@ -51,18 +45,10 @@ class SicsCache : public QObject
 		SicsCache(QSettings* pSettings=0);
 		virtual ~SicsCache();
 
-		void connect(const std::string& strHost, const std::string& strPort,
-			const std::string& strUser, const std::string& strPass);
-		void disconnect();
-
-	signals:
-		void connected(const QString& strHost, const QString& strSrv);
-		void disconnected();
-
-		void vars_changed(const CrystalOptions& crys, const TriangleOptions& triag);
-
-		void updated_cache_value(const std::string& strKey, const CacheVal& val);
-		void cleared_cache();
+		virtual void connect(const std::string& strHost, const std::string& strPort,
+			const std::string& strUser, const std::string& strPass) override;
+		virtual void disconnect() override;
+		virtual void refresh() override;
 };
 
 #endif

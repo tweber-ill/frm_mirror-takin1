@@ -761,8 +761,7 @@ void TazDlg::DeleteDialogs()
 #if !defined NO_NET
 	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
 	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
-	if(m_pNicosCache) { delete m_pNicosCache; m_pNicosCache = 0; }
-	if(m_pSicsCache) { delete m_pSicsCache; m_pSicsCache = 0; }
+	if(m_pNetCache) { delete m_pNetCache; m_pNetCache = 0; }
 #endif
 
 	if(m_pSgListDlg) { delete m_pSgListDlg; m_pSgListDlg = 0; }

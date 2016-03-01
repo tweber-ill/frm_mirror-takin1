@@ -37,15 +37,9 @@ void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPor
 
 	const QObject* pNetCache = nullptr;
 	if(iSys == 0)
-	{
-		m_pNicosCache = new NicosCache(&m_settings);
-		pNetCache = m_pNicosCache;
-	}
+		m_pNetCache = new NicosCache(&m_settings);
 	else if(iSys == 1)
-	{
-		m_pSicsCache = new SicsCache(&m_settings);
-		pNetCache = m_pSicsCache;
-	}
+		m_pNetCache = new SicsCache(&m_settings);
 	else
 	{
 		tl::log_err("Unknown instrument control system selected.");
@@ -53,63 +47,41 @@ void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPor
 	}
 
 
-	QObject::connect(pNetCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
+	QObject::connect(m_pNetCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
-	QObject::connect(pNetCache, SIGNAL(connected(const QString&, const QString&)),
+	QObject::connect(m_pNetCache, SIGNAL(connected(const QString&, const QString&)),
 					this, SLOT(Connected(const QString&, const QString&)));
-	QObject::connect(pNetCache, SIGNAL(disconnected()),
+	QObject::connect(m_pNetCache, SIGNAL(disconnected()),
 					this, SLOT(Disconnected()));
 
 	if(!m_pNetCacheDlg)
 		m_pNetCacheDlg = new NetCacheDlg(this, &m_settings);
 
 	m_pNetCacheDlg->ClearAll();
-	QObject::connect(pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
+	QObject::connect(m_pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
 					m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
 
-	if(iSys==0)
-		m_pNicosCache->connect(strHost, strPort, strUser, strPass);
-	else if(iSys==1)
-		m_pSicsCache->connect(strHost, strPort, strUser, strPass);
+	m_pNetCache->connect(strHost, strPort, strUser, strPass);
 }
 
 void TazDlg::Disconnect()
 {
-	const QObject *pNetCache = nullptr;
-	if(m_pNicosCache)
+	if(m_pNetCache)
 	{
-		m_pNicosCache->disconnect();
-		pNetCache = m_pNicosCache;
-	}
-	else if(m_pSicsCache)
-	{
-		m_pSicsCache->disconnect();
-		pNetCache = m_pSicsCache;
-	}
+		m_pNetCache->disconnect();
 
-
-	if(pNetCache)
-	{
-		QObject::disconnect(pNetCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
+		QObject::disconnect(m_pNetCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 						this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
-		QObject::disconnect(pNetCache, SIGNAL(connected(const QString&, const QString&)),
+		QObject::disconnect(m_pNetCache, SIGNAL(connected(const QString&, const QString&)),
 						this, SLOT(Connected(const QString&, const QString&)));
-		QObject::disconnect(pNetCache, SIGNAL(disconnected()),
+		QObject::disconnect(m_pNetCache, SIGNAL(disconnected()),
 						this, SLOT(Disconnected()));
 
-		QObject::disconnect(pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
+		QObject::disconnect(m_pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
 						m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
-	}
-
-	if(m_pNicosCache)
-	{
-		delete m_pNicosCache;
-		m_pNicosCache = nullptr;
-	}
-	if(m_pSicsCache)
-	{
-		delete m_pSicsCache;
-		m_pSicsCache = nullptr;
+						
+		delete m_pNetCache;
+		m_pNetCache = nullptr;
 	}
 
 	statusBar()->showMessage("Disconnected.", DEFAULT_MSG_TIMEOUT);
@@ -126,10 +98,8 @@ void TazDlg::ShowNetCache()
 
 void TazDlg::NetRefresh()
 {
-	if(m_pNicosCache)
-		m_pNicosCache->RefreshKeys();
-	else if(m_pSicsCache)
-		QMessageBox::information(this, "Info", "Sics is automatically polled and does not need refreshs.");
+	if(m_pNetCache)
+		m_pNetCache->refresh();
 	else
 		QMessageBox::warning(this, "Warning", "Not connected to a server.");
 }

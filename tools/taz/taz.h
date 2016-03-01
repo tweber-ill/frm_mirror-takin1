@@ -145,8 +145,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 #if !defined NO_NET
 		SrvDlg *m_pSrvDlg = nullptr;
-		NicosCache *m_pNicosCache = nullptr;
-		SicsCache *m_pSicsCache = nullptr;
+		NetCache *m_pNetCache = nullptr;
 		NetCacheDlg *m_pNetCacheDlg = nullptr;
 #endif
 
