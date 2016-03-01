@@ -82,6 +82,18 @@ License: Qwt License Version 1.0 (modified GNU LGPL version 2.1)
 
 
 
+--------------------------------------------------------------------------------
+FreeType
+URL: http://freetype.org
+
+Copyright (C) 1996-2002, 2006 by
+David Turner, Robert Wilhelm, and Werner Lemberg
+
+License: GNU GPL version 2 (see below) or FreeType License
+--------------------------------------------------------------------------------
+
+
+
 -------------------------------------------------------------------------------- 
 Lapack & Lapacke
 URL: http://www.netlib.org/lapack

@@ -28,18 +28,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectFont()));
 
-#ifndef NO_3D
-	std::string strDefFont = tl::FontMap::get_font_file("dejavusansmono.ttf");
-#else
-	std::string strDefFont = "";
-#endif
-	if(strDefFont == "")
-	{
-#ifndef NO_3D
-		tl::log_warn("Default gl font not available.");
-#endif
-		strDefFont = "/usr/share/fonts/dejavu/DejaVuSansMono.ttf";
-	}
+	std::string strDefFont = "/usr/share/fonts/dejavu/DejaVuSansMono.ttf";
 
 	m_vecEdits =
 	{
