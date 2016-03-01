@@ -54,7 +54,6 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		//t_tupEdit("net/stheta_aux", "nicos/sth/value", editRotTheta),
 		//t_tupEdit("net/stheta_aux_alias", "nicos/sth/alias", editRotAlias),
 
-
 		t_tupEdit("gl/font", "", editGLFont),
 		t_tupEdit("main/font_gfx", "", editGfxFont)
 	};
@@ -164,7 +163,7 @@ void SettingsDlg::LoadSettings()
 		int iVal = m_pSettings->value(strKey.c_str(), iDef).toInt();
 		pSpin->setValue(iVal);
 	}
-	
+
 	SetGlobals();
 }
 
@@ -205,9 +204,8 @@ void SettingsDlg::SetGlobals() const
 	g_iPrec = spinPrecGen->value();
 	g_iPrecGfx = spinPrecGfx->value();
 
-	g_dEps = std::pow(10., -g_iPrec);
-	g_dEpsGfx = std::pow(10., -g_iPrecGfx);
-	
+	g_dEps = std::pow(10., -double(g_iPrec));
+	g_dEpsGfx = std::pow(10., -double(g_iPrecGfx));
 
 	QString strGfxFont = editGfxFont->text();
 	if(strGfxFont.length() != 0)
@@ -216,7 +214,7 @@ void SettingsDlg::SetGlobals() const
 		if(font.fromString(strGfxFont))
 			g_fontGfx = font;
 	}
-	
+
 	QString strGLFont = editGLFont->text();
 	if(strGLFont.length() != 0)
 	{
