@@ -17,6 +17,13 @@ AtomsDlg::AtomsDlg(QWidget* pParent, QSettings *pSettings)
 	: QDialog(pParent), m_pSettings(pSettings)
 {
 	setupUi(this);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	tableAtoms->setColumnWidth(0, 75);
 	btnAdd->setIcon(load_icon("res/list-add.svg"));
 	btnDel->setIcon(load_icon("res/list-remove.svg"));

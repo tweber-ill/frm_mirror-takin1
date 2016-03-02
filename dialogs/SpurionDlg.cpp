@@ -20,6 +20,13 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 		: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	QColor colorBck(240, 240, 240, 255);
 	plotbragg->setCanvasBackground(colorBck);
 

@@ -15,6 +15,12 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Resolution Ellipsoids");
 	setSizeGripEnabled(1);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
 
 	PlotGl* pPlotLeft = new PlotGl(this, m_pSettings);
 	pPlotLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

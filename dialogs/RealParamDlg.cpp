@@ -16,7 +16,12 @@ RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
 	this->setupUi(this);
-
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
 
 	if(m_pSettings && m_pSettings->contains("real_params/geo"))
 		restoreGeometry(m_pSettings->value("real_params/geo").toByteArray());

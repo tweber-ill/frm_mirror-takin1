@@ -21,6 +21,13 @@ namespace co = boost::units::si::constants::codata;
 GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSettings(pSett)
 {
 	this->setupUi(this);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	btnAdd->setIcon(load_icon("res/list-add.svg"));
 	btnDel->setIcon(load_icon("res/list-remove.svg"));
 	btnSave->setIcon(load_icon("res/document-save.svg"));

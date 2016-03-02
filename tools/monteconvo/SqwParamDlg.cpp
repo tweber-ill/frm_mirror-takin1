@@ -12,6 +12,13 @@ SqwParamDlg::SqwParamDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSett(pSett)
 {
 	setupUi(this);
+	if(m_pSett)
+	{
+		QFont font;
+		if(m_pSett->contains("main/font_gen") && font.fromString(m_pSett->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	tableParams->verticalHeader()->setDefaultSectionSize(tableParams->verticalHeader()->minimumSectionSize()+2);
 
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));

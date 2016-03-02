@@ -13,9 +13,16 @@
 #include <memory>
 
 
-FilePreviewDlg::FilePreviewDlg(QWidget* pParent, const char* pcTitle)
-	: QFileDialog(pParent, pcTitle)
+FilePreviewDlg::FilePreviewDlg(QWidget* pParent, const char* pcTitle, QSettings* pSett)
+	: QFileDialog(pParent, pcTitle), m_pSettings(pSett)
 {
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	m_pPlot = new QwtPlot();
 	m_pCurve = new QwtPlotCurve("Scan Curve");
 	m_pPoints = new QwtPlotCurve("Scan Points");

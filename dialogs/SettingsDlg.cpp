@@ -26,9 +26,16 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
+	
+	g_fontGen.setStyleHint(QFont::SansSerif);
+	g_fontGfx.setStyleHint(QFont::SansSerif, QFont::PreferAntialias);
+	g_fontGL.setStyleHint(QFont::Monospace, QFont::OpenGLCompatible);
+	setFont(g_fontGen);
+
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectGLFont()));
 	connect(btnGfxFont, SIGNAL(clicked()), this, SLOT(SelectGfxFont()));
+	connect(btnGenFont, SIGNAL(clicked()), this, SLOT(SelectGenFont()));
 
 	m_vecEdits =
 	{
@@ -54,8 +61,9 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		//t_tupEdit("net/stheta_aux", "nicos/sth/value", editRotTheta),
 		//t_tupEdit("net/stheta_aux_alias", "nicos/sth/alias", editRotAlias),
 
-		t_tupEdit("gl/font", "", editGLFont),
-		t_tupEdit("main/font_gfx", "", editGfxFont)
+		t_tupEdit("gl/font", g_fontGL.toString().toStdString().c_str(), editGLFont),
+		t_tupEdit("main/font_gfx", g_fontGfx.toString().toStdString().c_str(), editGfxFont),
+		t_tupEdit("main/font_gen", g_fontGen.toString().toStdString().c_str(), editGenFont)
 	};
 
 	m_vecChecks =
@@ -201,12 +209,15 @@ void SettingsDlg::SaveSettings()
 
 void SettingsDlg::SetGlobals() const
 {
+	// precisions
 	g_iPrec = spinPrecGen->value();
 	g_iPrecGfx = spinPrecGfx->value();
 
 	g_dEps = std::pow(10., -double(g_iPrec));
 	g_dEpsGfx = std::pow(10., -double(g_iPrecGfx));
 
+
+	// fonts
 	QString strGfxFont = editGfxFont->text();
 	if(strGfxFont.length() != 0)
 	{
@@ -222,6 +233,16 @@ void SettingsDlg::SetGlobals() const
 		if(font.fromString(strGLFont))
 			g_fontGL = font;
 	}
+
+	QString strGenFont = editGenFont->text();
+	if(strGenFont.length() != 0)
+	{
+		QFont font;
+		if(font.fromString(strGenFont))
+			g_fontGen = font;
+	}
+
+	emit SettingsChanged();
 }
 
 
@@ -244,6 +265,17 @@ void SettingsDlg::SelectGfxFont()
 	{
 		g_fontGfx = fontNew;
 		editGfxFont->setText(fontNew.toString());
+	}
+}
+
+void SettingsDlg::SelectGenFont()
+{
+	bool bOk;
+	QFont fontNew = QFontDialog::getFont(&bOk, g_fontGen, this);
+	if(bOk)
+	{
+		g_fontGen = fontNew;
+		editGenFont->setText(fontNew.toString());
 	}
 }
 

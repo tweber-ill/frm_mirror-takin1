@@ -482,7 +482,7 @@ bool TazDlg::Import()
 
 	QFileDialog *pdlg = nullptr;
 	if(bShowPreview)
-		pdlg = new FilePreviewDlg(this, "Import Data File...");
+		pdlg = new FilePreviewDlg(this, "Import Data File...", &m_settings);
 	else
 		pdlg = new QFileDialog(this, "Import Data File...");
 	std::unique_ptr<QFileDialog> ptrdlg(pdlg);

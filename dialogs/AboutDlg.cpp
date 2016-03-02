@@ -26,6 +26,12 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
 
 	labelVersion->setText("Version " TAKIN_VER);
 	labelWritten->setText("Written by Tobias Weber");

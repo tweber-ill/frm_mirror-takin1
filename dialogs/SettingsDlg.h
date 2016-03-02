@@ -38,6 +38,9 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 	public:
 		SettingsDlg(QWidget* pParent=0, QSettings* pSett=0);
 		virtual ~SettingsDlg();
+		
+	signals:
+		void SettingsChanged() const;
 
 	protected:
 		void LoadSettings();
@@ -53,6 +56,7 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		void ButtonBoxClicked(QAbstractButton* pBtn);
 		void SelectGLFont();
 		void SelectGfxFont();
+		void SelectGenFont();
 };
 
 #endif

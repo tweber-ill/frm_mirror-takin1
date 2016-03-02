@@ -17,6 +17,13 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 {
 	setupUi(this);
 	setWindowTitle(m_pcTitle);
+	
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
 
 	m_vecPlots = {plot1,plot2,plot3,plot4};
 

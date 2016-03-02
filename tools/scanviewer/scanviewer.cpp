@@ -34,6 +34,10 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG" })
 {
 	this->setupUi(this);
+	QFont font;
+	if(m_settings.contains("main/font_gen") && font.fromString(m_settings.value("main/font_gen", "").toString()))
+		setFont(font);
+
 	splitter->setStretchFactor(0, 1);
 	splitter->setStretchFactor(1, 2);
 

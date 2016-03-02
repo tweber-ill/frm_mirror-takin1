@@ -44,6 +44,13 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 				m_pmapSpaceGroups(get_space_groups())
 {
 	this->setupUi(this);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	btnAtoms->setEnabled(g_bHasScatlens);
 
 

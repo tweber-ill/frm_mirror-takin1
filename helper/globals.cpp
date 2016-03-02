@@ -22,7 +22,9 @@ bool g_bHasFormfacts = 0;
 bool g_bHasScatlens = 0;
 
 #ifndef NO_QT
-	QFont g_fontGfx, g_fontGL;
+	QFont g_fontGen("DejaVu Sans",10);
+	QFont g_fontGfx("DejaVu Sans",10);
+	QFont g_fontGL("DejaVu Sans Mono",10);
 #endif
 
 // -----------------------------------------------------------------------------

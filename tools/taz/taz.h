@@ -259,6 +259,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 			bool bHasNearest, double dNearestH, double dNearestK, double dNearestL);
 		void RealCoordsChanged(double dh, double dk, double dl,
 			bool bHasNearest, double dNearestH, double dNearestK, double dNearestL);
+			
+		void SettingsChanged();
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

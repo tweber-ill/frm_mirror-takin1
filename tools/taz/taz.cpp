@@ -52,6 +52,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
+	this->setFont(g_fontGen);
 	btnAtoms->setEnabled(g_bHasScatlens);
 
 	if(m_settings.contains("main/geo"))
@@ -156,6 +157,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pviewRealLattice->setScene(&m_sceneRealLattice);
 	m_pviewReal->setScene(&m_sceneReal);
 
+
+	QObject::connect(m_pSettingsDlg, SIGNAL(SettingsChanged()), this, SLOT(SettingsChanged()));
 
 	QObject::connect(&m_sceneRecip, SIGNAL(triangleChanged(const TriangleOptions&)),
 					&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));
@@ -768,6 +771,14 @@ void TazDlg::DeleteDialogs()
 	if(m_pFormfactorDlg) { delete m_pFormfactorDlg; m_pFormfactorDlg = 0; }
 }
 
+void TazDlg::SettingsChanged()
+{
+	setFont(g_fontGen);
+	
+	m_sceneReal.update();
+	m_sceneRealLattice.update();
+	m_sceneRecip.update();
+}
 
 void TazDlg::showEvent(QShowEvent *pEvt)
 {
@@ -1084,8 +1095,6 @@ void TazDlg::RealContextMenu(const QPoint& _pt)
 	QPoint pt = this->m_pviewReal->mapToGlobal(_pt);
 	m_pMenuViewReal->exec(pt);
 }
-
-
 
 
 //--------------------------------------------------------------------------------

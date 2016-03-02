@@ -29,6 +29,13 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 		m_pSett(pSett)
 {
 	setupUi(this);
+	if(m_pSett)
+	{
+		QFont font;
+		if(m_pSett->contains("main/font_gen") && font.fromString(m_pSett->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	btnStart->setIcon(load_icon("res/media-playback-start.svg"));
 	btnStop->setIcon(load_icon("res/media-playback-stop.svg"));
 	btnSaveResult->setIcon(load_icon("res/document-save-as.svg"));

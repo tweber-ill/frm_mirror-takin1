@@ -17,8 +17,12 @@ SgListDlg::SgListDlg(QWidget *pParent)
 		m_settings("tobis_stuff", "sglist")
 {
 	setupUi(this);
-	SetupSpacegroups();
+	QFont font;
+	if(m_settings.contains("main/font_gen") && font.fromString(m_settings.value("main/font_gen", "").toString()))
+		setFont(font);
 
+
+	SetupSpacegroups();
 
 	QObject::connect(listSGs, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
 		this, SLOT(SGSelected(QListWidgetItem*, QListWidgetItem*)));

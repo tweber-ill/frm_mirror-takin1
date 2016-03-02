@@ -26,6 +26,13 @@ NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
 			: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	setupConstants();
 
 	QObject::connect(editLam, SIGNAL(textEdited(const QString&)), this, SLOT(CalcNeutronLam()));

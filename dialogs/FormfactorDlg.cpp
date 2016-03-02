@@ -16,6 +16,13 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	: QDialog(pParent), m_pSettings(pSettings)
 {
 	this->setupUi(this);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	SetupAtoms();
 
 	QColor colorBck(240, 240, 240, 255);

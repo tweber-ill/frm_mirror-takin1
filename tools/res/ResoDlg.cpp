@@ -33,6 +33,13 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
 	setupUi(this);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+	}
+
 	btnSave->setIcon(load_icon("res/document-save.svg"));
 	btnLoad->setIcon(load_icon("res/document-open.svg"));
 
