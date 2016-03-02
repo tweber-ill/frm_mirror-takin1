@@ -280,7 +280,7 @@ sglist: ${OBJ_SGLIST}
 	${STRIP} sglist
 
 gentab: ${OBJ_GENTAB}
-	${CC} ${FLAGS} ${LIB_DIRS} -o bin/gentab $+ ${STD_LIBS} -lclipper-core
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/gentab $+ ${STD_LIBS} ${BASIC_LIBS} -lclipper-core
 
 sfact: ${OBJ_SFACT}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/sfact $+ ${STD_LIBS} ${BASIC_LIBS} -lclipper-core

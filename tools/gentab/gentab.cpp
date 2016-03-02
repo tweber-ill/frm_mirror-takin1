@@ -77,14 +77,12 @@ bool gen_formfacts()
 	}
 
 
-	std::ofstream ofstr("res/ffacts.xml");
-	if(!ofstr)
+	if(!prop.Save("res/ffacts.xml.gz"))
 	{
-		tl::log_err("Error: Cannot write \"res/ffacts.xml\".");
+		tl::log_err("Error: Cannot write \"res/ffacts.xml.gz\".");
 		return false;
 	}
-
-	return prop.Save(ofstr, tl::PropType::XML);
+	return true;
 }
 
 // ============================================================================
@@ -184,14 +182,11 @@ bool gen_scatlens()
 	}
 
 
-	std::ofstream ofstr("res/scatlens.xml");
-	if(!ofstr)
+	if(!prop.Save("res/scatlens.xml.gz"))
 	{
-		tl::log_err("Error: Cannot write \"res/scatlens.xml\".");
+		tl::log_err("Error: Cannot write \"res/scatlens.xml.gz\".");
 		return false;
 	}
-
-	prop.Save(ofstr, tl::PropType::XML);
 	return true;
 }
 
@@ -256,14 +251,13 @@ bool gen_spacegroups()
 	}
 
 
-	std::ofstream ofstr("res/sgroups.xml");
-	if(!ofstr)
+	if(!prop.Save("res/sgroups.xml.gz"))
 	{
-		tl::log_err("Error: Cannot write \"res/sgroups.xml\".");
+		tl::log_err("Error: Cannot write \"res/sgroups.xml.gz\".");
 		return false;
 	}
 
-	return prop.Save(ofstr, tl::PropType::XML);
+	return true;
 }
 
 

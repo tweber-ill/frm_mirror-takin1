@@ -55,6 +55,10 @@ std::string find_resource(const std::string& strFile)
 		//tl::log_debug("Looking for file: ", _strFile);
 		if(boost::filesystem::exists(_strFile))
 			return _strFile;
+		else if(boost::filesystem::exists(_strFile + ".gz"))
+			return _strFile + ".gz";
+		else if(boost::filesystem::exists(_strFile + ".bz2"))
+			return _strFile + ".bz2";
 	}
 
 	tl::log_err("Could not load resource file \"", strFile, "\".");
