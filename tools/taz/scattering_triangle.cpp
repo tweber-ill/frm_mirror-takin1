@@ -80,6 +80,7 @@ RecipPeak::RecipPeak()
 
 QRectF RecipPeak::boundingRect() const
 {
+	//return QRectF(-50., -10., 100., 80.);
 	return QRectF(-35., -10., 70., 50.);
 }
 
@@ -906,12 +907,15 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<double>& lattice,
 								tl::structfact<double, std::complex<double>, t_vec, std::vector>
 									(vecAllAtoms, vecPeak, vecScatlens);
 							double dFsq = (std::conj(cF)*cF).real();
-							dF = std::sqrt(dFsq);
-							tl::set_eps_0(dF, g_dEpsGfx);
+							//dFsq *= tl::lorentz_factor(dAngle);
+							tl::set_eps_0(dFsq, g_dEpsGfx);
+	
+							//dF = std::sqrt(dFsq);
+							//tl::set_eps_0(dF, g_dEpsGfx);
 
 							std::ostringstream ostrStructfact;
 							ostrStructfact.precision(g_iPrecGfx);
-							ostrStructfact << "F = " << dF;
+							ostrStructfact << "S = " << dFsq;
 							strStructfact = ostrStructfact.str();
 						}
 						// --------------------------------------------------------------------

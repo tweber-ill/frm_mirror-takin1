@@ -307,6 +307,9 @@ void TazDlg::RepopulateSpaceGroups()
 	if(!pmapSpaceGroups)
 		return;
 
+	QString strCurSG = comboSpaceGroups->currentText();
+	comboSpaceGroups->setCurrentIndex(0);
+
 	for(int iCnt=comboSpaceGroups->count()-1; iCnt>0; --iCnt)
 		comboSpaceGroups->removeItem(iCnt);
 
@@ -325,6 +328,11 @@ void TazDlg::RepopulateSpaceGroups()
 		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
 			strName.c_str(), QVariant::fromValue((void*)&pair.second));
 	}
+
+
+	int iSGIdx = comboSpaceGroups->findText(strCurSG);
+	if(iSGIdx >= 0)
+		comboSpaceGroups->setCurrentIndex(iSGIdx);
 }
 
 
