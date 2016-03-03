@@ -21,6 +21,7 @@ extern bool g_bHasFormfacts;
 extern bool g_bHasScatlens;
 
 
+extern void add_resource_path(const std::string& strPath);
 extern std::string find_resource(const std::string& strFile);
 
 

@@ -30,7 +30,7 @@ bool g_bHasScatlens = 0;
 // -----------------------------------------------------------------------------
 
 
-static const std::vector<std::string> s_vecInstallPaths =
+static std::vector<std::string> s_vecInstallPaths =
 {
 	".",
 #ifdef INSTALL_PREFIX
@@ -48,6 +48,11 @@ QIcon load_icon(const std::string& strIcon)
 	return QIcon();
 }
 #endif
+
+void add_resource_path(const std::string& strPath)
+{
+	s_vecInstallPaths.push_back(strPath);
+}
 
 std::string find_resource(const std::string& strFile)
 {

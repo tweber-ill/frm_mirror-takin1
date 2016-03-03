@@ -17,6 +17,7 @@
 #include <memory>
 #include <QMetaType>
 #include <QMessageBox>
+#include <QCoreApplication>
 
 
 #ifdef Q_WS_X11
@@ -46,6 +47,12 @@ int main(int argc, char** argv)
 		std::unique_ptr<QApplication> app(new QApplication(argc, argv));
 		std::setlocale(LC_ALL, "C");
 		QLocale::setDefault(QLocale::English);
+
+		add_resource_path(QCoreApplication::applicationDirPath().toStdString());
+		add_resource_path(QCoreApplication::applicationDirPath().toStdString() + "/resources");
+		add_resource_path(QCoreApplication::applicationDirPath().toStdString() + "/Resources");
+		add_resource_path(QCoreApplication::applicationDirPath().toStdString() + "/../resources");
+		add_resource_path(QCoreApplication::applicationDirPath().toStdString() + "/../Resources");
 
 
 		// ------------------------------------------------------------
