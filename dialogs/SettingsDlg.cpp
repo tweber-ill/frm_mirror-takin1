@@ -26,7 +26,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
-	
+
 	g_fontGen.setStyleHint(QFont::SansSerif);
 	g_fontGfx.setStyleHint(QFont::SansSerif, QFont::PreferAntialias);
 	g_fontGL.setStyleHint(QFont::Monospace, QFont::OpenGLCompatible);
@@ -48,10 +48,10 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupEdit("net/psi0", "nicos/sample/psi0", editSamplePsi0),
 
 		t_tupEdit("net/stheta", "nicos/sth/value", editSampleTheta),
-		t_tupEdit("net/s2theta", "nicos/phi/value", editSample2Theta),
+		t_tupEdit("net/s2theta", "nicos/stt/value", editSample2Theta),
 
-		t_tupEdit("net/mtheta", "nicos/m2th/value", editMonoTheta),
-		t_tupEdit("net/m2theta", "nicos/m2tt/value", editMono2Theta),
+		t_tupEdit("net/mtheta", "nicos/mth/value", editMonoTheta),
+		t_tupEdit("net/m2theta", "nicos/mtt/value", editMono2Theta),
 		t_tupEdit("net/mono_d", "nicos/mono/dvalue", editMonoD),
 
 		t_tupEdit("net/atheta", "nicos/ath/value", editAnaTheta),

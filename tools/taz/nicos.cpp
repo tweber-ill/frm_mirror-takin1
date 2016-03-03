@@ -43,7 +43,7 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 		*pair.second = m_pSettings->value(strKey.c_str(), pair.second->c_str()
 										).toString().toStdString();
 	}
-	
+
 	m_bFlipOrient2 = m_pSettings->value("net/flip_orient2", true).toBool();
 	//tl::log_info("Flipping Nicos' orientation vector 2: ", m_bFlipOrient2);
 
@@ -225,7 +225,7 @@ void NicosCache::slot_receive(const std::string& str)
 			return;
 
 		crys.bChangedPlane2 = 1;
-		
+
 		for(int i=0; i<3; ++i)
 			crys.dPlane2[i] = m_bFlipOrient2 ? -vecOrient[i] : vecOrient[i];
 	}
