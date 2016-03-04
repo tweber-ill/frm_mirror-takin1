@@ -48,11 +48,14 @@ int main(int argc, char** argv)
 		std::setlocale(LC_ALL, "C");
 		QLocale::setDefault(QLocale::English);
 
-		add_resource_path(QCoreApplication::applicationDirPath().toStdString());
-		add_resource_path(QCoreApplication::applicationDirPath().toStdString() + "/resources");
-		add_resource_path(QCoreApplication::applicationDirPath().toStdString() + "/Resources");
-		add_resource_path(QCoreApplication::applicationDirPath().toStdString() + "/../resources");
-		add_resource_path(QCoreApplication::applicationDirPath().toStdString() + "/../Resources");
+		std::string strApp = QCoreApplication::applicationDirPath().toStdString();
+		tl::log_info("Application path: ", strApp);
+		add_resource_path(strApp);
+		add_resource_path(strApp + "/..");
+		add_resource_path(strApp + "/resources");
+		add_resource_path(strApp + "/Resources");
+		add_resource_path(strApp + "/../resources");
+		add_resource_path(strApp + "/../Resources");
 
 
 		// ------------------------------------------------------------
