@@ -112,7 +112,8 @@ STD_LIBS += -lpthread
 
 
 ifeq ($(DO_DEBUG), 0)
-	FLAGS = ${INC} -O2 -march=native -std=c++11 -DNDEBUG -Wall -fPIC
+	FLAGS = ${INC} -O2 -std=c++11 -DNDEBUG -Wall -fPIC
+	FLAGS += -march=native
 	FLAGS += -DQT_NO_DEBUG
 	FLAGS += ${DEFINES}
 	#FLAGS += -fexpensive-optimizations
