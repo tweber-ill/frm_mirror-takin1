@@ -122,16 +122,31 @@ bool gen_scatlens()
 		return false;
 	}
 
+	bool bTableStarted = 0;
 	std::string strTable;
-	unsigned int iLine = 0;
 	while(!ifstr.eof())
 	{
 		std::string strLine;
 		std::getline(ifstr, strLine);
-		if(iLine >= 115 && iLine <= 485)
+
+		if(!bTableStarted)
+		{
+			std::vector<std::string> vecHdr;
+			tl::get_tokens_seq<std::string, std::string>(strLine, "<th>", vecHdr, 0);
+			if(vecHdr.size() < 9)
+				continue;
+			bTableStarted = 1;
+		}
+		else
+		{
+			// at end of table?
+			if(tl::str_to_lower(strLine).find("/table") != std::string::npos)
+				break;
+
 			strTable += strLine;
-		++iLine;
+		}
 	}
+	ifstr.close();
 
 
 
@@ -158,6 +173,11 @@ bool gen_scatlens()
 
 		std::vector<std::string> vecCol;
 		tl::get_tokens_seq<std::string, std::string>(strRow, "<td>", vecCol, 0);
+		if(vecCol.size() < 9)
+		{
+			tl::log_warn("Invalid number of table entries in row \"", strRow, "\".");
+			continue;
+		}
 
 		std::string strName = vecCol[1];
 		tl::trim(strName);
