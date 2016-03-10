@@ -122,12 +122,16 @@ ConvoDlg::~ConvoDlg()
 
 void ConvoDlg::SaveResult()
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+	
 	QString strDirLast = ".";
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_result", ".").toString();
 
 	QString strFile = QFileDialog::getSaveFileName(this,
-		"Save Scan", strDirLast, "Data Files (*.dat *.DAT)");
+		"Save Scan", strDirLast, "Data Files (*.dat *.DAT)", nullptr, fileopt);
 
 	if(strFile == "")
 		return;
@@ -499,13 +503,16 @@ void ConvoDlg::Stop()
 
 void ConvoDlg::browseCrysFiles()
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+	
 	QString strDirLast = ".";
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_crys", ".").toString();
 	QString strFile = QFileDialog::getOpenFileName(this,
-							"Open Crystal File...",
-							strDirLast,
-							"Takin files (*.taz *.TAZ)");
+		"Open Crystal File...", strDirLast, "Takin files (*.taz *.TAZ)",
+		nullptr, fileopt);
 	if(strFile == "")
 		return;
 
@@ -518,13 +525,16 @@ void ConvoDlg::browseCrysFiles()
 
 void ConvoDlg::browseResoFiles()
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+	
 	QString strDirLast = ".";
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_reso", ".").toString();
 	QString strFile = QFileDialog::getOpenFileName(this,
-							"Open Resolution File...",
-							strDirLast,
-							"Takin files (*.taz *.TAZ)");
+		"Open Resolution File...", strDirLast, "Takin files (*.taz *.TAZ)",
+		nullptr, fileopt);
 	if(strFile == "")
 		return;
 
@@ -537,13 +547,16 @@ void ConvoDlg::browseResoFiles()
 
 void ConvoDlg::browseSqwFiles()
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+	
 	QString strDirLast = ".";
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_sqw", ".").toString();
 	QString strFile = QFileDialog::getOpenFileName(this,
-							"Open S(q,w) File...",
-							strDirLast,
-							"All S(q,w) files (*.dat *.DAT *.py *.PY)");
+		"Open S(q,w) File...", strDirLast, "All S(q,w) files (*.dat *.DAT *.py *.PY)",
+		nullptr, fileopt);
 	if(strFile == "")
 		return;
 

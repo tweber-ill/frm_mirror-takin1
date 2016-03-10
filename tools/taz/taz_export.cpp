@@ -50,9 +50,13 @@ void TazDlg::ExportRecip()
 
 void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(!m_settings.value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
 	QString strFile = QFileDialog::getSaveFileName(this,
-		"Export SVG", strDirLast, "SVG files (*.svg *.SVG)");
+		"Export SVG", strDirLast, "SVG files (*.svg *.SVG)", nullptr, fileopt);
 	if(strFile == "")
 		return;
 
@@ -77,9 +81,13 @@ void TazDlg::ExportSceneSVG(QGraphicsScene& scene)
 #ifdef USE_GIL
 void TazDlg::ExportBZImage()
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(!m_settings.value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
 	QString strFile = QFileDialog::getSaveFileName(this,
-		"Export PNG", strDirLast, "PNG files (*.png *.PNG)");
+		"Export PNG", strDirLast, "PNG files (*.png *.PNG)", nullptr, fileopt);
 	if(strFile == "")
 		return;
 
@@ -96,9 +104,13 @@ void TazDlg::ExportBZImage()
 
 void TazDlg::ExportWSImage()
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(!m_settings.value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
 	QString strFile = QFileDialog::getSaveFileName(this,
-		"Export PNG", strDirLast, "PNG files (*.png *.PNG)");
+		"Export PNG", strDirLast, "PNG files (*.png *.PNG)", nullptr, fileopt);
 	if(strFile == "")
 		return;
 
@@ -187,10 +199,13 @@ void TazDlg::ExportUCModel()
 		{ 0., 0., 0., 1.}	});
 
 
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(!m_settings.value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
 
 	QString strDirLast = m_settings.value("main/last_dir_export", ".").toString();
 	QString strFile = QFileDialog::getSaveFileName(this,
-		"Export X3D", strDirLast, "X3D files (*.x3d *.X3D)");
+		"Export X3D", strDirLast, "X3D files (*.x3d *.X3D)", nullptr, fileopt);
 	if(strFile == "")
 		return;
 

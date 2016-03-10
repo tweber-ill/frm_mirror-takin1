@@ -605,13 +605,17 @@ void PowderDlg::SavePowder()
 {
 	const std::string strXmlRoot("taz/");
 
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = ".";
 	if(m_pSettings)
 		m_pSettings->value("powder/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getSaveFileName(this,
-								"Save Powder Configuration",
-								strDirLast,
-								"TAZ files (*.taz *.TAZ)");
+		"Save Powder Configuration", strDirLast,
+		"TAZ files (*.taz *.TAZ)", nullptr,
+		fileopt);
 
 	if(qstrFile == "")
 		return;
@@ -637,13 +641,17 @@ void PowderDlg::LoadPowder()
 {
 	const std::string strXmlRoot("taz/");
 
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = ".";
 	if(m_pSettings)
 		strDirLast = m_pSettings->value("powder/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getOpenFileName(this,
-							"Open Powder Configuration",
-							strDirLast,
-							"TAZ files (*.taz *.TAZ)");
+		"Open Powder Configuration", strDirLast,
+		"TAZ files (*.taz *.TAZ)", nullptr,
+		fileopt);
 	if(qstrFile == "")
 		return;
 
@@ -753,9 +761,13 @@ void PowderDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 void PowderDlg::SaveTable()
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = m_pSettings ? m_pSettings->value("powder/last_dir_table", ".").toString() : ".";
 	QString strFile = QFileDialog::getSaveFileName(this,
-		"Save Table", strDirLast, "Data files (*.dat *.DAT)");
+		"Save Table", strDirLast, "Data files (*.dat *.DAT)", nullptr, fileopt);
 
 	if(strFile != "")
 	{

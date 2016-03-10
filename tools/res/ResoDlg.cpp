@@ -153,13 +153,18 @@ void ResoDlg::SaveRes()
 {
 	const std::string strXmlRoot("taz/");
 
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = ".";
 	if(m_pSettings)
 		strDirLast = m_pSettings->value("reso/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getSaveFileName(this,
 		"Save resolution configuration",
 		strDirLast,
-		"TAZ files (*.taz *.TAZ)");
+		"TAZ files (*.taz *.TAZ)", nullptr,
+		fileopt);
 
 	if(qstrFile == "")
 		return;
@@ -184,13 +189,18 @@ void ResoDlg::LoadRes()
 {
 	const std::string strXmlRoot("taz/");
 
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = ".";
 	if(m_pSettings)
 		strDirLast = m_pSettings->value("reso/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getOpenFileName(this,
 		"Open resolution configuration...",
 		strDirLast,
-		"TAZ files (*.taz *.TAZ)");
+		"TAZ files (*.taz *.TAZ)", nullptr,
+		fileopt);
 	if(qstrFile == "")
 		return;
 
@@ -848,8 +858,13 @@ void ResoDlg::MCGenerate()
 	if(!m_bEll4dCurrent)
 		CalcElli4d();
 
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strLastDir = m_pSettings ? m_pSettings->value("reso/mc_dir", ".").toString() : ".";
-	QString _strFile = QFileDialog::getSaveFileName(this, "Save MC neutron data...", strLastDir, "DAT files (*.dat);;All files (*.*)");
+	QString _strFile = QFileDialog::getSaveFileName(this, "Save MC neutron data...", 
+		strLastDir, "DAT files (*.dat);;All files (*.*)", nullptr, fileopt);
 	if(_strFile == "")
 		return;
 

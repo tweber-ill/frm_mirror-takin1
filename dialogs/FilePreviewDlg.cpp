@@ -54,7 +54,7 @@ FilePreviewDlg::FilePreviewDlg(QWidget* pParent, const char* pcTitle, QSettings*
 	resize(size().width(), size().height()*1.25);
 
 	QObject::connect(this, SIGNAL(currentChanged(const QString&)),
-					this, SLOT(FileSelected(const QString&)));
+		this, SLOT(FileSelected(const QString&)));
 }
 
 FilePreviewDlg::~FilePreviewDlg()

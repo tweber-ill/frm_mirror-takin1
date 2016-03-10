@@ -583,13 +583,17 @@ void GotoDlg::LoadList()
 {
 	const std::string strXmlRoot("taz/");
 
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = ".";
 	if(m_pSettings)
 		strDirLast = m_pSettings->value("goto_pos/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getOpenFileName(this,
-							"Load Positions",
-							strDirLast,
-							"TAZ files (*.taz *.TAZ)");
+		"Load Positions", strDirLast,
+		"TAZ files (*.taz *.TAZ)", nullptr,
+		fileopt);
 	if(qstrFile == "")
 		return;
 
@@ -613,13 +617,17 @@ void GotoDlg::SaveList()
 {
 	const std::string strXmlRoot("taz/");
 
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strDirLast = ".";
 	if(m_pSettings)
 		m_pSettings->value("goto_pos/last_dir", ".").toString();
 	QString qstrFile = QFileDialog::getSaveFileName(this,
-								"Save Positions",
-								strDirLast,
-								"TAZ files (*.taz *.TAZ)");
+		"Save Positions", strDirLast,
+		"TAZ files (*.taz *.TAZ)", nullptr,
+		fileopt);
 
 	if(qstrFile == "")
 		return;

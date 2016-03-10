@@ -115,21 +115,21 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(comboExport, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::GenerateExternal);
 #else
 	QObject::connect(editPath, SIGNAL(textEdited(const QString&)),
-					this, SLOT(ChangedPath()));
+		this, SLOT(ChangedPath()));
 	//QObject::connect(listFiles, SIGNAL(itemSelectionChanged()),
-	//				this, SLOT(FileSelected()));
+	//	this, SLOT(FileSelected()));
 	QObject::connect(listFiles, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
-					this, SLOT(FileSelected(QListWidgetItem*, QListWidgetItem*)));
+		this, SLOT(FileSelected(QListWidgetItem*, QListWidgetItem*)));
 	QObject::connect(btnBrowse, SIGNAL(clicked(bool)),
-					this, SLOT(SelectDir()));
+		this, SLOT(SelectDir()));
 	QObject::connect(comboX, SIGNAL(currentIndexChanged(const QString&)),
-					this, SLOT(XAxisSelected(const QString&)));
+		this, SLOT(XAxisSelected(const QString&)));
 	QObject::connect(comboY, SIGNAL(currentIndexChanged(const QString&)),
-					this, SLOT(YAxisSelected(const QString&)));
+		this, SLOT(YAxisSelected(const QString&)));
 	QObject::connect(tableProps, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)),
-					this, SLOT(PropSelected(QTableWidgetItem*, QTableWidgetItem*)));
+		this, SLOT(PropSelected(QTableWidgetItem*, QTableWidgetItem*)));
 	QObject::connect(comboExport, SIGNAL(currentIndexChanged(int)),
-					this, SLOT(GenerateExternal(int)));
+		this, SLOT(GenerateExternal(int)));
 	//QObject::connect(btnOpenExt, SIGNAL(clicked()), this, SLOT(openExternally()));
 #endif
 
@@ -195,12 +195,12 @@ void ScanViewerDlg::ClearPlot()
 	plot->setTitle("");
 
 	auto edits = { editA, editB, editC,
-				editAlpha, editBeta, editGamma,
-				editPlaneX0, editPlaneX1, editPlaneX2,
-				editPlaneY0, editPlaneY1, editPlaneY2,
-				editTitle, editSample,
-				editUser, editContact,
-				editKfix, editTimestamp };
+		editAlpha, editBeta, editGamma,
+		editPlaneX0, editPlaneX1, editPlaneX2,
+		editPlaneY0, editPlaneY1, editPlaneY2,
+		editTitle, editSample,
+		editUser, editContact,
+		editKfix, editTimestamp };
 	for(auto* pEdit : edits)
 		pEdit->setText("");
 
@@ -213,9 +213,13 @@ void ScanViewerDlg::ClearPlot()
 
 void ScanViewerDlg::SelectDir()
 {
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(!m_settings.value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
 	QString strCurDir = (m_strCurDir==""?".":m_strCurDir.c_str());
 	QString strDir = QFileDialog::getExistingDirectory(this, "Select directory",
-						strCurDir, QFileDialog::ShowDirsOnly);
+		strCurDir, QFileDialog::ShowDirsOnly | fileopt);
 	if(strDir != "")
 	{
 		editPath->setText(strDir);
