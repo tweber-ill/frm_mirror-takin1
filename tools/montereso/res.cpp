@@ -30,8 +30,7 @@ using namespace ublas;
  * 'read_mcstas_res' of the McStas 'mcresplot' program
  */
 Resolution calc_res(const std::vector<vector<double>>& Q_vec,
-					const vector<double>& Q_avg,
-					const std::vector<double>* pp_vec)
+	const vector<double>& Q_avg, const std::vector<double>* pp_vec)
 {
 	vector<double> Q_dir = tl::make_vec({Q_avg[0], Q_avg[1], Q_avg[2]});
 	Q_dir = Q_dir / norm_2(Q_dir);
@@ -99,8 +98,8 @@ Resolution calc_res(const std::vector<vector<double>>& Q_vec,
 
 
 Resolution calc_res(unsigned int uiLen,
-			  const double *_Q_x, const double *_Q_y, const double *_Q_z,
-			  const double *_E)
+	const double *_Q_x, const double *_Q_y, const double *_Q_z,
+	const double *_E)
 {
 	vector<double> Q_avg(4);
 	Q_avg[0] = Q_avg[1] = Q_avg[2] = Q_avg[3] = 0.;
@@ -133,9 +132,9 @@ Resolution calc_res(unsigned int uiLen,
  * 'read_mcstas_res' of the McStas 'mcresplot' program
  */
 Resolution calc_res(unsigned int uiLen,
-			  const double *_ki_x, const double *_ki_y, const double *_ki_z,
-			  const double *_kf_x, const double *_kf_y, const double *_kf_z,
-			  const double *_p_i, const double *_p_f)
+	const double *_ki_x, const double *_ki_y, const double *_ki_z,
+	const double *_kf_x, const double *_kf_y, const double *_kf_z,
+	const double *_p_i, const double *_p_f)
 {
 	tl::log_info("Calculating resolution...");
 

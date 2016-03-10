@@ -33,16 +33,16 @@ struct Resolution
 
 
 Resolution calc_res(const std::vector<ublas::vector<double>>& Q_vec,
-					const ublas::vector<double>& Q_avg,
-					const std::vector<double>* pp_vec = 0);
+	const ublas::vector<double>& Q_avg,
+	const std::vector<double>* pp_vec = 0);
 
 Resolution calc_res(unsigned int uiLen,
-			  const double *_Q_x, const double *_Q_y, const double *_Q_z,
-			  const double *_E);
+	const double *_Q_x, const double *_Q_y, const double *_Q_z,
+	const double *_E);
 
 Resolution calc_res(unsigned int uiLen,
-			  const double *ki_x, const double *ki_y, const double *ki_z,
-			  const double *kf_x, const double *kf_y, const double *kf_z,
-			  const double *p_i=0, const double *p_f=0);
+	const double *ki_x, const double *ki_y, const double *ki_z,
+	const double *kf_x, const double *kf_y, const double *kf_z,
+	const double *p_i=0, const double *p_f=0);
 
 #endif
