@@ -18,6 +18,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
+#include <qwt_plot_panner.h>
 #include <qwt_legend.h>
 
 
@@ -33,6 +34,7 @@ protected:
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
 	QwtPlotZoomer* m_pZoomer = nullptr;
+	QwtPlotPanner* m_pPanner = nullptr;
 
 
 	// ana stuff
@@ -42,6 +44,7 @@ protected:
 	QwtPlotGrid *m_pGridAna = nullptr;
 	QwtPlotPicker *m_pPickerAna = nullptr;
 	QwtPlotZoomer* m_pZoomerAna = nullptr;
+	QwtPlotPanner* m_pPannerAna = nullptr;
 
 
 	// bose stuff
@@ -53,6 +56,7 @@ protected:
 	QwtPlotPicker *m_pPickerBose = nullptr;
 	QwtLegend *m_pLegendBose = nullptr;
 	QwtPlotZoomer* m_pZoomerBose = nullptr;
+	QwtPlotPanner* m_pPannerBose = nullptr;
 
 
 	// lorentz stuff
@@ -62,6 +66,7 @@ protected:
 	QwtPlotGrid *m_pGridLor = nullptr;
 	QwtPlotPicker *m_pPickerLor = nullptr;
 	QwtPlotZoomer* m_pZoomerLor = nullptr;
+	QwtPlotPanner* m_pPannerLor = nullptr;
 
 
 

@@ -33,6 +33,9 @@ DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 	penGrid.setStyle(Qt::DashLine);
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plot);
+	
+	m_pPanner = new QwtPlotPanner(plot->canvas());
+	m_pPanner->setMouseButton(Qt::MiddleButton);
 
 #if QWT_VER>=6
 	m_pZoomer = new QwtPlotZoomer(plot->canvas());
@@ -94,17 +97,20 @@ DynPlaneDlg::~DynPlaneDlg()
 		delete m_pPicker;
 		m_pPicker = nullptr;
 	}
-
 	if(m_pGrid)
 	{
 		delete m_pGrid;
 		m_pGrid = nullptr;
 	}
-
 	if(m_pZoomer)
 	{
 		delete m_pZoomer;
 		m_pZoomer = nullptr;
+	}
+	if(m_pPanner)
+	{
+		delete m_pPanner;
+		m_pPanner = nullptr;
 	}
 }
 

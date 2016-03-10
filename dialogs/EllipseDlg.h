@@ -27,6 +27,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
+#include <qwt_plot_panner.h>
 
 
 class EllipseDlg : public QDialog, Ui::EllipseDlg
@@ -40,6 +41,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		std::vector<QwtPlotGrid*> m_vecGrid;
 		std::vector<QwtPlotPicker*> m_vecPickers;
 		std::vector<QwtPlotZoomer*> m_vecZoomers;
+		std::vector<QwtPlotPanner*> m_vecPanners;
 
 		std::vector<struct Ellipse> m_elliProj;
 		std::vector<struct Ellipse> m_elliSlice;

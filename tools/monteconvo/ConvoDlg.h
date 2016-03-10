@@ -19,6 +19,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
+#include <qwt_plot_panner.h>
 
 #include "SqwParamDlg.h"
 #include "ui/ui_monteconvo.h"
@@ -39,6 +40,7 @@ protected:
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
 	QwtPlotZoomer* m_pZoomer = nullptr;
+	QwtPlotPanner* m_pPanner = nullptr;
 
 	SqwBase *m_pSqw = nullptr;
 	std::vector<double> m_vecQ, m_vecS;

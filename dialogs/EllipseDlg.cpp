@@ -13,7 +13,7 @@
 #include <future>
 
 EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
-			: QDialog(pParent), m_pSettings(pSett)
+	: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
 	setWindowTitle(m_pcTitle);
@@ -37,6 +37,7 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 	m_vecGrid.resize(4);
 	m_vecPickers.resize(4);
 	m_vecZoomers.resize(4);
+	m_vecPanners.resize(4);
 
 	m_vecPlotCurves.resize(8);
 
@@ -79,18 +80,18 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 
 		m_vecPlots[i]->canvas()->setMouseTracking(1);
 		m_vecPickers[i] = new QwtPlotPicker(m_vecPlots[i]->xBottom,
-											m_vecPlots[i]->yLeft,
+			m_vecPlots[i]->yLeft,
 #if QWT_VER<6
-											QwtPlotPicker::PointSelection,
+			QwtPlotPicker::PointSelection,
 #endif
-											//QwtPlotPicker::CrossRubberBand,
-											QwtPlotPicker::NoRubberBand,
+			//QwtPlotPicker::CrossRubberBand,
+			QwtPlotPicker::NoRubberBand,
 #if QWT_VER>=6
-											QwtPlotPicker::AlwaysOff,
+			QwtPlotPicker::AlwaysOff,
 #else
-											QwtPlotPicker::AlwaysOn,
+			QwtPlotPicker::AlwaysOn,
 #endif
-											m_vecPlots[i]->canvas());
+			m_vecPlots[i]->canvas());
 
 #if QWT_VER>=6
 		m_vecPickers[i]->setStateMachine(new QwtPickerTrackerMachine());
@@ -99,6 +100,8 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 #endif
 		m_vecPickers[i]->setEnabled(1);
 
+		m_vecPanners[i] = new QwtPlotPanner(m_vecPlots[i]->canvas());
+		m_vecPanners[i]->setMouseButton(Qt::MiddleButton);
 
 		m_vecZoomers[i] = new QwtPlotZoomer(m_vecPlots[i]->canvas());
 		m_vecZoomers[i]->setMaxStackDepth(-1);
@@ -131,6 +134,10 @@ EllipseDlg::~EllipseDlg()
 		pZoomer->setEnabled(0);
 		delete pZoomer;
 	}
+	m_vecZoomers.clear();
+
+	for(QwtPlotPanner* pPanner : m_vecPanners)
+		delete pPanner;
 	m_vecZoomers.clear();
 
 #if QWT_VER<6

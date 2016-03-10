@@ -15,6 +15,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
+#include <qwt_plot_panner.h>
 #include <vector>
 
 #include "ui/ui_spurions.h"
@@ -33,6 +34,7 @@ class SpurionDlg : public QDialog, Ui::SpurionDlg
 		QwtPlotGrid *m_pBraggGrid = nullptr;
 		QwtPlotPicker *m_pBraggPicker = nullptr;
 		QwtPlotZoomer* m_pZoomerBragg = nullptr;
+		QwtPlotPanner* m_pPannerBragg = nullptr;
 
 	public:
 		SpurionDlg(QWidget* pParent=0, QSettings *pSett=0);

@@ -36,6 +36,9 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 	penGrid.setStyle(Qt::DashLine);
 	m_pBraggGrid->setPen(penGrid);
 	m_pBraggGrid->attach(plotbragg);
+	
+	m_pPannerBragg = new QwtPlotPanner(plotbragg->canvas());
+	m_pPannerBragg->setMouseButton(Qt::MiddleButton);
 
 #if QWT_VER>=6
 	m_pZoomerBragg = new QwtPlotZoomer(plotbragg->canvas());
@@ -102,17 +105,20 @@ SpurionDlg::~SpurionDlg()
 		delete m_pBraggPicker;
 		m_pBraggPicker = nullptr;
 	}
-
 	if(m_pBraggGrid)
 	{
 		delete m_pBraggGrid;
 		m_pBraggGrid = nullptr;
 	}
-
 	if(m_pZoomerBragg)
 	{
 		delete m_pZoomerBragg;
 		m_pZoomerBragg = nullptr;
+	}
+	if(m_pPannerBragg)
+	{
+		delete m_pPannerBragg;
+		m_pPannerBragg = nullptr;
 	}
 }
 

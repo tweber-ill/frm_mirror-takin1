@@ -48,6 +48,9 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plot);
 	
+	m_pPanner = new QwtPlotPanner(plot->canvas());
+	m_pPanner->setMouseButton(Qt::MiddleButton);
+	
 #if QWT_VER>=6
 	m_pZoomer = new QwtPlotZoomer(plot->canvas());
 	m_pZoomer->setMaxStackDepth(-1);
@@ -123,6 +126,17 @@ ConvoDlg::~ConvoDlg()
 	{
 		delete m_pSqwParamDlg;
 		m_pSqwParamDlg = nullptr;
+	}
+	
+	if(m_pZoomer)
+	{
+		delete m_pZoomer;
+		m_pZoomer = nullptr;
+	}
+	if(m_pPanner)
+	{
+		delete m_pPanner;
+		m_pPanner = nullptr;
 	}
 }
 
@@ -338,7 +352,7 @@ void ConvoDlg::Start()
 		unsigned ifocMode = unsigned(ResoFocus::FOC_NONE);
 		if(iFocMono == 1) ifocMode |= unsigned(ResoFocus::FOC_MONO_H);	// horizontal
 		else if(iFocMono == 2) ifocMode |= unsigned(ResoFocus::FOC_MONO_V);	// vertical
-		else if(iFocMono == 3) ifocMode |= unsigned(ResoFocus::FOC_MONO_V)|unsigned(ResoFocus::FOC_MONO_H);	// both
+		else if(iFocMono == 3) ifocMode |= unsigned(ResoFocus::FOC_MONO_V)|unsigned(ResoFocus::FOC_MONO_H);		// both
 		if(iFocAna == 1) ifocMode |= unsigned(ResoFocus::FOC_ANA_H);	// horizontal
 		else if(iFocAna == 2) ifocMode |= unsigned(ResoFocus::FOC_ANA_V);	// vertical
 		else if(iFocAna == 3) ifocMode |= unsigned(ResoFocus::FOC_ANA_V)|unsigned(ResoFocus::FOC_ANA_H);		// both

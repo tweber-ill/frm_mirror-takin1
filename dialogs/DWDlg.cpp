@@ -17,7 +17,7 @@
 
 
 DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
-		: QDialog(pParent), m_pSettings(pSettings)
+	: QDialog(pParent), m_pSettings(pSettings)
 {
 	this->setupUi(this);
 	if(m_pSettings)
@@ -51,6 +51,9 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	m_pGridBose = new QwtPlotGrid();
 	m_pGridBose->setPen(penGrid);
 	m_pGridBose->attach(plotBose);
+
+	m_pPannerBose = new QwtPlotPanner(plotBose->canvas());
+	m_pPannerBose->setMouseButton(Qt::MiddleButton);
 
 #if QWT_VER>=6
 	m_pZoomerBose = new QwtPlotZoomer(plotBose->canvas());
@@ -114,6 +117,9 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plot);
 
+	m_pPanner = new QwtPlotPanner(plot->canvas());
+	m_pPanner->setMouseButton(Qt::MiddleButton);
+
 #if QWT_VER>=6
 	m_pZoomer = new QwtPlotZoomer(plot->canvas());
 	m_pZoomer->setMaxStackDepth(-1);
@@ -161,6 +167,9 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	m_pGridAna = new QwtPlotGrid();
 	m_pGridAna->setPen(penGrid);
 	m_pGridAna->attach(plotAna);
+	
+	m_pPannerAna = new QwtPlotPanner(plotAna->canvas());
+	m_pPannerAna->setMouseButton(Qt::MiddleButton);
 
 #if QWT_VER>=6
 	m_pZoomerAna = new QwtPlotZoomer(plotAna->canvas());
@@ -210,6 +219,9 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	m_pGridLor = new QwtPlotGrid();
 	m_pGridLor->setPen(penGrid);
 	m_pGridLor->attach(plotLorentz);
+
+	m_pPannerLor = new QwtPlotPanner(plotLorentz->canvas());
+	m_pPannerLor->setMouseButton(Qt::MiddleButton);
 
 #if QWT_VER>=6
 	m_pZoomerLor = new QwtPlotZoomer(plotLorentz->canvas());
@@ -264,7 +276,6 @@ DWDlg::~DWDlg()
 			*pPicker = nullptr;
 		}
 	}
-
 	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridAna, &m_pGridBose, &m_pGridLor})
 	{
 		if(*pGrid)
@@ -273,13 +284,20 @@ DWDlg::~DWDlg()
 			*pGrid = nullptr;
 		}
 	}
-
 	for(QwtPlotZoomer** pZoomer : {&m_pZoomer, &m_pZoomerAna, &m_pZoomerBose, &m_pZoomerLor})
 	{
 		if(*pZoomer)
 		{
 			delete *pZoomer;
 			*pZoomer = nullptr;
+		}
+	}
+	for(QwtPlotPanner** pPanner : {&m_pPanner, &m_pPannerAna, &m_pPannerBose, &m_pPannerLor})
+	{
+		if(*pPanner)
+		{
+			delete *pPanner;
+			*pPanner = nullptr;
 		}
 	}
 }

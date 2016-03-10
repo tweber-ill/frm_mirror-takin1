@@ -86,6 +86,12 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	m_pCurveX->setPen(penCurve);
 	m_pCurveX->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 	m_pCurveX->attach(plotX);
+	
+	m_pPanner = new QwtPlotPanner(plotN->canvas());
+	m_pPanner->setMouseButton(Qt::MiddleButton);
+
+	m_pPannerX = new QwtPlotPanner(plotX->canvas());
+	m_pPannerX->setMouseButton(Qt::MiddleButton);
 
 #if QWT_VER>=6
 	m_pZoomer = new QwtPlotZoomer(plotN->canvas());
@@ -200,6 +206,15 @@ PowderDlg::~PowderDlg()
 		{
 			delete *pZoom;
 			*pZoom = nullptr;
+		}
+	}
+
+	for(QwtPlotPanner** pPanner : {&m_pPanner, &m_pPannerX})
+	{
+		if(*pPanner)
+		{
+			delete *pPanner;
+			*pPanner = nullptr;
 		}
 	}
 }

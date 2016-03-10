@@ -16,6 +16,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
+#include <qwt_plot_panner.h>
 
 #include <string>
 #include <vector>
@@ -39,6 +40,7 @@ protected:
 	QwtPlotGrid* m_pGrid = nullptr;
 	QwtPlotPicker* m_pPicker = nullptr;
 	QwtPlotZoomer* m_pZoomer = nullptr;
+	QwtPlotPanner* m_pPanner = nullptr;
 
 	std::string m_strX, m_strY, m_strCmd;
 

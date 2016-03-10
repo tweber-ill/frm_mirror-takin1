@@ -25,6 +25,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
+#include <qwt_plot_panner.h>
 //#include <qwt_legend.h>
 
 
@@ -56,11 +57,13 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		QwtPlotGrid *m_pGrid = nullptr;
 		QwtPlotPicker *m_pPicker = nullptr;
 		QwtPlotZoomer* m_pZoomer = nullptr;
+		QwtPlotPanner* m_pPanner = nullptr;
 
 		QwtPlotCurve *m_pCurveX = nullptr;
 		QwtPlotGrid *m_pGridX = nullptr;
 		QwtPlotPicker *m_pPickerX = nullptr;
 		QwtPlotZoomer* m_pZoomerX = nullptr;
+		QwtPlotPanner* m_pPannerX = nullptr;
 
 
 	protected:
