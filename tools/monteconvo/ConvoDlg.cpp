@@ -14,6 +14,7 @@
 #endif
 #include "TASReso.h"
 #include "helper/globals.h"
+#include "helper/qthelper.h"
 
 #include <iostream>
 #include <fstream>
@@ -46,6 +47,12 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	penGrid.setStyle(Qt::DashLine);
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(plot);
+	
+#if QWT_VER>=6
+	m_pZoomer = new QwtPlotZoomer(plot->canvas());
+	m_pZoomer->setMaxStackDepth(-1);
+	m_pZoomer->setEnabled(1);
+#endif
 
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
@@ -467,6 +474,7 @@ void ConvoDlg::Start()
 			m_pCurve->setRawData(m_vecQ.data(), m_vecS.data(), m_vecQ.size());
 			m_pPoints->setRawData(m_vecQ.data(), m_vecS.data(), m_vecQ.size());
 	#endif
+			set_zoomer_base(m_pZoomer, m_vecQ, m_vecS, true);
 			QMetaObject::invokeMethod(plot, "replot", connty);
 
 			QMetaObject::invokeMethod(textResult, "setPlainText", connty,

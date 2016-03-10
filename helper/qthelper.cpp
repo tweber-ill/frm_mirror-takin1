@@ -65,7 +65,8 @@ bool save_table(const char* pcFile, const QTableWidget* pTable)
 
 
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
-	const std::vector<double>& vecX, const std::vector<double>& vecY)
+	const std::vector<double>& vecX, const std::vector<double>& vecY,
+	bool bMetaCall)
 {
 	if(!pZoomer)
 		return;
@@ -95,6 +96,19 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	rect.setBottom(dminmax[3]);
 	rect.setTop(dminmax[2]);
 
-	pZoomer->zoom(rect);
-	pZoomer->setZoomBase(rect);
+	if(bMetaCall)
+	{
+		QMetaObject::invokeMethod(pZoomer, "zoom",
+			Qt::ConnectionType::DirectConnection,
+			Q_ARG(QRectF, rect));
+		// unfortunately not a metafunction...
+		//QMetaObject::invokeMethod(pZoomer, "setZoomBase", 
+		//	Qt::ConnectionType::DirectConnection,
+		//	Q_ARG(QRectF, rect));
+	}
+	else
+	{
+		pZoomer->zoom(rect);
+		pZoomer->setZoomBase(rect);
+	}
 }

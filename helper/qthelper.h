@@ -17,7 +17,8 @@
 extern bool save_table(const char* pcFile, const QTableWidget* pTable);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
-	const std::vector<double>& vecX, const std::vector<double>& vecY);
+	const std::vector<double>& vecX, const std::vector<double>& vecY,
+	bool bMetaCall=false);
 
 
 #endif

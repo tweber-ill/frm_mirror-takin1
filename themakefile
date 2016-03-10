@@ -254,7 +254,7 @@ monteconvo: ${OBJ_MONTECONVO} obj/mconv_main.o
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/monteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB}
 	${STRIP} monteconvo
 
-xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/globals.o obj/SqwParamDlg.o ${PY_OBJS}
+xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/qthelper.o obj/globals.o obj/SqwParamDlg.o ${PY_OBJS}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/xmonteconvo $+ ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${PY_LIBS}
 	${STRIP} xmonteconvo
 
