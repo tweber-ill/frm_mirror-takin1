@@ -584,6 +584,10 @@ void ConvoDlg::LoadSettings()
 			comboAlgo->setCurrentIndex(m_pSett->value("monteconvo/algo").toInt());
 		if(m_pSett->contains("monteconvo/fixedk"))
 			comboFixedK->setCurrentIndex(m_pSett->value("monteconvo/fixedk").toInt());
+		if(m_pSett->contains("monteconvo/mono_foc"))
+			comboFocMono->setCurrentIndex(m_pSett->value("monteconvo/mono_foc").toInt());
+		if(m_pSett->contains("monteconvo/ana_foc"))
+			comboFocAna->setCurrentIndex(m_pSett->value("monteconvo/ana_foc").toInt());
 		if(m_pSett->contains("monteconvo/sqw"))
 			comboSqw->setCurrentIndex(m_pSett->value("monteconvo/sqw").toInt());
 
@@ -636,6 +640,8 @@ void ConvoDlg::ButtonBoxClicked(QAbstractButton *pBtn)
 
 			m_pSett->setValue("monteconvo/algo", comboAlgo->currentIndex());
 			m_pSett->setValue("monteconvo/fixedk", comboFixedK->currentIndex());
+			m_pSett->setValue("monteconvo/mono_foc", comboFocMono->currentIndex());
+			m_pSett->setValue("monteconvo/ana_foc", comboFocAna->currentIndex());
 			m_pSett->setValue("monteconvo/sqw", comboSqw->currentIndex());
 
 			m_pSett->setValue("monteconvo/crys", editCrys->text());

@@ -94,29 +94,25 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
-						radioSampleScatterPlus,
-						radioSampleCub, radioSrcRect, radioDetRect};
+		radioSampleScatterPlus,
+		radioSampleCub, radioSrcRect, radioDetRect};
 	m_vecRadioMinus = {radioMonoScatterMinus, radioAnaScatterMinus,
-						radioSampleScatterMinus, radioSampleCyl,
-						radioSrcCirc, radioDetCirc};
+		radioSampleScatterMinus, radioSampleCyl,
+		radioSrcCirc, radioDetCirc};
 	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense",
-						"reso/sample_scatter_sense", "reso/pop_sample_cuboid",
-						"reso/pop_source_rect", "reso/pop_det_rect"};
+		"reso/sample_scatter_sense", "reso/pop_sample_cuboid",
+		"reso/pop_source_rect", "reso/pop_det_rect"};
 
 	m_vecComboBoxes = {comboAlgo,
-						comboAnaHori, comboAnaVert,
-						comboMonoHori, comboMonoVert};
+		comboAnaHori, comboAnaVert,
+		comboMonoHori, comboMonoVert};
 	m_vecComboNames = {"reso/algo",
-					"reso/pop_ana_use_curvh", "reso/pop_ana_use_curvv",
-					"reso/pop_mono_use_curvh", "reso/pop_mono_use_curvv"};
+		"reso/pop_ana_use_curvh", "reso/pop_ana_use_curvv",
+		"reso/pop_mono_use_curvh", "reso/pop_mono_use_curvv"};
 
 	ReadLastConfig();
 
 	QObject::connect(groupGuide, SIGNAL(toggled(bool)), this, SLOT(Calc()));
-
-	QComboBox* pComboBoxes[] = {comboAnaHori, comboAnaVert, comboMonoHori, comboMonoVert};
-	for(QComboBox* pbox : pComboBoxes)
-		QObject::connect(pbox, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
 
 	for(QDoubleSpinBox* pSpinBox : m_vecSpinBoxes)
 		QObject::connect(pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(Calc()));
@@ -625,7 +621,8 @@ void ResoDlg::ReadLastConfig()
 	{
 		if(!m_pSettings->contains(m_vecComboNames[iCombo].c_str()))
 			continue;
-		m_vecComboBoxes[iCombo]->setCurrentIndex(m_pSettings->value(m_vecComboNames[iCombo].c_str()).value<int>());
+		m_vecComboBoxes[iCombo]->setCurrentIndex(
+			m_pSettings->value(m_vecComboNames[iCombo].c_str()).value<int>());
 	}
 
 	groupGuide->setChecked(m_pSettings->value("reso/use_guide").value<bool>());
