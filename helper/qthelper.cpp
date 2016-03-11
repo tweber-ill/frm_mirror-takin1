@@ -6,12 +6,34 @@
  */
 
 #include "qthelper.h"
+#include "tlibs/math/math.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <memory>
-#include "tlibs/math/math.h"
+
 #include <qwt_picker_machine.h>
+#include <QMouseEvent>
+#include <iostream>
+
+
+class MyQwtPlotZoomer : public QwtPlotZoomer
+{
+protected:
+	virtual void widgetMouseReleaseEvent(QMouseEvent *pEvt) override
+	{
+		// filter out middle button event which is already used for panning
+		if(pEvt->button() & Qt::MiddleButton)
+			return;
+
+		QwtPlotZoomer::widgetMouseReleaseEvent(pEvt);
+	}
+
+public:
+	MyQwtPlotZoomer(QWidget* pWidget) : QwtPlotZoomer(pWidget) {}
+	virtual ~MyQwtPlotZoomer() {}
+};
 
 
 QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves, bool bNoTrackerSignal)
@@ -46,7 +68,7 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves, bool bNo
 	m_pPanner->setMouseButton(Qt::MiddleButton);
 
 #if QWT_VER>=6
-	m_pZoomer = new QwtPlotZoomer(m_pPlot->canvas());
+	m_pZoomer = new MyQwtPlotZoomer(m_pPlot->canvas());
 	m_pZoomer->setMaxStackDepth(-1);
 	m_pZoomer->setEnabled(1);
 #endif
