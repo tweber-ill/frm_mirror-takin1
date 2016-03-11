@@ -14,8 +14,8 @@
 #include <memory>
 
 #include <qwt_picker_machine.h>
+#include <qwt_plot_canvas.h>
 #include <QMouseEvent>
-#include <iostream>
 
 
 class MyQwtPlotZoomer : public QwtPlotZoomer
@@ -31,7 +31,10 @@ protected:
 	}
 
 public:
-	MyQwtPlotZoomer(QWidget* pWidget) : QwtPlotZoomer(pWidget) {}
+#if QWT_VER>=6
+	explicit MyQwtPlotZoomer(QWidget* pWidget) : QwtPlotZoomer(pWidget) {}
+#endif
+	explicit MyQwtPlotZoomer(QwtPlotCanvas* pCanvas) : QwtPlotZoomer(pCanvas) {}
 	virtual ~MyQwtPlotZoomer() {}
 };
 
@@ -49,7 +52,7 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves, bool bNo
 
 	QColor colorBck(240, 240, 240, 255);
 	m_pPlot->setCanvasBackground(colorBck);
-	
+
 	m_vecCurves.reserve(iNumCurves);
 	for(unsigned int iCurve=0; iCurve<iNumCurves; ++iCurve)
 	{
@@ -59,7 +62,7 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves, bool bNo
 		pCurve->attach(m_pPlot);
 		m_vecCurves.push_back(pCurve);
 	}
-	
+
 	m_pGrid = new QwtPlotGrid();
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(m_pPlot);
