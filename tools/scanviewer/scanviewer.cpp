@@ -19,7 +19,6 @@
 
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
-#include "helper/qthelper.h"
 
 namespace fs = boost::filesystem;
 
@@ -47,49 +46,21 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QColor colorBck(240, 240, 240, 255);
 	plot->setCanvasBackground(colorBck);
 
-	m_pCurve = new QwtPlotCurve("Scan Curve");
-	m_pPoints = new QwtPlotCurve("Scan Points");
+	m_plotwrap.reset(new QwtPlotWrapper(plot, 2, true));
 
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
 	penCurve.setWidth(2);
-	m_pCurve->setPen(penCurve);
-	m_pCurve->setStyle(QwtPlotCurve::CurveStyle::Lines);
-	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurve->attach(plot);
+	m_plotwrap->GetCurve(0)->setPen(penCurve);
+	m_plotwrap->GetCurve(0)->setStyle(QwtPlotCurve::CurveStyle::Lines);
+	m_plotwrap->GetCurve(0)->setTitle("Scan Curve");
 
 	QPen penPoints;
 	penPoints.setColor(QColor(0xff,0,0));
 	penPoints.setWidth(4);
-	m_pPoints->setPen(penPoints);
-	m_pPoints->setStyle(QwtPlotCurve::CurveStyle::Dots);
-	m_pPoints->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pPoints->attach(plot);
-
-	m_pGrid = new QwtPlotGrid();
-	QPen penGrid;
-	penGrid.setColor(QColor(0x99,0x99,0x99));
-	penGrid.setStyle(Qt::DashLine);
-	m_pGrid->setPen(penGrid);
-	m_pGrid->attach(plot);
-	
-	m_pPanner = new QwtPlotPanner(plot->canvas());
-	m_pPanner->setMouseButton(Qt::MiddleButton);
-
-#if QWT_VER>=6
-	m_pZoomer = new QwtPlotZoomer(plot->canvas());
-	m_pZoomer->setMaxStackDepth(-1);
-	m_pZoomer->setEnabled(1);
-#endif
-
-	plot->canvas()->setMouseTracking(1);
-	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand, QwtPlotPicker::AlwaysOn, plot->canvas());
-
-	m_pPicker->setEnabled(1);
+	m_plotwrap->GetCurve(1)->setPen(penPoints);
+	m_plotwrap->GetCurve(1)->setStyle(QwtPlotCurve::CurveStyle::Dots);
+	m_plotwrap->GetCurve(1)->setTitle("Scan Points");
 	// -------------------------------------------------------------------------
 
 
@@ -151,27 +122,6 @@ ScanViewerDlg::~ScanViewerDlg()
 {
 	ClearPlot();
 	tableProps->setRowCount(0);
-
-	if(m_pGrid)
-	{
-		delete m_pGrid;
-		m_pGrid = nullptr;
-	}
-	if(m_pZoomer)
-	{
-		m_pZoomer->setEnabled(0);
-		delete m_pZoomer;
-	}
-	if(m_pPanner)
-	{
-		delete m_pPanner;
-		m_pPanner = nullptr;
-	}
-	if(m_pPicker)
-	{
-		m_pPicker->setEnabled(0);
-		delete m_pPicker;
-	}
 }
 
 void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
@@ -191,13 +141,8 @@ void ScanViewerDlg::ClearPlot()
 	m_vecX.clear();
 	m_vecY.clear();
 
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
-	m_pPoints->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
-#elif QWT_VER<6
-	m_pCurve->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
-	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
-#endif
+	m_plotwrap->SetData(m_vecX, m_vecY, 0, false);
+	m_plotwrap->SetData(m_vecX, m_vecY, 1, false);
 
 	m_strX = m_strY = m_strCmd = "";
 	plot->setAxisTitle(QwtPlot::xBottom, "");
@@ -218,7 +163,7 @@ void ScanViewerDlg::ClearPlot()
 	comboY->clear();
 	textRoot->clear();
 
-	plot->replot();
+	m_plotwrap->GetPlot()->replot();
 }
 
 void ScanViewerDlg::SelectDir()
@@ -335,16 +280,11 @@ void ScanViewerDlg::PlotScan()
 	if(m_vecX.size()==0 || m_vecY.size()==0)
 		return;
 
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
-	m_pPoints->setRawSamples(m_vecX.data(), m_vecY.data(), m_vecY.size());
-#elif QWT_VER<6
-	m_pCurve->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
-	m_pPoints->setRawData(m_vecX.data(), m_vecY.data(), m_vecY.size());
-#endif
+	m_plotwrap->SetData(m_vecX, m_vecY, 0, false);
+	m_plotwrap->SetData(m_vecX, m_vecY, 1, false);
 
-	set_zoomer_base(m_pZoomer, m_vecX, m_vecY);
-	plot->replot();
+	set_zoomer_base(m_plotwrap->GetZoomer(), m_vecX, m_vecY);
+	m_plotwrap->GetPlot()->replot();
 	GenerateExternal(comboExport->currentIndex());
 }
 

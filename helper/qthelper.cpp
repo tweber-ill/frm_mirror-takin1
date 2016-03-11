@@ -14,7 +14,7 @@
 #include <qwt_picker_machine.h>
 
 
-QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves)
+QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves, bool bNoTrackerSignal)
 	: m_pPlot(pPlot)
 {
 	QPen penGrid;
@@ -52,17 +52,30 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves)
 #endif
 
 	m_pPlot->canvas()->setMouseTracking(1);
-	m_pPicker = new QwtPlotPicker(m_pPlot->xBottom, m_pPlot->yLeft,
+	if(bNoTrackerSignal)
+	{
+		m_pPicker = new QwtPlotPicker(m_pPlot->xBottom, m_pPlot->yLeft,
 #if QWT_VER<6
-		QwtPlotPicker::PointSelection,
+			QwtPlotPicker::PointSelection,
 #endif
-		QwtPlotPicker::NoRubberBand,
+			QwtPlotPicker::NoRubberBand, 
+			QwtPlotPicker::AlwaysOn, 
+			m_pPlot->canvas());
+	}
+	else
+	{
+		m_pPicker = new QwtPlotPicker(m_pPlot->xBottom, m_pPlot->yLeft,
+#if QWT_VER<6
+			QwtPlotPicker::PointSelection,
+#endif
+			QwtPlotPicker::NoRubberBand,
 #if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
+			QwtPlotPicker::AlwaysOff,
 #else
-		QwtPlotPicker::AlwaysOn,
+			QwtPlotPicker::AlwaysOn,
 #endif
-		m_pPlot->canvas());
+			m_pPlot->canvas());
+	}
 
 #if QWT_VER>=6
 	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
@@ -70,6 +83,7 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves)
 #endif
 	m_pPicker->setEnabled(1);
 }
+
 
 QwtPlotWrapper::~QwtPlotWrapper()
 {
@@ -96,11 +110,13 @@ QwtPlotWrapper::~QwtPlotWrapper()
 	}
 }
 
+
 #if QWT_VER>=6
 	bool QwtPlotWrapper::HasTrackerSignal() const { return 1; }
 #else
 	bool QwtPlotWrapper::HasTrackerSignal() const { return 0; }
 #endif
+
 
 void QwtPlotWrapper::SetData(const std::vector<double>& vecX, const std::vector<double>& vecY, 
 	unsigned int iCurve, bool bReplot)

@@ -29,7 +29,7 @@ protected:
 	QwtPlotPanner *m_pPanner = nullptr;
 
 public:
-	QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves=1);
+	QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves=1, bool bNoTrackerSignal=0);
 	virtual ~QwtPlotWrapper();
 	
 	QwtPlot* GetPlot() { return m_pPlot; }

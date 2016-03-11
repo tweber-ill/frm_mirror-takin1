@@ -10,20 +10,13 @@
 
 #include <QDialog>
 #include <QSettings>
-
 #include <thread>
 #include <atomic>
+#include <memory>
 
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_plot_panner.h>
-
+#include "helper/qthelper.h"
 #include "SqwParamDlg.h"
 #include "ui/ui_monteconvo.h"
-
 #include "sqw.h"
 
 
@@ -36,14 +29,9 @@ protected:
 	QSettings *m_pSett = nullptr;
 	SqwParamDlg *m_pSqwParamDlg = nullptr;
 
-	QwtPlotCurve *m_pCurve, *m_pPoints = nullptr;
-	QwtPlotGrid *m_pGrid = nullptr;
-	QwtPlotPicker *m_pPicker = nullptr;
-	QwtPlotZoomer* m_pZoomer = nullptr;
-	QwtPlotPanner* m_pPanner = nullptr;
-
 	SqwBase *m_pSqw = nullptr;
 	std::vector<double> m_vecQ, m_vecS;
+	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
 protected:
 	void LoadSettings();

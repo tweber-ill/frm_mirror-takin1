@@ -14,15 +14,11 @@
 #endif
 #include "TASReso.h"
 #include "helper/globals.h"
-#include "helper/qthelper.h"
 
 #include <iostream>
 #include <fstream>
-
 #include <QFileDialog>
 #include <QMessageBox>
-
-#include <qwt_picker_machine.h>
 
 
 ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
@@ -41,51 +37,24 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	btnStop->setIcon(load_icon("res/media-playback-stop.svg"));
 	btnSaveResult->setIcon(load_icon("res/document-save-as.svg"));
 
-	m_pGrid = new QwtPlotGrid();
-	QPen penGrid;
-	penGrid.setColor(QColor(0x99,0x99,0x99));
-	penGrid.setStyle(Qt::DashLine);
-	m_pGrid->setPen(penGrid);
-	m_pGrid->attach(plot);
-	
-	m_pPanner = new QwtPlotPanner(plot->canvas());
-	m_pPanner->setMouseButton(Qt::MiddleButton);
-	
-#if QWT_VER>=6
-	m_pZoomer = new QwtPlotZoomer(plot->canvas());
-	m_pZoomer->setMaxStackDepth(-1);
-	m_pZoomer->setEnabled(1);
-#endif
+
+	m_plotwrap.reset(new QwtPlotWrapper(plot, 2, true));
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::xBottom, "");
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "S (a.u.)");
 
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
 	penCurve.setWidth(2);
-	m_pCurve = new QwtPlotCurve("S(Q,w)");
-	m_pCurve->setPen(penCurve);
-	m_pCurve->setStyle(QwtPlotCurve::CurveStyle::Lines);
-	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurve->attach(plot);
+	m_plotwrap->GetCurve(0)->setPen(penCurve);
+	m_plotwrap->GetCurve(0)->setStyle(QwtPlotCurve::CurveStyle::Lines);
+	m_plotwrap->GetCurve(0)->setTitle("S(Q,w)");
 
 	QPen penPoints;
 	penPoints.setColor(QColor(0xff,0,0));
 	penPoints.setWidth(4);
-	m_pPoints = new QwtPlotCurve("S(Q,w)");
-	m_pPoints->setPen(penPoints);
-	m_pPoints->setStyle(QwtPlotCurve::CurveStyle::Dots);
-	m_pPoints->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pPoints->attach(plot);
-
-	plot->canvas()->setMouseTracking(1);
-	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand, QwtPlotPicker::AlwaysOn, plot->canvas());
-
-	m_pPicker->setEnabled(1);
-
-	plot->setAxisTitle(QwtPlot::xBottom, "");
-	plot->setAxisTitle(QwtPlot::yLeft, "S (a.u.)");
+	m_plotwrap->GetCurve(1)->setPen(penPoints);
+	m_plotwrap->GetCurve(1)->setStyle(QwtPlotCurve::CurveStyle::Dots);
+	m_plotwrap->GetCurve(1)->setTitle("S(Q,w)");
 
 
 	m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);
@@ -114,7 +83,13 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 ConvoDlg::~ConvoDlg()
 {
-	if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; m_pth = nullptr; }
+	if(m_pth)
+	{ 
+		if(m_pth->joinable()) 
+			m_pth->join(); 
+		delete m_pth; 
+		m_pth = nullptr; 
+	}
 
 	if(m_pSqw)
 	{
@@ -126,17 +101,6 @@ ConvoDlg::~ConvoDlg()
 	{
 		delete m_pSqwParamDlg;
 		m_pSqwParamDlg = nullptr;
-	}
-	
-	if(m_pZoomer)
-	{
-		delete m_pZoomer;
-		m_pZoomer = nullptr;
-	}
-	if(m_pPanner)
-	{
-		delete m_pPanner;
-		m_pPanner = nullptr;
 	}
 }
 
@@ -481,15 +445,11 @@ void ConvoDlg::Start()
 			m_vecS.push_back(dS);
 
 
-	#if QWT_VER>=6
-			m_pCurve->setRawSamples(m_vecQ.data(), m_vecS.data(), m_vecQ.size());
-			m_pPoints->setRawSamples(m_vecQ.data(), m_vecS.data(), m_vecQ.size());
-	#else
-			m_pCurve->setRawData(m_vecQ.data(), m_vecS.data(), m_vecQ.size());
-			m_pPoints->setRawData(m_vecQ.data(), m_vecS.data(), m_vecQ.size());
-	#endif
-			set_zoomer_base(m_pZoomer, m_vecQ, m_vecS, true);
-			QMetaObject::invokeMethod(plot, "replot", connty);
+			m_plotwrap->SetData(m_vecQ, m_vecS, 0, false);
+			m_plotwrap->SetData(m_vecQ, m_vecS, 1, false);
+
+			set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecS, true);
+			QMetaObject::invokeMethod(m_plotwrap->GetPlot(), "replot", connty);
 
 			QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 				Q_ARG(const QString&, QString(ostrOut.str().c_str())));

@@ -192,7 +192,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/scanviewer.o obj/x3d.o \
 	obj/tlibs_ver.o obj/AboutDlg.o
 
-OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o
+OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o obj/qthelper.o
 
 OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ellipse.o \

@@ -9,8 +9,8 @@
 #include "tlibs/string/spec_char.h"
 #include "tlibs/helper/flags.h"
 
-#include <qwt_picker_machine.h>
 #include <future>
+
 
 EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
@@ -25,39 +25,20 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 			setFont(font);
 	}
 
-	m_vecPlots = {plot1,plot2,plot3,plot4};
-
-	QColor colorBck(240, 240, 240, 255);
-	for(QwtPlot *pPlt : m_vecPlots)
-		pPlt->setCanvasBackground(colorBck);
-
-
+	m_vecplotwrap.reserve(4);
 	m_elliProj.resize(4);
 	m_elliSlice.resize(4);
-	m_vecGrid.resize(4);
-	m_vecPickers.resize(4);
-	m_vecZoomers.resize(4);
-	m_vecPanners.resize(4);
-
-	m_vecPlotCurves.resize(8);
-
 	m_vecXCurvePoints.resize(8);
 	m_vecYCurvePoints.resize(8);
 
+	QwtPlot* pPlots[] = {plot1, plot2, plot3, plot4};
 	for(unsigned int i=0; i<4; ++i)
 	{
-		m_vecPlots[i]->setCanvasBackground(QColor(0xff,0xff,0xff));
-		m_vecPlots[i]->setMinimumSize(200,200);
+		m_vecplotwrap.push_back(std::unique_ptr<QwtPlotWrapper>(new QwtPlotWrapper(pPlots[i], 2)));
+		m_vecplotwrap[i]->GetPlot()->setMinimumSize(200,200);
 
-		m_vecGrid[i] = new QwtPlotGrid();
-		QPen penGrid;
-		penGrid.setColor(QColor(0x99,0x99,0x99));
-		penGrid.setStyle(Qt::DashLine);
-		m_vecGrid[i]->setPen(penGrid);
-		m_vecGrid[i]->attach(m_vecPlots[i]);
-
-		QwtPlotCurve *pCurveProj = new QwtPlotCurve("projected");
-		QwtPlotCurve *pCurveSlice = new QwtPlotCurve("sliced");
+		m_vecplotwrap[i]->GetCurve(0)->setTitle("Projected Ellipse");
+		m_vecplotwrap[i]->GetCurve(1)->setTitle("Sliced Ellipse");
 
 		QPen penProj, penSlice;
 		penProj.setColor(QColor(0, 0x99,0));
@@ -65,49 +46,13 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 		penProj.setWidth(2);
 		penSlice.setWidth(2);
 
-		pCurveProj->setPen(penProj);
-		pCurveSlice->setPen(penSlice);
+		m_vecplotwrap[i]->GetCurve(0)->setPen(penProj);
+		m_vecplotwrap[i]->GetCurve(1)->setPen(penSlice);
 
-		pCurveProj->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-		pCurveSlice->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-
-		pCurveProj->attach(m_vecPlots[i]);
-		pCurveSlice->attach(m_vecPlots[i]);
-
-		m_vecPlotCurves[i*2+0] = pCurveProj;
-		m_vecPlotCurves[i*2+1] = pCurveSlice;
-
-
-		m_vecPlots[i]->canvas()->setMouseTracking(1);
-		m_vecPickers[i] = new QwtPlotPicker(m_vecPlots[i]->xBottom,
-			m_vecPlots[i]->yLeft,
-#if QWT_VER<6
-			QwtPlotPicker::PointSelection,
-#endif
-			//QwtPlotPicker::CrossRubberBand,
-			QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-			QwtPlotPicker::AlwaysOff,
-#else
-			QwtPlotPicker::AlwaysOn,
-#endif
-			m_vecPlots[i]->canvas());
-
-#if QWT_VER>=6
-		m_vecPickers[i]->setStateMachine(new QwtPickerTrackerMachine());
-		connect(m_vecPickers[i], SIGNAL(moved(const QPointF&)),
+		if(m_vecplotwrap[i]->HasTrackerSignal())
+			connect(m_vecplotwrap[i]->GetPicker(), SIGNAL(moved(const QPointF&)), 
 				this, SLOT(cursorMoved(const QPointF&)));
-#endif
-		m_vecPickers[i]->setEnabled(1);
-
-		m_vecPanners[i] = new QwtPlotPanner(m_vecPlots[i]->canvas());
-		m_vecPanners[i]->setMouseButton(Qt::MiddleButton);
-
-		m_vecZoomers[i] = new QwtPlotZoomer(m_vecPlots[i]->canvas());
-		m_vecZoomers[i]->setMaxStackDepth(-1);
-		m_vecZoomers[i]->setEnabled(1);
 	}
-
 
 	QObject::connect(comboCoord, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
 
@@ -115,45 +60,10 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 		restoreGeometry(m_pSettings->value("reso/ellipse_geo").toByteArray());
 }
 
-
 EllipseDlg::~EllipseDlg()
 {
-	for(QwtPlotPicker* pPicker : m_vecPickers)
-	{
-		pPicker->setEnabled(0);
-		//QwtPickerMachine *pMachine = pPicker->stateMachine();
-		//pPicker->setStateMachine(0);
-		//if(pMachine)
-		//	delete pMachine;
-		delete pPicker;
-	}
-	m_vecPickers.clear();
-
-	for(QwtPlotZoomer* pZoomer : m_vecZoomers)
-	{
-		pZoomer->setEnabled(0);
-		delete pZoomer;
-	}
-	m_vecZoomers.clear();
-
-	for(QwtPlotPanner* pPanner : m_vecPanners)
-		delete pPanner;
-	m_vecZoomers.clear();
-
-#if QWT_VER<6
-	for(QwtPlot* pPlot : m_vecPlots)
-		pPlot->clear();
-#endif
-
-	for(QwtPlotGrid* pGrid : m_vecGrid)
-		delete pGrid;
-	m_vecGrid.clear();
-
-	//for(QwtPlotCurve *pCurve : m_vecPlotCurves)
-	//	delete pCurve;
-	m_vecPlotCurves.clear();
+	m_vecplotwrap.clear();
 }
-
 
 void EllipseDlg::SetTitle(const char* pcTitle)
 {
@@ -292,13 +202,10 @@ void EllipseDlg::Calc()
 			m_elliSlice[iEll] = tasks_ell_slice[iEll].get();
 
 			/*m_elliProj[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[0][iEll][0], iParams[0][iEll][1],
-											iParams[0][iEll][2], iParams[0][iEll][3], iParams[0][iEll][4]);
+				iParams[0][iEll][2], iParams[0][iEll][3], iParams[0][iEll][4]);
 			m_elliSlice[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[1][iEll][0], iParams[1][iEll][1],
-											iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);*/
+				iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);*/
 
-			QwtPlot* pPlot = m_vecPlots[iEll];
-			QwtPlotCurve* pCurveProj = m_vecPlotCurves[iEll*2+0];
-			QwtPlotCurve* pCurveSlice = m_vecPlotCurves[iEll*2+1];
 			std::vector<double>& vecXProj = m_vecXCurvePoints[iEll*2+0];
 			std::vector<double>& vecYProj = m_vecYCurvePoints[iEll*2+0];
 			std::vector<double>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
@@ -308,13 +215,8 @@ void EllipseDlg::Calc()
 			m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512, dBBProj);
 			m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512, dBBSlice);
 
-	#if QWT_VER>=6
-			pCurveProj->setRawSamples(vecXProj.data(), vecYProj.data(), vecXProj.size());
-			pCurveSlice->setRawSamples(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
-	#else
-			pCurveProj->setRawData(vecXProj.data(), vecYProj.data(), vecXProj.size());
-			pCurveSlice->setRawData(vecXSlice.data(), vecYSlice.data(), vecXSlice.size());
-	#endif
+			m_vecplotwrap[iEll]->SetData(vecXProj, vecYProj, 0, false);
+			m_vecplotwrap[iEll]->SetData(vecXSlice, vecYSlice, 1, false);
 
 
 			std::ostringstream ostrSlope;
@@ -327,25 +229,25 @@ void EllipseDlg::Calc()
 			ostrSlope << "\tSlope: " << m_elliSlice[iEll].slope << "\n";
 			ostrSlope << "\tAngle: " << m_elliSlice[iEll].phi/M_PI*180. << strDeg << "\n";
 			ostrSlope << "\tArea " << m_elliSlice[iEll].area;
-			//pPlot->setTitle(ostrSlope.str().c_str());
+			//m_vecplotwrap[iEll]->GetPlot()->setTitle(ostrSlope.str().c_str());
 			//std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
-			m_vecPlots[iEll]->setToolTip(QString::fromUtf8(ostrSlope.str().c_str()));
+			m_vecplotwrap[iEll]->GetPlot()->setToolTip(QString::fromUtf8(ostrSlope.str().c_str()));
 
 			//const std::string& strLabX = m_elliProj[iEll].x_lab;
 			//const std::string& strLabY = m_elliProj[iEll].y_lab;
 			const std::string& strLabX = ellipse_labels(iParams[0][iEll][0], coord);
 			const std::string& strLabY = ellipse_labels(iParams[0][iEll][1], coord);
-			pPlot->setAxisTitle(QwtPlot::xBottom, strLabX.c_str());
-			pPlot->setAxisTitle(QwtPlot::yLeft, strLabY.c_str());
+			m_vecplotwrap[iEll]->GetPlot()->setAxisTitle(QwtPlot::xBottom, strLabX.c_str());
+			m_vecplotwrap[iEll]->GetPlot()->setAxisTitle(QwtPlot::yLeft, strLabY.c_str());
 
-			pPlot->replot();
+			m_vecplotwrap[iEll]->GetPlot()->replot();
 
 			QRectF rect;
 			rect.setLeft(std::min(dBBProj[0], dBBSlice[0]));
 			rect.setRight(std::max(dBBProj[1], dBBSlice[1]));
 			rect.setTop(std::max(dBBProj[2], dBBSlice[2]));
 			rect.setBottom(std::min(dBBProj[3], dBBSlice[3]));
-			m_vecZoomers[iEll]->setZoomBase(rect);
+			m_vecplotwrap[iEll]->GetZoomer()->setZoomBase(rect);
 
 
 			switch(iAlgo)

@@ -15,19 +15,13 @@
 #endif
 
 #include <vector>
+#include <memory>
 
 #include "tlibs/math/linalg.h"
 #include "tools/res/ellipse.h"
 #include "tools/res/pop.h"
-
 #include "ui/ui_ellipses.h"
-
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_plot_panner.h>
+#include "helper/qthelper.h"
 
 
 class EllipseDlg : public QDialog, Ui::EllipseDlg
@@ -36,12 +30,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		const char* m_pcTitle = "Resolution Ellipses";
 
 	protected:
-		std::vector<QwtPlot*> m_vecPlots;
-		std::vector<QwtPlotCurve*> m_vecPlotCurves;
-		std::vector<QwtPlotGrid*> m_vecGrid;
-		std::vector<QwtPlotPicker*> m_vecPickers;
-		std::vector<QwtPlotZoomer*> m_vecZoomers;
-		std::vector<QwtPlotPanner*> m_vecPanners;
+		std::vector<std::unique_ptr<QwtPlotWrapper>> m_vecplotwrap;
 
 		std::vector<struct Ellipse> m_elliProj;
 		std::vector<struct Ellipse> m_elliSlice;

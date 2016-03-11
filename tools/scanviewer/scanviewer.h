@@ -10,17 +10,12 @@
 
 #include <QDialog>
 #include <QSettings>
-
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_plot_panner.h>
-
 #include <string>
 #include <vector>
+#include <memory>
+
 #include "tlibs/file/loadinstr.h"
+#include "helper/qthelper.h"
 #include "ui/ui_scanviewer.h"
 
 
@@ -35,13 +30,7 @@ protected:
 	bool m_bDoUpdate = 0;
 	tl::FileInstr *m_pInstr = nullptr;
 	std::vector<double> m_vecX, m_vecY;
-
-	QwtPlotCurve *m_pCurve = nullptr, *m_pPoints = nullptr;
-	QwtPlotGrid* m_pGrid = nullptr;
-	QwtPlotPicker* m_pPicker = nullptr;
-	QwtPlotZoomer* m_pZoomer = nullptr;
-	QwtPlotPanner* m_pPanner = nullptr;
-
+	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 	std::string m_strX, m_strY, m_strCmd;
 
 protected:
