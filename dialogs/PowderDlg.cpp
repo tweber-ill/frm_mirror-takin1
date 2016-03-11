@@ -15,16 +15,12 @@
 
 #include "helper/globals.h"
 #include "helper/formfact.h"
-#include "helper/qthelper.h"
 
-#include <vector>
-#include <string>
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 
 #include <QFileDialog>
 #include <QMessageBox>
-#include <qwt_picker_machine.h>
 
 namespace ublas = boost::numeric::ublas;
 namespace co = boost::units::si::constants::codata;
@@ -40,8 +36,8 @@ namespace co = boost::units::si::constants::codata;
 #define TABLE_IX	7
 
 PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
-			: QDialog(pParent), m_pSettings(pSett),
-				m_pmapSpaceGroups(get_space_groups())
+	: QDialog(pParent), m_pSettings(pSett), 
+	m_pmapSpaceGroups(get_space_groups())
 {
 	this->setupUi(this);
 	if(m_pSettings)
@@ -56,97 +52,23 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 
 	// -------------------------------------------------------------------------
 	// plot stuff
-	QPen penGrid;
-	penGrid.setColor(QColor(0x99,0x99,0x99));
-	penGrid.setStyle(Qt::DashLine);
+	m_plotwrapN.reset(new QwtPlotWrapper(plotN));
+	m_plotwrapN->GetCurve(0)->setTitle("Neutron Powder Pattern");
+	m_plotwrapN->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
+	m_plotwrapN->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Intensity");
+	if(m_plotwrapN->HasTrackerSignal())
+		connect(m_plotwrapN->GetPicker(), SIGNAL(moved(const QPointF&)), 
+			this, SLOT(cursorMoved(const QPointF&)));
 
-	QPen penCurve;
-	penCurve.setColor(QColor(0,0,0x99));
-	penCurve.setWidth(2);
-
-	QColor colorBck(240, 240, 240, 255);
-	for(QwtPlot *pPlt : {plotN, plotX})
-		pPlt->setCanvasBackground(colorBck);
-
-
-	m_pGrid = new QwtPlotGrid();
-	m_pGrid->setPen(penGrid);
-	m_pGrid->attach(plotN);
-
-	m_pGridX = new QwtPlotGrid();
-	m_pGridX->setPen(penGrid);
-	m_pGridX->attach(plotX);
-
-	m_pCurve = new QwtPlotCurve("Neutron Powder Pattern");
-	m_pCurve->setPen(penCurve);
-	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurve->attach(plotN);
-
-	m_pCurveX = new QwtPlotCurve("X-Ray Powder Pattern");
-	m_pCurveX->setPen(penCurve);
-	m_pCurveX->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurveX->attach(plotX);
-	
-	m_pPanner = new QwtPlotPanner(plotN->canvas());
-	m_pPanner->setMouseButton(Qt::MiddleButton);
-
-	m_pPannerX = new QwtPlotPanner(plotX->canvas());
-	m_pPannerX->setMouseButton(Qt::MiddleButton);
-
-#if QWT_VER>=6
-	m_pZoomer = new QwtPlotZoomer(plotN->canvas());
-	m_pZoomer->setMaxStackDepth(-1);
-	m_pZoomer->setEnabled(1);
-
-	m_pZoomerX = new QwtPlotZoomer(plotX->canvas());
-	m_pZoomerX->setMaxStackDepth(-1);
-	m_pZoomerX->setEnabled(1);
-#endif
-
-	plotN->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
-	plotN->setAxisTitle(QwtPlot::yLeft, "Intensity");
-	plotX->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
-	plotX->setAxisTitle(QwtPlot::yLeft, "Intensity");
-
-	plotN->canvas()->setMouseTracking(1);
-	m_pPicker = new QwtPlotPicker(plotN->xBottom, plotN->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plotN->canvas());
-
-#if QWT_VER>=6
-	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPicker->setEnabled(1);
-
-
-	plotX->canvas()->setMouseTracking(1);
-	m_pPickerX = new QwtPlotPicker(plotX->xBottom, plotX->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plotX->canvas());
-
-#if QWT_VER>=6
-	m_pPickerX->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPickerX, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPickerX->setEnabled(1);
+	m_plotwrapX.reset(new QwtPlotWrapper(plotX));
+	m_plotwrapX->GetCurve(0)->setTitle("X-Ray Powder Pattern");
+	m_plotwrapX->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
+	m_plotwrapX->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Intensity");
+	if(m_plotwrapX->HasTrackerSignal())
+		connect(m_plotwrapX->GetPicker(), SIGNAL(moved(const QPointF&)), 
+			this, SLOT(cursorMoved(const QPointF&)));
 	// -------------------------------------------------------------------------
+
 
 	btnSave->setIcon(load_icon("res/document-save.svg"));
 	btnLoad->setIcon(load_icon("res/document-open.svg"));
@@ -190,34 +112,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 }
 
 PowderDlg::~PowderDlg()
-{
-	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridX})
-	{
-		if(*pGrid)
-		{
-			delete *pGrid;
-			*pGrid = nullptr;
-		}
-	}
-
-	for(QwtPlotZoomer** pZoom : {&m_pZoomer, &m_pZoomerX})
-	{
-		if(*pZoom)
-		{
-			delete *pZoom;
-			*pZoom = nullptr;
-		}
-	}
-
-	for(QwtPlotPanner** pPanner : {&m_pPanner, &m_pPannerX})
-	{
-		if(*pPanner)
-		{
-			delete *pPanner;
-			*pPanner = nullptr;
-		}
-	}
-}
+{}
 
 
 void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
@@ -278,19 +173,8 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 		m_vecIntx.push_back(dIntX);
 	}
 
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecTT.data(), m_vecInt.data(), m_vecTT.size());
-	m_pCurveX->setRawSamples(m_vecTTx.data(), m_vecIntx.data(), m_vecTTx.size());
-#else
-	m_pCurve->setRawData(m_vecTT.data(), m_vecInt.data(), m_vecTT.size());
-	m_pCurveX->setRawData(m_vecTTx.data(), m_vecIntx.data(), m_vecTTx.size());
-#endif
-
-	set_zoomer_base(m_pZoomer, m_vecTT, m_vecInt);
-	set_zoomer_base(m_pZoomerX, m_vecTTx, m_vecIntx);
-
-	plotN->replot();
-	plotX->replot();
+	m_plotwrapN->SetData(m_vecTT, m_vecInt);
+	m_plotwrapX->SetData(m_vecTTx, m_vecIntx);
 }
 
 
@@ -605,8 +489,7 @@ void PowderDlg::RepopulateSpaceGroups()
 			continue;
 
 		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
-									strName.c_str(),
-									QVariant::fromValue((void*)&pair.second));
+			strName.c_str(), QVariant::fromValue((void*)&pair.second));
 	}
 }
 

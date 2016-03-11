@@ -15,19 +15,12 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "helper/spacegroup.h"
+#include "helper/qthelper.h"
 #include "tlibs/file/prop.h"
 #include "AtomsDlg.h"
-
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_plot_panner.h>
-//#include <qwt_legend.h>
-
 
 struct PowderLine
 {
@@ -53,18 +46,8 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		std::vector<double> m_vecTT, m_vecInt;
 		std::vector<double> m_vecTTx, m_vecIntx;
 
-		QwtPlotCurve *m_pCurve = nullptr;
-		QwtPlotGrid *m_pGrid = nullptr;
-		QwtPlotPicker *m_pPicker = nullptr;
-		QwtPlotZoomer* m_pZoomer = nullptr;
-		QwtPlotPanner* m_pPanner = nullptr;
-
-		QwtPlotCurve *m_pCurveX = nullptr;
-		QwtPlotGrid *m_pGridX = nullptr;
-		QwtPlotPicker *m_pPickerX = nullptr;
-		QwtPlotZoomer* m_pZoomerX = nullptr;
-		QwtPlotPanner* m_pPannerX = nullptr;
-
+		std::unique_ptr<QwtPlotWrapper> m_plotwrapN;
+		std::unique_ptr<QwtPlotWrapper> m_plotwrapX;
 
 	protected:
 		bool m_bDontCalc = 1;
