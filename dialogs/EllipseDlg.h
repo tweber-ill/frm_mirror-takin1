@@ -30,6 +30,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		const char* m_pcTitle = "Resolution Ellipses";
 
 	protected:
+		bool m_bReady = 0;
 		std::vector<std::unique_ptr<QwtPlotWrapper>> m_vecplotwrap;
 
 		std::vector<struct Ellipse> m_elliProj;

@@ -58,6 +58,7 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 
 	if(m_pSettings && m_pSettings->contains("reso/ellipse_geo"))
 		restoreGeometry(m_pSettings->value("reso/ellipse_geo").toByteArray());
+	m_bReady = 1;
 }
 
 EllipseDlg::~EllipseDlg()
@@ -89,6 +90,7 @@ void EllipseDlg::cursorMoved(const QPointF& pt)
 
 void EllipseDlg::Calc()
 {
+	if(!m_bReady) return;
 	const EllipseCoordSys coord = static_cast<EllipseCoordSys>(comboCoord->currentIndex());
 
 	const ublas::matrix<double> *pReso = nullptr;
@@ -247,7 +249,8 @@ void EllipseDlg::Calc()
 			rect.setRight(std::max(dBBProj[1], dBBSlice[1]));
 			rect.setTop(std::max(dBBProj[2], dBBSlice[2]));
 			rect.setBottom(std::min(dBBProj[3], dBBSlice[3]));
-			m_vecplotwrap[iEll]->GetZoomer()->setZoomBase(rect);
+			if(m_vecplotwrap[iEll]->GetZoomer())
+				m_vecplotwrap[iEll]->GetZoomer()->setZoomBase(rect);
 
 
 			switch(iAlgo)
