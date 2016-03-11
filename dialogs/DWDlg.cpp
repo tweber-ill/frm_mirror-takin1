@@ -10,10 +10,8 @@
 #include "tlibs/string/string.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/atoms.h"
-#include "helper/qthelper.h"
 
 #include <boost/units/io.hpp>
-#include <qwt_picker_machine.h>
 
 
 DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
@@ -28,81 +26,36 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	}
 
 
-	QPen penGrid;
-	penGrid.setColor(QColor(0x99,0x99,0x99));
-	penGrid.setStyle(Qt::DashLine);
-
-	QPen penCurve;
-	penCurve.setColor(QColor(0,0,0x99));
-	penCurve.setWidth(2);
-
-
-	QColor colorBck(240, 240, 240, 255);
-	for(QwtPlot *pPlt : {plot, plotBose, plotAna, plotLorentz})
-		pPlt->setCanvasBackground(colorBck);
-
-
 	// -------------------------------------------------------------------------
 	// Bose Factor stuff
 	std::vector<QDoubleSpinBox*> vecSpinBoxesBose = {spinBoseT, spinBoseEMin, spinBoseEMax};
 	for(QDoubleSpinBox* pSpin : vecSpinBoxesBose)
 		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcBose()));
 
-	m_pGridBose = new QwtPlotGrid();
-	m_pGridBose->setPen(penGrid);
-	m_pGridBose->attach(plotBose);
-
-	m_pPannerBose = new QwtPlotPanner(plotBose->canvas());
-	m_pPannerBose->setMouseButton(Qt::MiddleButton);
-
-#if QWT_VER>=6
-	m_pZoomerBose = new QwtPlotZoomer(plotBose->canvas());
-	m_pZoomerBose->setMaxStackDepth(-1);
-	m_pZoomerBose->setEnabled(1);
-#endif
+	m_plotwrapBose.reset(new QwtPlotWrapper(plotBose, 2));
 
 	// positive Bose factor
-	m_pCurveBosePos = new QwtPlotCurve("Boson Creation");
 	QPen penCurveBosePos;
 	penCurveBosePos.setColor(QColor(0,0,0x99));
 	penCurveBosePos.setWidth(2);
-	m_pCurveBosePos->setPen(penCurveBosePos);
-	m_pCurveBosePos->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurveBosePos->attach(plotBose);
+	m_plotwrapBose->GetCurve(0)->setTitle("Boson Creation");
+	m_plotwrapBose->GetCurve(0)->setPen(penCurveBosePos);
 
 	// negative Bose factor
-	m_pCurveBoseNeg = new QwtPlotCurve("Boson Annihilation");
 	QPen penCurveBoseNeg;
 	penCurveBoseNeg.setColor(QColor(0x99,0,0));
 	penCurveBoseNeg.setWidth(2);
-	m_pCurveBoseNeg->setPen(penCurveBoseNeg);
-	m_pCurveBoseNeg->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurveBoseNeg->attach(plotBose);
-
-	plotBose->canvas()->setMouseTracking(1);
-	m_pPickerBose = new QwtPlotPicker(plotBose->xBottom, plotBose->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plotBose->canvas());
-
-#if QWT_VER>=6
-	m_pPickerBose->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPickerBose, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPickerBose->setEnabled(1);
+	m_plotwrapBose->GetCurve(1)->setTitle("Boson Annihilation");
+	m_plotwrapBose->GetCurve(1)->setPen(penCurveBoseNeg);
+	
+	if(m_plotwrapBose->HasTrackerSignal())
+		connect(m_plotwrapBose->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
 	m_pLegendBose = new QwtLegend();
-	plotBose->insertLegend(m_pLegendBose, QwtPlot::TopLegend);
+	m_plotwrapBose->GetPlot()->insertLegend(m_pLegendBose, QwtPlot::TopLegend);
 
-	plotBose->setAxisTitle(QwtPlot::xBottom, "E (meV)");
-	plotBose->setAxisTitle(QwtPlot::yLeft, "Bose Factor");
+	m_plotwrapBose->GetPlot()->setAxisTitle(QwtPlot::xBottom, "E (meV)");
+	m_plotwrapBose->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Bose Factor");
 
 	CalcBose();
 
@@ -113,49 +66,16 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	for(QDoubleSpinBox* pSpin : vecSpinBoxes)
 		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcDW()));
 
-	m_pGrid = new QwtPlotGrid();
-	m_pGrid->setPen(penGrid);
-	m_pGrid->attach(plot);
+	m_plotwrapDW.reset(new QwtPlotWrapper(plot, 1));
+	m_plotwrapDW->GetCurve(0)->setTitle("Debye-Waller Factor");
 
-	m_pPanner = new QwtPlotPanner(plot->canvas());
-	m_pPanner->setMouseButton(Qt::MiddleButton);
+	if(m_plotwrapDW->HasTrackerSignal())
+		connect(m_plotwrapDW->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
-#if QWT_VER>=6
-	m_pZoomer = new QwtPlotZoomer(plot->canvas());
-	m_pZoomer->setMaxStackDepth(-1);
-	m_pZoomer->setEnabled(1);
-#endif
-
-	m_pCurve = new QwtPlotCurve("Debye-Waller Factor");
-	m_pCurve->setPen(penCurve);
-	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurve->attach(plot);
-
-	plot->canvas()->setMouseTracking(1);
-	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plot->canvas());
-
-#if QWT_VER>=6
-	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPicker->setEnabled(1);
-
-
-	plot->setAxisTitle(QwtPlot::xBottom, "Q (1/A)");
-	plot->setAxisTitle(QwtPlot::yLeft, "DW Factor");
+	m_plotwrapDW->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Q (1/A)");
+	m_plotwrapDW->GetPlot()->setAxisTitle(QwtPlot::yLeft, "DW Factor");
 
 	CalcDW();
-
 
 
 	// -------------------------------------------------------------------------
@@ -164,49 +84,16 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	for(QDoubleSpinBox* pSpin : vecSpinBoxesAna)
 		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcAna()));
 
-	m_pGridAna = new QwtPlotGrid();
-	m_pGridAna->setPen(penGrid);
-	m_pGridAna->attach(plotAna);
-	
-	m_pPannerAna = new QwtPlotPanner(plotAna->canvas());
-	m_pPannerAna->setMouseButton(Qt::MiddleButton);
+	m_plotwrapAna.reset(new QwtPlotWrapper(plotAna, 1));
+	m_plotwrapAna->GetCurve(0)->setTitle("Analyser Factor");
 
-#if QWT_VER>=6
-	m_pZoomerAna = new QwtPlotZoomer(plotAna->canvas());
-	m_pZoomerAna->setMaxStackDepth(-1);
-	m_pZoomerAna->setEnabled(1);
-#endif
+	if(m_plotwrapAna->HasTrackerSignal())
+		connect(m_plotwrapAna->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
-	m_pCurveAna = new QwtPlotCurve("Analyser Factor");
-	m_pCurveAna->setPen(penCurve);
-	m_pCurveAna->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurveAna->attach(plotAna);
-
-	plotAna->canvas()->setMouseTracking(1);
-	m_pPickerAna = new QwtPlotPicker(plotAna->xBottom, plotAna->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plotAna->canvas());
-
-#if QWT_VER>=6
-	m_pPickerAna->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPickerAna, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPickerAna->setEnabled(1);
-
-
-	plotAna->setAxisTitle(QwtPlot::xBottom, "kf (1/A)");
-	plotAna->setAxisTitle(QwtPlot::yLeft, "Intensity (a.u.)");
+	m_plotwrapAna->GetPlot()->setAxisTitle(QwtPlot::xBottom, "kf (1/A)");
+	m_plotwrapAna->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Intensity (a.u.)");
 
 	CalcAna();
-
 
 
 	// -------------------------------------------------------------------------
@@ -216,46 +103,14 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 		QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcLorentz()));
 	QObject::connect(checkPol, SIGNAL(toggled(bool)), this, SLOT(CalcLorentz()));
 
-	m_pGridLor = new QwtPlotGrid();
-	m_pGridLor->setPen(penGrid);
-	m_pGridLor->attach(plotLorentz);
+	m_plotwrapLor.reset(new QwtPlotWrapper(plotLorentz, 1));
+	m_plotwrapLor->GetCurve(0)->setTitle("Lorentz Factor");
 
-	m_pPannerLor = new QwtPlotPanner(plotLorentz->canvas());
-	m_pPannerLor->setMouseButton(Qt::MiddleButton);
+	if(m_plotwrapLor->HasTrackerSignal())
+		connect(m_plotwrapLor->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
-#if QWT_VER>=6
-	m_pZoomerLor = new QwtPlotZoomer(plotLorentz->canvas());
-	m_pZoomerLor->setMaxStackDepth(-1);
-	m_pZoomerLor->setEnabled(1);
-#endif
-
-	m_pCurveLor = new QwtPlotCurve("Lorentz Factor");
-	m_pCurveLor->setPen(penCurve);
-	m_pCurveLor->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurveLor->attach(plotLorentz);
-
-	plotLorentz->canvas()->setMouseTracking(1);
-	m_pPickerLor = new QwtPlotPicker(plotLorentz->xBottom, plotLorentz->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plotLorentz->canvas());
-
-#if QWT_VER>=6
-	m_pPickerLor->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPickerLor, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPickerLor->setEnabled(1);
-
-
-	plotLorentz->setAxisTitle(QwtPlot::xBottom, "Scattering Angle (deg)");
-	plotLorentz->setAxisTitle(QwtPlot::yLeft, "Lorentz Factor");
+	m_plotwrapLor->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Angle (deg)");
+	m_plotwrapLor->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Lorentz Factor");
 
 	CalcLorentz();
 
@@ -266,41 +121,7 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 
 
 DWDlg::~DWDlg()
-{
-	for(QwtPlotPicker** pPicker : {&m_pPicker, &m_pPickerAna, &m_pPickerBose, &m_pPickerLor})
-	{
-		if(*pPicker)
-		{
-			(*pPicker)->setEnabled(0);
-			delete *pPicker;
-			*pPicker = nullptr;
-		}
-	}
-	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridAna, &m_pGridBose, &m_pGridLor})
-	{
-		if(*pGrid)
-		{
-			delete *pGrid;
-			*pGrid = nullptr;
-		}
-	}
-	for(QwtPlotZoomer** pZoomer : {&m_pZoomer, &m_pZoomerAna, &m_pZoomerBose, &m_pZoomerLor})
-	{
-		if(*pZoomer)
-		{
-			delete *pZoomer;
-			*pZoomer = nullptr;
-		}
-	}
-	for(QwtPlotPanner** pPanner : {&m_pPanner, &m_pPannerAna, &m_pPannerBose, &m_pPannerLor})
-	{
-		if(*pPanner)
-		{
-			delete *pPanner;
-			*pPanner = nullptr;
-		}
-	}
-}
+{}
 
 void DWDlg::cursorMoved(const QPointF& pt)
 {
@@ -340,21 +161,16 @@ void DWDlg::CalcBose()
 		m_vecBoseIntNeg.push_back(tl::bose(-E, T));
 	}
 
-#if QWT_VER>=6
-	m_pCurveBosePos->setRawSamples(m_vecBoseE.data(), m_vecBoseIntPos.data(), m_vecBoseE.size());
-	m_pCurveBoseNeg->setRawSamples(m_vecBoseE.data(), m_vecBoseIntNeg.data(), m_vecBoseE.size());
-#else
-	m_pCurveBosePos->setRawData(m_vecBoseE.data(), m_vecBoseIntPos.data(), m_vecBoseE.size());
-	m_pCurveBoseNeg->setRawData(m_vecBoseE.data(), m_vecBoseIntNeg.data(), m_vecBoseE.size());
-#endif
+	m_plotwrapBose->SetData(m_vecBoseE, m_vecBoseIntPos, 0, false);
+	m_plotwrapBose->SetData(m_vecBoseE, m_vecBoseIntNeg, 1, false);
 
 	std::vector<double> vecMerged;
 	vecMerged.resize(m_vecBoseIntPos.size() + m_vecBoseIntNeg.size());
 	std::merge(m_vecBoseIntPos.begin(), m_vecBoseIntPos.end(),
 		m_vecBoseIntNeg.begin(), m_vecBoseIntNeg.end(), vecMerged.begin());
-	set_zoomer_base(m_pZoomerBose, m_vecBoseE, vecMerged);
+	set_zoomer_base(m_plotwrapBose->GetZoomer(), m_vecBoseE, vecMerged);
 
-	plotBose->replot();
+	m_plotwrapBose->GetPlot()->replot();
 }
 
 
@@ -384,14 +200,7 @@ void DWDlg::CalcLorentz()
 		m_vecLor.push_back(dLor);
 	}
 
-#if QWT_VER>=6
-	m_pCurveLor->setRawSamples(m_vecLor2th.data(), m_vecLor.data(), m_vecLor2th.size());
-#else
-	m_pCurveLor->setRawData(m_vecLor2th.data(), m_vecLor.data(), m_vecLor2th.size());
-#endif
-
-	set_zoomer_base(m_pZoomerLor, m_vecLor2th, m_vecLor);
-	plotLorentz->replot();
+	m_plotwrapLor->SetData(m_vecLor2th, m_vecLor, 0);
 }
 
 
@@ -437,14 +246,7 @@ void DWDlg::CalcDW()
 		m_vecDeb.push_back(dDWF);
 	}
 
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecQ.data(), m_vecDeb.data(), m_vecQ.size());
-#else
-	m_pCurve->setRawData(m_vecQ.data(), m_vecDeb.data(), m_vecQ.size());
-#endif
-
-	set_zoomer_base(m_pZoomer, m_vecQ, m_vecDeb);
-	plot->replot();
+	m_plotwrapDW->SetData(m_vecQ, m_vecDeb, 0);
 }
 
 
@@ -477,14 +279,7 @@ void DWDlg::CalcAna()
 		m_vecInt.push_back(dEffic);
 	}
 
-#if QWT_VER>=6
-	m_pCurveAna->setRawSamples(m_veckf.data(), m_vecInt.data(), m_veckf.size());
-#else
-	m_pCurveAna->setRawData(m_veckf.data(), m_vecInt.data(), m_veckf.size());
-#endif
-
-	set_zoomer_base(m_pZoomerAna, m_veckf, m_vecInt);
-	plotAna->replot();
+	m_plotwrapAna->SetData(m_veckf, m_vecInt, 0);
 }
 
 

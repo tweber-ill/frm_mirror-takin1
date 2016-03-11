@@ -25,95 +25,22 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 
 	SetupAtoms();
 
-	QColor colorBck(240, 240, 240, 255);
-
 	// form factors
-	plotF->setCanvasBackground(colorBck);
-
-	m_pGrid = new QwtPlotGrid();
-	QPen penGrid;
-	penGrid.setColor(QColor(0x99,0x99,0x99));
-	penGrid.setStyle(Qt::DashLine);
-	m_pGrid->setPen(penGrid);
-	m_pGrid->attach(plotF);
-
-#if QWT_VER>=6
-	m_pZoomer = new QwtPlotZoomer(plotF->canvas());
-	m_pZoomer->setMaxStackDepth(-1);
-	m_pZoomer->setEnabled(1);
-#endif
-
-	m_pCurve = new QwtPlotCurve("Atomic Form Factor");
-	QPen penCurve;
-	penCurve.setColor(QColor(0,0,0x99));
-	penCurve.setWidth(2);
-	m_pCurve->setPen(penCurve);
-	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurve->attach(plotF);
-
-	plotF->canvas()->setMouseTracking(1);
-	m_pPicker = new QwtPlotPicker(plotF->xBottom, plotF->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plotF->canvas());
-
-#if QWT_VER>=6
-	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPicker->setEnabled(1);
-
-	plotF->setAxisTitle(QwtPlot::xBottom, "Scattering Wavenumber Q (1/A)");
-	plotF->setAxisTitle(QwtPlot::yLeft, "Atomic Form Factor f (e-)");
+	m_plotwrap.reset(new QwtPlotWrapper(plotF));
+	m_plotwrap->GetCurve(0)->setTitle("Atomic Form Factor");
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Wavenumber Q (1/A)");
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Atomic Form Factor f (e-)");
+	if(m_plotwrap->HasTrackerSignal())
+		connect(m_plotwrap->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
 
 	// scattering lengths
-	plotSc->setCanvasBackground(colorBck);
-
-	m_pGridSc = new QwtPlotGrid();
-	m_pGridSc->setPen(penGrid);
-	m_pGridSc->attach(plotSc);
-
-#if QWT_VER>=6
-	m_pZoomerSc = new QwtPlotZoomer(plotSc->canvas());
-	m_pZoomerSc->setMaxStackDepth(-1);
-	m_pZoomerSc->setEnabled(1);
-#endif
-
-	m_pCurveSc = new QwtPlotCurve("Scattering Lengths");
-	m_pCurveSc->setPen(penCurve);
-	m_pCurveSc->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurveSc->attach(plotSc);
-
-	plotSc->canvas()->setMouseTracking(1);
-	m_pPickerSc = new QwtPlotPicker(plotSc->xBottom, plotSc->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plotSc->canvas());
-
-#if QWT_VER>=6
-	m_pPickerSc->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPickerSc, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPickerSc->setEnabled(1);
-
-	plotSc->setAxisTitle(QwtPlot::xBottom, "Element");
-	plotSc->setAxisTitle(QwtPlot::yLeft, "Scattering Length b (fm)");
-
+	m_plotwrapSc.reset(new QwtPlotWrapper(plotSc));
+	m_plotwrapSc->GetCurve(0)->setTitle("Scattering Lengths");
+	m_plotwrapSc->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Element");
+	m_plotwrapSc->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Scattering Length b (fm)");
+	if(m_plotwrapSc->HasTrackerSignal())
+		connect(m_plotwrapSc->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
 
 	QObject::connect(listAtoms, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
@@ -135,30 +62,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 }
 
 FormfactorDlg::~FormfactorDlg()
-{
-	for(QwtPlotPicker** pPicker : {&m_pPicker, &m_pPickerSc})
-		if(*pPicker)
-		{
-			(*pPicker)->setEnabled(0);
-			delete (*pPicker);
-			*pPicker = nullptr;
-		}
-
-	for(QwtPlotGrid** pGrid : {&m_pGrid, &m_pGridSc})
-		if(*pGrid)
-		{
-			delete (*pGrid);
-			*pGrid = nullptr;
-		}
-
-	for(QwtPlotZoomer** pZoomer : {&m_pZoomer, &m_pZoomerSc})
-		if(*pZoomer)
-		{
-			delete (*pZoomer);
-			*pZoomer = nullptr;
-		}
-}
-
+{}
 
 static QListWidgetItem* create_header_item(const char *pcTitle, bool bSubheader=0)
 {
@@ -252,14 +156,7 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 		}
 	}
 
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecQ.data(), m_vecFF.data(), m_vecQ.size());
-#else
-	m_pCurve->setRawData(m_vecQ.data(), m_vecFF.data(), m_vecQ.size());
-#endif
-
-	set_zoomer_base(m_pZoomer, m_vecQ, m_vecFF);
-	plotF->replot();
+	m_plotwrap->SetData(m_vecQ, m_vecFF);
 }
 
 
@@ -280,14 +177,7 @@ void FormfactorDlg::PlotScatteringLengths()
 		m_vecSc.push_back(b.real());
 	}
 
-#if QWT_VER>=6
-	m_pCurveSc->setRawSamples(m_vecElem.data(), m_vecSc.data(), m_vecElem.size());
-#else
-	m_pCurveSc->setRawData(m_vecElem.data(), m_vecSc.data(), m_vecElem.size());
-#endif
-
-	set_zoomer_base(m_pZoomerSc, m_vecElem, m_vecSc);
-	plotSc->replot();
+	m_plotwrapSc->SetData(m_vecElem, m_vecSc);
 }
 
 void FormfactorDlg::cursorMoved(const QPointF& pt)

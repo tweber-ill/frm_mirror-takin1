@@ -1,5 +1,5 @@
 /*
- * qt helper
+ * qt&qwt helpers
  * @author Tobias Weber
  * @date feb-2016
  * @license GPLv2
@@ -11,6 +11,114 @@
 #include <iomanip>
 #include <memory>
 #include "tlibs/math/math.h"
+#include <qwt_picker_machine.h>
+
+
+QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves)
+	: m_pPlot(pPlot)
+{
+	QPen penGrid;
+	penGrid.setColor(QColor(0x99,0x99,0x99));
+	penGrid.setStyle(Qt::DashLine);
+
+	QPen penCurve;
+	penCurve.setColor(QColor(0,0,0x99));
+	penCurve.setWidth(2);
+
+	QColor colorBck(240, 240, 240, 255);
+	m_pPlot->setCanvasBackground(colorBck);
+	
+	m_vecCurves.reserve(iNumCurves);
+	for(unsigned int iCurve=0; iCurve<iNumCurves; ++iCurve)
+	{
+		QwtPlotCurve* pCurve = new QwtPlotCurve();
+		pCurve->setPen(penCurve);
+		pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+		pCurve->attach(m_pPlot);
+		m_vecCurves.push_back(pCurve);
+	}
+	
+	m_pGrid = new QwtPlotGrid();
+	m_pGrid->setPen(penGrid);
+	m_pGrid->attach(m_pPlot);
+
+	m_pPanner = new QwtPlotPanner(m_pPlot->canvas());
+	m_pPanner->setMouseButton(Qt::MiddleButton);
+
+#if QWT_VER>=6
+	m_pZoomer = new QwtPlotZoomer(m_pPlot->canvas());
+	m_pZoomer->setMaxStackDepth(-1);
+	m_pZoomer->setEnabled(1);
+#endif
+
+	m_pPlot->canvas()->setMouseTracking(1);
+	m_pPicker = new QwtPlotPicker(m_pPlot->xBottom, m_pPlot->yLeft,
+#if QWT_VER<6
+		QwtPlotPicker::PointSelection,
+#endif
+		QwtPlotPicker::NoRubberBand,
+#if QWT_VER>=6
+		QwtPlotPicker::AlwaysOff,
+#else
+		QwtPlotPicker::AlwaysOn,
+#endif
+		m_pPlot->canvas());
+
+#if QWT_VER>=6
+	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
+	//connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
+#endif
+	m_pPicker->setEnabled(1);
+}
+
+QwtPlotWrapper::~QwtPlotWrapper()
+{
+	if(m_pPicker)
+	{
+		m_pPicker->setEnabled(0);
+		delete m_pPicker;
+		m_pPicker = nullptr;
+	}
+	if(m_pGrid)
+	{
+		delete m_pGrid;
+		m_pGrid = nullptr;
+	}
+	if(m_pZoomer)
+	{
+		delete m_pZoomer;
+		m_pZoomer = nullptr;
+	}
+	if(m_pPanner)
+	{
+		delete m_pPanner;
+		m_pPanner = nullptr;
+	}
+}
+
+#if QWT_VER>=6
+	bool QwtPlotWrapper::HasTrackerSignal() const { return 1; }
+#else
+	bool QwtPlotWrapper::HasTrackerSignal() const { return 0; }
+#endif
+
+void QwtPlotWrapper::SetData(const std::vector<double>& vecX, const std::vector<double>& vecY, 
+	unsigned int iCurve, bool bReplot)
+{
+#if QWT_VER>=6
+	m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
+#else
+	m_vecCurves[iCurve]->setRawData(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
+#endif
+
+	if(bReplot)
+	{
+		set_zoomer_base(m_pZoomer, vecX, vecY);
+		m_pPlot->replot();
+	}
+}
+
+// ----------------------------------------------------------------------------
 
 
 bool save_table(const char* pcFile, const QTableWidget* pTable)

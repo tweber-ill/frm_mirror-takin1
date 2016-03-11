@@ -27,55 +27,14 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 			setFont(font);
 	}
 
-	QColor colorBck(240, 240, 240, 255);
-	plotbragg->setCanvasBackground(colorBck);
+	m_plotwrap.reset(new QwtPlotWrapper(plotbragg));
+	m_plotwrap->GetCurve(0)->setTitle("Bragg Tail");
 
-	m_pBraggGrid = new QwtPlotGrid();
-	QPen penGrid;
-	penGrid.setColor(QColor(0x99,0x99,0x99));
-	penGrid.setStyle(Qt::DashLine);
-	m_pBraggGrid->setPen(penGrid);
-	m_pBraggGrid->attach(plotbragg);
-	
-	m_pPannerBragg = new QwtPlotPanner(plotbragg->canvas());
-	m_pPannerBragg->setMouseButton(Qt::MiddleButton);
+	if(m_plotwrap->HasTrackerSignal())
+		connect(m_plotwrap->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
-#if QWT_VER>=6
-	m_pZoomerBragg = new QwtPlotZoomer(plotbragg->canvas());
-	m_pZoomerBragg->setMaxStackDepth(-1);
-	m_pZoomerBragg->setEnabled(1);
-#endif
-
-	m_pBraggCurve = new QwtPlotCurve("Bragg tail");
-	QPen penCurve;
-	penCurve.setColor(QColor(0,0,0x99));
-	penCurve.setWidth(2);
-	m_pBraggCurve->setPen(penCurve);
-	m_pBraggCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pBraggCurve->attach(plotbragg);
-
-	plotbragg->canvas()->setMouseTracking(1);
-	m_pBraggPicker = new QwtPlotPicker(plotbragg->xBottom, plotbragg->yLeft,
-#if QWT_VER<6
-									QwtPlotPicker::PointSelection,
-#endif
-									QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-									QwtPlotPicker::AlwaysOff,
-#else
-									QwtPlotPicker::AlwaysOn,
-#endif
-									plotbragg->canvas());
-
-#if QWT_VER>=6
-	m_pBraggPicker->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pBraggPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pBraggPicker->setEnabled(1);
-
-
-	plotbragg->setAxisTitle(QwtPlot::xBottom, "q (1/A)");
-	plotbragg->setAxisTitle(QwtPlot::yLeft, "E (meV)");
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::xBottom, "q (1/A)");
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "E (meV)");
 
 
 	QObject::connect(radioFixedEi, SIGNAL(toggled(bool)), this, SLOT(ChangedKiKfMode()));
@@ -98,29 +57,7 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 }
 
 SpurionDlg::~SpurionDlg()
-{
-	if(m_pBraggPicker)
-	{
-		m_pBraggPicker->setEnabled(0);
-		delete m_pBraggPicker;
-		m_pBraggPicker = nullptr;
-	}
-	if(m_pBraggGrid)
-	{
-		delete m_pBraggGrid;
-		m_pBraggGrid = nullptr;
-	}
-	if(m_pZoomerBragg)
-	{
-		delete m_pZoomerBragg;
-		m_pZoomerBragg = nullptr;
-	}
-	if(m_pPannerBragg)
-	{
-		delete m_pPannerBragg;
-		m_pPannerBragg = nullptr;
-	}
-}
+{}
 
 
 void SpurionDlg::ChangedKiKfMode()
@@ -242,14 +179,7 @@ void SpurionDlg::CalcBragg()
 		m_vecE.push_back(E/tl::meV);
 	}
 
-#if QWT_VER>=6
-	m_pBraggCurve->setRawSamples(m_vecQ.data(), m_vecE.data(), m_vecQ.size());
-#else
-	m_pBraggCurve->setRawData(m_vecQ.data(), m_vecE.data(), m_vecQ.size());
-#endif
-
-	set_zoomer_base(m_pZoomerBragg, m_vecQ, m_vecE);
-	plotbragg->replot();
+	m_plotwrap->SetData(m_vecQ, m_vecE);
 }
 
 void SpurionDlg::cursorMoved(const QPointF& pt)

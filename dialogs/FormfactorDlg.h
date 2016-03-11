@@ -10,15 +10,10 @@
 
 #include <QDialog>
 #include <QSettings>
-#include "ui/ui_formfactors.h"
-
 #include <vector>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_legend.h>
+#include <memory>
+#include "ui/ui_formfactors.h"
+#include "helper/qthelper.h"
 
 
 class FormfactorDlg : public QDialog, Ui::FormFactorDlg
@@ -28,19 +23,11 @@ protected:
 
 	// form factors
 	std::vector<double> m_vecQ, m_vecFF;
-
-	QwtPlotCurve *m_pCurve = nullptr;
-	QwtPlotGrid *m_pGrid = nullptr;
-	QwtPlotPicker *m_pPicker = nullptr;
-	QwtPlotZoomer *m_pZoomer = nullptr;
+	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
 	// scattering lengths
 	std::vector<double> m_vecElem, m_vecSc;
-
-	QwtPlotCurve *m_pCurveSc = nullptr;
-	QwtPlotGrid *m_pGridSc = nullptr;
-	QwtPlotPicker *m_pPickerSc = nullptr;
-	QwtPlotZoomer *m_pZoomerSc = nullptr;
+	std::unique_ptr<QwtPlotWrapper> m_plotwrapSc;
 
 
 protected:

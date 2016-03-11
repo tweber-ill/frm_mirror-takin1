@@ -10,16 +10,11 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <vector>
+#include <memory>
 #include "ui/ui_dyn_plane.h"
 #include "RecipParamDlg.h"
-
-#include <vector>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_plot_panner.h>
+#include "helper/qthelper.h"
 
 
 class DynPlaneDlg : public QDialog, Ui::DynPlaneDlg
@@ -27,12 +22,7 @@ class DynPlaneDlg : public QDialog, Ui::DynPlaneDlg
 protected:
 	QSettings *m_pSettings = nullptr;
 	std::vector<double> m_vecQ, m_vecE;
-
-	QwtPlotCurve *m_pCurve = nullptr;
-	QwtPlotGrid *m_pGrid = nullptr;
-	QwtPlotPicker *m_pPicker = nullptr;
-	QwtPlotZoomer *m_pZoomer = nullptr;
-	QwtPlotPanner* m_pPanner = nullptr;
+	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
 	double m_d2Theta = 0.;
 	double m_dEi = 5., m_dEf = 5.;

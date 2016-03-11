@@ -13,12 +13,8 @@
 #include "ui/ui_dw.h"
 
 #include <vector>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_plot_panner.h>
+#include <memory>
+#include "helper/qthelper.h"
 #include <qwt_legend.h>
 
 
@@ -29,46 +25,20 @@ protected:
 
 	// dw stuff
 	std::vector<double> m_vecQ, m_vecDeb;
-
-	QwtPlotCurve *m_pCurve = nullptr;
-	QwtPlotGrid *m_pGrid = nullptr;
-	QwtPlotPicker *m_pPicker = nullptr;
-	QwtPlotZoomer* m_pZoomer = nullptr;
-	QwtPlotPanner* m_pPanner = nullptr;
-
+	std::unique_ptr<QwtPlotWrapper> m_plotwrapDW;
 
 	// ana stuff
 	std::vector<double> m_veckf, m_vecInt;
-
-	QwtPlotCurve *m_pCurveAna = nullptr;
-	QwtPlotGrid *m_pGridAna = nullptr;
-	QwtPlotPicker *m_pPickerAna = nullptr;
-	QwtPlotZoomer* m_pZoomerAna = nullptr;
-	QwtPlotPanner* m_pPannerAna = nullptr;
-
+	std::unique_ptr<QwtPlotWrapper> m_plotwrapAna;
 
 	// bose stuff
 	std::vector<double> m_vecBoseE, m_vecBoseIntPos, m_vecBoseIntNeg;
-
-	QwtPlotCurve *m_pCurveBosePos = nullptr;
-	QwtPlotCurve *m_pCurveBoseNeg = nullptr;
-	QwtPlotGrid *m_pGridBose = nullptr;
-	QwtPlotPicker *m_pPickerBose = nullptr;
+	std::unique_ptr<QwtPlotWrapper> m_plotwrapBose;
 	QwtLegend *m_pLegendBose = nullptr;
-	QwtPlotZoomer* m_pZoomerBose = nullptr;
-	QwtPlotPanner* m_pPannerBose = nullptr;
-
 
 	// lorentz stuff
 	std::vector<double> m_vecLor2th, m_vecLor;
-
-	QwtPlotCurve *m_pCurveLor = nullptr;
-	QwtPlotGrid *m_pGridLor = nullptr;
-	QwtPlotPicker *m_pPickerLor = nullptr;
-	QwtPlotZoomer* m_pZoomerLor = nullptr;
-	QwtPlotPanner* m_pPannerLor = nullptr;
-
-
+	std::unique_ptr<QwtPlotWrapper> m_plotwrapLor;
 
 protected:
 	virtual void showEvent(QShowEvent *pEvt) override;

@@ -10,16 +10,11 @@
 
 #include <QDialog>
 #include <QSettings>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_plot_panner.h>
 #include <vector>
-
+#include <memory>
 #include "ui/ui_spurions.h"
 #include "RecipParamDlg.h"
+#include "helper/qthelper.h"
 
 
 class SpurionDlg : public QDialog, Ui::SpurionDlg
@@ -29,12 +24,7 @@ class SpurionDlg : public QDialog, Ui::SpurionDlg
 		double m_dEi=0., m_dEf=0.;
 
 		std::vector<double> m_vecQ, m_vecE;
-
-		QwtPlotCurve *m_pBraggCurve = nullptr;
-		QwtPlotGrid *m_pBraggGrid = nullptr;
-		QwtPlotPicker *m_pBraggPicker = nullptr;
-		QwtPlotZoomer* m_pZoomerBragg = nullptr;
-		QwtPlotPanner* m_pPannerBragg = nullptr;
+		std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
 	public:
 		SpurionDlg(QWidget* pParent=0, QSettings *pSett=0);

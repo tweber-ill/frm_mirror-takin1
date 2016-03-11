@@ -6,13 +6,10 @@
  */
 
 #include "DynPlaneDlg.h"
-
 #include "tlibs/string/string.h"
 #include "tlibs/math/neutrons.hpp"
 #include "helper/qthelper.h"
-
 #include <boost/units/io.hpp>
-#include <qwt_picker_machine.h>
 
 
 DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
@@ -27,52 +24,12 @@ DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 	}
 
 
-	m_pGrid = new QwtPlotGrid();
-	QPen penGrid;
-	penGrid.setColor(QColor(0x99,0x99,0x99));
-	penGrid.setStyle(Qt::DashLine);
-	m_pGrid->setPen(penGrid);
-	m_pGrid->attach(plot);
-	
-	m_pPanner = new QwtPlotPanner(plot->canvas());
-	m_pPanner->setMouseButton(Qt::MiddleButton);
-
-#if QWT_VER>=6
-	m_pZoomer = new QwtPlotZoomer(plot->canvas());
-	m_pZoomer->setMaxStackDepth(-1);
-	m_pZoomer->setEnabled(1);
-#endif
-
-	m_pCurve = new QwtPlotCurve("Kinematic Plane (top)");
-	QPen penCurve;
-	penCurve.setColor(QColor(0,0,0x99));
-	penCurve.setWidth(2);
-	m_pCurve->setPen(penCurve);
-	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurve->attach(plot);
-
-	plot->canvas()->setMouseTracking(1);
-	m_pPicker = new QwtPlotPicker(plot->xBottom, plot->yLeft,
-#if QWT_VER<6
-		QwtPlotPicker::PointSelection,
-#endif
-		QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-		QwtPlotPicker::AlwaysOff,
-#else
-		QwtPlotPicker::AlwaysOn,
-#endif
-		plot->canvas());
-
-#if QWT_VER>=6
-	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
-	connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPicker->setEnabled(1);
-
-
-	plot->setAxisTitle(QwtPlot::xBottom, "Q (1/A)");
-	plot->setAxisTitle(QwtPlot::yLeft, "E (meV)");
+	m_plotwrap.reset(new QwtPlotWrapper(plot));
+	m_plotwrap->GetCurve(0)->setTitle("Kinematic Plane");
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Q (1/A)");
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "E (meV)");
+	if(m_plotwrap->HasTrackerSignal())
+		connect(m_plotwrap->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
 
 	QObject::connect(comboFixedE, SIGNAL(currentIndexChanged(int)), this, SLOT(FixedKiKfToggled()));
@@ -90,29 +47,7 @@ DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 }
 
 DynPlaneDlg::~DynPlaneDlg()
-{
-	if(m_pPicker)
-	{
-		m_pPicker->setEnabled(0);
-		delete m_pPicker;
-		m_pPicker = nullptr;
-	}
-	if(m_pGrid)
-	{
-		delete m_pGrid;
-		m_pGrid = nullptr;
-	}
-	if(m_pZoomer)
-	{
-		delete m_pZoomer;
-		m_pZoomer = nullptr;
-	}
-	if(m_pPanner)
-	{
-		delete m_pPanner;
-		m_pPanner = nullptr;
-	}
-}
+{}
 
 void DynPlaneDlg::cursorMoved(const QPointF& pt)
 {
@@ -174,15 +109,7 @@ void DynPlaneDlg::Calc()
 	m_vecQ.insert(m_vecQ.end(), vecQ[1].begin(), vecQ[1].end());
 	m_vecE.insert(m_vecE.end(), vecE[1].begin(), vecE[1].end());
 
-
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecQ.data(), m_vecE.data(), m_vecQ.size());
-#else
-	m_pCurve->setRawData(m_vecQ.data(), m_vecE.data(), m_vecQ.size());
-#endif
-
-	set_zoomer_base(m_pZoomer, m_vecQ, m_vecE);
-	plot->replot();
+	m_plotwrap->SetData(m_vecQ, m_vecE);
 }
 
 void DynPlaneDlg::RecipParamsChanged(const RecipParams& params)
