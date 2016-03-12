@@ -56,8 +56,12 @@ struct Scan
 	Plane plane;
 	bool bKiFixed=0;
 	double dKFix = 2.662;
+
+	std::string strTempCol = "TT";
 	double dTemp = 100., dTempErr=0.;
 
+	std::string strCntCol = "";
+	std::string strMonCol = "";
 	std::vector<ScanPoint> vecPoints;
 
 	std::vector<double> vecX;
@@ -141,7 +145,8 @@ struct Filter
 	double dUpper = 0.;
 };
 
-bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1, const Filter& filter = Filter())
+bool load_file(std::vector<std::string> vecFiles, Scan& scan, 
+	bool bNormToMon=1, const Filter& filter = Filter())
 {
 	if(!vecFiles.size()) return 0;
 	tl::log_info("Loading \"", vecFiles[0], "\".");
@@ -167,8 +172,12 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1,
 	}
 
 
-	const std::string strCountVar = pInstr->GetCountVar();
-	const std::string strMonVar = pInstr->GetMonVar();
+	std::string strCountVar = pInstr->GetCountVar();	// defaults
+	std::string strMonVar = pInstr->GetMonVar();
+	if(scan.strCntCol != "") strCountVar = scan.strCntCol;	// overrides
+	if(scan.strMonCol != "") strMonVar = scan.strMonCol;
+	tl::log_info("Counts column: ", strCountVar, "\nMonitor column: ", strMonVar);
+
 	scan.vecCts = pInstr->GetCol(strCountVar);
 	scan.vecMon = pInstr->GetCol(strMonVar);
 
@@ -222,10 +231,10 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1,
 		tl::log_info("kf = ", scan.dKFix);
 
 
-	const tl::FileInstr::t_vecVals& vecTemp = pInstr->GetCol("TT");
+	const tl::FileInstr::t_vecVals& vecTemp = pInstr->GetCol(scan.strTempCol);
 	if(vecTemp.size() == 0)
 	{
-		tl::log_err("Sample temperature column not found.");
+		tl::log_err("Sample temperature column \"", scan.strTempCol, "\" not found.");
 		return false;
 	}
 	scan.dTemp = tl::mean_value(vecTemp);
@@ -334,7 +343,8 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon=1,
 	return true;
 }
 
-bool load_file(const char* pcFile, Scan& scan, bool bNormToMon=1, const Filter& filter=Filter())
+bool load_file(const char* pcFile, Scan& scan, bool bNormToMon=1, 
+	const Filter& filter=Filter())
 {
 	std::vector<std::string> vec{pcFile};
 	return load_file(vec, scan, bNormToMon, filter);
@@ -632,7 +642,12 @@ bool run_job(const std::string& strJob)
 	}
 
 	std::string strScFile = prop.Query<std::string>("input/scan_file");
+	std::string strTempCol = prop.Query<std::string>("input/temp_col");
+	std::string strCntCol = prop.Query<std::string>("input/counts_col");
+	std::string strMonCol = prop.Query<std::string>("input/monitor_col");
+
 	std::string strResFile = prop.Query<std::string>("input/instrument_file");
+
 	std::string strSqwMod = prop.Query<std::string>("input/sqw_model");
 	std::string strSqwFile = prop.Query<std::string>("input/sqw_file");
 	bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
@@ -699,6 +714,10 @@ bool run_job(const std::string& strJob)
 
 
 	Scan sc;
+	if(strTempCol != "")
+		sc.strTempCol = strTempCol;
+	sc.strCntCol = strCntCol;
+	sc.strMonCol = strMonCol;
 	if(!load_file(vecScFiles, sc, bNormToMon, filter))
 		return 0;
 
