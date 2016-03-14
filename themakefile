@@ -199,7 +199,8 @@ OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/rand.o obj/tasreso.o \
 	obj/loadtxt.o
 
-OBJ_CONVOFIT = obj/convofit.o obj/loadinstr.o obj/minuit.o ${OBJ_MONTECONVO} ${PY_OBJS}
+OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
+	obj/loadinstr.o obj/minuit.o ${OBJ_MONTECONVO} ${PY_OBJS}
 OBJ_CONVOSERIES = obj/scanseries.o obj/log.o
 
 OBJ_RESO = obj/log.o obj/rand.o \
@@ -424,6 +425,10 @@ obj/posextract.o: tools/posextract/posextract.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/convofit.o: tools/convofit/convofit.cpp
+	${CC} ${FLAGS} -c -o $@ $<
+obj/convo_scan.o: tools/convofit/scan.cpp tools/convofit/scan.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/convo_model.o: tools/convofit/model.cpp tools/convofit/model.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/scanseries.o: tools/convofit/scanseries.cpp
 	${CC} ${FLAGS} -c -o $@ $<

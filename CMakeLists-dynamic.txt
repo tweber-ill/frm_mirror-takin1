@@ -158,6 +158,7 @@ add_executable(convofit
 	tools/monteconvo/sqw.cpp tools/monteconvo/sqw_py.cpp
 
 	tools/convofit/convofit.cpp
+	tools/convofit/model.cpp tools/convofit/scan.cpp
 )
 
 target_link_libraries(convofit

@@ -164,6 +164,7 @@ add_executable(convofit
 	tools/monteconvo/sqw.cpp tools/monteconvo/sqw_py.cpp
 
 	tools/convofit/convofit.cpp
+	tools/convofit/model.cpp tools/convofit/scan.cpp
 
 
 	# statically link tlibs externals

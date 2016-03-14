@@ -1,1 +1,1 @@
-CMakeLists-dynamic.txt
+CMakeLists-static.txt
