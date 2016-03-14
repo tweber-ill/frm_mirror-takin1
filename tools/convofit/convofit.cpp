@@ -60,6 +60,9 @@ struct Scan
 	std::string strTempCol = "TT";
 	double dTemp = 100., dTempErr=0.;
 
+	std::string strFieldCol = "";
+	double dField = 0., dFieldErr=0.;
+
 	std::string strCntCol = "";
 	std::string strMonCol = "";
 	std::vector<ScanPoint> vecPoints;
@@ -113,6 +116,7 @@ bool save_file(const char* pcFile, const Scan& sc)
 		<< sc.vecScanDir[2] << " "
 		<< sc.vecScanDir[3] << "\n";
 	ofstr << "# T = " << sc.dTemp << " +- " << sc.dTempErr << "\n";
+	ofstr << "# B = " << sc.dField << " +- " << sc.dFieldErr << "\n";
 
 	ofstr << "#\n";
 
@@ -237,9 +241,25 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan,
 		tl::log_err("Sample temperature column \"", scan.strTempCol, "\" not found.");
 		return false;
 	}
-	scan.dTemp = tl::mean_value(vecTemp);
-	scan.dTempErr = tl::std_dev(vecTemp);
-	tl::log_info("Sample temperature: ", scan.dTemp, " +- ", scan.dTempErr);
+	else
+	{
+		scan.dTemp = tl::mean_value(vecTemp);
+		scan.dTempErr = tl::std_dev(vecTemp);
+		tl::log_info("Sample temperature: ", scan.dTemp, " +- ", scan.dTempErr);
+	}
+
+	const tl::FileInstr::t_vecVals& vecField = pInstr->GetCol(scan.strFieldCol);
+	if(vecField.size() == 0)
+	{
+		tl::log_warn("Sample field column \"", scan.strFieldCol, "\" not found.");
+		//return false;
+	}
+	else
+	{
+		scan.dField = tl::mean_value(vecField);
+		scan.dFieldErr = tl::std_dev(vecField);
+		tl::log_info("Sample field: ", scan.dField, " +- ", scan.dFieldErr);
+	}
 
 
 	const std::size_t iNumPts = pInstr->GetScanCount();
@@ -370,6 +390,9 @@ protected:
 	std::vector<double> m_vecModelParams;
 	std::vector<double> m_vecModelErrs;
 
+	std::string m_strTempParamName = "T";
+	std::string m_strFieldParamName = "";
+
 protected:
 	void SetModelParams();
 
@@ -390,7 +413,8 @@ public:
 	virtual std::vector<double> GetParamValues() const override;
 	virtual std::vector<double> GetParamErrors() const override;
 
-	void SetOtherParams(double dTemperature);
+	void SetOtherParamNames(std::string strTemp, std::string strField);
+	void SetOtherParams(double dTemperature, double dField);
 
 	void SetReso(const TASReso& reso) { m_reso = reso; }
 	void SetNumNeutrons(unsigned int iNum) { m_iNumNeutrons = iNum; }
@@ -471,15 +495,24 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_vecModelParamNames = this->m_vecModelParamNames;
 	pMod->m_vecModelParams = this->m_vecModelParams;
 	pMod->m_vecModelErrs = this->m_vecModelErrs;
+	pMod->m_strTempParamName = this->m_strTempParamName;
+	pMod->m_strFieldParamName = this->m_strFieldParamName;
 	return pMod;
 }
 
-void SqwFuncModel::SetOtherParams(double dTemperature)
+void SqwFuncModel::SetOtherParamNames(std::string strTemp, std::string strField)
+{
+	m_strTempParamName = strTemp;
+	m_strFieldParamName = strField;
+}
+
+void SqwFuncModel::SetOtherParams(double dTemperature, double dField)
 {
 	std::vector<SqwBase::t_var> vecVars;
-
-	vecVars.push_back(std::make_tuple("T", "double", tl::var_to_str(dTemperature)));
-
+	if(m_strTempParamName != "")
+		vecVars.push_back(std::make_tuple(m_strTempParamName, "double", tl::var_to_str(dTemperature)));
+	if(m_strFieldParamName != "")
+		vecVars.push_back(std::make_tuple(m_strFieldParamName, "double", tl::var_to_str(dField)));
 	m_pSqw->SetVars(vecVars);
 }
 
@@ -643,6 +676,11 @@ bool run_job(const std::string& strJob)
 
 	std::string strScFile = prop.Query<std::string>("input/scan_file");
 	std::string strTempCol = prop.Query<std::string>("input/temp_col");
+	std::string strFieldCol = prop.Query<std::string>("input/field_col");
+	bool bTempOverride = prop.Exists("input/temp_override");
+	bool bFieldOverride = prop.Exists("input/field_override");
+	double dTempOverride = prop.Query<double>("input/temp_override");
+	double dFieldOverride = prop.Query<double>("input/field_override");
 	std::string strCntCol = prop.Query<std::string>("input/counts_col");
 	std::string strMonCol = prop.Query<std::string>("input/monitor_col");
 
@@ -650,6 +688,8 @@ bool run_job(const std::string& strJob)
 
 	std::string strSqwMod = prop.Query<std::string>("input/sqw_model");
 	std::string strSqwFile = prop.Query<std::string>("input/sqw_file");
+	std::string strTempVar = prop.Query<std::string>("input/sqw_temp_var", "T");
+	std::string strFieldVar = prop.Query<std::string>("input/sqw_field_var", "");
 	bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
 
 	Filter filter;
@@ -716,6 +756,8 @@ bool run_job(const std::string& strJob)
 	Scan sc;
 	if(strTempCol != "")
 		sc.strTempCol = strTempCol;
+	if(strFieldCol != "")
+		sc.strFieldCol = strFieldCol;
 	sc.strCntCol = strCntCol;
 	sc.strMonCol = strMonCol;
 	if(!load_file(vecScFiles, sc, bNormToMon, filter))
@@ -777,10 +819,18 @@ bool run_job(const std::string& strJob)
 	if(!pSqw->IsOk())
 		return 0;
 	SqwFuncModel mod(pSqw, reso);
+
 	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
 	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
 	mod.SetNumNeutrons(iNumNeutrons);
-	mod.SetOtherParams(sc.dTemp);
+
+	double dTemp = bTempOverride ? dTempOverride : sc.dTemp;
+	double dField = bFieldOverride ? dFieldOverride : sc.dField;
+	mod.SetOtherParamNames(strTempVar, strFieldVar);
+	mod.SetOtherParams(dTemp, dField);
+
+	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", dTemp);
+	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", dField);
 
 	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
 	{
