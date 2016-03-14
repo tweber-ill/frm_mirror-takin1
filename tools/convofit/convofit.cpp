@@ -824,13 +824,21 @@ bool run_job(const std::string& strJob)
 	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
 	mod.SetNumNeutrons(iNumNeutrons);
 
-	double dTemp = bTempOverride ? dTempOverride : sc.dTemp;
-	double dField = bFieldOverride ? dFieldOverride : sc.dField;
+	if(bTempOverride)
+	{
+		sc.dTemp = dTempOverride;
+		sc.dTempErr = 0.;
+	}
+	if(bFieldOverride)
+	{
+		sc.dField = dFieldOverride;
+		sc.dFieldErr = 0.;
+	}
 	mod.SetOtherParamNames(strTempVar, strFieldVar);
-	mod.SetOtherParams(dTemp, dField);
+	mod.SetOtherParams(sc.dTemp, sc.dField);
 
-	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", dTemp);
-	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", dField);
+	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", sc.dTemp);
+	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", sc.dField);
 
 	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
 	{
