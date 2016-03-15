@@ -348,7 +348,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	else if(m_algo == ResoAlgo::POP)
 	{
 		//tl::log_info("Algorithm: Popovici");
-		m_reso.bCalcR0 = true;
+		//m_reso.bCalcR0 = true;
 		m_res = calc_pop(m_reso);
 	}
 	else if(m_algo == ResoAlgo::ECK)

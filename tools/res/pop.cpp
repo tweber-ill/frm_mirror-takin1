@@ -307,7 +307,7 @@ CNResults calc_pop(const PopParams& pop)
 
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = 0.;
-	//if(pop.bCalcR0)
+	if(pop.bCalcR0)
 	{
 		// resolution volume, [pop75], equ. 13a & 16
 		// [D] = 1/cm, [SI] = cm^2

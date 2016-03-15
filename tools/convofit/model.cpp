@@ -51,8 +51,10 @@ double SqwFuncModel::operator()(double x) const
 	for(int i=0; i<4; ++i)
 		dhklE_mean[i] /= double(m_iNumNeutrons);
 
-	if(m_bUseR0 && reso.GetResoParams().bCalcR0)
-		dS *= reso.GetResoResults().dR0;
+	if(m_bUseR0)
+		dS *= reso.GetResoResults().dResVol;
+	//if(m_bUseR0 && reso.GetResoParams().bCalcR0)	// TODO
+	//	dS *= reso.GetResoResults().dR0;
 
 	tl::log_debug("Scan position: ", vecScanPos, ", S = ", dS*m_dScale + m_dOffs);
 	return dS*m_dScale + m_dOffs;
