@@ -31,7 +31,7 @@ protected:
 	TASReso m_reso;
 	unsigned int m_iNumNeutrons = 1000;
 
-	ublas::vector<double> m_vecScanOrigin;	// hklE
+	ublas::vector<double> m_vecScanOrigin;		// hklE
 	ublas::vector<double> m_vecScanDir;		// hklE
 
 	double m_dScale = 1., m_dOffs = 0.;
@@ -43,6 +43,8 @@ protected:
 
 	std::string m_strTempParamName = "T";
 	std::string m_strFieldParamName = "";
+
+	bool m_bUseR0 = false;
 
 protected:
 	void SetModelParams();
@@ -86,6 +88,8 @@ public:
 	void SetMinuitParams(const minuit::MnUserParameterState& state);
 
 	bool Save(const char *pcFile, double dXMin, double dXMax, std::size_t) const;
+
+	void SetUseR0(bool bR0) { m_bUseR0 = bR0; }
 };
 
 

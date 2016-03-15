@@ -248,6 +248,7 @@ void ConvoDlg::Start()
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
 		};
 
+		const bool bUseR0 = true;
 		const unsigned int iNumNeutrons = spinNeutrons->value();
 
 		const unsigned int iNumSteps = spinStepCnt->value();
@@ -408,6 +409,9 @@ void ConvoDlg::Start()
 				dS /= double(iNumNeutrons);
 				for(int i=0; i<4; ++i)
 					dhklE_mean[i] /= double(iNumNeutrons);
+
+				if(bUseR0 && localreso.GetResoParams().bCalcR0)
+					dS *= localreso.GetResoResults().dR0;
 
 				return std::pair<bool, double>(true, dS);
 			});

@@ -65,6 +65,9 @@ public:
 
 	void SetAlgo(ResoAlgo algo) { m_algo = algo; }
 	void SetOptimalFocus(ResoFocus foc) { m_foc = foc; }
+	
+	const EckParams& GetResoParams() const { return m_reso; }
+	const CNResults& GetResoResults() const { return m_res; }
 };
 
 #endif

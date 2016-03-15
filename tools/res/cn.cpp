@@ -172,8 +172,8 @@ CNResults calc_cn(const CNParams& cn)
 	// -------------------------------------------------------------------------
 
 
-	res.dR0 = 0.;	// TODO
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
+	res.dR0 = 0.;	// TODO
 
 	// Bragg widths
 	for(unsigned int i=0; i<4; ++i)

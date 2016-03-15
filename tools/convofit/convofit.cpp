@@ -58,6 +58,7 @@ bool run_job(const std::string& strJob)
 	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
 
 	std::string strResAlgo = prop.Query<std::string>("resolution/algorithm", "pop");
+	bool bUseR0 = prop.Query<bool>("resolution/use_r0", 0);
 	bool bResFocMonoV = prop.Query<bool>("resolution/focus_mono_v", 0);
 	bool bResFocMonoH = prop.Query<bool>("resolution/focus_mono_h", 0);
 	bool bResFocAnaV = prop.Query<bool>("resolution/focus_ana_v", 0);
@@ -175,6 +176,7 @@ bool run_job(const std::string& strJob)
 	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
 	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
 	mod.SetNumNeutrons(iNumNeutrons);
+	mod.SetUseR0(bUseR0);
 
 	if(bTempOverride)
 	{

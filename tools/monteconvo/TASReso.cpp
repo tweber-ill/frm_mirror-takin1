@@ -187,8 +187,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 
 
 bool TASReso::SetLattice(t_real a, t_real b, t_real c,
-		t_real alpha, t_real beta, t_real gamma,
-		const t_vec& vec1, const t_vec& vec2)
+	t_real alpha, t_real beta, t_real gamma,
+	const t_vec& vec1, const t_vec& vec2)
 {
 	tl::Lattice<t_real> latt(a, b, c, alpha, beta, gamma);
 
@@ -342,16 +342,19 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	if(m_algo == ResoAlgo::CN)
 	{
 		//tl::log_info("Algorithm: Cooper-Nathans");
+		m_reso.bCalcR0 = false;
 		m_res = calc_cn(m_reso);
 	}
 	else if(m_algo == ResoAlgo::POP)
 	{
 		//tl::log_info("Algorithm: Popovici");
+		m_reso.bCalcR0 = true;
 		m_res = calc_pop(m_reso);
 	}
 	else if(m_algo == ResoAlgo::ECK)
 	{
 		//tl::log_info("Algorithm: Eckold-Sobolev");
+		m_reso.bCalcR0 = true;
 		m_res = calc_eck(m_reso);
 	}
 	else
@@ -372,7 +375,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 Ellipsoid4d TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& vecNeutrons) const
 {
-	Ellipsoid4d ell4d = calc_res_ellipsoid4d(m_res.reso, m_res.Q_avg);;
+	Ellipsoid4d ell4d = calc_res_ellipsoid4d(m_res.reso, m_res.Q_avg);
 	if(vecNeutrons.size() != iNum)
 		vecNeutrons.resize(iNum);
 

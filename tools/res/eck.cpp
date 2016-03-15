@@ -377,9 +377,6 @@ CNResults calc_eck(const EckParams& eck)
 	t_vec V1 = ublas::prod(vecBF, Tinv);
 
 
-	t_real W1 = C + D + G + H;
-	t_real Z1 = dReflM*dReflA;
-
 
 	//--------------------------------------------------------------------------
 	// integrate last 2 vars -> equs 57 & 58 in [eck14]
@@ -390,11 +387,11 @@ CNResults calc_eck(const EckParams& eck)
 	t_vec V2 = ellipsoid_gauss_int(V1, U1, 5);
 	t_vec V = ellipsoid_gauss_int(V2, U2, 4);
 
-	t_real W2 = W1 - 0.25*V1[5]/U1(5,5);
-	t_real W = W2 - 0.25*V2[4]/U2(4,4);
+	t_real W = (C + D + G + H) - 0.25*V1[5]/U1(5,5) - 0.25*V2[4]/U2(4,4);
 
-	t_real Z2 = Z1*std::sqrt(M_PI/std::fabs(U1(5,5)));
-	t_real Z = Z2*std::sqrt(M_PI/std::fabs(U2(4,4)));
+	t_real Z = dReflM*dReflA
+		* std::sqrt(M_PI/std::abs(U1(5,5)))
+		* std::sqrt(M_PI/std::abs(U2(4,4)));
 
 	/*std::cout << "U = " << U << std::endl;
 	std::cout << "V = " << V << std::endl;
@@ -410,8 +407,8 @@ CNResults calc_eck(const EckParams& eck)
 	res.reso_s = W;
 
 	// prefactor and volume
-	res.dR0 = Z;
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
+	res.dR0 = Z /** res.dResVol*/;	// TODO: check
 
 	// Bragg widths
 	for(unsigned int i=0; i<4; ++i)

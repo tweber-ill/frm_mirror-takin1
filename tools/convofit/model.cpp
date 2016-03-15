@@ -51,6 +51,9 @@ double SqwFuncModel::operator()(double x) const
 	for(int i=0; i<4; ++i)
 		dhklE_mean[i] /= double(m_iNumNeutrons);
 
+	if(m_bUseR0 && reso.GetResoParams().bCalcR0)
+		dS *= reso.GetResoResults().dR0;
+
 	tl::log_debug("Scan position: ", vecScanPos, ", S = ", dS*m_dScale + m_dOffs);
 	return dS*m_dScale + m_dOffs;
 }
@@ -71,6 +74,7 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_vecModelErrs = this->m_vecModelErrs;
 	pMod->m_strTempParamName = this->m_strTempParamName;
 	pMod->m_strFieldParamName = this->m_strFieldParamName;
+	pMod->m_bUseR0 = this->m_bUseR0;
 	return pMod;
 }
 

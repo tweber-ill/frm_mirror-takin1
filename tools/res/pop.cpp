@@ -305,8 +305,9 @@ CNResults calc_pop(const PopParams& pop)
 	res.reso_s = 0.;
 
 
+	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = 0.;
-	if(pop.bCalcR0)
+	//if(pop.bCalcR0)
 	{
 		// resolution volume, [pop75], equ. 13a & 16
 		// [D] = 1/cm, [SI] = cm^2
@@ -323,23 +324,21 @@ CNResults calc_pop(const PopParams& pop)
 		t_real dP0 = pop.dmono_refl*pop.dana_effic * (2.*M_PI)*(2.*M_PI)*(2.*M_PI)*(2.*M_PI);
 		dP0 /= std::sqrt(dDetDSiDti);
 
-		// [T] = 1/cm, [F] = 1/rad^2
-		t_mat K = S + tl::transform(F, T, 1);;
+		// [T] = 1/cm, [F] = 1/rad^2, [pop75], equ. 15
+		t_mat K = S + tl::transform(F, T, 1);
 
 		t_real dDetS = tl::determinant(S);
 		t_real dDetF = tl::determinant(F);
 		t_real dDetK = tl::determinant(K);
 
+		// [pop75], equ. 16
 		res.dR0 = dP0 / (64. * M_PI*M_PI * units::sin(thetam)*units::sin(thetaa));
 		res.dR0 *= std::sqrt(dDetS*dDetF/dDetK);
 
 		// rest of the prefactors, equ. 1 in [pop75]
-		res.dR0 /= (2.*M_PI*2.*M_PI);
-		res.dR0 *= std::sqrt(tl::determinant(res.reso));
+		//res.dR0 *= std::sqrt(tl::determinant(res.reso)) / (2.*M_PI*2.*M_PI);
+		//res.dR0 *= res.dResVol;		// TODO: check
 	}
-
-	// placeholder: volume of ellipsoid
-	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 
 	// Bragg widths
 	for(unsigned int i=0; i<4; ++i)

@@ -87,10 +87,11 @@ extern struct Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso
 
 /*
  * this is a 1:1 C++ reimplementation of 'rc_int' from 'mcresplot' and 'rescal5'
+ * (see also [eck14], equ. 57)
  * integrate over row/column iIdx
  */
 template<class T = double>
-ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, unsigned int iIdx)
+ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, std::size_t iIdx)
 {
 	ublas::vector<T> b(mat.size1());
 	for(std::size_t i=0; i<mat.size1(); ++i)
@@ -103,10 +104,12 @@ ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, unsigned int i
 	return m;
 }
 
+/*
+ * (see also [eck14], equ. 57)
+ */
 template<class T = double>
 ublas::vector<T> ellipsoid_gauss_int(const ublas::vector<T>& vec,
-									const ublas::matrix<T>& mat,
-									unsigned int iIdx)
+	const ublas::matrix<T>& mat, std::size_t iIdx)
 {
 	ublas::vector<T> vecInt(vec.size()-1);
 
