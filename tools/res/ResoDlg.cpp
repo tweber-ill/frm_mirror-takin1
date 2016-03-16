@@ -384,29 +384,38 @@ void ResoDlg::Calc()
 		std::ostringstream ostrRes;
 
 		//ostrRes << std::scientific;
-		ostrRes.precision(8);
-		ostrRes << "Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "\n";
-		ostrRes << "R0: " << res.dR0 << "\n\n";
-		ostrRes << "Bragg FWHMs:\n";
-		ostrRes << "\tQ_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "\n";
-		ostrRes << "\tQ_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "\n";
-		ostrRes << "\tQ_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "\n";
-		ostrRes << "\tE: " << res.dBraggFWHMs[3] << " meV\n\n";
-		ostrRes << "Vanadium FWHM: " << dVanadiumFWHM << " meV\n";
-		ostrRes << "\n\n";
-		ostrRes << "Resolution Matrix (Q_para, Q_ortho, Q_z, E): \n\n";
+		ostrRes.precision(g_iPrec);
+		ostrRes << "<html><body>\n";
 
+		ostrRes << "<p><b>Correction Factors:</b>\n";
+		ostrRes << "\t<ul><li>Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "</li>\n";
+		ostrRes << "\t<li>R0: " << res.dR0 << "</li></ul></p>\n\n";
+		
+		ostrRes << "<p><b>Bragg FWHMs:</b>\n";
+		ostrRes << "\t<ul><li>Q_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "</li>\n";
+		ostrRes << "\t<li>Q_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "</li>\n";
+		ostrRes << "\t<li>Q_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "</li>\n";
+		ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
+
+		ostrRes << "<p><b>Vanadium FWHM:</b> " << dVanadiumFWHM << " meV</p>\n\n";
+
+		ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
+		ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
 		for(unsigned int i=0; i<res.reso.size1(); ++i)
 		{
+			ostrRes << "<tr>\n";
 			for(unsigned int j=0; j<res.reso.size2(); ++j)
-				ostrRes << std::setw(18) << res.reso(i,j);
+				ostrRes << "<td>" << std::setw(g_iPrec*2) << res.reso(i,j) << "</td>";
+			ostrRes << "</tr>\n";
 
 			if(i!=res.reso.size1()-1)
 				ostrRes << "\n";
 		}
+		ostrRes << "</table></blockquote></p>\n";
+		ostrRes << "</body></html>";
 
+		editResults->setHtml(QString::fromUtf8(ostrRes.str().c_str()));
 		labelStatus->setText("Calculation successful.");
-		labelResult->setText(QString::fromUtf8(ostrRes.str().c_str()));
 
 #ifndef NDEBUG
 		// check against ELASTIC approximation for perp. slope from Shirane p. 268

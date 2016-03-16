@@ -200,6 +200,8 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 
 	std::vector<std::string> vecScanVars = m_pInstr->GetScannedVars();
 	std::string strCntVar = m_pInstr->GetCountVar();
+	//std::string strMonVar = m_pInstr->GetMonVar();
+	//tl::log_info("Count var: ", strCntVar, ", mon var: ", strMonVar);
 
 	m_bDoUpdate = 0;
 

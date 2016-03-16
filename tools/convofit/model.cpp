@@ -53,8 +53,8 @@ double SqwFuncModel::operator()(double x) const
 
 	if(m_bUseR0)
 		dS *= reso.GetResoResults().dResVol;
-	//if(m_bUseR0 && reso.GetResoParams().bCalcR0)	// TODO
-	//	dS *= reso.GetResoResults().dR0;
+	if(m_bUseR0 && reso.GetResoParams().bCalcR0)
+		dS *= reso.GetResoResults().dR0;
 
 	tl::log_debug("Scan position: ", vecScanPos, ", S = ", dS*m_dScale + m_dOffs);
 	return dS*m_dScale + m_dOffs;

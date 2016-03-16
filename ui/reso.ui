@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>796</width>
-    <height>460</height>
+    <width>836</width>
+    <height>463</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1671,31 +1671,19 @@
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Result</string>
+          <string>Results</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_9">
-          <property name="fieldGrowthPolicy">
-           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-          </property>
-          <item row="1" column="0" colspan="2">
-           <widget class="QLabel" name="labelResult">
-            <property name="font">
-             <font>
-              <family>DejaVu Sans Mono [unknown]</family>
-              <pointsize>8</pointsize>
-             </font>
+         <layout class="QGridLayout" name="gridLayout_12">
+          <item row="0" column="0">
+           <widget class="QTextEdit" name="editResults">
+            <property name="tabChangesFocus">
+             <bool>true</bool>
             </property>
-            <property name="text">
-             <string>Resolution Volume: 
-
-Resolution Matrix:
-1 2 3 4
-1 2 3 4
-1 2 3 4
-1 2 3 4</string>
+            <property name="undoRedoEnabled">
+             <bool>false</bool>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
+            <property name="readOnly">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -1859,7 +1847,11 @@ Resolution Matrix:
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
           <item row="0" column="0">
-           <widget class="QPlainTextEdit" name="editSim"/>
+           <widget class="QPlainTextEdit" name="editSim">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1993,6 +1985,7 @@ Resolution Matrix:
   <tabstop>editQ</tabstop>
   <tabstop>editE</tabstop>
   <tabstop>comboAlgo</tabstop>
+  <tabstop>editResults</tabstop>
   <tabstop>checkElli4dAutoCalc</tabstop>
   <tabstop>btnCalcElli4d</tabstop>
   <tabstop>spinMCNeutrons</tabstop>

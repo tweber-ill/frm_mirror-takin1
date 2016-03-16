@@ -412,8 +412,8 @@ void ConvoDlg::Start()
 
 				if(bUseR0)
 					dS *= localreso.GetResoResults().dResVol;
-				//if(bUseR0 && localreso.GetResoParams().bCalcR0)	// TODO
-				//	dS *= localreso.GetResoResults().dR0;
+				if(bUseR0 && localreso.GetResoParams().bCalcR0)
+					dS *= localreso.GetResoResults().dR0;
 
 				return std::pair<bool, double>(true, dS);
 			});

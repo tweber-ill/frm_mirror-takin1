@@ -19,6 +19,7 @@
 
 bool run_job(const std::string& strJob)
 {
+	// Parameters
 	tl::Prop<std::string> prop;
 	if(!prop.Load(strJob.c_str(), tl::PropType::INFO))
 	{
@@ -105,6 +106,8 @@ bool run_job(const std::string& strJob)
 	}
 
 
+	// --------------------------------------------------------------------
+	// Scan file
 
 	Scan sc;
 	if(strTempCol != "")
@@ -116,6 +119,9 @@ bool run_job(const std::string& strJob)
 	if(!load_file(vecScFiles, sc, bNormToMon, filter))
 		return 0;
 
+
+	// --------------------------------------------------------------------
+	// Resolution file
 
 	TASReso reso;
 	tl::log_info("Loading instrument file \"", strResFile, "\".");
@@ -151,6 +157,12 @@ bool run_job(const std::string& strJob)
 		reso.SetOptimalFocus(ResoFocus(iFoc));
 	}
 
+	if(bUseR0 && !reso.GetResoParams().bCalcR0)
+		tl::log_warn("Resolution R0 requested, but not calculated, using raw ellipsoid volume.");
+
+
+	// --------------------------------------------------------------------
+	// Model file
 
 	tl::log_info("Loading S(q,w) file \"", strSqwFile, "\".");
 	SqwBase *pSqw = nullptr;
@@ -193,6 +205,10 @@ bool run_job(const std::string& strJob)
 
 	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", sc.dTemp);
 	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", sc.dField);
+
+
+	// --------------------------------------------------------------------
+	// Fitting
 
 	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
 	{
@@ -257,6 +273,10 @@ bool run_job(const std::string& strJob)
 	std::ostringstream ostrMini;
 	ostrMini << mini << "\n";
 	tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
+
+
+	// --------------------------------------------------------------------
+	// Plotting
 
 	if(bPlot)
 	{

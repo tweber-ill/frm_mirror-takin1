@@ -65,7 +65,7 @@ struct CNParams
 	double dmono_refl;
 	double dana_effic;
 
-	bool bCalcR0 = 0;
+	bool bCalcR0 = 1;
 };
 
 struct CNResults
