@@ -14,6 +14,9 @@
    <string>TAS Resolution</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>8</number>
+   </property>
    <item row="1" column="1">
     <widget class="QPushButton" name="btnSave">
      <property name="text">
@@ -1867,20 +1870,17 @@
          <property name="title">
           <string>Ellipsoid</string>
          </property>
-         <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="labelElli">
-            <property name="font">
-             <font>
-              <family>DejaVu Sans Mono [unknown]</family>
-              <pointsize>8</pointsize>
-             </font>
+         <layout class="QGridLayout" name="gridLayout_13">
+          <item row="0" column="0">
+           <widget class="QTextEdit" name="editElli">
+            <property name="tabChangesFocus">
+             <bool>true</bool>
             </property>
-            <property name="text">
-             <string>Not calculated.</string>
+            <property name="undoRedoEnabled">
+             <bool>false</bool>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
+            <property name="readOnly">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -1992,6 +1992,7 @@
   <tabstop>comboMCCoords</tabstop>
   <tabstop>checkMCCenter</tabstop>
   <tabstop>btnMCGenerate</tabstop>
+  <tabstop>editElli</tabstop>
   <tabstop>groupSim</tabstop>
   <tabstop>editSim</tabstop>
   <tabstop>buttonBox</tabstop>

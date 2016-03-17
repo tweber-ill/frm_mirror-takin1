@@ -143,8 +143,8 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	const tl::FileInstr::t_vecVals& vecTemp = pInstr->GetCol(scan.strTempCol);
 	if(vecTemp.size() == 0)
 	{
-		tl::log_err("Sample temperature column \"", scan.strTempCol, "\" not found.");
-		return false;
+		tl::log_warn("Sample temperature column \"", scan.strTempCol, "\" not found.");
+		//return false;
 	}
 	else
 	{

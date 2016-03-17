@@ -843,19 +843,25 @@ void ResoDlg::CalcElli4d()
 	m_ell4d = calc_res_ellipsoid4d(m_res.reso, m_res.Q_avg);
 
 	std::ostringstream ostrElli;
-	ostrElli << "Ellipsoid volume: " << m_ell4d.vol << "\n\n";
-	ostrElli << "Ellipsoid offsets:\n"
-		<< "\tQx = " << m_ell4d.x_offs << "\n"
-		<< "\tQy = " << m_ell4d.y_offs << "\n"
-		<< "\tQz = " << m_ell4d.z_offs << "\n"
-		<< "\tE = " << m_ell4d.w_offs << "\n\n";
-	ostrElli << "Ellipsoid HWHMs (unsorted):\n"
-		<< "\t" << m_ell4d.x_hwhm << "\n"
-		<< "\t" << m_ell4d.y_hwhm << "\n"
-		<< "\t" << m_ell4d.z_hwhm << "\n"
-		<< "\t" << m_ell4d.w_hwhm << "\n\n";
+	ostrElli << "<html><body>\n";
 
-	labelElli->setText(QString::fromUtf8(ostrElli.str().c_str()));
+	ostrElli << "<p><b>Ellipsoid volume:</b> " << m_ell4d.vol << "</p>\n\n";
+
+	ostrElli << "<p><b>Ellipsoid offsets:</b>\n"
+		<< "\t<ul><li>Qx = " << m_ell4d.x_offs << "</li>\n"
+		<< "\t<li>Qy = " << m_ell4d.y_offs << "</li>\n"
+		<< "\t<li>Qz = " << m_ell4d.z_offs << "</li>\n"
+		<< "\t<li>E = " << m_ell4d.w_offs << "</li></ul></p>\n\n";
+
+	ostrElli << "<p><b>Ellipsoid HWHMs (unsorted):</b>\n"
+		<< "\t<ul><li>" << m_ell4d.x_hwhm << "</li>\n"
+		<< "\t<li>" << m_ell4d.y_hwhm << "</li>\n"
+		<< "\t<li>" << m_ell4d.z_hwhm << "</li>\n"
+		<< "\t<li>" << m_ell4d.w_hwhm << "</li></ul></p>\n\n";
+
+	ostrElli << "</body></html>\n";
+
+	editElli->setHtml(QString::fromUtf8(ostrElli.str().c_str()));
 }
 
 
