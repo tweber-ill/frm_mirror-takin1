@@ -258,12 +258,14 @@ bool run_job(const std::string& strJob)
 		return 0;
 	}
 
+	tl::log_info("Performing fit.");
 	minuit::FunctionMinimum mini = (*pmini)(iMaxFuncCalls, dTolerance);
 	const minuit::MnUserParameterState& state = mini.UserState();
 	bool bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();
 	mod.SetMinuitParams(state);
 
 
+	tl::log_info("Saving results.");
 	std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax
 		= std::minmax_element(sc.vecX.begin(), sc.vecX.end());
 	mod.Save(strModOutFile.c_str(), *xminmax.first, *xminmax.second, 256);
