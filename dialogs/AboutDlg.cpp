@@ -35,7 +35,7 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 
 	labelVersion->setText("Version " TAKIN_VER);
 	labelWritten->setText("Written by Tobias Weber");
-	labelYears->setText("2014 - 2015");
+	labelYears->setText("2014 - 2016");
 
 	labelCC->setText(QString("Built with ") + QString(BOOST_COMPILER));
 	labelBuildDate->setText(QString("Build date: ") +
