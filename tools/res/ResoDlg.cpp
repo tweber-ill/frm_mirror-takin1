@@ -390,7 +390,7 @@ void ResoDlg::Calc()
 		ostrRes << "<p><b>Correction Factors:</b>\n";
 		ostrRes << "\t<ul><li>Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "</li>\n";
 		ostrRes << "\t<li>R0: " << res.dR0 << "</li></ul></p>\n\n";
-		
+
 		ostrRes << "<p><b>Bragg FWHMs:</b>\n";
 		ostrRes << "\t<ul><li>Q_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "</li>\n";
 		ostrRes << "\t<li>Q_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "</li>\n";
@@ -421,11 +421,10 @@ void ResoDlg::Calc()
 		// check against ELASTIC approximation for perp. slope from Shirane p. 268
 		// valid for small mosaicities
 		double dEoverQperp = tl::co::hbar*tl::co::hbar*cn.ki / tl::co::m_n
-								* units::cos(cn.twotheta/2.)
-								* (1. + units::tan(units::abs(cn.twotheta/2.))
-									* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam))
-								  )
-								/ tl::meV / tl::angstrom;
+			* units::cos(cn.twotheta/2.)
+			* (1. + units::tan(units::abs(cn.twotheta/2.))
+			* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam)))
+				/ tl::meV / tl::angstrom;
 
 		tl::log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
 		tl::log_info("E/Q_perp (2nd approximation for ki=kf) = ", double(4.*cn.ki * tl::angstrom), " meV*A");
@@ -714,6 +713,8 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 void ResoDlg::ResoParamsChanged(const ResoParams& params)
 {
+	//tl::log_debug("reso params changed");
+
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
@@ -730,7 +731,7 @@ void ResoDlg::ResoParamsChanged(const ResoParams& params)
 
 void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 {
-	//std::cout << "recip params changed" << std::endl;
+	//tl::log_debug("recip params changed");
 
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
@@ -774,12 +775,13 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	editKf->setText(std::to_string(parms.dkf).c_str());
 
 	m_bDontCalc = bOldDontCalc;
-	Calc();
+	if(m_bUpdateOnRecipEvent)
+		Calc();
 }
 
 void ResoDlg::RealParamsChanged(const RealParams& parms)
 {
-	//std::cout << "real params changed" << std::endl;
+	//tl::log_debug("real params changed");
 
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
@@ -794,13 +796,16 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	//std::cout << parms.dSampleTT/M_PI*180. << std::endl;
 
 	m_bDontCalc = bOldDontCalc;
-	Calc();
+	if(m_bUpdateOnRealEvent)
+		Calc();
 }
 
 void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 {
+	//tl::log_debug("sample params changed");
+
 	tl::Lattice<double> lattice(parms.dLattice[0],parms.dLattice[1],parms.dLattice[2],
-				parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
+		parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
 
 	m_vecOrient1 = tl::make_vec<ublas::vector<double>>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
 	m_vecOrient2 = tl::make_vec<ublas::vector<double>>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});

@@ -268,10 +268,12 @@ class ScatteringTriangleScene : public QGraphicsScene
 			bool bHasNearest,
 			double dNearestH, double dNearestK, double dNearestL);
 
+		void nodeEvent(bool bStarted);
+
 	protected:
 		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt) override;
-		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt) override;
 		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt) override;
+		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt) override;
 
 		virtual void keyPressEvent(QKeyEvent *pEvt) override;
 		virtual void keyReleaseEvent(QKeyEvent *pEvt) override;

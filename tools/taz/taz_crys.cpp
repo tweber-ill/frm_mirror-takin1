@@ -432,13 +432,13 @@ void TazDlg::InitReso()
 		m_pReso = new ResoDlg(this, &m_settings);
 
 		QObject::connect(this, SIGNAL(ResoParamsChanged(const ResoParams&)),
-						m_pReso, SLOT(ResoParamsChanged(const ResoParams&)));
+			m_pReso, SLOT(ResoParamsChanged(const ResoParams&)));
 		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-						m_pReso, SLOT(RecipParamsChanged(const RecipParams&)));
+			m_pReso, SLOT(RecipParamsChanged(const RecipParams&)));
 		QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
-						m_pReso, SLOT(RealParamsChanged(const RealParams&)));
+			m_pReso, SLOT(RealParamsChanged(const RealParams&)));
 		QObject::connect(this, SIGNAL(SampleParamsChanged(const SampleParams&)),
-						m_pReso, SLOT(SampleParamsChanged(const SampleParams&)));
+			m_pReso, SLOT(SampleParamsChanged(const SampleParams&)));
 
 		UpdateDs();
 		UpdateMonoSense();

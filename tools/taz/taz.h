@@ -239,8 +239,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowSpurions();
 		void spurionInfo(const tl::ElasticSpurion& spuris,
-				const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
-				const std::vector<tl::InelasticSpurion<double>>& vecInelCKF);
+			const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
+			const std::vector<tl::InelasticSpurion<double>>& vecInelCKF);
 		void recipParamsChanged(const RecipParams&);
 
 		void ShowConnectDlg();
@@ -259,8 +259,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 			bool bHasNearest, double dNearestH, double dNearestK, double dNearestL);
 		void RealCoordsChanged(double dh, double dk, double dl,
 			bool bHasNearest, double dNearestH, double dNearestK, double dNearestL);
-			
+
 		void SettingsChanged();
+
+		void RecipNodeEvent(bool bStarted);
+		void RealNodeEvent(bool bStarted);
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

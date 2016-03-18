@@ -128,6 +128,11 @@ class TasLayoutScene : public QGraphicsScene
 
 		bool m_bDontEmitChange = 1;
 
+	protected:
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt) override;
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt) override;
+
+
 	public:
 		TasLayoutScene();
 		virtual ~TasLayoutScene();
@@ -150,6 +155,8 @@ class TasLayoutScene : public QGraphicsScene
 		void tasChanged(const TriangleOptions& opts);
 		// all parameters
 		void paramsChanged(const RealParams& parms);
+
+		void nodeEvent(bool bStarted);
 };
 
 

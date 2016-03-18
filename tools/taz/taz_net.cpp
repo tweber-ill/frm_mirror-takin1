@@ -48,18 +48,18 @@ void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPor
 
 
 	QObject::connect(m_pNetCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
-					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
+		this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
 	QObject::connect(m_pNetCache, SIGNAL(connected(const QString&, const QString&)),
-					this, SLOT(Connected(const QString&, const QString&)));
+		this, SLOT(Connected(const QString&, const QString&)));
 	QObject::connect(m_pNetCache, SIGNAL(disconnected()),
-					this, SLOT(Disconnected()));
+		this, SLOT(Disconnected()));
 
 	if(!m_pNetCacheDlg)
 		m_pNetCacheDlg = new NetCacheDlg(this, &m_settings);
 
 	m_pNetCacheDlg->ClearAll();
 	QObject::connect(m_pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
-					m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
+		m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
 
 	m_pNetCache->connect(strHost, strPort, strUser, strPass);
 }
@@ -71,15 +71,15 @@ void TazDlg::Disconnect()
 		m_pNetCache->disconnect();
 
 		QObject::disconnect(m_pNetCache, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
-						this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
+			this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
 		QObject::disconnect(m_pNetCache, SIGNAL(connected(const QString&, const QString&)),
-						this, SLOT(Connected(const QString&, const QString&)));
+			this, SLOT(Connected(const QString&, const QString&)));
 		QObject::disconnect(m_pNetCache, SIGNAL(disconnected()),
-						this, SLOT(Disconnected()));
+			this, SLOT(Disconnected()));
 
 		QObject::disconnect(m_pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
-						m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
-						
+			m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
+
 		delete m_pNetCache;
 		m_pNetCache = nullptr;
 	}

@@ -92,6 +92,8 @@ protected:
 	Ellipsoid4d m_ell4d;
 
 	QSettings* m_pSettings = 0;
+	bool m_bUpdateOnRealEvent = 1;
+	bool m_bUpdateOnRecipEvent = 1;
 
 public:
 	ResoDlg(QWidget* pParent, QSettings* pSettings=0);
@@ -127,6 +129,12 @@ public slots:
 public:
 	void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
 	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
+
+	void SetUpdateOn(bool bRealEvent, bool bRecipEvent)
+	{
+		m_bUpdateOnRealEvent = bRealEvent;
+		m_bUpdateOnRecipEvent = bRecipEvent;
+	}
 
 signals:
 	void ResoResults(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,

@@ -1456,6 +1456,14 @@ void ScatteringTriangleScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	m_bMousePressed = 1;
 	QGraphicsScene::mousePressEvent(pEvt);
+	emit nodeEvent(1);
+}
+
+void ScatteringTriangleScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
+{
+	m_bMousePressed = 0;
+	QGraphicsScene::mouseReleaseEvent(pEvt);
+	emit nodeEvent(0);
 }
 
 void ScatteringTriangleScene::setSnapq(bool bSnap)
@@ -1562,7 +1570,6 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 	bool bHandled = 0;
 	bool bAllowed = 1;
 
-
 	// tooltip
 	if(m_pTri)
 	{
@@ -1597,7 +1604,6 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 				pvecNearest?(*pvecNearest)[5]:0.);
 		}
 	}
-
 
 	// node dragging
 	if(m_bMousePressed)
@@ -1647,13 +1653,6 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 
 	if(!bHandled && bAllowed)
 		QGraphicsScene::mouseMoveEvent(pEvt);
-}
-
-void ScatteringTriangleScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
-{
-	m_bMousePressed = 0;
-
-	QGraphicsScene::mouseReleaseEvent(pEvt);
 }
 
 void ScatteringTriangleScene::keyPressEvent(QKeyEvent *pEvt)

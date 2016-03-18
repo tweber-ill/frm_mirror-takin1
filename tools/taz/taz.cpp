@@ -33,15 +33,14 @@ const std::string TazDlg::s_strTitle = "Takin";
 
 
 TazDlg::TazDlg(QWidget* pParent)
-		: QMainWindow(pParent),
-		  m_settings("tobis_stuff", "takin"),
-		  m_pSettingsDlg(new SettingsDlg(this, &m_settings)),
-		  m_pStatusMsg(new QLabel(this)),
-		  m_pCoordQStatusMsg(new QLabel(this)),
-		  m_pCoordCursorStatusMsg(new QLabel(this)),
-		  m_dlgRecipParam(this, &m_settings),
-		  m_dlgRealParam(this, &m_settings),
-		  m_pGotoDlg(new GotoDlg(this, &m_settings))
+	: QMainWindow(pParent), m_settings("tobis_stuff", "takin"),
+		m_pSettingsDlg(new SettingsDlg(this, &m_settings)),
+		m_pStatusMsg(new QLabel(this)),
+		m_pCoordQStatusMsg(new QLabel(this)),
+		m_pCoordCursorStatusMsg(new QLabel(this)),
+		m_dlgRecipParam(this, &m_settings),
+		m_dlgRealParam(this, &m_settings),
+		m_pGotoDlg(new GotoDlg(this, &m_settings))
 {
 	//log_debug("In ", __func__, ".");
 
@@ -160,41 +159,44 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(m_pSettingsDlg, SIGNAL(SettingsChanged()), this, SLOT(SettingsChanged()));
 
+	QObject::connect(&m_sceneReal, SIGNAL(nodeEvent(bool)), this, SLOT(RealNodeEvent(bool)));
+	QObject::connect(&m_sceneRecip, SIGNAL(nodeEvent(bool)), this, SLOT(RecipNodeEvent(bool)));
+
 	QObject::connect(&m_sceneRecip, SIGNAL(triangleChanged(const TriangleOptions&)),
-					&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));
+		&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));
 	QObject::connect(&m_sceneReal, SIGNAL(tasChanged(const TriangleOptions&)),
-					&m_sceneRecip, SLOT(tasChanged(const TriangleOptions&)));
+		&m_sceneRecip, SLOT(tasChanged(const TriangleOptions&)));
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-					&m_sceneReal, SLOT(recipParamsChanged(const RecipParams&)));
+		&m_sceneReal, SLOT(recipParamsChanged(const RecipParams&)));
 
 	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(double)),
-					&m_sceneRecip, SLOT(scaleChanged(double)));
+		&m_sceneRecip, SLOT(scaleChanged(double)));
 	QObject::connect(m_pviewRealLattice, SIGNAL(scaleChanged(double)),
-					&m_sceneRealLattice, SLOT(scaleChanged(double)));
+		&m_sceneRealLattice, SLOT(scaleChanged(double)));
 	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(double)),
-					&m_sceneReal, SLOT(scaleChanged(double)));
+		&m_sceneReal, SLOT(scaleChanged(double)));
 
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-					&m_dlgRecipParam, SLOT(paramsChanged(const RecipParams&)));
+		&m_dlgRecipParam, SLOT(paramsChanged(const RecipParams&)));
 	QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
-					&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
+		&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
 
 	// cursor position
 	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(double, double, double, bool, double, double, double)),
-					this, SLOT(RecipCoordsChanged(double, double, double, bool, double, double, double)));
+		this, SLOT(RecipCoordsChanged(double, double, double, bool, double, double, double)));
 	QObject::connect(&m_sceneRealLattice, SIGNAL(coordsChanged(double, double, double, bool, double, double, double)),
-					this, SLOT(RealCoordsChanged(double, double, double, bool, double, double, double)));
+		this, SLOT(RealCoordsChanged(double, double, double, bool, double, double, double)));
 
 	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)),
-					this, SLOT(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)));
+		this, SLOT(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)));
 
 	QObject::connect(m_pGotoDlg, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
-					this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
+		this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-					m_pGotoDlg, SLOT(RecipParamsChanged(const RecipParams&)));
+		m_pGotoDlg, SLOT(RecipParamsChanged(const RecipParams&)));
 
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-					this, SLOT(recipParamsChanged(const RecipParams&)));
+		this, SLOT(recipParamsChanged(const RecipParams&)));
 
 
 	for(QLineEdit* pEdit : m_vecEdits_monoana)
@@ -774,7 +776,7 @@ void TazDlg::DeleteDialogs()
 void TazDlg::SettingsChanged()
 {
 	setFont(g_fontGen);
-	
+
 	m_sceneReal.update();
 	m_sceneRealLattice.update();
 	m_sceneRecip.update();
@@ -870,7 +872,7 @@ void TazDlg::ShowDynPlaneDlg()
 	{
 		m_pDynPlaneDlg = new DynPlaneDlg(this, &m_settings);
 		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
-						m_pDynPlaneDlg, SLOT(RecipParamsChanged(const RecipParams&)));
+			m_pDynPlaneDlg, SLOT(RecipParamsChanged(const RecipParams&)));
 		m_sceneRecip.emitAllParams();
 	}
 
@@ -953,6 +955,51 @@ void TazDlg::UpdateAnaSense()
 	params.bScatterSenses[2] = bSense;
 	emit ResoParamsChanged(params);
 }
+
+
+void TazDlg::RecipNodeEvent(bool bStarted)
+{
+	//tl::log_info("recip node movement: ", bStarted);
+
+	if(m_pNetCache)
+	{
+		Disconnect();
+		QMessageBox::warning(this, "Warning",
+			"Disconnected the network because the reciprocal space view was manually edited.");
+	}
+
+	// optimises reso dialog update policy
+	if(m_pReso)
+	{
+		if(bStarted)
+			m_pReso->SetUpdateOn(0, 1);
+		else
+			m_pReso->SetUpdateOn(1, 1);
+	}
+}
+
+void TazDlg::RealNodeEvent(bool bStarted)
+{
+	//tl::log_info("real node movement: ", bStarted);
+
+	if(m_pNetCache)
+	{
+		Disconnect();
+		QMessageBox::warning(this, "Warning",
+			"Disconnected the network because the real space view was manually edited.");
+	}
+
+	// optimises reso dialog update policy
+	if(m_pReso)
+	{
+		if(bStarted)
+			m_pReso->SetUpdateOn(1, 0);
+		else
+			m_pReso->SetUpdateOn(1, 1);
+	}
+}
+
+
 
 #if !defined NO_3D
 void TazDlg::Show3D()
@@ -1072,7 +1119,6 @@ void TazDlg::ShowRealParams()
 	m_dlgRealParam.show();
 	m_dlgRealParam.activateWindow();
 }
-
 
 
 

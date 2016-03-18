@@ -106,6 +106,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	bAllowUpdate = 0;
 	if(pNode==m_pSample)
 	{
+		//tl::log_debug("Sample node moved.");
+
 		double dTwoTheta = m_dTwoTheta;
 		double dAnaTwoTheta = m_dAnaTwoTheta;
 
@@ -155,6 +157,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	}
 	else if(pNode==m_pMono)
 	{
+		//tl::log_debug("Mono node moved.");
+
 		ublas::vector<double> vecSrcMono = vecMono-vecSrc;
 		vecSrcMono /= ublas::norm_2(vecSrcMono);
 
@@ -183,6 +187,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	}
 	else if(pNode==m_pDet)
 	{
+		//tl::log_debug("Det node moved.");
+
 		ublas::vector<double> vecSampleAna = vecAna - vecSample;
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 
@@ -208,6 +214,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 
 	if(/*pNode==m_pMono ||*/ pNode==m_pAna)
 	{
+		//tl::log_debug("Ana node moved.");
+
 		ublas::vector<double> vecSampleAna = vecAna-vecSample;
 		if(pNode==m_pAna && m_bAllowChanges)
 			m_dLenSampleAna = ublas::norm_2(vecSampleAna)/m_dScaleFactor;
@@ -251,7 +259,7 @@ QRectF TasLayout::boundingRect() const
 void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	painter->setFont(g_fontGfx);
-	
+
 	const bool bDisplayLengths = 0;
 
 	QPointF ptSrc = mapFromItem(m_pSrc, 0, 0) * m_dZoom;
@@ -600,6 +608,18 @@ void TasLayoutScene::scaleChanged(double dTotalScale)
 		return;
 
 	m_pTas->SetZoom(dTotalScale);
+}
+
+void TasLayoutScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
+{
+	QGraphicsScene::mousePressEvent(pEvt);
+	emit nodeEvent(1);
+}
+
+void TasLayoutScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
+{
+	QGraphicsScene::mouseReleaseEvent(pEvt);
+	emit nodeEvent(0);
 }
 
 
