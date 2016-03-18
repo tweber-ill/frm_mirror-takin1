@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>TAS Resolution</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="margin">
     <number>8</number>

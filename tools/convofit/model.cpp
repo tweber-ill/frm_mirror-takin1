@@ -114,6 +114,36 @@ void SqwFuncModel::SetModelParams()
 
 bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
 {
+	// --------------------------------------------------------------------
+	// prints changed model parameters
+	std::vector<double> vecOldParams = {m_dScale, m_dOffs};
+	vecOldParams.insert(vecOldParams.end(), m_vecModelParams.begin(), m_vecModelParams.end());
+	std::vector<std::string> vecParamNames = GetParamNames();
+	if(vecOldParams.size()==vecParams.size() && vecParamNames.size()==vecParams.size())
+	{
+		std::ostringstream ostrDebug;
+		std::transform(vecParams.begin(), vecParams.end(), vecParamNames.begin(),
+			std::ostream_iterator<std::string>(ostrDebug, ", "),
+			[&vecOldParams, &vecParamNames](double dVal, const std::string& strParam) -> std::string
+			{
+				std::vector<std::string>::const_iterator iterParam =
+					std::find(vecParamNames.begin(), vecParamNames.end(), strParam);
+				if(iterParam == vecParamNames.end())
+					return "";
+				double dOldParam = vecOldParams[iterParam-vecParamNames.begin()];
+
+				bool bChanged = !tl::float_equal(dVal, dOldParam);
+				std::string strRet = strParam +
+					std::string(" = ") +
+					tl::var_to_str(dVal);
+				if(bChanged)
+					strRet += " (old: " + tl::var_to_str(dOldParam) + ")";
+				return strRet;
+			});
+		tl::log_debug("Changed model parameters: ", ostrDebug.str());
+	}
+	// --------------------------------------------------------------------
+
 	m_dScale = vecParams[0];
 	m_dOffs = vecParams[1];
 

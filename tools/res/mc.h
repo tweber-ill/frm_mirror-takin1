@@ -33,7 +33,7 @@ template<class t_mat = ublas::matrix<double>>
 struct McNeutronOpts
 {
 	using real_type = typename t_mat::value_type;
-	
+
 	McNeutronCoords coords = McNeutronCoords::RLU;
 	t_mat matU, matB, matUB;
 	t_mat matUinv, matBinv, matUBinv;

@@ -84,11 +84,11 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 ConvoDlg::~ConvoDlg()
 {
 	if(m_pth)
-	{ 
-		if(m_pth->joinable()) 
-			m_pth->join(); 
-		delete m_pth; 
-		m_pth = nullptr; 
+	{
+		if(m_pth->joinable())
+			m_pth->join();
+		delete m_pth;
+		m_pth = nullptr;
 	}
 
 	if(m_pSqw)
@@ -110,7 +110,7 @@ void ConvoDlg::SaveResult()
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
 	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
 		fileopt = QFileDialog::DontUseNativeDialog;
-	
+
 	QString strDirLast = ".";
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_result", ".").toString();
@@ -494,7 +494,7 @@ void ConvoDlg::browseCrysFiles()
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
 	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
 		fileopt = QFileDialog::DontUseNativeDialog;
-	
+
 	QString strDirLast = ".";
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_crys", ".").toString();
@@ -516,7 +516,7 @@ void ConvoDlg::browseResoFiles()
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
 	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
 		fileopt = QFileDialog::DontUseNativeDialog;
-	
+
 	QString strDirLast = ".";
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_reso", ".").toString();
@@ -538,7 +538,7 @@ void ConvoDlg::browseSqwFiles()
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
 	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
 		fileopt = QFileDialog::DontUseNativeDialog;
-	
+
 	QString strDirLast = ".";
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_sqw", ".").toString();
