@@ -241,6 +241,8 @@ bool run_job(const std::string& strJob)
 		params.SetError(strParam, dErr);
 		if(bFix) params.Fix(strParam);
 	}
+	// set initials
+	mod.SetMinuitParams(params);
 
 
 	minuit::MnStrategy strat(iStrat);

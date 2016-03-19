@@ -82,12 +82,12 @@ public:
 		m_vecModelParamNames.push_back(strName);
 		m_vecModelParams.push_back(dInitValue);
 		m_vecModelErrs.push_back(dErr);
-
-		SetModelParams();
 	}
 
 	minuit::MnUserParameters GetMinuitParams() const;
-	void SetMinuitParams(const minuit::MnUserParameterState& state);
+	void SetMinuitParams(const minuit::MnUserParameters& params);
+	void SetMinuitParams(const minuit::MnUserParameterState& state)
+	{ SetMinuitParams(state.Parameters()); }
 
 	bool Save(const char *pcFile, double dXMin, double dXMax, std::size_t) const;
 

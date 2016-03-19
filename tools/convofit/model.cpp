@@ -202,7 +202,7 @@ std::vector<double> SqwFuncModel::GetParamErrors() const
 	return vecErrs;
 }
 
-void SqwFuncModel::SetMinuitParams(const minuit::MnUserParameterState& state)
+void SqwFuncModel::SetMinuitParams(const minuit::MnUserParameters& state)
 {
 	std::vector<double> vecNewVals;
 	std::vector<double> vecNewErrs;
