@@ -10,6 +10,7 @@
 #include "tlibs/log/log.h"
 #include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
+#include "dialogs/AboutDlg.h"
 #include "helper/globals.h"
 #include "helper/spacegroup.h"
 
@@ -31,7 +32,7 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		tl::log_info("Starting up Takin.");
+		tl::log_info("Starting up Takin version ", TAKIN_VER, ".");
 
 		#if defined Q_WS_X11 && !defined NO_3D
 			XInitThreads();

@@ -69,12 +69,14 @@ bool run_job(const std::string& strJob)
 	int iStrat = prop.Query<int>("fitter/strategy", 0);
 	double dSigma = prop.Query<double>("fitter/sigma", 1.);
 
+	bool bDoFit = prop.Query<bool>("fitter/do_fit", 1);
 	unsigned int iMaxFuncCalls = prop.Query<unsigned>("fitter/max_funccalls", 0);
 	double dTolerance = prop.Query<double>("fitter/tolerance", 0.5);
 
 	std::string strScOutFile = prop.Query<std::string>("output/scan_file");
 	std::string strModOutFile = prop.Query<std::string>("output/model_file");
 	bool bPlot = prop.Query<bool>("output/plot", 0);
+	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot-points", 128);
 
 	if(strScOutFile=="" || strModOutFile=="")
 	{
@@ -258,23 +260,30 @@ bool run_job(const std::string& strJob)
 		return 0;
 	}
 
-	tl::log_info("Performing fit.");
-	minuit::FunctionMinimum mini = (*pmini)(iMaxFuncCalls, dTolerance);
-	const minuit::MnUserParameterState& state = mini.UserState();
-	bool bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();
-	mod.SetMinuitParams(state);
+	bool bValidFit = 0;
+	if(bDoFit)
+	{
+		tl::log_info("Performing fit.");
+		minuit::FunctionMinimum mini = (*pmini)(iMaxFuncCalls, dTolerance);
+		const minuit::MnUserParameterState& state = mini.UserState();
+		bValidFit = mini.IsValid() && mini.HasValidParameters() && state.IsValid();
+		mod.SetMinuitParams(state);
+
+		std::ostringstream ostrMini;
+		ostrMini << mini << "\n";
+		tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
+	}
+	else
+	{
+		tl::log_info("Skipping fit, keeping initial values.");
+	}
 
 
 	tl::log_info("Saving results.");
 	std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax
 		= std::minmax_element(sc.vecX.begin(), sc.vecX.end());
-	mod.Save(strModOutFile.c_str(), *xminmax.first, *xminmax.second, 256);
+	mod.Save(strModOutFile.c_str(), *xminmax.first, *xminmax.second, iPlotPoints);
 	save_file(strScOutFile.c_str(), sc);
-
-
-	std::ostringstream ostrMini;
-	ostrMini << mini << "\n";
-	tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
 
 
 	// --------------------------------------------------------------------

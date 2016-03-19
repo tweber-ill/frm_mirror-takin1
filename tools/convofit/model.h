@@ -82,6 +82,8 @@ public:
 		m_vecModelParamNames.push_back(strName);
 		m_vecModelParams.push_back(dInitValue);
 		m_vecModelErrs.push_back(dErr);
+
+		SetModelParams();
 	}
 
 	minuit::MnUserParameters GetMinuitParams() const;
