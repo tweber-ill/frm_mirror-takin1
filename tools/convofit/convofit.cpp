@@ -75,6 +75,7 @@ bool run_job(const std::string& strJob)
 
 	std::string strScOutFile = prop.Query<std::string>("output/scan_file");
 	std::string strModOutFile = prop.Query<std::string>("output/model_file");
+	std::string strLogOutFile = prop.Query<std::string>("output/log_file");
 	bool bPlot = prop.Query<bool>("output/plot", 0);
 	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot-points", 128);
 
@@ -274,6 +275,12 @@ bool run_job(const std::string& strJob)
 		std::ostringstream ostrMini;
 		ostrMini << mini << "\n";
 		tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
+
+		if(strLogOutFile != "")
+		{
+			std::ofstream ofstrLog(strLogOutFile);
+			ofstrLog << ostrMini.str();
+		}
 	}
 	else
 	{
