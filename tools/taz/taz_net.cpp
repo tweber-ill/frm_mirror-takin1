@@ -61,6 +61,10 @@ void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPor
 	QObject::connect(m_pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
 		m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
 
+	// no manual node movement
+	if(m_sceneReal.GetTasLayout()) m_sceneReal.GetTasLayout()->AllowMouseMove(0);
+	if(m_sceneRecip.GetTriangle()) m_sceneRecip.GetTriangle()->AllowMouseMove(0);
+
 	m_pNetCache->connect(strHost, strPort, strUser, strPass);
 }
 
@@ -83,6 +87,10 @@ void TazDlg::Disconnect()
 		delete m_pNetCache;
 		m_pNetCache = nullptr;
 	}
+
+	// re-enable manual node movement
+	if(m_sceneReal.GetTasLayout()) m_sceneReal.GetTasLayout()->AllowMouseMove(1);
+	if(m_sceneRecip.GetTriangle()) m_sceneRecip.GetTriangle()->AllowMouseMove(1);
 
 	statusBar()->showMessage("Disconnected.", DEFAULT_MSG_TIMEOUT);
 }

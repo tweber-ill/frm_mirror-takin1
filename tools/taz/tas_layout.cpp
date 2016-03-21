@@ -63,11 +63,7 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene)
 	m_pAna->setPos(-m_dLenSampleAna*m_dScaleFactor, 0.);
 	m_pDet->setPos(-100., -m_dLenAnaDet*m_dScaleFactor);
 
-	//m_pSrc->setFlag(QGraphicsItem::ItemIsMovable);
-	m_pMono->setFlag(QGraphicsItem::ItemIsMovable);
-	m_pSample->setFlag(QGraphicsItem::ItemIsMovable);
-	m_pAna->setFlag(QGraphicsItem::ItemIsMovable);
-	m_pDet->setFlag(QGraphicsItem::ItemIsMovable);
+	AllowMouseMove(1);
 
 	scene.addItem(m_pSrc);
 	scene.addItem(m_pMono);
@@ -88,6 +84,15 @@ TasLayout::~TasLayout()
 	delete m_pSample;
 	delete m_pAna;
 	delete m_pDet;
+}
+
+void TasLayout::AllowMouseMove(bool bAllow)
+{
+	//m_pSrc->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
+	m_pMono->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
+	m_pSample->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
+	m_pAna->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
+	m_pDet->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
 }
 
 void TasLayout::nodeMoved(const TasLayoutNode *pNode)

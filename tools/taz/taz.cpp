@@ -961,13 +961,6 @@ void TazDlg::RecipNodeEvent(bool bStarted)
 {
 	//tl::log_info("recip node movement: ", bStarted);
 
-	if(m_pNetCache)
-	{
-		Disconnect();
-		QMessageBox::warning(this, "Warning",
-			"Disconnected the network because the reciprocal space view was manually edited.");
-	}
-
 	// optimises reso dialog update policy
 	if(m_pReso)
 	{
@@ -981,13 +974,6 @@ void TazDlg::RecipNodeEvent(bool bStarted)
 void TazDlg::RealNodeEvent(bool bStarted)
 {
 	//tl::log_info("real node movement: ", bStarted);
-
-	if(m_pNetCache)
-	{
-		Disconnect();
-		QMessageBox::warning(this, "Warning",
-			"Disconnected the network because the real space view was manually edited.");
-	}
 
 	// optimises reso dialog update policy
 	if(m_pReso)

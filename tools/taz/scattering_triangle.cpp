@@ -118,9 +118,7 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_pNodeKfQ->setData(TRIANGLE_NODE_TYPE_KEY, NODE_Q);
 	m_pNodeGq->setData(TRIANGLE_NODE_TYPE_KEY, NODE_q);
 
-	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIsMovable);
-	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable);
-	m_pNodeGq->setFlag(QGraphicsItem::ItemIsMovable);
+	AllowMouseMove(1);
 
 	m_pNodeKiQ->setPos(0., 0.);
 	m_pNodeKiKf->setPos(80., -150.);
@@ -146,6 +144,13 @@ ScatteringTriangle::~ScatteringTriangle()
 	delete m_pNodeGq;
 
 	ClearPeaks();
+}
+
+void ScatteringTriangle::AllowMouseMove(bool bAllow)
+{
+	m_pNodeKiKf->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
+	m_pNodeKfQ->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
+	m_pNodeGq->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
 }
 
 void ScatteringTriangle::nodeMoved(const ScatteringTriangleNode* pNode)

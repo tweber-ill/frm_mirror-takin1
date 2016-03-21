@@ -47,7 +47,6 @@ class TasLayout : public QGraphicsItem
 {
 	protected:
 		bool m_bReady = 0;
-
 		TasLayoutScene& m_scene;
 
 		TasLayoutNode *m_pSrc = 0;
@@ -105,6 +104,7 @@ class TasLayout : public QGraphicsItem
 		void nodeMoved(const TasLayoutNode* pNode=0);
 
 		void AllowChanges(bool bAllow) { m_bAllowChanges = bAllow; };
+		void AllowMouseMove(bool bAllow);
 
 		void SetZoom(double dZoom);
 		double GetZoom() const { return m_dZoom; }
@@ -125,7 +125,6 @@ class TasLayoutScene : public QGraphicsScene
 {	Q_OBJECT
 	protected:
 		TasLayout *m_pTas;
-
 		bool m_bDontEmitChange = 1;
 
 	protected:
