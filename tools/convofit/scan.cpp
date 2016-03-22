@@ -7,7 +7,6 @@
 
 #include "scan.h"
 #include "tlibs/log/log.h"
-#include "tlibs/file/loadinstr.h"
 
 #include <fstream>
 
@@ -60,7 +59,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	if(!vecFiles.size()) return 0;
 	tl::log_info("Loading \"", vecFiles[0], "\".");
 
-	std::unique_ptr<tl::FileInstr> pInstr(tl::FileInstr::LoadInstr(vecFiles[0].c_str()));
+	std::unique_ptr<tl::FileInstrBase<t_real_sc>> pInstr(tl::FileInstrBase<t_real_sc>::LoadInstr(vecFiles[0].c_str()));
 	if(!pInstr)
 	{
 		tl::log_err("Cannot load \"", vecFiles[0], "\".");
@@ -70,7 +69,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	for(std::size_t iFile=1; iFile<vecFiles.size(); ++iFile)
 	{
 		tl::log_info("Loading \"", vecFiles[iFile], "\" for merging.");
-		std::unique_ptr<tl::FileInstr> pInstrM(tl::FileInstr::LoadInstr(vecFiles[iFile].c_str()));
+		std::unique_ptr<tl::FileInstrBase<t_real_sc>> pInstrM(tl::FileInstrBase<t_real_sc>::LoadInstr(vecFiles[iFile].c_str()));
 		if(!pInstrM)
 		{
 			tl::log_err("Cannot load \"", vecFiles[iFile], "\".");
@@ -90,7 +89,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	scan.vecCts = pInstr->GetCol(strCountVar);
 	scan.vecMon = pInstr->GetCol(strMonVar);
 
-	std::function<double(double)> funcErr = [](double d) -> double 
+	std::function<t_real_sc(t_real_sc)> funcErr = [](t_real_sc d) -> t_real_sc
 	{
 		//if(tl::float_equal(d, 0.))	// error 0 causes problems with minuit
 		//	return d/100.;
@@ -103,18 +102,18 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	{
 		for(std::size_t iPos=0; iPos<scan.vecCts.size(); ++iPos)
 		{
-			double y = scan.vecCts[iPos];
-			double dy = scan.vecCtsErr[iPos];
-			double m = scan.vecMon[iPos];
-			double dm  = scan.vecMonErr[iPos];
+			t_real_sc y = scan.vecCts[iPos];
+			t_real_sc dy = scan.vecCtsErr[iPos];
+			t_real_sc m = scan.vecMon[iPos];
+			t_real_sc dm  = scan.vecMonErr[iPos];
 
 			scan.vecCts[iPos] /= m;
 			scan.vecCtsErr[iPos] = std::sqrt(dy/m * dy/m  +  y*dm/(m*m) * y*dm/(m*m));
 		}
 	}
 
-	const std::array<double, 3> latt = pInstr->GetSampleLattice();
-	const std::array<double, 3> ang = pInstr->GetSampleAngles();
+	const std::array<t_real_sc, 3> latt = pInstr->GetSampleLattice();
+	const std::array<t_real_sc, 3> ang = pInstr->GetSampleAngles();
 
 	scan.sample.a = latt[0]; scan.sample.b = latt[1]; scan.sample.c = latt[2];
 	scan.sample.alpha = ang[0]; scan.sample.beta = ang[1]; scan.sample.gamma = ang[2];
@@ -123,8 +122,8 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	tl::log_info("Sample angles: ", tl::r2d(scan.sample.alpha), " ", tl::r2d(scan.sample.beta), " ", tl::r2d(scan.sample.gamma));
 
 
-	const std::array<double, 3> vec1 = pInstr->GetScatterPlane0();
-	const std::array<double, 3> vec2 = pInstr->GetScatterPlane1();
+	const std::array<t_real_sc, 3> vec1 = pInstr->GetScatterPlane0();
+	const std::array<t_real_sc, 3> vec2 = pInstr->GetScatterPlane1();
 	scan.plane.vec1[0] = vec1[0]; scan.plane.vec1[1] = vec1[1]; scan.plane.vec1[2] = vec1[2];
 	scan.plane.vec2[0] = vec2[0]; scan.plane.vec2[1] = vec2[1]; scan.plane.vec2[2] = vec2[2];
 
@@ -140,7 +139,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 		tl::log_info("kf = ", scan.dKFix);
 
 
-	const tl::FileInstr::t_vecVals& vecTemp = pInstr->GetCol(scan.strTempCol);
+	const tl::FileInstrBase<t_real_sc>::t_vecVals& vecTemp = pInstr->GetCol(scan.strTempCol);
 	if(vecTemp.size() == 0)
 	{
 		tl::log_warn("Sample temperature column \"", scan.strTempCol, "\" not found.");
@@ -153,7 +152,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 		tl::log_info("Sample temperature: ", scan.dTemp, " +- ", scan.dTempErr);
 	}
 
-	const tl::FileInstr::t_vecVals& vecField = pInstr->GetCol(scan.strFieldCol);
+	const tl::FileInstrBase<t_real_sc>::t_vecVals& vecField = pInstr->GetCol(scan.strFieldCol);
 	if(vecField.size() == 0)
 	{
 		tl::log_warn("Sample field column \"", scan.strFieldCol, "\" not found.");
@@ -170,7 +169,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	const std::size_t iNumPts = pInstr->GetScanCount();
 	for(std::size_t iPt=0; iPt<iNumPts; ++iPt)
 	{
-		const std::array<double, 5> sc = pInstr->GetScanHKLKiKf(iPt);
+		const std::array<t_real_sc, 5> sc = pInstr->GetScanHKLKiKf(iPt);
 
 		ScanPoint pt;
 		pt.h = sc[0]; pt.k = sc[1]; pt.l = sc[2];
@@ -179,7 +178,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 		pt.E = pt.Ei-pt.Ef;
 
 		tl::log_info("Point ", iPt+1, ": ", "h=", pt.h, ", k=", pt.k, ", l=", pt.l,
-			", ki=", double(pt.ki*tl::angstrom), ", kf=", double(pt.kf*tl::angstrom),
+			", ki=", t_real_sc(pt.ki*tl::angstrom), ", kf=", t_real_sc(pt.kf*tl::angstrom),
 			", E=", pt.E/tl::meV/*, ", Q=", pt.Q*tl::angstrom*/,
 			", Cts=", scan.vecCts[iPt]/*, "+-", scan.vecCtsErr[iPt]*/,
 			", Mon=", scan.vecMon[iPt]/*, "+-", scan.vecMonErr[iPt]*/);
@@ -202,7 +201,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	scan.vecScanDir[2] = ptEnd.l - ptBegin.l;
 	scan.vecScanDir[3] = (ptEnd.E - ptBegin.E) / tl::meV;
 
-	const double dEps = 0.01;
+	const t_real_sc dEps = 0.01;
 
 	for(unsigned int i=0; i<4; ++i)
 	{
@@ -237,7 +236,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	{
 		const ScanPoint& pt = scan.vecPoints[iPt];
 
-		double dPos[] = { pt.h, pt.k, pt.l, pt.E/tl::meV };
+		t_real_sc dPos[] = { pt.h, pt.k, pt.l, pt.E/tl::meV };
 		scan.vecX.push_back(dPos[iScIdx]);
 		//tl::log_info("Added pos: ", *scan.vecX.rbegin());
 	}

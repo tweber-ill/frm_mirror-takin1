@@ -11,15 +11,17 @@
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
 
+using t_real = tl::t_real_min;
+
 
 SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const TASReso& reso)
 	: m_pSqw(pSqw), m_reso(reso)
 {}
 
-double SqwFuncModel::operator()(double x) const
+t_real SqwFuncModel::operator()(t_real x) const
 {
 	TASReso reso = m_reso;
-	const ublas::vector<double> vecScanPos = m_vecScanOrigin + x*m_vecScanDir;
+	const ublas::vector<t_real> vecScanPos = m_vecScanOrigin + x*m_vecScanDir;
 
 	if(!reso.SetHKLE(vecScanPos[0],vecScanPos[1],vecScanPos[2],vecScanPos[3]))
 	{
@@ -33,13 +35,13 @@ double SqwFuncModel::operator()(double x) const
 	}
 
 
-	std::vector<ublas::vector<double>> vecNeutrons;
+	std::vector<ublas::vector<t_real>> vecNeutrons;
 	Ellipsoid4d elli = reso.GenerateMC(m_iNumNeutrons, vecNeutrons);
 
-	double dS = 0.;
-	double dhklE_mean[4] = {0., 0., 0., 0.};
+	t_real dS = 0.;
+	t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
-	for(const ublas::vector<double>& vecHKLE : vecNeutrons)
+	for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 	{
 		dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
@@ -47,9 +49,9 @@ double SqwFuncModel::operator()(double x) const
 			dhklE_mean[i] += vecHKLE[i];
 	}
 
-	dS /= double(m_iNumNeutrons);
+	dS /= t_real(m_iNumNeutrons);
 	for(int i=0; i<4; ++i)
-		dhklE_mean[i] /= double(m_iNumNeutrons);
+		dhklE_mean[i] /= t_real(m_iNumNeutrons);
 
 	if(m_bUseR0)
 		dS *= reso.GetResoResults().dResVol;
@@ -88,7 +90,7 @@ void SqwFuncModel::SetOtherParamNames(std::string strTemp, std::string strField)
 	m_strFieldParamName = strField;
 }
 
-void SqwFuncModel::SetOtherParams(double dTemperature, double dField)
+void SqwFuncModel::SetOtherParams(t_real dTemperature, t_real dField)
 {
 	std::vector<SqwBase::t_var> vecVars;
 	if(m_strTempParamName != "")
@@ -114,11 +116,11 @@ void SqwFuncModel::SetModelParams()
 	m_pSqw->SetVars(vecVars);
 }
 
-bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
+bool SqwFuncModel::SetParams(const std::vector<t_real>& vecParams)
 {
 	// --------------------------------------------------------------------
 	// prints changed model parameters
-	std::vector<double> vecOldParams = {m_dScale, m_dOffs};
+	std::vector<t_real> vecOldParams = {m_dScale, m_dOffs};
 	vecOldParams.insert(vecOldParams.end(), m_vecModelParams.begin(), m_vecModelParams.end());
 	std::vector<std::string> vecParamNames = GetParamNames();
 	if(vecOldParams.size()==vecParams.size() && vecParamNames.size()==vecParams.size())
@@ -126,13 +128,13 @@ bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
 		std::ostringstream ostrDebug;
 		std::transform(vecParams.begin(), vecParams.end(), vecParamNames.begin(),
 			std::ostream_iterator<std::string>(ostrDebug, ", "),
-			[&vecOldParams, &vecParamNames](double dVal, const std::string& strParam) -> std::string
+			[&vecOldParams, &vecParamNames](t_real dVal, const std::string& strParam) -> std::string
 			{
 				std::vector<std::string>::const_iterator iterParam =
 					std::find(vecParamNames.begin(), vecParamNames.end(), strParam);
 				if(iterParam == vecParamNames.end())
 					return "";
-				double dOldParam = vecOldParams[iterParam-vecParamNames.begin()];
+				t_real dOldParam = vecOldParams[iterParam-vecParamNames.begin()];
 
 				bool bChanged = !tl::float_equal(dVal, dOldParam);
 				std::string strRet = strParam +
@@ -153,14 +155,14 @@ bool SqwFuncModel::SetParams(const std::vector<double>& vecParams)
 		m_vecModelParams[iParam-2] = vecParams[iParam];
 
 	//tl::log_debug("Params:");
-	//for(double d : vecParams)
+	//for(t_real d : vecParams)
 	//	tl::log_debug(d);
 
 	SetModelParams();
 	return true;
 }
 
-bool SqwFuncModel::SetErrs(const std::vector<double>& vecErrs)
+bool SqwFuncModel::SetErrs(const std::vector<t_real>& vecErrs)
 {
 	m_dScaleErr = vecErrs[0];
 	m_dOffsErr = vecErrs[1];
@@ -182,21 +184,21 @@ std::vector<std::string> SqwFuncModel::GetParamNames() const
 	return vecNames;
 }
 
-std::vector<double> SqwFuncModel::GetParamValues() const
+std::vector<t_real> SqwFuncModel::GetParamValues() const
 {
-	std::vector<double> vecVals = {m_dScale, m_dOffs};
+	std::vector<t_real> vecVals = {m_dScale, m_dOffs};
 
-	for(double d : m_vecModelParams)
+	for(t_real d : m_vecModelParams)
 		vecVals.push_back(d);
 
 	return vecVals;
 }
 
-std::vector<double> SqwFuncModel::GetParamErrors() const
+std::vector<t_real> SqwFuncModel::GetParamErrors() const
 {
-	std::vector<double> vecErrs = {m_dScaleErr, m_dOffsErr};
+	std::vector<t_real> vecErrs = {m_dScaleErr, m_dOffsErr};
 
-	for(double d : m_vecModelErrs)
+	for(t_real d : m_vecModelErrs)
 		vecErrs.push_back(d);
 
 	return vecErrs;
@@ -204,16 +206,16 @@ std::vector<double> SqwFuncModel::GetParamErrors() const
 
 void SqwFuncModel::SetMinuitParams(const minuit::MnUserParameters& state)
 {
-	std::vector<double> vecNewVals;
-	std::vector<double> vecNewErrs;
+	std::vector<t_real> vecNewVals;
+	std::vector<t_real> vecNewErrs;
 
 	const std::vector<std::string> vecNames = GetParamNames();
 	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
 	{
 		const std::string& strName = vecNames[iParam];
 
-		const double dVal = state.Value(strName);
-		const double dErr = state.Error(strName);
+		const t_real dVal = state.Value(strName);
+		const t_real dErr = state.Error(strName);
 
 		vecNewVals.push_back(dVal);
 		vecNewErrs.push_back(dErr);
@@ -233,8 +235,8 @@ minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
 	for(std::size_t iParam=0; iParam<m_vecModelParamNames.size(); ++iParam)
 	{
 		const std::string& strParam = m_vecModelParamNames[iParam];
-		double dHint = m_vecModelParams[iParam];
-		double dErr = m_vecModelErrs[iParam];
+		t_real dHint = m_vecModelParams[iParam];
+		t_real dErr = m_vecModelErrs[iParam];
 
 		params.Add(strParam, dHint, dErr);
 	}
@@ -242,7 +244,7 @@ minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
 	return params;
 }
 
-bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::size_t iNum=512) const
+bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::size_t iNum=512) const
 {
 	std::ofstream ofstr(pcFile);
 	if(!ofstr)
@@ -254,8 +256,8 @@ bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::siz
 	ofstr.precision(16);
 
 	const std::vector<std::string> vecNames = GetParamNames();
-	const std::vector<double> vecVals = GetParamValues();
-	const std::vector<double> vecErrs = GetParamErrors();
+	const std::vector<t_real> vecVals = GetParamValues();
+	const std::vector<t_real> vecErrs = GetParamErrors();
 
 	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
 		ofstr << "# " << vecNames[iParam] << " = " 
@@ -264,8 +266,8 @@ bool SqwFuncModel::Save(const char *pcFile, double dXMin, double dXMax, std::siz
 
 	for(std::size_t i=0; i<iNum; ++i)
 	{
-		double dX = tl::lerp(dXMin, dXMax, double(i)/double(iNum-1));
-		double dY = (*this)(dX);
+		t_real dX = tl::lerp(dXMin, dXMax, t_real(i)/t_real(iNum-1));
+		t_real dY = (*this)(dX);
 
 		ofstr << std::left << std::setw(20) << dX 
 			<< std::left << std::setw(20) << dY << "\n";

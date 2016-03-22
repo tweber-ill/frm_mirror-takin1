@@ -13,25 +13,29 @@
 
 #include "tlibs/math/math.h"
 #include "tlibs/math/neutrons.hpp"
+#include "tlibs/file/loadinstr.h"
+
+#include "tlibs/fit/minuit.h"	// only to get intrinsic real type
+using t_real_sc = tl::t_real_min;
 
 
 struct ScanPoint
 {
-	double h, k, l;
+	t_real_sc h, k, l;
 	tl::wavenumber ki, kf;
 	tl::energy Ei, Ef, E;
 };
 
 struct Sample
 {
-	double a, b, c;
-	double alpha, beta, gamma;
+	t_real_sc a, b, c;
+	t_real_sc alpha, beta, gamma;
 };
 
 struct Plane
 {
-	double vec1[3];
-	double vec2[3];
+	t_real_sc vec1[3];
+	t_real_sc vec2[3];
 };
 
 
@@ -40,8 +44,8 @@ struct Filter
 	bool bLower = 0;
 	bool bUpper = 0;
 
-	double dLower = 0.;
-	double dUpper = 0.;
+	t_real_sc dLower = 0.;
+	t_real_sc dUpper = 0.;
 };
 
 
@@ -50,24 +54,24 @@ struct Scan
 	Sample sample;
 	Plane plane;
 	bool bKiFixed=0;
-	double dKFix = 2.662;
+	t_real_sc dKFix = 2.662;
 
 	std::string strTempCol = "TT";
-	double dTemp = 100., dTempErr=0.;
+	t_real_sc dTemp = 100., dTempErr=0.;
 
 	std::string strFieldCol = "";
-	double dField = 0., dFieldErr=0.;
+	t_real_sc dField = 0., dFieldErr=0.;
 
 	std::string strCntCol = "";
 	std::string strMonCol = "";
 	std::vector<ScanPoint> vecPoints;
 
-	std::vector<double> vecX;
-	std::vector<double> vecCts, vecMon;
-	std::vector<double> vecCtsErr, vecMonErr;
+	std::vector<t_real_sc> vecX;
+	std::vector<t_real_sc> vecCts, vecMon;
+	std::vector<t_real_sc> vecCtsErr, vecMonErr;
 
-	double vecScanOrigin[4];
-	double vecScanDir[4];
+	t_real_sc vecScanOrigin[4];
+	t_real_sc vecScanDir[4];
 
 
 	ScanPoint InterpPoint(std::size_t i, std::size_t N) const
@@ -77,12 +81,12 @@ struct Scan
 
 		ScanPoint pt;
 
-		pt.h = tl::lerp(ptBegin.h, ptEnd.h, double(i)/double(N-1));
-		pt.k = tl::lerp(ptBegin.k, ptEnd.k, double(i)/double(N-1));
-		pt.l = tl::lerp(ptBegin.l, ptEnd.l, double(i)/double(N-1));
-		pt.E = tl::lerp(ptBegin.E, ptEnd.E, double(i)/double(N-1));
-		pt.Ei = tl::lerp(ptBegin.Ei, ptEnd.Ei, double(i)/double(N-1));
-		pt.Ef = tl::lerp(ptBegin.Ef, ptEnd.Ef, double(i)/double(N-1));
+		pt.h = tl::lerp(ptBegin.h, ptEnd.h, t_real_sc(i)/t_real_sc(N-1));
+		pt.k = tl::lerp(ptBegin.k, ptEnd.k, t_real_sc(i)/t_real_sc(N-1));
+		pt.l = tl::lerp(ptBegin.l, ptEnd.l, t_real_sc(i)/t_real_sc(N-1));
+		pt.E = tl::lerp(ptBegin.E, ptEnd.E, t_real_sc(i)/t_real_sc(N-1));
+		pt.Ei = tl::lerp(ptBegin.Ei, ptEnd.Ei, t_real_sc(i)/t_real_sc(N-1));
+		pt.Ef = tl::lerp(ptBegin.Ef, ptEnd.Ef, t_real_sc(i)/t_real_sc(N-1));
 		bool bImag=0;
 		pt.ki = tl::E2k(pt.Ei, bImag);
 		pt.kf = tl::E2k(pt.Ef, bImag);
@@ -92,7 +96,7 @@ struct Scan
 };
 
 
-extern bool load_file(std::vector<std::string> vecFiles, Scan& scan, 
+extern bool load_file(std::vector<std::string> vecFiles, Scan& scan,
 	bool bNormToMon=1, const Filter& filter = Filter());
 extern bool load_file(const char* pcFile, Scan& scan,
 	bool bNormToMon=1, const Filter& filter=Filter());

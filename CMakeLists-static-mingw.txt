@@ -33,6 +33,7 @@ add_definitions(-DNO_JPEG -DNO_TIFF)
 add_definitions(-DNO_PY)
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_definitions(${Boost_CXX_FLAGS})
+add_definitions(-DTLIBS_INC_HDR_IMPLS)
 
 
 include_directories("${PROJECT_SOURCE_DIR}" ".")
@@ -84,7 +85,8 @@ add_executable(takin
 
 
 	# statically link tlibs externals
-	tlibs/file/loadinstr.cpp  tlibs/file/recent.cpp  tlibs/file/x3d.cpp
+	#tlibs/file/loadinstr.cpp  
+	tlibs/file/recent.cpp  tlibs/file/x3d.cpp
 	tlibs/log/log.cpp tlibs/log/debug.cpp
 	tlibs/math/rand.cpp
 	tlibs/net/tcp.cpp

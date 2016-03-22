@@ -7,7 +7,9 @@
 
 #include "tlibs/file/prop.h"
 #include "tlibs/log/log.h"
+#include "tlibs/log/debug.h"
 #include "tlibs/helper/thread.h"
+//#include "tlibs/math/neutrons.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -15,6 +17,8 @@
 #include "scan.h"
 #include "model.h"
 #include "../monteconvo/sqw_py.h"
+
+using t_real = tl::t_real_min;
 
 
 bool run_job(const std::string& strJob)
@@ -32,8 +36,8 @@ bool run_job(const std::string& strJob)
 	std::string strFieldCol = prop.Query<std::string>("input/field_col");
 	bool bTempOverride = prop.Exists("input/temp_override");
 	bool bFieldOverride = prop.Exists("input/field_override");
-	double dTempOverride = prop.Query<double>("input/temp_override");
-	double dFieldOverride = prop.Query<double>("input/field_override");
+	t_real dTempOverride = prop.Query<t_real>("input/temp_override");
+	t_real dFieldOverride = prop.Query<t_real>("input/field_override");
 	std::string strCntCol = prop.Query<std::string>("input/counts_col");
 	std::string strMonCol = prop.Query<std::string>("input/monitor_col");
 
@@ -48,8 +52,8 @@ bool run_job(const std::string& strJob)
 	Filter filter;
 	filter.bLower = prop.Exists("input/filter_lower");
 	filter.bUpper = prop.Exists("input/filter_upper");
-	if(filter.bLower) filter.dLower = prop.Query<double>("input/filter_lower", 0);
-	if(filter.bUpper) filter.dUpper = prop.Query<double>("input/filter_upper", 0);
+	if(filter.bLower) filter.dLower = prop.Query<t_real>("input/filter_lower", 0);
+	if(filter.bUpper) filter.dUpper = prop.Query<t_real>("input/filter_upper", 0);
 
 
 	std::vector<std::string> vecScFiles;
@@ -67,11 +71,11 @@ bool run_job(const std::string& strJob)
 
 	std::string strMinimiser = prop.Query<std::string>("fitter/minimiser");
 	int iStrat = prop.Query<int>("fitter/strategy", 0);
-	double dSigma = prop.Query<double>("fitter/sigma", 1.);
+	t_real dSigma = prop.Query<t_real>("fitter/sigma", 1.);
 
 	bool bDoFit = prop.Query<bool>("fitter/do_fit", 1);
 	unsigned int iMaxFuncCalls = prop.Query<unsigned>("fitter/max_funccalls", 0);
-	double dTolerance = prop.Query<double>("fitter/tolerance", 0.5);
+	t_real dTolerance = prop.Query<t_real>("fitter/tolerance", 0.5);
 
 	std::string strScOutFile = prop.Query<std::string>("output/scan_file");
 	std::string strModOutFile = prop.Query<std::string>("output/model_file");
@@ -93,10 +97,10 @@ bool run_job(const std::string& strJob)
 
 	std::vector<std::string> vecFitParams;
 	tl::get_tokens<std::string, std::string>(strFitParams, " \t\n,;", vecFitParams);
-	std::vector<double> vecFitValues;
-	tl::get_tokens<double, std::string>(strFitValues, " \t\n,;", vecFitValues);
-	std::vector<double> vecFitErrors;
-	tl::get_tokens<double, std::string>(strFitErrors, " \t\n,;", vecFitErrors);
+	std::vector<t_real> vecFitValues;
+	tl::get_tokens<t_real, std::string>(strFitValues, " \t\n,;", vecFitValues);
+	std::vector<t_real> vecFitErrors;
+	tl::get_tokens<t_real, std::string>(strFitErrors, " \t\n,;", vecFitErrors);
 	std::vector<bool> vecFitFixed;
 	tl::get_tokens<bool, std::string>(strFitFixed, " \t\n,;", vecFitFixed);
 
@@ -216,8 +220,8 @@ bool run_job(const std::string& strJob)
 	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
 	{
 		const std::string& strParam = vecFitParams[iParam];
-		double dVal = vecFitValues[iParam];
-		double dErr = vecFitErrors[iParam];
+		t_real dVal = vecFitValues[iParam];
+		t_real dErr = vecFitErrors[iParam];
 
 		// not a S(q,w) model parameter
 		if(strParam=="scale" || strParam=="offs")
@@ -227,6 +231,7 @@ bool run_job(const std::string& strJob)
 	}
 
 	tl::Chi2Function chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
+	chi2fkt.SetDebug(1);
 	chi2fkt.SetSigma(dSigma);
 
 
@@ -234,8 +239,8 @@ bool run_job(const std::string& strJob)
 	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
 	{
 		const std::string& strParam = vecFitParams[iParam];
-		double dVal = vecFitValues[iParam];
-		double dErr = vecFitErrors[iParam];
+		t_real dVal = vecFitValues[iParam];
+		t_real dErr = vecFitErrors[iParam];
 		bool bFix = vecFitFixed[iParam];
 
 		params.SetValue(strParam, dVal);
@@ -314,6 +319,9 @@ bool run_job(const std::string& strJob)
 
 int main(int argc, char** argv)
 {
+	tl::log_info("This is the Takin convolution fitter.");
+	tl::log_debug("Compiled with value type: ", tl::get_typename<t_real>(), ".");
+
 	if(argc > 2)
 	{
 		for(tl::Log* log : { &tl::log_info, &tl::log_warn, &tl::log_err, &tl::log_crit, &tl::log_debug })
@@ -326,6 +334,7 @@ int main(int argc, char** argv)
 		tl::log_info("\t", argv[0], " <job file 1> <job file 2> ...");
 		return -1;
 	}
+
 
 	unsigned int iNumThreads = std::thread::hardware_concurrency();
 	tl::ThreadPool<bool()> tp(iNumThreads);
