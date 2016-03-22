@@ -85,7 +85,7 @@ void connected(const std::string& strHost, const std::string& strSrv)
 
 void received_sics(const std::string& strMsg)
 {
-//	log_info("Received: ", strMsg);
+	//log_info("Received: ", strMsg);
 
 	std::pair<std::string, std::string> pair = split_first<std::string>(strMsg, "=", true);
 

@@ -150,7 +150,7 @@ void NicosCache::slot_disconnected(const std::string& strHost, const std::string
 
 void NicosCache::slot_receive(const std::string& str)
 {
-	//log_debug("Received: ", str);
+	//tl::log_debug("Received: ", str);
 
 	std::pair<std::string, std::string> pairTimeVal = tl::split_first<std::string>(str, "@", 1);
 	std::pair<std::string, std::string> pairKeyVal = tl::split_first<std::string>(pairTimeVal.second, "=", 1);
