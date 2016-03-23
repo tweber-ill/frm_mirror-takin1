@@ -290,12 +290,6 @@ bool run_job(const std::string& strJob)
 		std::ostringstream ostrMini;
 		ostrMini << mini << "\n";
 		tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
-
-		/*if(strLogOutFile != "")
-		{
-			std::ofstream ofstrLog(strLogOutFile);
-			ofstrLog << ostrMini.str();
-		}*/
 	}
 	else
 	{
@@ -321,6 +315,14 @@ bool run_job(const std::string& strJob)
 			<< strScOutFile.c_str() << "\\\" using 1:2:3 w yerrorbars ps 1 pt 7\"\n";
 
 		std::system(ostr.str().c_str());
+	}
+
+
+	// remove thread-local loggers
+	if(!!ofstrLog)
+	{
+		for(tl::Log* plog : { &tl::log_info, &tl::log_warn, &tl::log_err, &tl::log_crit, &tl::log_debug })
+			plog->RemoveOstr(ofstrLog.get());
 	}
 
 	return bValidFit;
