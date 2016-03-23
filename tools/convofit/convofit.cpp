@@ -83,6 +83,16 @@ bool run_job(const std::string& strJob)
 	bool bPlot = prop.Query<bool>("output/plot", 0);
 	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot-points", 128);
 
+	// thread-local debug log
+	std::unique_ptr<std::ostream> ofstrLog;
+	if(strLogOutFile != "")
+	{
+		ofstrLog.reset(new std::ofstream(strLogOutFile));
+
+		for(tl::Log* plog : { &tl::log_info, &tl::log_warn, &tl::log_err, &tl::log_crit, &tl::log_debug })
+			plog->AddOstr(ofstrLog.get(), 0, 1);
+	}
+
 	if(strScOutFile=="" || strModOutFile=="")
 	{
 		tl::log_err("Not output files selected.");
@@ -281,11 +291,11 @@ bool run_job(const std::string& strJob)
 		ostrMini << mini << "\n";
 		tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
 
-		if(strLogOutFile != "")
+		/*if(strLogOutFile != "")
 		{
 			std::ofstream ofstrLog(strLogOutFile);
 			ofstrLog << ostrMini.str();
-		}
+		}*/
 	}
 	else
 	{
