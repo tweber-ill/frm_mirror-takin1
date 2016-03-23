@@ -81,7 +81,7 @@ bool run_job(const std::string& strJob)
 	std::string strModOutFile = prop.Query<std::string>("output/model_file");
 	std::string strLogOutFile = prop.Query<std::string>("output/log_file");
 	bool bPlot = prop.Query<bool>("output/plot", 0);
-	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot-points", 128);
+	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot_points", 128);
 
 	// thread-local debug log
 	std::unique_ptr<std::ostream> ofstrLog;
