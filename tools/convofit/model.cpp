@@ -269,8 +269,8 @@ bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::siz
 		t_real dX = tl::lerp(dXMin, dXMax, t_real(i)/t_real(iNum-1));
 		t_real dY = (*this)(dX);
 
-		ofstr << std::left << std::setw(20) << dX 
-			<< std::left << std::setw(20) << dY << "\n";
+		ofstr << std::left << std::setw(32) << dX << " "
+			<< std::left << std::setw(32) << dY << "\n";
 	}
 
 	return true;
