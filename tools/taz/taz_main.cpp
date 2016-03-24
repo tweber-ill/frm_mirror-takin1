@@ -28,10 +28,33 @@
 
 #define TAKIN_CHECK " Please check if Takin is correctly installed and the current working directory is set to the Takin main directory."
 
+
+static void add_logfile(std::ofstream* postrLog, bool bAdd=1)
+{
+	if(!postrLog || !postrLog->is_open())
+	{
+		tl::log_err("Cannot open log file.");
+		return;
+	}
+
+	for(tl::Log* plog : { &tl::log_info, &tl::log_warn, &tl::log_err, &tl::log_crit, &tl::log_debug })
+	{
+		if(bAdd)
+			plog->AddOstr(postrLog, 0, 0);
+		else
+			plog->RemoveOstr(postrLog);
+	}
+
+	if(!bAdd) postrLog->operator<<(std::endl);
+}
+
 int main(int argc, char** argv)
 {
 	try
 	{
+		std::ofstream ofstrLog("takin.log", std::ios_base::out|std::ios_base::app);
+		add_logfile(&ofstrLog, 1);
+
 		tl::log_info("Starting up Takin version ", TAKIN_VER, ".");
 
 		#if defined Q_WS_X11 && !defined NO_3D
@@ -126,6 +149,8 @@ int main(int argc, char** argv)
 		// ------------------------------------------------------------
 		tl::deinit_spec_chars();
 		tl::log_info("Shutting down Takin.");
+		add_logfile(&ofstrLog, 0);
+
 		return iRet;
 	}
 	catch(const std::exception& ex)
