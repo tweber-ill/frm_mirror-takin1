@@ -376,7 +376,7 @@ obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/loadtxt.o: tlibs/file/loadtxt.cpp tlibs/file/loadtxt.h
+obj/loadtxt.o: tlibs/old/loadtxt.cpp tlibs/old/loadtxt.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/x3d.o: tlibs/file/x3d.cpp tlibs/file/x3d.h
 	${CC} ${FLAGS} -c -o $@ $<

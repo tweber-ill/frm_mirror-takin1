@@ -204,7 +204,6 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 	//tl::log_info("Count var: ", strCntVar, ", mon var: ", strMonVar);
 
 	m_bDoUpdate = 0;
-
 	int iIdxX=-1, iIdxY=-1, iCurIdx=0;
 	const tl::FileInstr::t_vecColNames& vecColNames = m_pInstr->GetColNames();
 	for(const tl::FileInstr::t_vecColNames::value_type& strCol : vecColNames)
