@@ -34,7 +34,18 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	labelWritten->setText("Written by Tobias Weber");
 	labelYears->setText("2014 - 2016");
 
-	labelCC->setText(QString("Built with ") + QString(BOOST_COMPILER));
+	std::string strCC = "Built using " + std::string(BOOST_COMPILER);
+#ifdef __cplusplus
+	strCC += " (standard: " + tl::var_to_str(__cplusplus) + ")";
+#endif
+#ifdef BOOST_STDLIB
+		strCC += " with " + std::string(BOOST_STDLIB);
+#endif
+#ifdef BOOST_PLATFORM
+		strCC += " for " + std::string(BOOST_PLATFORM);
+#endif
+	strCC += ".";
+	labelCC->setText(strCC.c_str());
 	labelBuildDate->setText(QString("Build date: ") +
 		QString(__DATE__) + ", " + QString(__TIME__));
 
