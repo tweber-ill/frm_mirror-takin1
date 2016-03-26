@@ -22,48 +22,48 @@ namespace ublas = boost::numeric::ublas;
 namespace units = boost::units;
 namespace codata = boost::units::si::constants::codata;
 
-
+using t_real_reso = double;
 
 struct CNParams
 {
 	// monochromator
-	units::quantity<units::si::length> mono_d;
-	units::quantity<units::si::plane_angle> mono_mosaic;
-	double dmono_sense=-1.;
+	tl::t_length_si<t_real_reso> mono_d;
+	tl::t_angle_si<t_real_reso> mono_mosaic;
+	t_real_reso dmono_sense=-1.;
 
 	// analyser
-	units::quantity<units::si::length> ana_d;
-	units::quantity<units::si::plane_angle> ana_mosaic;
-	double dana_sense=-1.;
+	tl::t_length_si<t_real_reso> ana_d;
+	tl::t_angle_si<t_real_reso> ana_mosaic;
+	t_real_reso dana_sense=-1.;
 
 	// sample
-	units::quantity<units::si::plane_angle> sample_mosaic;
-	units::quantity<units::si::length> sample_lattice[3];
-	units::quantity<units::si::plane_angle> sample_angles[3];
-	double dsample_sense=1.;
+	tl::t_angle_si<t_real_reso> sample_mosaic;
+	tl::t_length_si<t_real_reso> sample_lattice[3];
+	tl::t_angle_si<t_real_reso> sample_angles[3];
+	t_real_reso dsample_sense=1.;
 
 	// collimators
-	units::quantity<units::si::plane_angle> coll_h_pre_mono;
-	units::quantity<units::si::plane_angle> coll_h_pre_sample;
-	units::quantity<units::si::plane_angle> coll_h_post_sample;
-	units::quantity<units::si::plane_angle> coll_h_post_ana;
-	units::quantity<units::si::plane_angle> coll_v_pre_mono;
-	units::quantity<units::si::plane_angle> coll_v_pre_sample;
-	units::quantity<units::si::plane_angle> coll_v_post_sample;
-	units::quantity<units::si::plane_angle> coll_v_post_ana;
+	tl::t_angle_si<t_real_reso> coll_h_pre_mono;
+	tl::t_angle_si<t_real_reso> coll_h_pre_sample;
+	tl::t_angle_si<t_real_reso> coll_h_post_sample;
+	tl::t_angle_si<t_real_reso> coll_h_post_ana;
+	tl::t_angle_si<t_real_reso> coll_v_pre_mono;
+	tl::t_angle_si<t_real_reso> coll_v_pre_sample;
+	tl::t_angle_si<t_real_reso> coll_v_post_sample;
+	tl::t_angle_si<t_real_reso> coll_v_post_ana;
 
-	units::quantity<units::si::wavenumber> ki, kf, Q;
-	units::quantity<units::si::energy> E;
+	tl::t_wavenumber_si<t_real_reso> ki, kf, Q;
+	tl::t_energy_si<t_real_reso> E;
 
-	units::quantity<units::si::plane_angle> thetaa, thetam;
-	units::quantity<units::si::plane_angle> twotheta;
+	tl::t_angle_si<t_real_reso> thetaa, thetam;
+	tl::t_angle_si<t_real_reso> twotheta;
 
-	units::quantity<units::si::plane_angle> angle_ki_Q;
-	units::quantity<units::si::plane_angle> angle_kf_Q;
+	tl::t_angle_si<t_real_reso> angle_ki_Q;
+	tl::t_angle_si<t_real_reso> angle_kf_Q;
 
 	// resolution volume stuff
-	double dmono_refl;
-	double dana_effic;
+	t_real_reso dmono_refl;
+	t_real_reso dana_effic;
 
 	bool bCalcR0 = 1;
 };
@@ -73,15 +73,15 @@ struct CNResults
 	bool bOk;
 	std::string strErr;
 
-	ublas::matrix<double> reso;		// quadratic part of quadric
-	ublas::vector<double> reso_v;	// linear part of quadric
-	double reso_s;					// constant part of quadric
+	ublas::matrix<t_real_reso> reso;		// quadratic part of quadric
+	ublas::vector<t_real_reso> reso_v;		// linear part of quadric
+	t_real_reso reso_s;				// constant part of quadric
 
-	ublas::vector<double> Q_avg;
-	double dR0;						// resolution prefactor
-	double dResVol;					// resolution volume in 1/A^3 * meV
+	ublas::vector<t_real_reso> Q_avg;
+	t_real_reso dR0;				// resolution prefactor
+	t_real_reso dResVol;				// resolution volume in 1/A^3 * meV
 
-	double dBraggFWHMs[4];
+	t_real_reso dBraggFWHMs[4];
 };
 
 

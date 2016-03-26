@@ -16,45 +16,45 @@
 
 struct PopParams : public CNParams
 {
-	units::quantity<units::si::length> mono_w;
-	units::quantity<units::si::length> mono_h;
-	units::quantity<units::si::length> mono_thick;
-	units::quantity<units::si::length> mono_curvh;
-	units::quantity<units::si::length> mono_curvv;
+	tl::t_length_si<t_real_reso> mono_w;
+	tl::t_length_si<t_real_reso> mono_h;
+	tl::t_length_si<t_real_reso> mono_thick;
+	tl::t_length_si<t_real_reso> mono_curvh;
+	tl::t_length_si<t_real_reso> mono_curvv;
 	bool bMonoIsCurvedH=0, bMonoIsCurvedV=0;
 	bool bMonoIsOptimallyCurvedH=0, bMonoIsOptimallyCurvedV=0;
 	unsigned int mono_numtiles_v, mono_numtiles_h;
 
-	units::quantity<units::si::length> ana_w;
-	units::quantity<units::si::length> ana_h;
-	units::quantity<units::si::length> ana_thick;
-	units::quantity<units::si::length> ana_curvh;
-	units::quantity<units::si::length> ana_curvv;
+	tl::t_length_si<t_real_reso> ana_w;
+	tl::t_length_si<t_real_reso> ana_h;
+	tl::t_length_si<t_real_reso> ana_thick;
+	tl::t_length_si<t_real_reso> ana_curvh;
+	tl::t_length_si<t_real_reso> ana_curvv;
 	bool bAnaIsCurvedH=0, bAnaIsCurvedV=0;
 	bool bAnaIsOptimallyCurvedH=0, bAnaIsOptimallyCurvedV=0;
 	unsigned int ana_numtiles_v, ana_numtiles_h;
 
 	bool bSampleCub=1;
-	units::quantity<units::si::length> sample_w_q;
-	units::quantity<units::si::length> sample_w_perpq;
-	units::quantity<units::si::length> sample_h;
+	tl::t_length_si<t_real_reso> sample_w_q;
+	tl::t_length_si<t_real_reso> sample_w_perpq;
+	tl::t_length_si<t_real_reso> sample_h;
 
 	bool bSrcRect=1;
-	units::quantity<units::si::length> src_w;
-	units::quantity<units::si::length> src_h;
+	tl::t_length_si<t_real_reso> src_w;
+	tl::t_length_si<t_real_reso> src_h;
 
 	bool bDetRect=1;
-	units::quantity<units::si::length> det_w;
-	units::quantity<units::si::length> det_h;
+	tl::t_length_si<t_real_reso> det_w;
+	tl::t_length_si<t_real_reso> det_h;
 
 	bool bGuide=0;
-	units::quantity<units::si::plane_angle> guide_div_h;
-	units::quantity<units::si::plane_angle> guide_div_v;
+	tl::t_angle_si<t_real_reso> guide_div_h;
+	tl::t_angle_si<t_real_reso> guide_div_v;
 
-	units::quantity<units::si::length> dist_mono_sample;
-	units::quantity<units::si::length> dist_sample_ana;
-	units::quantity<units::si::length> dist_ana_det;
-	units::quantity<units::si::length> dist_src_mono;
+	tl::t_length_si<t_real_reso> dist_mono_sample;
+	tl::t_length_si<t_real_reso> dist_sample_ana;
+	tl::t_length_si<t_real_reso> dist_ana_det;
+	tl::t_length_si<t_real_reso> dist_src_mono;
 };
 
 

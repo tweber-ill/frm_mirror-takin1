@@ -1,6 +1,6 @@
 /*
  * implementation of the eckold-sobolev algo
- * 
+ *
  * @author tweber
  * @date feb-2015
  * @license GPLv2
@@ -16,10 +16,10 @@
 
 struct EckParams : public PopParams
 {
-	units::quantity<units::si::plane_angle> mono_mosaic_v;
-	units::quantity<units::si::plane_angle> ana_mosaic_v;
+	tl::t_angle_si<t_real_reso> mono_mosaic_v;
+	tl::t_angle_si<t_real_reso> ana_mosaic_v;
 
-	units::quantity<units::si::length> pos_x, pos_y, pos_z;
+	tl::t_length_si<t_real_reso> pos_x, pos_y, pos_z;
 };
 
 
@@ -27,3 +27,4 @@ extern CNResults calc_eck(const EckParams& eck);
 
 
 #endif
+

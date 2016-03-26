@@ -16,14 +16,18 @@
 
 #include <string>
 #include <iostream>
-#include <boost/units/io.hpp>
 
-typedef double t_real;
+
+typedef t_real_reso t_real;
 typedef ublas::matrix<t_real> t_mat;
 typedef ublas::vector<t_real> t_vec;
 
-using tl::angle; using tl::wavenumber; using tl::energy; using tl::length;
-using tl::inv_length;
+using angle = tl::t_angle_si<t_real>;
+using wavenumber = tl::t_wavenumber_si<t_real>;
+using energy = tl::t_energy_si<t_real>;
+using length = tl::t_length_si<t_real>;
+using inv_length = tl::t_length_inverse_si<t_real>;
+
 static const auto cm = tl::cm;
 static const auto angs = tl::angstrom;
 static const auto rads = tl::radians;
