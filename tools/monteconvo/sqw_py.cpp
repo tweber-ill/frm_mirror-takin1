@@ -8,6 +8,8 @@
 #include "sqw_py.h"
 #include "tlibs/string/string.h"
 
+using t_real = t_real_reso;
+
 
 SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 {
@@ -46,12 +48,12 @@ SqwPy::~SqwPy()
 }
 
 
-double SqwPy::operator()(double dh, double dk, double dl, double dE) const
+t_real SqwPy::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
 	std::lock_guard<std::mutex> lock(*m_pmtx);
 	try
 	{
-		return py::extract<double>(m_Sqw(dh, dk, dl, dE));
+		return py::extract<t_real>(m_Sqw(dh, dk, dl, dE));
 	}
 	catch(const py::error_already_set& ex)
 	{

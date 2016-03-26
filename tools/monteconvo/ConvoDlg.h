@@ -18,6 +18,7 @@
 #include "SqwParamDlg.h"
 #include "ui/ui_monteconvo.h"
 #include "sqw.h"
+#include "../res/defs.h"
 
 
 class ConvoDlg : public QDialog, Ui::ConvoDlg
@@ -30,7 +31,7 @@ protected:
 	SqwParamDlg *m_pSqwParamDlg = nullptr;
 
 	SqwBase *m_pSqw = nullptr;
-	std::vector<double> m_vecQ, m_vecS;
+	std::vector<t_real_reso> m_vecQ, m_vecS;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
 protected:

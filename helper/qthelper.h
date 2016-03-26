@@ -35,13 +35,13 @@ protected:
 public:
 	QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves=1, bool bNoTrackerSignal=0);
 	virtual ~QwtPlotWrapper();
-	
+
 	QwtPlot* GetPlot() { return m_pPlot; }
 	QwtPlotCurve* GetCurve(unsigned int iCurve=0) { return m_vecCurves[iCurve]; }
 	QwtPlotZoomer* GetZoomer() { return m_pZoomer; }
 	QwtPlotPicker* GetPicker() { return m_pPicker; }
 	bool HasTrackerSignal() const;
-	
+
 	void SetData(const std::vector<double>& vecX, const std::vector<double>& vecY,
 		unsigned int iCurve=0, bool bReplot=1, bool bCopy=0);
 };

@@ -15,15 +15,18 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/file/loadinstr.h"
 
-#include "tlibs/fit/minuit.h"	// only to get intrinsic real type
-using t_real_sc = tl::t_real_min;
+//#include "tlibs/fit/minuit.h"	// only to get intrinsic real type
+//using t_real_sc = tl::t_real_min;
+
+#include "../res/defs.h"
+using t_real_sc = t_real_reso;
 
 
 struct ScanPoint
 {
 	t_real_sc h, k, l;
-	tl::wavenumber ki, kf;
-	tl::energy Ei, Ef, E;
+	tl::t_wavenumber_si<t_real_sc> ki, kf;
+	tl::t_energy_si<t_real_sc> Ei, Ef, E;
 };
 
 struct Sample

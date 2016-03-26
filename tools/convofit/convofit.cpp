@@ -17,8 +17,10 @@
 #include "scan.h"
 #include "model.h"
 #include "../monteconvo/sqw_py.h"
+#include "../res/defs.h"
 
-using t_real = tl::t_real_min;
+//using t_real = tl::t_real_min;
+using t_real = t_real_reso;
 
 
 bool run_job(const std::string& strJob)

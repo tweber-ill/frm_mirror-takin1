@@ -19,7 +19,7 @@ class SqwParamDlg : public QDialog, Ui::SqwParamDlg
 { Q_OBJECT
 protected:
 	QSettings *m_pSett = nullptr;
-	
+
 protected:
 	void SaveSqwParams();
 	virtual void showEvent(QShowEvent *pEvt) override;
@@ -27,13 +27,13 @@ protected:
 public:
 	SqwParamDlg(QWidget* pParent=nullptr, QSettings* pSett=nullptr);
 	virtual ~SqwParamDlg();
-	
+
 public slots:
 	void SqwLoaded(const std::vector<SqwBase::t_var>&);
 
 protected slots:
 	void ButtonBoxClicked(QAbstractButton *pBtn);
-	
+
 signals:
 	void SqwParamsChanged(const std::vector<SqwBase::t_var>&);
 };

@@ -196,8 +196,7 @@ OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o obj/qthelper.o
 
 OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ellipse.o \
-	obj/rand.o obj/tasreso.o \
-	obj/loadtxt.o
+	obj/rand.o obj/tasreso.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
 	obj/loadinstr.o ${OBJ_MONTECONVO} ${PY_OBJS}
@@ -376,8 +375,8 @@ obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/loadtxt.o: tlibs/old/loadtxt.cpp tlibs/old/loadtxt.h
-	${CC} ${FLAGS} -c -o $@ $<
+#obj/loadtxt.o: tlibs/old/loadtxt.cpp tlibs/old/loadtxt.h
+#	${CC} ${FLAGS} -c -o $@ $<
 obj/x3d.o: tlibs/file/x3d.cpp tlibs/file/x3d.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/recent.o: tlibs/file/recent.cpp tlibs/file/recent.h

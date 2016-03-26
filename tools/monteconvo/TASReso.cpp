@@ -14,9 +14,18 @@
 #include <boost/units/io.hpp>
 
 
-typedef double t_real;
+typedef t_real_reso t_real;
+
 using t_vec = ublas::vector<t_real>;
 using t_mat = ublas::matrix<t_real>;
+
+static const auto angs = tl::get_one_angstrom<t_real_reso>();
+static const auto rads = tl::get_one_radian<t_real_reso>();
+static const auto meV = tl::get_one_meV<t_real_reso>();
+static const auto cm = tl::get_one_centimeter<t_real_reso>();
+static const auto meters = tl::get_one_meter<t_real_reso>();
+
+using wavenumber = tl::t_wavenumber_si<t_real>;
 
 
 TASReso::TASReso()
@@ -90,21 +99,21 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	}
 
 	// CN
-	m_reso.mono_d = xml.Query<t_real>((strXmlRoot + "reso/mono_d").c_str(), 0.) * tl::angstrom;
-	m_reso.mono_mosaic = xml.Query<t_real>((strXmlRoot + "reso/mono_mosaic").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.ana_d = xml.Query<t_real>((strXmlRoot + "reso/ana_d").c_str(), 0.) * tl::angstrom;
-	m_reso.ana_mosaic = xml.Query<t_real>((strXmlRoot + "reso/ana_mosaic").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.sample_mosaic = xml.Query<t_real>((strXmlRoot + "reso/sample_mosaic").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
+	m_reso.mono_d = xml.Query<t_real>((strXmlRoot + "reso/mono_d").c_str(), 0.) * angs;
+	m_reso.mono_mosaic = t_real(xml.Query<t_real>((strXmlRoot + "reso/mono_mosaic").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.ana_d = xml.Query<t_real>((strXmlRoot + "reso/ana_d").c_str(), 0.) * angs;
+	m_reso.ana_mosaic = t_real(xml.Query<t_real>((strXmlRoot + "reso/ana_mosaic").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.sample_mosaic = t_real(xml.Query<t_real>((strXmlRoot + "reso/sample_mosaic").c_str(), 0.) / (180.*60.) * M_PI) * rads;
 
-	m_reso.coll_h_pre_mono = xml.Query<t_real>((strXmlRoot + "reso/h_coll_mono").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.coll_h_pre_sample = xml.Query<t_real>((strXmlRoot + "reso/h_coll_before_sample").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.coll_h_post_sample = xml.Query<t_real>((strXmlRoot + "reso/h_coll_after_sample").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.coll_h_post_ana = xml.Query<t_real>((strXmlRoot + "reso/h_coll_ana").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
+	m_reso.coll_h_pre_mono = t_real(xml.Query<t_real>((strXmlRoot + "reso/h_coll_mono").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.coll_h_pre_sample = t_real(xml.Query<t_real>((strXmlRoot + "reso/h_coll_before_sample").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.coll_h_post_sample = t_real(xml.Query<t_real>((strXmlRoot + "reso/h_coll_after_sample").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.coll_h_post_ana = t_real(xml.Query<t_real>((strXmlRoot + "reso/h_coll_ana").c_str(), 0.) / (180.*60.) * M_PI) * rads;
 
-	m_reso.coll_v_pre_mono = xml.Query<t_real>((strXmlRoot + "reso/v_coll_mono").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.coll_v_pre_sample = xml.Query<t_real>((strXmlRoot + "reso/v_coll_before_sample").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.coll_v_post_sample = xml.Query<t_real>((strXmlRoot + "reso/v_coll_after_sample").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.coll_v_post_ana = xml.Query<t_real>((strXmlRoot + "reso/v_coll_ana").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
+	m_reso.coll_v_pre_mono = t_real(xml.Query<t_real>((strXmlRoot + "reso/v_coll_mono").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.coll_v_pre_sample = t_real(xml.Query<t_real>((strXmlRoot + "reso/v_coll_before_sample").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.coll_v_post_sample = t_real(xml.Query<t_real>((strXmlRoot + "reso/v_coll_after_sample").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.coll_v_post_ana = t_real(xml.Query<t_real>((strXmlRoot + "reso/v_coll_ana").c_str(), 0.) / (180.*60.) * M_PI) * rads;
 
 	m_reso.dmono_refl = xml.Query<t_real>((strXmlRoot + "reso/mono_refl").c_str(), 0.);
 	m_reso.dana_effic = xml.Query<t_real>((strXmlRoot + "reso/ana_effic").c_str(), 0.);
@@ -115,55 +124,55 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 
 
 	// Pop
-	m_reso.mono_w = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_w").c_str(), 0.)*0.01*tl::meters;
-	m_reso.mono_h = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_h").c_str(), 0.)*0.01*tl::meters;
-	m_reso.mono_thick = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_thick").c_str(), 0.)*0.01*tl::meters;
-	m_reso.mono_curvh = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_curvh").c_str(), 0.)*0.01*tl::meters;
-	m_reso.mono_curvv = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_curvv").c_str(), 0.)*0.01*tl::meters;
+	m_reso.mono_w = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_w").c_str(), 0.)*cm;
+	m_reso.mono_h = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_h").c_str(), 0.)*cm;
+	m_reso.mono_thick = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_thick").c_str(), 0.)*cm;
+	m_reso.mono_curvh = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_curvh").c_str(), 0.)*cm;
+	m_reso.mono_curvv = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_curvv").c_str(), 0.)*cm;
 	m_reso.bMonoIsCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvh").c_str(), 0) != 0);
 	m_reso.bMonoIsCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvv").c_str(), 0) != 0);
 	m_reso.bMonoIsOptimallyCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvh_opt").c_str(), 1) != 0);
 	m_reso.bMonoIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvv_opt").c_str(), 1) != 0);
 
-	m_reso.ana_w = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_w").c_str(), 0.)*0.01*tl::meters;
-	m_reso.ana_h = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_h").c_str(), 0.)*0.01*tl::meters;
-	m_reso.ana_thick = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_thick").c_str(), 0.)*0.01*tl::meters;
-	m_reso.ana_curvh = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_curvh").c_str(), 0.)*0.01*tl::meters;
-	m_reso.ana_curvv = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_curvv").c_str(), 0.)*0.01*tl::meters;
+	m_reso.ana_w = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_w").c_str(), 0.)*cm;
+	m_reso.ana_h = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_h").c_str(), 0.)*cm;
+	m_reso.ana_thick = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_thick").c_str(), 0.)*cm;
+	m_reso.ana_curvh = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_curvh").c_str(), 0.)*cm;
+	m_reso.ana_curvv = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_curvv").c_str(), 0.)*cm;
 	m_reso.bAnaIsCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvh").c_str(), 0) != 0);
 	m_reso.bAnaIsCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvv").c_str(), 0) != 0);
 	m_reso.bAnaIsOptimallyCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvh_opt").c_str(), 1) != 0);
 	m_reso.bAnaIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvv_opt").c_str(), 1) != 0);
 
 	m_reso.bSampleCub = (xml.Query<int>((strXmlRoot + "reso/pop_sample_cuboid").c_str(), 0) != 0);
-	m_reso.sample_w_q = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_wq").c_str(), 0.)*0.01*tl::meters;
-	m_reso.sample_w_perpq = xml.Query<t_real>((strXmlRoot + "reso/pop_sampe_wperpq").c_str(), 0.)*0.01*tl::meters;
-	m_reso.sample_h = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_h").c_str(), 0.)*0.01*tl::meters;
+	m_reso.sample_w_q = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_wq").c_str(), 0.)*cm;
+	m_reso.sample_w_perpq = xml.Query<t_real>((strXmlRoot + "reso/pop_sampe_wperpq").c_str(), 0.)*cm;
+	m_reso.sample_h = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_h").c_str(), 0.)*cm;
 
 	m_reso.bSrcRect = (xml.Query<int>((strXmlRoot + "reso/pop_source_rect").c_str(), 0) != 0);
-	m_reso.src_w = xml.Query<t_real>((strXmlRoot + "reso/pop_src_w").c_str(), 0.)*0.01*tl::meters;
-	m_reso.src_h = xml.Query<t_real>((strXmlRoot + "reso/pop_src_h").c_str(), 0.)*0.01*tl::meters;
+	m_reso.src_w = xml.Query<t_real>((strXmlRoot + "reso/pop_src_w").c_str(), 0.)*cm;
+	m_reso.src_h = xml.Query<t_real>((strXmlRoot + "reso/pop_src_h").c_str(), 0.)*cm;
 
 	m_reso.bDetRect = (xml.Query<int>((strXmlRoot + "reso/pop_det_rect").c_str(), 0) != 0);
-	m_reso.det_w = xml.Query<t_real>((strXmlRoot + "reso/pop_det_w").c_str(), 0.)*0.01*tl::meters;
-	m_reso.det_h = xml.Query<t_real>((strXmlRoot + "reso/pop_det_h").c_str(), 0.)*0.01*tl::meters;
+	m_reso.det_w = xml.Query<t_real>((strXmlRoot + "reso/pop_det_w").c_str(), 0.)*cm;
+	m_reso.det_h = xml.Query<t_real>((strXmlRoot + "reso/pop_det_h").c_str(), 0.)*cm;
 
 	m_reso.bGuide = (xml.Query<int>((strXmlRoot + "reso/use_guide").c_str(), 0) != 0);
-	m_reso.guide_div_h = xml.Query<t_real>((strXmlRoot + "reso/pop_guide_divh").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.guide_div_v = xml.Query<t_real>((strXmlRoot + "reso/pop_guide_divv").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
+	m_reso.guide_div_h = t_real(xml.Query<t_real>((strXmlRoot + "reso/pop_guide_divh").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.guide_div_v = t_real(xml.Query<t_real>((strXmlRoot + "reso/pop_guide_divv").c_str(), 0.) / (180.*60.) * M_PI) * rads;
 
-	m_reso.dist_mono_sample = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_mono_sample").c_str(), 0.)*0.01*tl::meters;
-	m_reso.dist_sample_ana = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_sample_ana").c_str(), 0.)*0.01*tl::meters;
-	m_reso.dist_ana_det = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_ana_det").c_str(), 0.)*0.01*tl::meters;
-	m_reso.dist_src_mono = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_src_mono").c_str(), 0.)*0.01*tl::meters;
+	m_reso.dist_mono_sample = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_mono_sample").c_str(), 0.)*cm;
+	m_reso.dist_sample_ana = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_sample_ana").c_str(), 0.)*cm;
+	m_reso.dist_ana_det = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_ana_det").c_str(), 0.)*cm;
+	m_reso.dist_src_mono = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_src_mono").c_str(), 0.)*cm;
 
 
 	// Eck
-	m_reso.mono_mosaic_v = xml.Query<t_real>((strXmlRoot + "reso/eck_mono_mosaic_v").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.ana_mosaic_v = xml.Query<t_real>((strXmlRoot + "reso/eck_ana_mosaic_v").c_str(), 0.) / (180.*60.) * M_PI * tl::radians;
-	m_reso.pos_x = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_x").c_str(), 0.)*0.01*tl::meters;
-	m_reso.pos_y = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_y").c_str(), 0.)*0.01*tl::meters;
-	m_reso.pos_z = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_z").c_str(), 0.)*0.01*tl::meters;
+	m_reso.mono_mosaic_v = t_real(xml.Query<t_real>((strXmlRoot + "reso/eck_mono_mosaic_v").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.ana_mosaic_v = t_real(xml.Query<t_real>((strXmlRoot + "reso/eck_ana_mosaic_v").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.pos_x = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_x").c_str(), 0.)*cm;
+	m_reso.pos_y = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_y").c_str(), 0.)*cm;
+	m_reso.pos_z = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_z").c_str(), 0.)*cm;
 
 
 	m_algo = ResoAlgo(xml.Query<int>((strXmlRoot + "reso/algo").c_str(), 0));
@@ -176,12 +185,12 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 
 
 	// preliminary position
-	m_reso.ki = xml.Query<t_real>((strXmlRoot + "reso/ki").c_str(), 0.) / tl::angstrom;
-	m_reso.kf = xml.Query<t_real>((strXmlRoot + "reso/kf").c_str(), 0.) / tl::angstrom;
-	m_reso.E = xml.Query<t_real>((strXmlRoot + "reso/E").c_str(), 0.) * tl::one_meV;
-	m_reso.Q = xml.Query<t_real>((strXmlRoot + "reso/Q").c_str(), 0.) / tl::angstrom;
+	m_reso.ki = xml.Query<t_real>((strXmlRoot + "reso/ki").c_str(), 0.) / angs;
+	m_reso.kf = xml.Query<t_real>((strXmlRoot + "reso/kf").c_str(), 0.) / angs;
+	m_reso.E = xml.Query<t_real>((strXmlRoot + "reso/E").c_str(), 0.) * meV;
+	m_reso.Q = xml.Query<t_real>((strXmlRoot + "reso/Q").c_str(), 0.) / angs;
 
-	m_dKFix = m_bKiFix ? m_reso.ki*tl::angstrom : m_reso.kf*tl::angstrom;
+	m_dKFix = m_bKiFix ? m_reso.ki*angs : m_reso.kf*angs;
 	return true;
 }
 
@@ -217,10 +226,10 @@ bool TASReso::SetLattice(t_real a, t_real b, t_real c,
 	m_opts.matBinv = matBinv;
 	m_opts.matUBinv = matUBinv;
 
-	ublas::matrix<double>* pMats[] = {&m_opts.matU, &m_opts.matB, &m_opts.matUB, 
+	ublas::matrix<t_real>* pMats[] = {&m_opts.matU, &m_opts.matB, &m_opts.matUB, 
 		&m_opts.matUinv, &m_opts.matBinv, &m_opts.matUBinv};
 
-	for(ublas::matrix<double> *pMat : pMats)
+	for(ublas::matrix<t_real> *pMat : pMats)
 	{
 		pMat->resize(4,4,1);
 
@@ -247,37 +256,37 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	if(vecQ.size() > 3)
 		vecQ.resize(3, true);
 
-	m_reso.Q = ublas::norm_2(vecQ) / tl::angstrom;
-	m_reso.E = E * tl::meV;
+	m_reso.Q = ublas::norm_2(vecQ) / angs;
+	m_reso.E = E * meV;
 
 	//tl::log_info("kfix = ", m_dKFix);
-	tl::wavenumber kother = tl::get_other_k(m_reso.E, m_dKFix/tl::angstrom, m_bKiFix);
+	wavenumber kother = tl::get_other_k(m_reso.E, m_dKFix/angs, m_bKiFix);
 	if(m_bKiFix)
 	{
-		m_reso.ki = m_dKFix / tl::angstrom;
+		m_reso.ki = m_dKFix / angs;
 		m_reso.kf = kother;
 	}
 	else
 	{
 		m_reso.ki = kother;
-		m_reso.kf = m_dKFix / tl::angstrom;
+		m_reso.kf = m_dKFix / angs;
 	}
 
 	//tl::log_info("ki = ", m_reso.ki, ", kf = ", m_reso.kf);
-	//tl::log_info("Q = ", m_reso.Q, ", E = ", m_reso.E/tl::meV, " meV");
+	//tl::log_info("Q = ", m_reso.Q, ", E = ", m_reso.E/meV, " meV");
 
-	m_reso.thetam = units::abs(tl::get_mono_twotheta(m_reso.ki, m_reso.mono_d, /*m_reso.dmono_sense>=0.*/1)*0.5);
-	m_reso.thetaa = units::abs(tl::get_mono_twotheta(m_reso.kf, m_reso.ana_d, /*m_reso.dana_sense>=0.*/1)*0.5);
+	m_reso.thetam = units::abs(tl::get_mono_twotheta(m_reso.ki, m_reso.mono_d, /*m_reso.dmono_sense>=0.*/1)*t_real(0.5));
+	m_reso.thetaa = units::abs(tl::get_mono_twotheta(m_reso.kf, m_reso.ana_d, /*m_reso.dana_sense>=0.*/1)*t_real(0.5));
 	m_reso.twotheta = units::abs(tl::get_sample_twotheta(m_reso.ki, m_reso.kf, m_reso.Q, 1));
 
-	//tl::log_info("thetam = ", tl::r2d(m_reso.thetam/tl::radians));
-	//tl::log_info("thetaa = ", tl::r2d(m_reso.thetaa/tl::radians));
-	//tl::log_info("twothetas = ", tl::r2d(m_reso.twotheta/tl::radians));
+	//tl::log_info("thetam = ", tl::r2d(m_reso.thetam/rads));
+	//tl::log_info("thetaa = ", tl::r2d(m_reso.thetaa/rads));
+	//tl::log_info("twothetas = ", tl::r2d(m_reso.twotheta/rads));
 
 	m_reso.angle_ki_Q = tl::get_angle_ki_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
 	m_reso.angle_kf_Q = tl::get_angle_kf_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
 
-	//tl::log_info("kiQ = ", tl::r2d(m_reso.angle_ki_Q/tl::radians));
+	//tl::log_info("kiQ = ", tl::r2d(m_reso.angle_ki_Q/rads));
 	//m_reso.angle_ki_Q = units::abs(m_reso.angle_ki_Q);
 	//m_reso.angle_kf_Q = units::abs(m_reso.angle_kf_Q);
 
@@ -302,23 +311,23 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		// remove collimators
 		/*if(m_reso.bMonoIsCurvedH)
 		{
-			m_reso.coll_h_pre_mono = 99999. * tl::radians;
-			m_reso.coll_h_pre_sample = 99999. * tl::radians;
+			m_reso.coll_h_pre_mono = 99999. * rads;
+			m_reso.coll_h_pre_sample = 99999. * rads;
 		}
 		if(m_reso.bMonoIsCurvedV)
 		{
-			m_reso.coll_v_pre_mono = 99999. * tl::radians;
-			m_reso.coll_v_pre_sample = 99999. * tl::radians;
+			m_reso.coll_v_pre_mono = 99999. * rads;
+			m_reso.coll_v_pre_sample = 99999. * rads;
 		}
 		if(m_reso.bAnaIsCurvedH)
 		{
-			m_reso.coll_h_post_sample = 99999. * tl::radians;
-			m_reso.coll_h_post_ana = 99999. * tl::radians;
+			m_reso.coll_h_post_sample = 99999. * rads;
+			m_reso.coll_h_post_ana = 99999. * rads;
 		}
 		if(m_reso.bAnaIsCurvedV)
 		{
-			m_reso.coll_v_post_sample = 99999. * tl::radians;
-			m_reso.coll_v_post_ana = 99999. * tl::radians;
+			m_reso.coll_v_post_sample = 99999. * rads;
+			m_reso.coll_v_post_ana = 99999. * rads;
 		}*/
 	}
 

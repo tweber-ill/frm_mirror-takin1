@@ -12,12 +12,8 @@
 #include "../res/ellipse.h"
 #include "../res/mc.h"
 
-enum class ResoAlgo
-{
-	CN,
-	POP,
-	ECK
-};
+
+enum class ResoAlgo { CN, POP, ECK };
 
 enum class ResoFocus : unsigned
 {
@@ -37,12 +33,12 @@ protected:
 	ResoAlgo m_algo = ResoAlgo::CN;
 	ResoFocus m_foc = ResoFocus::FOC_NONE;
 
-	McNeutronOpts<ublas::matrix<double>> m_opts;
+	McNeutronOpts<ublas::matrix<t_real_reso>> m_opts;
 	EckParams m_reso;
 	CNResults m_res;
 
 	bool m_bKiFix = 0;
-	double m_dKFix = 1.4;
+	t_real_reso m_dKFix = 1.4;
 
 public:
 	TASReso();
@@ -54,18 +50,18 @@ public:
 	bool LoadRes(const char* pcXmlFile);
 	bool LoadLattice(const char* pcXmlFile);
 
-	bool SetLattice(double a, double b, double c,
-		double alpha, double beta, double gamma,
-		const ublas::vector<double>& vec1, const ublas::vector<double>& vec2);
-	bool SetHKLE(double h, double k, double l, double E);
-	Ellipsoid4d GenerateMC(std::size_t iNum, std::vector<ublas::vector<double>>&) const;
+	bool SetLattice(t_real_reso a, t_real_reso b, t_real_reso c,
+		t_real_reso alpha, t_real_reso beta, t_real_reso gamma,
+		const ublas::vector<t_real_reso>& vec1, const ublas::vector<t_real_reso>& vec2);
+	bool SetHKLE(t_real_reso h, t_real_reso k, t_real_reso l, t_real_reso E);
+	Ellipsoid4d GenerateMC(std::size_t iNum, std::vector<ublas::vector<t_real_reso>>&) const;
 
 	void SetKiFix(bool bKiFix) { m_bKiFix = bKiFix; }
-	void SetKFix(double dKFix) { m_dKFix = dKFix; }
+	void SetKFix(t_real_reso dKFix) { m_dKFix = dKFix; }
 
 	void SetAlgo(ResoAlgo algo) { m_algo = algo; }
 	void SetOptimalFocus(ResoFocus foc) { m_foc = foc; }
-	
+
 	const EckParams& GetResoParams() const { return m_reso; }
 	const CNResults& GetResoResults() const { return m_res; }
 };

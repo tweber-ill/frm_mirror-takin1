@@ -91,7 +91,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 
 	std::function<t_real_sc(t_real_sc)> funcErr = [](t_real_sc d) -> t_real_sc
 	{
-		//if(tl::float_equal(d, 0.))	// error 0 causes problems with minuit
+		//if(tl::float_equal<t_real_sc>(d, 0.))	// error 0 causes problems with minuit
 		//	return d/100.;
 		return std::sqrt(d);
 	};
@@ -173,13 +173,15 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 
 		ScanPoint pt;
 		pt.h = sc[0]; pt.k = sc[1]; pt.l = sc[2];
-		pt.ki = sc[3]/tl::angstrom; pt.kf = sc[4]/tl::angstrom;
+		pt.ki = sc[3]/tl::get_one_angstrom<t_real_sc>();
+		pt.kf = sc[4]/tl::get_one_angstrom<t_real_sc>();
 		pt.Ei = tl::k2E(pt.ki); pt.Ef = tl::k2E(pt.kf);
 		pt.E = pt.Ei-pt.Ef;
 
 		tl::log_info("Point ", iPt+1, ": ", "h=", pt.h, ", k=", pt.k, ", l=", pt.l,
-			", ki=", t_real_sc(pt.ki*tl::angstrom), ", kf=", t_real_sc(pt.kf*tl::angstrom),
-			", E=", pt.E/tl::meV/*, ", Q=", pt.Q*tl::angstrom*/,
+			", ki=", t_real_sc(pt.ki*tl::get_one_angstrom<t_real_sc>()), 
+			", kf=", t_real_sc(pt.kf*tl::get_one_angstrom<t_real_sc>()),
+			", E=", pt.E/tl::get_one_meV<t_real_sc>()/*, ", Q=", pt.Q*tl::angstrom*/,
 			", Cts=", scan.vecCts[iPt]/*, "+-", scan.vecCtsErr[iPt]*/,
 			", Mon=", scan.vecMon[iPt]/*, "+-", scan.vecMonErr[iPt]*/);
 
@@ -194,18 +196,18 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	scan.vecScanOrigin[0] = ptBegin.h;
 	scan.vecScanOrigin[1] = ptBegin.k;
 	scan.vecScanOrigin[2] = ptBegin.l;
-	scan.vecScanOrigin[3] = ptBegin.E / tl::meV;
+	scan.vecScanOrigin[3] = ptBegin.E / tl::get_one_meV<t_real_sc>();
 
 	scan.vecScanDir[0] = ptEnd.h - ptBegin.h;
 	scan.vecScanDir[1] = ptEnd.k - ptBegin.k;
 	scan.vecScanDir[2] = ptEnd.l - ptBegin.l;
-	scan.vecScanDir[3] = (ptEnd.E - ptBegin.E) / tl::meV;
+	scan.vecScanDir[3] = (ptEnd.E - ptBegin.E) / tl::get_one_meV<t_real_sc>();
 
 	const t_real_sc dEps = 0.01;
 
 	for(unsigned int i=0; i<4; ++i)
 	{
-		if(!tl::float_equal(scan.vecScanDir[i], 0., dEps))
+		if(!tl::float_equal<t_real_sc>(scan.vecScanDir[i], 0., dEps))
 		{
 			scan.vecScanDir[i] /= scan.vecScanDir[i];
 			scan.vecScanOrigin[i] = 0.;
@@ -223,7 +225,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 
 	unsigned int iScIdx = 0;
 	for(iScIdx=0; iScIdx<4; ++iScIdx)
-		if(!tl::float_equal(scan.vecScanDir[iScIdx], 0., dEps))
+		if(!tl::float_equal<t_real_sc>(scan.vecScanDir[iScIdx], 0., dEps))
 			break;
 
 	if(iScIdx >= 4)
@@ -236,7 +238,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 	{
 		const ScanPoint& pt = scan.vecPoints[iPt];
 
-		t_real_sc dPos[] = { pt.h, pt.k, pt.l, pt.E/tl::meV };
+		t_real_sc dPos[] = { pt.h, pt.k, pt.l, pt.E/tl::get_one_meV<t_real_sc>() };
 		scan.vecX.push_back(dPos[iScIdx]);
 		//tl::log_info("Added pos: ", *scan.vecX.rbegin());
 	}

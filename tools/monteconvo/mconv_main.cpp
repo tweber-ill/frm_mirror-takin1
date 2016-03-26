@@ -14,9 +14,12 @@
 
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
-#include "tlibs/file/loadtxt.h"
+#include "tlibs/file/loaddat.h"
 #include "TASReso.h"
 #include "sqw.h"
+#include "../res/defs.h"
+
+using t_real = t_real_reso;
 
 
 static inline void usage(const char* pcProg)
@@ -50,8 +53,8 @@ static inline int monteconvo_simple(const char* pcNeutrons, const char* pcSqw)
 
 	unsigned int iCurNeutr = 0;
 	std::unordered_map<std::string, std::string> mapNeutrParams;
-	double dS = 0.;
-	double dhklE[4] = {0., 0., 0., 0.};
+	t_real dS = 0.;
+	t_real dhklE[4] = {0., 0., 0., 0.};
 
 	while(!ifstrNeutr.eof())
 	{
@@ -75,8 +78,8 @@ static inline int monteconvo_simple(const char* pcNeutrons, const char* pcSqw)
 			return -3;
 		}*/
 
-		std::vector<double> vecNeutr;
-		tl::get_tokens<double>(strLine, std::string(" \t"), vecNeutr);
+		std::vector<t_real> vecNeutr;
+		tl::get_tokens<t_real>(strLine, std::string(" \t"), vecNeutr);
 		if(vecNeutr.size() != 4)
 		{
 			tl::log_err("Need h,k,l,E data.");
@@ -92,10 +95,10 @@ static inline int monteconvo_simple(const char* pcNeutrons, const char* pcSqw)
 		++iCurNeutr;
 	}
 
-	dS /= double(iCurNeutr+1);
+	dS /= t_real(iCurNeutr+1);
 
 	for(int i=0; i<4; ++i)
-		dhklE[i] /= double(iCurNeutr+1);
+		dhklE[i] /= t_real(iCurNeutr+1);
 
 	tl::log_info("Processed ",  iCurNeutr, " MC neutrons.");
 	tl::log_info("S(", dhklE[0], ", ", dhklE[1],  ", ", dhklE[2], ", ", dhklE[3], ") = ", dS);
@@ -116,32 +119,32 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 		return -2;
 
 
-	tl::LoadTxt steps;
+	tl::DatFile<t_real, char> steps;
 	tl::log_info("Loading scan steps file \"", pcRes, "\".");
 	if(!steps.Load(pcSteps))
 	{
 		tl::log_err("Cannot load steps file.");
 		return -3;
 	}
-	if(steps.GetColCnt() != 4)
+	if(steps.GetColumnCount() != 4)
 	{
 		tl::log_err("Need 4 columns in step file: h k l E.");
 		return -3;
 	}
-	const unsigned int iNumSteps = steps.GetColLen();
+	const unsigned int iNumSteps = steps.GetRowCount();
 	tl::log_info("Number of scan steps: ", iNumSteps);
-	const double *pH = steps.GetColumn(0);
-	const double *pK = steps.GetColumn(1);
-	const double *pL = steps.GetColumn(2);
-	const double *pE = steps.GetColumn(3);
+	const t_real *pH = steps.GetColumn(0).data();
+	const t_real *pK = steps.GetColumn(1).data();
+	const t_real *pL = steps.GetColumn(2).data();
+	const t_real *pE = steps.GetColumn(3).data();
 
 	unsigned int iNumNeutrons = 0;
 	try
 	{
-		iNumNeutrons = tl::str_to_var<unsigned int>(steps.GetCommMapSingle().at("num_neutrons"));
-		reso.SetAlgo(ResoAlgo(tl::str_to_var<int>(steps.GetCommMapSingle().at("algo"))));
-		bool bFixedKi = tl::str_to_var<bool>(steps.GetCommMapSingle().at("fixed_ki"));
-		double dKFix = tl::str_to_var<double>(steps.GetCommMapSingle().at("kfix"));
+		iNumNeutrons = tl::str_to_var<unsigned int>(steps.GetHeader().at("num_neutrons"));
+		reso.SetAlgo(ResoAlgo(tl::str_to_var<int>(steps.GetHeader().at("algo"))));
+		bool bFixedKi = tl::str_to_var<bool>(steps.GetHeader().at("fixed_ki"));
+		t_real dKFix = tl::str_to_var<t_real>(steps.GetHeader().at("kfix"));
 
 		reso.SetKiFix(bFixedKi);
 		reso.SetKFix(dKFix);
@@ -190,10 +193,10 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 	ofstrOut << "# Format: h k l E S\n";
 	ofstrOut << "#\n";
 
-	std::vector<ublas::vector<double>> vecNeutrons;
+	std::vector<ublas::vector<t_real>> vecNeutrons;
 	for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 	{
-		double dProgress = double(iStep)/double(iNumSteps)*100.;
+		t_real dProgress = t_real(iStep)/t_real(iNumSteps)*100.;
 
 		tl::log_info("------------------------------------------------------------");
 		tl::log_info("Step ", iStep+1, " of ", iNumSteps, ".");
@@ -210,14 +213,14 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 			<< "\x07" << std::flush;
 		Ellipsoid4d elli = reso.GenerateMC(iNumNeutrons, vecNeutrons);
 
-		double dS = 0.;
-		double dhklE_mean[4] = {0., 0., 0., 0.};
+		t_real dS = 0.;
+		t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
 		std::cout <<"\x1b]0;"
 			<< std::setprecision(3) << dProgress <<  "%"
 			<< " - calculating S(q,w)"
 			<< "\x07" << std::flush;
-		for(const ublas::vector<double>& vecHKLE : vecNeutrons)
+		for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 		{
 			dS += (*psqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
@@ -225,9 +228,9 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 				dhklE_mean[i] += vecHKLE[i];
 		}
 
-		dS /= double(iNumNeutrons);
+		dS /= t_real(iNumNeutrons);
 		for(int i=0; i<4; ++i)
-			dhklE_mean[i] /= double(iNumNeutrons);
+			dhklE_mean[i] /= t_real(iNumNeutrons);
 
 		ofstrOut.precision(16);
 		ofstrOut << std::left << std::setw(20) << pH[iStep] << " "

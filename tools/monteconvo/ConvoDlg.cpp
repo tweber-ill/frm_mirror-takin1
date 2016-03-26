@@ -4,6 +4,7 @@
  * @date aug-2015
  * @license GPLv2
  */
+
 #include "ConvoDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
@@ -14,11 +15,14 @@
 #endif
 #include "TASReso.h"
 #include "helper/globals.h"
+#include "helper/qthelper.h"
 
 #include <iostream>
 #include <fstream>
 #include <QFileDialog>
 #include <QMessageBox>
+
+using t_real = t_real_reso;
 
 
 ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
@@ -252,13 +256,13 @@ void ConvoDlg::Start()
 		const unsigned int iNumNeutrons = spinNeutrons->value();
 
 		const unsigned int iNumSteps = spinStepCnt->value();
-		std::vector<double> vecH = tl::linspace<double,double>(spinStartH->value(), spinStopH->value(), iNumSteps);
-		std::vector<double> vecK = tl::linspace<double,double>(spinStartK->value(), spinStopK->value(), iNumSteps);
-		std::vector<double> vecL = tl::linspace<double,double>(spinStartL->value(), spinStopL->value(), iNumSteps);
-		std::vector<double> vecE = tl::linspace<double,double>(spinStartE->value(), spinStopE->value(), iNumSteps);
+		std::vector<t_real> vecH = tl::linspace<t_real,t_real>(spinStartH->value(), spinStopH->value(), iNumSteps);
+		std::vector<t_real> vecK = tl::linspace<t_real,t_real>(spinStartK->value(), spinStopK->value(), iNumSteps);
+		std::vector<t_real> vecL = tl::linspace<t_real,t_real>(spinStartL->value(), spinStopL->value(), iNumSteps);
+		std::vector<t_real> vecE = tl::linspace<t_real,t_real>(spinStartE->value(), spinStopE->value(), iNumSteps);
 
 		std::string strScanVar = "";
-		std::vector<double> *pVecScanX = nullptr;
+		std::vector<t_real> *pVecScanX = nullptr;
 		if(!tl::float_equal(spinStartH->value(), spinStopH->value(), 0.0001))
 		{
 			pVecScanX = &vecH;
@@ -355,23 +359,23 @@ void ConvoDlg::Start()
 
 		unsigned int iNumThreads = bForceDeferred ? 0 : std::thread::hardware_concurrency();
 
-		tl::ThreadPool<std::pair<bool, double>()> tp(iNumThreads);
+		tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads);
 		auto& lstFuts = tp.GetFutures();
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
 		{
-			double dCurH = vecH[iStep];
-			double dCurK = vecK[iStep];
-			double dCurL = vecL[iStep];
-			double dCurE = vecE[iStep];
+			t_real dCurH = vecH[iStep];
+			t_real dCurK = vecK[iStep];
+			t_real dCurL = vecL[iStep];
+			t_real dCurE = vecE[iStep];
 
 			tp.AddTask(
-			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, this]() -> std::pair<bool, double>
+			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, this]() -> std::pair<bool, t_real>
 			{
-				if(m_atStop.load()) return std::pair<bool, double>(false, 0.);
+				if(m_atStop.load()) return std::pair<bool, t_real>(false, 0.);
 
 				TASReso localreso = reso;
-				std::vector<ublas::vector<double>> vecNeutrons;
+				std::vector<ublas::vector<t_real>> vecNeutrons;
 
 				try
 				{
@@ -388,17 +392,17 @@ void ConvoDlg::Start()
 				{
 					//QMessageBox::critical(this, "Error", ex.what());
 					tl::log_err(ex.what());
-					return std::pair<bool, double>(false, 0.);
+					return std::pair<bool, t_real>(false, 0.);
 				}
 
 				Ellipsoid4d elli = localreso.GenerateMC(iNumNeutrons, vecNeutrons);
 
-				double dS = 0.;
-				double dhklE_mean[4] = {0., 0., 0., 0.};
+				t_real dS = 0.;
+				t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
-				for(const ublas::vector<double>& vecHKLE : vecNeutrons)
+				for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 				{
-					if(m_atStop.load()) return std::pair<bool, double>(false, 0.);
+					if(m_atStop.load()) return std::pair<bool, t_real>(false, 0.);
 
 					dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
@@ -406,16 +410,16 @@ void ConvoDlg::Start()
 						dhklE_mean[i] += vecHKLE[i];
 				}
 
-				dS /= double(iNumNeutrons);
+				dS /= t_real(iNumNeutrons);
 				for(int i=0; i<4; ++i)
-					dhklE_mean[i] /= double(iNumNeutrons);
+					dhklE_mean[i] /= t_real(iNumNeutrons);
 
 				if(bUseR0)
 					dS *= localreso.GetResoResults().dResVol;
 				if(bUseR0 && localreso.GetResoParams().bCalcR0)
 					dS *= localreso.GetResoResults().dR0;
 
-				return std::pair<bool, double>(true, dS);
+				return std::pair<bool, t_real>(true, dS);
 			});
 		}
 
@@ -434,10 +438,10 @@ void ConvoDlg::Start()
 				++iterTask;
 			}
 
-			std::pair<bool, double> pairS = fut.get();
+			std::pair<bool, t_real> pairS = fut.get();
 			if(!pairS.first)
 				break;
-			double dS = pairS.second;
+			t_real dS = pairS.second;
 
 			ostrOut.precision(16);
 			ostrOut << std::left << std::setw(20) << vecH[iStep] << " "
@@ -450,11 +454,12 @@ void ConvoDlg::Start()
 			m_vecQ.push_back((*pVecScanX)[iStep]);
 			m_vecS.push_back(dS);
 
+			set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecS, 0, false);
+			set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecS, 1, false);
+			//m_plotwrap->SetData(m_vecQ, m_vecS, 0, false);
+			//m_plotwrap->SetData(m_vecQ, m_vecS, 1, false);
 
-			m_plotwrap->SetData(m_vecQ, m_vecS, 0, false);
-			m_plotwrap->SetData(m_vecQ, m_vecS, 1, false);
-
-			set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecS, true);
+			//set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecS, true);
 			QMetaObject::invokeMethod(m_plotwrap->GetPlot(), "replot", connty);
 
 			QMetaObject::invokeMethod(textResult, "setPlainText", connty,

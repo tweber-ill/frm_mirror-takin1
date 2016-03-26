@@ -10,8 +10,9 @@
 #include "model.h"
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
+#include "../res/defs.h"
 
-using t_real = tl::t_real_min;
+using t_real = t_real_mod;
 
 
 SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const TASReso& reso)

@@ -13,6 +13,9 @@
 #include <fstream>
 #include <list>
 
+using t_real = t_real_reso;
+
+
 SqwElast::SqwElast(const char* pcFile) : m_bLoadedFromFile(true)
 {
 	std::ifstream ifstr(pcFile);
@@ -31,7 +34,7 @@ SqwElast::SqwElast(const char* pcFile) : m_bLoadedFromFile(true)
 			continue;
 
 		std::istringstream istr(strLine);
-		double h=0., k=0. ,l=0., dSigQ=0., dSigE=0., dS=0.;
+		t_real h=0., k=0. ,l=0., dSigQ=0., dSigE=0., dS=0.;
 		istr >> h >> k >> l >> dSigQ >> dSigE >> dS;
 
 		AddPeak(h,k,l, dSigQ, dSigE, dS);
@@ -41,7 +44,7 @@ SqwElast::SqwElast(const char* pcFile) : m_bLoadedFromFile(true)
 	SqwBase::m_bOk = true;
 }
 
-void SqwElast::AddPeak(double h, double k, double l, double dSigQ, double dSigE, double dS)
+void SqwElast::AddPeak(t_real h, t_real k, t_real l, t_real dSigQ, t_real dSigE, t_real dS)
 {
 	ElastPeak pk;
 	pk.h = h; pk.k = k; pk.l = l;
@@ -50,32 +53,32 @@ void SqwElast::AddPeak(double h, double k, double l, double dSigQ, double dSigE,
 	m_lstPeaks.push_back(std::move(pk));
 }
 
-double SqwElast::operator()(double dh, double dk, double dl, double dE) const
+t_real SqwElast::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
-	const ublas::vector<double> vecCur = tl::make_vec({dh, dk, dl});
+	const ublas::vector<t_real> vecCur = tl::make_vec({dh, dk, dl});
 
 	if(!m_bLoadedFromFile)	// use nearest integer bragg peak
 	{
-		const ublas::vector<double> vecPt = tl::make_vec({std::round(dh), std::round(dk), std::round(dl)});
+		const ublas::vector<t_real> vecPt = tl::make_vec({std::round(dh), std::round(dk), std::round(dl)});
 
-		const double dDistQ = ublas::norm_2(vecPt-vecCur);
-		const double dSigmaQ = 0.02;
-		const double dSigmaE = 0.02;
+		const t_real dDistQ = ublas::norm_2(vecPt-vecCur);
+		const t_real dSigmaQ = 0.02;
+		const t_real dSigmaE = 0.02;
 
-		return tl::gauss_model(dDistQ, 0., dSigmaQ, 1., 0.) *
-			tl::gauss_model(dE, 0., dSigmaE, 1., 0.);
+		return tl::gauss_model<t_real>(dDistQ, 0., dSigmaQ, 1., 0.) *
+			tl::gauss_model<t_real>(dE, 0., dSigmaE, 1., 0.);
 	}
 	else	// use bragg peaks from config file
 	{
-		double dS = 0.;
+		t_real dS = 0.;
 
 		for(const ElastPeak& pk : m_lstPeaks)
 		{
-			const ublas::vector<double> vecPk = tl::make_vec({pk.h, pk.k, pk.l});
-			const double dDistQ = ublas::norm_2(vecPk-vecCur);
+			const ublas::vector<t_real> vecPk = tl::make_vec({pk.h, pk.k, pk.l});
+			const t_real dDistQ = ublas::norm_2(vecPk-vecCur);
 
-			dS += pk.dS * tl::gauss_model(dDistQ, 0., pk.dSigQ, 1., 0.) *
-				tl::gauss_model(dE, 0., pk.dSigE, 1., 0.);
+			dS += pk.dS * tl::gauss_model<t_real>(dDistQ, 0., pk.dSigQ, 1., 0.) *
+				tl::gauss_model<t_real>(dE, 0., pk.dSigE, 1., 0.);
 		}
 
 		return dS;
@@ -113,13 +116,13 @@ SqwKdTree::SqwKdTree(const char* pcFile)
 
 bool SqwKdTree::open(const char* pcFile)
 {
-	m_kd = std::make_shared<tl::Kd<double>>();
+	m_kd = std::make_shared<tl::Kd<t_real>>();
 
 	std::ifstream ifstr(pcFile);
 	if(!ifstr.is_open())
 		return false;
 
-	std::list<std::vector<double>> lstPoints;
+	std::list<std::vector<t_real>> lstPoints;
 	std::size_t iCurPoint = 0;
 	while(!ifstr.eof())
 	{
@@ -137,8 +140,8 @@ bool SqwKdTree::open(const char* pcFile)
 			continue;
 		}
 
-		std::vector<double> vecSqw;
-		tl::get_tokens<double>(strLine, std::string(" \t"), vecSqw);
+		std::vector<t_real> vecSqw;
+		tl::get_tokens<t_real>(strLine, std::string(" \t"), vecSqw);
 		if(vecSqw.size() != 5)
 		{
 			tl::log_err("Need h,k,l,E,S data.");
@@ -159,15 +162,15 @@ bool SqwKdTree::open(const char* pcFile)
 }
 
 
-double SqwKdTree::operator()(double dh, double dk, double dl, double dE) const
+t_real SqwKdTree::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
-	std::vector<double> vechklE = {dh, dk, dl, dE};
+	std::vector<t_real> vechklE = {dh, dk, dl, dE};
 	if(!m_kd->IsPointInGrid(vechklE))
 		return 0.;
 
-	std::vector<double> vec = m_kd->GetNearestNode(vechklE);
+	std::vector<t_real> vec = m_kd->GetNearestNode(vechklE);
 
-	/*double dDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.) +
+	/*t_real dDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.) +
 			std::pow(vec[1]-vechklE[1], 2.) +
 			std::pow(vec[2]-vechklE[2], 2.) +
 			std::pow(vec[3]-vechklE[3], 2.));
@@ -203,7 +206,7 @@ SqwBase* SqwKdTree::shallow_copy() const
 //------------------------------------------------------------------------------
 
 
-double SqwPhonon::disp(double dq, double da, double df)
+t_real SqwPhonon::disp(t_real dq, t_real da, t_real df)
 {
 	return std::abs(da*std::sin(dq*df));
 }
@@ -211,9 +214,9 @@ double SqwPhonon::disp(double dq, double da, double df)
 void SqwPhonon::create()
 {
 #ifdef USE_RTREE
-	m_rt = std::make_shared<tl::Rt<double,3,RT_ELEMS>>();
+	m_rt = std::make_shared<tl::Rt<t_real,3,RT_ELEMS>>();
 #else
-	m_kd = std::make_shared<tl::Kd<double>>();
+	m_kd = std::make_shared<tl::Kd<t_real>>();
 #endif
 
 	const bool bSaveOnlyIndices = 1;
@@ -233,32 +236,32 @@ void SqwPhonon::create()
 	tl::log_info("TA1: ", m_vecTA1);
 	tl::log_info("TA2: ", m_vecTA2);
 
-	std::list<std::vector<double>> lst;
-	for(double dq=-1.; dq<1.; dq+=1./double(m_iNumqs))
+	std::list<std::vector<t_real>> lst;
+	for(t_real dq=-1.; dq<1.; dq+=1./t_real(m_iNumqs))
 	{
-		ublas::vector<double> vecQLA = dq*m_vecLA;
-		ublas::vector<double> vecQTA1 = dq*m_vecTA1;
-		ublas::vector<double> vecQTA2 = dq*m_vecTA2;
+		ublas::vector<t_real> vecQLA = dq*m_vecLA;
+		ublas::vector<t_real> vecQTA1 = dq*m_vecTA1;
+		ublas::vector<t_real> vecQTA2 = dq*m_vecTA2;
 
 		vecQLA += m_vecBragg;
 		vecQTA1 += m_vecBragg;
 		vecQTA2 += m_vecBragg;
 
-		double dELA = disp(dq, m_dLA_amp, m_dLA_freq);
-		double dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
-		double dETA2 = disp(dq, m_dTA2_amp, m_dTA2_freq);
+		t_real dELA = disp(dq, m_dLA_amp, m_dLA_freq);
+		t_real dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
+		t_real dETA2 = disp(dq, m_dTA2_amp, m_dTA2_freq);
 
 
-		double dLA_E_HWHM = m_dLA_E_HWHM;
-		double dLA_q_HWHM = m_dLA_q_HWHM;
-		double dTA1_E_HWHM = m_dTA1_E_HWHM;
-		double dTA1_q_HWHM = m_dTA1_q_HWHM;
-		double dTA2_E_HWHM = m_dTA2_E_HWHM;
-		double dTA2_q_HWHM = m_dTA2_q_HWHM;
+		t_real dLA_E_HWHM = m_dLA_E_HWHM;
+		t_real dLA_q_HWHM = m_dLA_q_HWHM;
+		t_real dTA1_E_HWHM = m_dTA1_E_HWHM;
+		t_real dTA1_q_HWHM = m_dTA1_q_HWHM;
+		t_real dTA2_E_HWHM = m_dTA2_E_HWHM;
+		t_real dTA2_q_HWHM = m_dTA2_q_HWHM;
 
-		double dLA_S0 = m_dLA_S0;
-		double dTA1_S0 = m_dTA1_S0;
-		double dTA2_S0 = m_dTA2_S0;
+		t_real dLA_S0 = m_dLA_S0;
+		t_real dTA1_S0 = m_dTA1_S0;
+		t_real dTA2_S0 = m_dTA2_S0;
 
 		if(bSaveOnlyIndices)
 		{
@@ -270,32 +273,32 @@ void SqwPhonon::create()
 		// only generate exact phonon branches, no arcs
 		if(m_iNumArc==0 || m_iNumArc==1)
 		{
-			lst.push_back(std::vector<double>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
-			lst.push_back(std::vector<double>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
-			lst.push_back(std::vector<double>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
+			lst.push_back(std::vector<t_real>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
+			lst.push_back(std::vector<t_real>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
+			lst.push_back(std::vector<t_real>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
 		}
 		else
 		{
-			const double dArcMax = std::abs(tl::d2r(m_dArcMax));
-			for(double dph=-dArcMax; dph<=dArcMax; dph+=1./double(m_iNumArc))
+			const t_real dArcMax = std::abs(tl::d2r(m_dArcMax));
+			for(t_real dph=-dArcMax; dph<=dArcMax; dph+=1./t_real(m_iNumArc))
 			{
 				// ta2
-				ublas::vector<double> vecArcTA2TA1 = tl::arc(vecQTA2, vecQTA1, dph);
-				ublas::vector<double> vecArcTA2LA = tl::arc(vecQTA2, vecQLA, dph);
-				lst.push_back(std::vector<double>({vecArcTA2TA1[0], vecArcTA2TA1[1], vecArcTA2TA1[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
-				lst.push_back(std::vector<double>({vecArcTA2LA[0], vecArcTA2LA[1], vecArcTA2LA[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
+				ublas::vector<t_real> vecArcTA2TA1 = tl::arc(vecQTA2, vecQTA1, dph);
+				ublas::vector<t_real> vecArcTA2LA = tl::arc(vecQTA2, vecQLA, dph);
+				lst.push_back(std::vector<t_real>({vecArcTA2TA1[0], vecArcTA2TA1[1], vecArcTA2TA1[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
+				lst.push_back(std::vector<t_real>({vecArcTA2LA[0], vecArcTA2LA[1], vecArcTA2LA[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
 
 				// ta1
-				ublas::vector<double> vecArcTA1TA2 = tl::arc(vecQTA1, vecQTA2, dph);
-				ublas::vector<double> vecArcTA1LA = tl::arc(vecQTA1, vecQLA, dph);
-				lst.push_back(std::vector<double>({vecArcTA1TA2[0], vecArcTA1TA2[1], vecArcTA1TA2[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
-				lst.push_back(std::vector<double>({vecArcTA1LA[0], vecArcTA1LA[1], vecArcTA1LA[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
+				ublas::vector<t_real> vecArcTA1TA2 = tl::arc(vecQTA1, vecQTA2, dph);
+				ublas::vector<t_real> vecArcTA1LA = tl::arc(vecQTA1, vecQLA, dph);
+				lst.push_back(std::vector<t_real>({vecArcTA1TA2[0], vecArcTA1TA2[1], vecArcTA1TA2[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
+				lst.push_back(std::vector<t_real>({vecArcTA1LA[0], vecArcTA1LA[1], vecArcTA1LA[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
 
 				// la
-				ublas::vector<double> vecArcLATA1 = tl::arc(vecQLA, vecQTA1, dph);
-				ublas::vector<double> vecArcLATA2 = tl::arc(vecQLA, vecQTA2, dph);
-				lst.push_back(std::vector<double>({vecArcLATA1[0], vecArcLATA1[1], vecArcLATA1[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
-				lst.push_back(std::vector<double>({vecArcLATA2[0], vecArcLATA2[1], vecArcLATA2[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
+				ublas::vector<t_real> vecArcLATA1 = tl::arc(vecQLA, vecQTA1, dph);
+				ublas::vector<t_real> vecArcLATA2 = tl::arc(vecQLA, vecQTA2, dph);
+				lst.push_back(std::vector<t_real>({vecArcLATA1[0], vecArcLATA1[1], vecArcLATA1[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
+				lst.push_back(std::vector<t_real>({vecArcLATA2[0], vecArcLATA2[1], vecArcLATA2[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
 			}
 		}
 	}
@@ -321,13 +324,13 @@ void SqwPhonon::destroy()
 #endif
 }
 
-SqwPhonon::SqwPhonon(const ublas::vector<double>& vecBragg,
-	const ublas::vector<double>& vecTA1,
-	const ublas::vector<double>& vecTA2,
-	double dLA_amp, double dLA_freq, double dLA_E_HWHM, double dLA_q_HWHM, double dLA_S0,
-	double dTA1_amp, double dTA1_freq, double dTA1_E_HWHM, double dTA1_q_HWHM, double dTA1_S0,
-	double dTA2_amp, double dTA2_freq, double dTA2_E_HWHM, double dTA2_q_HWHM, double dTA2_S0,
-	double dT)
+SqwPhonon::SqwPhonon(const ublas::vector<t_real>& vecBragg,
+	const ublas::vector<t_real>& vecTA1,
+	const ublas::vector<t_real>& vecTA2,
+	t_real dLA_amp, t_real dLA_freq, t_real dLA_E_HWHM, t_real dLA_q_HWHM, t_real dLA_S0,
+	t_real dTA1_amp, t_real dTA1_freq, t_real dTA1_E_HWHM, t_real dTA1_q_HWHM, t_real dTA1_S0,
+	t_real dTA2_amp, t_real dTA2_freq, t_real dTA2_E_HWHM, t_real dTA2_q_HWHM, t_real dTA2_S0,
+	t_real dT)
 		: m_vecBragg(vecBragg), m_vecLA(vecBragg),
 		m_vecTA1(vecTA1), m_vecTA2(vecTA2),
 		m_dLA_amp(dLA_amp), m_dLA_freq(dLA_freq), m_dLA_S0(dLA_S0),
@@ -360,98 +363,98 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 
 		if(vecToks[0] == "num_qs") m_iNumqs = tl::str_to_var<unsigned int>(vecToks[1]);
 		if(vecToks[0] == "num_arc") m_iNumArc = tl::str_to_var<unsigned int>(vecToks[1]);
-		if(vecToks[0] == "arc_max") m_dArcMax = tl::str_to_var<double>(vecToks[1]);
+		if(vecToks[0] == "arc_max") m_dArcMax = tl::str_to_var<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
-		else if(vecToks[0] == "TA1") m_vecTA1 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
-		else if(vecToks[0] == "TA2") m_vecTA2 = tl::make_vec({tl::str_to_var<double>(vecToks[1]), tl::str_to_var<double>(vecToks[2]), tl::str_to_var<double>(vecToks[3])});
+		else if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var<t_real>(vecToks[1]), tl::str_to_var<t_real>(vecToks[2]), tl::str_to_var<t_real>(vecToks[3])});
+		else if(vecToks[0] == "TA1") m_vecTA1 = tl::make_vec({tl::str_to_var<t_real>(vecToks[1]), tl::str_to_var<t_real>(vecToks[2]), tl::str_to_var<t_real>(vecToks[3])});
+		else if(vecToks[0] == "TA2") m_vecTA2 = tl::make_vec({tl::str_to_var<t_real>(vecToks[1]), tl::str_to_var<t_real>(vecToks[2]), tl::str_to_var<t_real>(vecToks[3])});
 
-		else if(vecToks[0] == "LA_amp") m_dLA_amp = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "LA_freq") m_dLA_freq = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "LA_S0") m_dLA_S0 = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "LA_amp") m_dLA_amp = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_freq") m_dLA_freq = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_S0") m_dLA_S0 = tl::str_to_var<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "TA1_amp") m_dTA1_amp = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "TA1_freq") m_dTA1_freq = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "TA1_S0") m_dTA1_S0 = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "TA1_amp") m_dTA1_amp = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_freq") m_dTA1_freq = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_S0") m_dTA1_S0 = tl::str_to_var<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "TA2_amp") m_dTA2_amp = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "TA2_freq") m_dTA2_freq = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "TA2_S0") m_dTA2_S0 = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "TA2_amp") m_dTA2_amp = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_freq") m_dTA2_freq = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_S0") m_dTA2_S0 = tl::str_to_var<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var<double>(vecToks[1]);
-		else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "T") m_dT = tl::str_to_var<double>(vecToks[1]);
+		else if(vecToks[0] == "T") m_dT = tl::str_to_var<t_real>(vecToks[1]);
 	}
 
 	create();
 }
 
-double SqwPhonon::operator()(double dh, double dk, double dl, double dE) const
+t_real SqwPhonon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
-	std::vector<double> vechklE = {dh, dk, dl, dE};
+	std::vector<t_real> vechklE = {dh, dk, dl, dE};
 #ifdef USE_RTREE
 	if(!m_rt->IsPointInGrid(vechklE)) return 0.;
-	std::vector<double> vec = m_rt->GetNearestNode(vechklE);
+	std::vector<t_real> vec = m_rt->GetNearestNode(vechklE);
 #else
 	if(!m_kd->IsPointInGrid(vechklE)) return 0.;
-	std::vector<double> vec = m_kd->GetNearestNode(vechklE);
+	std::vector<t_real> vec = m_kd->GetNearestNode(vechklE);
 #endif
 
 	//std::cout << "query: " << dh << " " << dk << " " << dl << " " << dE << std::endl;
 	//std::cout << "nearest: " << vec[0] << " " << vec[1] << " " << vec[2] << " " << vec[3] << std::endl;
 
-	double dE0 = vec[3];
-	double dS = vec[4];
-	double dT = m_dT;
-	double dE_HWHM = vec[5];
-	double dQ_HWHM = vec[6];
+	t_real dE0 = vec[3];
+	t_real dS = vec[4];
+	t_real dT = m_dT;
+	t_real dE_HWHM = vec[5];
+	t_real dQ_HWHM = vec[6];
 
 	// index, not value
 	if(dE_HWHM < 0.)
 	{
-		if(tl::float_equal(dE_HWHM, -1., 0.1))		// TA1
+		if(tl::float_equal<t_real>(dE_HWHM, -1., 0.1))		// TA1
 			dE_HWHM = m_dTA1_E_HWHM;
-		else if(tl::float_equal(dE_HWHM, -2., 0.1))	// TA2
+		else if(tl::float_equal<t_real>(dE_HWHM, -2., 0.1))	// TA2
 			dE_HWHM = m_dTA2_E_HWHM;
-		else if(tl::float_equal(dE_HWHM, -3., 0.1))	// LA
+		else if(tl::float_equal<t_real>(dE_HWHM, -3., 0.1))	// LA
 			dE_HWHM = m_dLA_E_HWHM;
 	}
 	if(dQ_HWHM < 0.)
 	{
-		if(tl::float_equal(dQ_HWHM, -1., 0.1))		// TA1
+		if(tl::float_equal<t_real>(dQ_HWHM, -1., 0.1))		// TA1
 			dQ_HWHM = m_dTA1_q_HWHM;
-		else if(tl::float_equal(dQ_HWHM, -2., 0.1))	// TA2
+		else if(tl::float_equal<t_real>(dQ_HWHM, -2., 0.1))	// TA2
 			dQ_HWHM = m_dTA2_q_HWHM;
-		else if(tl::float_equal(dQ_HWHM, -3., 0.1))	// LA
+		else if(tl::float_equal<t_real>(dQ_HWHM, -3., 0.1))	// LA
 			dQ_HWHM = m_dLA_q_HWHM;
 	}
 	if(dS < 0.)
 	{
-		if(tl::float_equal(dS, -1., 0.1))		// TA1
+		if(tl::float_equal<t_real>(dS, -1., 0.1))		// TA1
 			dS = m_dTA1_S0;
-		else if(tl::float_equal(dS, -2., 0.1))	// TA2
+		else if(tl::float_equal<t_real>(dS, -2., 0.1))	// TA2
 			dS = m_dTA2_S0;
-		else if(tl::float_equal(dS, -3., 0.1))	// LA
+		else if(tl::float_equal<t_real>(dS, -3., 0.1))	// LA
 			dS = m_dLA_S0;
 	}
 
-	double dqDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.)
+	t_real dqDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.)
 		+ std::pow(vec[1]-vechklE[1], 2.)
 		+ std::pow(vec[2]-vechklE[2], 2.));
 
-	double dInc = 0.;
-	if(!tl::float_equal(m_dIncAmp, 0.))
-		dInc = tl::gauss_model(dE, 0., m_dIncSig, m_dIncAmp, 0.);
+	t_real dInc = 0.;
+	if(!tl::float_equal<t_real>(m_dIncAmp, 0.))
+		dInc = tl::gauss_model<t_real>(dE, 0., m_dIncSig, m_dIncAmp, 0.);
 
-	return dS * std::abs(tl::DHO_model(dE, dT, dE0, dE_HWHM, 1., 0.))
-		* tl::gauss_model(dqDist, 0., dQ_HWHM*tl::HWHM2SIGMA, 1., 0.)
+	return dS * std::abs(tl::DHO_model<t_real>(dE, dT, dE0, dE_HWHM, 1., 0.))
+		* tl::gauss_model<t_real>(dqDist, 0., dQ_HWHM*tl::HWHM2SIGMA, 1., 0.)
 		+ dInc;
 }
 
@@ -485,34 +488,34 @@ std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
 
 	vecVars.push_back(SqwBase::t_var{"num_qs", "uint", tl::var_to_str(m_iNumqs)});
 	vecVars.push_back(SqwBase::t_var{"num_arc", "uint", tl::var_to_str(m_iNumArc)});
-	vecVars.push_back(SqwBase::t_var{"arc_max", "double", tl::var_to_str(m_dArcMax)});
+	vecVars.push_back(SqwBase::t_var{"arc_max", "t_real", tl::var_to_str(m_dArcMax)});
 
 	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
 	vecVars.push_back(SqwBase::t_var{"TA1", "vector", vec_to_str(m_vecTA1)});
 	vecVars.push_back(SqwBase::t_var{"TA2", "vector", vec_to_str(m_vecTA2)});
 
-	vecVars.push_back(SqwBase::t_var{"LA_amp", "double", tl::var_to_str(m_dLA_amp)});
-	vecVars.push_back(SqwBase::t_var{"LA_freq", "double", tl::var_to_str(m_dLA_freq)});
-	vecVars.push_back(SqwBase::t_var{"LA_E_HWHM", "double", tl::var_to_str(m_dLA_E_HWHM)});
-	vecVars.push_back(SqwBase::t_var{"LA_q_HWHM", "double", tl::var_to_str(m_dLA_q_HWHM)});
-	vecVars.push_back(SqwBase::t_var{"LA_S0", "double", tl::var_to_str(m_dLA_S0)});
+	vecVars.push_back(SqwBase::t_var{"LA_amp", "t_real", tl::var_to_str(m_dLA_amp)});
+	vecVars.push_back(SqwBase::t_var{"LA_freq", "t_real", tl::var_to_str(m_dLA_freq)});
+	vecVars.push_back(SqwBase::t_var{"LA_E_HWHM", "t_real", tl::var_to_str(m_dLA_E_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"LA_q_HWHM", "t_real", tl::var_to_str(m_dLA_q_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"LA_S0", "t_real", tl::var_to_str(m_dLA_S0)});
 
-	vecVars.push_back(SqwBase::t_var{"TA1_amp", "double", tl::var_to_str(m_dTA1_amp)});
-	vecVars.push_back(SqwBase::t_var{"TA1_freq", "double", tl::var_to_str(m_dTA1_freq)});
-	vecVars.push_back(SqwBase::t_var{"TA1_E_HWHM", "double", tl::var_to_str(m_dTA1_E_HWHM)});
-	vecVars.push_back(SqwBase::t_var{"TA1_q_HWHM", "double", tl::var_to_str(m_dTA1_q_HWHM)});
-	vecVars.push_back(SqwBase::t_var{"TA1_S0", "double", tl::var_to_str(m_dTA1_S0)});
+	vecVars.push_back(SqwBase::t_var{"TA1_amp", "t_real", tl::var_to_str(m_dTA1_amp)});
+	vecVars.push_back(SqwBase::t_var{"TA1_freq", "t_real", tl::var_to_str(m_dTA1_freq)});
+	vecVars.push_back(SqwBase::t_var{"TA1_E_HWHM", "t_real", tl::var_to_str(m_dTA1_E_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"TA1_q_HWHM", "t_real", tl::var_to_str(m_dTA1_q_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"TA1_S0", "t_real", tl::var_to_str(m_dTA1_S0)});
 
-	vecVars.push_back(SqwBase::t_var{"TA2_amp", "double", tl::var_to_str(m_dTA2_amp)});
-	vecVars.push_back(SqwBase::t_var{"TA2_freq", "double", tl::var_to_str(m_dTA2_freq)});
-	vecVars.push_back(SqwBase::t_var{"TA2_E_HWHM", "double", tl::var_to_str(m_dTA2_E_HWHM)});
-	vecVars.push_back(SqwBase::t_var{"TA2_q_HWHM", "double", tl::var_to_str(m_dTA2_q_HWHM)});
-	vecVars.push_back(SqwBase::t_var{"TA2_S0", "double", tl::var_to_str(m_dTA2_S0)});
+	vecVars.push_back(SqwBase::t_var{"TA2_amp", "t_real", tl::var_to_str(m_dTA2_amp)});
+	vecVars.push_back(SqwBase::t_var{"TA2_freq", "t_real", tl::var_to_str(m_dTA2_freq)});
+	vecVars.push_back(SqwBase::t_var{"TA2_E_HWHM", "t_real", tl::var_to_str(m_dTA2_E_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"TA2_q_HWHM", "t_real", tl::var_to_str(m_dTA2_q_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"TA2_S0", "t_real", tl::var_to_str(m_dTA2_S0)});
 
-	vecVars.push_back(SqwBase::t_var{"inc_amp", "double", tl::var_to_str(m_dIncAmp)});
-	vecVars.push_back(SqwBase::t_var{"inc_sig", "double", tl::var_to_str(m_dIncSig)});
+	vecVars.push_back(SqwBase::t_var{"inc_amp", "t_real", tl::var_to_str(m_dIncAmp)});
+	vecVars.push_back(SqwBase::t_var{"inc_sig", "t_real", tl::var_to_str(m_dIncSig)});
 
-	vecVars.push_back(SqwBase::t_var{"T", "double", tl::var_to_str(m_dT)});
+	vecVars.push_back(SqwBase::t_var{"T", "t_real", tl::var_to_str(m_dT)});
 
 	return vecVars;
 }
