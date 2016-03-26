@@ -23,7 +23,7 @@ namespace ublas = boost::numeric::ublas;
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/geo.h"
-#include "cn.h"
+#include "defs.h"
 
 using t_real_elli = t_real_reso;
 

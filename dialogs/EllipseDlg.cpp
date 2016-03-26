@@ -1,7 +1,7 @@
 /*
  * Ellipse Dialog
  * @author Tobias Weber
- * @date may-2013, 29-apr-2014
+ * @date 2013 - 2016
  * @license GPLv2
  */
 
@@ -17,7 +17,7 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 {
 	setupUi(this);
 	setWindowTitle(m_pcTitle);
-	
+
 	if(m_pSettings)
 	{
 		QFont font;
@@ -93,8 +93,8 @@ void EllipseDlg::Calc()
 	if(!m_bReady) return;
 	const EllipseCoordSys coord = static_cast<EllipseCoordSys>(comboCoord->currentIndex());
 
-	const ublas::matrix<double> *pReso = nullptr;
-	const ublas::vector<double> *pQavg = nullptr;
+	const ublas::matrix<t_real_reso> *pReso = nullptr;
+	const ublas::vector<t_real_reso> *pQavg = nullptr;
 
 	switch(coord)
 	{
@@ -113,8 +113,8 @@ void EllipseDlg::Calc()
 
 
 	int iAlgo = m_iAlgo;
-	const ublas::matrix<double>& reso = *pReso;
-	const ublas::vector<double>& _Q_avg = *pQavg;
+	const ublas::matrix<t_real_reso>& reso = *pReso;
+	const ublas::vector<t_real_reso>& _Q_avg = *pQavg;
 
 	try
 	{
@@ -141,9 +141,9 @@ void EllipseDlg::Calc()
 		bool bXMLLoaded = 0; //xmlparams.Load("res/res.conf");
 		bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
 
-		ublas::vector<double> Q_avg = _Q_avg;
+		ublas::vector<t_real_reso> Q_avg = _Q_avg;
 		if(bCenterOn0)
-			Q_avg = ublas::zero_vector<double>(Q_avg.size());
+			Q_avg = ublas::zero_vector<t_real_reso>(Q_avg.size());
 
 
 		std::vector<std::future<Ellipse>> tasks_ell_proj, tasks_ell_slice;
@@ -208,17 +208,19 @@ void EllipseDlg::Calc()
 			m_elliSlice[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[1][iEll][0], iParams[1][iEll][1],
 				iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);*/
 
-			std::vector<double>& vecXProj = m_vecXCurvePoints[iEll*2+0];
-			std::vector<double>& vecYProj = m_vecYCurvePoints[iEll*2+0];
-			std::vector<double>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
-			std::vector<double>& vecYSlice = m_vecYCurvePoints[iEll*2+1];
+			std::vector<t_real_reso>& vecXProj = m_vecXCurvePoints[iEll*2+0];
+			std::vector<t_real_reso>& vecYProj = m_vecYCurvePoints[iEll*2+0];
+			std::vector<t_real_reso>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
+			std::vector<t_real_reso>& vecYSlice = m_vecYCurvePoints[iEll*2+1];
 
-			double dBBProj[4], dBBSlice[4];
+			t_real_reso dBBProj[4], dBBSlice[4];
 			m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512, dBBProj);
 			m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512, dBBSlice);
 
-			m_vecplotwrap[iEll]->SetData(vecXProj, vecYProj, 0, false);
-			m_vecplotwrap[iEll]->SetData(vecXSlice, vecYSlice, 1, false);
+			set_qwt_data<t_real_reso>()(*m_vecplotwrap[iEll], vecXProj, vecYProj, 0, false);
+			set_qwt_data<t_real_reso>()(*m_vecplotwrap[iEll], vecXSlice, vecYSlice, 1, false);
+			//m_vecplotwrap[iEll]->SetData(vecXProj, vecYProj, 0, false);
+			//m_vecplotwrap[iEll]->SetData(vecXSlice, vecYSlice, 1, false);
 
 
 			std::ostringstream ostrSlope;
@@ -269,9 +271,9 @@ void EllipseDlg::Calc()
 	}
 }
 
-void EllipseDlg::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
-	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
-	const ublas::matrix<double>& resoOrient, const ublas::vector<double>& Q_avgOrient,
+void EllipseDlg::SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
+	const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
+	const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
 	int iAlgo)
 {
 	m_reso = reso;

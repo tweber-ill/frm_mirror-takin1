@@ -12,6 +12,7 @@
 #ifndef __CN_H__
 #define __CN_H__
 
+#include "defs.h"
 #include "tlibs/math/neutrons.hpp"
 
 #include <boost/numeric/ublas/vector.hpp>
@@ -21,8 +22,6 @@
 namespace ublas = boost::numeric::ublas;
 namespace units = boost::units;
 namespace codata = boost::units::si::constants::codata;
-
-using t_real_reso = double;
 
 
 struct CNParams

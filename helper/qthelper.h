@@ -9,6 +9,7 @@
 #define __QT_HELPER_H__
 
 #include <vector>
+#include <type_traits>
 #include <QTableWidget>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
@@ -20,6 +21,9 @@
 
 class QwtPlotWrapper
 {
+public:
+	using t_real_qwt = double;		// qwt's intrinsic value type
+
 protected:
 	QwtPlot *m_pPlot = nullptr;
 	std::vector<QwtPlotCurve*> m_vecCurves;
@@ -39,10 +43,50 @@ public:
 	bool HasTrackerSignal() const;
 	
 	void SetData(const std::vector<double>& vecX, const std::vector<double>& vecY,
-		unsigned int iCurve=0, bool bReplot=1);
+		unsigned int iCurve=0, bool bReplot=1, bool bCopy=0);
+};
+
+
+// ----------------------------------------------------------------------------
+
+template<typename t_real, bool bSetDirectly=std::is_same<t_real, typename QwtPlotWrapper::t_real_qwt>::value>
+struct set_qwt_data
+{
+	void operator()(QwtPlotWrapper& plot, const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
+		unsigned int iCurve=0, bool bReplot=1) {}
+};
+
+// same types -> set data directly
+template<typename t_real>
+struct set_qwt_data<t_real, 1>
+{
+	void operator()(QwtPlotWrapper& plot, const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
+		unsigned int iCurve=0, bool bReplot=1)
+	{
+		plot.SetData(vecX, vecY, iCurve, bReplot, 0);
+	}
+};
+
+// different types -> copy & convert data first
+template<typename t_real>
+struct set_qwt_data<t_real, 0>
+{
+	void operator()(QwtPlotWrapper& plot, const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
+		unsigned int iCurve=0, bool bReplot=1)
+	{
+		std::vector<QwtPlotWrapper::t_real_qwt> vecNewX, vecNewY;
+		vecNewX.reserve(vecX.size());
+		vecNewY.reserve(vecY.size());
+
+		for(t_real d : vecX) vecNewX.push_back(d);
+		for(t_real d : vecY) vecNewY.push_back(d);
+
+		plot.SetData(vecNewX, vecNewY, iCurve, bReplot, 1);
+	}
 };
 
 // ----------------------------------------------------------------------------
+
 
 extern bool save_table(const char* pcFile, const QTableWidget* pTable);
 

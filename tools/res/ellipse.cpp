@@ -13,6 +13,7 @@
 #include "tlibs/math/linalg2.h"
 #include "tlibs/math/quat.h"
 #include "tlibs/math/math.h"
+#include "cn.h"
 
 typedef t_real_elli t_real;
 typedef ublas::matrix<t_real> t_mat;

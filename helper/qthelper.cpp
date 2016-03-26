@@ -144,13 +144,24 @@ QwtPlotWrapper::~QwtPlotWrapper()
 
 
 void QwtPlotWrapper::SetData(const std::vector<double>& vecX, const std::vector<double>& vecY, 
-	unsigned int iCurve, bool bReplot)
+	unsigned int iCurve, bool bReplot, bool bCopy)
 {
-#if QWT_VER>=6
-	m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
-#else
-	m_vecCurves[iCurve]->setRawData(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
-#endif
+	if(!bCopy)	// copy pointers
+	{
+	#if QWT_VER>=6
+		m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
+	#else
+		m_vecCurves[iCurve]->setRawData(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
+	#endif
+	}
+	else		// copy data
+	{
+	#if QWT_VER>=6
+		m_vecCurves[iCurve]->setSamples(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
+	#else
+		m_vecCurves[iCurve]->setData(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
+	#endif
+	}
 
 	if(bReplot)
 	{

@@ -89,22 +89,22 @@ void EllipseDlg3D::showEvent(QShowEvent *event)
 }
 
 
-ublas::vector<double>
-EllipseDlg3D::ProjRotatedVec(const ublas::matrix<double>& rot,
-	const ublas::vector<double>& vec)
+ublas::vector<t_real_reso>
+EllipseDlg3D::ProjRotatedVec(const ublas::matrix<t_real_reso>& rot,
+	const ublas::vector<t_real_reso>& vec)
 {
-	ublas::vector<double> vecCoord(3);
+	ublas::vector<t_real_reso> vecCoord(3);
 
-	ublas::vector<double> x = ublas::zero_vector<double>(3);
+	ublas::vector<t_real_reso> x = ublas::zero_vector<t_real_reso>(3);
 	x[0] = 1.;
-	ublas::vector<double> y = ublas::zero_vector<double>(3);
+	ublas::vector<t_real_reso> y = ublas::zero_vector<t_real_reso>(3);
 	y[1] = 1.;
-	ublas::vector<double> z = ublas::zero_vector<double>(3);
+	ublas::vector<t_real_reso> z = ublas::zero_vector<t_real_reso>(3);
 	z[2] = 1.;
 
-	const ublas::vector<double> vecrot_x = ublas::prod(rot, x*vec[0]);
-	const ublas::vector<double> vecrot_y = ublas::prod(rot, y*vec[1]);
-	const ublas::vector<double> vecrot_z = ublas::prod(rot, z*vec[2]);
+	const ublas::vector<t_real_reso> vecrot_x = ublas::prod(rot, x*vec[0]);
+	const ublas::vector<t_real_reso> vecrot_y = ublas::prod(rot, y*vec[1]);
+	const ublas::vector<t_real_reso> vecrot_z = ublas::prod(rot, z*vec[2]);
 
 	vecCoord[0] = std::fabs(vecrot_x[0]) + std::fabs(vecrot_y[0]) + std::fabs(vecrot_z[0]);
 	vecCoord[1] = std::fabs(vecrot_x[1]) + std::fabs(vecrot_y[1]) + std::fabs(vecrot_z[1]);
@@ -118,8 +118,8 @@ void EllipseDlg3D::Calc()
 {
 	const EllipseCoordSys coord = static_cast<EllipseCoordSys>(m_pComboCoord->currentIndex());
 
-	const ublas::matrix<double> *pReso = nullptr;
-	const ublas::vector<double> *pQavg = nullptr;
+	const ublas::matrix<t_real_reso> *pReso = nullptr;
+	const ublas::vector<t_real_reso> *pQavg = nullptr;
 
 	switch(coord)
 	{
@@ -138,8 +138,8 @@ void EllipseDlg3D::Calc()
 
 
 	int iAlgo = m_iAlgo;
-	const ublas::matrix<double>& reso = *pReso;
-	const ublas::vector<double>& _Q_avg = *pQavg;
+	const ublas::matrix<t_real_reso>& reso = *pReso;
+	const ublas::vector<t_real_reso>& _Q_avg = *pQavg;
 
 
 	const int iX[] = {0, 0};
@@ -151,17 +151,17 @@ void EllipseDlg3D::Calc()
 	//bool bXMLLoaded = xmlparams.Load("res/res.conf");
 	bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
 
-	ublas::vector<double> Q_avg = _Q_avg;
+	ublas::vector<t_real_reso> Q_avg = _Q_avg;
 	if(bCenterOn0)
-		Q_avg = ublas::zero_vector<double>(Q_avg.size());
+		Q_avg = ublas::zero_vector<t_real_reso>(Q_avg.size());
 
 	for(unsigned int i=0; i<m_pPlots.size(); ++i)
 	{
 		m_elliProj[i] = ::calc_res_ellipsoid(reso, Q_avg, iX[i], iY[i], iZ[i], iIntOrRem[i], -1);
 		m_elliSlice[i] = ::calc_res_ellipsoid(reso, Q_avg, iX[i], iY[i], iZ[i], -1, iIntOrRem[i]);
 
-		ublas::vector<double> vecWProj(3), vecWSlice(3);
-		ublas::vector<double> vecOffsProj(3), vecOffsSlice(3);
+		ublas::vector<t_real_reso> vecWProj(3), vecWSlice(3);
+		ublas::vector<t_real_reso> vecOffsProj(3), vecOffsSlice(3);
 
 		vecWProj[0] = m_elliProj[i].x_hwhm;
 		vecWProj[1] = m_elliProj[i].y_hwhm;
@@ -200,9 +200,9 @@ void EllipseDlg3D::Calc()
 	}
 }
 
-void EllipseDlg3D::SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
-	const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
-	const ublas::matrix<double>& resoOrient, const ublas::vector<double>& Q_avgOrient,
+void EllipseDlg3D::SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
+	const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
+	const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
 	int iAlgo)
 {
 	m_reso = reso;

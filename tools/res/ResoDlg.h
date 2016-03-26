@@ -1,7 +1,7 @@
 /*
  * resolution calculation
  * @author tweber
- * @date may-2013, apr-2014
+ * @date 2013 - 2016
  * @license GPLv2
  */
 
@@ -36,15 +36,15 @@ struct ResoParams
 	bool bMonoDChanged = 0, bAnaDChanged = 0;
 	bool bSensesChanged[3] = {0,0,0};
 
-	double dMonoD, dAnaD;
+	t_real_reso dMonoD, dAnaD;
 	bool bScatterSenses[3];
 };
 
 struct SampleParams
 {
-	double dLattice[3];
-	double dAngles[3];
-	double dPlane1[3], dPlane2[3];
+	t_real_reso dLattice[3];
+	t_real_reso dAngles[3];
+	t_real_reso dPlane1[3], dPlane2[3];
 };
 
 
@@ -72,19 +72,19 @@ protected:
 
 
 	// -------------------------------------------------------------------------
-	ublas::vector<double> m_vecOrient1, m_vecOrient2;
-	ublas::matrix<double> m_matU, m_matB, m_matUinv, m_matBinv;
-	ublas::matrix<double> m_matUrlu, m_matUinvrlu;
-	ublas::matrix<double> m_matUB, m_matUBinv;
+	ublas::vector<t_real_reso> m_vecOrient1, m_vecOrient2;
+	ublas::matrix<t_real_reso> m_matU, m_matB, m_matUinv, m_matBinv;
+	ublas::matrix<t_real_reso> m_matUrlu, m_matUinvrlu;
+	ublas::matrix<t_real_reso> m_matUB, m_matUBinv;
 	bool m_bHasUB = 0;
-	double m_dAngleQVec0 = 0.;
+	t_real_reso m_dAngleQVec0 = 0.;
 	// -------------------------------------------------------------------------
 
 
 	EckParams m_pop;
 	CNResults m_res;
-	ublas::matrix<double> m_resoHKL, m_resoOrient;
-	ublas::vector<double> m_Q_avgHKL, m_Q_avgOrient;
+	ublas::matrix<t_real_reso> m_resoHKL, m_resoOrient;
+	ublas::vector<t_real_reso> m_Q_avgHKL, m_Q_avgOrient;
 
 	bool m_bDontCalc;
 
@@ -137,9 +137,9 @@ public:
 	}
 
 signals:
-	void ResoResults(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
-		const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
-		const ublas::matrix<double>& resoHKL_orient, const ublas::vector<double>& Q_avgHKL_orient,
+	void ResoResults(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
+		const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
+		const ublas::matrix<t_real_reso>& resoHKL_orient, const ublas::vector<t_real_reso>& Q_avgHKL_orient,
 		int iAlgo);
 };
 

@@ -1,7 +1,7 @@
 /*
  * Ellipse Dialog
  * @author Tobias Weber
- * @date may-2013, 29-apr-2014
+ * @date 2013 - 2016
  * @license GPLv2
  */
 
@@ -36,14 +36,14 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		std::vector<struct Ellipse> m_elliProj;
 		std::vector<struct Ellipse> m_elliSlice;
 
-		std::vector<std::vector<double> > m_vecXCurvePoints;
-		std::vector<std::vector<double> > m_vecYCurvePoints;
+		std::vector<std::vector<t_real_reso> > m_vecXCurvePoints;
+		std::vector<std::vector<t_real_reso> > m_vecYCurvePoints;
 
 		QSettings *m_pSettings = 0;
 
 	protected:
-		ublas::matrix<double> m_reso, m_resoHKL, m_resoOrient;
-		ublas::vector<double> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
+		ublas::matrix<t_real_reso> m_reso, m_resoHKL, m_resoOrient;
+		ublas::vector<t_real_reso> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
 		int m_iAlgo = -1;
 
 	public:
@@ -58,9 +58,9 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		void cursorMoved(const QPointF& pt);
 
 	public slots:
-		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
-			const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
-			const ublas::matrix<double>& resoOrient, const ublas::vector<double>& Q_avgOrient,
+		void SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
+			const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
+			const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
 			int iAlgo);
 		void Calc();
 

@@ -30,14 +30,14 @@ class EllipseDlg3D : public QDialog
 		QComboBox *m_pComboCoord = nullptr;
 		QSettings *m_pSettings = nullptr;
 
-		ublas::matrix<double> m_reso, m_resoHKL, m_resoOrient;
-		ublas::vector<double> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
+		ublas::matrix<t_real_reso> m_reso, m_resoHKL, m_resoOrient;
+		ublas::vector<t_real_reso> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
 		int m_iAlgo = -1;
 
 	protected:
-		ublas::vector<double>
-		ProjRotatedVec(const ublas::matrix<double>& rot,
-			const ublas::vector<double>& vec);
+		ublas::vector<t_real_reso>
+		ProjRotatedVec(const ublas::matrix<t_real_reso>& rot,
+			const ublas::vector<t_real_reso>& vec);
 
 	public:
 		EllipseDlg3D(QWidget* pParent, QSettings *pSett=0);
@@ -48,9 +48,9 @@ class EllipseDlg3D : public QDialog
 		void showEvent(QShowEvent *event);
 
 	public slots:
-		void SetParams(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg,
-			const ublas::matrix<double>& resoHKL, const ublas::vector<double>& Q_avgHKL,
-			const ublas::matrix<double>& resoOrient, const ublas::vector<double>& Q_avgOrient,
+		void SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
+			const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
+			const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
 			int iAlgo);
 		void Calc();
 };

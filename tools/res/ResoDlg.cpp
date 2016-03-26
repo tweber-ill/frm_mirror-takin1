@@ -1,7 +1,7 @@
 /*
  * resolution calculation
  * @author tweber
- * @date may-2013, apr-2014
+ * @date 2013 - 2016
  * @license GPLv2
  */
 
@@ -27,6 +27,15 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QGridLayout>
+
+using t_mat = ublas::matrix<t_real_reso>;
+using t_vec = ublas::vector<t_real_reso>;
+
+static const auto angs = tl::get_one_angstrom<t_real_reso>();
+static const auto rads = tl::get_one_radian<t_real_reso>();
+static const auto meV = tl::get_one_meV<t_real_reso>();
+static const auto cm = tl::get_one_centimeter<t_real_reso>();
+static const auto meters = tl::get_one_meter<t_real_reso>();
 
 
 ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
@@ -226,11 +235,11 @@ void ResoDlg::Calc()
 	CNResults &res = m_res;
 
 	// CN
-	cn.mono_d = spinMonod->value() * tl::angstrom;
-	cn.mono_mosaic = spinMonoMosaic->value() / (180.*60.) * M_PI * tl::radians;
-	cn.ana_d = spinAnad->value() * tl::angstrom;
-	cn.ana_mosaic = spinAnaMosaic->value() / (180.*60.) * M_PI * tl::radians;
-	cn.sample_mosaic = spinSampleMosaic->value() / (180.*60.) * M_PI * tl::radians;
+	cn.mono_d = t_real_reso(spinMonod->value()) * angs;
+	cn.mono_mosaic = t_real_reso(spinMonoMosaic->value() / (180.*60.) * M_PI) * rads;
+	cn.ana_d = t_real_reso(spinAnad->value()) * angs;
+	cn.ana_mosaic = t_real_reso(spinAnaMosaic->value() / (180.*60.) * M_PI) * rads;
+	cn.sample_mosaic = t_real_reso(spinSampleMosaic->value() / (180.*60.) * M_PI) * rads;
 
 	cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
 	cn.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
@@ -239,35 +248,35 @@ void ResoDlg::Calc()
 	//if(spinQ->value() < 0.)
 	//	cn.dsample_sense = -cn.dsample_sense;
 
-	cn.coll_h_pre_mono = spinHCollMono->value() / (180.*60.) * M_PI * tl::radians;
-	cn.coll_h_pre_sample = spinHCollBSample->value() / (180.*60.) * M_PI * tl::radians;
-	cn.coll_h_post_sample = spinHCollASample->value() / (180.*60.) * M_PI * tl::radians;
-	cn.coll_h_post_ana = spinHCollAna->value() / (180.*60.) * M_PI * tl::radians;
+	cn.coll_h_pre_mono = t_real_reso(spinHCollMono->value() / (180.*60.) * M_PI) * rads;
+	cn.coll_h_pre_sample = t_real_reso(spinHCollBSample->value() / (180.*60.) * M_PI) * rads;
+	cn.coll_h_post_sample = t_real_reso(spinHCollASample->value() / (180.*60.) * M_PI) * rads;
+	cn.coll_h_post_ana = t_real_reso(spinHCollAna->value() / (180.*60.) * M_PI) * rads;
 
-	cn.coll_v_pre_mono = spinVCollMono->value() / (180.*60.) * M_PI * tl::radians;
-	cn.coll_v_pre_sample = spinVCollBSample->value() / (180.*60.) * M_PI * tl::radians;
-	cn.coll_v_post_sample = spinVCollASample->value() / (180.*60.) * M_PI * tl::radians;
-	cn.coll_v_post_ana = spinVCollAna->value() / (180.*60.) * M_PI * tl::radians;
+	cn.coll_v_pre_mono = t_real_reso(spinVCollMono->value() / (180.*60.) * M_PI) * rads;
+	cn.coll_v_pre_sample = t_real_reso(spinVCollBSample->value() / (180.*60.) * M_PI) * rads;
+	cn.coll_v_post_sample = t_real_reso(spinVCollASample->value() / (180.*60.) * M_PI) * rads;
+	cn.coll_v_post_ana = t_real_reso(spinVCollAna->value() / (180.*60.) * M_PI) * rads;
 
 	cn.dmono_refl = spinMonoRefl->value();
 	cn.dana_effic = spinAnaEffic->value();
 
 
 	// Position
-	cn.ki = editKi->text().toDouble() / tl::angstrom;
-	cn.kf = editKf->text().toDouble() / tl::angstrom;
-	cn.E = editE->text().toDouble() * tl::one_meV;
+	cn.ki = t_real_reso(editKi->text().toDouble()) / angs;
+	cn.kf = t_real_reso(editKf->text().toDouble()) / angs;
+	cn.E = t_real_reso(editE->text().toDouble()) * meV;
 	//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
 	//std::cout << "E = " << editE->text().toStdString() << std::endl;
-	cn.Q = editQ->text().toDouble() / tl::angstrom;
+	cn.Q = t_real_reso(editQ->text().toDouble()) / angs;
 
 
 	// Pop
-	cn.mono_w = spinMonoW->value()*0.01*tl::meters;
-	cn.mono_h = spinMonoH->value()*0.01*tl::meters;
-	cn.mono_thick = spinMonoThick->value()*0.01*tl::meters;
-	cn.mono_curvh = spinMonoCurvH->value()*0.01*tl::meters;
-	cn.mono_curvv = spinMonoCurvV->value()*0.01*tl::meters;
+	cn.mono_w = t_real_reso(spinMonoW->value()) * cm;
+	cn.mono_h = t_real_reso(spinMonoH->value()) * cm;
+	cn.mono_thick = t_real_reso(spinMonoThick->value()) * cm;
+	cn.mono_curvh = t_real_reso(spinMonoCurvH->value()) * cm;
+	cn.mono_curvv = t_real_reso(spinMonoCurvV->value()) * cm;
 	cn.bMonoIsCurvedH = cn.bMonoIsCurvedV = 0;
 	cn.bMonoIsOptimallyCurvedH = cn.bMonoIsOptimallyCurvedV = 0;
 	spinMonoCurvH->setEnabled(0); spinMonoCurvV->setEnabled(0);
@@ -288,11 +297,11 @@ void ResoDlg::Calc()
 	else if(comboMonoVert->currentIndex()==1)
 		cn.bMonoIsCurvedV = cn.bMonoIsOptimallyCurvedV = 1;
 
-	cn.ana_w = spinAnaW->value()*0.01*tl::meters;
-	cn.ana_h = spinAnaH->value()*0.01*tl::meters;
-	cn.ana_thick = spinAnaThick->value()*0.01*tl::meters;
-	cn.ana_curvh = spinAnaCurvH->value()*0.01*tl::meters;
-	cn.ana_curvv = spinAnaCurvV->value()*0.01*tl::meters;
+	cn.ana_w = t_real_reso(spinAnaW->value()) *cm;
+	cn.ana_h = t_real_reso(spinAnaH->value()) * cm;
+	cn.ana_thick = t_real_reso(spinAnaThick->value()) * cm;
+	cn.ana_curvh = t_real_reso(spinAnaCurvH->value()) * cm;
+	cn.ana_curvv = t_real_reso(spinAnaCurvV->value()) * cm;
 	cn.bAnaIsCurvedH = cn.bAnaIsCurvedV = 0;
 	cn.bAnaIsOptimallyCurvedH = cn.bAnaIsOptimallyCurvedV = 0;
 	spinAnaCurvH->setEnabled(0); spinAnaCurvV->setEnabled(0);
@@ -314,34 +323,34 @@ void ResoDlg::Calc()
 		cn.bAnaIsCurvedV = cn.bAnaIsOptimallyCurvedV = 1;
 
 	cn.bSampleCub = radioSampleCub->isChecked();
-	cn.sample_w_q = spinSampleW_Q->value()*0.01*tl::meters;
-	cn.sample_w_perpq = spinSampleW_perpQ->value()*0.01*tl::meters;
-	cn.sample_h = spinSampleH->value()*0.01*tl::meters;
+	cn.sample_w_q = t_real_reso(spinSampleW_Q->value()) * cm;
+	cn.sample_w_perpq = t_real_reso(spinSampleW_perpQ->value()) * cm;
+	cn.sample_h = t_real_reso(spinSampleH->value()) * cm;
 
 	cn.bSrcRect = radioSrcRect->isChecked();
-	cn.src_w = spinSrcW->value()*0.01*tl::meters;
-	cn.src_h = spinSrcH->value()*0.01*tl::meters;
+	cn.src_w = t_real_reso(spinSrcW->value()) * cm;
+	cn.src_h = t_real_reso(spinSrcH->value()) * cm;
 
 	cn.bDetRect = radioDetRect->isChecked();
-	cn.det_w = spinDetW->value()*0.01*tl::meters;
-	cn.det_h = spinDetH->value()*0.01*tl::meters;
+	cn.det_w = t_real_reso(spinDetW->value()) * cm;
+	cn.det_h = t_real_reso(spinDetH->value()) * cm;
 
 	cn.bGuide = groupGuide->isChecked();
-	cn.guide_div_h = spinGuideDivH->value() / (180.*60.) * M_PI * tl::radians;
-	cn.guide_div_v = spinGuideDivV->value() / (180.*60.) * M_PI * tl::radians;
+	cn.guide_div_h = t_real_reso(spinGuideDivH->value() / (180.*60.) * M_PI) * rads;
+	cn.guide_div_v = t_real_reso(spinGuideDivV->value() / (180.*60.) * M_PI) * rads;
 
-	cn.dist_mono_sample = spinDistMonoSample->value()*0.01*tl::meters;
-	cn.dist_sample_ana = spinDistSampleAna->value()*0.01*tl::meters;
-	cn.dist_ana_det = spinDistAnaDet->value()*0.01*tl::meters;
-	cn.dist_src_mono = spinDistSrcMono->value()*0.01*tl::meters;
+	cn.dist_mono_sample = t_real_reso(spinDistMonoSample->value()) * cm;
+	cn.dist_sample_ana = t_real_reso(spinDistSampleAna->value()) * cm;
+	cn.dist_ana_det = t_real_reso(spinDistAnaDet->value()) * cm;
+	cn.dist_src_mono = t_real_reso(spinDistSrcMono->value()) * cm;
 
 
 	// Eck
-	cn.mono_mosaic_v = spinMonoMosaicV->value() / (180.*60.) * M_PI * tl::radians;
-	cn.ana_mosaic_v = spinAnaMosaicV->value() / (180.*60.) * M_PI * tl::radians;
-	cn.pos_x = spinSamplePosX->value()*0.01*tl::meters;
-	cn.pos_y = spinSamplePosY->value()*0.01*tl::meters;
-	cn.pos_z = spinSamplePosZ->value()*0.01*tl::meters;
+	cn.mono_mosaic_v = t_real_reso(spinMonoMosaicV->value() / (180.*60.) * M_PI) * rads;
+	cn.ana_mosaic_v = t_real_reso(spinAnaMosaicV->value() / (180.*60.) * M_PI) * rads;
+	cn.pos_x = t_real_reso(spinSamplePosX->value()) * cm;
+	cn.pos_y = t_real_reso(spinSamplePosY->value()) * cm;
+	cn.pos_z = t_real_reso(spinSamplePosZ->value()) * cm;
 
 	// TODO
 	cn.mono_numtiles_h = 1;
@@ -359,7 +368,7 @@ void ResoDlg::Calc()
 		default: tl::log_err("Unknown resolution algorithm selected."); return;
 	}
 
-	editE->setText(std::to_string(cn.E / tl::one_meV).c_str());
+	editE->setText(std::to_string(cn.E / meV).c_str());
 	//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
 	//if(m_pScatterDlg) m_pScatterDlg->SetParams(cn, res);
 
@@ -369,7 +378,7 @@ void ResoDlg::Calc()
 		// Vanadium width
 		struct Ellipse ellVa = calc_res_ellipse(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
 		//std::cout << ellVa.phi/M_PI*180. << std::endl;
-		double dVanadiumFWHM = ellVa.y_hwhm*2.;
+		t_real_reso dVanadiumFWHM = ellVa.y_hwhm*2.;
 		if(std::fabs(ellVa.phi) >= M_PI/4.)
 			dVanadiumFWHM = ellVa.x_hwhm*2.;
 		// --------------------------------------------------------------------------------
@@ -420,18 +429,18 @@ void ResoDlg::Calc()
 #ifndef NDEBUG
 		// check against ELASTIC approximation for perp. slope from Shirane p. 268
 		// valid for small mosaicities
-		double dEoverQperp = tl::co::hbar*tl::co::hbar*cn.ki / tl::co::m_n
+		t_real_reso dEoverQperp = tl::co::hbar*tl::co::hbar*cn.ki / tl::co::m_n
 			* units::cos(cn.twotheta/2.)
 			* (1. + units::tan(units::abs(cn.twotheta/2.))
 			* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam)))
-				/ tl::meV / tl::angstrom;
+				/ meV / angs;
 
 		tl::log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
-		tl::log_info("E/Q_perp (2nd approximation for ki=kf) = ", double(4.*cn.ki * tl::angstrom), " meV*A");
+		tl::log_info("E/Q_perp (2nd approximation for ki=kf) = ", t_real_reso(4.*cn.ki * angs), " meV*A");
 
-		//std::cout << "thetas = " << m_pop.thetas/tl::radians/M_PI*180. << std::endl;
-		//std::cout << "2thetam = " << 2.*m_pop.thetam/tl::radians/M_PI*180. << std::endl;
-		//std::cout << "2thetaa = " << 2.*m_pop.thetaa/tl::radians/M_PI*180. << std::endl;
+		//std::cout << "thetas = " << m_pop.thetas/rads/M_PI*180. << std::endl;
+		//std::cout << "2thetam = " << 2.*m_pop.thetam/rads/M_PI*180. << std::endl;
+		//std::cout << "2thetaa = " << 2.*m_pop.thetaa/rads/M_PI*180. << std::endl;
 #endif
 
 		if(checkElli4dAutoCalc->isChecked())
@@ -449,17 +458,17 @@ void ResoDlg::Calc()
 			// hkl crystal system:
 			// Qavg system in 1/A -> rotate back to orient system in 1/A ->
 			// transform to hkl rlu system
-			ublas::matrix<double> matQVec0 = tl::rotation_matrix_2d(-m_dAngleQVec0);
+			t_mat matQVec0 = tl::rotation_matrix_2d(-m_dAngleQVec0);
 			matQVec0.resize(4,4, true);
 			matQVec0(2,2) = matQVec0(3,3) = 1.;
 			matQVec0(2,0) = matQVec0(2,1) = matQVec0(2,3) = 0.;
 			matQVec0(3,0) = matQVec0(3,1) = matQVec0(3,2) = 0.;
 			matQVec0(0,2) = matQVec0(0,3) = 0.;
 			matQVec0(1,2) = matQVec0(1,3) = 0.;
-			const ublas::matrix<double> matQVec0inv = ublas::trans(matQVec0);
+			const t_mat matQVec0inv = ublas::trans(matQVec0);
 
-			const ublas::matrix<double> matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
-			const ublas::matrix<double> matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
+			const t_mat matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
+			const t_mat matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
 			// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
 			m_resoHKL = tl::transform(m_res.reso, matQVec0invUB, 1);
 			//m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
@@ -474,8 +483,8 @@ void ResoDlg::Calc()
 			// system of scattering plane: (orient1, orient2, up)
 			// Qavg system in 1/A -> rotate back to orient system in 1/A ->
 			// transform to hkl rlu system -> rotate forward to orient system in rlu
-			const ublas::matrix<double> matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
-			const ublas::matrix<double> matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
+			const t_mat matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
+			const t_mat matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
 
 			// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
 			m_resoOrient = tl::transform(m_res.reso, matToOrientinv, 1);
@@ -497,50 +506,52 @@ void ResoDlg::Calc()
 
 void ResoDlg::RefreshSimCmd()
 {
+	const t_real_reso dMin = t_real_reso(M_PI/180./60.);
+	
 	std::ostringstream ostrCmd;
 	ostrCmd.precision(12);
 
 	ostrCmd << "./templateTAS -n 1e6 verbose=1 ";
 
-	ostrCmd << "KI=" << (m_pop.ki * tl::angstrom) << " ";
-	ostrCmd << "KF=" << (m_pop.kf * tl::angstrom) << " ";
-	ostrCmd << "QM=" << (m_pop.Q * tl::angstrom) << " ";
-	ostrCmd << "EN=" << (m_pop.E / tl::one_meV) << " ";
+	ostrCmd << "KI=" << (m_pop.ki * angs) << " ";
+	ostrCmd << "KF=" << (m_pop.kf * angs) << " ";
+	ostrCmd << "QM=" << (m_pop.Q * angs) << " ";
+	ostrCmd << "EN=" << (m_pop.E / meV) << " ";
 	//ostrCmt << "FX=" << (m_pop.bki_fix ? "1" : "2") << " ";
 
-	ostrCmd << "L1=" << (m_pop.dist_src_mono / tl::meters) << " ";
-	ostrCmd << "L2=" << (m_pop.dist_mono_sample / tl::meters) << " ";
-	ostrCmd << "L3=" << (m_pop.dist_sample_ana / tl::meters) << " ";
-	ostrCmd << "L4=" << (m_pop.dist_ana_det / tl::meters) << " ";
+	ostrCmd << "L1=" << (m_pop.dist_src_mono / meters) << " ";
+	ostrCmd << "L2=" << (m_pop.dist_mono_sample / meters) << " ";
+	ostrCmd << "L3=" << (m_pop.dist_sample_ana / meters) << " ";
+	ostrCmd << "L4=" << (m_pop.dist_ana_det / meters) << " ";
 
 	ostrCmd << "SM=" << m_pop.dmono_sense << " ";
 	ostrCmd << "SS=" << m_pop.dsample_sense << " ";
 	ostrCmd << "SA=" << m_pop.dana_sense << " ";
 
-	ostrCmd << "DM=" << (m_pop.mono_d / tl::angstrom) << " ";
-	ostrCmd << "DA=" << (m_pop.ana_d / tl::angstrom) << " ";
+	ostrCmd << "DM=" << (m_pop.mono_d / angs) << " ";
+	ostrCmd << "DA=" << (m_pop.ana_d / angs) << " ";
 
-	ostrCmd << "RMV=" << (m_pop.mono_curvv / tl::meters) << " ";
-	ostrCmd << "RMH=" << (m_pop.mono_curvh / tl::meters) << " ";
-	ostrCmd << "RAV=" << (m_pop.ana_curvv / tl::meters) << " ";
-	ostrCmd << "RAH=" << (m_pop.ana_curvh / tl::meters) << " ";
+	ostrCmd << "RMV=" << (m_pop.mono_curvv / meters) << " ";
+	ostrCmd << "RMH=" << (m_pop.mono_curvh / meters) << " ";
+	ostrCmd << "RAV=" << (m_pop.ana_curvv / meters) << " ";
+	ostrCmd << "RAH=" << (m_pop.ana_curvh / meters) << " ";
 
-	ostrCmd << "ETAM=" << (m_pop.mono_mosaic/tl::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "ETAA=" << (m_pop.ana_mosaic/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ETAM=" << (m_pop.mono_mosaic/rads/dMin) << " ";
+	ostrCmd << "ETAA=" << (m_pop.ana_mosaic/rads/dMin) << " ";
 
-	ostrCmd << "ALF1=" << (m_pop.coll_h_pre_mono/tl::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "ALF2=" << (m_pop.coll_h_pre_sample/tl::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "ALF3=" << (m_pop.coll_h_post_sample/tl::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "ALF4=" << (m_pop.coll_h_post_ana/tl::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "BET1=" << (m_pop.coll_v_pre_mono/tl::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "BET2=" << (m_pop.coll_v_pre_sample/tl::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "BET3=" << (m_pop.coll_v_post_sample/tl::radians/M_PI*180.*60.) << " ";
-	ostrCmd << "BET4=" << (m_pop.coll_v_post_ana/tl::radians/M_PI*180.*60.) << " ";
+	ostrCmd << "ALF1=" << (m_pop.coll_h_pre_mono/rads/dMin) << " ";
+	ostrCmd << "ALF2=" << (m_pop.coll_h_pre_sample/rads/dMin) << " ";
+	ostrCmd << "ALF3=" << (m_pop.coll_h_post_sample/rads/dMin) << " ";
+	ostrCmd << "ALF4=" << (m_pop.coll_h_post_ana/rads/dMin) << " ";
+	ostrCmd << "BET1=" << (m_pop.coll_v_pre_mono/rads/dMin) << " ";
+	ostrCmd << "BET2=" << (m_pop.coll_v_pre_sample/rads/dMin) << " ";
+	ostrCmd << "BET3=" << (m_pop.coll_v_post_sample/rads/dMin) << " ";
+	ostrCmd << "BET4=" << (m_pop.coll_v_post_ana/rads/dMin) << " ";
 
-	ostrCmd << "WM=" << (m_pop.mono_w / tl::meters) << " ";
-	ostrCmd << "HM=" << (m_pop.mono_h / tl::meters) << " ";
-	ostrCmd << "WA=" << (m_pop.ana_w / tl::meters) << " ";
-	ostrCmd << "HA=" << (m_pop.ana_h / tl::meters) << " ";
+	ostrCmd << "WM=" << (m_pop.mono_w / meters) << " ";
+	ostrCmd << "HM=" << (m_pop.mono_h / meters) << " ";
+	ostrCmd << "WA=" << (m_pop.ana_w / meters) << " ";
+	ostrCmd << "HA=" << (m_pop.ana_h / meters) << " ";
 
 	ostrCmd << "NVM=" << m_pop.mono_numtiles_v << " ";
 	ostrCmd << "NHM=" << m_pop.mono_numtiles_h << " ";
@@ -589,14 +600,14 @@ void ResoDlg::ReadLastConfig()
 	{
 		if(!m_pSettings->contains(m_vecSpinNames[iSpinBox].c_str()))
 			continue;
-		m_vecSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecSpinNames[iSpinBox].c_str()).value<double>());
+		m_vecSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecSpinNames[iSpinBox].c_str()).value<t_real_reso>());
 	}
 
 	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
 	{
 		if(!m_pSettings->contains(m_vecEditNames[iEditBox].c_str()))
 			continue;
-		double dEditVal = m_pSettings->value(m_vecEditNames[iEditBox].c_str()).value<double>();
+		t_real_reso dEditVal = m_pSettings->value(m_vecEditNames[iEditBox].c_str()).value<t_real_reso>();
 		m_vecEditBoxes[iEditBox]->setText(std::to_string(dEditVal).c_str());
 	}
 
@@ -675,11 +686,11 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 	bool bOk=0;
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
-		m_vecSpinBoxes[iSpinBox]->setValue(xml.Query<double>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str(), 0., &bOk));
+		m_vecSpinBoxes[iSpinBox]->setValue(xml.Query<t_real_reso>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str(), 0., &bOk));
 
 	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
 	{
-		double dEditVal = xml.Query<double>((strXmlRoot+m_vecEditNames[iEditBox]).c_str(), 0., &bOk);
+		t_real_reso dEditVal = xml.Query<t_real_reso>((strXmlRoot+m_vecEditNames[iEditBox]).c_str(), 0., &bOk);
 		if(bOk) m_vecEditBoxes[iEditBox]->setText(std::to_string(dEditVal).c_str());
 	}
 
@@ -736,37 +747,37 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	m_pop.twotheta = units::abs(parms.d2Theta * tl::radians);
+	m_pop.twotheta = units::abs(t_real_reso(parms.d2Theta) * rads);
 	//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
-	m_pop.ki = parms.dki / tl::angstrom;
-	m_pop.kf = parms.dkf / tl::angstrom;
-	m_pop.E = parms.dE * tl::one_meV;
+	m_pop.ki = t_real_reso(parms.dki) / angs;
+	m_pop.kf = t_real_reso(parms.dkf) / angs;
+	m_pop.E = t_real_reso(parms.dE) * meV;
 
 	//m_dAngleQVec0 = parms.dAngleQVec0;
 	//std::cout << "qvec0 in rlu: " << m_dAngleQVec0 << std::endl;
 
-	ublas::vector<double> vecHKL = -tl::make_vec({parms.Q_rlu[0], parms.Q_rlu[1], parms.Q_rlu[2]});
-	ublas::vector<double> vecQ = ublas::prod(m_matUB, vecHKL);
+	t_vec vecHKL = -tl::make_vec({parms.Q_rlu[0], parms.Q_rlu[1], parms.Q_rlu[2]});
+	t_vec vecQ = ublas::prod(m_matUB, vecHKL);
 	vecQ.resize(2,1);
 	m_dAngleQVec0 = -tl::vec_angle(vecQ);
-	double dQ = ublas::norm_2(vecQ);
-	m_pop.Q = dQ / tl::angstrom;
+	t_real_reso dQ = ublas::norm_2(vecQ);
+	m_pop.Q = dQ / angs;
 
 	//std::cout << "qvec0 in 1/A: " << m_dAngleQVec0 << std::endl;
 
 
-	m_pop.angle_ki_Q = /*M_PI*tl::radians -*/ tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, 1);
-	m_pop.angle_kf_Q = /*M_PI*tl::radians -*/ tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, 1);
+	m_pop.angle_ki_Q = /*M_PI*rads -*/ tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, 1);
+	m_pop.angle_kf_Q = /*M_PI*rads -*/ tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, 1);
 	//m_pop.angle_ki_Q = units::abs(m_pop.angle_ki_Q);
 	//m_pop.angle_kf_Q = units::abs(m_pop.angle_kf_Q);
 
-	/*std::cout << "ki = " << double(m_pop.ki*tl::angstrom) << std::endl;
-	std::cout << "kf = " << double(m_pop.kf*tl::angstrom) << std::endl;
-	std::cout << "Q = " << double(m_pop.Q*tl::angstrom) << std::endl;
+	/*std::cout << "ki = " << t_real_reso(m_pop.ki*angs) << std::endl;
+	std::cout << "kf = " << t_real_reso(m_pop.kf*angs) << std::endl;
+	std::cout << "Q = " << t_real_reso(m_pop.Q*angs) << std::endl;
 
-	std::cout << "kiQ = " << double(m_pop.angle_ki_Q/M_PI/tl::radians * 180.) << std::endl;
-	std::cout << "kfQ = " << double(m_pop.angle_kf_Q/M_PI/tl::radians * 180.) << std::endl;*/
+	std::cout << "kiQ = " << t_real_reso(m_pop.angle_ki_Q/M_PI/rads * 180.) << std::endl;
+	std::cout << "kfQ = " << t_real_reso(m_pop.angle_kf_Q/M_PI/rads * 180.) << std::endl;*/
 
 
 	editQ->setText(std::to_string(dQ).c_str());
@@ -786,10 +797,10 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	m_pop.thetam = units::abs(parms.dMonoT * tl::radians);
-	m_pop.thetaa = units::abs(parms.dAnaT * tl::radians);
+	m_pop.thetam = units::abs(t_real_reso(parms.dMonoT) * rads);
+	m_pop.thetaa = units::abs(t_real_reso(parms.dAnaT) * rads);
 
-	m_pop.twotheta = parms.dSampleTT * tl::radians;
+	m_pop.twotheta = t_real_reso(parms.dSampleTT) * rads;
 	m_pop.twotheta = units::abs(m_pop.twotheta);
 
 	//std::cout << parms.dMonoT/M_PI*180. << ", " << parms.dAnaT/M_PI*180. << std::endl;
@@ -804,11 +815,11 @@ void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 {
 	//tl::log_debug("sample params changed");
 
-	tl::Lattice<double> lattice(parms.dLattice[0],parms.dLattice[1],parms.dLattice[2],
+	tl::Lattice<t_real_reso> lattice(parms.dLattice[0],parms.dLattice[1],parms.dLattice[2],
 		parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
 
-	m_vecOrient1 = tl::make_vec<ublas::vector<double>>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
-	m_vecOrient2 = tl::make_vec<ublas::vector<double>>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});
+	m_vecOrient1 = tl::make_vec<t_vec>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
+	m_vecOrient2 = tl::make_vec<t_vec>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});
 	//m_vecOrient1 /= ublas::norm_2(m_vecOrient1);
 	//m_vecOrient2 /= ublas::norm_2(m_vecOrient2);
 
@@ -897,8 +908,8 @@ void ResoDlg::MCGenerate()
 		return;
 	}
 
-	std::vector<ublas::vector<double>> vecNeutrons;
-	McNeutronOpts<ublas::matrix<double>> opts;
+	std::vector<t_vec> vecNeutrons;
+	McNeutronOpts<t_mat> opts;
 	opts.bCenter = bCenter;
 	opts.coords = McNeutronCoords(comboMCCoords->currentIndex());
 	opts.matU = m_matU;
@@ -908,10 +919,10 @@ void ResoDlg::MCGenerate()
 	opts.matBinv = m_matBinv;
 	opts.matUBinv = m_matUBinv;
 
-	ublas::matrix<double>* pMats[] = {&opts.matU, &opts.matB, &opts.matUB,
+	t_mat* pMats[] = {&opts.matU, &opts.matB, &opts.matUB,
 		&opts.matUinv, &opts.matBinv, &opts.matUBinv};
 
-	for(ublas::matrix<double> *pMat : pMats)
+	for(t_mat *pMat : pMats)
 	{
 		pMat->resize(4,4,1);
 
@@ -958,7 +969,7 @@ void ResoDlg::MCGenerate()
 	}
 
 
-	for(const ublas::vector<double>& vecNeutron : vecNeutrons)
+	for(const t_vec& vecNeutron : vecNeutrons)
 	{
 		for(unsigned i=0; i<4; ++i)
 			ofstr << std::setw(24) << vecNeutron[i];
