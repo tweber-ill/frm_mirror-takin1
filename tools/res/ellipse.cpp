@@ -14,9 +14,7 @@
 #include "tlibs/math/quat.h"
 #include "tlibs/math/math.h"
 
-#include "cn.h"
-
-typedef double t_real;
+typedef t_real_elli t_real;
 typedef ublas::matrix<t_real> t_mat;
 typedef ublas::vector<t_real> t_vec;
 

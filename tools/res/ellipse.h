@@ -23,47 +23,50 @@ namespace ublas = boost::numeric::ublas;
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/geo.h"
+#include "cn.h"
+
+using t_real_elli = t_real_reso;
 
 
 struct Ellipse
 {
-	tl::QuadEllipsoid<double> quad;
+	tl::QuadEllipsoid<t_real_elli> quad;
 
-	double phi, slope;
-	double x_hwhm, y_hwhm;
-	double x_offs, y_offs;
-	double area;
+	t_real_elli phi, slope;
+	t_real_elli x_hwhm, y_hwhm;
+	t_real_elli x_offs, y_offs;
+	t_real_elli area;
 
 	std::string x_lab, y_lab;
 
-	ublas::vector<double> operator()(double t) const;
-	void GetCurvePoints(std::vector<double>& x, std::vector<double>& y,
-		unsigned int iPoints=512, double *pLRTB=0);
+	ublas::vector<t_real_elli> operator()(t_real_elli t) const;
+	void GetCurvePoints(std::vector<t_real_elli>& x, std::vector<t_real_elli>& y,
+		unsigned int iPoints=512, t_real_elli *pLRTB=0);
 };
 
 struct Ellipsoid
 {
-	tl::QuadEllipsoid<double> quad;
+	tl::QuadEllipsoid<t_real_elli> quad;
 
-	//double alpha, beta, gamma;
-	ublas::matrix<double> rot;
+	//t_real_elli alpha, beta, gamma;
+	ublas::matrix<t_real_elli> rot;
 
-	double x_hwhm, y_hwhm, z_hwhm;
-	double x_offs, y_offs, z_offs;
-	double vol;
+	t_real_elli x_hwhm, y_hwhm, z_hwhm;
+	t_real_elli x_offs, y_offs, z_offs;
+	t_real_elli vol;
 
 	std::string x_lab, y_lab, z_lab;
 };
 
 struct Ellipsoid4d
 {
-	tl::QuadEllipsoid<double> quad;
+	tl::QuadEllipsoid<t_real_elli> quad;
 
-	ublas::matrix<double> rot;
+	ublas::matrix<t_real_elli> rot;
 
-	double x_hwhm, y_hwhm, z_hwhm, w_hwhm;
-	double x_offs, y_offs, z_offs, w_offs;
-	double vol;
+	t_real_elli x_hwhm, y_hwhm, z_hwhm, w_hwhm;
+	t_real_elli x_offs, y_offs, z_offs, w_offs;
+	t_real_elli vol;
 
 	std::string x_lab, y_lab, z_lab, w_lab;
 };
@@ -79,9 +82,9 @@ enum class EllipseCoordSys : int
 
 extern std::ostream& operator<<(std::ostream& ostr, const struct Ellipse& ell);
 extern const std::string& ellipse_labels(int iCoord, EllipseCoordSys = EllipseCoordSys::Q_AVG);
-extern struct Ellipse calc_res_ellipse(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iInt, int iRem1=-1, int iRem2=-1);
-extern struct Ellipsoid calc_res_ellipsoid(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg, int iX, int iY, int iZ, int iInt, int iRem=-1);
-extern struct Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso, const ublas::vector<double>& Q_avg);
+extern struct Ellipse calc_res_ellipse(const ublas::matrix<t_real_elli>& reso, const ublas::vector<t_real_elli>& Q_avg, int iX, int iY, int iInt, int iRem1=-1, int iRem2=-1);
+extern struct Ellipsoid calc_res_ellipsoid(const ublas::matrix<t_real_elli>& reso, const ublas::vector<t_real_elli>& Q_avg, int iX, int iY, int iZ, int iInt, int iRem=-1);
+extern struct Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<t_real_elli>& reso, const ublas::vector<t_real_elli>& Q_avg);
 
 
 
@@ -90,7 +93,7 @@ extern struct Ellipsoid4d calc_res_ellipsoid4d(const ublas::matrix<double>& reso
  * (see also [eck14], equ. 57)
  * integrate over row/column iIdx
  */
-template<class T = double>
+template<class T = t_real_elli>
 ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, std::size_t iIdx)
 {
 	ublas::vector<T> b(mat.size1());
@@ -107,7 +110,7 @@ ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, std::size_t iI
 /*
  * (see also [eck14], equ. 57)
  */
-template<class T = double>
+template<class T = t_real_elli>
 ublas::vector<T> ellipsoid_gauss_int(const ublas::vector<T>& vec,
 	const ublas::matrix<T>& mat, std::size_t iIdx)
 {

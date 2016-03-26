@@ -28,10 +28,10 @@ using energy = tl::t_energy_si<t_real>;
 using length = tl::t_length_si<t_real>;
 using inv_length = tl::t_length_inverse_si<t_real>;
 
-static const auto cm = tl::cm;
-static const auto angs = tl::angstrom;
-static const auto rads = tl::radians;
-static const auto meV = tl::meV;
+static const auto angs = tl::get_one_angstrom<t_real>();
+static const auto rads = tl::get_one_radian<t_real>();
+static const auto meV = tl::get_one_meV<t_real>();
+static const auto cm = tl::get_one_centimeter<t_real>();
 
 
 CNResults calc_pop(const PopParams& pop)
@@ -66,8 +66,8 @@ CNResults calc_pop(const PopParams& pop)
 	tl::submatrix_copy(B, Ti, 0, 0);
 	tl::submatrix_copy(B, Tf, 0, 3);
 	B(2,2) = 1.; B(2,5) = -1.;
-	B(3,0) = 2.*pop.ki*angs * tl::KSQ2E;
-	B(3,3) = -2.*pop.kf*angs * tl::KSQ2E;
+	B(3,0) = t_real(2)*pop.ki*angs * tl::get_KSQ2E<t_real>();
+	B(3,3) = t_real(-2)*pop.kf*angs * tl::get_KSQ2E<t_real>();
 	//std::cout << "k^2 to E factor: " << tl::KSQ2E << std::endl;
 	//std::cout << "B = " << B << std::endl;
 
@@ -84,17 +84,17 @@ CNResults calc_pop(const PopParams& pop)
 
 	// collimator covariance matrix G, [pop75], Appendix 1
 	t_mat G = tl::diag_matrix({
-		1./(coll_h_pre_mono*coll_h_pre_mono /rads/rads),
-		1./(pop.coll_h_pre_sample*pop.coll_h_pre_sample /rads/rads),
+		t_real(1)/(coll_h_pre_mono*coll_h_pre_mono /rads/rads),
+		t_real(1)/(pop.coll_h_pre_sample*pop.coll_h_pre_sample /rads/rads),
 
-		1./(coll_v_pre_mono*coll_v_pre_mono /rads/rads),
-		1./(pop.coll_v_pre_sample*pop.coll_v_pre_sample /rads/rads),
+		t_real(1)/(coll_v_pre_mono*coll_v_pre_mono /rads/rads),
+		t_real(1)/(pop.coll_v_pre_sample*pop.coll_v_pre_sample /rads/rads),
 
-		1./(pop.coll_h_post_sample*pop.coll_h_post_sample /rads/rads),
-		1./(pop.coll_h_post_ana*pop.coll_h_post_ana /rads/rads),
+		t_real(1)/(pop.coll_h_post_sample*pop.coll_h_post_sample /rads/rads),
+		t_real(1)/(pop.coll_h_post_ana*pop.coll_h_post_ana /rads/rads),
 
-		1./(pop.coll_v_post_sample*pop.coll_v_post_sample /rads/rads),
-		1./(pop.coll_v_post_ana*pop.coll_v_post_ana /rads/rads)
+		t_real(1)/(pop.coll_v_post_sample*pop.coll_v_post_sample /rads/rads),
+		t_real(1)/(pop.coll_v_post_ana*pop.coll_v_post_ana /rads/rads)
 	});
 
 
@@ -105,27 +105,27 @@ CNResults calc_pop(const PopParams& pop)
 	// crystal mosaic covariance matrix F, [pop75], Appendix 1
 	t_mat F = tl::diag_matrix(
 	{
-		1./(pop.mono_mosaic*pop.mono_mosaic /rads/rads),
-		1./(mono_mosaic_spread*mono_mosaic_spread /rads/rads),
-		1./(pop.ana_mosaic*pop.ana_mosaic /rads/rads),
-		1./(ana_mosaic_spread*ana_mosaic_spread /rads/rads)
+		t_real(1)/(pop.mono_mosaic*pop.mono_mosaic /rads/rads),
+		t_real(1)/(mono_mosaic_spread*mono_mosaic_spread /rads/rads),
+		t_real(1)/(pop.ana_mosaic*pop.ana_mosaic /rads/rads),
+		t_real(1)/(ana_mosaic_spread*ana_mosaic_spread /rads/rads)
 	});
 
 	// C matrix, [pop75], Appendix 1
 	t_mat C = ublas::zero_matrix<t_real>(4,8);
 	C(2,5) = C(2,4) = C(0,1) = C(0,0) = 0.5;
 	C(1,2) = 0.5/units::sin(thetam);
-	C(1,3) /*C(2,2)*/ = -0.5/units::sin(thetam);		// Popovici says C(2,2), not C(1,3)
-	C(3,6) = 0.5/units::sin(thetaa);
-	C(3,7) = -0.5/units::sin(thetaa);
+	C(1,3) /*C(2,2)*/ = t_real(-0.5)/units::sin(thetam);	// Popovici says C(2,2), not C(1,3)
+	C(3,6) = t_real(0.5)/units::sin(thetaa);
+	C(3,7) = t_real(-0.5)/units::sin(thetaa);
 
 	// A matrix, [pop75], Appendix 1
 	t_mat A = ublas::zero_matrix<t_real>(6,8);
-	A(0,0) = 0.5 * pop.ki*angs * units::cos(thetam)/units::sin(thetam);
-	A(0,1) = -0.5 * pop.ki*angs * units::cos(thetam)/units::sin(thetam);
+	A(0,0) = t_real(0.5) * pop.ki*angs * units::cos(thetam)/units::sin(thetam);
+	A(0,1) = t_real(-0.5) * pop.ki*angs * units::cos(thetam)/units::sin(thetam);
 	A(2,3) = A(1,1) = pop.ki * angs;
-	A(3,4) = 0.5 * pop.kf*angs * units::cos(thetaa)/units::sin(thetaa);
-	A(3,5) = -0.5 * pop.kf*angs * units::cos(thetaa)/units::sin(thetaa);
+	A(3,4) = t_real(0.5) * pop.kf*angs * units::cos(thetaa)/units::sin(thetaa);
+	A(3,5) = t_real(-0.5) * pop.kf*angs * units::cos(thetaa)/units::sin(thetaa);
 	A(5,6) = A(4,4) = pop.kf * angs;
 
 
@@ -134,18 +134,18 @@ CNResults calc_pop(const PopParams& pop)
 	// source
 	t_real dMult = 1./12.;
 	if(!pop.bSrcRect) dMult = 1./16.;
-	t_real dSiSrc[] = 
-	{ 
+	t_real dSiSrc[] =
+	{
 		dMult * pop.src_w*pop.src_w /cm/cm,
 		dMult * pop.src_h*pop.src_h /cm/cm 
 	};
 
 	// mono
 	t_real dSiMono[] =
-	{ 
-		1./12. * pop.mono_thick*pop.mono_thick /cm/cm,
-		1./12. * pop.mono_w*pop.mono_w /cm/cm,
-		1./12. * pop.mono_h*pop.mono_h /cm/cm
+	{
+		t_real(1./12.) * pop.mono_thick*pop.mono_thick /cm/cm,
+		t_real(1./12.) * pop.mono_w*pop.mono_w /cm/cm,
+		t_real(1./12.) * pop.mono_h*pop.mono_h /cm/cm
 	};
 
 	// sample
@@ -155,15 +155,15 @@ CNResults calc_pop(const PopParams& pop)
 	{
 		dMult * pop.sample_w_perpq *pop.sample_w_perpq /cm/cm,
 		dMult * pop.sample_w_q*pop.sample_w_q /cm/cm,
-		1./12. * pop.sample_h*pop.sample_h /cm/cm
+		t_real(1./12.) * pop.sample_h*pop.sample_h /cm/cm
 	};
 
 	// ana
 	t_real dSiAna[] =
 	{
-		1./12. * pop.ana_thick*pop.ana_thick /cm/cm,
-		1./12. * pop.ana_w*pop.ana_w /cm/cm,
-		1./12. * pop.ana_h*pop.ana_h /cm/cm
+		t_real(1./12.) * pop.ana_thick*pop.ana_thick /cm/cm,
+		t_real(1./12.) * pop.ana_w*pop.ana_w /cm/cm,
+		t_real(1./12.) * pop.ana_h*pop.ana_h /cm/cm
 	};
 
 	// det
@@ -196,21 +196,21 @@ CNResults calc_pop(const PopParams& pop)
 	length mono_curvh = pop.mono_curvh, mono_curvv = pop.mono_curvv;
 	length ana_curvh = pop.ana_curvh, ana_curvv = pop.ana_curvv;
 
-	if(pop.bMonoIsOptimallyCurvedH) mono_curvh = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, units::abs(2.*thetam), false);
-	if(pop.bMonoIsOptimallyCurvedV) mono_curvv = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, units::abs(2.*thetam), true);
-	if(pop.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(2.*thetaa), false);
-	if(pop.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(2.*thetaa), true);
+	if(pop.bMonoIsOptimallyCurvedH) mono_curvh = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, units::abs(t_real(2)*thetam), false);
+	if(pop.bMonoIsOptimallyCurvedV) mono_curvv = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, units::abs(t_real(2)*thetam), true);
+	if(pop.bAnaIsOptimallyCurvedH) ana_curvh = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(t_real(2)*thetaa), false);
+	if(pop.bAnaIsOptimallyCurvedV) ana_curvv = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(t_real(2)*thetaa), true);
 
 	mono_curvh *= pop.dmono_sense; mono_curvv *= pop.dmono_sense;
 	ana_curvh *= pop.dana_sense; ana_curvv *= pop.dana_sense;
 
-	inv_length inv_mono_curvh = 0./cm, inv_mono_curvv = 0./cm;
-	inv_length inv_ana_curvh = 0./cm, inv_ana_curvv = 0./cm;
+	inv_length inv_mono_curvh = t_real(0)/cm, inv_mono_curvv = t_real(0)/cm;
+	inv_length inv_ana_curvh = t_real(0)/cm, inv_ana_curvv = t_real(0)/cm;
 
-	if(pop.bMonoIsCurvedH) inv_mono_curvh = 1./mono_curvh;
-	if(pop.bMonoIsCurvedV) inv_mono_curvv = 1./mono_curvv;
-	if(pop.bAnaIsCurvedH) inv_ana_curvh = 1./ana_curvh;
-	if(pop.bAnaIsCurvedV) inv_ana_curvv = 1./ana_curvv;
+	if(pop.bMonoIsCurvedH) inv_mono_curvh = t_real(1)/mono_curvh;
+	if(pop.bMonoIsCurvedV) inv_mono_curvv = t_real(1)/mono_curvv;
+	if(pop.bAnaIsCurvedH) inv_ana_curvh = t_real(1)/ana_curvh;
+	if(pop.bAnaIsCurvedV) inv_ana_curvv = t_real(1)/ana_curvv;
 
 	//if(pop.bMonoIsCurvedH) tl::log_debug("mono curv h: ", mono_curvh);
 	//if(pop.bMonoIsCurvedV) tl::log_debug("mono curv v: ", mono_curvv);
@@ -222,61 +222,61 @@ CNResults calc_pop(const PopParams& pop)
 
 	// T matrix, [pop75], Appendix 2
 	t_mat T = ublas::zero_matrix<t_real>(4,13);
-	T(0,0) = -0.5 / (pop.dist_src_mono / cm);
-	T(0,2) = 0.5 * units::cos(thetam) *
-		(1./(pop.dist_mono_sample/cm) - 1./(pop.dist_src_mono/cm));
-	T(0,3) = 0.5 * units::sin(thetam) *
-		(1./(pop.dist_src_mono/cm) + 1./(pop.dist_mono_sample/cm) -
-		2.*inv_mono_curvh*cm/(units::sin(thetam)));
-	T(0,5) = 0.5 * units::sin(0.5*twotheta) / (pop.dist_mono_sample/cm);
-	T(0,6) = 0.5 * units::cos(0.5*twotheta) / (pop.dist_mono_sample/cm);
-	T(1,1) = -0.5/(pop.dist_src_mono/cm * units::sin(thetam));
-	T(1,4) = 0.5 * (1./(pop.dist_src_mono/cm) +
-		1./(pop.dist_mono_sample/cm) -
-		2.*units::sin(thetam)*inv_mono_curvv*cm)
+	T(0,0) = t_real(-0.5) / (pop.dist_src_mono / cm);
+	T(0,2) = t_real(0.5) * units::cos(thetam) *
+		(t_real(1)/(pop.dist_mono_sample/cm) - t_real(1)/(pop.dist_src_mono/cm));
+	T(0,3) = t_real(0.5) * units::sin(thetam) *
+		(t_real(1)/(pop.dist_src_mono/cm) + t_real(1)/(pop.dist_mono_sample/cm) -
+		t_real(2)*inv_mono_curvh*cm/(units::sin(thetam)));
+	T(0,5) = t_real(0.5) * units::sin(t_real(0.5)*twotheta) / (pop.dist_mono_sample/cm);
+	T(0,6) = t_real(0.5) * units::cos(t_real(0.5)*twotheta) / (pop.dist_mono_sample/cm);
+	T(1,1) = t_real(-0.5)/(pop.dist_src_mono/cm * units::sin(thetam));
+	T(1,4) = t_real(0.5) * (t_real(1)/(pop.dist_src_mono/cm) +
+		t_real(1)/(pop.dist_mono_sample/cm) -
+		t_real(2)*units::sin(thetam)*inv_mono_curvv*cm)
 		/ (units::sin(thetam));
-	T(1,7) = -0.5/(pop.dist_mono_sample/cm * units::sin(thetam));
-	T(2,5) = 0.5*units::sin(0.5*twotheta) / (pop.dist_sample_ana/cm);
-	T(2,6) = -0.5*units::cos(0.5*twotheta) / (pop.dist_sample_ana/cm);
-	T(2,8) = 0.5*units::cos(thetaa) * (1./(pop.dist_ana_det/cm) -
-		1/(pop.dist_sample_ana/cm));
-	T(2,9) = 0.5*units::sin(thetaa) * (
-		1./(pop.dist_sample_ana/cm) +
-		1./(pop.dist_ana_det/cm) -
-		2.*inv_ana_curvh*cm / (units::sin(thetaa)));
-	T(2,11) = 0.5/(pop.dist_ana_det/cm);
-	T(3,7) = -0.5/(pop.dist_sample_ana/cm*units::sin(thetaa));
-	T(3,10) = 0.5*(1./(pop.dist_sample_ana/cm) +
-		1./(pop.dist_ana_det/cm) -
-		2.*units::sin(thetaa)*inv_ana_curvv*cm)
+	T(1,7) = t_real(-0.5)/(pop.dist_mono_sample/cm * units::sin(thetam));
+	T(2,5) = t_real(0.5)*units::sin(t_real(0.5)*twotheta) / (pop.dist_sample_ana/cm);
+	T(2,6) = t_real(-0.5)*units::cos(t_real(0.5)*twotheta) / (pop.dist_sample_ana/cm);
+	T(2,8) = t_real(0.5)*units::cos(thetaa) * (t_real(1)/(pop.dist_ana_det/cm) -
+		t_real(1)/(pop.dist_sample_ana/cm));
+	T(2,9) = t_real(0.5)*units::sin(thetaa) * (
+		t_real(1)/(pop.dist_sample_ana/cm) +
+		t_real(1)/(pop.dist_ana_det/cm) -
+		t_real(2)*inv_ana_curvh*cm / (units::sin(thetaa)));
+	T(2,11) = t_real(0.5)/(pop.dist_ana_det/cm);
+	T(3,7) = t_real(-0.5)/(pop.dist_sample_ana/cm*units::sin(thetaa));
+	T(3,10) = t_real(0.5)*(1./(pop.dist_sample_ana/cm) +
+		t_real(1)/(pop.dist_ana_det/cm) -
+		t_real(2)*units::sin(thetaa)*inv_ana_curvv*cm)
 		/ (units::sin(thetaa));
-	T(3,12) = -0.5/(pop.dist_ana_det/cm*units::sin(thetaa));
+	T(3,12) = t_real(-0.5)/(pop.dist_ana_det/cm*units::sin(thetaa));
 
 
 	// D matrix, [pop75], Appendix 2
 	t_mat D = ublas::zero_matrix<t_real>(8,13);
-	D(0,0) = -1. / (pop.dist_src_mono/cm);
+	D(0,0) = t_real(-1) / (pop.dist_src_mono/cm);
 	D(0,2) = -cos(thetam) / (pop.dist_src_mono/cm);
 	D(0,3) = sin(thetam) / (pop.dist_src_mono/cm);
 	D(1,2) = cos(thetam) / (pop.dist_mono_sample/cm);
 	D(1,3) = sin(thetam) / (pop.dist_mono_sample/cm);
-	D(1,5) = sin(0.5*twotheta) / (pop.dist_mono_sample/cm);
-	D(1,6) = cos(0.5*twotheta) / (pop.dist_mono_sample/cm);
-	D(2,1) = -1. / (pop.dist_src_mono/cm);
-	D(2,4) = 1. / (pop.dist_src_mono/cm);
-	D(3,4) = -1. / (pop.dist_mono_sample/cm);
-	D(3,7) = 1. / (pop.dist_mono_sample/cm);
-	D(4,5) = sin(0.5*twotheta) / (pop.dist_sample_ana/cm);
-	D(4,6) = -cos(0.5*twotheta) / (pop.dist_sample_ana/cm);
+	D(1,5) = sin(t_real(0.5)*twotheta) / (pop.dist_mono_sample/cm);
+	D(1,6) = cos(t_real(0.5)*twotheta) / (pop.dist_mono_sample/cm);
+	D(2,1) = t_real(-1) / (pop.dist_src_mono/cm);
+	D(2,4) = t_real(1) / (pop.dist_src_mono/cm);
+	D(3,4) = t_real(-1) / (pop.dist_mono_sample/cm);
+	D(3,7) = t_real(1) / (pop.dist_mono_sample/cm);
+	D(4,5) = sin(t_real(0.5)*twotheta) / (pop.dist_sample_ana/cm);
+	D(4,6) = -cos(t_real(0.5)*twotheta) / (pop.dist_sample_ana/cm);
 	D(4,8) = -cos(thetaa) / (pop.dist_sample_ana/cm);
 	D(4,9) = sin(thetaa) / (pop.dist_sample_ana/cm);
 	D(5,8) = cos(thetaa) / (pop.dist_ana_det/cm);
 	D(5,9) = sin(thetaa) / (pop.dist_ana_det/cm);
-	D(5,11) = 1. / (pop.dist_ana_det/cm);
-	D(6,7) = -1. / (pop.dist_sample_ana/cm);
-	D(6,10) = 1. / (pop.dist_sample_ana/cm);
-	D(7,10) = -1. / (pop.dist_ana_det/cm);
-	D(7,12) = 1. / (pop.dist_ana_det/cm);
+	D(5,11) = t_real(1) / (pop.dist_ana_det/cm);
+	D(6,7) = t_real(-1) / (pop.dist_sample_ana/cm);
+	D(6,10) = t_real(1) / (pop.dist_sample_ana/cm);
+	D(7,10) = t_real(-1) / (pop.dist_ana_det/cm);
+	D(7,12) = t_real(1) / (pop.dist_ana_det/cm);
 
 
 	// [pop75], equ. 20
@@ -338,7 +338,7 @@ CNResults calc_pop(const PopParams& pop)
 	{
 		//SI /= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 		//S *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
-		
+
 		// resolution volume, [pop75], equ. 13a & 16
 		// [D] = 1/cm, [SI] = cm^2
 		t_mat DSiDt = tl::transform_inv(SI, D, 1);
@@ -351,7 +351,7 @@ CNResults calc_pop(const PopParams& pop)
 		}
 		DSiDti += G;
 		t_real dP0 = pop.dmono_refl*pop.dana_effic * 
-			(2.*M_PI)*(2.*M_PI)*(2.*M_PI)*(2.*M_PI) /
+			t_real((2.*M_PI)*(2.*M_PI)*(2.*M_PI)*(2.*M_PI)) /
 			std::sqrt(tl::determinant(DSiDti));
 
 		// [T] = 1/cm, [F] = 1/rad^2, [pop75], equ. 15
@@ -362,7 +362,7 @@ CNResults calc_pop(const PopParams& pop)
 		t_real dDetK = tl::determinant(K);
 
 		// [pop75], equ. 16
-		res.dR0 = dP0 / (8.*M_PI*8.*M_PI * units::sin(thetam)*units::sin(thetaa));
+		res.dR0 = dP0 / (t_real(8.*M_PI*8.*M_PI) * units::sin(thetam)*units::sin(thetaa));
 		res.dR0 *= std::sqrt(dDetS*dDetF/dDetK);
 
 		// rest of the prefactors, equ. 1 in [pop75]

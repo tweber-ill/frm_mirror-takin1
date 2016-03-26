@@ -30,9 +30,9 @@ using wavenumber = tl::t_wavenumber_si<t_real>;
 using energy = tl::t_energy_si<t_real>;
 using length = tl::t_length_si<t_real>;
 
-static const auto angs = tl::angstrom;
-static const auto rads = tl::radians;
-static const auto meV = tl::meV;
+static const auto angs = tl::get_one_angstrom<t_real>();
+static const auto rads = tl::get_one_radian<t_real>();
+static const auto meV = tl::get_one_meV<t_real>();
 
 
 CNResults calc_cn(const CNParams& cn)
@@ -80,8 +80,8 @@ CNResults calc_cn(const CNParams& cn)
 	tl::submatrix_copy(U, Ti, 0, 0);
 	tl::submatrix_copy(U, Tf, 0, 3);
 	U(2,2) = 1.; U(2,5) = -1.;
-	U(3,0) = 2.*cn.ki * tl::KSQ2E * angs;
-	U(3,3) = -2.*cn.kf * tl::KSQ2E * angs;
+	U(3,0) = t_real(2)*cn.ki * tl::get_KSQ2E<t_real>() * angs;
+	U(3,3) = t_real(-2)*cn.kf * tl::get_KSQ2E<t_real>() * angs;
 	U(4,0) = 1.; U(5,2) = 1.;
 	//tl::log_info("Trafo matrix (CN) = ", U);
 
@@ -131,27 +131,27 @@ CNResults calc_cn(const CNParams& cn)
 
 	t_mat m01(2,2);
 	m01 = ublas::outer_prod(pm,pm) +
-			ublas::outer_prod(palf0,palf0) +
-			ublas::outer_prod(palf1,palf1);
+		ublas::outer_prod(palf0,palf0) +
+		ublas::outer_prod(palf1,palf1);
 	t_mat m34(2,2);
 	m34 = ublas::outer_prod(pa,pa) +
-			ublas::outer_prod(palf2,palf2) +
-			ublas::outer_prod(palf3,palf3);
+		ublas::outer_prod(palf2,palf2) +
+		ublas::outer_prod(palf3,palf3);
 
 	t_mat M = ublas::zero_matrix<t_real>(6,6);
 	tl::submatrix_copy(M, m01, 0, 0);
 	tl::submatrix_copy(M, m34, 3, 3);
 
-	M(2,2) = 1./(cn.ki*cn.ki * angs*angs) *
+	M(2,2) = t_real(1)/(cn.ki*cn.ki * angs*angs) *
 	(
-		1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample/rads/rads) +
-		1./((2.*units::sin(thetam)*cn.mono_mosaic/rads)*(2.*units::sin(thetam)*cn.mono_mosaic/rads) +
+		t_real(1)/(cn.coll_v_pre_sample*cn.coll_v_pre_sample/rads/rads) +
+		t_real(1)/((t_real(2)*units::sin(thetam)*cn.mono_mosaic/rads)*(t_real(2)*units::sin(thetam)*cn.mono_mosaic/rads) +
 			coll_v_pre_mono*coll_v_pre_mono/rads/rads)
 	);
-	M(5,5) = 1./(cn.kf*cn.kf * angs*angs) *
+	M(5,5) = t_real(1)/(cn.kf*cn.kf * angs*angs) *
 	(
-		1./(cn.coll_v_post_sample*cn.coll_v_post_sample/rads/rads) +
-		1./((2.*units::sin(thetaa)*cn.ana_mosaic/rads)*(2.*units::sin(thetaa)*cn.ana_mosaic/rads) +
+		t_real(1)/(cn.coll_v_post_sample*cn.coll_v_post_sample/rads/rads) +
+		t_real(1)/((t_real(2)*units::sin(thetaa)*cn.ana_mosaic/rads)*(t_real(2)*units::sin(thetaa)*cn.ana_mosaic/rads) +
 			cn.coll_v_post_ana*cn.coll_v_post_ana/rads/rads)
 	);
 	// -------------------------------------------------------------------------

@@ -24,23 +24,24 @@ namespace codata = boost::units::si::constants::codata;
 
 using t_real_reso = double;
 
+
 struct CNParams
 {
 	// monochromator
 	tl::t_length_si<t_real_reso> mono_d;
 	tl::t_angle_si<t_real_reso> mono_mosaic;
-	t_real_reso dmono_sense=-1.;
+	t_real_reso dmono_sense = -1.;
 
 	// analyser
 	tl::t_length_si<t_real_reso> ana_d;
 	tl::t_angle_si<t_real_reso> ana_mosaic;
-	t_real_reso dana_sense=-1.;
+	t_real_reso dana_sense = -1.;
 
 	// sample
 	tl::t_angle_si<t_real_reso> sample_mosaic;
 	tl::t_length_si<t_real_reso> sample_lattice[3];
 	tl::t_angle_si<t_real_reso> sample_angles[3];
-	t_real_reso dsample_sense=1.;
+	t_real_reso dsample_sense = 1.;
 
 	// collimators
 	tl::t_angle_si<t_real_reso> coll_h_pre_mono;
