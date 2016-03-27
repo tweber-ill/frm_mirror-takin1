@@ -31,10 +31,9 @@ protected:
 	}
 
 public:
-#if QWT_VER>=6
-	explicit MyQwtPlotZoomer(QWidget* pWidget) : QwtPlotZoomer(pWidget) {}
-#endif
-	explicit MyQwtPlotZoomer(QwtPlotCanvas* pCanvas) : QwtPlotZoomer(pCanvas) {}
+	template<class t_widget_or_canvas>
+	explicit MyQwtPlotZoomer(t_widget_or_canvas* ptr) : QwtPlotZoomer(ptr) {}
+
 	virtual ~MyQwtPlotZoomer() {}
 };
 
@@ -83,8 +82,8 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves, bool bNo
 #if QWT_VER<6
 			QwtPlotPicker::PointSelection,
 #endif
-			QwtPlotPicker::NoRubberBand, 
-			QwtPlotPicker::AlwaysOn, 
+			QwtPlotPicker::NoRubberBand,
+			QwtPlotPicker::AlwaysOn,
 			m_pPlot->canvas());
 	}
 	else
