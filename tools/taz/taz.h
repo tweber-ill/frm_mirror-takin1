@@ -33,9 +33,9 @@
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"
 #include "dialogs/EllipseDlg.h"
-#include "../res/ResoDlg.h"
-#include "../monteconvo/ConvoDlg.h"
-#include "../scanviewer/scanviewer.h"
+#include "tools/res/ResoDlg.h"
+#include "tools/monteconvo/ConvoDlg.h"
+#include "tools/scanviewer/scanviewer.h"
 #include "dialogs/SpurionDlg.h"
 #include "dialogs/NeutronDlg.h"
 #include "dialogs/GotoDlg.h"
@@ -52,8 +52,8 @@
 	#include "dialogs/EllipseDlg3D.h"
 #endif
 
-#include "../sglist/SgListDlg.h"
-#include "helper/spacegroup.h"
+#include "tools/sglist/SgListDlg.h"
+#include "libs/spacegroups/spacegroup.h"
 #include "tlibs/math/lattice.h"
 
 

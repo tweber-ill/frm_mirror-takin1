@@ -15,7 +15,7 @@
 #include <memory>
 
 #include "tlibs/file/loadinstr.h"
-#include "helper/qthelper.h"
+#include "libs/qthelper.h"
 #include "ui/ui_scanviewer.h"
 
 

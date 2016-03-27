@@ -13,9 +13,9 @@
 #include "tlibs/version.h"
 
 #include "tlibs/string/string.h"
-#include "../helper/formfact.h"
-#include "../helper/spacegroup.h"
-#include "../helper/globals.h"
+#include "libs/formfactors/formfact.h"
+#include "libs/spacegroups/spacegroup.h"
+#include "libs/globals.h"
 #include <sstream>
 
 

@@ -13,7 +13,7 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/linalg_ops.h"
 #include "tlibs/string/string.h"
-#include "helper/spacegroup_clp.h"
+#include "libs/spacegroups/spacegroup_clp.h"
 
 
 typedef tl::ublas::vector<double> t_vec;

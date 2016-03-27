@@ -8,7 +8,7 @@
 #include "taz.h"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
-#include "helper/globals.h"
+#include "libs/globals.h"
 #include <boost/algorithm/string.hpp>
 
 

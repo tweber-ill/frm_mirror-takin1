@@ -11,7 +11,7 @@
 #ifndef NO_3D
 	#include "tlibs/gfx/gl.h"
 #endif
-#include "helper/globals.h"
+#include "libs/globals.h"
 
 #include <QFileDialog>
 #include <QFontDialog>

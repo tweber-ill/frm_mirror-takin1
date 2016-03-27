@@ -12,7 +12,7 @@
 #include "tlibs/math/math.h"
 #include "tlibs/helper/misc.h"
 #include "tlibs/math/neutrons.hpp"
-#include "helper/globals.h"
+#include "libs/globals.h"
 
 #include <sstream>
 #include <iostream>

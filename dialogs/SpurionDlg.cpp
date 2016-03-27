@@ -9,7 +9,6 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
-#include "helper/qthelper.h"
 
 #include <sstream>
 #include <iostream>

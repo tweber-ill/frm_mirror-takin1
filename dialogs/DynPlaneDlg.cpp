@@ -8,7 +8,6 @@
 #include "DynPlaneDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/neutrons.hpp"
-#include "helper/qthelper.h"
 #include <boost/units/io.hpp>
 
 

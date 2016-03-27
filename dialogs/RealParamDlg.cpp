@@ -9,7 +9,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
 #include "tlibs/math/neutrons.hpp"
-#include "helper/globals.h"
+#include "libs/globals.h"
 
 
 RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)

@@ -17,10 +17,11 @@
 #include <vector>
 #include <memory>
 
-#include "helper/spacegroup.h"
-#include "helper/qthelper.h"
+#include "libs/spacegroups/spacegroup.h"
+#include "libs/qthelper.h"
 #include "tlibs/file/prop.h"
 #include "AtomsDlg.h"
+
 
 struct PowderLine
 {

@@ -13,7 +13,7 @@
 #include <vector>
 #include <memory>
 #include "ui/ui_formfactors.h"
-#include "helper/qthelper.h"
+#include "libs/qthelper.h"
 
 
 class FormfactorDlg : public QDialog, Ui::FormFactorDlg

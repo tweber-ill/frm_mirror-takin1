@@ -15,8 +15,8 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/linalg_ops.h"
 #include "tlibs/string/string.h"
-#include "helper/spacegroup_clp.h"
-#include "helper/formfact.h"
+#include "libs/spacegroups/spacegroup_clp.h"
+#include "libs/formfactors/formfact.h"
 
 
 typedef tl::ublas::vector<double> t_vec;

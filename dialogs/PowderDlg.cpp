@@ -13,8 +13,8 @@
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
 
-#include "helper/globals.h"
-#include "helper/formfact.h"
+#include "libs/globals.h"
+#include "libs/formfactors/formfact.h"
 
 #include <iostream>
 #include <boost/algorithm/string.hpp>

@@ -324,9 +324,9 @@ obj/AtomsDlg.o: dialogs/AtomsDlg.cpp dialogs/AtomsDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/SettingsDlg.o: dialogs/SettingsDlg.cpp dialogs/SettingsDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/globals.o: helper/globals.cpp helper/globals.h
+obj/globals.o: libs/globals.cpp libs/globals.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/qthelper.o: helper/qthelper.cpp helper/qthelper.h
+obj/qthelper.o: libs/qthelper.cpp libs/qthelper.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -361,17 +361,17 @@ obj/tcp.o: tlibs/net/tcp.cpp tlibs/net/tcp.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/linalg2.o: tlibs/math/linalg2.cpp tlibs/math/linalg2.h tlibs/math/geo.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/spacegroup_clp.o: helper/spacegroup_clp.cpp helper/spacegroup_clp.h
+obj/spacegroup_clp.o: libs/spacegroups/spacegroup_clp.cpp libs/spacegroups/spacegroup_clp.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/spacegroup.o: helper/spacegroup.cpp helper/spacegroup.h
+obj/spacegroup.o: libs/spacegroups/spacegroup.cpp libs/spacegroups/spacegroup.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/crystalsys.o: helper/crystalsys.cpp helper/crystalsys.h
+obj/crystalsys.o: libs/spacegroups/crystalsys.cpp libs/spacegroups/crystalsys.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/formfact.o: helper/formfact.cpp helper/formfact.h
+obj/formfact.o: libs/formfactors/formfact.cpp libs/formfactors/formfact.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/rand.o: tlibs/math/rand.cpp tlibs/math/rand.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/plotgl.o: helper/plotgl.cpp helper/plotgl.h
+obj/plotgl.o: libs/plotgl.cpp libs/plotgl.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -447,9 +447,9 @@ obj/sglist_main.o: tools/sglist/main.cpp
 obj/SgListDlg.o: tools/sglist/SgListDlg.cpp tools/sglist/SgListDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 
-obj/globals_noqt.o: helper/globals.cpp helper/globals.h
+obj/globals_noqt.o: libs/globals.cpp libs/globals.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
-obj/crystalsys_noqt.o: helper/crystalsys.cpp helper/crystalsys.h
+obj/crystalsys_noqt.o: libs/spacegroups/crystalsys.cpp libs/spacegroups/crystalsys.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/sfact.o: tools/sggen/sfact.cpp
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
@@ -472,5 +472,4 @@ clean:
 	rm -f tools/scanviewer/*.moc
 	rm -f tools/monteconvo/*.moc
 	rm -f tools/sglist/*.moc
-	rm -f helper/*.moc
 	rm -f dialogs/*.moc

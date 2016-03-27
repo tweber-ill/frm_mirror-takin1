@@ -14,7 +14,7 @@
 #include <memory>
 #include "ui/ui_dyn_plane.h"
 #include "RecipParamDlg.h"
-#include "helper/qthelper.h"
+#include "libs/qthelper.h"
 
 
 class DynPlaneDlg : public QDialog, Ui::DynPlaneDlg

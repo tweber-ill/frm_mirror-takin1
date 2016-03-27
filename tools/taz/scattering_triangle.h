@@ -15,7 +15,7 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/kd.h"
 #include "dialogs/AtomsDlg.h"
-#include "helper/spacegroup.h"
+#include "libs/spacegroups/spacegroup.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>

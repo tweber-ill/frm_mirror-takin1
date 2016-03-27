@@ -10,7 +10,7 @@
 #include "tlibs/math/atoms.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
-#include "helper/globals.h"
+#include "libs/globals.h"
 #include "real_lattice.h"
 
 #include <QToolTip>

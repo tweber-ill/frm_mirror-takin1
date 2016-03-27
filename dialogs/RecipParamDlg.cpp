@@ -10,7 +10,7 @@
 #include "tlibs/math/math.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/neutrons.hpp"
-#include "helper/globals.h"
+#include "libs/globals.h"
 
 namespace ublas = boost::numeric::ublas;
 

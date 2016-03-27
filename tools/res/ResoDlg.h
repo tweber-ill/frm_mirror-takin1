@@ -23,7 +23,7 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/prop.h"
 #ifndef NO_3D
-	#include "helper/plotgl.h"
+	#include "libs/plotgl.h"
 #endif
 #include "ellipse.h"
 #include "dialogs/RecipParamDlg.h"

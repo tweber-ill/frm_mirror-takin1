@@ -14,8 +14,7 @@
 	#include "sqw_py.h"
 #endif
 #include "TASReso.h"
-#include "helper/globals.h"
-#include "helper/qthelper.h"
+#include "libs/globals.h"
 
 #include <iostream>
 #include <fstream>

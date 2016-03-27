@@ -11,8 +11,7 @@
 #include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
 #include "dialogs/AboutDlg.h"
-#include "helper/globals.h"
-#include "helper/spacegroup.h"
+#include "libs/globals.h"
 
 #include <clocale>
 #include <memory>

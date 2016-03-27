@@ -14,7 +14,7 @@
 
 #include <vector>
 #include <memory>
-#include "helper/qthelper.h"
+#include "libs/qthelper.h"
 #include <qwt_legend.h>
 
 

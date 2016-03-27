@@ -9,7 +9,7 @@
 #include <sstream>
 //#include <iostream>
 #include "tlibs/string/string.h"
-#include "helper/spacegroup.h"
+#include "libs/spacegroups/spacegroup.h"
 
 
 SgListDlg::SgListDlg(QWidget *pParent)

@@ -6,7 +6,7 @@
  */
 
 #include "taz.h"
-#include "helper/globals.h"
+#include "libs/globals.h"
 
 #include <iostream>
 #include <algorithm>

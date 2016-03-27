@@ -20,7 +20,7 @@
 #include "tlibs/math/math.h"
 #include "tlibs/math/lattice.h"
 
-#include "helper/globals.h"
+#include "libs/globals.h"
 #include "mc.h"
 
 #include <QPainter>

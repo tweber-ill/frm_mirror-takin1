@@ -6,8 +6,7 @@
  */
 
 #include "FormfactorDlg.h"
-#include "helper/formfact.h"
-#include "helper/qthelper.h"
+#include "libs/formfactors/formfact.h"
 #include "tlibs/string/spec_char.h"
 #include <qwt_picker_machine.h>
 

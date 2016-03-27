@@ -6,7 +6,7 @@
  */
 
 #include "spacegroup.h"
-#include "globals.h"
+#include "libs/globals.h"
 #include <sstream>
 
 

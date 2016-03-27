@@ -21,7 +21,7 @@
 #include "tools/res/ellipse.h"
 #include "tools/res/pop.h"
 #include "ui/ui_ellipses.h"
-#include "helper/qthelper.h"
+#include "libs/qthelper.h"
 
 
 class EllipseDlg : public QDialog, Ui::EllipseDlg

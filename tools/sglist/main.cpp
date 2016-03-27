@@ -10,7 +10,7 @@
 #include <QApplication>
 #include <iostream>
 #include "SgListDlg.h"
-#include "helper/spacegroup.h"
+#include "libs/spacegroups/spacegroup.h"
 
 
 int main(int argc, char** argv)

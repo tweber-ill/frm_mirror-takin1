@@ -14,7 +14,7 @@
 #include <atomic>
 #include <memory>
 
-#include "helper/qthelper.h"
+#include "libs/qthelper.h"
 #include "SqwParamDlg.h"
 #include "ui/ui_monteconvo.h"
 #include "sqw.h"

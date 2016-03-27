@@ -6,7 +6,7 @@
  */
 
 #include "formfact.h"
-#include "globals.h"
+#include "libs/globals.h"
 #include "tlibs/math/math.h"
 #include "tlibs/log/log.h"
 #include "tlibs/file/prop.h"

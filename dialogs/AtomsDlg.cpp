@@ -6,7 +6,7 @@
  */
 
 #include "AtomsDlg.h"
-#include "helper/globals.h"
+#include "libs/globals.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/linalg.h"
 

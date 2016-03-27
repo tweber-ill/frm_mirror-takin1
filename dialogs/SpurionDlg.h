@@ -14,7 +14,7 @@
 #include <memory>
 #include "ui/ui_spurions.h"
 #include "RecipParamDlg.h"
-#include "helper/qthelper.h"
+#include "libs/qthelper.h"
 
 
 class SpurionDlg : public QDialog, Ui::SpurionDlg

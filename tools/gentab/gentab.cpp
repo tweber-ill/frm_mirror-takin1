@@ -13,7 +13,7 @@
 #include "tlibs/file/prop.h"
 #include "tlibs/log/log.h"
 #include "tlibs/math/linalg.h"
-#include "../../helper/spacegroup_clp.h"
+#include "libs/spacegroups/spacegroup_clp.h"
 
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/version.hpp>
