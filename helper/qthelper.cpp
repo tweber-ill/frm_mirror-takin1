@@ -6,6 +6,7 @@
  */
 
 #include "qthelper.h"
+#include "globals.h"
 #include "tlibs/math/math.h"
 
 #include <algorithm>
@@ -38,7 +39,8 @@ public:
 };
 
 
-QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves, bool bNoTrackerSignal)
+QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
+	unsigned int iNumCurves, bool bNoTrackerSignal)
 	: m_pPlot(pPlot)
 {
 	QPen penGrid;
@@ -106,6 +108,18 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves, bool bNo
 	//connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 #endif
 	m_pPicker->setEnabled(1);
+
+
+	// fonts
+	QwtText txt = m_pPlot->title();
+	txt.setFont(g_fontGfx);
+	m_pPlot->setTitle(txt);
+	for(QwtPlot::Axis ax : {QwtPlot::yLeft, QwtPlot::yRight, QwtPlot::xBottom, QwtPlot::xTop})
+	{
+		txt = m_pPlot->axisTitle(ax);
+		txt.setFont(g_fontGfx);
+		m_pPlot->setAxisTitle(ax, txt);
+	}
 }
 
 

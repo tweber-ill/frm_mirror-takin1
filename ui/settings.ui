@@ -191,7 +191,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>2D Views:</string>
+             <string>2D Views and Plots:</string>
             </property>
            </widget>
           </item>

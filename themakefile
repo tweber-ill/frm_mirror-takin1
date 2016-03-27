@@ -192,7 +192,8 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/scanviewer.o obj/x3d.o \
 	obj/tlibs_ver.o obj/AboutDlg.o
 
-OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o obj/qthelper.o
+OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
+	obj/qthelper.o obj/globals.o
 
 OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/ellipse.o \
@@ -208,7 +209,8 @@ OBJ_RESO = obj/log.o obj/rand.o \
 	obj/ellipse.o obj/linalg2.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
-	obj/loadinstr.o obj/log.o obj/qthelper.o
+	obj/loadinstr.o obj/log.o obj/qthelper.o \
+	obj/globals.o
 
 OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup.o obj/crystalsys.o \
 	obj/log.o obj/globals.o
