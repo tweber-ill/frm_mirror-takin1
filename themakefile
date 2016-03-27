@@ -239,7 +239,7 @@ OBJ_TAZ += obj/SgListDlg.o obj/spacegroup.o
 
 .PHONY: all clean
 
-all: takin montereso monteconvo xmonteconvo posextract scanviewer gentab sglist sfact convofit convoseries
+all: takin  montereso  monteconvo xmonteconvo posextract  scanviewer  gentab sglist sfact  convofit convoseries
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}

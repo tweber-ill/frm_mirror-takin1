@@ -36,18 +36,18 @@ t_real SqwFuncModel::operator()(t_real x) const
 	}
 
 
-	std::vector<ublas::vector<t_real>> vecNeutrons;
+	std::vector<ublas::vector<t_real_reso>> vecNeutrons;
 	Ellipsoid4d elli = reso.GenerateMC(m_iNumNeutrons, vecNeutrons);
 
 	t_real dS = 0.;
 	t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
-	for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
+	for(const ublas::vector<t_real_reso>& vecHKLE : vecNeutrons)
 	{
-		dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
+		dS += t_real((*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]));
 
 		for(int i=0; i<4; ++i)
-			dhklE_mean[i] += vecHKLE[i];
+			dhklE_mean[i] += t_real(vecHKLE[i]);
 	}
 
 	dS /= t_real(m_iNumNeutrons);

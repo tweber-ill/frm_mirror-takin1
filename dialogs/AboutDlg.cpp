@@ -31,7 +31,7 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	}
 
 	labelVersion->setText("Version " TAKIN_VER);
-	labelWritten->setText("Written by Tobias Weber");
+	labelWritten->setText("Written by Tobias Weber <tobias.weber@tum.de>");
 	labelYears->setText("2014 - 2016");
 
 	std::string strCC = "Built using " + std::string(BOOST_COMPILER);

@@ -338,16 +338,15 @@ CNResults calc_eck(const EckParams& eck)
 	wavenumber kperp = tl::my_units_sqrt<wavenumber>(units::abs(kipara*kipara - eck.ki*eck.ki));
 	kperp *= eck.dsample_sense;
 
-	const auto ksq2E = tl::get_hbar<t_real>()*tl::get_hbar<t_real>() /
-		(t_real(2) * tl::get_m_n<t_real>());
+	const t_real ksq2E = tl::get_KSQ2E<t_real>();
 
 	// trafo, equ 52 in [eck14]
 	t_mat T = ublas::identity_matrix<t_real>(6);
 	T(0,3) = T(1,4) = T(2,5) = -1.;
-	T(3,0) = t_real(2)*ksq2E * kipara / meV / angs;
-	T(3,3) = t_real(2)*ksq2E * kfpara / meV / angs;
-	T(3,1) = t_real(2)*ksq2E * kperp / meV / angs;
-	T(3,4) = t_real(-2)*ksq2E * kperp / meV / angs;
+	T(3,0) = t_real(2)*ksq2E * kipara * angs;
+	T(3,3) = t_real(2)*ksq2E * kfpara * angs;
+	T(3,1) = t_real(2)*ksq2E * kperp * angs;
+	T(3,4) = t_real(-2)*ksq2E * kperp * angs;
 	T(4,1) = T(5,2) = (0.5 - dE);
 	T(4,4) = T(5,5) = (0.5 + dE);
 	t_mat Tinv;

@@ -242,7 +242,7 @@ bool run_job(const std::string& strJob)
 		mod.AddModelFitParams(strParam, dVal, dErr);
 	}
 
-	tl::Chi2Function chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
+	tl::Chi2Function_gen<t_real_sc> chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
 	chi2fkt.SetDebug(1);
 	chi2fkt.SetSigma(dSigma);
 
@@ -333,8 +333,10 @@ bool run_job(const std::string& strJob)
 
 int main(int argc, char** argv)
 {
-	tl::log_info("This is the Takin convolution fitter.");
-	tl::log_debug("Compiled with value type: ", tl::get_typename<t_real>(), ".");
+	tl::log_info("This is the Takin command-line convolution fitter.");
+	tl::log_info("Written by Tobias Weber <tobias.weber@tum.de>, 2014-2016.\n");
+	tl::log_debug("Resolution calculation uses ", sizeof(t_real_reso)*8, " bit ", tl::get_typename<t_real_reso>(), "s.");
+	tl::log_debug("Fitting uses ", sizeof(tl::t_real_min)*8, " bit ", tl::get_typename<tl::t_real_min>(), "s.");
 
 	if(argc > 2)
 	{
