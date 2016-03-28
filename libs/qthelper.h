@@ -18,12 +18,11 @@
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
 
+using t_real_qwt = double;		// qwt's intrinsic value type
+
 
 class QwtPlotWrapper
 {
-public:
-	using t_real_qwt = double;		// qwt's intrinsic value type
-
 protected:
 	QwtPlot *m_pPlot = nullptr;
 	std::vector<QwtPlotCurve*> m_vecCurves;
@@ -31,6 +30,9 @@ protected:
 	QwtPlotPicker *m_pPicker = nullptr;
 	QwtPlotZoomer *m_pZoomer = nullptr;
 	QwtPlotPanner *m_pPanner = nullptr;
+
+	bool m_bHasDataPtrs = 1;
+	std::vector<std::pair<const std::vector<t_real_qwt>*, const std::vector<t_real_qwt>*>> m_vecDataPtrs;
 
 public:
 	QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves=1, bool bNoTrackerSignal=0);
@@ -42,14 +44,16 @@ public:
 	QwtPlotPicker* GetPicker() { return m_pPicker; }
 	bool HasTrackerSignal() const;
 
-	void SetData(const std::vector<double>& vecX, const std::vector<double>& vecY,
+	void SetData(const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 		unsigned int iCurve=0, bool bReplot=1, bool bCopy=0);
+
+	void SavePlot() const;
 };
 
 
 // ----------------------------------------------------------------------------
 
-template<typename t_real, bool bSetDirectly=std::is_same<t_real, typename QwtPlotWrapper::t_real_qwt>::value>
+template<typename t_real, bool bSetDirectly=std::is_same<t_real, t_real_qwt>::value>
 struct set_qwt_data
 {
 	void operator()(QwtPlotWrapper& plot, const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
@@ -74,7 +78,7 @@ struct set_qwt_data<t_real, 0>
 	void operator()(QwtPlotWrapper& plot, const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
 		unsigned int iCurve=0, bool bReplot=1)
 	{
-		std::vector<QwtPlotWrapper::t_real_qwt> vecNewX, vecNewY;
+		std::vector<t_real_qwt> vecNewX, vecNewY;
 		vecNewX.reserve(vecX.size());
 		vecNewY.reserve(vecY.size());
 
@@ -91,8 +95,7 @@ struct set_qwt_data<t_real, 0>
 extern bool save_table(const char* pcFile, const QTableWidget* pTable);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
-	const std::vector<double>& vecX, const std::vector<double>& vecY,
+	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 	bool bMetaCall=false);
-
 
 #endif

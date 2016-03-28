@@ -8,14 +8,19 @@
 #include "qthelper.h"
 #include "globals.h"
 #include "tlibs/math/math.h"
+#include "tlibs/string/string.h"
 
 #include <algorithm>
 #include <fstream>
+//#include <iostream>
 #include <iomanip>
 #include <memory>
 
 #include <qwt_picker_machine.h>
 #include <qwt_plot_canvas.h>
+
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QMouseEvent>
 
 
@@ -33,10 +38,55 @@ protected:
 
 public:
 	template<class t_widget_or_canvas>
-	explicit MyQwtPlotZoomer(t_widget_or_canvas* ptr) : QwtPlotZoomer(ptr) {}
+	explicit MyQwtPlotZoomer(t_widget_or_canvas* ptr) : QwtPlotZoomer(ptr)
+	{
+		QwtPlotZoomer::setMaxStackDepth(-1);
+		QwtPlotZoomer::setEnabled(1);
+	}
 
 	virtual ~MyQwtPlotZoomer() {}
 };
+
+
+// ----------------------------------------------------------------------------
+
+
+class MyQwtPlotPicker : public QwtPlotPicker
+{
+protected:
+	QwtPlotWrapper *m_pPlotWrap = nullptr;
+
+	virtual void widgetKeyPressEvent(QKeyEvent *pEvt) override
+	{
+		const int iKey = pEvt->key();
+		//std::cout << "Plot key: " <<  iKey << std::endl;
+		if(iKey == Qt::Key_S)
+			m_pPlotWrap->SavePlot();
+	}
+
+public:
+	MyQwtPlotPicker(QwtPlotWrapper *pPlotWrap, bool bNoTrackerSignal=0) :
+		m_pPlotWrap(pPlotWrap),
+		QwtPlotPicker(pPlotWrap->GetPlot()->xBottom, pPlotWrap->GetPlot()->yLeft,
+#if QWT_VER<6
+		QwtPlotPicker::PointSelection,
+#endif
+		QwtPlotPicker::NoRubberBand,
+		bNoTrackerSignal ? QwtPicker::AlwaysOn : QwtPicker::AlwaysOff,
+		pPlotWrap->GetPlot()->canvas())
+	{
+#if QWT_VER>=6
+		QwtPlotPicker::setStateMachine(new QwtPickerTrackerMachine());
+		//connect(this, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
+#endif
+		QwtPlotPicker::setEnabled(1);
+	}
+
+	virtual ~MyQwtPlotPicker() {}
+};
+
+
+// ----------------------------------------------------------------------------
 
 
 QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
@@ -68,46 +118,21 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 	m_pGrid->setPen(penGrid);
 	m_pGrid->attach(m_pPlot);
 
+
 	m_pPanner = new QwtPlotPanner(m_pPlot->canvas());
 	m_pPanner->setMouseButton(Qt::MiddleButton);
 
+
 #if QWT_VER>=6
 	m_pZoomer = new MyQwtPlotZoomer(m_pPlot->canvas());
-	m_pZoomer->setMaxStackDepth(-1);
-	m_pZoomer->setEnabled(1);
-#endif
-
-	m_pPlot->canvas()->setMouseTracking(1);
-	if(bNoTrackerSignal)
-	{
-		m_pPicker = new QwtPlotPicker(m_pPlot->xBottom, m_pPlot->yLeft,
-#if QWT_VER<6
-			QwtPlotPicker::PointSelection,
-#endif
-			QwtPlotPicker::NoRubberBand,
-			QwtPlotPicker::AlwaysOn,
-			m_pPlot->canvas());
-	}
-	else
-	{
-		m_pPicker = new QwtPlotPicker(m_pPlot->xBottom, m_pPlot->yLeft,
-#if QWT_VER<6
-			QwtPlotPicker::PointSelection,
-#endif
-			QwtPlotPicker::NoRubberBand,
-#if QWT_VER>=6
-			QwtPlotPicker::AlwaysOff,
 #else
-			QwtPlotPicker::AlwaysOn,
+	// display tracker overlay anyway
+	if(bNoTrackerSignal==0) bNoTrackerSignal = 1;
 #endif
-			m_pPlot->canvas());
-	}
 
-#if QWT_VER>=6
-	m_pPicker->setStateMachine(new QwtPickerTrackerMachine());
-	//connect(m_pPicker, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
-#endif
-	m_pPicker->setEnabled(1);
+
+	m_pPicker = new MyQwtPlotPicker(this, bNoTrackerSignal);
+	m_pPlot->canvas()->setMouseTracking(1);
 
 
 	// fonts
@@ -156,30 +181,101 @@ QwtPlotWrapper::~QwtPlotWrapper()
 #endif
 
 
-void QwtPlotWrapper::SetData(const std::vector<double>& vecX, const std::vector<double>& vecY, 
+void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY, 
 	unsigned int iCurve, bool bReplot, bool bCopy)
 {
 	if(!bCopy)	// copy pointers
 	{
-	#if QWT_VER>=6
-		m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
-	#else
-		m_vecCurves[iCurve]->setRawData(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
-	#endif
+#if QWT_VER>=6
+		m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min<t_real_qwt>(vecX.size(), vecY.size()));
+#else
+		m_vecCurves[iCurve]->setRawData(vecX.data(), vecY.data(), std::min<t_real_qwt>(vecX.size(), vecY.size()));
+#endif
+
+		m_bHasDataPtrs = 1;
+		if(iCurve >= m_vecDataPtrs.size())
+			m_vecDataPtrs.resize(iCurve+1);
+
+		m_vecDataPtrs[iCurve].first = &vecX;
+		m_vecDataPtrs[iCurve].second = &vecY;
 	}
 	else		// copy data
 	{
-	#if QWT_VER>=6
-		m_vecCurves[iCurve]->setSamples(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
-	#else
-		m_vecCurves[iCurve]->setData(vecX.data(), vecY.data(), std::min<double>(vecX.size(), vecY.size()));
-	#endif
+#if QWT_VER>=6
+		m_vecCurves[iCurve]->setSamples(vecX.data(), vecY.data(), std::min<t_real_qwt>(vecX.size(), vecY.size()));
+#else
+		m_vecCurves[iCurve]->setData(vecX.data(), vecY.data(), std::min<t_real_qwt>(vecX.size(), vecY.size()));
+#endif
+
+		m_bHasDataPtrs = 0;
+		m_vecDataPtrs.clear();
 	}
 
 	if(bReplot)
 	{
 		set_zoomer_base(m_pZoomer, vecX, vecY);
 		m_pPlot->replot();
+	}
+}
+
+
+void QwtPlotWrapper::SavePlot() const
+{
+	if(!m_bHasDataPtrs)
+	{
+		// if data was deep-copied, it is now lost somewhere in the plot objects...
+		QMessageBox::critical(m_pPlot, "Error", "Cannot get plot data.");
+		return;
+	}
+
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	//if(!m_settings.value("main/native_dialogs", 1).toBool())
+	//	fileopt = QFileDialog::DontUseNativeDialog;
+
+	std::string strFile = QFileDialog::getSaveFileName(m_pPlot,
+		"Save Plot Data", nullptr, "Data files (*.dat *.DAT)",
+		nullptr, fileopt).toStdString();
+
+	tl::trim(strFile);
+	if(strFile == "")
+		return;
+
+	std::ofstream ofstrDat(strFile);
+	if(!ofstrDat)
+	{
+		std::string strErr = "Cannot open file \"" + strFile + "\" for saving.";
+		QMessageBox::critical(m_pPlot, "Error", strErr.c_str());
+		return;
+	}
+
+	ofstrDat.precision(g_iPrec);
+	ofstrDat << "# title: " << m_pPlot->title().text().toStdString() << "\n";
+	ofstrDat << "# x_label: " << m_pPlot->axisTitle(QwtPlot::xBottom).text().toStdString() << "\n";
+	ofstrDat << "# y_label: " << m_pPlot->axisTitle(QwtPlot::yLeft).text().toStdString() << "\n";
+	ofstrDat << "# x_label_2: " << m_pPlot->axisTitle(QwtPlot::xTop).text().toStdString() << "\n";
+	ofstrDat << "# y_label_2: " << m_pPlot->axisTitle(QwtPlot::yRight).text().toStdString() << "\n";
+	ofstrDat << "\n";
+
+	std::size_t iDataSet=0;
+	for(const auto& pairVecs : m_vecDataPtrs)
+	{
+		ofstrDat << "## ---------------- begin of dataset " << (iDataSet+1) 
+			<< " ----------------\n";
+
+		const std::vector<t_real_qwt>* pVecX = pairVecs.first;
+		const std::vector<t_real_qwt>* pVecY = pairVecs.second;
+
+		const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
+
+		for(std::size_t iCur=0; iCur<iSize; ++iCur)
+		{
+			ofstrDat << std::left << std::setw(g_iPrec*2) << pVecX->operator[](iCur) << " ";
+			ofstrDat << std::left << std::setw(g_iPrec*2) << pVecY->operator[](iCur) << "\n";
+		}
+
+		ofstrDat << "## ---------------- end of dataset " << (iDataSet+1)
+			<< " ------------------\n\n";
+		++iDataSet;
 	}
 }
 
@@ -237,8 +333,11 @@ bool save_table(const char* pcFile, const QTableWidget* pTable)
 }
 
 
+// ----------------------------------------------------------------------------
+
+
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
-	const std::vector<double>& vecX, const std::vector<double>& vecY,
+	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 	bool bMetaCall)
 {
 	if(!pZoomer)
@@ -249,15 +348,15 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	//tl::log_debug("min: ", *minmaxX.first, " ", *minmaxY.first);
 	//tl::log_debug("max: ", *minmaxX.second, " ", *minmaxY.second);
 
-	double dminmax[] = {*minmaxX.first, *minmaxX.second,
+	t_real_qwt dminmax[] = {*minmaxX.first, *minmaxX.second,
 		*minmaxY.first, *minmaxY.second};
 
-	if(tl::float_equal(dminmax[0], dminmax[1]))
+	if(tl::float_equal<t_real_qwt>(dminmax[0], dminmax[1]))
 	{
 		dminmax[0] -= dminmax[0]/10.;
 		dminmax[1] += dminmax[1]/10.;
 	}
-	if(tl::float_equal(dminmax[2], dminmax[3]))
+	if(tl::float_equal<t_real_qwt>(dminmax[2], dminmax[3]))
 	{
 		dminmax[2] -= dminmax[2]/10.;
 		dminmax[3] += dminmax[3]/10.;
@@ -266,8 +365,8 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	QRectF rect;
 	rect.setLeft(dminmax[0]);
 	rect.setRight(dminmax[1]);
-	rect.setBottom(dminmax[3]);
 	rect.setTop(dminmax[2]);
+	rect.setBottom(dminmax[3]);
 
 	if(bMetaCall)
 	{
@@ -285,3 +384,5 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 		pZoomer->setZoomBase(rect);
 	}
 }
+
+// ----------------------------------------------------------------------------
