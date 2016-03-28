@@ -117,19 +117,19 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 	for(int i=0; i<3; ++i)
 	{
 		bool bHasElem = 0;
-		if(!tl::float_equal(vecXR[i], 0.))
+		if(!tl::float_equal<T>(vecXR[i], 0.))
 		{
 			double dVal = vecXR[i];
 
-			if(tl::float_equal(dVal, 1.))
+			if(tl::float_equal<T>(dVal, 1.))
 				ostr << "x";
-			else if(tl::float_equal(dVal, -1.))
+			else if(tl::float_equal<T>(dVal, -1.))
 				ostr << "-x";
 			else
 				ostr << dVal << "x";
 			bHasElem = 1;
 		}
-		if(!tl::float_equal(vecYR[i], 0.))
+		if(!tl::float_equal<T>(vecYR[i], 0.))
 		{
 			double dVal = vecYR[i];
 
@@ -137,23 +137,23 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 			{
 				if(dVal >= 0.) ostr << " + "; else ostr << " - ";
 
-				if(tl::float_equal(std::fabs(dVal), 1.))
+				if(tl::float_equal<T>(std::fabs(dVal), 1.))
 					ostr << "y";
 				else
 					ostr << std::fabs(dVal) << "y";
 			}
 			else
 			{
-				if(tl::float_equal(dVal, 1.))
+				if(tl::float_equal<T>(dVal, 1.))
 					ostr << "y";
-				else if(tl::float_equal(dVal, -1.))
+				else if(tl::float_equal<T>(dVal, -1.))
 					ostr << "-y";
 				else
 					ostr << dVal << "y";
 			}
 			bHasElem = 1;
 		}
-		if(!tl::float_equal(vecZR[i], 0.))
+		if(!tl::float_equal<T>(vecZR[i], 0.))
 		{
 			double dVal = vecZR[i];
 
@@ -161,16 +161,16 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 			{
 				if(dVal >= 0.) ostr << " + "; else ostr << " - ";
 
-				if(tl::float_equal(std::fabs(dVal), 1.))
+				if(tl::float_equal<T>(std::fabs(dVal), 1.))
 					ostr << "z";
 				else
 					ostr << std::fabs(dVal) << "z";
 			}
 			else
 			{
-				if(tl::float_equal(dVal, 1.))
+				if(tl::float_equal<T>(dVal, 1.))
 					ostr << "z";
-				else if(tl::float_equal(dVal, -1.))
+				else if(tl::float_equal<T>(dVal, -1.))
 					ostr << "-z";
 				else
 					ostr << dVal << "z";
@@ -178,7 +178,7 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 			bHasElem = 1;
 		}
 
-		if(!tl::float_equal(vecTrans[i], 0.))
+		if(!tl::float_equal<T>(vecTrans[i], 0.))
 		{
 			double dVal = vecTrans[i];
 
@@ -282,11 +282,12 @@ bool is_reflection_allowed(int h, int k, int l, const t_cont<t_mat>& vecTrafos)
 			t_real dInner = ublas::inner_prod(vecTrans, vecHKL2);
 
 			t_real dMod = std::fmod(dInner, 1.);
-			if(tl::float_equal(dMod, 1., dEps) || tl::float_equal(dMod, -1., dEps))
+			if(tl::float_equal<t_real>(dMod, 1., dEps) ||
+				tl::float_equal<t_real>(dMod, -1., dEps))
 				dMod = 0.;
 
 			// not allowed if vecTrans and vecHKL2 not perpendicular
-			if(!tl::float_equal(dMod, 0., dEps))
+			if(!tl::float_equal<t_real>(dMod, 0., dEps))
 				return false;
 		}
 	}

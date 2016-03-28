@@ -34,5 +34,6 @@ extern std::string find_resource(const std::string& strFile);
 #endif
 
 
-#endif
+using t_real_glob = double;
 
+#endif

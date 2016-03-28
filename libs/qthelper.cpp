@@ -62,6 +62,8 @@ protected:
 		//std::cout << "Plot key: " <<  iKey << std::endl;
 		if(iKey == Qt::Key_S)
 			m_pPlotWrap->SavePlot();
+		else
+			QwtPlotPicker::widgetKeyPressEvent(pEvt);
 	}
 
 public:
@@ -259,8 +261,9 @@ void QwtPlotWrapper::SavePlot() const
 	std::size_t iDataSet=0;
 	for(const auto& pairVecs : m_vecDataPtrs)
 	{
-		ofstrDat << "## ---------------- begin of dataset " << (iDataSet+1) 
-			<< " ----------------\n";
+		if(m_vecDataPtrs.size() > 1)
+			ofstrDat << "## -------------------------------- begin of dataset " << (iDataSet+1) 
+				<< " --------------------------------\n";
 
 		const std::vector<t_real_qwt>* pVecX = pairVecs.first;
 		const std::vector<t_real_qwt>* pVecY = pairVecs.second;
@@ -273,8 +276,9 @@ void QwtPlotWrapper::SavePlot() const
 			ofstrDat << std::left << std::setw(g_iPrec*2) << pVecY->operator[](iCur) << "\n";
 		}
 
-		ofstrDat << "## ---------------- end of dataset " << (iDataSet+1)
-			<< " ------------------\n\n";
+		if(m_vecDataPtrs.size() > 1)
+			ofstrDat << "## -------------------------------- end of dataset " << (iDataSet+1)
+				<< " ----------------------------------\n\n";
 		++iDataSet;
 	}
 }

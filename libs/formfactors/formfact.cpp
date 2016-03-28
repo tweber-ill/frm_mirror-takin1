@@ -48,8 +48,8 @@ void FormfactList::Init()
 	s_strSrcUrl = xml.Query<std::string>("ffacts/source_url", "");
 }
 
-std::vector<Formfact<double>> FormfactList::s_vecAtoms;
-std::vector<Formfact<double>> FormfactList::s_vecIons;
+std::vector<Formfact<t_real_ff>> FormfactList::s_vecAtoms;
+std::vector<Formfact<t_real_ff>> FormfactList::s_vecIons;
 
 std::string FormfactList::s_strSrc;
 std::string FormfactList::s_strSrcUrl;

@@ -8,7 +8,9 @@
 #ifndef __RESO_DEFS_H__
 #define __RESO_DEFS_H__
 
-using t_real_reso = double;
-//using t_real_reso = float;
+#include "libs/globals.h"
+
+
+using t_real_reso = ::t_real_glob;
 
 #endif

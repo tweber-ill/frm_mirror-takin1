@@ -13,6 +13,9 @@
 #include <complex>
 #include "tlibs/helper/array.h"
 #include "tlibs/math/atoms.h"
+#include "libs/globals.h"
+
+using t_real_ff = ::t_real_glob;
 
 
 // ----------------------------------------------------------------------------
@@ -47,7 +50,7 @@ struct Formfact
 class FormfactList
 {
 	public:
-		typedef Formfact<double> elem_type;
+		typedef Formfact<t_real_ff> elem_type;
 		typedef typename elem_type::value_type value_type;
 
 	private:
@@ -115,7 +118,7 @@ struct Scatlen
 class ScatlenList
 {
 	public:
-		typedef Scatlen<std::complex<double>> elem_type;
+		typedef Scatlen<std::complex<t_real_ff>> elem_type;
 		typedef typename elem_type::value_type value_type;
 
 	private:

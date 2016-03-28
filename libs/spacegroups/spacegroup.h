@@ -16,6 +16,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
 #include "tlibs/file/prop.h"
+#include "libs/globals.h"
 
 namespace ublas = boost::numeric::ublas;
 
@@ -23,7 +24,7 @@ namespace ublas = boost::numeric::ublas;
 class SpaceGroup
 {
 public:
-	using t_real = double;
+	using t_real = ::t_real_glob;
 	using t_mat = ublas::matrix<t_real>;
 	using t_vec = ublas::vector<t_real>;
 

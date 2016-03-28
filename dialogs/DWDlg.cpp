@@ -47,7 +47,7 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	penCurveBoseNeg.setWidth(2);
 	m_plotwrapBose->GetCurve(1)->setTitle("Boson Annihilation");
 	m_plotwrapBose->GetCurve(1)->setPen(penCurveBoseNeg);
-	
+
 	if(m_plotwrapBose->HasTrackerSignal())
 		connect(m_plotwrapBose->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
