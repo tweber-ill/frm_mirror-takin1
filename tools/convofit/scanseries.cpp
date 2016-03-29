@@ -14,7 +14,8 @@
 #include "tlibs/log/log.h"
 
 
-using t_map = std::map<std::string, std::pair<double, double>>;
+using t_real = double;
+using t_map = std::map<std::string, std::pair<t_real, t_real>>;
 
 
 // reads property maps from data files
@@ -45,8 +46,8 @@ bool get_fileprops(const char* pcFile, t_map& mapProps)
 			continue;
 
 
-		std::vector<double> vecHKLE;
-		tl::get_tokens<double>(_strVal, std::string(" \t"), vecHKLE);
+		std::vector<t_real> vecHKLE;
+		tl::get_tokens<t_real>(_strVal, std::string(" \t"), vecHKLE);
 
 		// value & error pair
 		if(_strVal.find("+-") != std::string::npos)
@@ -60,8 +61,8 @@ bool get_fileprops(const char* pcFile, t_map& mapProps)
 			//std::cout << strKey << ": " << strVal << ", " << strErr << std::endl;
 			if(strVal.length())
 			{
-				double dVal = tl::str_to_var<double>(strVal);
-				double dErr = tl::str_to_var<double>(strErr);
+				t_real dVal = tl::str_to_var<t_real>(strVal);
+				t_real dErr = tl::str_to_var<t_real>(strErr);
 
 				mapProps.insert(t_map::value_type(strKey, {dVal, dErr}));
 			}
