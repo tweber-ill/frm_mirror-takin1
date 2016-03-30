@@ -96,6 +96,8 @@ public:
 	bool Save(const char *pcFile, t_real_mod dXMin, t_real_mod dXMax, std::size_t) const;
 
 	void SetUseR0(bool bR0) { m_bUseR0 = bR0; }
+
+	SqwBase* GetSqwBase() { return m_pSqw.get(); }
 };
 
 
