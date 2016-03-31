@@ -264,7 +264,9 @@ bool run_job(const std::string& strJob)
 		mod.AddModelFitParams(strParam, dVal, dErr);
 	}
 
-	tl::Chi2Function_gen<t_real_sc> chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
+	//tl::Chi2Function_gen<t_real_sc> chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
+	tl::Chi2Function_mult_gen<t_real_sc, std::vector> chi2fkt;
+	chi2fkt.AddFunc(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
 	chi2fkt.SetDebug(1);
 	chi2fkt.SetSigma(dSigma);
 
