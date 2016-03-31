@@ -11,6 +11,7 @@
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
 #include "../res/defs.h"
+#include "convofit.h"
 
 using t_real = t_real_mod;
 
@@ -82,6 +83,9 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_strTempParamName = this->m_strTempParamName;
 	pMod->m_strFieldParamName = this->m_strFieldParamName;
 	pMod->m_bUseR0 = this->m_bUseR0;
+	pMod->m_iCurParamSet = this->m_iCurParamSet;
+	pMod->m_pScans = this->m_pScans;
+
 	return pMod;
 }
 
@@ -276,3 +280,65 @@ bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::siz
 
 	return true;
 }
+
+
+// -----------------------------------------------------------------------------
+// optional, for multi-fits
+void SqwFuncModel::SetParamSet(std::size_t iSet)
+{
+	if(!m_pScans) return;
+	
+	if(iSet >= m_pScans->size())
+	{
+		tl::log_err("Requested invalid scan group ", iSet);
+		return;
+	}
+
+	if(m_iCurParamSet != iSet)
+	{
+		m_iCurParamSet = iSet;
+
+		const Scan& sc = m_pScans->operator[](m_iCurParamSet);
+		set_tasreso_params_from_scan(m_reso, sc);
+		set_model_params_from_scan(*this, sc);
+	}
+}
+
+std::size_t SqwFuncModel::GetParamSetCount() const
+{
+	// multi-fits
+	if(m_pScans)
+		return m_pScans->size();
+
+	// single-fits
+	return 1;
+}
+
+std::size_t SqwFuncModel::GetExpLen() const
+{
+	if(m_pScans)
+		return m_pScans->operator[](m_iCurParamSet).vecX.size();
+	return 0;
+}
+
+const t_real_mod* SqwFuncModel::GetExpX() const
+{
+	if(m_pScans)
+		return m_pScans->operator[](m_iCurParamSet).vecX.data();
+	return nullptr;
+}
+
+const t_real_mod* SqwFuncModel::GetExpY() const
+{
+	if(m_pScans)
+		return m_pScans->operator[](m_iCurParamSet).vecCts.data();
+	return nullptr;
+}
+
+const t_real_mod* SqwFuncModel::GetExpDY() const
+{
+	if(m_pScans)
+		return m_pScans->operator[](m_iCurParamSet).vecCtsErr.data();
+	return nullptr;
+}
+// -----------------------------------------------------------------------------

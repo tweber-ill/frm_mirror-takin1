@@ -14,6 +14,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "convofit.h"
 #include "scan.h"
 #include "model.h"
 #include "../monteconvo/sqw_py.h"
@@ -34,6 +35,9 @@ bool run_job(const std::string& strJob)
 	}
 
 	std::string strScFile = prop.Query<std::string>("input/scan_file");
+	if(strScFile == "")	// "scan_file_0" is synonymous to "scan_file"
+		strScFile = prop.Query<std::string>("input/scan_file_0");
+
 	std::string strTempCol = prop.Query<std::string>("input/temp_col");
 	std::string strFieldCol = prop.Query<std::string>("input/field_col");
 	bool bTempOverride = prop.Exists("input/temp_override");
@@ -59,9 +63,32 @@ bool run_job(const std::string& strJob)
 	if(filter.bUpper) filter.dUpper = prop.Query<t_real>("input/filter_upper", 0);
 
 
-	std::vector<std::string> vecScFiles;
-	tl::get_tokens<std::string, std::string>(strScFile, ";", vecScFiles);
-	for(std::string& strFile : vecScFiles) tl::trim(strFile);
+	// files in inner vector will be merged
+	// files in outer vector will be used for multi-function fitting
+	std::vector<std::vector<std::string>> vecvecScFiles;
+
+	// primary scan files
+	{
+		std::vector<std::string> vecScFiles;
+		tl::get_tokens<std::string, std::string>(strScFile, ";", vecScFiles);
+		std::for_each(vecScFiles.begin(), vecScFiles.end(), [](std::string& str){ tl::trim(str); });
+		vecvecScFiles.emplace_back(std::move(vecScFiles));
+	}
+
+	// get secondary scan files for multi-function fitting
+	for(std::size_t iSecFile=1; 1; ++iSecFile)
+	{
+		std::string strSecFile = "input/scan_file_" + tl::var_to_str(iSecFile);
+		std::string strSecScFile = prop.Query<std::string>(strSecFile, "");
+		if(strSecScFile == "")
+			break;
+
+		std::vector<std::string> vecSecScFiles;
+		tl::get_tokens<std::string, std::string>(strSecScFile, ";", vecSecScFiles);
+		std::for_each(vecSecScFiles.begin(), vecSecScFiles.end(), [](std::string& str){ tl::trim(str); });
+		vecvecScFiles.emplace_back(std::move(vecSecScFiles));
+	}
+
 
 	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
 
@@ -126,33 +153,49 @@ bool run_job(const std::string& strJob)
 	}
 
 
-	// --------------------------------------------------------------------
-	// Scan file
 
-	Scan sc;
-	if(strTempCol != "")
-		sc.strTempCol = strTempCol;
-	if(strFieldCol != "")
-		sc.strFieldCol = strFieldCol;
-	sc.strCntCol = strCntCol;
-	sc.strMonCol = strMonCol;
-	if(!load_file(vecScFiles, sc, bNormToMon, filter))
+
+	// --------------------------------------------------------------------
+	// Scan files
+	std::vector<Scan> vecSc;
+	for(std::size_t iSc=0; iSc<vecvecScFiles.size(); ++iSc)
+	{
+		Scan sc;
+		if(strTempCol != "")
+			sc.strTempCol = strTempCol;
+		if(strFieldCol != "")
+			sc.strFieldCol = strFieldCol;
+		sc.strCntCol = strCntCol;
+		sc.strMonCol = strMonCol;
+
+		if(vecvecScFiles.size() > 1)
+			tl::log_info("Loading scan group ", iSc, ".");
+		if(!load_file(vecvecScFiles[iSc], sc, bNormToMon, filter))
+			tl::log_err("Cannot load scan files of group ", iSc, ".");
+
+		vecSc.emplace_back(std::move(sc));
+	}
+	if(!vecSc.size())
+	{
+		tl::log_err("No scans loaded.");
 		return 0;
+	}
+
+	tl::log_info("Number of scan groups: ", vecSc.size(), ".");
+	// --------------------------------------------------------------------
+
+
 
 
 	// --------------------------------------------------------------------
 	// Resolution file
-
 	TASReso reso;
 	tl::log_info("Loading instrument file \"", strResFile, "\".");
 	if(!reso.LoadRes(strResFile.c_str()))
 		return 0;
-	reso.SetLattice(sc.sample.a, sc.sample.b, sc.sample.c,
-		sc.sample.alpha, sc.sample.beta, sc.sample.gamma,
-		tl::make_vec({sc.plane.vec1[0], sc.plane.vec1[1], sc.plane.vec1[2]}), 
-		tl::make_vec({sc.plane.vec2[0], sc.plane.vec2[1], sc.plane.vec2[2]}));
-	reso.SetKiFix(sc.bKiFixed);
-	reso.SetKFix(sc.dKFix);
+
+	// base parameter set for single-fits
+	set_tasreso_params_from_scan(reso, vecSc[0]);
 
 	if(strResAlgo == "pop")
 		reso.SetAlgo(ResoAlgo::POP);
@@ -179,11 +222,13 @@ bool run_job(const std::string& strJob)
 
 	if(bUseR0 && !reso.GetResoParams().bCalcR0)
 		tl::log_warn("Resolution R0 requested, but not calculated, using raw ellipsoid volume.");
+	// --------------------------------------------------------------------
+
+
 
 
 	// --------------------------------------------------------------------
 	// Model file
-
 	tl::log_info("Loading S(q,w) file \"", strSqwFile, "\".");
 	SqwBase *pSqw = nullptr;
 
@@ -205,26 +250,36 @@ bool run_job(const std::string& strJob)
 		return 0;
 	SqwFuncModel mod(pSqw, reso);
 
-	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1], sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
-	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], sc.vecScanDir[2], sc.vecScanDir[3]);
+	// only needed for multi-fits
+	if(vecSc.size() > 1)
+		mod.SetScans(&vecSc);
+
 	mod.SetNumNeutrons(iNumNeutrons);
 	mod.SetUseR0(bUseR0);
 
 	if(bTempOverride)
 	{
-		sc.dTemp = dTempOverride;
-		sc.dTempErr = 0.;
+		for(Scan& sc : vecSc)
+		{
+			sc.dTemp = dTempOverride;
+			sc.dTempErr = 0.;
+		}
 	}
 	if(bFieldOverride)
 	{
-		sc.dField = dFieldOverride;
-		sc.dFieldErr = 0.;
+		for(Scan& sc : vecSc)
+		{
+			sc.dField = dFieldOverride;
+			sc.dFieldErr = 0.;
+		}
 	}
 	mod.SetOtherParamNames(strTempVar, strFieldVar);
-	mod.SetOtherParams(sc.dTemp, sc.dField);
 
-	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", sc.dTemp);
-	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", sc.dField);
+	// base parameter set for single-fits
+	set_model_params_from_scan(mod, vecSc[0]);
+
+	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", vecSc[0].dTemp);
+	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", vecSc[0].dField);
 
 
 	// set given individual model parameters
@@ -247,6 +302,9 @@ bool run_job(const std::string& strJob)
 				tl::log_err("No parameter named \"", vecModParam[0], "\" available in S(q,w) model.");
 		}
 	}
+	// --------------------------------------------------------------------
+
+
 
 
 	// --------------------------------------------------------------------
@@ -264,9 +322,10 @@ bool run_job(const std::string& strJob)
 		mod.AddModelFitParams(strParam, dVal, dErr);
 	}
 
-	//tl::Chi2Function_gen<t_real_sc> chi2fkt(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
+	//tl::Chi2Function_gen<t_real_sc> chi2fkt(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
 	tl::Chi2Function_mult_gen<t_real_sc, std::vector> chi2fkt;
-	chi2fkt.AddFunc(&mod, sc.vecX.size(), sc.vecX.data(), sc.vecCts.data(), sc.vecCtsErr.data());
+	// the vecSc[0] data sets are the default data set (will not be used if scan groups are defined)
+	chi2fkt.AddFunc(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
 	chi2fkt.SetDebug(1);
 	chi2fkt.SetSigma(dSigma);
 
@@ -324,15 +383,32 @@ bool run_job(const std::string& strJob)
 
 
 	tl::log_info("Saving results.");
-	std::pair<decltype(sc.vecX)::iterator, decltype(sc.vecX)::iterator> xminmax
-		= std::minmax_element(sc.vecX.begin(), sc.vecX.end());
-	mod.Save(strModOutFile.c_str(), *xminmax.first, *xminmax.second, iPlotPoints);
-	save_file(strScOutFile.c_str(), sc);
+
+	for(std::size_t iSc=0; iSc<vecSc.size(); ++iSc)
+	{
+		const Scan& sc = vecSc[iSc];
+
+		std::string strCurModOutFile = strModOutFile;
+		std::string strCurScOutFile = strScOutFile;
+
+		// append scan group number if this is a multi-fit
+		if(vecSc.size() > 1)
+		{
+			strCurModOutFile += tl::var_to_str(iSc);
+			strCurScOutFile += tl::var_to_str(iSc);
+		}
+		std::pair<decltype(sc.vecX)::const_iterator, decltype(sc.vecX)::const_iterator> xminmax
+			= std::minmax_element(sc.vecX.begin(), sc.vecX.end());
+		mod.Save(strCurModOutFile.c_str(), *xminmax.first, *xminmax.second, iPlotPoints);
+		save_file(strCurScOutFile.c_str(), sc);
+	}
+	// --------------------------------------------------------------------
+
+
 
 
 	// --------------------------------------------------------------------
 	// Plotting
-
 	if(bPlot)
 	{
 		std::ostringstream ostr;
@@ -342,6 +418,9 @@ bool run_job(const std::string& strJob)
 
 		std::system(ostr.str().c_str());
 	}
+	// --------------------------------------------------------------------
+
+
 
 
 	// remove thread-local loggers
@@ -353,6 +432,8 @@ bool run_job(const std::string& strJob)
 
 	return bValidFit;
 }
+
+
 
 
 int main(int argc, char** argv)

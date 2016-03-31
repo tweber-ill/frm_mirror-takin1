@@ -21,6 +21,7 @@
 #include "../monteconvo/sqw.h"
 #include "../monteconvo/TASReso.h"
 #include "../res/defs.h"
+#include "scan.h"
 
 namespace minuit = ROOT::Minuit2;
 
@@ -28,7 +29,7 @@ using t_real_mod = tl::t_real_min;
 //using t_real_mod = t_real_reso;
 
 
-class SqwFuncModel : public tl::MinuitFuncModel
+class SqwFuncModel : public tl::MinuitMultiFuncModel<t_real_mod>
 {
 protected:
 	std::unique_ptr<SqwBase> m_pSqw;
@@ -50,6 +51,12 @@ protected:
 
 	bool m_bUseR0 = false;
 
+	// -------------------------------------------------------------------------
+	// optional, for multi-fits
+	std::size_t m_iCurParamSet = 0;
+	const std::vector<Scan>* m_pScans = nullptr;
+	// -------------------------------------------------------------------------
+
 protected:
 	void SetModelParams();
 
@@ -63,12 +70,24 @@ public:
 	virtual t_real_mod operator()(t_real_mod x) const override;
 
 	virtual SqwFuncModel* copy() const override;
-	virtual std::string print(bool bFillInSyms=true) const override { return ""; }
 
 	virtual const char* GetModelName() const override { return "SqwFuncModel"; }
 	virtual std::vector<std::string> GetParamNames() const override;
 	virtual std::vector<t_real_mod> GetParamValues() const override;
 	virtual std::vector<t_real_mod> GetParamErrors() const override;
+
+	// -------------------------------------------------------------------------
+	// optional, for multi-fits
+	virtual void SetParamSet(std::size_t iSet) override;
+	virtual std::size_t GetParamSetCount() const override;
+	virtual std::size_t GetExpLen() const override;
+	virtual const t_real_mod* GetExpX() const override;
+	virtual const t_real_mod* GetExpY() const override;
+	virtual const t_real_mod* GetExpDY() const override;
+
+	void SetScans(const std::vector<Scan>* pScans) { m_pScans = pScans; }
+	// -------------------------------------------------------------------------
+
 
 	void SetOtherParamNames(std::string strTemp, std::string strField);
 	void SetOtherParams(t_real_mod dTemperature, t_real_mod dField);
