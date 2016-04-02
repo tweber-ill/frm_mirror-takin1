@@ -11,6 +11,9 @@
 #include <boost/units/io.hpp>
 
 using t_real = t_real_glob;
+static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
+static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
+static const tl::t_angle_si<t_real> rads = tl::get_one_radian<t_real>();
 
 
 DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
@@ -73,7 +76,7 @@ void DynPlaneDlg::Calc()
 	if(btnSync->isChecked())
 		spinEiEf->setValue(bFixedKi ? m_dEi : m_dEf);
 
-	tl::t_energy_si<t_real> EiEf = t_real(spinEiEf->value()) * tl::get_one_meV<t_real>();
+	tl::t_energy_si<t_real> EiEf = t_real(spinEiEf->value()) * meV;
 
 
 	//m_pPlanePlot->clear();
@@ -81,22 +84,22 @@ void DynPlaneDlg::Calc()
 	vecQ[0].reserve(NUM_POINTS); vecE[0].reserve(NUM_POINTS);
 	vecQ[1].reserve(NUM_POINTS); vecE[1].reserve(NUM_POINTS);
 
-	tl::t_angle_si<t_real> twotheta = dAngle * tl::get_one_radian<t_real>();
+	tl::t_angle_si<t_real> twotheta = dAngle * rads;
 
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
 		for(unsigned int iSign=0; iSign<=1; ++iSign)
 		{
-			tl::t_wavenumber_si<t_real> Q = (dMinQ + (dMaxQ - dMinQ)/t_real(NUM_POINTS)*t_real(iPt)) / tl::get_one_angstrom<t_real>();
+			tl::t_wavenumber_si<t_real> Q = (dMinQ + (dMaxQ - dMinQ)/t_real(NUM_POINTS)*t_real(iPt)) / angs;
 			tl::t_energy_si<t_real> dE = tl::kinematic_plane(bFixedKi, iSign, EiEf, Q, twotheta);
 
-			t_real _dQ = Q * tl::get_one_angstrom<t_real>();
-			t_real _dE = dE / tl::get_one_meV<t_real>();
+			t_real _dQ = Q * angs;
+			t_real _dE = dE / meV;
 
 			if(!std::isnan(_dQ) && !std::isnan(_dE) && !std::isinf(_dQ) && !std::isinf(_dE))
 			{
-				vecQ[iSign].push_back(Q * tl::get_one_angstrom<t_real>());
-				vecE[iSign].push_back(dE / tl::get_one_meV<t_real>());
+				vecQ[iSign].push_back(Q * angs);
+				vecE[iSign].push_back(dE / meV);
 			}
 		}
 	}
@@ -116,8 +119,8 @@ void DynPlaneDlg::Calc()
 void DynPlaneDlg::RecipParamsChanged(const RecipParams& params)
 {
 	m_d2Theta = params.d2Theta;
-	m_dEi = tl::k2E(params.dki/tl::get_one_angstrom<t_real>())/tl::get_one_meV<t_real>();
-	m_dEf = tl::k2E(params.dkf/tl::get_one_angstrom<t_real>())/tl::get_one_meV<t_real>();
+	m_dEi = tl::k2E(params.dki/angs)/meV;
+	m_dEf = tl::k2E(params.dkf/angs)/meV;
 
 	Calc();
 }

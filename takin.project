@@ -191,23 +191,6 @@
     <File Name="dialogs/AboutDlg.cpp"/>
     <File Name="dialogs/AboutDlg.h"/>
   </VirtualDirectory>
-  <VirtualDirectory Name="helper">
-    <File Name="helper/plotgl.cpp"/>
-    <File Name="helper/plotgl.h"/>
-    <File Name="helper/globals.cpp"/>
-    <File Name="helper/globals.h"/>
-    <File Name="helper/crystalsys.h"/>
-    <File Name="helper/crystalsys.cpp"/>
-    <File Name="helper/spacegroup_clp.cpp" ExcludeProjConfig="Debug;Release"/>
-    <File Name="helper/spacegroup_clp.h" ExcludeProjConfig="Debug;Release"/>
-    <File Name="helper/formfact.h"/>
-    <File Name="helper/formfact.cpp"/>
-    <File Name="helper/sghelper.h"/>
-    <File Name="helper/spacegroup.cpp"/>
-    <File Name="helper/spacegroup.h"/>
-    <File Name="helper/qthelper.cpp"/>
-    <File Name="helper/qthelper.h"/>
-  </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
   <Settings Type="Executable">
@@ -413,4 +396,19 @@
       </Completion>
     </Configuration>
   </Settings>
+  <VirtualDirectory Name="libs">
+    <File Name="libs/globals.cpp"/>
+    <File Name="libs/globals.h"/>
+    <File Name="libs/plotgl.cpp"/>
+    <File Name="libs/plotgl.h"/>
+    <File Name="libs/qthelper.cpp"/>
+    <File Name="libs/qthelper.h"/>
+    <File Name="libs/formfactors/formfact.cpp"/>
+    <File Name="libs/formfactors/formfact.h"/>
+    <File Name="libs/spacegroups/crystalsys.cpp"/>
+    <File Name="libs/spacegroups/crystalsys.h"/>
+    <File Name="libs/spacegroups/sghelper.h"/>
+    <File Name="libs/spacegroups/spacegroup.cpp"/>
+    <File Name="libs/spacegroups/spacegroup.h"/>
+  </VirtualDirectory>
 </CodeLite_Project>

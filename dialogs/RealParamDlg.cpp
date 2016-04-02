@@ -33,14 +33,14 @@ RealParamDlg::~RealParamDlg()
 
 void RealParamDlg::paramsChanged(const RealParams& parms)
 {
-	this->edit2ThetaM->setText(tl::var_to_str<t_real>(parms.dMonoTT / M_PI * 180., g_iPrec).c_str());
-	this->editThetaM->setText(tl::var_to_str<t_real>(parms.dMonoT / M_PI * 180., g_iPrec).c_str());
+	this->edit2ThetaM->setText(tl::var_to_str<t_real>(tl::r2d(parms.dMonoTT), g_iPrec).c_str());
+	this->editThetaM->setText(tl::var_to_str<t_real>(tl::r2d(parms.dMonoT), g_iPrec).c_str());
 
-	this->edit2ThetaS->setText(tl::var_to_str<t_real>(parms.dSampleTT / M_PI * 180., g_iPrec).c_str());
-	this->editThetaS->setText(tl::var_to_str<t_real>(parms.dSampleT / M_PI * 180., g_iPrec).c_str());
+	this->edit2ThetaS->setText(tl::var_to_str<t_real>(tl::r2d(parms.dSampleTT), g_iPrec).c_str());
+	this->editThetaS->setText(tl::var_to_str<t_real>(tl::r2d(parms.dSampleT), g_iPrec).c_str());
 
-	this->edit2ThetaA->setText(tl::var_to_str<t_real>(parms.dAnaTT / M_PI * 180., g_iPrec).c_str());
-	this->editThetaA->setText(tl::var_to_str<t_real>(parms.dAnaT / M_PI * 180., g_iPrec).c_str());
+	this->edit2ThetaA->setText(tl::var_to_str<t_real>(tl::r2d(parms.dAnaTT), g_iPrec).c_str());
+	this->editThetaA->setText(tl::var_to_str<t_real>(tl::r2d(parms.dAnaT), g_iPrec).c_str());
 
 
 	this->editLenMonoSample->setText(tl::var_to_str<t_real>(parms.dLenMonoSample, g_iPrec).c_str());

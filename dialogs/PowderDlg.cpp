@@ -21,6 +21,7 @@
 #include <QMessageBox>
 
 using t_real = t_real_glob;
+static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
 namespace ublas = boost::numeric::ublas;
 
 
@@ -34,7 +35,7 @@ namespace ublas = boost::numeric::ublas;
 #define TABLE_IX	7
 
 PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
-	: QDialog(pParent), m_pSettings(pSett), 
+	: QDialog(pParent), m_pSettings(pSett),
 	m_pmapSpaceGroups(get_space_groups())
 {
 	this->setupUi(this);
@@ -55,7 +56,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	m_plotwrapN->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
 	m_plotwrapN->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Intensity");
 	if(m_plotwrapN->HasTrackerSignal())
-		connect(m_plotwrapN->GetPicker(), SIGNAL(moved(const QPointF&)), 
+		connect(m_plotwrapN->GetPicker(), SIGNAL(moved(const QPointF&)),
 			this, SLOT(cursorMoved(const QPointF&)));
 
 	m_plotwrapX.reset(new QwtPlotWrapper(plotX));
@@ -63,7 +64,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	m_plotwrapX->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Angle");
 	m_plotwrapX->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Intensity");
 	if(m_plotwrapX->HasTrackerSignal())
-		connect(m_plotwrapX->GetPicker(), SIGNAL(moved(const QPointF&)), 
+		connect(m_plotwrapX->GetPicker(), SIGNAL(moved(const QPointF&)),
 			this, SLOT(cursorMoved(const QPointF&)));
 	// -------------------------------------------------------------------------
 
@@ -274,7 +275,7 @@ void PowderDlg::CalcPeaks()
 					t_real dQ = ublas::norm_2(vecBragg);
 					if(tl::is_nan_or_inf<t_real>(dQ)) continue;
 
-					t_real dAngle = tl::bragg_recip_twotheta(dQ/tl::get_one_angstrom<t_real>(), dLam*tl::get_one_angstrom<t_real>(), t_real(1.)) / tl::get_one_radian<t_real>();
+					t_real dAngle = tl::bragg_recip_twotheta(dQ/angs, dLam*angs, t_real(1.)) / tl::get_one_radian<t_real>();
 					if(tl::is_nan_or_inf<t_real>(dAngle)) continue;
 
 					//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;

@@ -15,6 +15,8 @@
 #include <qwt_picker_machine.h>
 
 using t_real = t_real_glob;
+static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
+static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
 
 
 SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
@@ -104,8 +106,8 @@ void SpurionDlg::CalcInel()
 			else
 				iOrderMono = iOrder;
 
-			t_real dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*tl::get_one_meV<t_real>(),
-				iOrderMono, iOrderAna) / tl::get_one_meV<t_real>();
+			t_real dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*meV,
+				iOrderMono, iOrderAna) / meV;
 
 			if(dE_sp != 0.)
 			{
@@ -123,8 +125,8 @@ void SpurionDlg::CalcInel()
 		for(unsigned int iOrderMono=1; iOrderMono<=iMaxOrder; ++iOrderMono)
 		for(unsigned int iOrderAna=1; iOrderAna<=iMaxOrder; ++iOrderAna)
 		{
-			t_real dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*tl::get_one_meV<t_real>(),
-				iOrderMono, iOrderAna) / tl::get_one_meV<t_real>();
+			t_real dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*meV,
+				iOrderMono, iOrderAna) / meV;
 
 			if(dE_sp != 0.)
 			{
@@ -163,7 +165,7 @@ void SpurionDlg::CalcBragg()
 	const bool bFixedEi = radioFixedEi->isChecked();
 	t_real dE = t_real(spinE->value());
 	bool bImag;
-	tl::t_wavenumber_si<t_real> k = tl::E2k(dE*tl::get_one_meV<t_real>(), bImag);
+	tl::t_wavenumber_si<t_real> k = tl::E2k(dE*meV, bImag);
 
 	const t_real dMinq = spinMinQ->value();
 	const t_real dMaxq = spinMaxQ->value();
@@ -174,10 +176,10 @@ void SpurionDlg::CalcBragg()
 
 	for(t_real dq : m_vecQ)
 	{
-		tl::t_wavenumber_si<t_real> q = dq/tl::get_one_angstrom<t_real>();
+		tl::t_wavenumber_si<t_real> q = dq/angs;
 		tl::t_energy_si<t_real> E = tl::get_bragg_tail(k, q, bFixedEi);
 
-		m_vecE.push_back(E/tl::get_one_meV<t_real>());
+		m_vecE.push_back(E/meV);
 	}
 
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecE);
@@ -197,13 +199,13 @@ void SpurionDlg::cursorMoved(const QPointF& pt)
 
 void SpurionDlg::paramsChanged(const RecipParams& parms)
 {
-	tl::t_wavenumber_si<t_real> ki = parms.dki / tl::get_one_angstrom<t_real>();
-	tl::t_wavenumber_si<t_real> kf = parms.dkf / tl::get_one_angstrom<t_real>();
+	tl::t_wavenumber_si<t_real> ki = parms.dki / angs;
+	tl::t_wavenumber_si<t_real> kf = parms.dkf / angs;
 	tl::t_energy_si<t_real> Ei = tl::k2E(ki);
 	tl::t_energy_si<t_real> Ef = tl::k2E(kf);
 
-	m_dEi = Ei / tl::get_one_meV<t_real>();
-	m_dEf = Ef / tl::get_one_meV<t_real>();
+	m_dEi = Ei / meV;
+	m_dEf = Ef / meV;
 
 	Calc();
 }

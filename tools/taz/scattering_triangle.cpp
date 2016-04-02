@@ -21,6 +21,9 @@
 using t_real = t_real_glob;
 using t_vec = ublas::vector<t_real>;
 using t_mat = ublas::matrix<t_real>;
+static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
+static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
+static const tl::t_angle_si<t_real> rads = tl::get_one_radian<t_real>();
 
 
 ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem)
@@ -481,7 +484,7 @@ t_real ScatteringTriangle::GetE() const
 {
 	const t_real dKi = GetKi();
 	const t_real dKf = GetKf();
-	const t_real dE = tl::get_energy_transfer(dKi/tl::get_one_angstrom<t_real>(), dKf/tl::get_one_angstrom<t_real>()) / tl::get_one_meV<t_real>();
+	const t_real dE = tl::get_energy_transfer(dKi/angs, dKf/angs) / meV;
 	return dE;
 }
 
@@ -527,7 +530,7 @@ t_real ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 	try
 	{
 		t_real dTT = GetTwoTheta(bPosSense);
-		t_real dAngle = tl::get_angle_ki_Q(GetKi()/tl::get_one_angstrom<t_real>(), GetKf()/tl::get_one_angstrom<t_real>(), GetQ()/tl::get_one_angstrom<t_real>(), bPosSense) / tl::get_one_radian<t_real>();
+		t_real dAngle = tl::get_angle_ki_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
 		//std::cout << "tt=" << dTT << ", kiQ="<<dAngle << std::endl;
 
 		if(std::fabs(dTT) > M_PI)
@@ -553,7 +556,7 @@ t_real ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 	try
 	{
 		t_real dTT = GetTwoTheta(bPosSense);
-		t_real dAngle = M_PI-tl::get_angle_kf_Q(GetKi()/tl::get_one_angstrom<t_real>(), GetKf()/tl::get_one_angstrom<t_real>(), GetQ()/tl::get_one_angstrom<t_real>(), bPosSense) / tl::get_one_radian<t_real>();
+		t_real dAngle = M_PI-tl::get_angle_kf_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
 
 		if(std::fabs(dTT) > M_PI)
 			dAngle = -dAngle;
@@ -608,7 +611,7 @@ t_real ScatteringTriangle::GetMonoTwoTheta(t_real dMonoD, bool bPosSense) const
 	t_vec vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
 		- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	t_real dKi = ublas::norm_2(vecKi) / m_dScaleFactor;
-	return tl::get_mono_twotheta(dKi/tl::get_one_angstrom<t_real>(), dMonoD*tl::get_one_angstrom<t_real>(), bPosSense) / tl::get_one_radian<t_real>();
+	return tl::get_mono_twotheta(dKi/angs, dMonoD*angs, bPosSense) / rads;
 }
 
 t_real ScatteringTriangle::GetAnaTwoTheta(t_real dAnaD, bool bPosSense) const
@@ -616,7 +619,7 @@ t_real ScatteringTriangle::GetAnaTwoTheta(t_real dAnaD, bool bPosSense) const
 	t_vec vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0))
 		- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	t_real dKf = ublas::norm_2(vecKf) / m_dScaleFactor;
-	return tl::get_mono_twotheta(dKf/tl::get_one_angstrom<t_real>(), dAnaD*tl::get_one_angstrom<t_real>(), bPosSense) / tl::get_one_radian<t_real>();
+	return tl::get_mono_twotheta(dKf/angs, dAnaD*angs, bPosSense) / rads;
 }
 
 void ScatteringTriangle::SetAnaTwoTheta(t_real dTT, t_real dAnaD)
@@ -911,7 +914,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 							t_real dFsq = (std::conj(cF)*cF).real();
 							//dFsq *= tl::lorentz_factor(dAngle);
 							tl::set_eps_0(dFsq, g_dEpsGfx);
-	
+
 							//dF = std::sqrt(dFsq);
 							//tl::set_eps_0(dF, g_dEpsGfx);
 
@@ -1227,8 +1230,8 @@ bool ScatteringTriangle::KeepAbsKiKf(t_real dQx, t_real dQy)
 		//t_real dCurQ = ublas::norm_2(vecCurQ)/m_dScaleFactor;
 		t_real dNewQ = ublas::norm_2(vecNewQ)/m_dScaleFactor;
 
-		//t_real dCurAngKiQ = tl::get_angle_ki_Q(dKi/tl::get_one_angstrom<t_real>(), dKf/tl::get_one_angstrom<t_real>(), dCurQ/tl::get_one_angstrom<t_real>()) / tl::radians;
-		t_real dAngKiQ = tl::get_angle_ki_Q(dKi/tl::get_one_angstrom<t_real>(), dKf/tl::get_one_angstrom<t_real>(), dNewQ/tl::get_one_angstrom<t_real>()) / tl::radians;
+		//t_real dCurAngKiQ = tl::get_angle_ki_Q(dKi/angs, dKf/angs, dCurQ/angs) / tl::radians;
+		t_real dAngKiQ = tl::get_angle_ki_Q(dKi/angs, dKf/angs, dNewQ/angs) / tl::radians;
 
 		t_mat matRot = tl::rotation_matrix_2d(-dAngKiQ);
 		vecKi = ublas::prod(matRot, vecNewQ) / ublas::norm_2(vecNewQ);
@@ -1380,9 +1383,9 @@ void ScatteringTriangleScene::CheckForSpurions()
 	const t_vec vecq = m_pTri->GetQVecPlane(1);
 	const t_vec vecKi = m_pTri->GetKiVecPlane();
 	const t_vec vecKf = m_pTri->GetKfVecPlane();
-	energy E = m_pTri->GetE() * tl::get_one_meV<t_real>();
-	energy Ei = tl::k2E(m_pTri->GetKi()/tl::get_one_angstrom<t_real>());
-	energy Ef = tl::k2E(m_pTri->GetKf()/tl::get_one_angstrom<t_real>());
+	energy E = m_pTri->GetE() * meV;
+	energy Ei = tl::k2E(m_pTri->GetKi()/angs);
+	energy Ef = tl::k2E(m_pTri->GetKf()/angs);
 
 	// elastic currat-axe spurions
 	tl::ElasticSpurion spuris = tl::check_elastic_spurion(vecKi, vecKf, vecq);

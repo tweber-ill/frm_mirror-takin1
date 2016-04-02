@@ -13,6 +13,10 @@
 
 namespace ublas = boost::numeric::ublas;
 using t_real = t_real_glob;
+static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
+static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
+static const tl::t_time_si<t_real> sec = tl::get_one_second<t_real>();
+static const tl::t_length_si<t_real> meter = tl::get_one_meter<t_real>();
 
 
 RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
@@ -57,8 +61,8 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 		dQ = -dQ;
 
 	t_real dq_rlu = std::sqrt(m_params.q_rlu[0]*m_params.q_rlu[0]
-				+ m_params.q_rlu[1]*m_params.q_rlu[1]
-				+ m_params.q_rlu[2]*m_params.q_rlu[2]);
+		+ m_params.q_rlu[1]*m_params.q_rlu[1]
+		+ m_params.q_rlu[2]*m_params.q_rlu[2]);
 
 	this->editKi->setText(tl::var_to_str<t_real>(m_params.dki, g_iPrec).c_str());
 	this->editKf->setText(tl::var_to_str<t_real>(m_params.dkf, g_iPrec).c_str());
@@ -66,10 +70,10 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	this->editq->setText(tl::var_to_str<t_real>(m_params.dq, g_iPrec).c_str());
 	this->editqrlu->setText(tl::var_to_str<t_real>(dq_rlu, g_iPrec).c_str());
 	this->editE->setText(tl::var_to_str<t_real>(m_params.dE, g_iPrec).c_str());
-	this->edit2Theta->setText(tl::var_to_str<t_real>(m_params.d2Theta / M_PI * 180., g_iPrec).c_str());
-	this->editTheta->setText(tl::var_to_str<t_real>(m_params.dTheta / M_PI * 180., g_iPrec).c_str());
-	this->editKiQ->setText(tl::var_to_str<t_real>(m_params.dKiQ / M_PI * 180., g_iPrec).c_str());
-	this->editKfQ->setText(tl::var_to_str<t_real>(m_params.dKfQ / M_PI * 180., g_iPrec).c_str());
+	this->edit2Theta->setText(tl::var_to_str<t_real>(tl::r2d(m_params.d2Theta), g_iPrec).c_str());
+	this->editTheta->setText(tl::var_to_str<t_real>(tl::r2d(m_params.dTheta), g_iPrec).c_str());
+	this->editKiQ->setText(tl::var_to_str<t_real>(tl::r2d(m_params.dKiQ), g_iPrec).c_str());
+	this->editKfQ->setText(tl::var_to_str<t_real>(tl::r2d(m_params.dKfQ), g_iPrec).c_str());
 
 	this->editQx->setText(tl::var_to_str<t_real>(-m_params.Q[0], g_iPrec).c_str());
 	this->editQy->setText(tl::var_to_str<t_real>(-m_params.Q[1], g_iPrec).c_str());
@@ -117,26 +121,26 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 
 void RecipParamDlg::KiChanged()
 {
-	tl::t_wavenumber_si<t_real> ki = tl::str_to_var<t_real>(editKi->text().toStdString()) / tl::get_one_angstrom<t_real>();
+	tl::t_wavenumber_si<t_real> ki = tl::str_to_var<t_real>(editKi->text().toStdString()) / angs;
 	tl::t_energy_si<t_real> Ei = tl::k2E(ki);
 	tl::t_length_si<t_real> lami = tl::k2lam(ki);
 	tl::t_velocity_si<t_real> vi = tl::k2v(ki);
 
-	editEi->setText(tl::var_to_str<t_real>(Ei / tl::get_one_meV<t_real>(), g_iPrec).c_str());
-	editLami->setText(tl::var_to_str<t_real>(lami / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
-	editVi->setText(tl::var_to_str<t_real>(vi*tl::get_one_second<t_real>()/tl::get_one_meter<t_real>(), g_iPrec).c_str());
+	editEi->setText(tl::var_to_str<t_real>(Ei / meV, g_iPrec).c_str());
+	editLami->setText(tl::var_to_str<t_real>(lami / angs, g_iPrec).c_str());
+	editVi->setText(tl::var_to_str<t_real>(vi*sec/meter, g_iPrec).c_str());
 }
 
 void RecipParamDlg::KfChanged()
 {
-	tl::t_wavenumber_si<t_real> kf = tl::str_to_var<t_real>(editKf->text().toStdString()) / tl::get_one_angstrom<t_real>();
+	tl::t_wavenumber_si<t_real> kf = tl::str_to_var<t_real>(editKf->text().toStdString()) / angs;
 	tl::t_energy_si<t_real> Ef = tl::k2E(kf);
 	tl::t_length_si<t_real> lamf = tl::k2lam(kf);
 	tl::t_velocity_si<t_real> vf = tl::k2v(kf);
 
-	editEf->setText(tl::var_to_str<t_real>(Ef / tl::get_one_meV<t_real>(), g_iPrec).c_str());
-	editLamf->setText(tl::var_to_str<t_real>(lamf / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
-	editVf->setText(tl::var_to_str<t_real>(vf*tl::get_one_second<t_real>()/tl::get_one_meter<t_real>(), g_iPrec).c_str());
+	editEf->setText(tl::var_to_str<t_real>(Ef / meV, g_iPrec).c_str());
+	editLamf->setText(tl::var_to_str<t_real>(lamf / angs, g_iPrec).c_str());
+	editVf->setText(tl::var_to_str<t_real>(vf*sec/meter, g_iPrec).c_str());
 }
 
 

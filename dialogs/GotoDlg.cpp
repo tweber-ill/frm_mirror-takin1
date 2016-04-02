@@ -14,7 +14,9 @@
 #include <QMessageBox>
 
 using t_real = t_real_glob;
-namespace units = boost::units;
+static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
+static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
+static const tl::t_angle_si<t_real> rads = tl::get_one_radian<t_real>();
 
 
 GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSettings(pSett)
@@ -132,7 +134,7 @@ void GotoDlg::CalcSample()
 	{
 		ublas::vector<t_real> vecQ0 = vecQ;
 		vecQ0.resize(2, true);
-		t_real dAngleQVec0 = tl::vec_angle(vecQ0) / M_PI * 180.;
+		t_real dAngleQVec0 = tl::r2d(tl::vec_angle(vecQ0));
 		tl::log_info("Angle Q Orient0: ", dAngleQVec0, " deg.");
 	}
 	catch(const std::exception& ex)
@@ -141,8 +143,8 @@ void GotoDlg::CalcSample()
 
 	if(bFailed) return;
 
-	editThetaS->setText(tl::var_to_str(m_dSampleTheta/M_PI*180., g_iPrec).c_str());
-	edit2ThetaS->setText(tl::var_to_str(m_dSample2Theta/M_PI*180., g_iPrec).c_str());
+	editThetaS->setText(tl::var_to_str(tl::r2d(m_dSampleTheta), g_iPrec).c_str());
+	edit2ThetaS->setText(tl::var_to_str(tl::r2d(m_dSample2Theta), g_iPrec).c_str());
 
 	m_bSampleOk = 1;
 
@@ -163,15 +165,15 @@ void GotoDlg::CalcMonoAna()
 	t_real dKf = editKf->text().toDouble(&bKfOk);
 	if(!bKiOk || !bKfOk) return;
 
-	tl::t_wavenumber_si<t_real> ki = dKi / tl::get_one_angstrom<t_real>();
-	tl::t_wavenumber_si<t_real> kf = dKf / tl::get_one_angstrom<t_real>();
+	tl::t_wavenumber_si<t_real> ki = dKi / angs;
+	tl::t_wavenumber_si<t_real> kf = dKf / angs;
 
 	bool bMonoOk = 0;
 	bool bAnaOk = 0;
 
 	try
 	{
-		m_dMono2Theta = tl::get_mono_twotheta(ki, m_dMono*tl::get_one_angstrom<t_real>(), m_bSenseM) / tl::get_one_radian<t_real>();
+		m_dMono2Theta = tl::get_mono_twotheta(ki, m_dMono*angs, m_bSenseM) / rads;
 		if(tl::is_nan_or_inf<t_real>(m_dMono2Theta))
 			throw tl::Err("Invalid monochromator angle.");
 
@@ -189,7 +191,7 @@ void GotoDlg::CalcMonoAna()
 
 	try
 	{
-		m_dAna2Theta = tl::get_mono_twotheta(kf, m_dAna*tl::get_one_angstrom<t_real>(), m_bSenseA) / tl::get_one_radian<t_real>();
+		m_dAna2Theta = tl::get_mono_twotheta(kf, m_dAna*angs, m_bSenseA) / rads;
 		if(tl::is_nan_or_inf<t_real>(m_dAna2Theta))
 			throw tl::Err("Invalid analysator angle.");
 
@@ -212,10 +214,10 @@ void GotoDlg::CalcMonoAna()
 	t_real dTMono = m_dMono2Theta / 2.;
 	t_real dTAna = m_dAna2Theta / 2.;
 
-	edit2ThetaM->setText(tl::var_to_str(m_dMono2Theta/M_PI*180., g_iPrec).c_str());
-	editThetaM->setText(tl::var_to_str(dTMono/M_PI*180., g_iPrec).c_str());
-	edit2ThetaA->setText(tl::var_to_str(m_dAna2Theta/M_PI*180., g_iPrec).c_str());
-	editThetaA->setText(tl::var_to_str(dTAna/M_PI*180., g_iPrec).c_str());
+	edit2ThetaM->setText(tl::var_to_str(tl::r2d(m_dMono2Theta), g_iPrec).c_str());
+	editThetaM->setText(tl::var_to_str(tl::r2d(dTMono), g_iPrec).c_str());
+	edit2ThetaA->setText(tl::var_to_str(tl::r2d(m_dAna2Theta), g_iPrec).c_str());
+	editThetaA->setText(tl::var_to_str(tl::r2d(dTAna), g_iPrec).c_str());
 
 	m_bMonoAnaOk = 1;
 
@@ -230,11 +232,11 @@ void GotoDlg::EditedKiKf()
 	t_real dKf = editKf->text().toDouble(&bKfOk);
 	if(!bKiOk || !bKfOk) return;
 
-	tl::t_energy_si<t_real> Ei = tl::k2E(dKi / tl::get_one_angstrom<t_real>());
-	tl::t_energy_si<t_real> Ef = tl::k2E(dKf / tl::get_one_angstrom<t_real>());
+	tl::t_energy_si<t_real> Ei = tl::k2E(dKi / angs);
+	tl::t_energy_si<t_real> Ef = tl::k2E(dKf / angs);
 
 	tl::t_energy_si<t_real> E = Ei-Ef;
-	t_real dE = E/tl::get_one_meV<t_real>();
+	t_real dE = E/meV;
 	tl::set_eps_0(dE, g_dEps);
 
 	std::string strE = tl::var_to_str<t_real>(dE, g_iPrec);
@@ -249,7 +251,7 @@ void GotoDlg::EditedE()
 	bool bOk = 0;
 	t_real dE = editE->text().toDouble(&bOk);
 	if(!bOk) return;
-	tl::t_energy_si<t_real> E = dE * tl::get_one_meV<t_real>();
+	tl::t_energy_si<t_real> E = dE * meV;
 
 	bool bImag=0;
 	tl::t_wavenumber_si<t_real> k_E = tl::E2k(E, bImag);
@@ -262,10 +264,11 @@ void GotoDlg::EditedE()
 		t_real dKi = editKi->text().toDouble(&bKOk);
 		if(!bKOk) return;
 
-		tl::t_wavenumber_si<t_real> ki = dKi / tl::get_one_angstrom<t_real>();
-		tl::t_wavenumber_si<t_real> kf = tl::my_units_sqrt<tl::t_wavenumber_si<t_real>>(ki*ki - dSign*k_E*k_E);
+		tl::t_wavenumber_si<t_real> ki = dKi / angs;
+		tl::t_wavenumber_si<t_real> kf =
+			tl::my_units_sqrt<tl::t_wavenumber_si<t_real>>(ki*ki - dSign*k_E*k_E);
 
-		t_real dKf = kf*tl::get_one_angstrom<t_real>();
+		t_real dKf = kf*angs;
 		tl::set_eps_0(dKf, g_dEps);
 
 		std::string strKf = tl::var_to_str<t_real>(dKf, g_iPrec);
@@ -277,10 +280,11 @@ void GotoDlg::EditedE()
 		t_real dKf = editKf->text().toDouble(&bKOk);
 		if(!bKOk) return;
 
-		tl::t_wavenumber_si<t_real> kf = dKf / tl::get_one_angstrom<t_real>();
-		tl::t_wavenumber_si<t_real> ki = tl::my_units_sqrt<tl::t_wavenumber_si<t_real>>(kf*kf + dSign*k_E*k_E);
+		tl::t_wavenumber_si<t_real> kf = dKf / angs;
+		tl::t_wavenumber_si<t_real> ki =
+			tl::my_units_sqrt<tl::t_wavenumber_si<t_real>>(kf*kf + dSign*k_E*k_E);
 
-		t_real dKi = ki*tl::get_one_angstrom<t_real>();
+		t_real dKi = ki*angs;
 		tl::set_eps_0(dKi, g_dEps);
 
 		std::string strKi = tl::var_to_str<t_real>(dKi, g_iPrec);
@@ -295,20 +299,20 @@ void GotoDlg::EditedE()
 void GotoDlg::EditedAngles()
 {
 	bool bthmOk;
-	t_real th_m = edit2ThetaM->text().toDouble(&bthmOk)/2. / 180.*M_PI;
+	t_real th_m = tl::d2r(edit2ThetaM->text().toDouble(&bthmOk)/2.);
 	tl::set_eps_0(th_m, g_dEps);
 	if(bthmOk)
-		editThetaM->setText(tl::var_to_str<t_real>(th_m/M_PI*180., g_iPrec).c_str());
+		editThetaM->setText(tl::var_to_str<t_real>(tl::r2d(th_m), g_iPrec).c_str());
 
 	bool bthaOk;
-	t_real th_a = edit2ThetaA->text().toDouble(&bthaOk)/2. / 180.*M_PI;
+	t_real th_a = tl::d2r(edit2ThetaA->text().toDouble(&bthaOk)/2.);
 	tl::set_eps_0(th_a, g_dEps);
 	if(bthaOk)
-		editThetaA->setText(tl::var_to_str<t_real>(th_a/M_PI*180., g_iPrec).c_str());
+		editThetaA->setText(tl::var_to_str<t_real>(tl::r2d(th_a), g_iPrec).c_str());
 
 	bool bthsOk, bttsOk;
-	t_real th_s = editThetaS->text().toDouble(&bthsOk) / 180.*M_PI;
-	t_real tt_s = edit2ThetaS->text().toDouble(&bttsOk) / 180.*M_PI;
+	t_real th_s = tl::d2r(editThetaS->text().toDouble(&bthsOk));
+	t_real tt_s = tl::d2r(edit2ThetaS->text().toDouble(&bttsOk));
 
 	if(!bthmOk || !bthaOk || !bthsOk || !bttsOk)
 		return;
@@ -321,13 +325,13 @@ void GotoDlg::EditedAngles()
 	try
 	{
 		tl::get_hkl_from_tas_angles<t_real>(m_lattice,
-								m_vec1, m_vec2,
-								m_dMono, m_dAna,
-								th_m, th_a, th_s, tt_s,
-								m_bSenseM, m_bSenseA, m_bSenseS,
-								&h, &k, &l,
-								&dKi, &dKf, &dE, 0,
-								&vecQ);
+			m_vec1, m_vec2,
+			m_dMono, m_dAna,
+			th_m, th_a, th_s, tt_s,
+			m_bSenseM, m_bSenseA, m_bSenseS,
+			&h, &k, &l,
+			&dKi, &dKf, &dE, 0,
+			&vecQ);
 
 		if(tl::is_nan_or_inf<t_real>(h) || tl::is_nan_or_inf<t_real>(k) || tl::is_nan_or_inf<t_real>(l))
 			throw tl::Err("Invalid hkl.");
@@ -519,7 +523,7 @@ void GotoDlg::AddPosToList(t_real dh, t_real dk, t_real dl, t_real dki, t_real d
 	pPos->dl = dl;
 	pPos->dki = dki;
 	pPos->dkf = dkf;
-	pPos->dE = (tl::k2E(pPos->dki/tl::get_one_angstrom<t_real>()) - tl::k2E(pPos->dkf/tl::get_one_angstrom<t_real>()))/tl::meV;
+	pPos->dE = (tl::k2E(pPos->dki/angs) - tl::k2E(pPos->dkf/angs))/tl::meV;
 
 	tl::set_eps_0(pPos->dh, g_dEps);
 	tl::set_eps_0(pPos->dk, g_dEps);
