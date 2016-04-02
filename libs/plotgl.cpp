@@ -6,7 +6,6 @@
  */
 
 #include "plotgl.h"
-#include "globals.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/math.h"
 #include "tlibs/string/string.h"
@@ -16,6 +15,9 @@
 #include <time.h>
 #include <iostream>
 #include <sstream>
+
+// TODO: make fully generic
+using t_real = t_real_glob;
 
 
 #if QT_VER>=5
@@ -52,7 +54,7 @@ void PlotGl::SetEnabled(bool b)
 	m_bEnabled.store(b);
 }
 
-void PlotGl::SetColor(double r, double g, double b, double a)
+void PlotGl::SetColor(t_real r, t_real g, t_real b, t_real a)
 {
 	GLfloat pfCol[] = {GLfloat(r), GLfloat(g), GLfloat(b), GLfloat(a)};
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, pfCol);
@@ -339,7 +341,7 @@ void PlotGl::clear()
 	m_vecObjs.clear();
 }
 
-void PlotGl::SetObjectColor(int iObjIdx, const std::vector<double>& vecCol)
+void PlotGl::SetObjectColor(int iObjIdx, const std::vector<t_real>& vecCol)
 {
 	std::lock_guard<QMutex> _lck(m_mutex);
 

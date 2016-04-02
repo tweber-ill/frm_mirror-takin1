@@ -20,6 +20,7 @@
 #include <atomic>
 
 #include "tlibs/gfx/gl.h"
+#include "libs/globals.h"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -38,7 +39,7 @@ struct PlotObjGl
 {
 	PlotTypeGl plttype = PLOT_INVALID;
 	std::vector<double> vecParams;
-	std::vector<double> vecColor;
+	std::vector<t_real_glob> vecColor;
 
 	bool bSelected = 0;
 	bool bUseLOD = 1;
@@ -70,7 +71,7 @@ protected:
 	void resizeEvent(QResizeEvent*);
 	void paintEvent(QPaintEvent*);
 
-	void SetColor(double r, double g, double b, double a=1.);
+	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a=1.);
 	void SetColor(unsigned int iIdx);
 
 	// ------------------------------------------------------------------------
@@ -114,11 +115,11 @@ public:
 
 	void PlotSphere(const ublas::vector<double>& vecPos, double dRadius, int iObjIdx=-1);
 	void PlotEllipsoid(const ublas::vector<double>& widths,
-						const ublas::vector<double>& offsets,
-						const ublas::matrix<double>& rot,
-						int iObjsIdx=-1);
+		const ublas::vector<double>& offsets,
+		const ublas::matrix<double>& rot,
+		int iObjsIdx=-1);
 	void SetObjectCount(unsigned int iSize) { m_vecObjs.resize(iSize); }
-	void SetObjectColor(int iObjIdx, const std::vector<double>& vecCol);
+	void SetObjectColor(int iObjIdx, const std::vector<t_real_glob>& vecCol);
 	void SetObjectLabel(int iObjIdx, const std::string& strLab);
 	void SetObjectUseLOD(int iObjIdx, bool bLOD);
 	void clear();

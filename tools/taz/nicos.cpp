@@ -193,7 +193,8 @@ void NicosCache::slot_receive(const std::string& str)
 
 	if(strKey == m_strSampleLattice)
 	{
-		std::vector<t_real> vecLattice = tl::get_py_array(strVal);
+		std::vector<t_real> vecLattice =
+			tl::get_py_array<std::string, std::vector<t_real>>(strVal);
 		if(vecLattice.size() != 3)
 			return;
 
@@ -203,7 +204,8 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleAngles)
 	{
-		std::vector<t_real> vecAngles = tl::get_py_array(strVal);
+		std::vector<t_real> vecAngles =
+			tl::get_py_array<std::string, std::vector<t_real>>(strVal);
 		if(vecAngles.size() != 3)
 			return;
 
@@ -213,7 +215,8 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleOrient1)
 	{
-		std::vector<t_real> vecOrient = tl::get_py_array(strVal);
+		std::vector<t_real> vecOrient =
+			tl::get_py_array<std::string, std::vector<t_real>>(strVal);
 		if(vecOrient.size() != 3)
 			return;
 
@@ -223,7 +226,8 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleOrient2)
 	{
-		std::vector<t_real> vecOrient = tl::get_py_array(strVal);
+		std::vector<t_real> vecOrient =
+			tl::get_py_array<std::string, std::vector<t_real>>(strVal);
 		if(vecOrient.size() != 3)
 			return;
 
