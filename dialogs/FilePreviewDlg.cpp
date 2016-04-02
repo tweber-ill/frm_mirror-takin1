@@ -12,6 +12,8 @@
 #include <iostream>
 #include <memory>
 
+using t_real = t_real_glob;
+
 
 FilePreviewDlg::FilePreviewDlg(QWidget* pParent, const char* pcTitle, QSettings* pSett)
 	: QFileDialog(pParent, pcTitle), m_pSettings(pSett)
@@ -23,25 +25,22 @@ FilePreviewDlg::FilePreviewDlg(QWidget* pParent, const char* pcTitle, QSettings*
 			setFont(font);
 	}
 
-	m_pPlot = new QwtPlot();
-	m_pCurve = new QwtPlotCurve("Scan Curve");
-	m_pPoints = new QwtPlotCurve("Scan Points");
+	m_pPlot.reset(new QwtPlot());
+	m_plotwrap.reset(new QwtPlotWrapper(m_pPlot.get(), 2, true));
 
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
 	penCurve.setWidth(2);
-	m_pCurve->setPen(penCurve);
-	m_pCurve->setStyle(QwtPlotCurve::CurveStyle::Lines);
-	m_pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pCurve->attach(m_pPlot);
+	m_plotwrap->GetCurve(0)->setPen(penCurve);
+	m_plotwrap->GetCurve(0)->setStyle(QwtPlotCurve::CurveStyle::Lines);
+	m_plotwrap->GetCurve(0)->setTitle("Scan Curve");
 
 	QPen penPoints;
 	penPoints.setColor(QColor(0xff,0,0));
 	penPoints.setWidth(4);
-	m_pPoints->setPen(penPoints);
-	m_pPoints->setStyle(QwtPlotCurve::CurveStyle::Dots);
-	m_pPoints->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-	m_pPoints->attach(m_pPlot);
+	m_plotwrap->GetCurve(1)->setPen(penPoints);
+	m_plotwrap->GetCurve(1)->setStyle(QwtPlotCurve::CurveStyle::Dots);
+	m_plotwrap->GetCurve(1)->setTitle("Scan Points");
 
 	QSizePolicy spol(QSizePolicy::Preferred, QSizePolicy::Preferred);
 	spol.setHorizontalStretch(1);
@@ -50,29 +49,22 @@ FilePreviewDlg::FilePreviewDlg(QWidget* pParent, const char* pcTitle, QSettings*
 
 	// depends on qt/src/gui/dialogs/qfiledialog.ui using QGridLayout
 	QGridLayout *pLayout((QGridLayout*)layout());
-	pLayout->addWidget(m_pPlot, pLayout->rowCount(), 0, 1, pLayout->columnCount());
+	pLayout->addWidget(m_pPlot.get(), pLayout->rowCount(), 0, 1, pLayout->columnCount());
 	resize(size().width(), size().height()*1.25);
 
 	QObject::connect(this, SIGNAL(currentChanged(const QString&)),
 		this, SLOT(FileSelected(const QString&)));
 }
 
-FilePreviewDlg::~FilePreviewDlg()
-{
-	if(m_pPlot) { delete m_pPlot; m_pPlot = nullptr; }
-}
+FilePreviewDlg::~FilePreviewDlg() {}
 
 void FilePreviewDlg::ClearPlot()
 {
 	m_vecCts.clear();
 	m_vecScn.clear();
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
-	m_pPoints->setRawSamples(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
-#else
-	m_pCurve->setRawData(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
-	m_pPoints->setRawData(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
-#endif
+
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecScn, m_vecCts, 0, 0);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecScn, m_vecCts, 1, 0);
 
 	m_pPlot->setAxisTitle(QwtPlot::xBottom, "");
 	m_pPlot->setAxisTitle(QwtPlot::yLeft, "");
@@ -84,26 +76,21 @@ void FilePreviewDlg::FileSelected(const QString& qstrFile)
 {
 	ClearPlot();
 
-	tl::FileInstr *pInstr = tl::FileInstr::LoadInstr(qstrFile.toStdString().c_str());
+	tl::FileInstrBase<t_real> *pInstr = tl::FileInstrBase<t_real>::LoadInstr(qstrFile.toStdString().c_str());
 	if(!pInstr) return;
 
-	std::unique_ptr<tl::FileInstr> _ptrInstr(pInstr);
+	std::unique_ptr<tl::FileInstrBase<t_real>> _ptrInstr(pInstr);
 
 	std::vector<std::string> vecScanVars = pInstr->GetScannedVars();
 	if(vecScanVars.size() == 0) return;
 	m_vecCts = pInstr->GetCol(pInstr->GetCountVar());
 	m_vecScn = pInstr->GetCol(vecScanVars[0]);
 
-	//std::copy(m_vecScn.begin(), m_vecScn.end(), std::ostream_iterator<double>(std::cout, " "));
+	//std::copy(m_vecScn.begin(), m_vecScn.end(), std::ostream_iterator<t_real>(std::cout, " "));
 	//std::cout << std::endl;
 
-#if QWT_VER>=6
-	m_pCurve->setRawSamples(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
-	m_pPoints->setRawSamples(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
-#else
-	m_pCurve->setRawData(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
-	m_pPoints->setRawData(m_vecScn.data(), m_vecCts.data(), m_vecCts.size());
-#endif
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecScn, m_vecCts, 0, 0);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecScn, m_vecCts, 1, 0);
 
 	m_pPlot->setAxisTitle(QwtPlot::xBottom, vecScanVars[0].c_str());
 	m_pPlot->setAxisTitle(QwtPlot::yLeft, "Counts");

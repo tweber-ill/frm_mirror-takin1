@@ -15,6 +15,7 @@
 #include "tlibs/math/kd.h"
 #include "tasoptions.h"
 #include "dialogs/AtomsDlg.h"
+#include "libs/globals.h"
 #include "libs/spacegroups/spacegroup.h"
 
 #include <QGraphicsScene>
@@ -61,9 +62,9 @@ class LatticeAtom : public QGraphicsItem
 
 	protected:
 		std::string m_strElem;
-		ublas::vector<double> m_vecPos;
-		ublas::vector<double> m_vecProj;
-		double m_dProjDist = 0.;
+		ublas::vector<t_real_glob> m_vecPos;
+		ublas::vector<t_real_glob> m_vecProj;
+		t_real_glob m_dProjDist = 0.;
 
 	public:
 		LatticeAtom();
@@ -78,20 +79,20 @@ class RealLattice : public QGraphicsItem
 		bool m_bReady = 0;
 		LatticeScene &m_scene;
 
-		double m_dScaleFactor = 48.;	// pixels per A for zoom == 1.
-		double m_dZoom = 1.;
-		double m_dPlaneDistTolerance = 0.01;
+		t_real_glob m_dScaleFactor = 48.;	// pixels per A for zoom == 1.
+		t_real_glob m_dZoom = 1.;
+		t_real_glob m_dPlaneDistTolerance = 0.01;
 		int m_iMaxPeaks = 7;
 
-		tl::Lattice<double> m_lattice;
-		ublas::matrix<double> m_matPlane, m_matPlane_inv;
+		tl::Lattice<t_real_glob> m_lattice;
+		ublas::matrix<t_real_glob> m_matPlane, m_matPlane_inv;
 		std::vector<LatticePoint*> m_vecPeaks;
 		std::vector<LatticeAtom*> m_vecAtoms;
 
-		tl::Kd<double> m_kdLattice;
+		tl::Kd<t_real_glob> m_kdLattice;
 
 		bool m_bShowWS = 1;
-		tl::Brillouin2D<double> m_ws;	// Wigner-Seitz cell
+		tl::Brillouin2D<t_real_glob> m_ws;	// Wigner-Seitz cell
 
 	protected:
 		QRectF boundingRect() const;
@@ -105,30 +106,30 @@ class RealLattice : public QGraphicsItem
 		void SetReady(bool bReady) { m_bReady = bReady; }
 		bool IsReady() const { return m_bReady; }
 
-		const ublas::matrix<double>& GetPlane() const { return m_matPlane; }
+		const ublas::matrix<t_real_glob>& GetPlane() const { return m_matPlane; }
 
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_lattice.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const tl::Lattice<double>& lattice, const tl::Plane<double>& planeFrac,
+		void CalcPeaks(const tl::Lattice<t_real_glob>& lattice, const tl::Plane<t_real_glob>& planeFrac,
 			const SpaceGroup* pSpaceGroup=nullptr, const std::vector<AtomPos>* pvecAtomPos=nullptr);
 
-		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
+		void SetPlaneDistTolerance(t_real_glob dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
 		unsigned int GetMaxPeaks() const { return m_iMaxPeaks; }
-		void SetZoom(double dZoom);
-		double GetZoom() const { return m_dZoom; }
+		void SetZoom(t_real_glob dZoom);
+		t_real_glob GetZoom() const { return m_dZoom; }
 
 		void SetWSVisible(bool bVisible);
 
-		const tl::Kd<double>& GetKdLattice() const { return m_kdLattice; }
+		const tl::Kd<t_real_glob>& GetKdLattice() const { return m_kdLattice; }
 
 	public:
-		double GetScaleFactor() const { return m_dScaleFactor; }
-		void SetScaleFactor(double dScale) { m_dScaleFactor = dScale; }
+		t_real_glob GetScaleFactor() const { return m_dScaleFactor; }
+		void SetScaleFactor(t_real_glob dScale) { m_dScaleFactor = dScale; }
 
-		ublas::vector<double> GetHKLFromPlanePos(double x, double y) const;
-		const tl::Lattice<double>& GetRealLattice() const { return m_lattice; }
+		ublas::vector<t_real_glob> GetHKLFromPlanePos(t_real_glob x, t_real_glob y) const;
+		const tl::Lattice<t_real_glob>& GetRealLattice() const { return m_lattice; }
 };
 
 
@@ -157,12 +158,12 @@ class LatticeScene : public QGraphicsScene
 		bool ExportWSAccurate(const char* pcFile) const;
 
 	public slots:
-		void scaleChanged(double dTotalScale);
+		void scaleChanged(t_real_glob dTotalScale);
 
 	signals:
-		void coordsChanged(double dh, double dk, double dl,
+		void coordsChanged(t_real_glob dh, t_real_glob dk, t_real_glob dl,
 			bool bHasNearest,
-			double dNearestH, double dNearestK, double dNearestL);
+			t_real_glob dNearestH, t_real_glob dNearestK, t_real_glob dNearestL);
 
 	protected:
 		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt) override;
@@ -180,7 +181,7 @@ class LatticeView : public QGraphicsView
 {
 	Q_OBJECT
 	protected:
-		double m_dTotalScale = 1.;
+		t_real_glob m_dTotalScale = 1.;
 		virtual void wheelEvent(QWheelEvent* pEvt);
 
 	public:
@@ -188,7 +189,7 @@ class LatticeView : public QGraphicsView
 		virtual ~LatticeView();
 
 	signals:
-		void scaleChanged(double dTotalScale);
+		void scaleChanged(t_real_glob dTotalScale);
 };
 
 #endif

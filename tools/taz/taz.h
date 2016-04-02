@@ -54,6 +54,7 @@
 
 #include "tools/sglist/SgListDlg.h"
 #include "libs/spacegroups/spacegroup.h"
+#include "libs/globals.h"
 #include "tlibs/math/lattice.h"
 
 
@@ -90,7 +91,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::vector<std::string> m_vecCheckBoxNamesSenses;
 
 	protected:
-		static constexpr double s_dPlaneDistTolerance = tl::get_plane_dist_tolerance<double>();
+		static constexpr t_real_glob s_dPlaneDistTolerance = tl::get_plane_dist_tolerance<t_real_glob>();
 
 		bool m_bReady = false;
 		QSettings m_settings;
@@ -239,8 +240,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void ShowSpurions();
 		void spurionInfo(const tl::ElasticSpurion& spuris,
-			const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
-			const std::vector<tl::InelasticSpurion<double>>& vecInelCKF);
+			const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKI,
+			const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKF);
 		void recipParamsChanged(const RecipParams&);
 
 		void ShowConnectDlg();
@@ -255,10 +256,10 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void Disconnected();
 		void VarsChanged(const CrystalOptions& crys, const TriangleOptions& triag);
 
-		void RecipCoordsChanged(double dh, double dk, double dl,
-			bool bHasNearest, double dNearestH, double dNearestK, double dNearestL);
-		void RealCoordsChanged(double dh, double dk, double dl,
-			bool bHasNearest, double dNearestH, double dNearestK, double dNearestL);
+		void RecipCoordsChanged(t_real_glob dh, t_real_glob dk, t_real_glob dl,
+			bool bHasNearest, t_real_glob dNearestH, t_real_glob dNearestK, t_real_glob dNearestL);
+		void RealCoordsChanged(t_real_glob dh, t_real_glob dk, t_real_glob dl,
+			bool bHasNearest, t_real_glob dNearestH, t_real_glob dNearestK, t_real_glob dNearestL);
 
 		void SettingsChanged();
 

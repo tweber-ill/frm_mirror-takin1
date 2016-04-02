@@ -10,6 +10,7 @@
 #include "model.h"
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
+#include "tlibs/helper/array.h"
 #include "../res/defs.h"
 #include "convofit.h"
 
@@ -20,10 +21,10 @@ SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const TASReso& reso)
 	: m_pSqw(pSqw), m_reso(reso)
 {}
 
-t_real SqwFuncModel::operator()(t_real x) const
+tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
 {
 	TASReso reso = m_reso;
-	const ublas::vector<t_real> vecScanPos = m_vecScanOrigin + x*m_vecScanDir;
+	const ublas::vector<t_real> vecScanPos = m_vecScanOrigin + t_real(x)*m_vecScanDir;
 
 	if(!reso.SetHKLE(vecScanPos[0],vecScanPos[1],vecScanPos[2],vecScanPos[3]))
 	{
@@ -63,7 +64,7 @@ t_real SqwFuncModel::operator()(t_real x) const
 	tl::log_debug("Q = (",
 		vecScanPos[0], ", ", vecScanPos[1], ", ", vecScanPos[2],
 		") rlu, E = ", vecScanPos[3], " meV -> S = ", dS*m_dScale + m_dOffs);
-	return dS*m_dScale + m_dOffs;
+	return tl::t_real_min(dS*m_dScale + m_dOffs);
 }
 
 SqwFuncModel* SqwFuncModel::copy() const
@@ -121,7 +122,7 @@ void SqwFuncModel::SetModelParams()
 	m_pSqw->SetVars(vecVars);
 }
 
-bool SqwFuncModel::SetParams(const std::vector<t_real>& vecParams)
+bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 {
 	// --------------------------------------------------------------------
 	// prints changed model parameters
@@ -133,8 +134,9 @@ bool SqwFuncModel::SetParams(const std::vector<t_real>& vecParams)
 		std::ostringstream ostrDebug;
 		std::transform(vecParams.begin(), vecParams.end(), vecParamNames.begin(),
 			std::ostream_iterator<std::string>(ostrDebug, ", "),
-			[&vecOldParams, &vecParamNames](t_real dVal, const std::string& strParam) -> std::string
+			[&vecOldParams, &vecParamNames](tl::t_real_min _dVal, const std::string& strParam) -> std::string
 			{
+				t_real dVal = t_real(_dVal);
 				std::vector<std::string>::const_iterator iterParam =
 					std::find(vecParamNames.begin(), vecParamNames.end(), strParam);
 				if(iterParam == vecParamNames.end())
@@ -153,11 +155,11 @@ bool SqwFuncModel::SetParams(const std::vector<t_real>& vecParams)
 	}
 	// --------------------------------------------------------------------
 
-	m_dScale = vecParams[0];
-	m_dOffs = vecParams[1];
+	m_dScale = t_real(vecParams[0]);
+	m_dOffs = t_real(vecParams[1]);
 
 	for(std::size_t iParam=2; iParam<vecParams.size(); ++iParam)
-		m_vecModelParams[iParam-2] = vecParams[iParam];
+		m_vecModelParams[iParam-2] = t_real(vecParams[iParam]);
 
 	//tl::log_debug("Params:");
 	//for(t_real d : vecParams)
@@ -167,13 +169,13 @@ bool SqwFuncModel::SetParams(const std::vector<t_real>& vecParams)
 	return true;
 }
 
-bool SqwFuncModel::SetErrs(const std::vector<t_real>& vecErrs)
+bool SqwFuncModel::SetErrs(const std::vector<tl::t_real_min>& vecErrs)
 {
-	m_dScaleErr = vecErrs[0];
-	m_dOffsErr = vecErrs[1];
+	m_dScaleErr = t_real(vecErrs[0]);
+	m_dOffsErr = t_real(vecErrs[1]);
 
 	for(std::size_t iParam=2; iParam<vecErrs.size(); ++iParam)
-		m_vecModelErrs[iParam-2] = vecErrs[iParam];
+		m_vecModelErrs[iParam-2] = t_real(vecErrs[iParam]);
 
 	//SetModelParams();
 	return true;
@@ -189,22 +191,22 @@ std::vector<std::string> SqwFuncModel::GetParamNames() const
 	return vecNames;
 }
 
-std::vector<t_real> SqwFuncModel::GetParamValues() const
+std::vector<tl::t_real_min> SqwFuncModel::GetParamValues() const
 {
-	std::vector<t_real> vecVals = {m_dScale, m_dOffs};
+	std::vector<tl::t_real_min> vecVals = {m_dScale, m_dOffs};
 
 	for(t_real d : m_vecModelParams)
-		vecVals.push_back(d);
+		vecVals.push_back(tl::t_real_min(d));
 
 	return vecVals;
 }
 
-std::vector<t_real> SqwFuncModel::GetParamErrors() const
+std::vector<tl::t_real_min> SqwFuncModel::GetParamErrors() const
 {
-	std::vector<t_real> vecErrs = {m_dScaleErr, m_dOffsErr};
+	std::vector<tl::t_real_min> vecErrs = {m_dScaleErr, m_dOffsErr};
 
 	for(t_real d : m_vecModelErrs)
-		vecErrs.push_back(d);
+		vecErrs.push_back(tl::t_real_min(d));
 
 	return vecErrs;
 }
@@ -219,15 +221,15 @@ void SqwFuncModel::SetMinuitParams(const minuit::MnUserParameters& state)
 	{
 		const std::string& strName = vecNames[iParam];
 
-		const t_real dVal = state.Value(strName);
-		const t_real dErr = state.Error(strName);
+		const t_real dVal = t_real(state.Value(strName));
+		const t_real dErr = t_real(state.Error(strName));
 
 		vecNewVals.push_back(dVal);
 		vecNewErrs.push_back(dErr);
 	}
 
-	SetParams(vecNewVals);
-	SetErrs(vecNewErrs);
+	SetParams(tl::container_cast<tl::t_real_min, t_real, std::vector>()(vecNewVals));
+	SetErrs(tl::container_cast<tl::t_real_min, t_real, std::vector>()(vecNewErrs));
 }
 
 minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
@@ -240,8 +242,8 @@ minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
 	for(std::size_t iParam=0; iParam<m_vecModelParamNames.size(); ++iParam)
 	{
 		const std::string& strParam = m_vecModelParamNames[iParam];
-		t_real dHint = m_vecModelParams[iParam];
-		t_real dErr = m_vecModelErrs[iParam];
+		tl::t_real_min dHint = tl::t_real_min(m_vecModelParams[iParam]);
+		tl::t_real_min dErr = tl::t_real_min(m_vecModelErrs[iParam]);
 
 		params.Add(strParam, dHint, dErr);
 	}
@@ -261,8 +263,10 @@ bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::siz
 	ofstr.precision(16);
 
 	const std::vector<std::string> vecNames = GetParamNames();
-	const std::vector<t_real> vecVals = GetParamValues();
-	const std::vector<t_real> vecErrs = GetParamErrors();
+
+	tl::container_cast<t_real, tl::t_real_min, std::vector> cst;
+	const std::vector<t_real> vecVals = cst(GetParamValues());
+	const std::vector<t_real> vecErrs = cst(GetParamErrors());
 
 	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
 		ofstr << "# " << vecNames[iParam] << " = " 
@@ -287,7 +291,7 @@ bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::siz
 void SqwFuncModel::SetParamSet(std::size_t iSet)
 {
 	if(!m_pScans) return;
-	
+
 	if(iSet >= m_pScans->size())
 	{
 		tl::log_err("Requested invalid scan group ", iSet);

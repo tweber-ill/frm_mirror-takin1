@@ -10,9 +10,9 @@
 #include "tlibs/math/math.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/neutrons.hpp"
-#include "libs/globals.h"
 
 namespace ublas = boost::numeric::ublas;
+using t_real = t_real_glob;
 
 
 RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
@@ -52,61 +52,61 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 {
 	m_params = parms;
 
-	double dQ = m_params.dQ;
+	t_real dQ = m_params.dQ;
 	if(m_params.d2Theta < 0.)
 		dQ = -dQ;
 
-	double dq_rlu = std::sqrt(m_params.q_rlu[0]*m_params.q_rlu[0]
+	t_real dq_rlu = std::sqrt(m_params.q_rlu[0]*m_params.q_rlu[0]
 				+ m_params.q_rlu[1]*m_params.q_rlu[1]
 				+ m_params.q_rlu[2]*m_params.q_rlu[2]);
 
-	this->editKi->setText(tl::var_to_str<double>(m_params.dki, g_iPrec).c_str());
-	this->editKf->setText(tl::var_to_str<double>(m_params.dkf, g_iPrec).c_str());
-	this->editQ->setText(tl::var_to_str<double>(dQ, g_iPrec).c_str());
-	this->editq->setText(tl::var_to_str<double>(m_params.dq, g_iPrec).c_str());
-	this->editqrlu->setText(tl::var_to_str<double>(dq_rlu, g_iPrec).c_str());
-	this->editE->setText(tl::var_to_str<double>(m_params.dE, g_iPrec).c_str());
-	this->edit2Theta->setText(tl::var_to_str<double>(m_params.d2Theta / M_PI * 180., g_iPrec).c_str());
-	this->editTheta->setText(tl::var_to_str<double>(m_params.dTheta / M_PI * 180., g_iPrec).c_str());
-	this->editKiQ->setText(tl::var_to_str<double>(m_params.dKiQ / M_PI * 180., g_iPrec).c_str());
-	this->editKfQ->setText(tl::var_to_str<double>(m_params.dKfQ / M_PI * 180., g_iPrec).c_str());
+	this->editKi->setText(tl::var_to_str<t_real>(m_params.dki, g_iPrec).c_str());
+	this->editKf->setText(tl::var_to_str<t_real>(m_params.dkf, g_iPrec).c_str());
+	this->editQ->setText(tl::var_to_str<t_real>(dQ, g_iPrec).c_str());
+	this->editq->setText(tl::var_to_str<t_real>(m_params.dq, g_iPrec).c_str());
+	this->editqrlu->setText(tl::var_to_str<t_real>(dq_rlu, g_iPrec).c_str());
+	this->editE->setText(tl::var_to_str<t_real>(m_params.dE, g_iPrec).c_str());
+	this->edit2Theta->setText(tl::var_to_str<t_real>(m_params.d2Theta / M_PI * 180., g_iPrec).c_str());
+	this->editTheta->setText(tl::var_to_str<t_real>(m_params.dTheta / M_PI * 180., g_iPrec).c_str());
+	this->editKiQ->setText(tl::var_to_str<t_real>(m_params.dKiQ / M_PI * 180., g_iPrec).c_str());
+	this->editKfQ->setText(tl::var_to_str<t_real>(m_params.dKfQ / M_PI * 180., g_iPrec).c_str());
 
-	this->editQx->setText(tl::var_to_str<double>(-m_params.Q[0], g_iPrec).c_str());
-	this->editQy->setText(tl::var_to_str<double>(-m_params.Q[1], g_iPrec).c_str());
-	this->editQz->setText(tl::var_to_str<double>(-m_params.Q[2], g_iPrec).c_str());
-	this->editQxrlu->setText(tl::var_to_str<double>(-m_params.Q_rlu[0], g_iPrec).c_str());
-	this->editQyrlu->setText(tl::var_to_str<double>(-m_params.Q_rlu[1], g_iPrec).c_str());
-	this->editQzrlu->setText(tl::var_to_str<double>(-m_params.Q_rlu[2], g_iPrec).c_str());
+	this->editQx->setText(tl::var_to_str<t_real>(-m_params.Q[0], g_iPrec).c_str());
+	this->editQy->setText(tl::var_to_str<t_real>(-m_params.Q[1], g_iPrec).c_str());
+	this->editQz->setText(tl::var_to_str<t_real>(-m_params.Q[2], g_iPrec).c_str());
+	this->editQxrlu->setText(tl::var_to_str<t_real>(-m_params.Q_rlu[0], g_iPrec).c_str());
+	this->editQyrlu->setText(tl::var_to_str<t_real>(-m_params.Q_rlu[1], g_iPrec).c_str());
+	this->editQzrlu->setText(tl::var_to_str<t_real>(-m_params.Q_rlu[2], g_iPrec).c_str());
 
-	this->editqx->setText(tl::var_to_str<double>(-m_params.q[0], g_iPrec).c_str());
-	this->editqy->setText(tl::var_to_str<double>(-m_params.q[1], g_iPrec).c_str());
-	this->editqz->setText(tl::var_to_str<double>(-m_params.q[2], g_iPrec).c_str());
-	this->editqxrlu->setText(tl::var_to_str<double>(-m_params.q_rlu[0], g_iPrec).c_str());
-	this->editqyrlu->setText(tl::var_to_str<double>(-m_params.q_rlu[1], g_iPrec).c_str());
-	this->editqzrlu->setText(tl::var_to_str<double>(-m_params.q_rlu[2], g_iPrec).c_str());
+	this->editqx->setText(tl::var_to_str<t_real>(-m_params.q[0], g_iPrec).c_str());
+	this->editqy->setText(tl::var_to_str<t_real>(-m_params.q[1], g_iPrec).c_str());
+	this->editqz->setText(tl::var_to_str<t_real>(-m_params.q[2], g_iPrec).c_str());
+	this->editqxrlu->setText(tl::var_to_str<t_real>(-m_params.q_rlu[0], g_iPrec).c_str());
+	this->editqyrlu->setText(tl::var_to_str<t_real>(-m_params.q_rlu[1], g_iPrec).c_str());
+	this->editqzrlu->setText(tl::var_to_str<t_real>(-m_params.q_rlu[2], g_iPrec).c_str());
 
-	this->editGx->setText(tl::var_to_str<double>(-m_params.G[0], g_iPrec).c_str());
-	this->editGy->setText(tl::var_to_str<double>(-m_params.G[1], g_iPrec).c_str());
-	this->editGz->setText(tl::var_to_str<double>(-m_params.G[2], g_iPrec).c_str());
-	this->editGxrlu->setText(tl::var_to_str<double>(-m_params.G_rlu[0], g_iPrec).c_str());
-	this->editGyrlu->setText(tl::var_to_str<double>(-m_params.G_rlu[1], g_iPrec).c_str());
-	this->editGzrlu->setText(tl::var_to_str<double>(-m_params.G_rlu[2], g_iPrec).c_str());
+	this->editGx->setText(tl::var_to_str<t_real>(-m_params.G[0], g_iPrec).c_str());
+	this->editGy->setText(tl::var_to_str<t_real>(-m_params.G[1], g_iPrec).c_str());
+	this->editGz->setText(tl::var_to_str<t_real>(-m_params.G[2], g_iPrec).c_str());
+	this->editGxrlu->setText(tl::var_to_str<t_real>(-m_params.G_rlu[0], g_iPrec).c_str());
+	this->editGyrlu->setText(tl::var_to_str<t_real>(-m_params.G_rlu[1], g_iPrec).c_str());
+	this->editGzrlu->setText(tl::var_to_str<t_real>(-m_params.G_rlu[2], g_iPrec).c_str());
 
 
 	// focus
-	ublas::vector<double> vecG = tl::make_vec({-m_params.G_rlu[0], -m_params.G_rlu[1], -m_params.G_rlu[2]});
-	ublas::vector<double> vecUp = tl::make_vec({m_params.orient_up[0], m_params.orient_up[1], m_params.orient_up[2]});
-	ublas::vector<double> vecFm = tl::cross_3(vecG, vecUp);
+	ublas::vector<t_real> vecG = tl::make_vec({-m_params.G_rlu[0], -m_params.G_rlu[1], -m_params.G_rlu[2]});
+	ublas::vector<t_real> vecUp = tl::make_vec({m_params.orient_up[0], m_params.orient_up[1], m_params.orient_up[2]});
+	ublas::vector<t_real> vecFm = tl::cross_3(vecG, vecUp);
 	vecFm /= ublas::norm_2(vecFm);
 	tl::set_eps_0(vecFm, g_dEps);
 
-	this->editFmx->setText(tl::var_to_str<double>(vecFm[0], g_iPrec).c_str());
-	this->editFmy->setText(tl::var_to_str<double>(vecFm[1], g_iPrec).c_str());
-	this->editFmz->setText(tl::var_to_str<double>(vecFm[2], g_iPrec).c_str());
+	this->editFmx->setText(tl::var_to_str<t_real>(vecFm[0], g_iPrec).c_str());
+	this->editFmy->setText(tl::var_to_str<t_real>(vecFm[1], g_iPrec).c_str());
+	this->editFmz->setText(tl::var_to_str<t_real>(vecFm[2], g_iPrec).c_str());
 
-	this->editFpx->setText(tl::var_to_str<double>(-vecFm[0], g_iPrec).c_str());
-	this->editFpy->setText(tl::var_to_str<double>(-vecFm[1], g_iPrec).c_str());
-	this->editFpz->setText(tl::var_to_str<double>(-vecFm[2], g_iPrec).c_str());
+	this->editFpx->setText(tl::var_to_str<t_real>(-vecFm[0], g_iPrec).c_str());
+	this->editFpy->setText(tl::var_to_str<t_real>(-vecFm[1], g_iPrec).c_str());
+	this->editFpz->setText(tl::var_to_str<t_real>(-vecFm[2], g_iPrec).c_str());
 
 
 	/*if(editOriginH->text().trimmed()=="" || editOriginK->text().trimmed()=="" || editOriginL->text().trimmed()=="")
@@ -117,26 +117,26 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 
 void RecipParamDlg::KiChanged()
 {
-	tl::wavenumber ki = tl::str_to_var<double>(editKi->text().toStdString()) / tl::angstrom;
-	tl::energy Ei = tl::k2E(ki);
-	tl::length lami = tl::k2lam(ki);
-	tl::velocity vi = tl::k2v(ki);
+	tl::t_wavenumber_si<t_real> ki = tl::str_to_var<t_real>(editKi->text().toStdString()) / tl::get_one_angstrom<t_real>();
+	tl::t_energy_si<t_real> Ei = tl::k2E(ki);
+	tl::t_length_si<t_real> lami = tl::k2lam(ki);
+	tl::t_velocity_si<t_real> vi = tl::k2v(ki);
 
-	editEi->setText(tl::var_to_str<double>(Ei / tl::one_meV, g_iPrec).c_str());
-	editLami->setText(tl::var_to_str<double>(lami / tl::angstrom, g_iPrec).c_str());
-	editVi->setText(tl::var_to_str<double>(vi*tl::seconds/tl::meters, g_iPrec).c_str());
+	editEi->setText(tl::var_to_str<t_real>(Ei / tl::get_one_meV<t_real>(), g_iPrec).c_str());
+	editLami->setText(tl::var_to_str<t_real>(lami / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editVi->setText(tl::var_to_str<t_real>(vi*tl::get_one_second<t_real>()/tl::get_one_meter<t_real>(), g_iPrec).c_str());
 }
 
 void RecipParamDlg::KfChanged()
 {
-	tl::wavenumber kf = tl::str_to_var<double>(editKf->text().toStdString()) / tl::angstrom;
-	tl::energy Ef = tl::k2E(kf);
-	tl::length lamf = tl::k2lam(kf);
-	tl::velocity vf = tl::k2v(kf);
+	tl::t_wavenumber_si<t_real> kf = tl::str_to_var<t_real>(editKf->text().toStdString()) / tl::get_one_angstrom<t_real>();
+	tl::t_energy_si<t_real> Ef = tl::k2E(kf);
+	tl::t_length_si<t_real> lamf = tl::k2lam(kf);
+	tl::t_velocity_si<t_real> vf = tl::k2v(kf);
 
-	editEf->setText(tl::var_to_str<double>(Ef / tl::one_meV, g_iPrec).c_str());
-	editLamf->setText(tl::var_to_str<double>(lamf / tl::angstrom, g_iPrec).c_str());
-	editVf->setText(tl::var_to_str<double>(vf*tl::seconds/tl::meters, g_iPrec).c_str());
+	editEf->setText(tl::var_to_str<t_real>(Ef / tl::get_one_meV<t_real>(), g_iPrec).c_str());
+	editLamf->setText(tl::var_to_str<t_real>(lamf / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editVf->setText(tl::var_to_str<t_real>(vf*tl::get_one_second<t_real>()/tl::get_one_meter<t_real>(), g_iPrec).c_str());
 }
 
 
@@ -152,14 +152,14 @@ void RecipParamDlg::SetGOrigin()
 void RecipParamDlg::OriginChanged()
 {
 	const bool bEm = radioEm->isChecked();
-	const double dH = tl::str_to_var<double>(editOriginH->text().toStdString());
-	const double dK = tl::str_to_var<double>(editOriginK->text().toStdString());
-	const double dL = tl::str_to_var<double>(editOriginL->text().toStdString());
-	const double dSq = dH*dH + dK*dK + dL*dL;
+	const t_real dH = tl::str_to_var<t_real>(editOriginH->text().toStdString());
+	const t_real dK = tl::str_to_var<t_real>(editOriginK->text().toStdString());
+	const t_real dL = tl::str_to_var<t_real>(editOriginL->text().toStdString());
+	const t_real dSq = dH*dH + dK*dK + dL*dL;
 
-	const ublas::vector<double> vecQ = tl::make_vec({dH, dK, dL});
-	ublas::vector<double> vecUp = tl::make_vec({m_params.orient_up[0], m_params.orient_up[1], m_params.orient_up[2]});
-	ublas::vector<double> vecFm = tl::cross_3(vecQ, vecUp);
+	const ublas::vector<t_real> vecQ = tl::make_vec({dH, dK, dL});
+	ublas::vector<t_real> vecUp = tl::make_vec({m_params.orient_up[0], m_params.orient_up[1], m_params.orient_up[2]});
+	ublas::vector<t_real> vecFm = tl::cross_3(vecQ, vecUp);
 	vecUp /= ublas::norm_2(vecUp);
 	vecFm /= ublas::norm_2(vecFm);
 
@@ -173,7 +173,7 @@ void RecipParamDlg::OriginChanged()
 	ostrDefs << "origin = np.array([" << dH << ", " << dK << ", " << dL << "])\n\n";
 
 	ostrDefs << "longdir = origin";
-	if(!tl::float_equal(dSq, 1.))
+	if(!tl::float_equal<t_real>(dSq, 1.))
 		ostrDefs << " / np.sqrt(" << dSq << ")";
 	ostrDefs << "\n";
 

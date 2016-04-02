@@ -9,6 +9,9 @@
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
 #include "tlibs/helper/py.h"
+#include "libs/globals.h"
+
+using t_real = t_real_glob;
 
 
 NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
@@ -169,7 +172,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 
 	const std::string& strTime = pairTimeVal.first;
-	double dTimestamp = tl::str_to_var<double>(strTime);
+	t_real dTimestamp = tl::str_to_var<t_real>(strTime);
 
 	if(strVal.length() == 0)
 		return;
@@ -190,7 +193,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 	if(strKey == m_strSampleLattice)
 	{
-		std::vector<double> vecLattice = tl::get_py_array(strVal);
+		std::vector<t_real> vecLattice = tl::get_py_array(strVal);
 		if(vecLattice.size() != 3)
 			return;
 
@@ -200,7 +203,7 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleAngles)
 	{
-		std::vector<double> vecAngles = tl::get_py_array(strVal);
+		std::vector<t_real> vecAngles = tl::get_py_array(strVal);
 		if(vecAngles.size() != 3)
 			return;
 
@@ -210,7 +213,7 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleOrient1)
 	{
-		std::vector<double> vecOrient = tl::get_py_array(strVal);
+		std::vector<t_real> vecOrient = tl::get_py_array(strVal);
 		if(vecOrient.size() != 3)
 			return;
 
@@ -220,7 +223,7 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strSampleOrient2)
 	{
-		std::vector<double> vecOrient = tl::get_py_array(strVal);
+		std::vector<t_real> vecOrient = tl::get_py_array(strVal);
 		if(vecOrient.size() != 3)
 			return;
 
@@ -236,27 +239,27 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strMono2Theta)
 	{
-		triag.dMonoTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
+		triag.dMonoTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
 		triag.bChangedMonoTwoTheta = 1;
 	}
 	else if(strKey == m_strAna2Theta)
 	{
-		triag.dAnaTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
+		triag.dAnaTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
 		triag.bChangedAnaTwoTheta = 1;
 	}
 	else if(strKey == m_strSample2Theta)
 	{
-		triag.dTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
+		triag.dTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
 		triag.bChangedTwoTheta = 1;
 	}
 	else if(strKey == m_strMonoD)
 	{
-		triag.dMonoD = tl::str_to_var<double>(strVal);
+		triag.dMonoD = tl::str_to_var<t_real>(strVal);
 		triag.bChangedMonoD = 1;
 	}
 	else if(strKey == m_strAnaD)
 	{
-		triag.dAnaD = tl::str_to_var<double>(strVal);
+		triag.dAnaD = tl::str_to_var<t_real>(strVal);
 		triag.bChangedAnaD = 1;
 	}
 	else if(strKey == m_strSampleName)
@@ -276,8 +279,8 @@ void NicosCache::slot_receive(const std::string& str)
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 
-		double dSth = tl::str_to_var<double>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
-		double dPsi = tl::str_to_var<double>(m_mapCache[m_strSamplePsi0].strVal) /180.*M_PI;
+		t_real dSth = tl::str_to_var<t_real>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
+		t_real dPsi = tl::str_to_var<t_real>(m_mapCache[m_strSamplePsi0].strVal) /180.*M_PI;
 
 		// sth and psi0 are arbitrary, but together they form the
 		// angle from ki to the bragg peak at orient1

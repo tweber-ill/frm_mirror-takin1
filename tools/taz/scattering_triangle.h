@@ -15,6 +15,7 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/kd.h"
 #include "dialogs/AtomsDlg.h"
+#include "libs/globals.h"
 #include "libs/spacegroups/spacegroup.h"
 
 #include <QGraphicsScene>
@@ -72,7 +73,7 @@ class RecipPeak : public QGraphicsItem
 
 	protected:
 		QString m_strLabel;
-		//const Brillouin2D<double>* m_pBZ = 0;
+		//const Brillouin2D<t_real_glob>* m_pBZ = 0;
 
 	public:
 		RecipPeak();
@@ -80,7 +81,7 @@ class RecipPeak : public QGraphicsItem
 		void SetLabel(const QString& str) { m_strLabel = str; }
 		void SetColor(const QColor& col) { m_color = col; }
 
-		//void SetBZ(const Brillouin2D<double>* pBZ) { this->m_pBZ = pBZ; }
+		//void SetBZ(const Brillouin2D<t_real_glob>* pBZ) { this->m_pBZ = pBZ; }
 };
 
 class ScatteringTriangleScene;
@@ -96,23 +97,23 @@ class ScatteringTriangle : public QGraphicsItem
 		ScatteringTriangleNode *m_pNodeKfQ = 0;
 		ScatteringTriangleNode *m_pNodeGq = 0;
 
-		double m_dScaleFactor = 150.;	// pixels per A^-1 for zoom == 1.
-		double m_dZoom = 1.;
-		double m_dPlaneDistTolerance = 0.01;
+		t_real_glob m_dScaleFactor = 150.;	// pixels per A^-1 for zoom == 1.
+		t_real_glob m_dZoom = 1.;
+		t_real_glob m_dPlaneDistTolerance = 0.01;
 		int m_iMaxPeaks = 7;
 
-		tl::Lattice<double> m_lattice, m_recip;
-		ublas::matrix<double> m_matPlane, m_matPlane_inv;
+		tl::Lattice<t_real_glob> m_lattice, m_recip;
+		ublas::matrix<t_real_glob> m_matPlane, m_matPlane_inv;
 		std::vector<RecipPeak*> m_vecPeaks;
 
-		tl::Powder<int> m_powder;
-		tl::Kd<double> m_kdLattice;
+		tl::Powder<int, t_real_glob> m_powder;
+		tl::Kd<t_real_glob> m_kdLattice;
 
 		bool m_bShowBZ = 1;
-		tl::Brillouin2D<double> m_bz;
+		tl::Brillouin2D<t_real_glob> m_bz;
 
-		//tl::Lattice<double> m_recip_unrot;
-		//double m_dAngleRot = 0.;
+		//tl::Lattice<t_real_glob> m_recip_unrot;
+		//t_real_glob m_dAngleRot = 0.;
 
 		bool m_bqVisible = 0;
 		bool m_bShowEwaldSphere = 1;
@@ -129,76 +130,76 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetReady(bool bReady) { m_bReady = bReady; }
 		void nodeMoved(const ScatteringTriangleNode* pNode=0);
 
-		const ublas::matrix<double>& GetPlane() const { return m_matPlane; }
+		const ublas::matrix<t_real_glob>& GetPlane() const { return m_matPlane; }
 
 		bool IsReady() const { return m_bReady; }
-		double GetTheta(bool bPosSense) const;
-		double GetTwoTheta(bool bPosSense) const;
-		double GetMonoTwoTheta(double dMonoD, bool bPosSense) const;
-		double GetAnaTwoTheta(double dAnaD, bool bPosSense) const;
+		t_real_glob GetTheta(bool bPosSense) const;
+		t_real_glob GetTwoTheta(bool bPosSense) const;
+		t_real_glob GetMonoTwoTheta(t_real_glob dMonoD, bool bPosSense) const;
+		t_real_glob GetAnaTwoTheta(t_real_glob dAnaD, bool bPosSense) const;
 
-		double GetKi() const;
-		double GetKf() const;
-		double GetE() const;
-		double GetQ() const;
-		double Getq() const;
+		t_real_glob GetKi() const;
+		t_real_glob GetKf() const;
+		t_real_glob GetE() const;
+		t_real_glob GetQ() const;
+		t_real_glob Getq() const;
 
-		double GetAngleKiQ(bool bSense) const;
-		double GetAngleKfQ(bool bSense) const;
-		double GetAngleQVec0() const;
+		t_real_glob GetAngleKiQ(bool bSense) const;
+		t_real_glob GetAngleKfQ(bool bSense) const;
+		t_real_glob GetAngleQVec0() const;
 
-		void SetTwoTheta(double dTT);
-		void SetAnaTwoTheta(double dTT, double dAnaD);
-		void SetMonoTwoTheta(double dTT, double dMonoD);
+		void SetTwoTheta(t_real_glob dTT);
+		void SetAnaTwoTheta(t_real_glob dTT, t_real_glob dAnaD);
+		void SetMonoTwoTheta(t_real_glob dTT, t_real_glob dMonoD);
 
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_recip.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const tl::Lattice<double>& lattice,
-						const tl::Lattice<double>& recip,
-						const tl::Plane<double>& planeRLU,
+		void CalcPeaks(const tl::Lattice<t_real_glob>& lattice,
+						const tl::Lattice<t_real_glob>& recip,
+						const tl::Plane<t_real_glob>& planeRLU,
 						const SpaceGroup* pSpaceGroup=nullptr,
 						bool bIsPowder=0,
 						const std::vector<AtomPos>* pvecAtomPos=nullptr);
 
-		void SetPlaneDistTolerance(double dTol) { m_dPlaneDistTolerance = dTol; }
+		void SetPlaneDistTolerance(t_real_glob dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
 		unsigned int GetMaxPeaks() const { return m_iMaxPeaks; }
-		void SetZoom(double dZoom);
-		double GetZoom() const { return m_dZoom; }
+		void SetZoom(t_real_glob dZoom);
+		t_real_glob GetZoom() const { return m_dZoom; }
 
 		void SetqVisible(bool bVisible);
 		void SetBZVisible(bool bVisible);
 		void SetEwaldSphereVisible(bool bVisible);
 
-		const tl::Powder<int>& GetPowder() const { return m_powder; }
-		const tl::Kd<double>& GetKdLattice() const { return m_kdLattice; }
+		const tl::Powder<int,t_real_glob>& GetPowder() const { return m_powder; }
+		const tl::Kd<t_real_glob>& GetKdLattice() const { return m_kdLattice; }
 
 	public:
 		std::vector<ScatteringTriangleNode*> GetNodes();
 		std::vector<std::string> GetNodeNames() const;
 
-		double GetScaleFactor() const { return m_dScaleFactor; }
-		void SetScaleFactor(double dScale) { m_dScaleFactor = dScale; }
+		t_real_glob GetScaleFactor() const { return m_dScaleFactor; }
+		void SetScaleFactor(t_real_glob dScale) { m_dScaleFactor = dScale; }
 
 		ScatteringTriangleNode* GetNodeGq() { return m_pNodeGq; }
 		ScatteringTriangleNode* GetNodeKiQ() { return m_pNodeKiQ; }
 		ScatteringTriangleNode* GetNodeKfQ() { return m_pNodeKfQ; }
 		ScatteringTriangleNode* GetNodeKiKf() { return m_pNodeKiKf; }
 
-		ublas::vector<double> GetHKLFromPlanePos(double x, double y) const;
-		ublas::vector<double> GetQVec(bool bSmallQ=0, bool bRLU=1) const;	// careful: check sign
+		ublas::vector<t_real_glob> GetHKLFromPlanePos(t_real_glob x, t_real_glob y) const;
+		ublas::vector<t_real_glob> GetQVec(bool bSmallQ=0, bool bRLU=1) const;	// careful: check sign
 
-		ublas::vector<double> GetQVecPlane(bool bSmallQ=0) const;
-		ublas::vector<double> GetKiVecPlane() const;
-		ublas::vector<double> GetKfVecPlane() const;
+		ublas::vector<t_real_glob> GetQVecPlane(bool bSmallQ=0) const;
+		ublas::vector<t_real_glob> GetKiVecPlane() const;
+		ublas::vector<t_real_glob> GetKfVecPlane() const;
 
-		void RotateKiVec0To(bool bSense, double dAngle);
+		void RotateKiVec0To(bool bSense, t_real_glob dAngle);
 		void SnapToNearestPeak(ScatteringTriangleNode* pNode,
 						const ScatteringTriangleNode* pNodeOrg=0);
-		bool KeepAbsKiKf(double dQx, double dQy);
+		bool KeepAbsKiKf(t_real_glob dQx, t_real_glob dQy);
 
-		const tl::Lattice<double>& GetRecipLattice() const { return m_recip; }
+		const tl::Lattice<t_real_glob>& GetRecipLattice() const { return m_recip; }
 		QPointF GetGfxMid() const;
 		
 		void AllowMouseMove(bool bAllow);
@@ -209,8 +210,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 {	Q_OBJECT
 	protected:
 		ScatteringTriangle *m_pTri;
-		double m_dMonoD = 3.355;
-		double m_dAnaD = 3.355;
+		t_real_glob m_dMonoD = 3.355;
+		t_real_glob m_dAnaD = 3.355;
 
 		bool m_bSamplePosSense = 1;
 		bool m_bAnaPosSense = 0;
@@ -233,7 +234,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void emitUpdate();
 		// emits paramsChanged
 		void emitAllParams();
-		void SetDs(double dMonoD, double dAnaD);
+		void SetDs(t_real_glob dMonoD, t_real_glob dAnaD);
 
 		void SetSampleSense(bool bPos);
 		void SetMonoSense(bool bPos);
@@ -248,7 +249,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 
 	public slots:
 		void tasChanged(const TriangleOptions& opts);
-		void scaleChanged(double dTotalScale);
+		void scaleChanged(t_real_glob dTotalScale);
 
 		void setSnapq(bool bSnap);
 		bool getSnapq() const { return m_bSnapq; }
@@ -263,12 +264,12 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void paramsChanged(const RecipParams& parms);
 
 		void spurionInfo(const tl::ElasticSpurion& spuris,
-					const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
-					const std::vector<tl::InelasticSpurion<double>>& vecInelCKF);
+					const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKI,
+					const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKF);
 
-		void coordsChanged(double dh, double dk, double dl,
+		void coordsChanged(t_real_glob dh, t_real_glob dk, t_real_glob dl,
 			bool bHasNearest,
-			double dNearestH, double dNearestK, double dNearestL);
+			t_real_glob dNearestH, t_real_glob dNearestK, t_real_glob dNearestL);
 
 		void nodeEvent(bool bStarted);
 
@@ -288,7 +289,7 @@ class ScatteringTriangleView : public QGraphicsView
 {
 	Q_OBJECT
 	protected:
-		double m_dTotalScale = 1.;
+		t_real_glob m_dTotalScale = 1.;
 		virtual void wheelEvent(QWheelEvent* pEvt);
 
 	public:
@@ -296,7 +297,7 @@ class ScatteringTriangleView : public QGraphicsView
 		virtual ~ScatteringTriangleView();
 
 	signals:
-		void scaleChanged(double dTotalScale);
+		void scaleChanged(t_real_glob dTotalScale);
 };
 
 #endif

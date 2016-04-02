@@ -10,6 +10,8 @@
 #include "tlibs/math/neutrons.hpp"
 #include <boost/units/io.hpp>
 
+using t_real = t_real_glob;
+
 
 DynPlaneDlg::DynPlaneDlg(QWidget* pParent, QSettings *pSettings)
 		: QDialog(pParent), m_pSettings(pSettings)
@@ -63,38 +65,38 @@ void DynPlaneDlg::Calc()
 {
 	const unsigned int NUM_POINTS = 512;
 
-	const double dMinQ = spinMinQ->value();
-	const double dMaxQ = spinMaxQ->value();
-	const double dAngle = spinAngle->value() / 180. * M_PI;
+	const t_real dMinQ = spinMinQ->value();
+	const t_real dMaxQ = spinMaxQ->value();
+	const t_real dAngle = spinAngle->value() / 180. * M_PI;
 	const bool bFixedKi = (comboFixedE->currentIndex()==0);
 
 	if(btnSync->isChecked())
 		spinEiEf->setValue(bFixedKi ? m_dEi : m_dEf);
 
-	tl::energy EiEf = spinEiEf->value() * tl::one_meV;
+	tl::t_energy_si<t_real> EiEf = t_real(spinEiEf->value()) * tl::get_one_meV<t_real>();
 
 
 	//m_pPlanePlot->clear();
-	std::vector<double> vecQ[2], vecE[2];
+	std::vector<t_real> vecQ[2], vecE[2];
 	vecQ[0].reserve(NUM_POINTS); vecE[0].reserve(NUM_POINTS);
 	vecQ[1].reserve(NUM_POINTS); vecE[1].reserve(NUM_POINTS);
 
-	tl::angle twotheta = dAngle * tl::radians;
+	tl::t_angle_si<t_real> twotheta = dAngle * tl::get_one_radian<t_real>();
 
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
 		for(unsigned int iSign=0; iSign<=1; ++iSign)
 		{
-			tl::wavenumber Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
-			tl::energy dE = tl::kinematic_plane(bFixedKi, iSign, EiEf, Q, twotheta);
+			tl::t_wavenumber_si<t_real> Q = (dMinQ + (dMaxQ - dMinQ)/t_real(NUM_POINTS)*t_real(iPt)) / tl::get_one_angstrom<t_real>();
+			tl::t_energy_si<t_real> dE = tl::kinematic_plane(bFixedKi, iSign, EiEf, Q, twotheta);
 
-			double _dQ = Q * tl::angstrom;
-			double _dE = dE / tl::one_meV;
+			t_real _dQ = Q * tl::get_one_angstrom<t_real>();
+			t_real _dE = dE / tl::get_one_meV<t_real>();
 
 			if(!std::isnan(_dQ) && !std::isnan(_dE) && !std::isinf(_dQ) && !std::isinf(_dE))
 			{
-				vecQ[iSign].push_back(Q * tl::angstrom);
-				vecE[iSign].push_back(dE / tl::one_meV);
+				vecQ[iSign].push_back(Q * tl::get_one_angstrom<t_real>());
+				vecE[iSign].push_back(dE / tl::get_one_meV<t_real>());
 			}
 		}
 	}
@@ -108,14 +110,14 @@ void DynPlaneDlg::Calc()
 	m_vecQ.insert(m_vecQ.end(), vecQ[1].begin(), vecQ[1].end());
 	m_vecE.insert(m_vecE.end(), vecE[1].begin(), vecE[1].end());
 
-	m_plotwrap->SetData(m_vecQ, m_vecE);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecE);
 }
 
 void DynPlaneDlg::RecipParamsChanged(const RecipParams& params)
 {
 	m_d2Theta = params.d2Theta;
-	m_dEi = tl::k2E(params.dki/tl::angstrom)/tl::one_meV;
-	m_dEf = tl::k2E(params.dkf/tl::angstrom)/tl::one_meV;
+	m_dEi = tl::k2E(params.dki/tl::get_one_angstrom<t_real>())/tl::get_one_meV<t_real>();
+	m_dEf = tl::k2E(params.dkf/tl::get_one_angstrom<t_real>())/tl::get_one_meV<t_real>();
 
 	Calc();
 }

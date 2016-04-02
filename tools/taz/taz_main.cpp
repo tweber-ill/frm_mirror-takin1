@@ -8,6 +8,7 @@
 #include "taz.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
+#include "tlibs/log/debug.h"
 #include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
 #include "dialogs/AboutDlg.h"
@@ -55,6 +56,8 @@ int main(int argc, char** argv)
 		add_logfile(&ofstrLog, 1);
 
 		tl::log_info("Starting up Takin version ", TAKIN_VER, ".");
+		tl::log_debug("Using ", sizeof(t_real_glob)*8, " bit ", tl::get_typename<t_real_glob>(), "s as internal data type.");
+
 
 		#if defined Q_WS_X11 && !defined NO_3D
 			XInitThreads();

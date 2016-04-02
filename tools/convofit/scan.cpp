@@ -181,7 +181,7 @@ bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, c
 		tl::log_info("Point ", iPt+1, ": ", "h=", pt.h, ", k=", pt.k, ", l=", pt.l,
 			", ki=", t_real_sc(pt.ki*tl::get_one_angstrom<t_real_sc>()), 
 			", kf=", t_real_sc(pt.kf*tl::get_one_angstrom<t_real_sc>()),
-			", E=", pt.E/tl::get_one_meV<t_real_sc>()/*, ", Q=", pt.Q*tl::angstrom*/,
+			", E=", t_real_sc(pt.E/tl::get_one_meV<t_real_sc>())/*, ", Q=", pt.Q*tl::angstrom*/,
 			", Cts=", scan.vecCts[iPt]/*, "+-", scan.vecCtsErr[iPt]*/,
 			", Mon=", scan.vecMon[iPt]/*, "+-", scan.vecMonErr[iPt]*/);
 

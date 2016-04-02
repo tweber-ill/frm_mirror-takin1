@@ -9,8 +9,11 @@
 #include "tlibs/math/geo.h"
 #include <QGridLayout>
 
+
+using t_real = t_real_glob;
+
 Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
-			: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings))
+	: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings))
 {
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Reciprocal Space");
@@ -32,22 +35,21 @@ Recip3DDlg::~Recip3DDlg()
 }
 
 
-void Recip3DDlg::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Lattice<double>& recip,
-							const tl::Plane<double>& planeRLU, const SpaceGroup* pSpaceGroup)
+void Recip3DDlg::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Lattice<t_real>& recip,
+							const tl::Plane<t_real>& planeRLU, const SpaceGroup* pSpaceGroup)
 {
-	ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
-	ublas::vector<double> vecPlaneX = planeRLU.GetDir0()[0]*recip.GetVec(0) +
+	ublas::vector<t_real> vecX0 = ublas::zero_vector<t_real>(3);
+	ublas::vector<t_real> vecPlaneX = planeRLU.GetDir0()[0]*recip.GetVec(0) +
 		planeRLU.GetDir0()[1]*recip.GetVec(1) +
 		planeRLU.GetDir0()[2]*recip.GetVec(2);
-	ublas::vector<double> vecPlaneY = planeRLU.GetDir1()[0]*recip.GetVec(0) +
+	ublas::vector<t_real> vecPlaneY = planeRLU.GetDir1()[0]*recip.GetVec(0) +
 		planeRLU.GetDir1()[1]*recip.GetVec(1) +
 		planeRLU.GetDir1()[2]*recip.GetVec(2);
-	tl::Plane<double> plane(vecX0, vecPlaneX, vecPlaneY);
+	tl::Plane<t_real> plane(vecX0, vecPlaneX, vecPlaneY);
 
 
 	const unsigned int iObjCnt = (unsigned int)((m_dMaxPeaks*2 + 1)*
-												(m_dMaxPeaks*2 + 1)*
-												(m_dMaxPeaks*2 + 1));
+		(m_dMaxPeaks*2 + 1) * (m_dMaxPeaks*2 + 1));
 	//log_info("Number of objects: ", iObjCnt);
 
 	m_pPlot->SetEnabled(0);
@@ -55,14 +57,14 @@ void Recip3DDlg::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Lattice
 	m_pPlot->SetObjectCount(iObjCnt);
 
 	unsigned int iPeakIdx = 0;
-	const double dLimMax = std::numeric_limits<double>::max();
+	const t_real dLimMax = std::numeric_limits<t_real>::max();
 
-	std::vector<double> vecMin = {dLimMax, dLimMax, dLimMax},
+	std::vector<t_real> vecMin = {dLimMax, dLimMax, dLimMax},
 						vecMax = {-dLimMax, -dLimMax, -dLimMax};
 
-	for(double h=-m_dMaxPeaks; h<=m_dMaxPeaks; h+=1.)
-		for(double k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
-			for(double l=-m_dMaxPeaks; l<=m_dMaxPeaks; l+=1.)
+	for(t_real h=-m_dMaxPeaks; h<=m_dMaxPeaks; h+=1.)
+		for(t_real k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
+			for(t_real l=-m_dMaxPeaks; l<=m_dMaxPeaks; l+=1.)
 			{
 				int ih = int(h), ik = int(k), il = int(l);
 				if(pSpaceGroup)
@@ -72,27 +74,27 @@ void Recip3DDlg::CalcPeaks(const tl::Lattice<double>& lattice, const tl::Lattice
 				}
 
 				bool bInScatteringPlane = 0;
-				ublas::vector<double> vecPeak = recip.GetPos(h,k,l);
+				ublas::vector<t_real> vecPeak = recip.GetPos(h,k,l);
 				for(unsigned int i=0; i<3; ++i)
 				{
 					vecMin[i] = std::min(vecPeak[i], vecMin[i]);
 					vecMax[i] = std::max(vecPeak[i], vecMax[i]);
 				}
 
-				double dDist = 0.;
-				ublas::vector<double> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
+				t_real dDist = 0.;
+				ublas::vector<t_real> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
-				std::vector<double> vecColor{0., 0., 1., 0.7};
-				if(tl::float_equal(dDist, 0., m_dPlaneDistTolerance))
+				std::vector<t_real> vecColor{0., 0., 1., 0.7};
+				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
 				{
 					bool bIsDirectBeam = 0;
-					if(tl::float_equal(h, 0.) && tl::float_equal(k, 0.) && tl::float_equal(l, 0.))
+					if(tl::float_equal<t_real>(h, 0.) && tl::float_equal<t_real>(k, 0.) && tl::float_equal<t_real>(l, 0.))
 						bIsDirectBeam = 1;
 
 					if(bIsDirectBeam)
-						vecColor = std::vector<double>{0., 1., 0., 0.7};
+						vecColor = std::vector<t_real>{0., 1., 0., 0.7};
 					else
-						vecColor = std::vector<double>{1., 0., 0., 0.7};
+						vecColor = std::vector<t_real>{1., 0., 0., 0.7};
 
 					bInScatteringPlane = 1;
 				}

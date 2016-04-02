@@ -19,11 +19,12 @@
 #include <map>
 #include <vector>
 
+using t_real = t_real_glob;
 namespace co = boost::units::si::constants::codata;
 
 
 NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
-			: QDialog(pParent), m_pSettings(pSett)
+	: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
 	if(m_pSettings)
@@ -85,7 +86,7 @@ NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
 			restoreGeometry(m_pSettings->value("neutron_props/geo").toByteArray());
 
 		bool bOk = 0;
-		double dLam = m_pSettings->value("neutron_props/lam").toDouble(&bOk);
+		t_real dLam = m_pSettings->value("neutron_props/lam").toDouble(&bOk);
 		if(!bOk)
 			dLam = 5.;
 
@@ -107,53 +108,53 @@ void NeutronDlg::CalcNeutronLam()
 {
 	std::string strInput = editLam->text().toStdString();
 
-	tl::length lam_n = tl::str_to_var<double>(strInput) * tl::angstrom;
+	tl::t_length_si<t_real> lam_n = tl::str_to_var<t_real>(strInput) * tl::get_one_angstrom<t_real>();
 
-	tl::wavenumber k_n = tl::lam2k(lam_n);
-	tl::momentum p_n = tl::lam2p(lam_n);
-	tl::energy E_n = p_n*p_n / (2.*co::m_n);
+	tl::t_wavenumber_si<t_real> k_n = tl::lam2k(lam_n);
+	tl::t_momentum_si<t_real> p_n = tl::lam2p(lam_n);
+	tl::t_energy_si<t_real> E_n = p_n*p_n / (t_real(2.)*tl::get_m_n<t_real>());
 
-	editE->setText(tl::var_to_str<double>(E_n / tl::one_meV, g_iPrec).c_str());
-	editOm->setText(tl::var_to_str<double>(E_n / co::hbar * tl::seconds / 1e12, g_iPrec).c_str());
-	editF->setText(tl::var_to_str<double>(E_n / co::h * tl::seconds / 1e12, g_iPrec).c_str());
-	editK->setText(tl::var_to_str<double>(k_n * tl::angstrom, g_iPrec).c_str());
-	editV->setText(tl::var_to_str<double>((p_n / co::m_n) * tl::seconds / tl::meters, g_iPrec).c_str());
-	editT->setText(tl::var_to_str<double>((E_n / co::k_B) / tl::kelvin, g_iPrec).c_str());
+	editE->setText(tl::var_to_str<t_real>(E_n / tl::get_one_meV<t_real>(), g_iPrec).c_str());
+	editOm->setText(tl::var_to_str<t_real>(E_n / tl::get_hbar<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editF->setText(tl::var_to_str<t_real>(E_n / tl::get_h<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editK->setText(tl::var_to_str<t_real>(k_n * tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editV->setText(tl::var_to_str<t_real>((p_n / tl::get_m_n<t_real>()) * tl::get_one_second<t_real>() / tl::get_one_meter<t_real>(), g_iPrec).c_str());
+	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / tl::get_one_kelvin<t_real>(), g_iPrec).c_str());
 }
 
 void NeutronDlg::CalcNeutronk()
 {
 	std::string strInput = editK->text().toStdString();
 
-	tl::wavenumber k_n = tl::str_to_var<double>(strInput) / tl::angstrom;
-	tl::length lam_n = tl::k2lam(k_n);
-	tl::momentum p_n = tl::lam2p(lam_n);
-	tl::energy E_n = p_n*p_n / (2.*co::m_n);
+	tl::t_wavenumber_si<t_real> k_n = tl::str_to_var<t_real>(strInput) / tl::get_one_angstrom<t_real>();
+	tl::t_length_si<t_real> lam_n = tl::k2lam(k_n);
+	tl::t_momentum_si<t_real> p_n = tl::lam2p(lam_n);
+	tl::t_energy_si<t_real> E_n = p_n*p_n / (t_real(2.)*tl::get_m_n<t_real>());
 
-	editLam->setText(tl::var_to_str<double>(lam_n / tl::angstrom, g_iPrec).c_str());
-	editE->setText(tl::var_to_str<double>(E_n / tl::one_meV, g_iPrec).c_str());
-	editOm->setText(tl::var_to_str<double>(E_n / co::hbar * tl::seconds / 1e12, g_iPrec).c_str());
-	editF->setText(tl::var_to_str<double>(E_n / co::h * tl::seconds / 1e12, g_iPrec).c_str());
-	editV->setText(tl::var_to_str<double>((p_n / co::m_n) * tl::seconds / tl::meters, g_iPrec).c_str());
-	editT->setText(tl::var_to_str<double>((E_n / co::k_B) / tl::kelvin, g_iPrec).c_str());
+	editLam->setText(tl::var_to_str<t_real>(lam_n / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editE->setText(tl::var_to_str<t_real>(E_n / tl::get_one_meV<t_real>(), g_iPrec).c_str());
+	editOm->setText(tl::var_to_str<t_real>(E_n / tl::get_hbar<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editF->setText(tl::var_to_str<t_real>(E_n / tl::get_h<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editV->setText(tl::var_to_str<t_real>((p_n / tl::get_m_n<t_real>()) * tl::get_one_second<t_real>() / tl::get_one_meter<t_real>(), g_iPrec).c_str());
+	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / tl::get_one_kelvin<t_real>(), g_iPrec).c_str());
 }
 
 void NeutronDlg::CalcNeutronv()
 {
 	std::string strInput = editV->text().toStdString();
 
-	tl::velocity v_n = tl::str_to_var<double>(strInput) * tl::meters / tl::seconds;
-	tl::wavenumber k_n = tl::v2k(v_n);
-	tl::length lam_n = tl::k2lam(k_n);
-	tl::momentum p_n = tl::lam2p(lam_n);
-	tl::energy E_n = p_n*p_n / (2.*co::m_n);
+	tl::t_velocity_si<t_real> v_n = tl::str_to_var<t_real>(strInput) * tl::get_one_meter<t_real>() / tl::get_one_second<t_real>();
+	tl::t_wavenumber_si<t_real> k_n = tl::v2k(v_n);
+	tl::t_length_si<t_real> lam_n = tl::k2lam(k_n);
+	tl::t_momentum_si<t_real> p_n = tl::lam2p(lam_n);
+	tl::t_energy_si<t_real> E_n = p_n*p_n / (t_real(2.)*tl::get_m_n<t_real>());
 
-	editLam->setText(tl::var_to_str<double>(lam_n / tl::angstrom, g_iPrec).c_str());
-	editE->setText(tl::var_to_str<double>(E_n / tl::one_meV, g_iPrec).c_str());
-	editOm->setText(tl::var_to_str<double>(E_n / co::hbar * tl::seconds / 1e12, g_iPrec).c_str());
-	editF->setText(tl::var_to_str<double>(E_n / co::h * tl::seconds / 1e12, g_iPrec).c_str());
-	editK->setText(tl::var_to_str<double>(k_n * tl::angstrom, g_iPrec).c_str());
-	editT->setText(tl::var_to_str<double>((E_n / co::k_B) / tl::kelvin, g_iPrec).c_str());
+	editLam->setText(tl::var_to_str<t_real>(lam_n / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editE->setText(tl::var_to_str<t_real>(E_n / tl::get_one_meV<t_real>(), g_iPrec).c_str());
+	editOm->setText(tl::var_to_str<t_real>(E_n / tl::get_hbar<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editF->setText(tl::var_to_str<t_real>(E_n / tl::get_h<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editK->setText(tl::var_to_str<t_real>(k_n * tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / tl::get_one_kelvin<t_real>(), g_iPrec).c_str());
 }
 
 void NeutronDlg::CalcNeutronE()
@@ -161,17 +162,17 @@ void NeutronDlg::CalcNeutronE()
 	std::string strInput = editE->text().toStdString();
 
 	bool bImag = 0;
-	tl::energy E_n = tl::str_to_var<double>(strInput) * tl::one_meV;
-	tl::wavenumber k_n = tl::E2k(E_n, bImag);
-	tl::length lam_n = tl::k2lam(k_n);
-	tl::momentum p_n = tl::lam2p(lam_n);
+	tl::t_energy_si<t_real> E_n = tl::str_to_var<t_real>(strInput) * tl::get_one_meV<t_real>();
+	tl::t_wavenumber_si<t_real> k_n = tl::E2k(E_n, bImag);
+	tl::t_length_si<t_real> lam_n = tl::k2lam(k_n);
+	tl::t_momentum_si<t_real> p_n = tl::lam2p(lam_n);
 
-	editOm->setText(tl::var_to_str<double>(E_n / co::hbar * tl::seconds / 1e12, g_iPrec).c_str());
-	editF->setText(tl::var_to_str<double>(E_n / co::h * tl::seconds / 1e12, g_iPrec).c_str());
-	editLam->setText(tl::var_to_str<double>(lam_n / tl::angstrom, g_iPrec).c_str());
-	editK->setText(tl::var_to_str<double>(k_n * tl::angstrom, g_iPrec).c_str());
-	editV->setText(tl::var_to_str<double>((p_n / co::m_n) * tl::seconds / tl::meters, g_iPrec).c_str());
-	editT->setText(tl::var_to_str<double>((E_n / co::k_B) / tl::kelvin, g_iPrec).c_str());
+	editOm->setText(tl::var_to_str<t_real>(E_n / tl::get_hbar<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editF->setText(tl::var_to_str<t_real>(E_n / tl::get_h<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editLam->setText(tl::var_to_str<t_real>(lam_n / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editK->setText(tl::var_to_str<t_real>(k_n * tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editV->setText(tl::var_to_str<t_real>((p_n / tl::get_m_n<t_real>()) * tl::get_one_second<t_real>() / tl::get_one_meter<t_real>(), g_iPrec).c_str());
+	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / tl::get_one_kelvin<t_real>(), g_iPrec).c_str());
 }
 
 void NeutronDlg::CalcNeutronOm()
@@ -179,17 +180,17 @@ void NeutronDlg::CalcNeutronOm()
 	std::string strInput = editOm->text().toStdString();
 
 	bool bImag = 0;
-	tl::energy E_n = tl::str_to_var<double>(strInput) / tl::seconds * co::hbar * 1e12;
-	tl::wavenumber k_n = tl::E2k(E_n, bImag);
-	tl::length lam_n = tl::k2lam(k_n);
-	tl::momentum p_n = tl::lam2p(lam_n);
+	tl::t_energy_si<t_real> E_n = tl::str_to_var<t_real>(strInput) / tl::get_one_picosecond<t_real>() * tl::get_hbar<t_real>();
+	tl::t_wavenumber_si<t_real> k_n = tl::E2k(E_n, bImag);
+	tl::t_length_si<t_real> lam_n = tl::k2lam(k_n);
+	tl::t_momentum_si<t_real> p_n = tl::lam2p(lam_n);
 
-	editE->setText(tl::var_to_str<double>(E_n / tl::one_meV, g_iPrec).c_str());
-	editF->setText(tl::var_to_str<double>(E_n / co::h * tl::seconds / 1e12, g_iPrec).c_str());
-	editLam->setText(tl::var_to_str<double>(lam_n / tl::angstrom, g_iPrec).c_str());
-	editK->setText(tl::var_to_str<double>(k_n * tl::angstrom, g_iPrec).c_str());
-	editV->setText(tl::var_to_str<double>((p_n / co::m_n) * tl::seconds / tl::meters, g_iPrec).c_str());
-	editT->setText(tl::var_to_str<double>((E_n / co::k_B) / tl::kelvin, g_iPrec).c_str());
+	editE->setText(tl::var_to_str<t_real>(E_n / tl::get_one_meV<t_real>(), g_iPrec).c_str());
+	editF->setText(tl::var_to_str<t_real>(E_n / tl::get_h<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editLam->setText(tl::var_to_str<t_real>(lam_n / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editK->setText(tl::var_to_str<t_real>(k_n * tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editV->setText(tl::var_to_str<t_real>((p_n / tl::get_m_n<t_real>()) * tl::get_one_second<t_real>() / tl::get_one_meter<t_real>(), g_iPrec).c_str());
+	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / tl::get_one_kelvin<t_real>(), g_iPrec).c_str());
 }
 
 void NeutronDlg::CalcNeutronF()
@@ -197,17 +198,17 @@ void NeutronDlg::CalcNeutronF()
 	std::string strInput = editF->text().toStdString();
 
 	bool bImag = 0;
-	tl::energy E_n = tl::str_to_var<double>(strInput) / tl::seconds * co::h * 1e12;
-	tl::wavenumber k_n = tl::E2k(E_n, bImag);
-	tl::length lam_n = tl::k2lam(k_n);
-	tl::momentum p_n = tl::lam2p(lam_n);
+	tl::t_energy_si<t_real> E_n = tl::str_to_var<t_real>(strInput) / tl::get_one_picosecond<t_real>() * tl::get_h<t_real>();
+	tl::t_wavenumber_si<t_real> k_n = tl::E2k(E_n, bImag);
+	tl::t_length_si<t_real> lam_n = tl::k2lam(k_n);
+	tl::t_momentum_si<t_real> p_n = tl::lam2p(lam_n);
 
-	editE->setText(tl::var_to_str<double>(E_n / tl::one_meV, g_iPrec).c_str());
-	editOm->setText(tl::var_to_str<double>(E_n / co::hbar * tl::seconds / 1e12, g_iPrec).c_str());
-	editLam->setText(tl::var_to_str<double>(lam_n / tl::angstrom, g_iPrec).c_str());
-	editK->setText(tl::var_to_str<double>(k_n * tl::angstrom, g_iPrec).c_str());
-	editV->setText(tl::var_to_str<double>((p_n / co::m_n) * tl::seconds / tl::meters, g_iPrec).c_str());
-	editT->setText(tl::var_to_str<double>((E_n / co::k_B) / tl::kelvin, g_iPrec).c_str());
+	editE->setText(tl::var_to_str<t_real>(E_n / tl::get_one_meV<t_real>(), g_iPrec).c_str());
+	editOm->setText(tl::var_to_str<t_real>(E_n / tl::get_hbar<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editLam->setText(tl::var_to_str<t_real>(lam_n / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editK->setText(tl::var_to_str<t_real>(k_n * tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editV->setText(tl::var_to_str<t_real>((p_n / tl::get_m_n<t_real>()) * tl::get_one_second<t_real>() / tl::get_one_meter<t_real>(), g_iPrec).c_str());
+	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / tl::get_one_kelvin<t_real>(), g_iPrec).c_str());
 }
 
 void NeutronDlg::CalcNeutronT()
@@ -215,18 +216,18 @@ void NeutronDlg::CalcNeutronT()
 	std::string strInput = editT->text().toStdString();
 
 	bool bImag;
-	tl::temp T_n = tl::str_to_var<double>(strInput) * tl::kelvin;
-	tl::energy E_n = T_n * co::k_B;
-	tl::wavenumber k_n = tl::E2k(E_n, bImag);
-	tl::length lam_n = tl::k2lam(k_n);
-	tl::momentum p_n = tl::lam2p(lam_n);
+	tl::t_temperature_si<t_real> T_n = tl::str_to_var<t_real>(strInput) * tl::get_one_kelvin<t_real>();
+	tl::t_energy_si<t_real> E_n = T_n * tl::get_kB<t_real>();
+	tl::t_wavenumber_si<t_real> k_n = tl::E2k(E_n, bImag);
+	tl::t_length_si<t_real> lam_n = tl::k2lam(k_n);
+	tl::t_momentum_si<t_real> p_n = tl::lam2p(lam_n);
 
-	editLam->setText(tl::var_to_str<double>(lam_n / tl::angstrom, g_iPrec).c_str());
-	editK->setText(tl::var_to_str<double>(k_n * tl::angstrom, g_iPrec).c_str());
-	editV->setText(tl::var_to_str<double>((p_n / co::m_n) * tl::seconds / tl::meters, g_iPrec).c_str());
-	editE->setText(tl::var_to_str<double>(E_n / tl::one_meV, g_iPrec).c_str());
-	editOm->setText(tl::var_to_str<double>(E_n / co::hbar * tl::seconds / 1e12, g_iPrec).c_str());
-	editF->setText(tl::var_to_str<double>(E_n / co::h * tl::seconds / 1e12, g_iPrec).c_str());
+	editLam->setText(tl::var_to_str<t_real>(lam_n / tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editK->setText(tl::var_to_str<t_real>(k_n * tl::get_one_angstrom<t_real>(), g_iPrec).c_str());
+	editV->setText(tl::var_to_str<t_real>((p_n / tl::get_m_n<t_real>()) * tl::get_one_second<t_real>() / tl::get_one_meter<t_real>(), g_iPrec).c_str());
+	editE->setText(tl::var_to_str<t_real>(E_n / tl::get_one_meV<t_real>(), g_iPrec).c_str());
+	editOm->setText(tl::var_to_str<t_real>(E_n / tl::get_hbar<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
+	editF->setText(tl::var_to_str<t_real>(E_n / tl::get_h<t_real>() * tl::get_one_picosecond<t_real>(), g_iPrec).c_str());
 }
 
 
@@ -260,7 +261,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::h;
+		ostrVal << tl::get_h<t_real>();
 
 		Constant constant;
 		constant.strSymbol = "h";
@@ -272,7 +273,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << (co::h / tl::one_eV) << " eV";
+		ostrVal << (tl::get_h<t_real>() / tl::one_eV) << " eV";
 
 		Constant constant;
 		constant.strSymbol = "h";
@@ -284,7 +285,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::hbar;
+		ostrVal << tl::get_hbar<t_real>();
 
 		Constant constant;
 		constant.strSymbol = "hbar";
@@ -296,7 +297,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << (co::hbar / tl::one_eV) << " eV";
+		ostrVal << (tl::get_hbar<t_real>() / tl::one_eV) << " eV";
 
 		Constant constant;
 		constant.strSymbol = "hbar";
@@ -308,7 +309,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::m_n;
+		ostrVal << tl::get_m_n<t_real>();
 
 		Constant constant;
 		constant.strSymbol = "m_n";
@@ -320,7 +321,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::g_n;
+		ostrVal << tl::get_g_n<t_real>();
 
 		Constant constant;
 		constant.strSymbol = "g_n";
@@ -332,7 +333,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::gamma_n;
+		ostrVal << co::gamma_n;		// TODO: replace with a tl::... getter
 
 		Constant constant;
 		constant.strSymbol = "gamma_n";
@@ -344,7 +345,8 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::mu_n;
+		//ostrVal << tl::get_mu_n<t_real>();
+		ostrVal << t_real(tl::get_mu_n<t_real>() / tl::get_one_meV<t_real>() * tl::get_one_tesla<t_real>()) << " meV/T";
 
 		Constant constant;
 		constant.strSymbol = "mu_n";
@@ -356,7 +358,8 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::mu_N;
+		//ostrVal << co::mu_N;
+		ostrVal << t_real(tl::get_mu_N<t_real>() / tl::get_one_meV<t_real>() * tl::get_one_tesla<t_real>()) << " meV/T";
 
 		Constant constant;
 		constant.strSymbol = "mu_N";
@@ -368,7 +371,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << double(co::mu_B / tl::meV * tl::tesla) << " meV/T";
+		ostrVal << t_real(tl::get_muB<t_real>() / tl::get_one_meV<t_real>() * tl::get_one_tesla<t_real>()) << " meV/T";
 
 		Constant constant;
 		constant.strSymbol = "mu_B";
@@ -380,7 +383,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		//ostrVal << std::scientific;
-		ostrVal << (-double(co::g_e * co::mu_B / tl::meV * tl::tesla)) << " meV/T";
+		ostrVal << (-tl::get_g_e<t_real>() * tl::get_muB<t_real>() / tl::get_one_meV<t_real>() * tl::get_one_tesla<t_real>()) << " meV/T";
 
 		Constant constant;
 		constant.strSymbol = "-g_e * mu_B";
@@ -392,7 +395,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::c;
+		ostrVal << tl::get_c<t_real>();
 
 		Constant constant;
 		constant.strSymbol = "c";
@@ -404,7 +407,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::k_B;
+		ostrVal << tl::get_kB<t_real>();
 
 		Constant constant;
 		constant.strSymbol = "k_B";
@@ -416,7 +419,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << double(co::k_B / tl::one_meV * tl::kelvin) << " meV/K";
+		ostrVal << t_real(tl::get_kB<t_real>() / tl::get_one_meV<t_real>() * tl::get_one_kelvin<t_real>()) << " meV/K";
 
 		Constant constant;
 		constant.strSymbol = "k_B";
@@ -503,7 +506,7 @@ void NeutronDlg::EnableRecipEdits()
 void NeutronDlg::SetEditTT(QLineEdit *pEditT, QLineEdit *pEditTT)
 {
 	std::string strT = pEditT->text().toStdString();
-	double dT = tl::str_to_var<double>(strT);
+	t_real dT = tl::str_to_var<t_real>(strT);
 	std::string strTT = tl::var_to_str(dT*2., g_iPrec);
 	pEditTT->setText(strTT.c_str());
 }
@@ -515,7 +518,7 @@ void NeutronDlg::RecipThetaEdited() { SetEditTT(editBraggReciT, editBraggReciTT)
 void NeutronDlg::SetEditT(QLineEdit *pEditT, QLineEdit *pEditTT)
 {
 	std::string strTT = pEditTT->text().toStdString();
-	double dTT = tl::str_to_var<double>(strTT);
+	t_real dTT = tl::str_to_var<t_real>(strTT);
 	std::string strT = tl::var_to_str(dTT*0.5, g_iPrec);
 	pEditT->setText(strT.c_str());
 }
@@ -532,27 +535,27 @@ void NeutronDlg::CalcBraggReal()
 	std::string strTT = editBraggDirTT->text().toStdString();
 
 	int iOrder = tl::str_to_var<int>(strN);
-	tl::length lam = tl::str_to_var<double>(strLam)*tl::angstrom;
-	tl::length d = tl::str_to_var<double>(strD)*tl::angstrom;
-	tl::angle tt = tl::str_to_var<double>(strTT)/180.*M_PI*tl::radians;
+	tl::t_length_si<t_real> lam = tl::str_to_var<t_real>(strLam)*tl::get_one_angstrom<t_real>();
+	tl::t_length_si<t_real> d = tl::str_to_var<t_real>(strD)*tl::get_one_angstrom<t_real>();
+	tl::t_angle_si<t_real> tt = tl::d2r(tl::str_to_var<t_real>(strTT))*tl::get_one_radian<t_real>();
 
 	if(radioBraggDirLam->isChecked())
 	{
-		lam = tl::bragg_real_lam(d, tt, double(iOrder));
-		std::string strLam = tl::var_to_str(double(lam/tl::angstrom), g_iPrec);
+		lam = tl::bragg_real_lam(d, tt, t_real(iOrder));
+		std::string strLam = tl::var_to_str(t_real(lam/tl::get_one_angstrom<t_real>()), g_iPrec);
 		editBraggDirLam->setText(strLam.c_str());
 	}
 	else if(radioBraggDirD->isChecked())
 	{
-		d = tl::bragg_real_d(lam, tt, double(iOrder));
-		std::string strD = tl::var_to_str(double(d/tl::angstrom), g_iPrec);
+		d = tl::bragg_real_d(lam, tt, t_real(iOrder));
+		std::string strD = tl::var_to_str(t_real(d/tl::get_one_angstrom<t_real>()), g_iPrec);
 		editBraggDirD->setText(strD.c_str());
 	}
 	else if(radioBraggDirTT->isChecked())
 	{
-		tt = tl::bragg_real_twotheta(d, lam, double(iOrder));
-		std::string strTT = tl::var_to_str(double(tt/tl::radians) /M_PI*180., g_iPrec);
-		std::string strT = tl::var_to_str(double(0.5*tt/tl::radians) /M_PI*180., g_iPrec);
+		tt = tl::bragg_real_twotheta(d, lam, t_real(iOrder));
+		std::string strTT = tl::var_to_str(tl::r2d(tt/tl::get_one_radian<t_real>()), g_iPrec);
+		std::string strT = tl::var_to_str(tl::r2d(t_real(0.5)*tt/tl::get_one_radian<t_real>()), g_iPrec);
 		editBraggDirTT->setText(strTT.c_str());
 		editBraggDirT->setText(strT.c_str());
 	}
@@ -566,27 +569,27 @@ void NeutronDlg::CalcBraggRecip()
 	std::string strTT = editBraggReciTT->text().toStdString();
 
 	int iOrder = tl::str_to_var<int>(strN);
-	tl::length lam = tl::str_to_var<double>(strLam)*tl::angstrom;
-	tl::wavenumber Q = tl::str_to_var<double>(strQ)/tl::angstrom;
-	tl::angle tt = tl::str_to_var<double>(strTT)/180.*M_PI*tl::radians;
+	tl::t_length_si<t_real> lam = tl::str_to_var<t_real>(strLam)*tl::get_one_angstrom<t_real>();
+	tl::t_wavenumber_si<t_real> Q = tl::str_to_var<t_real>(strQ)/tl::get_one_angstrom<t_real>();
+	tl::t_angle_si<t_real> tt = tl::d2r(tl::str_to_var<t_real>(strTT))*tl::get_one_radian<t_real>();
 
 	if(radioBraggReciLam->isChecked())
 	{
-		lam = tl::bragg_recip_lam(Q, tt, double(iOrder));
-		std::string strLam = tl::var_to_str(double(lam/tl::angstrom), g_iPrec);
+		lam = tl::bragg_recip_lam(Q, tt, t_real(iOrder));
+		std::string strLam = tl::var_to_str(t_real(lam/tl::get_one_angstrom<t_real>()), g_iPrec);
 		editBraggReciLam->setText(strLam.c_str());
 	}
 	else if(radioBraggReciQ->isChecked())
 	{
-		Q = tl::bragg_recip_Q(lam, tt, double(iOrder));
-		std::string strQ = tl::var_to_str(double(Q*tl::angstrom), g_iPrec);
+		Q = tl::bragg_recip_Q(lam, tt, t_real(iOrder));
+		std::string strQ = tl::var_to_str(t_real(Q*tl::get_one_angstrom<t_real>()), g_iPrec);
 		editBraggReciQ->setText(strQ.c_str());
 	}
 	else if(radioBraggReciTT->isChecked())
 	{
-		tt = tl::bragg_recip_twotheta(Q, lam, double(iOrder));
-		std::string strTT = tl::var_to_str(double(tt/tl::radians) /M_PI*180., g_iPrec);
-		std::string strT = tl::var_to_str(double(0.5*tt/tl::radians) /M_PI*180., g_iPrec);
+		tt = tl::bragg_recip_twotheta(Q, lam, t_real(iOrder));
+		std::string strTT = tl::var_to_str(tl::r2d(tt/tl::get_one_radian<t_real>()), g_iPrec);
+		std::string strT = tl::var_to_str(tl::r2d(t_real(0.5)*tt/tl::get_one_radian<t_real>()), g_iPrec);
 		editBraggReciTT->setText(strTT.c_str());
 		editBraggReciT->setText(strT.c_str());
 	}

@@ -16,6 +16,7 @@
 
 #include "tlibs/file/loadinstr.h"
 #include "libs/qthelper.h"
+#include "libs/globals.h"
 #include "ui/ui_scanviewer.h"
 
 
@@ -28,8 +29,8 @@ protected:
 	std::vector<std::string> m_vecExts;
 
 	bool m_bDoUpdate = 0;
-	tl::FileInstr *m_pInstr = nullptr;
-	std::vector<double> m_vecX, m_vecY;
+	tl::FileInstrBase<t_real_glob> *m_pInstr = nullptr;
+	std::vector<t_real_glob> m_vecX, m_vecY;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 	std::string m_strX, m_strY, m_strCmd;
 

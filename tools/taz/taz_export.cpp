@@ -15,6 +15,8 @@
 #include <QtSvg/QSvgGenerator>
 
 
+using t_real = t_real_glob;
+
 //--------------------------------------------------------------------------------
 // image exports
 
@@ -22,7 +24,7 @@ void TazDlg::ExportReal()
 {
 	TasLayout *pTas = m_sceneReal.GetTasLayout();
 
-	const double dZoom = pTas->GetZoom();
+	const t_real dZoom = pTas->GetZoom();
 	pTas->SetZoom(1.);
 	ExportSceneSVG(m_sceneReal);
 	pTas->SetZoom(dZoom);
@@ -32,7 +34,7 @@ void TazDlg::ExportRealLattice()
 {
 	RealLattice *pLatt = m_sceneRealLattice.GetLattice();
 
-	const double dZoom = pLatt->GetZoom();
+	const t_real dZoom = pLatt->GetZoom();
 	pLatt->SetZoom(1.);
 	ExportSceneSVG(m_sceneRealLattice);
 	pLatt->SetZoom(dZoom);
@@ -42,7 +44,7 @@ void TazDlg::ExportRecip()
 {
 	ScatteringTriangle *pTri = m_sceneRecip.GetTriangle();
 
-	const double dZoom = pTri->GetZoom();
+	const t_real dZoom = pTri->GetZoom();
 	pTri->SetZoom(1.);
 	ExportSceneSVG(m_sceneRecip);
 	pTri->SetZoom(dZoom);
@@ -136,8 +138,8 @@ void TazDlg::ExportWSImage() {}
 
 void TazDlg::ExportUCModel()
 {
-	using t_mat = ublas::matrix<double>;
-	using t_vec = ublas::vector<double>;
+	using t_mat = ublas::matrix<t_real>;
+	using t_vec = ublas::vector<t_real>;
 
 
 	if(m_vecAtoms.size() == 0)
@@ -172,13 +174,13 @@ void TazDlg::ExportUCModel()
 	}
 
 
-	const double a = editA->text().toDouble();
-	const double b = editB->text().toDouble();
-	const double c = editC->text().toDouble();
-	const double alpha = tl::d2r(editAlpha->text().toDouble());
-	const double beta = tl::d2r(editBeta->text().toDouble());
-	const double gamma = tl::d2r(editGamma->text().toDouble());
-	const tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
+	const t_real a = editA->text().toDouble();
+	const t_real b = editB->text().toDouble();
+	const t_real c = editC->text().toDouble();
+	const t_real alpha = tl::d2r(editAlpha->text().toDouble());
+	const t_real beta = tl::d2r(editBeta->text().toDouble());
+	const t_real gamma = tl::d2r(editGamma->text().toDouble());
+	const tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
 	const t_mat matA = lattice.GetMetric();
 
 
@@ -218,7 +220,7 @@ void TazDlg::ExportUCModel()
 		const t_vec& vecAtom = vecAtoms[iAtom];
 		const std::string& strAtomName = vecAtomNames[iAtom];
 
-		const double dUCSize = 1.;
+		const t_real dUCSize = 1.;
 		std::vector<t_vec> vecPos =
 			tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom, -dUCSize*0.5, dUCSize*0.5);
 		ostrComment << "Unit cell contains " << vecPos.size() << " " << strAtomName

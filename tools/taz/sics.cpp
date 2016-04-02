@@ -10,7 +10,10 @@
 #include "tlibs/log/log.h"
 #include "tlibs/helper/misc.h"
 #include "tlibs/time/chrono.h"
+#include "libs/globals.h"
 #include <boost/algorithm/string.hpp>
+
+using t_real = t_real_glob;
 
 
 SicsCache::SicsCache(QSettings* pSettings) : m_pSettings(pSettings)
@@ -134,7 +137,7 @@ void SicsCache::slot_receive(const std::string& str)
 	CacheVal cacheval;
 	cacheval.strVal = strVal;
 	boost::to_upper(cacheval.strVal);
-	cacheval.dTimestamp = tl::epoch<double>();
+	cacheval.dTimestamp = tl::epoch<t_real>();
 	m_mapCache[strKey] = cacheval;
 
 	//std::cout << strKey << " = " << strVal << std::endl;
@@ -148,24 +151,24 @@ void SicsCache::slot_receive(const std::string& str)
 	if(tl::str_is_equal<std::string>(strKey, "A2", false))
 	{
 		triag.bChangedMonoTwoTheta = 1;
-		triag.dMonoTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
+		triag.dMonoTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
 	}
 	// analyser
 	else if(tl::str_is_equal<std::string>(strKey, "A6", false))
 	{
 		triag.bChangedAnaTwoTheta = 1;
-		triag.dAnaTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
+		triag.dAnaTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
 	}
 	// sample
 	else if(tl::str_is_equal<std::string>(strKey, "A4", false))
 	{
 		triag.bChangedTwoTheta = 1;
-		triag.dTwoTheta = tl::str_to_var<double>(strVal) /180.*M_PI;
+		triag.dTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
 	}
 	else if(tl::str_is_equal<std::string>(strKey, "A3", false))
 	{
 		triag.bChangedAngleKiVec0 = 1;
-		triag.dAngleKiVec0 = -tl::str_to_var<double>(strVal) /180.*M_PI;
+		triag.dAngleKiVec0 = -tl::str_to_var<t_real>(strVal) /180.*M_PI;
 	}
 	// lattice constants and angles
 	else if(tl::str_is_equal_to_either<std::string>(strKey, {"AS", "BS", "CS", "AA", "BB", "CC"}, false))
@@ -182,12 +185,12 @@ void SicsCache::slot_receive(const std::string& str)
 				return;
 
 		crys.bChangedLattice = crys.bChangedLatticeAngles = 1;
-		crys.dLattice[0] = tl::str_to_var<double>(iterAS->second.strVal);
-		crys.dLattice[1] = tl::str_to_var<double>(iterBS->second.strVal);
-		crys.dLattice[2] = tl::str_to_var<double>(iterCS->second.strVal);
-		crys.dLatticeAngles[0] = tl::str_to_var<double>(iterAA->second.strVal);
-		crys.dLatticeAngles[1] = tl::str_to_var<double>(iterBB->second.strVal);
-		crys.dLatticeAngles[2] = tl::str_to_var<double>(iterCC->second.strVal);
+		crys.dLattice[0] = tl::str_to_var<t_real>(iterAS->second.strVal);
+		crys.dLattice[1] = tl::str_to_var<t_real>(iterBS->second.strVal);
+		crys.dLattice[2] = tl::str_to_var<t_real>(iterCS->second.strVal);
+		crys.dLatticeAngles[0] = tl::str_to_var<t_real>(iterAA->second.strVal);
+		crys.dLatticeAngles[1] = tl::str_to_var<t_real>(iterBB->second.strVal);
+		crys.dLatticeAngles[2] = tl::str_to_var<t_real>(iterCC->second.strVal);
 	}
 	// orientation reflexes
 	else if(tl::str_is_equal_to_either<std::string>(strKey, {"AX", "AY", "AZ", "BX", "BY", "BZ"}, false))
@@ -204,21 +207,21 @@ void SicsCache::slot_receive(const std::string& str)
 				return;
 
 		crys.bChangedPlane1 = crys.bChangedPlane2 = 1;
-		crys.dPlane1[0] = tl::str_to_var<double>(iterAX->second.strVal);
-		crys.dPlane1[1] = tl::str_to_var<double>(iterAY->second.strVal);
-		crys.dPlane1[2] = tl::str_to_var<double>(iterAZ->second.strVal);
-		crys.dPlane2[0] = tl::str_to_var<double>(iterBX->second.strVal);
-		crys.dPlane2[1] = tl::str_to_var<double>(iterBY->second.strVal);
-		crys.dPlane2[2] = tl::str_to_var<double>(iterBZ->second.strVal);
+		crys.dPlane1[0] = tl::str_to_var<t_real>(iterAX->second.strVal);
+		crys.dPlane1[1] = tl::str_to_var<t_real>(iterAY->second.strVal);
+		crys.dPlane1[2] = tl::str_to_var<t_real>(iterAZ->second.strVal);
+		crys.dPlane2[0] = tl::str_to_var<t_real>(iterBX->second.strVal);
+		crys.dPlane2[1] = tl::str_to_var<t_real>(iterBY->second.strVal);
+		crys.dPlane2[2] = tl::str_to_var<t_real>(iterBZ->second.strVal);
 	}
 	else if(tl::str_is_equal<std::string>(strKey, "DM", false))
 	{
-		triag.dMonoD = tl::str_to_var<double>(strVal);
+		triag.dMonoD = tl::str_to_var<t_real>(strVal);
 		triag.bChangedMonoD = 1;
 	}
 	else if(tl::str_is_equal<std::string>(strKey, "DA", false))
 	{
-		triag.dAnaD = tl::str_to_var<double>(strVal);
+		triag.dAnaD = tl::str_to_var<t_real>(strVal);
 		triag.bChangedAnaD = 1;
 	}
 

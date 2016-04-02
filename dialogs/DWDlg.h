@@ -15,6 +15,7 @@
 #include <vector>
 #include <memory>
 #include "libs/qthelper.h"
+#include "libs/globals.h"
 #include <qwt_legend.h>
 
 
@@ -24,20 +25,20 @@ protected:
 	QSettings *m_pSettings = nullptr;
 
 	// dw stuff
-	std::vector<double> m_vecQ, m_vecDeb;
+	std::vector<t_real_glob> m_vecQ, m_vecDeb;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrapDW;
 
 	// ana stuff
-	std::vector<double> m_veckf, m_vecInt;
+	std::vector<t_real_glob> m_veckf, m_vecInt;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrapAna;
 
 	// bose stuff
-	std::vector<double> m_vecBoseE, m_vecBoseIntPos, m_vecBoseIntNeg;
+	std::vector<t_real_glob> m_vecBoseE, m_vecBoseIntPos, m_vecBoseIntNeg;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrapBose;
 	QwtLegend *m_pLegendBose = nullptr;
 
 	// lorentz stuff
-	std::vector<double> m_vecLor2th, m_vecLor;
+	std::vector<t_real_glob> m_vecLor2th, m_vecLor;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrapLor;
 
 protected:

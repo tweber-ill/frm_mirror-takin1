@@ -10,21 +10,22 @@
 
 #include <QDialog>
 #include <QSettings>
+#include "libs/globals.h"
 #include "ui/ui_recip_params.h"
 
 
 struct RecipParams
 {
-	double dki, dkf;
-	double dE, dQ, dq;
-	double d2Theta, dTheta, dKiQ, dKfQ;
-	double dAngleQVec0;
+	t_real_glob dki, dkf;
+	t_real_glob dE, dQ, dq;
+	t_real_glob d2Theta, dTheta, dKiQ, dKfQ;
+	t_real_glob dAngleQVec0;
 
-	double Q[3], Q_rlu[3];
-	double G[3], G_rlu[3], G_rlu_accurate[3];
-	double q[3], q_rlu[3];
+	t_real_glob Q[3], Q_rlu[3];
+	t_real_glob G[3], G_rlu[3], G_rlu_accurate[3];
+	t_real_glob q[3], q_rlu[3];
 
-	double orient_0[3], orient_1[3], orient_up[3];
+	t_real_glob orient_0[3], orient_1[3], orient_up[3];
 };
 
 

@@ -15,15 +15,16 @@
 #include "ui/ui_spurions.h"
 #include "RecipParamDlg.h"
 #include "libs/qthelper.h"
+#include "libs/globals.h"
 
 
 class SpurionDlg : public QDialog, Ui::SpurionDlg
 { Q_OBJECT
 	protected:
 		QSettings *m_pSettings = 0;
-		double m_dEi=0., m_dEf=0.;
+		t_real_glob m_dEi=0., m_dEf=0.;
 
-		std::vector<double> m_vecQ, m_vecE;
+		std::vector<t_real_glob> m_vecQ, m_vecE;
 		std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
 	public:

@@ -19,6 +19,7 @@
 
 #include "libs/spacegroups/spacegroup.h"
 #include "libs/qthelper.h"
+#include "libs/globals.h"
 #include "tlibs/file/prop.h"
 #include "AtomsDlg.h"
 
@@ -27,25 +28,25 @@ struct PowderLine
 {
 	int h, k, l;
 
-	double dAngle;
+	t_real_glob dAngle;
 	std::string strAngle;
 
-	double dQ;
+	t_real_glob dQ;
 	std::string strQ;
 
 	std::string strPeaks;
 
 	unsigned int iMult;
-	double dFn, dFx;	// neutron/xray structure factors
-	double dIn, dIx;	// neutron/xray intensities
+	t_real_glob dFn, dFx;	// neutron/xray structure factors
+	t_real_glob dIn, dIx;	// neutron/xray intensities
 };
 
 
 class PowderDlg : public QDialog, Ui::PowderDlg
 { Q_OBJECT
 	protected:
-		std::vector<double> m_vecTT, m_vecInt;
-		std::vector<double> m_vecTTx, m_vecIntx;
+		std::vector<t_real_glob> m_vecTT, m_vecInt;
+		std::vector<t_real_glob> m_vecTTx, m_vecIntx;
 
 		std::unique_ptr<QwtPlotWrapper> m_plotwrapN;
 		std::unique_ptr<QwtPlotWrapper> m_plotwrapX;

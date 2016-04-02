@@ -13,11 +13,13 @@
 #include <QSettings>
 #include <QTimer>
 #include "ui/ui_netcache.h"
+#include "libs/globals.h"
+
 
 struct CacheVal
 {
 	std::string strVal;
-	double dTimestamp;
+	t_real_glob dTimestamp;
 };
 
 typedef std::map<std::string, CacheVal> t_mapCacheVal;

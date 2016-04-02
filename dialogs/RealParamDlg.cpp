@@ -9,7 +9,8 @@
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
 #include "tlibs/math/neutrons.hpp"
-#include "libs/globals.h"
+
+using t_real = t_real_glob;
 
 
 RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
@@ -32,19 +33,19 @@ RealParamDlg::~RealParamDlg()
 
 void RealParamDlg::paramsChanged(const RealParams& parms)
 {
-	this->edit2ThetaM->setText(tl::var_to_str<double>(parms.dMonoTT / M_PI * 180., g_iPrec).c_str());
-	this->editThetaM->setText(tl::var_to_str<double>(parms.dMonoT / M_PI * 180., g_iPrec).c_str());
+	this->edit2ThetaM->setText(tl::var_to_str<t_real>(parms.dMonoTT / M_PI * 180., g_iPrec).c_str());
+	this->editThetaM->setText(tl::var_to_str<t_real>(parms.dMonoT / M_PI * 180., g_iPrec).c_str());
 
-	this->edit2ThetaS->setText(tl::var_to_str<double>(parms.dSampleTT / M_PI * 180., g_iPrec).c_str());
-	this->editThetaS->setText(tl::var_to_str<double>(parms.dSampleT / M_PI * 180., g_iPrec).c_str());
+	this->edit2ThetaS->setText(tl::var_to_str<t_real>(parms.dSampleTT / M_PI * 180., g_iPrec).c_str());
+	this->editThetaS->setText(tl::var_to_str<t_real>(parms.dSampleT / M_PI * 180., g_iPrec).c_str());
 
-	this->edit2ThetaA->setText(tl::var_to_str<double>(parms.dAnaTT / M_PI * 180., g_iPrec).c_str());
-	this->editThetaA->setText(tl::var_to_str<double>(parms.dAnaT / M_PI * 180., g_iPrec).c_str());
+	this->edit2ThetaA->setText(tl::var_to_str<t_real>(parms.dAnaTT / M_PI * 180., g_iPrec).c_str());
+	this->editThetaA->setText(tl::var_to_str<t_real>(parms.dAnaT / M_PI * 180., g_iPrec).c_str());
 
 
-	this->editLenMonoSample->setText(tl::var_to_str<double>(parms.dLenMonoSample, g_iPrec).c_str());
-	this->editLenSampleAna->setText(tl::var_to_str<double>(parms.dLenSampleAna, g_iPrec).c_str());
-	this->editLenAnaDet->setText(tl::var_to_str<double>(parms.dLenAnaDet, g_iPrec).c_str());
+	this->editLenMonoSample->setText(tl::var_to_str<t_real>(parms.dLenMonoSample, g_iPrec).c_str());
+	this->editLenSampleAna->setText(tl::var_to_str<t_real>(parms.dLenSampleAna, g_iPrec).c_str());
+	this->editLenAnaDet->setText(tl::var_to_str<t_real>(parms.dLenAnaDet, g_iPrec).c_str());
 }
 
 

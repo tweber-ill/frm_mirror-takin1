@@ -20,7 +20,9 @@
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
 
+using t_real = t_real_glob;
 namespace fs = boost::filesystem;
+
 
 #ifndef QWT_VER
 	#define QWT_VER 6
@@ -141,8 +143,8 @@ void ScanViewerDlg::ClearPlot()
 	m_vecX.clear();
 	m_vecY.clear();
 
-	m_plotwrap->SetData(m_vecX, m_vecY, 0, false);
-	m_plotwrap->SetData(m_vecX, m_vecY, 1, false);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 0, 0);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 1, 0);
 
 	m_strX = m_strY = m_strCmd = "";
 	plot->setAxisTitle(QwtPlot::xBottom, "");
@@ -195,7 +197,7 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 
 	ClearPlot();
 	std::string strFile = m_strCurDir + m_strCurFile;
-	m_pInstr = tl::FileInstr::LoadInstr(strFile.c_str());
+	m_pInstr = tl::FileInstrBase<t_real>::LoadInstr(strFile.c_str());
 	if(!m_pInstr) return;
 
 	std::vector<std::string> vecScanVars = m_pInstr->GetScannedVars();
@@ -205,8 +207,8 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 
 	m_bDoUpdate = 0;
 	int iIdxX=-1, iIdxY=-1, iCurIdx=0;
-	const tl::FileInstr::t_vecColNames& vecColNames = m_pInstr->GetColNames();
-	for(const tl::FileInstr::t_vecColNames::value_type& strCol : vecColNames)
+	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_pInstr->GetColNames();
+	for(const tl::FileInstrBase<t_real>::t_vecColNames::value_type& strCol : vecColNames)
 	{
 		comboX->addItem(strCol.c_str());
 		comboY->addItem(strCol.c_str());
@@ -242,10 +244,10 @@ void ScanViewerDlg::PlotScan()
 	m_vecY = m_pInstr->GetCol(m_strY.c_str());
 	//tl::log_debug("Number of points: ", m_vecX.size(), ", ", m_vecY.size());
 
-	std::array<double, 3> arrLatt = m_pInstr->GetSampleLattice();
-	std::array<double, 3> arrAng = m_pInstr->GetSampleAngles();
-	std::array<double, 3> arrPlaneX = m_pInstr->GetScatterPlane0();
-	std::array<double, 3> arrPlaneY = m_pInstr->GetScatterPlane1();
+	std::array<t_real, 3> arrLatt = m_pInstr->GetSampleLattice();
+	std::array<t_real, 3> arrAng = m_pInstr->GetSampleAngles();
+	std::array<t_real, 3> arrPlaneX = m_pInstr->GetScatterPlane0();
+	std::array<t_real, 3> arrPlaneY = m_pInstr->GetScatterPlane1();
 
 	editA->setText(tl::var_to_str(arrLatt[0]).c_str());
 	editB->setText(tl::var_to_str(arrLatt[1]).c_str());
@@ -281,11 +283,9 @@ void ScanViewerDlg::PlotScan()
 	if(m_vecX.size()==0 || m_vecY.size()==0)
 		return;
 
-	m_plotwrap->SetData(m_vecX, m_vecY, 0, false);
-	m_plotwrap->SetData(m_vecX, m_vecY, 1, false);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 0, 0);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 1, 1);
 
-	set_zoomer_base(m_plotwrap->GetZoomer(), m_vecX, m_vecY);
-	m_plotwrap->GetPlot()->replot();
 	GenerateExternal(comboExport->currentIndex());
 }
 
@@ -329,12 +329,12 @@ plot "-" using 1:2:3 pt 7 with yerrorbars title "Data"
 end)RAWSTR";
 
 
-	std::vector<double> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](double& d) { d = std::sqrt(d); });
+	std::vector<t_real> vecYErr = m_vecY;
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d) { d = std::sqrt(d); });
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-	double dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+	t_real dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
 
 	std::ostringstream ostrPoints;
 
@@ -410,12 +410,12 @@ plt.plot(x_fine, y_fit)
 plt.show())RAWSTR";
 
 
-	std::vector<double> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](double& d) { d = std::sqrt(d); });
+	std::vector<t_real> vecYErr = m_vecY;
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d) { d = std::sqrt(d); });
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-	double dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+	t_real dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
 
 	std::ostringstream ostrX, ostrY, ostrYErr;
 
@@ -530,12 +530,12 @@ R"RAWSTR(void scan_plot()
 })RAWSTR";
 
 
-	std::vector<double> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](double& d) { d = std::sqrt(d); });
+	std::vector<t_real> vecYErr = m_vecY;
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d) { d = std::sqrt(d); });
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-	double dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+	t_real dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
 
 	std::ostringstream ostrX, ostrY, ostrYErr;
 
@@ -583,11 +583,11 @@ void ScanViewerDlg::ShowProps()
 	if(m_pInstr==nullptr || !m_bDoUpdate)
 		return;
 
-	const tl::FileInstr::t_mapParams& params = m_pInstr->GetAllParams();
+	const tl::FileInstrBase<t_real>::t_mapParams& params = m_pInstr->GetAllParams();
 	tableProps->setRowCount(params.size());
 
 	unsigned int iItem = 0;
-	for(const tl::FileInstr::t_mapParams::value_type& pair : params)
+	for(const tl::FileInstrBase<t_real>::t_mapParams::value_type& pair : params)
 	{
 		QTableWidgetItem *pItemKey = tableProps->item(iItem, 0);
 		if(!pItemKey)

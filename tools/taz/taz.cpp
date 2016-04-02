@@ -6,7 +6,6 @@
  */
 
 #include "taz.h"
-#include "libs/globals.h"
 
 #include <iostream>
 #include <algorithm>
@@ -29,6 +28,7 @@
 #include "tlibs/log/log.h"
 
 
+using t_real = t_real_glob;
 const std::string TazDlg::s_strTitle = "Takin";
 
 
@@ -169,12 +169,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 		&m_sceneReal, SLOT(recipParamsChanged(const RecipParams&)));
 
-	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(double)),
-		&m_sceneRecip, SLOT(scaleChanged(double)));
-	QObject::connect(m_pviewRealLattice, SIGNAL(scaleChanged(double)),
-		&m_sceneRealLattice, SLOT(scaleChanged(double)));
-	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(double)),
-		&m_sceneReal, SLOT(scaleChanged(double)));
+	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(t_real_glob)),
+		&m_sceneRecip, SLOT(scaleChanged(t_real_glob)));
+	QObject::connect(m_pviewRealLattice, SIGNAL(scaleChanged(t_real_glob)),
+		&m_sceneRealLattice, SLOT(scaleChanged(t_real_glob)));
+	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(t_real_glob)),
+		&m_sceneReal, SLOT(scaleChanged(t_real_glob)));
 
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 		&m_dlgRecipParam, SLOT(paramsChanged(const RecipParams&)));
@@ -182,13 +182,13 @@ TazDlg::TazDlg(QWidget* pParent)
 		&m_dlgRealParam, SLOT(paramsChanged(const RealParams&)));
 
 	// cursor position
-	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(double, double, double, bool, double, double, double)),
-		this, SLOT(RecipCoordsChanged(double, double, double, bool, double, double, double)));
-	QObject::connect(&m_sceneRealLattice, SIGNAL(coordsChanged(double, double, double, bool, double, double, double)),
-		this, SLOT(RealCoordsChanged(double, double, double, bool, double, double, double)));
+	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)),
+		this, SLOT(RecipCoordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)));
+	QObject::connect(&m_sceneRealLattice, SIGNAL(coordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)),
+		this, SLOT(RealCoordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)));
 
-	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)),
-		this, SLOT(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<double>>&, const std::vector<tl::InelasticSpurion<double>>&)));
+	QObject::connect(&m_sceneRecip, SIGNAL(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<t_real_glob>>&, const std::vector<tl::InelasticSpurion<t_real_glob>>&)),
+		this, SLOT(spurionInfo(const tl::ElasticSpurion&, const std::vector<tl::InelasticSpurion<t_real_glob>>&, const std::vector<tl::InelasticSpurion<t_real_glob>>&)));
 
 	QObject::connect(m_pGotoDlg, SIGNAL(vars_changed(const CrystalOptions&, const TriangleOptions&)),
 		this, SLOT(VarsChanged(const CrystalOptions&, const TriangleOptions&)));
@@ -214,7 +214,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	}
 
 	//for(QDoubleSpinBox* pSpin : m_vecSpinBoxesSample)
-	//	QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(CalcPeaks()));
+	//	QObject::connect(pSpin, SIGNAL(valueChanged(t_real)), this, SLOT(CalcPeaks()));
 
 	for(QLineEdit* pEdit : m_vecEdits_recip)
 	{
@@ -257,7 +257,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	tl::RecentFiles recent(&m_settings, "main/recent");
 	m_pMapperRecent = new QSignalMapper(m_pMenuRecent);
 	QObject::connect(m_pMapperRecent, SIGNAL(mapped(const QString&)),
-					this, SLOT(LoadFile(const QString&)));
+		this, SLOT(LoadFile(const QString&)));
 	recent.FillMenu(m_pMenuRecent, m_pMapperRecent);
 	pMenuFile->addMenu(m_pMenuRecent);
 
@@ -283,7 +283,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	tl::RecentFiles recentimport(&m_settings, "main/recent_import");
 	m_pMapperRecentImport = new QSignalMapper(m_pMenuRecentImport);
 	QObject::connect(m_pMapperRecentImport, SIGNAL(mapped(const QString&)),
-					this, SLOT(ImportFile(const QString&)));
+		this, SLOT(ImportFile(const QString&)));
 	recentimport.FillMenu(m_pMenuRecentImport, m_pMapperRecentImport);
 	pMenuFile->addMenu(m_pMenuRecentImport);
 
@@ -647,11 +647,11 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pviewReal->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	QObject::connect(m_pviewRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
-					this, SLOT(RecipContextMenu(const QPoint&)));
+		this, SLOT(RecipContextMenu(const QPoint&)));
 	QObject::connect(m_pviewRealLattice, SIGNAL(customContextMenuRequested(const QPoint&)),
-					this, SLOT(RealContextMenu(const QPoint&)));
+		this, SLOT(RealContextMenu(const QPoint&)));
 	QObject::connect(m_pviewReal, SIGNAL(customContextMenuRequested(const QPoint&)),
-					this, SLOT(RealContextMenu(const QPoint&)));
+		this, SLOT(RealContextMenu(const QPoint&)));
 
 
 	// --------------------------------------------------------------------------------
@@ -710,7 +710,7 @@ TazDlg::TazDlg(QWidget* pParent)
 #if !defined NO_3D
 	if(m_pRecip3d)
 	{
-		m_pRecip3d->SetMaxPeaks((double)iMaxPeaks);
+		m_pRecip3d->SetMaxPeaks((t_real)iMaxPeaks);
 		m_pRecip3d->SetPlaneDistTolerance(s_dPlaneDistTolerance);
 	}
 #endif
@@ -882,8 +882,8 @@ void TazDlg::ShowDynPlaneDlg()
 
 void TazDlg::UpdateDs()
 {
-	double dMonoD = editMonoD->text().toDouble();
-	double dAnaD = editAnaD->text().toDouble();
+	t_real dMonoD = editMonoD->text().toDouble();
+	t_real dAnaD = editAnaD->text().toDouble();
 
 	m_sceneRecip.SetDs(dMonoD, dAnaD);
 
@@ -994,7 +994,7 @@ void TazDlg::Show3D()
 	{
 		m_pRecip3d = new Recip3DDlg(this, &m_settings);
 
-		double dTol = s_dPlaneDistTolerance;
+		t_real dTol = s_dPlaneDistTolerance;
 		m_pRecip3d->SetPlaneDistTolerance(dTol);
 	}
 
@@ -1036,8 +1036,8 @@ void TazDlg::EnableRealQDir(bool bEnable)
 // Q position
 void TazDlg::recipParamsChanged(const RecipParams& params)
 {
-	double dQx = -params.Q_rlu[0], dQy = -params.Q_rlu[1], dQz = -params.Q_rlu[2];
-	double dE = params.dE;
+	t_real dQx = -params.Q_rlu[0], dQy = -params.Q_rlu[1], dQz = -params.Q_rlu[2];
+	t_real dE = params.dE;
 
 	tl::set_eps_0(dQx); tl::set_eps_0(dQy); tl::set_eps_0(dQz);
 	tl::set_eps_0(dE);
@@ -1056,8 +1056,8 @@ void TazDlg::recipParamsChanged(const RecipParams& params)
 }
 
 // cursor position
-void TazDlg::RecipCoordsChanged(double dh, double dk, double dl,
-	bool bHasNearest, double dNearestH, double dNearestK, double dNearestL)
+void TazDlg::RecipCoordsChanged(t_real dh, t_real dk, t_real dl,
+	bool bHasNearest, t_real dNearestH, t_real dNearestK, t_real dNearestL)
 {
 	tl::set_eps_0(dh); tl::set_eps_0(dk); tl::set_eps_0(dl);
 	tl::set_eps_0(dNearestH); tl::set_eps_0(dNearestK); tl::set_eps_0(dNearestL);
@@ -1073,8 +1073,8 @@ void TazDlg::RecipCoordsChanged(double dh, double dk, double dl,
 }
 
 // cursor position
-void TazDlg::RealCoordsChanged(double dh, double dk, double dl,
-	bool bHasNearest, double dNearestH, double dNearestK, double dNearestL)
+void TazDlg::RealCoordsChanged(t_real dh, t_real dk, t_real dl,
+	bool bHasNearest, t_real dNearestH, t_real dNearestK, t_real dNearestL)
 {
 	tl::set_eps_0(dh); tl::set_eps_0(dk); tl::set_eps_0(dl);
 	tl::set_eps_0(dNearestH); tl::set_eps_0(dNearestK); tl::set_eps_0(dNearestL);

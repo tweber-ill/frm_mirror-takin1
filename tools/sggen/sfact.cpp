@@ -17,10 +17,12 @@
 #include "tlibs/string/string.h"
 #include "libs/spacegroups/spacegroup_clp.h"
 #include "libs/formfactors/formfact.h"
+#include "libs/globals.h"
 
 
-typedef tl::ublas::vector<double> t_vec;
-typedef tl::ublas::matrix<double> t_mat;
+using t_real = t_real_glob;
+typedef tl::ublas::vector<t_real> t_vec;
+typedef tl::ublas::matrix<t_real> t_mat;
 
 void gen_atoms_sfact()
 {
@@ -28,18 +30,18 @@ void gen_atoms_sfact()
 	FormfactList lstff;
 
 
-	double a,b,c, alpha,beta,gamma;
+	t_real a,b,c, alpha,beta,gamma;
 	std::cout << "Enter unit cell lattice constants: ";
 	std::cin >> a >> b >> c;
 	std::cout << "Enter unit cell angles: ";
 	std::cin >> alpha >> beta >> gamma;
 
-	alpha = alpha/180.*M_PI;
-	beta = beta/180.*M_PI;
-	gamma = gamma/180.*M_PI;
+	alpha = tl::d2r(alpha);
+	beta = tl::d2r(beta);
+	gamma = tl::d2r(gamma);
 
-	const tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
-	const double dVol = lattice.GetVol();
+	const tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
+	const t_real dVol = lattice.GetVol();
 	const t_mat matA = lattice.GetMetric();
 	const t_mat matB = lattice.GetRecip().GetMetric();
 	std::cout << "A = " << matA << std::endl;
@@ -102,11 +104,11 @@ void gen_atoms_sfact()
 
 	std::vector<unsigned int> vecNumAtoms;
 	std::vector<t_vec> vecAllAtoms;
-	std::vector<std::complex<double>> vecScatlens;
-	std::vector<double> vecFormfacts;
+	std::vector<std::complex<t_real>> vecScatlens;
+	std::vector<t_real> vecFormfacts;
 	std::vector<int> vecAtomIndices;
 
-	double dSigAbs = 0.;
+	t_real dSigAbs = 0.;
 
 	for(int iAtom=0; iAtom<int(vecAtoms.size()); ++iAtom)
 	{
@@ -126,11 +128,11 @@ void gen_atoms_sfact()
 			return;
 		}
 
-		std::complex<double> b = pElem->GetCoherent() /*/ 10.*/;
+		std::complex<t_real> b = pElem->GetCoherent() /*/ 10.*/;
 
-		dSigAbs += tl::macro_xsect(pElem->GetXSecCoherent().real()*tl::barns, 
+		dSigAbs += tl::macro_xsect(pElem->GetXSecCoherent().real()*tl::get_one_barn<t_real>(), 
 			vecNumAtoms[iAtom],
-			dVol*tl::angstrom*tl::angstrom*tl::angstrom) * tl::cm;
+			dVol*tl::get_one_angstrom<t_real>()*tl::get_one_angstrom<t_real>()*tl::get_one_angstrom<t_real>()) * tl::get_one_centimeter<t_real>();
 		//dSigAbs += pElem->GetXSecCoherent().real()*1e-24 * vecNumAtoms[iAtom] / (dVol*1e-24);
 
 		for(t_vec vecThisAtom : vecPos)
@@ -142,25 +144,25 @@ void gen_atoms_sfact()
 		}
 	}
 
-	const double dLam0 = 1.8;	// thermal
-	const double dLam = 4.5;
+	const t_real dLam0 = 1.8;	// thermal
+	const t_real dLam = 4.5;
 	std::cout << "\nMacroscopic absorption cross-section for lambda = 4.5 A: "
 		<< dSigAbs*dLam/dLam0 << " / cm." << std::endl;
 
 	//for(const t_vec& vecAt : vecAllAtoms) std::cout << vecAt << std::endl;
-	//for(const std::complex<double>& cb : vecScatlens) std::cout << cb << std::endl;
+	//for(const std::complex<t_real>& cb : vecScatlens) std::cout << cb << std::endl;
 
 
 	while(1)
 	{
 		std::cout << std::endl;
 
-		double h=0., k=0., l=0.;
+		t_real h=0., k=0., l=0.;
 		std::cout << "Enter hkl: ";
 		std::cin >> h >> k >> l;
 
 		t_vec vecG = matB * tl::make_vec({h,k,l});
-		double dG = ublas::norm_2(vecG);
+		t_real dG = ublas::norm_2(vecG);
 		std::cout << "G = " << dG << " / A" << std::endl;
 
 
@@ -177,27 +179,27 @@ void gen_atoms_sfact()
 				return;
 			}
 
-			double dFF = pElemff->GetFormfact(dG);
+			t_real dFF = pElemff->GetFormfact(dG);
 			vecFormfacts.push_back(dFF);
 		}
 
 
-		std::complex<double> F = tl::structfact<double, std::complex<double>, ublas::vector<double>, std::vector>
+		std::complex<t_real> F = tl::structfact<t_real, std::complex<t_real>, ublas::vector<t_real>, std::vector>
 			(vecAllAtoms, vecG, vecScatlens);
-		std::complex<double> Fx = tl::structfact<double, double, ublas::vector<double>, std::vector>
+		std::complex<t_real> Fx = tl::structfact<t_real, t_real, ublas::vector<t_real>, std::vector>
 			(vecAllAtoms, vecG, vecFormfacts);
 
 
 		std::cout << std::endl;
 		std::cout << "Neutron structure factor: " << std::endl;
-		double dFsq = (std::conj(F)*F).real();
+		t_real dFsq = (std::conj(F)*F).real();
 		std::cout << "F = " << F << std::endl;
 		std::cout << "|F| = " << std::sqrt(dFsq) << std::endl;
 		std::cout << "|F|^2 = " << dFsq << std::endl;
 
 		std::cout << std::endl;
 		std::cout << "X-ray structure factor: " << std::endl;
-		double dFxsq = (std::conj(Fx)*Fx).real();
+		t_real dFxsq = (std::conj(Fx)*Fx).real();
 		std::cout << "Fx = " << Fx << std::endl;
 		std::cout << "|Fx| = " << std::sqrt(dFxsq) << std::endl;
 		std::cout << "|Fx|^2 = " << dFxsq << std::endl;

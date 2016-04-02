@@ -14,6 +14,8 @@
 #include <iostream>
 #include <qwt_picker_machine.h>
 
+using t_real = t_real_glob;
+
 
 SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 		: QDialog(pParent), m_pSettings(pSett)
@@ -73,7 +75,7 @@ void SpurionDlg::Calc()
 
 	if(btnSync->isChecked())
 	{
-		const double dSyncedE = bFixedEi ? m_dEi : m_dEf;
+		const t_real dSyncedE = bFixedEi ? m_dEi : m_dEf;
 		spinE->setValue(dSyncedE);
 	}
 
@@ -84,12 +86,12 @@ void SpurionDlg::Calc()
 void SpurionDlg::CalcInel()
 {
 	const bool bFixedEi = radioFixedEi->isChecked();
-	double dE = spinE->value();
+	t_real dE = spinE->value();
 
 	const unsigned int iMaxOrder = (unsigned int)spinOrder->value();
 	const bool bFilter = checkFilter->isChecked();
 
-	std::vector<double> vecSpurions;
+	std::vector<t_real> vecSpurions;
 	std::vector<std::string> vecInfo;
 
 	if(bFilter)
@@ -102,8 +104,8 @@ void SpurionDlg::CalcInel()
 			else
 				iOrderMono = iOrder;
 
-			double dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*tl::one_meV,
-										iOrderMono, iOrderAna) / tl::one_meV;
+			t_real dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*tl::get_one_meV<t_real>(),
+				iOrderMono, iOrderAna) / tl::get_one_meV<t_real>();
 
 			if(dE_sp != 0.)
 			{
@@ -111,7 +113,7 @@ void SpurionDlg::CalcInel()
 
 				std::ostringstream ostrInfo;
 				ostrInfo << "Mono order: " << iOrderMono
-						<< ", Ana order: " << iOrderAna;
+					<< ", Ana order: " << iOrderAna;
 				vecInfo.push_back(ostrInfo.str());
 			}
 		}
@@ -121,8 +123,8 @@ void SpurionDlg::CalcInel()
 		for(unsigned int iOrderMono=1; iOrderMono<=iMaxOrder; ++iOrderMono)
 		for(unsigned int iOrderAna=1; iOrderAna<=iMaxOrder; ++iOrderAna)
 		{
-			double dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*tl::one_meV,
-										iOrderMono, iOrderAna) / tl::one_meV;
+			t_real dE_sp = tl::get_inelastic_spurion(bFixedEi, dE*tl::get_one_meV<t_real>(),
+				iOrderMono, iOrderAna) / tl::get_one_meV<t_real>();
 
 			if(dE_sp != 0.)
 			{
@@ -143,7 +145,7 @@ void SpurionDlg::CalcInel()
 	ostr << "Spurious inelastic signals for " + strDelta + "E = \n\n";
 	for(unsigned int i=0; i<vecSpurions.size(); ++i)
 	{
-		const double dE_Sp = vecSpurions[i];
+		const t_real dE_Sp = vecSpurions[i];
 		const std::string& strInfo = vecInfo[i];
 
 		ostr << "  " << strBullet << " ";
@@ -159,26 +161,26 @@ void SpurionDlg::CalcBragg()
 	const unsigned int NUM_POINTS = 512;
 
 	const bool bFixedEi = radioFixedEi->isChecked();
-	double dE = spinE->value();
+	t_real dE = t_real(spinE->value());
 	bool bImag;
-	tl::wavenumber k = tl::E2k(dE*tl::meV, bImag);
+	tl::t_wavenumber_si<t_real> k = tl::E2k(dE*tl::get_one_meV<t_real>(), bImag);
 
-	const double dMinq = spinMinQ->value();
-	const double dMaxq = spinMaxQ->value();
+	const t_real dMinq = spinMinQ->value();
+	const t_real dMaxq = spinMaxQ->value();
 
 	m_vecQ = tl::linspace(dMinq, dMaxq, NUM_POINTS);
 	m_vecE.clear();
 	m_vecE.reserve(m_vecQ.size());
 
-	for(double dq : m_vecQ)
+	for(t_real dq : m_vecQ)
 	{
-		tl::wavenumber q = dq/tl::angstrom;
-		tl::energy E = tl::get_bragg_tail(k, q, bFixedEi);
+		tl::t_wavenumber_si<t_real> q = dq/tl::get_one_angstrom<t_real>();
+		tl::t_energy_si<t_real> E = tl::get_bragg_tail(k, q, bFixedEi);
 
-		m_vecE.push_back(E/tl::meV);
+		m_vecE.push_back(E/tl::get_one_meV<t_real>());
 	}
 
-	m_plotwrap->SetData(m_vecQ, m_vecE);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecE);
 }
 
 void SpurionDlg::cursorMoved(const QPointF& pt)
@@ -195,13 +197,13 @@ void SpurionDlg::cursorMoved(const QPointF& pt)
 
 void SpurionDlg::paramsChanged(const RecipParams& parms)
 {
-	tl::wavenumber ki = parms.dki / tl::angstrom;
-	tl::wavenumber kf = parms.dkf / tl::angstrom;
-	tl::energy Ei = tl::k2E(ki);
-	tl::energy Ef = tl::k2E(kf);
+	tl::t_wavenumber_si<t_real> ki = parms.dki / tl::get_one_angstrom<t_real>();
+	tl::t_wavenumber_si<t_real> kf = parms.dkf / tl::get_one_angstrom<t_real>();
+	tl::t_energy_si<t_real> Ei = tl::k2E(ki);
+	tl::t_energy_si<t_real> Ef = tl::k2E(kf);
 
-	m_dEi = Ei / tl::one_meV;
-	m_dEf = Ef / tl::one_meV;
+	m_dEi = Ei / tl::get_one_meV<t_real>();
+	m_dEf = Ef / tl::get_one_meV<t_real>();
 
 	Calc();
 }

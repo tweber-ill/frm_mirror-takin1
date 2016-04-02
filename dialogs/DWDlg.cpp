@@ -10,8 +10,11 @@
 #include "tlibs/string/string.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/atoms.h"
+#include "tlibs/helper/array.h"
 
 #include <boost/units/io.hpp>
+
+using t_real = t_real_glob;
 
 
 DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
@@ -139,10 +142,10 @@ void DWDlg::CalcBose()
 {
 	const unsigned int NUM_POINTS = 512;
 
-	const double dMinE = spinBoseEMin->value();
-	const double dMaxE = spinBoseEMax->value();
+	const t_real dMinE = spinBoseEMin->value();
+	const t_real dMaxE = spinBoseEMax->value();
 
-	const tl::temp T = spinBoseT->value() * tl::kelvin;
+	const tl::t_temperature_si<t_real> T = t_real(spinBoseT->value()) * tl::get_one_kelvin<t_real>();
 
 	m_vecBoseE.clear();
 	m_vecBoseIntPos.clear();
@@ -154,21 +157,23 @@ void DWDlg::CalcBose()
 
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
-		tl::energy E = (dMinE + (dMaxE - dMinE)/double(NUM_POINTS)*double(iPt)) * tl::meV;
-		m_vecBoseE.push_back(E / tl::meV);
+		tl::t_energy_si<t_real> E = (dMinE + (dMaxE - dMinE)/t_real(NUM_POINTS)*t_real(iPt)) * tl::get_one_meV<t_real>();
+		m_vecBoseE.push_back(E / tl::get_one_meV<t_real>());
 
 		m_vecBoseIntPos.push_back(tl::bose(E, T));
 		m_vecBoseIntNeg.push_back(tl::bose(-E, T));
 	}
 
-	m_plotwrapBose->SetData(m_vecBoseE, m_vecBoseIntPos, 0, false);
-	m_plotwrapBose->SetData(m_vecBoseE, m_vecBoseIntNeg, 1, false);
+	set_qwt_data<t_real>()(*m_plotwrapBose, m_vecBoseE, m_vecBoseIntPos, 0, false);
+	set_qwt_data<t_real>()(*m_plotwrapBose, m_vecBoseE, m_vecBoseIntNeg, 1, false);
 
-	std::vector<double> vecMerged;
+	std::vector<t_real> vecMerged;
 	vecMerged.resize(m_vecBoseIntPos.size() + m_vecBoseIntNeg.size());
 	std::merge(m_vecBoseIntPos.begin(), m_vecBoseIntPos.end(),
 		m_vecBoseIntNeg.begin(), m_vecBoseIntNeg.end(), vecMerged.begin());
-	set_zoomer_base(m_plotwrapBose->GetZoomer(), m_vecBoseE, vecMerged);
+	set_zoomer_base(m_plotwrapBose->GetZoomer(), 
+		tl::container_cast<t_real_qwt, t_real, std::vector>()(m_vecBoseE), 
+		tl::container_cast<t_real_qwt, t_real, std::vector>()(vecMerged));
 
 	m_plotwrapBose->GetPlot()->replot();
 }
@@ -178,8 +183,8 @@ void DWDlg::CalcLorentz()
 {
 	const unsigned int NUM_POINTS = 512;
 
-	const double dMin2th = spinMin2Th->value() / 180.*M_PI;
-	const double dMax2th = spinMax2Th->value() / 180.*M_PI;
+	const t_real dMin2th = tl::d2r(spinMin2Th->value());
+	const t_real dMax2th = tl::d2r(spinMax2Th->value());
 
 	const bool bPol = checkPol->isChecked();
 
@@ -191,16 +196,16 @@ void DWDlg::CalcLorentz()
 
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
-		double d2th = (dMin2th + (dMax2th - dMin2th)/double(NUM_POINTS)*double(iPt));
-		double dLor = tl::lorentz_factor(d2th);
+		t_real d2th = (dMin2th + (dMax2th - dMin2th)/t_real(NUM_POINTS)*t_real(iPt));
+		t_real dLor = tl::lorentz_factor(d2th);
 		if(bPol)
 			dLor *= tl::lorentz_pol_factor(d2th);
 
-		m_vecLor2th.push_back(d2th /M_PI*180.);
+		m_vecLor2th.push_back(tl::r2d(d2th));
 		m_vecLor.push_back(dLor);
 	}
 
-	m_plotwrapLor->SetData(m_vecLor2th, m_vecLor, 0);
+	set_qwt_data<t_real>()(*m_plotwrapLor, m_vecLor2th, m_vecLor, 0, true);
 }
 
 
@@ -208,12 +213,12 @@ void DWDlg::CalcDW()
 {
 	const unsigned int NUM_POINTS = 512;
 
-	double dMinQ = spinMinQ_deb->value();
-	double dMaxQ = spinMaxQ_deb->value();
+	t_real dMinQ = spinMinQ_deb->value();
+	t_real dMaxQ = spinMaxQ_deb->value();
 
-	tl::temp T = spinT_deb->value() * tl::kelvin;
-	tl::temp T_D = spinTD_deb->value() * tl::kelvin;
-	tl::mass M = spinAMU_deb->value() * tl::amu;
+	tl::t_temperature_si<t_real> T = t_real(spinT_deb->value()) * tl::get_one_kelvin<t_real>();
+	tl::t_temperature_si<t_real> T_D = t_real(spinTD_deb->value()) * tl::get_one_kelvin<t_real>();
+	tl::t_mass_si<t_real> M = t_real(spinAMU_deb->value()) * tl::get_amu<t_real>();
 
 	m_vecQ.clear();
 	m_vecDeb.clear();
@@ -224,20 +229,20 @@ void DWDlg::CalcDW()
 	bool bHasZetaSq = 0;
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
-		tl::wavenumber Q = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
-		double dDWF = 0.;
-		auto zetasq = 1.*tl::angstrom*tl::angstrom;
+		tl::t_wavenumber_si<t_real> Q = (dMinQ + (dMaxQ - dMinQ)/t_real(NUM_POINTS)*t_real(iPt)) / tl::get_one_angstrom<t_real>();
+		t_real dDWF = 0.;
+		auto zetasq = tl::get_one_angstrom<t_real>()*tl::get_one_angstrom<t_real>();
 
 		if(T <= T_D)
 			dDWF = tl::debye_waller_low_T(T_D, T, M, Q, &zetasq);
 		else
 			dDWF = tl::debye_waller_high_T(T_D, T, M, Q, &zetasq);
 
-		m_vecQ.push_back(Q * tl::angstrom);
+		m_vecQ.push_back(Q * tl::get_one_angstrom<t_real>());
 
 		if(!bHasZetaSq)
 		{
-			std::string strZetaSq = tl::var_to_str(double(tl::units::sqrt(zetasq) / tl::angstrom));
+			std::string strZetaSq = tl::var_to_str(t_real(tl::my_units_sqrt<tl::t_length_si<t_real>>(zetasq) / tl::get_one_angstrom<t_real>()));
 			editZetaSq->setText(strZetaSq.c_str());
 
 			bHasZetaSq = 1;
@@ -246,7 +251,7 @@ void DWDlg::CalcDW()
 		m_vecDeb.push_back(dDWF);
 	}
 
-	m_plotwrapDW->SetData(m_vecQ, m_vecDeb, 0);
+	set_qwt_data<t_real>()(*m_plotwrapDW, m_vecQ, m_vecDeb, 0, true);
 }
 
 
@@ -254,12 +259,12 @@ void DWDlg::CalcAna()
 {
 	const unsigned int NUM_POINTS = 512;
 
-	const tl::length d = spinAnad->value()*tl::angstrom;
-	const double dMinKf = spinMinkf->value();
-	const double dMaxKf = spinMaxkf->value();
+	const tl::t_length_si<t_real> d = t_real(spinAnad->value()) * tl::get_one_angstrom<t_real>();
+	const t_real dMinKf = spinMinkf->value();
+	const t_real dMaxKf = spinMaxkf->value();
 
-	double dAngMax = 0.5*tl::get_mono_twotheta(dMinKf/tl::angstrom, d, 1) / tl::radians / M_PI * 180.;
-	double dAngMin = 0.5*tl::get_mono_twotheta(dMaxKf/tl::angstrom, d, 1) / tl::radians / M_PI * 180.;
+	t_real dAngMax = 0.5*tl::r2d(tl::get_mono_twotheta(dMinKf/tl::get_one_angstrom<t_real>(), d, 1) / tl::get_one_radian<t_real>());
+	t_real dAngMin = 0.5*tl::r2d(tl::get_mono_twotheta(dMaxKf/tl::get_one_angstrom<t_real>(), d, 1) / tl::get_one_radian<t_real>());
 
 	editAngMin->setText(tl::var_to_str(dAngMin).c_str());
 	editAngMax->setText(tl::var_to_str(dAngMax).c_str());
@@ -272,14 +277,14 @@ void DWDlg::CalcAna()
 
 	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 	{
-		tl::wavenumber kf = (dMinKf + (dMaxKf - dMinKf)/double(NUM_POINTS)*double(iPt)) / tl::angstrom;
-		double dEffic = tl::ana_effic_factor(kf, d);
+		tl::t_wavenumber_si<t_real> kf = (dMinKf + (dMaxKf - dMinKf)/t_real(NUM_POINTS)*t_real(iPt)) / tl::get_one_angstrom<t_real>();
+		t_real dEffic = tl::ana_effic_factor(kf, d);
 
-		m_veckf.push_back(kf * tl::angstrom);
+		m_veckf.push_back(kf * tl::get_one_angstrom<t_real>());
 		m_vecInt.push_back(dEffic);
 	}
 
-	m_plotwrapAna->SetData(m_veckf, m_vecInt, 0);
+	set_qwt_data<t_real>()(*m_plotwrapAna, m_veckf, m_vecInt, 0, true);
 }
 
 

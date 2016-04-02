@@ -25,8 +25,8 @@
 
 namespace minuit = ROOT::Minuit2;
 
-using t_real_mod = tl::t_real_min;
-//using t_real_mod = t_real_reso;
+//using t_real_mod = tl::t_real_min;
+using t_real_mod = t_real_reso;
 
 
 class SqwFuncModel : public tl::MinuitMultiFuncModel<t_real_mod>
@@ -37,7 +37,7 @@ protected:
 	unsigned int m_iNumNeutrons = 1000;
 
 	ublas::vector<t_real_mod> m_vecScanOrigin;	// hklE
-	ublas::vector<t_real_mod> m_vecScanDir;	// hklE
+	ublas::vector<t_real_mod> m_vecScanDir;		// hklE
 
 	t_real_mod m_dScale = 1., m_dOffs = 0.;
 	t_real_mod m_dScaleErr = 0.1, m_dOffsErr = 0.;
@@ -65,16 +65,16 @@ public:
 	SqwFuncModel() = delete;
 	virtual ~SqwFuncModel() = default;
 
-	virtual bool SetParams(const std::vector<t_real_mod>& vecParams) override;
-	virtual bool SetErrs(const std::vector<t_real_mod>& vecErrs);
-	virtual t_real_mod operator()(t_real_mod x) const override;
+	virtual bool SetParams(const std::vector<tl::t_real_min>& vecParams) override;
+	virtual bool SetErrs(const std::vector<tl::t_real_min>& vecErrs);
+	virtual tl::t_real_min operator()(tl::t_real_min x) const override;
 
 	virtual SqwFuncModel* copy() const override;
 
 	virtual const char* GetModelName() const override { return "SqwFuncModel"; }
 	virtual std::vector<std::string> GetParamNames() const override;
-	virtual std::vector<t_real_mod> GetParamValues() const override;
-	virtual std::vector<t_real_mod> GetParamErrors() const override;
+	virtual std::vector<tl::t_real_min> GetParamValues() const override;
+	virtual std::vector<tl::t_real_min> GetParamErrors() const override;
 
 	// -------------------------------------------------------------------------
 	// optional, for multi-fits

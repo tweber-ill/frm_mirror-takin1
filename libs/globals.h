@@ -11,11 +11,15 @@
 #include <string>
 
 
+//using t_real_glob = float;
+using t_real_glob = double;
+
+
 extern unsigned int g_iPrec;
 extern unsigned int g_iPrecGfx;
 
-extern double g_dEps;
-extern double g_dEpsGfx;
+extern t_real_glob g_dEps;
+extern t_real_glob g_dEpsGfx;
 
 extern bool g_bHasFormfacts;
 extern bool g_bHasScatlens;
@@ -33,7 +37,5 @@ extern std::string find_resource(const std::string& strFile);
 	extern QFont g_fontGen, g_fontGfx, g_fontGL;
 #endif
 
-
-using t_real_glob = double;
 
 #endif

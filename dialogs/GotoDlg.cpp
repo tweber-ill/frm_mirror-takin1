@@ -9,13 +9,12 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
-#include "libs/globals.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
 
+using t_real = t_real_glob;
 namespace units = boost::units;
-namespace co = boost::units::si::constants::codata;
 
 
 GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSettings(pSett)
@@ -41,7 +40,7 @@ GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSett
 	QObject::connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveList()));
 	QObject::connect(listSeq, SIGNAL(itemSelectionChanged()), this, SLOT(ListItemSelected()));
 	QObject::connect(listSeq, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-					this, SLOT(ListItemDoubleClicked(QListWidgetItem*)));
+		this, SLOT(ListItemDoubleClicked(QListWidgetItem*)));
 
 	QObject::connect(editKi, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
 	QObject::connect(editKf, SIGNAL(textEdited(const QString&)), this, SLOT(EditedKiKf()));
@@ -82,30 +81,30 @@ void GotoDlg::CalcSample()
 
 	bool bHOk=0, bKOk=0, bLOk=0, bKiOk=0, bKfOk=0;
 
-	double dH = editH->text().toDouble(&bHOk);
-	double dK = editK->text().toDouble(&bKOk);
-	double dL = editL->text().toDouble(&bLOk);
-	double dKi = editKi->text().toDouble(&bKiOk);
-	double dKf = editKf->text().toDouble(&bKfOk);
+	t_real dH = editH->text().toDouble(&bHOk);
+	t_real dK = editK->text().toDouble(&bKOk);
+	t_real dL = editL->text().toDouble(&bLOk);
+	t_real dKi = editKi->text().toDouble(&bKiOk);
+	t_real dKf = editKf->text().toDouble(&bKfOk);
 
 	if(!bHOk || !bKOk || !bLOk || !bKiOk || !bKfOk)
 		return;
 
-	ublas::vector<double> vecQ;
+	ublas::vector<t_real> vecQ;
 	bool bFailed = 0;
 	try
 	{
 		tl::get_tas_angles(m_lattice,
-					m_vec1, m_vec2,
-					dKi, dKf,
-					dH, dK, dL,
-					m_bSenseS,
-					&m_dSampleTheta, &m_dSample2Theta,
-					&vecQ);
+			m_vec1, m_vec2,
+			dKi, dKf,
+			dH, dK, dL,
+			m_bSenseS,
+			&m_dSampleTheta, &m_dSample2Theta,
+			&vecQ);
 
-		if(tl::is_nan_or_inf<double>(m_dSample2Theta))
+		if(tl::is_nan_or_inf<t_real>(m_dSample2Theta))
 			throw tl::Err("Invalid sample 2theta.");
-		if(tl::is_nan_or_inf<double>(m_dSampleTheta))
+		if(tl::is_nan_or_inf<t_real>(m_dSampleTheta))
 			throw tl::Err("Invalid sample theta.");
 	}
 	catch(const std::exception& ex)
@@ -131,9 +130,9 @@ void GotoDlg::CalcSample()
 #ifndef NDEBUG
 	try
 	{
-		ublas::vector<double> vecQ0 = vecQ;
+		ublas::vector<t_real> vecQ0 = vecQ;
 		vecQ0.resize(2, true);
-		double dAngleQVec0 = tl::vec_angle(vecQ0) / M_PI * 180.;
+		t_real dAngleQVec0 = tl::vec_angle(vecQ0) / M_PI * 180.;
 		tl::log_info("Angle Q Orient0: ", dAngleQVec0, " deg.");
 	}
 	catch(const std::exception& ex)
@@ -160,20 +159,20 @@ void GotoDlg::CalcMonoAna()
 		pEdit->setText("");
 
 	bool bKiOk=0, bKfOk=0;
-	double dKi = editKi->text().toDouble(&bKiOk);
-	double dKf = editKf->text().toDouble(&bKfOk);
+	t_real dKi = editKi->text().toDouble(&bKiOk);
+	t_real dKf = editKf->text().toDouble(&bKfOk);
 	if(!bKiOk || !bKfOk) return;
 
-	tl::wavenumber ki = dKi / tl::angstrom;
-	tl::wavenumber kf = dKf / tl::angstrom;
+	tl::t_wavenumber_si<t_real> ki = dKi / tl::get_one_angstrom<t_real>();
+	tl::t_wavenumber_si<t_real> kf = dKf / tl::get_one_angstrom<t_real>();
 
 	bool bMonoOk = 0;
 	bool bAnaOk = 0;
 
 	try
 	{
-		m_dMono2Theta = tl::get_mono_twotheta(ki, m_dMono*tl::angstrom, m_bSenseM) / tl::radians;
-		if(tl::is_nan_or_inf<double>(m_dMono2Theta))
+		m_dMono2Theta = tl::get_mono_twotheta(ki, m_dMono*tl::get_one_angstrom<t_real>(), m_bSenseM) / tl::get_one_radian<t_real>();
+		if(tl::is_nan_or_inf<t_real>(m_dMono2Theta))
 			throw tl::Err("Invalid monochromator angle.");
 
 		tl::set_eps_0(m_dMono2Theta, g_dEps);
@@ -190,8 +189,8 @@ void GotoDlg::CalcMonoAna()
 
 	try
 	{
-		m_dAna2Theta = tl::get_mono_twotheta(kf, m_dAna*tl::angstrom, m_bSenseA) / tl::radians;
-		if(tl::is_nan_or_inf<double>(m_dAna2Theta))
+		m_dAna2Theta = tl::get_mono_twotheta(kf, m_dAna*tl::get_one_angstrom<t_real>(), m_bSenseA) / tl::get_one_radian<t_real>();
+		if(tl::is_nan_or_inf<t_real>(m_dAna2Theta))
 			throw tl::Err("Invalid analysator angle.");
 
 		tl::set_eps_0(m_dAna2Theta, g_dEps);
@@ -210,8 +209,8 @@ void GotoDlg::CalcMonoAna()
 		return;
 
 
-	double dTMono = m_dMono2Theta / 2.;
-	double dTAna = m_dAna2Theta / 2.;
+	t_real dTMono = m_dMono2Theta / 2.;
+	t_real dTAna = m_dAna2Theta / 2.;
 
 	edit2ThetaM->setText(tl::var_to_str(m_dMono2Theta/M_PI*180., g_iPrec).c_str());
 	editThetaM->setText(tl::var_to_str(dTMono/M_PI*180., g_iPrec).c_str());
@@ -227,18 +226,18 @@ void GotoDlg::CalcMonoAna()
 void GotoDlg::EditedKiKf()
 {
 	bool bKiOk=0, bKfOk=0;
-	double dKi = editKi->text().toDouble(&bKiOk);
-	double dKf = editKf->text().toDouble(&bKfOk);
+	t_real dKi = editKi->text().toDouble(&bKiOk);
+	t_real dKf = editKf->text().toDouble(&bKfOk);
 	if(!bKiOk || !bKfOk) return;
 
-	tl::energy Ei = tl::k2E(dKi / tl::angstrom);
-	tl::energy Ef = tl::k2E(dKf / tl::angstrom);
+	tl::t_energy_si<t_real> Ei = tl::k2E(dKi / tl::get_one_angstrom<t_real>());
+	tl::t_energy_si<t_real> Ef = tl::k2E(dKf / tl::get_one_angstrom<t_real>());
 
-	tl::energy E = Ei-Ef;
-	double dE = E/tl::one_meV;
+	tl::t_energy_si<t_real> E = Ei-Ef;
+	t_real dE = E/tl::get_one_meV<t_real>();
 	tl::set_eps_0(dE, g_dEps);
 
-	std::string strE = tl::var_to_str<double>(dE, g_iPrec);
+	std::string strE = tl::var_to_str<t_real>(dE, g_iPrec);
 	editE->setText(strE.c_str());
 
 	CalcMonoAna();
@@ -248,43 +247,43 @@ void GotoDlg::EditedKiKf()
 void GotoDlg::EditedE()
 {
 	bool bOk = 0;
-	double dE = editE->text().toDouble(&bOk);
+	t_real dE = editE->text().toDouble(&bOk);
 	if(!bOk) return;
-	tl::energy E = dE * tl::one_meV;
+	tl::t_energy_si<t_real> E = dE * tl::get_one_meV<t_real>();
 
 	bool bImag=0;
-	tl::wavenumber k_E = tl::E2k(E, bImag);
-	double dSign = 1.;
+	tl::t_wavenumber_si<t_real> k_E = tl::E2k(E, bImag);
+	t_real dSign = 1.;
 	if(bImag) dSign = -1.;
 
 	if(radioFixedKi->isChecked())
 	{
 		bool bKOk = 0;
-		double dKi = editKi->text().toDouble(&bKOk);
+		t_real dKi = editKi->text().toDouble(&bKOk);
 		if(!bKOk) return;
 
-		tl::wavenumber ki = dKi / tl::angstrom;
-		tl::wavenumber kf = units::sqrt(ki*ki - dSign*k_E*k_E);
+		tl::t_wavenumber_si<t_real> ki = dKi / tl::get_one_angstrom<t_real>();
+		tl::t_wavenumber_si<t_real> kf = tl::my_units_sqrt<tl::t_wavenumber_si<t_real>>(ki*ki - dSign*k_E*k_E);
 
-		double dKf = kf*tl::angstrom;
+		t_real dKf = kf*tl::get_one_angstrom<t_real>();
 		tl::set_eps_0(dKf, g_dEps);
 
-		std::string strKf = tl::var_to_str<double>(dKf, g_iPrec);
+		std::string strKf = tl::var_to_str<t_real>(dKf, g_iPrec);
 		editKf->setText(strKf.c_str());
 	}
 	else
 	{
 		bool bKOk = 0;
-		double dKf = editKf->text().toDouble(&bKOk);
+		t_real dKf = editKf->text().toDouble(&bKOk);
 		if(!bKOk) return;
 
-		tl::wavenumber kf = dKf / tl::angstrom;
-		tl::wavenumber ki = units::sqrt(kf*kf + dSign*k_E*k_E);
+		tl::t_wavenumber_si<t_real> kf = dKf / tl::get_one_angstrom<t_real>();
+		tl::t_wavenumber_si<t_real> ki = tl::my_units_sqrt<tl::t_wavenumber_si<t_real>>(kf*kf + dSign*k_E*k_E);
 
-		double dKi = ki*tl::angstrom;
+		t_real dKi = ki*tl::get_one_angstrom<t_real>();
 		tl::set_eps_0(dKi, g_dEps);
 
-		std::string strKi = tl::var_to_str<double>(dKi, g_iPrec);
+		std::string strKi = tl::var_to_str<t_real>(dKi, g_iPrec);
 		editKi->setText(strKi.c_str());
 	}
 
@@ -296,32 +295,32 @@ void GotoDlg::EditedE()
 void GotoDlg::EditedAngles()
 {
 	bool bthmOk;
-	double th_m = edit2ThetaM->text().toDouble(&bthmOk)/2. / 180.*M_PI;
+	t_real th_m = edit2ThetaM->text().toDouble(&bthmOk)/2. / 180.*M_PI;
 	tl::set_eps_0(th_m, g_dEps);
 	if(bthmOk)
-		editThetaM->setText(tl::var_to_str<double>(th_m/M_PI*180., g_iPrec).c_str());
+		editThetaM->setText(tl::var_to_str<t_real>(th_m/M_PI*180., g_iPrec).c_str());
 
 	bool bthaOk;
-	double th_a = edit2ThetaA->text().toDouble(&bthaOk)/2. / 180.*M_PI;
+	t_real th_a = edit2ThetaA->text().toDouble(&bthaOk)/2. / 180.*M_PI;
 	tl::set_eps_0(th_a, g_dEps);
 	if(bthaOk)
-		editThetaA->setText(tl::var_to_str<double>(th_a/M_PI*180., g_iPrec).c_str());
+		editThetaA->setText(tl::var_to_str<t_real>(th_a/M_PI*180., g_iPrec).c_str());
 
 	bool bthsOk, bttsOk;
-	double th_s = editThetaS->text().toDouble(&bthsOk) / 180.*M_PI;
-	double tt_s = edit2ThetaS->text().toDouble(&bttsOk) / 180.*M_PI;
+	t_real th_s = editThetaS->text().toDouble(&bthsOk) / 180.*M_PI;
+	t_real tt_s = edit2ThetaS->text().toDouble(&bttsOk) / 180.*M_PI;
 
 	if(!bthmOk || !bthaOk || !bthsOk || !bttsOk)
 		return;
 
 
-	double h,k,l;
-	double dKi, dKf, dE;
-	ublas::vector<double> vecQ;
+	t_real h,k,l;
+	t_real dKi, dKf, dE;
+	ublas::vector<t_real> vecQ;
 	bool bFailed = 0;
 	try
 	{
-		tl::get_hkl_from_tas_angles<double>(m_lattice,
+		tl::get_hkl_from_tas_angles<t_real>(m_lattice,
 								m_vec1, m_vec2,
 								m_dMono, m_dAna,
 								th_m, th_a, th_s, tt_s,
@@ -330,7 +329,7 @@ void GotoDlg::EditedAngles()
 								&dKi, &dKf, &dE, 0,
 								&vecQ);
 
-		if(tl::is_nan_or_inf<double>(h) || tl::is_nan_or_inf<double>(k) || tl::is_nan_or_inf<double>(l))
+		if(tl::is_nan_or_inf<t_real>(h) || tl::is_nan_or_inf<t_real>(k) || tl::is_nan_or_inf<t_real>(l))
 			throw tl::Err("Invalid hkl.");
 	}
 	catch(const std::exception& ex)
@@ -347,16 +346,16 @@ void GotoDlg::EditedAngles()
 
 	if(bFailed) return;
 
-	for(double* d : {&h,&k,&l, &dKi,&dKf,&dE})
+	for(t_real* d : {&h,&k,&l, &dKi,&dKf,&dE})
 		tl::set_eps_0(*d, g_dEps);
 
-	editH->setText(tl::var_to_str<double>(h, g_iPrec).c_str());
-	editK->setText(tl::var_to_str<double>(k, g_iPrec).c_str());
-	editL->setText(tl::var_to_str<double>(l, g_iPrec).c_str());
+	editH->setText(tl::var_to_str<t_real>(h, g_iPrec).c_str());
+	editK->setText(tl::var_to_str<t_real>(k, g_iPrec).c_str());
+	editL->setText(tl::var_to_str<t_real>(l, g_iPrec).c_str());
 
-	editKi->setText(tl::var_to_str<double>(dKi, g_iPrec).c_str());
-	editKf->setText(tl::var_to_str<double>(dKf, g_iPrec).c_str());
-	editE->setText(tl::var_to_str<double>(dE, g_iPrec).c_str());
+	editKi->setText(tl::var_to_str<t_real>(dKi, g_iPrec).c_str());
+	editKf->setText(tl::var_to_str<t_real>(dKf, g_iPrec).c_str());
+	editE->setText(tl::var_to_str<t_real>(dE, g_iPrec).c_str());
 
 	m_dMono2Theta = th_m*2.;
 	m_dAna2Theta = th_a*2.;
@@ -432,9 +431,9 @@ void GotoDlg::showEvent(QShowEvent *pEvt)
 
 struct HklPos
 {
-	double dh, dk, dl;
-	double dki, dkf;
-	double dE;
+	t_real dh, dk, dl;
+	t_real dki, dkf;
+	t_real dE;
 };
 
 bool GotoDlg::ApplyCurPos()
@@ -456,7 +455,7 @@ bool GotoDlg::ApplyCurPos()
 
 	triag.bChangedAngleKiVec0 = 1;
 
-	double dSampleTheta = m_dSampleTheta;
+	t_real dSampleTheta = m_dSampleTheta;
 	if(!m_bSenseS) dSampleTheta = -dSampleTheta;
 	triag.dAngleKiVec0 = M_PI/2. - dSampleTheta;
 	//log_info("kivec0 = ", triag.dAngleKiVec0/M_PI*180.);
@@ -511,7 +510,7 @@ void GotoDlg::ListItemDoubleClicked(QListWidgetItem* pItem)
 		QMessageBox::critical(this, "Error", "Invalid position.");
 }
 
-void GotoDlg::AddPosToList(double dh, double dk, double dl, double dki, double dkf)
+void GotoDlg::AddPosToList(t_real dh, t_real dk, t_real dl, t_real dki, t_real dkf)
 {
 	HklPos *pPos = new HklPos;
 
@@ -520,7 +519,7 @@ void GotoDlg::AddPosToList(double dh, double dk, double dl, double dki, double d
 	pPos->dl = dl;
 	pPos->dki = dki;
 	pPos->dkf = dkf;
-	pPos->dE = (tl::k2E(pPos->dki/tl::angstrom) - tl::k2E(pPos->dkf/tl::angstrom))/tl::meV;
+	pPos->dE = (tl::k2E(pPos->dki/tl::get_one_angstrom<t_real>()) - tl::k2E(pPos->dkf/tl::get_one_angstrom<t_real>()))/tl::meV;
 
 	tl::set_eps_0(pPos->dh, g_dEps);
 	tl::set_eps_0(pPos->dk, g_dEps);
@@ -545,11 +544,11 @@ void GotoDlg::AddPosToList(double dh, double dk, double dl, double dki, double d
 
 void GotoDlg::AddPosToList()
 {
-	double dh = tl::str_to_var<double>(editH->text().toStdString());
-	double dk = tl::str_to_var<double>(editK->text().toStdString());
-	double dl = tl::str_to_var<double>(editL->text().toStdString());
-	double dki = tl::str_to_var<double>(editKi->text().toStdString());
-	double dkf = tl::str_to_var<double>(editKf->text().toStdString());
+	t_real dh = tl::str_to_var<t_real>(editH->text().toStdString());
+	t_real dk = tl::str_to_var<t_real>(editK->text().toStdString());
+	t_real dl = tl::str_to_var<t_real>(editL->text().toStdString());
+	t_real dki = tl::str_to_var<t_real>(editKi->text().toStdString());
+	t_real dkf = tl::str_to_var<t_real>(editKf->text().toStdString());
 
 	AddPosToList(dh, dk, dl, dki, dkf);
 }
@@ -681,11 +680,11 @@ void GotoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	bool bOk=0;
 
-	editH->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/h").c_str(), 1., &bOk)).c_str());
-	editK->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/k").c_str(), 0., &bOk)).c_str());
-	editL->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/l").c_str(), 0., &bOk)).c_str());
-	editKi->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/ki").c_str(), 1.4, &bOk)).c_str());
-	editKf->setText(std::to_string(xml.Query<double>((strXmlRoot + "goto_pos/kf").c_str(), 1.4, &bOk)).c_str());
+	editH->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/h").c_str(), 1., &bOk)).c_str());
+	editK->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/k").c_str(), 0., &bOk)).c_str());
+	editL->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/l").c_str(), 0., &bOk)).c_str());
+	editKi->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/ki").c_str(), 1.4, &bOk)).c_str());
+	editKf->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/kf").c_str(), 1.4, &bOk)).c_str());
 	radioFixedKi->setChecked(xml.Query<bool>((strXmlRoot + "goto_pos/cki").c_str(), 0, &bOk));
 
 	// favlist
@@ -700,11 +699,11 @@ void GotoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		if(!xml.Exists((strXmlRoot + strItemBase).c_str()))
 			break;
 
-		double dh = xml.Query<double>((strXmlRoot + strItemBase + "h").c_str(), 0., &bOk);
-		double dk = xml.Query<double>((strXmlRoot + strItemBase + "k").c_str(), 0., &bOk);
-		double dl = xml.Query<double>((strXmlRoot + strItemBase + "l").c_str(), 0., &bOk);
-		double dki = xml.Query<double>((strXmlRoot + strItemBase + "ki").c_str(), 0., &bOk);
-		double dkf = xml.Query<double>((strXmlRoot + strItemBase + "kf").c_str(), 0., &bOk);
+		t_real dh = xml.Query<t_real>((strXmlRoot + strItemBase + "h").c_str(), 0., &bOk);
+		t_real dk = xml.Query<t_real>((strXmlRoot + strItemBase + "k").c_str(), 0., &bOk);
+		t_real dl = xml.Query<t_real>((strXmlRoot + strItemBase + "l").c_str(), 0., &bOk);
+		t_real dki = xml.Query<t_real>((strXmlRoot + strItemBase + "ki").c_str(), 0., &bOk);
+		t_real dkf = xml.Query<t_real>((strXmlRoot + strItemBase + "kf").c_str(), 0., &bOk);
 
 		AddPosToList(dh, dk, dl, dki, dkf);
 		++iItem;

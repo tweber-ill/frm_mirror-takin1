@@ -8,17 +8,18 @@
 #include "taz.h"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
-#include "libs/globals.h"
 #include <boost/algorithm/string.hpp>
 
 
-static inline QString dtoqstr(double dVal, unsigned int iPrec=8)
+using t_real = t_real_glob;
+
+static inline QString dtoqstr(t_real dVal, unsigned int iPrec=8)
 {
 	std::string str = tl::var_to_str(dVal, iPrec);
 	return QString(str.c_str());
 }
 
-std::ostream& operator<<(std::ostream& ostr, const tl::Lattice<double>& lat)
+std::ostream& operator<<(std::ostream& ostr, const tl::Lattice<t_real>& lat)
 {
 	ostr << "a = " << lat.GetA();
 	ostr << ", b = " << lat.GetB();
@@ -31,21 +32,21 @@ std::ostream& operator<<(std::ostream& ostr, const tl::Lattice<double>& lat)
 
 void TazDlg::emitSampleParams()
 {
-	double a = editA->text().toDouble();
-	double b = editB->text().toDouble();
-	double c = editC->text().toDouble();
+	t_real a = editA->text().toDouble();
+	t_real b = editB->text().toDouble();
+	t_real c = editC->text().toDouble();
 
-	double alpha = editAlpha->text().toDouble()/180.*M_PI;
-	double beta = editBeta->text().toDouble()/180.*M_PI;
-	double gamma = editGamma->text().toDouble()/180.*M_PI;
+	t_real alpha = editAlpha->text().toDouble()/180.*M_PI;
+	t_real beta = editBeta->text().toDouble()/180.*M_PI;
+	t_real gamma = editGamma->text().toDouble()/180.*M_PI;
 
-	double dX0 = editScatX0->text().toDouble();
-	double dX1 = editScatX1->text().toDouble();
-	double dX2 = editScatX2->text().toDouble();
+	t_real dX0 = editScatX0->text().toDouble();
+	t_real dX1 = editScatX1->text().toDouble();
+	t_real dX2 = editScatX2->text().toDouble();
 
-	double dY0 = editScatY0->text().toDouble();
-	double dY1 = editScatY1->text().toDouble();
-	double dY2 = editScatY2->text().toDouble();
+	t_real dY0 = editScatY0->text().toDouble();
+	t_real dY1 = editScatY1->text().toDouble();
+	t_real dY2 = editScatY2->text().toDouble();
 
 	SampleParams sampleparams;
 	sampleparams.dAngles[0] = alpha; sampleparams.dAngles[1] = beta; sampleparams.dAngles[2] = gamma;
@@ -81,16 +82,16 @@ void TazDlg::CalcPeaksRecip()
 {
 	if(!m_bReady) return;
 
-	double a = editARecip->text().toDouble();
-	double b = editBRecip->text().toDouble();
-	double c = editCRecip->text().toDouble();
+	t_real a = editARecip->text().toDouble();
+	t_real b = editBRecip->text().toDouble();
+	t_real c = editCRecip->text().toDouble();
 
-	double alpha = editAlphaRecip->text().toDouble()/180.*M_PI;
-	double beta = editBetaRecip->text().toDouble()/180.*M_PI;
-	double gamma = editGammaRecip->text().toDouble()/180.*M_PI;
+	t_real alpha = editAlphaRecip->text().toDouble()/180.*M_PI;
+	t_real beta = editBetaRecip->text().toDouble()/180.*M_PI;
+	t_real gamma = editGammaRecip->text().toDouble()/180.*M_PI;
 
-	tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
-	tl::Lattice<double> recip = lattice.GetRecip();
+	tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
+	tl::Lattice<t_real> recip = lattice.GetRecip();
 
 	editA->setText(dtoqstr(recip.GetA(), g_iPrec));
 	editB->setText(dtoqstr(recip.GetB(), g_iPrec));
@@ -114,29 +115,29 @@ void TazDlg::CalcPeaks()
 		const bool bPowder = checkPowder->isChecked();
 
 		// lattice
-		const double a = editA->text().toDouble();
-		const double b = editB->text().toDouble();
-		const double c = editC->text().toDouble();
+		const t_real a = editA->text().toDouble();
+		const t_real b = editB->text().toDouble();
+		const t_real c = editC->text().toDouble();
 
-		const double alpha = editAlpha->text().toDouble()/180.*M_PI;
-		const double beta = editBeta->text().toDouble()/180.*M_PI;
-		const double gamma = editGamma->text().toDouble()/180.*M_PI;
+		const t_real alpha = editAlpha->text().toDouble()/180.*M_PI;
+		const t_real beta = editBeta->text().toDouble()/180.*M_PI;
+		const t_real gamma = editGamma->text().toDouble()/180.*M_PI;
 
-		tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
-		tl::Lattice<double> recip_unrot = lattice.GetRecip();
+		tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
+		tl::Lattice<t_real> recip_unrot = lattice.GetRecip();
 
 
 		//----------------------------------------------------------------------
 		// scattering plane
-		double dX0 = editScatX0->text().toDouble();
-		double dX1 = editScatX1->text().toDouble();
-		double dX2 = editScatX2->text().toDouble();
-		ublas::vector<double> vecPlaneXRLU = tl::make_vec({dX0, dX1, dX2});
+		t_real dX0 = editScatX0->text().toDouble();
+		t_real dX1 = editScatX1->text().toDouble();
+		t_real dX2 = editScatX2->text().toDouble();
+		ublas::vector<t_real> vecPlaneXRLU = tl::make_vec({dX0, dX1, dX2});
 
-		double dY0 = editScatY0->text().toDouble();
-		double dY1 = editScatY1->text().toDouble();
-		double dY2 = editScatY2->text().toDouble();
-		ublas::vector<double> vecPlaneYRLU = tl::make_vec({dY0, dY1, dY2});
+		t_real dY0 = editScatY0->text().toDouble();
+		t_real dY1 = editScatY1->text().toDouble();
+		t_real dY2 = editScatY2->text().toDouble();
+		ublas::vector<t_real> vecPlaneYRLU = tl::make_vec({dY0, dY1, dY2});
 
 		//----------------------------------------------------------------------
 		// show integer up vector
@@ -154,8 +155,8 @@ void TazDlg::CalcPeaks()
 		editScatZ2->setText(std::to_string(ivecUp[2]).c_str());
 		//----------------------------------------------------------------------
 
-		ublas::vector<double> vecX0 = ublas::zero_vector<double>(3);
-		tl::Plane<double> planeRLU(vecX0, vecPlaneXRLU, vecPlaneYRLU);
+		ublas::vector<t_real> vecX0 = ublas::zero_vector<t_real>(3);
+		tl::Plane<t_real> planeRLU(vecX0, vecPlaneXRLU, vecPlaneYRLU);
 		if(!planeRLU.IsValid())
 		{
 			tl::log_err("Invalid scattering plane.");
@@ -167,15 +168,15 @@ void TazDlg::CalcPeaks()
 		//----------------------------------------------------------------------
 		// view plane for real lattice
 		// scattering plane
-		double dX0R = editRealX0->text().toDouble();
-		double dX1R = editRealX1->text().toDouble();
-		double dX2R = editRealX2->text().toDouble();
-		ublas::vector<double> vecPlaneXR = tl::make_vec({dX0R, dX1R, dX2R});
+		t_real dX0R = editRealX0->text().toDouble();
+		t_real dX1R = editRealX1->text().toDouble();
+		t_real dX2R = editRealX2->text().toDouble();
+		ublas::vector<t_real> vecPlaneXR = tl::make_vec({dX0R, dX1R, dX2R});
 
-		double dY0R = editRealY0->text().toDouble();
-		double dY1R = editRealY1->text().toDouble();
-		double dY2R = editRealY2->text().toDouble();
-		ublas::vector<double> vecPlaneYR = tl::make_vec({dY0R, dY1R, dY2R});
+		t_real dY0R = editRealY0->text().toDouble();
+		t_real dY1R = editRealY1->text().toDouble();
+		t_real dY2R = editRealY2->text().toDouble();
+		ublas::vector<t_real> vecPlaneYR = tl::make_vec({dY0R, dY1R, dY2R});
 
 		//----------------------------------------------------------------------
 		// show integer up vector
@@ -193,8 +194,8 @@ void TazDlg::CalcPeaks()
 		editRealZ2->setText(std::to_string(ivecUpR[2]).c_str());
 		//----------------------------------------------------------------------
 
-		ublas::vector<double> vecX0R = ublas::zero_vector<double>(3);
-		tl::Plane<double> planeRealFrac(vecX0R, vecPlaneXR, vecPlaneYR);
+		ublas::vector<t_real> vecX0R = ublas::zero_vector<t_real>(3);
+		tl::Plane<t_real> planeRealFrac(vecX0R, vecPlaneXR, vecPlaneYR);
 		if(!planeRealFrac.IsValid())
 		{
 			tl::log_err("Invalid view plane for real lattice.");
@@ -206,21 +207,21 @@ void TazDlg::CalcPeaks()
 
 		/*
 		// rotated lattice
-		double dPhi = spinRotPhi->value() / 180. * M_PI;
-		double dTheta = spinRotTheta->value() / 180. * M_PI;
-		double dPsi = spinRotPsi->value() / 180. * M_PI;
+		t_real dPhi = spinRotPhi->value() / 180. * M_PI;
+		t_real dTheta = spinRotTheta->value() / 180. * M_PI;
+		t_real dPsi = spinRotPsi->value() / 180. * M_PI;
 		//lattice.RotateEuler(dPhi, dTheta, dPsi);
 
-		ublas::vector<double> dir0 = plane.GetDir0();
-		ublas::vector<double> dirup = plane.GetNorm();
-		ublas::vector<double> dir1 = tl::cross_3(dirup, dir0);
+		ublas::vector<t_real> dir0 = plane.GetDir0();
+		ublas::vector<t_real> dirup = plane.GetNorm();
+		ublas::vector<t_real> dir1 = tl::cross_3(dirup, dir0);
 
-		double dDir0Len = ublas::norm_2(dir0);
-		double dDir1Len = ublas::norm_2(dir1);
-		double dDirUpLen = ublas::norm_2(dirup);
+		t_real dDir0Len = ublas::norm_2(dir0);
+		t_real dDir1Len = ublas::norm_2(dir1);
+		t_real dDirUpLen = ublas::norm_2(dirup);
 
 		if(tl::float_equal(dDir0Len, 0.) || tl::float_equal(dDir1Len, 0.) || tl::float_equal(dDirUpLen, 0.)
-			|| tl::is_nan_or_inf<double>(dDir0Len) || tl::is_nan_or_inf<double>(dDir1Len) || tl::is_nan_or_inf<double>(dDirUpLen))
+			|| tl::is_nan_or_inf<t_real>(dDir0Len) || tl::is_nan_or_inf<t_real>(dDir1Len) || tl::is_nan_or_inf<t_real>(dDirUpLen))
 		{
 			tl::log_err("Invalid scattering plane.");
 			return;
@@ -241,8 +242,8 @@ void TazDlg::CalcPeaks()
 		emitSampleParams();
 
 		//lattice.RotateEulerRecip(dir0, dir1, dirup, dPhi, dTheta, dPsi);
-		//tl::Lattice<double> recip = lattice.GetRecip();
-		const tl::Lattice<double>& recip = recip_unrot;		// anyway not rotated anymore
+		//tl::Lattice<t_real> recip = lattice.GetRecip();
+		const tl::Lattice<t_real>& recip = recip_unrot;		// anyway not rotated anymore
 
 
 		if(m_bUpdateRecipEdits)
@@ -259,8 +260,8 @@ void TazDlg::CalcPeaks()
 		const std::wstring& strMinus = tl::get_spec_char_utf16("sup-");
 		const std::wstring& strThree = tl::get_spec_char_utf16("sup3");
 
-		double dVol = lattice.GetVol();
-		double dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
+		t_real dVol = lattice.GetVol();
+		t_real dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
 
 		std::wostringstream ostrSample;
 		ostrSample.precision(g_iPrecGfx);
@@ -356,8 +357,8 @@ void TazDlg::ShowSpurions()
 }
 
 void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
-	const std::vector<tl::InelasticSpurion<double>>& vecInelCKI,
-	const std::vector<tl::InelasticSpurion<double>>& vecInelCKF)
+	const std::vector<tl::InelasticSpurion<t_real>>& vecInelCKI,
+	const std::vector<tl::InelasticSpurion<t_real>>& vecInelCKF)
 {
 	std::ostringstream ostrMsg;
 	if(spuri.bAType || spuri.bMType || vecInelCKI.size() || vecInelCKF.size())

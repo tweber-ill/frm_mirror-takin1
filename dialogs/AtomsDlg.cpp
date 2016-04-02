@@ -6,11 +6,10 @@
  */
 
 #include "AtomsDlg.h"
-#include "libs/globals.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/linalg.h"
 
-#include <iostream>
+using t_real = t_real_glob;
 
 
 AtomsDlg::AtomsDlg(QWidget* pParent, QSettings *pSettings)
@@ -38,8 +37,7 @@ AtomsDlg::AtomsDlg(QWidget* pParent, QSettings *pSettings)
 }
 
 AtomsDlg::~AtomsDlg()
-{
-}
+{}
 
 
 void AtomsDlg::RemoveAtom()
@@ -101,9 +99,9 @@ void AtomsDlg::SendApplyAtoms()
 		AtomPos atom;
 		atom.strAtomName = tableAtoms->item(iRow, 0)->text().toStdString();
 		tl::trim(atom.strAtomName);
-		double dX = tl::str_to_var<double>(tableAtoms->item(iRow, 1)->text().toStdString());
-		double dY = tl::str_to_var<double>(tableAtoms->item(iRow, 2)->text().toStdString());
-		double dZ = tl::str_to_var<double>(tableAtoms->item(iRow, 3)->text().toStdString());
+		t_real dX = tl::str_to_var<t_real>(tableAtoms->item(iRow, 1)->text().toStdString());
+		t_real dY = tl::str_to_var<t_real>(tableAtoms->item(iRow, 2)->text().toStdString());
+		t_real dZ = tl::str_to_var<t_real>(tableAtoms->item(iRow, 3)->text().toStdString());
 		atom.vecPos = tl::make_vec({dX, dY, dZ});
 
 		vecAtoms.push_back(std::move(atom));

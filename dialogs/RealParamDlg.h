@@ -11,13 +11,14 @@
 #include <QDialog>
 #include <QSettings>
 #include "ui/ui_real_params.h"
+#include "libs/globals.h"
 
 
 struct RealParams
 {
-	double dMonoTT, dSampleTT, dAnaTT;
-	double dMonoT, dSampleT, dAnaT;
-	double dLenMonoSample, dLenSampleAna, dLenAnaDet;
+	t_real_glob dMonoTT, dSampleTT, dAnaTT;
+	t_real_glob dMonoT, dSampleT, dAnaT;
+	t_real_glob dLenMonoSample, dLenSampleAna, dLenAnaDet;
 };
 
 

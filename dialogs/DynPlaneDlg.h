@@ -15,17 +15,18 @@
 #include "ui/ui_dyn_plane.h"
 #include "RecipParamDlg.h"
 #include "libs/qthelper.h"
+#include "libs/globals.h"
 
 
 class DynPlaneDlg : public QDialog, Ui::DynPlaneDlg
 { Q_OBJECT
 protected:
 	QSettings *m_pSettings = nullptr;
-	std::vector<double> m_vecQ, m_vecE;
+	std::vector<t_real_glob> m_vecQ, m_vecE;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
-	double m_d2Theta = 0.;
-	double m_dEi = 5., m_dEf = 5.;
+	t_real_glob m_d2Theta = 0.;
+	t_real_glob m_dEi = 5., m_dEf = 5.;
 
 protected:
 	virtual void showEvent(QShowEvent *pEvt) override;

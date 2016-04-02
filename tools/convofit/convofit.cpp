@@ -171,7 +171,10 @@ bool run_job(const std::string& strJob)
 		if(vecvecScFiles.size() > 1)
 			tl::log_info("Loading scan group ", iSc, ".");
 		if(!load_file(vecvecScFiles[iSc], sc, bNormToMon, filter))
+		{
 			tl::log_err("Cannot load scan files of group ", iSc, ".");
+			continue;
+		}
 
 		vecSc.emplace_back(std::move(sc));
 	}

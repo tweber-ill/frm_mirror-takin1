@@ -55,20 +55,20 @@ extern const t_mapSpaceGroups* get_space_groups();
 extern void init_space_groups();
 
 
-template<class T=clipper::ftype>
+template<class T=double, class t_clp=clipper::ftype>
 ublas::matrix<T> symop_to_matrix(const clipper::Symop& symop)
 {
-	const clipper::Mat33<T>& mat = symop.rot();
-	const clipper::Vec3<T>& vec = symop.trn();
+	const clipper::Mat33<t_clp>& mat = symop.rot();
+	const clipper::Vec3<t_clp>& vec = symop.trn();
 
 	ublas::matrix<T> matRet(4,4);
 	for(int i=0; i<3; ++i)
 		for(int j=0; j<3; ++j)
-			matRet(i,j) = mat(i,j);
+			matRet(i,j) = T(mat(i,j));
 
 	for(int i=0; i<3; ++i)
 	{
-		matRet(i,3) = vec[i];
+		matRet(i,3) = T(vec[i]);
 		matRet(3,i) = 0.;
 	}
 

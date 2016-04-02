@@ -11,6 +11,8 @@
 #include <chrono>
 #include <iostream>
 
+using t_real = t_real_glob;
+
 NetCacheDlg::NetCacheDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
@@ -128,10 +130,10 @@ void NetCacheDlg::UpdateAge(int iRow)
 	QTableWidgetItem *pItem = tableCache->item(iRow, 2);
 	if(!pItemTimestamp || !pItem) return;
 
-	double dTimestamp = tl::str_to_var<double, std::string>(pItemTimestamp->text().toStdString());
-	double dNow = std::chrono::system_clock::now().time_since_epoch().count();
-	dNow *= double(std::chrono::system_clock::period::num) / double(std::chrono::system_clock::period::den);
-	double dAgeS = dNow - dTimestamp;
+	t_real dTimestamp = tl::str_to_var<t_real, std::string>(pItemTimestamp->text().toStdString());
+	t_real dNow = std::chrono::system_clock::now().time_since_epoch().count();
+	dNow *= t_real(std::chrono::system_clock::period::num) / t_real(std::chrono::system_clock::period::den);
+	t_real dAgeS = dNow - dTimestamp;
 	//std::cout << strKey << " = " << val.strVal << " (age: " << dAge << "s)" << std::endl;
 
 	int iAgeS = int(dAgeS);

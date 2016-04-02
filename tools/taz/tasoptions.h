@@ -9,21 +9,22 @@
 #define __TASOPTIONS_H__
 
 #include "tlibs/math/linalg.h"
+#include "libs/globals.h"
 #include <QPointF>
 
 namespace ublas = boost::numeric::ublas;
 
 
-static inline ublas::vector<double> qpoint_to_vec(const QPointF& pt)
+static inline ublas::vector<t_real_glob> qpoint_to_vec(const QPointF& pt)
 {
-	ublas::vector<double> vec(2);
-	vec[0] = double(pt.x());
-	vec[1] = double(pt.y());
+	ublas::vector<t_real_glob> vec(2);
+	vec[0] = t_real_glob(pt.x());
+	vec[1] = t_real_glob(pt.y());
 
 	return vec;
 }
 
-static inline QPointF vec_to_qpoint(const ublas::vector<double>& vec)
+static inline QPointF vec_to_qpoint(const ublas::vector<t_real_glob>& vec)
 {
 	if(vec.size() < 2)
 		return QPointF(0., 0.);
@@ -44,15 +45,15 @@ struct TriangleOptions
 	bool bChangedAngleKiVec0 = 0;
 
 
-	double dTheta;
-	double dTwoTheta;
-	double dAnaTwoTheta;
-	double dMonoTwoTheta;
+	t_real_glob dTheta;
+	t_real_glob dTwoTheta;
+	t_real_glob dAnaTwoTheta;
+	t_real_glob dMonoTwoTheta;
 
-	double dMonoD;
-	double dAnaD;
+	t_real_glob dMonoD;
+	t_real_glob dAnaD;
 
-	double dAngleKiVec0;
+	t_real_glob dAngleKiVec0;
 };
 
 struct CrystalOptions
@@ -63,11 +64,11 @@ struct CrystalOptions
 	bool bChangedPlane1 = 0;
 	bool bChangedPlane2 = 0;
 
-	double dLattice[3];
-	double dLatticeAngles[3];
+	t_real_glob dLattice[3];
+	t_real_glob dLatticeAngles[3];
 	std::string strSpacegroup;
-	double dPlane1[3];
-	double dPlane2[3];
+	t_real_glob dPlane1[3];
+	t_real_glob dPlane2[3];
 
 	std::string strSampleName;
 };

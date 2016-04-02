@@ -14,6 +14,7 @@
 #include <memory>
 #include "ui/ui_formfactors.h"
 #include "libs/qthelper.h"
+#include "libs/globals.h"
 
 
 class FormfactorDlg : public QDialog, Ui::FormFactorDlg
@@ -22,11 +23,11 @@ protected:
 	QSettings *m_pSettings = nullptr;
 
 	// form factors
-	std::vector<double> m_vecQ, m_vecFF;
+	std::vector<t_real_glob> m_vecQ, m_vecFF;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
 	// scattering lengths
-	std::vector<double> m_vecElem, m_vecSc;
+	std::vector<t_real_glob> m_vecElem, m_vecSc;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrapSc;
 
 

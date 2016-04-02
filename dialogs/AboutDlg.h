@@ -13,7 +13,7 @@
 #include "ui/ui_about.h"
 
 
-#define TAKIN_VER "0.9.6"
+#define TAKIN_VER "0.9.7"
 
 class AboutDlg : public QDialog, Ui::AboutDlg
 { Q_OBJECT

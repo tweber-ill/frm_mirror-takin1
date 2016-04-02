@@ -9,6 +9,7 @@
 #include <QGridLayout>
 //#include <QtGui/QSplitter>
 
+
 EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {

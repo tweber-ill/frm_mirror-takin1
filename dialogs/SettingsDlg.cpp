@@ -18,6 +18,7 @@
 #include <iostream>
 #include <limits>
 
+using t_real = t_real_glob;
 
 // -----------------------------------------------------------------------------
 
@@ -81,8 +82,8 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupSpin("net/poll", 750, spinNetPoll),
 	};
 
-	spinPrecGen->setMaximum(std::numeric_limits<double>::max_digits10);
-	spinPrecGfx->setMaximum(std::numeric_limits<double>::max_digits10);
+	spinPrecGen->setMaximum(std::numeric_limits<t_real>::max_digits10);
+	spinPrecGfx->setMaximum(std::numeric_limits<t_real>::max_digits10);
 
 	SetDefaults(0);
 
@@ -211,8 +212,8 @@ void SettingsDlg::SetGlobals() const
 	g_iPrec = spinPrecGen->value();
 	g_iPrecGfx = spinPrecGfx->value();
 
-	g_dEps = std::pow(10., -double(g_iPrec));
-	g_dEpsGfx = std::pow(10., -double(g_iPrecGfx));
+	g_dEps = std::pow(10., -t_real(g_iPrec));
+	g_dEpsGfx = std::pow(10., -t_real(g_iPrecGfx));
 
 
 	// fonts

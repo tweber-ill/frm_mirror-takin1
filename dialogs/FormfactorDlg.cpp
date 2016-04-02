@@ -10,6 +10,8 @@
 #include "tlibs/string/spec_char.h"
 #include <qwt_picker_machine.h>
 
+using t_real = t_real_glob;
+
 
 FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	: QDialog(pParent), m_pSettings(pSettings)
@@ -63,6 +65,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 FormfactorDlg::~FormfactorDlg()
 {}
 
+
 static QListWidgetItem* create_header_item(const char *pcTitle, bool bSubheader=0)
 {
 	QListWidgetItem *pHeaderItem = new QListWidgetItem(pcTitle);
@@ -96,7 +99,7 @@ void FormfactorDlg::SetupAtoms()
 		else if(iFF==54) listAtoms->addItem(create_header_item("Period 6", 1));
 		else if(iFF==86) listAtoms->addItem(create_header_item("Period 7", 1));
 
-		const Formfact<double>& ff = lstff.GetAtom(iFF);
+		const Formfact<t_real>& ff = lstff.GetAtom(iFF);
 		const std::string& strAtom = ff.GetAtomIdent();
 
 		std::ostringstream ostrAtom;
@@ -110,7 +113,7 @@ void FormfactorDlg::SetupAtoms()
 	listAtoms->addItem(create_header_item("Ions"));
 	for(unsigned int iFF=0; iFF<lstff.GetNumIons(); ++iFF)
 	{
-		const Formfact<double>& ff = lstff.GetIon(iFF);
+		const Formfact<t_real>& ff = lstff.GetIon(iFF);
 		const std::string& strAtom = ff.GetAtomIdent();
 
 		std::ostringstream ostrAtom;
@@ -126,12 +129,13 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 {
 	if(!pItem) return;
 	const unsigned int iAtomOrIon = pItem->data(Qt::UserRole).toUInt();
+	if(iAtomOrIon == 0) return;
 	const unsigned int iAtom = pItem->data(Qt::UserRole+1).toUInt();
 
 	const unsigned int NUM_POINTS = 512;
 
-	double dMinQ = 0.;
-	double dMaxQ = 25.;
+	t_real dMinQ = 0.;
+	t_real dMaxQ = 25.;
 
 	m_vecQ.clear();
 	m_vecFF.clear();
@@ -143,19 +147,19 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	if((iAtomOrIon==1 && iAtom < lstff.GetNumAtoms()) ||
 		(iAtomOrIon==2 && iAtom < lstff.GetNumIons()))
 	{
-		const Formfact<double>& ff = (iAtomOrIon==1 ? lstff.GetAtom(iAtom) : lstff.GetIon(iAtom));
+		const Formfact<t_real>& ff = (iAtomOrIon==1 ? lstff.GetAtom(iAtom) : lstff.GetIon(iAtom));
 
 		for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
 		{
-			const double dQ = (dMinQ + (dMaxQ - dMinQ)/double(NUM_POINTS)*double(iPt));
-			const double dFF = ff.GetFormfact(dQ);
+			const t_real dQ = (dMinQ + (dMaxQ - dMinQ)/t_real(NUM_POINTS)*t_real(iPt));
+			const t_real dFF = ff.GetFormfact(dQ);
 
 			m_vecQ.push_back(dQ);
 			m_vecFF.push_back(dFF);
 		}
 	}
 
-	m_plotwrap->SetData(m_vecQ, m_vecFF);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecFF);
 }
 
 
@@ -170,13 +174,13 @@ void FormfactorDlg::PlotScatteringLengths()
 	for(unsigned int iAtom=0; iAtom<lstsc.GetNumElems(); ++iAtom)
 	{
 		const ScatlenList::elem_type& sc = lstsc.GetElem(iAtom);
-		std::complex<double> b = bCoh ? sc.GetCoherent() : sc.GetIncoherent();
+		std::complex<t_real> b = bCoh ? sc.GetCoherent() : sc.GetIncoherent();
 
-		m_vecElem.push_back(double(iAtom+1));
+		m_vecElem.push_back(t_real(iAtom+1));
 		m_vecSc.push_back(b.real());
 	}
 
-	m_plotwrapSc->SetData(m_vecElem, m_vecSc);
+	set_qwt_data<t_real>()(*m_plotwrapSc, m_vecElem, m_vecSc);
 }
 
 void FormfactorDlg::cursorMoved(const QPointF& pt)
@@ -208,8 +212,8 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 		}
 
 		const std::string& strName = lst.GetElem(unsigned(iElem-1)).GetAtomIdent();
-		std::complex<double> b_coh = lst.GetElem(unsigned(iElem-1)).GetCoherent();
-		std::complex<double> b_inc = lst.GetElem(unsigned(iElem-1)).GetIncoherent();
+		std::complex<t_real> b_coh = lst.GetElem(unsigned(iElem-1)).GetCoherent();
+		std::complex<t_real> b_inc = lst.GetElem(unsigned(iElem-1)).GetIncoherent();
 
 		std::ostringstream ostr;
 		ostr << iElem << ", " << strName
