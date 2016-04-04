@@ -17,6 +17,7 @@
 #include <clocale>
 #include <memory>
 #include <QMetaType>
+#include <QDir>
 #include <QMessageBox>
 #include <QCoreApplication>
 
@@ -29,12 +30,12 @@
 #define TAKIN_CHECK " Please check if Takin is correctly installed and the current working directory is set to the Takin main directory."
 
 
-static void add_logfile(std::ofstream* postrLog, bool bAdd=1)
+static bool add_logfile(std::ofstream* postrLog, bool bAdd=1)
 {
 	if(!postrLog || !postrLog->is_open())
 	{
 		tl::log_err("Cannot open log file.");
-		return;
+		return 0;
 	}
 
 	for(tl::Log* plog : { &tl::log_info, &tl::log_warn, &tl::log_err, &tl::log_crit, &tl::log_debug })
@@ -46,14 +47,19 @@ static void add_logfile(std::ofstream* postrLog, bool bAdd=1)
 	}
 
 	if(!bAdd) postrLog->operator<<(std::endl);
+	return 1;
 }
 
 int main(int argc, char** argv)
 {
 	try
 	{
-		std::ofstream ofstrLog("takin.log", std::ios_base::out|std::ios_base::app);
-		add_logfile(&ofstrLog, 1);
+		//std::string strLog = QDir::homePath().toStdString();
+		std::string strLog = QDir::tempPath().toStdString();
+		strLog += "/takin.log";
+		std::ofstream ofstrLog(strLog, std::ios_base::out|std::ios_base::app);
+		if(add_logfile(&ofstrLog, 1))
+			tl::log_info("Logging to file \"", strLog, "\".");
 
 		tl::log_info("Starting up Takin version ", TAKIN_VER, ".");
 		tl::log_debug("Using ", sizeof(t_real_glob)*8, " bit ", tl::get_typename<t_real_glob>(), "s as internal data type.");
@@ -74,8 +80,11 @@ int main(int argc, char** argv)
 		std::setlocale(LC_ALL, "C");
 		QLocale::setDefault(QLocale::English);
 
+		QCoreApplication::setApplicationName("Takin");
+		QCoreApplication::setApplicationVersion(TAKIN_VER);
 		std::string strApp = QCoreApplication::applicationDirPath().toStdString();
 		tl::log_info("Application path: ", strApp);
+
 		add_resource_path(strApp);
 		add_resource_path(strApp + "/..");
 		add_resource_path(strApp + "/resources");
