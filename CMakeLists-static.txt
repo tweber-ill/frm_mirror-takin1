@@ -9,7 +9,7 @@
 project(takin)
 cmake_minimum_required(VERSION 3.0)
 
-set(CMAKE_VERBOSE_MAKEFILE TRUE)
+#set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CMAKE_BUILD_TYPE Release)
 
 
