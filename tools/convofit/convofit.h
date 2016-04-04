@@ -28,7 +28,7 @@ static inline void set_model_params_from_scan(SqwFuncModel& mod, const Scan& sc)
 		sc.vecScanOrigin[2], sc.vecScanOrigin[3]);
 	mod.SetScanDir(sc.vecScanDir[0], sc.vecScanDir[1], 
 		sc.vecScanDir[2], sc.vecScanDir[3]);
-	
+
 	mod.SetOtherParams(sc.dTemp, sc.dField);
 }
 

@@ -161,6 +161,8 @@ add_executable(convofit
 	tools/convofit/model.cpp tools/convofit/scan.cpp
 )
 
+set_target_properties(convofit PROPERTIES COMPILE_FLAGS "-DNO_QT")
+
 target_link_libraries(convofit
 	${tlibs_LIBRARIES} Threads::Threads
 	${Boost_LIBRARIES} ${Minuit2_LIBRARIES} ${PYTHON_LIBRARIES}
@@ -177,6 +179,8 @@ endif()
 add_executable(convoseries
 	tools/convofit/scanseries.cpp
 )
+
+set_target_properties(convoseries PROPERTIES COMPILE_FLAGS "-DNO_QT")
 
 target_link_libraries(convoseries
 	${tlibs_LIBRARIES} ${Boost_LIBRARIES}
