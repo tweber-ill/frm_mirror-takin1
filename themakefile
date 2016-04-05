@@ -2,6 +2,7 @@
 CC = clang
 
 DO_DEBUG = 0
+NATIVE_OPTS = 1
 QT_VER = 4
 QWT_VER = 6
 USE_LAPACK = 0
@@ -113,10 +114,15 @@ STD_LIBS += -lpthread
 
 ifeq ($(DO_DEBUG), 0)
 	FLAGS = ${INC} -O2 -std=c++11 -DNDEBUG -Wall -fPIC
-	FLAGS += -march=native
+	ifeq ($(NATIVE_OPTS), 1)
+		FLAGS += -march=native
+	else
+		FLAGS += -mtune=native
+	endif
+	FLAGS += -ffast-math
+	#FLAGS += -flto -fexpensive-optimizations
 	FLAGS += -DQT_NO_DEBUG
 	FLAGS += ${DEFINES}
-	#FLAGS += -fexpensive-optimizations
 	STRIP = strip -v 
 else
 	FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall -Weffc++ -fPIC ${DEFINES}

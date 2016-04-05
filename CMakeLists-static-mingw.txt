@@ -47,6 +47,7 @@ set(CMAKE_AUTOUIC OFF)
 
 add_definitions(-std=c++11)
 add_definitions(-O3 -s)
+add_definitions(-mtune=native -ffast-math)
 #add_definitions(-march=native)
 
 
