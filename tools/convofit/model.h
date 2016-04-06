@@ -33,7 +33,8 @@ class SqwFuncModel : public tl::MinuitMultiFuncModel<t_real_mod>
 {
 protected:
 	std::unique_ptr<SqwBase> m_pSqw;
-	TASReso m_reso;
+	std::vector<TASReso> m_vecResos;
+	//TASReso m_reso;
 	unsigned int m_iNumNeutrons = 1000;
 
 	ublas::vector<t_real_mod> m_vecScanOrigin;	// hklE
@@ -62,6 +63,7 @@ protected:
 
 public:
 	SqwFuncModel(SqwBase* pSqw, const TASReso& reso);
+	SqwFuncModel(SqwBase* pSqw, const std::vector<TASReso>& vecResos);
 	SqwFuncModel() = delete;
 	virtual ~SqwFuncModel() = default;
 
@@ -92,7 +94,8 @@ public:
 	void SetOtherParamNames(std::string strTemp, std::string strField);
 	void SetOtherParams(t_real_mod dTemperature, t_real_mod dField);
 
-	void SetReso(const TASReso& reso) { m_reso = reso; }
+	void SetReso(const TASReso& reso) { /*m_reso = reso;*/ m_vecResos = {reso}; }
+	void SetResos(const std::vector<TASReso>& vecResos) { m_vecResos = vecResos; }
 	void SetNumNeutrons(unsigned int iNum) { m_iNumNeutrons = iNum; }
 
 	void SetScanOrigin(t_real_mod h, t_real_mod k, t_real_mod l, t_real_mod E)

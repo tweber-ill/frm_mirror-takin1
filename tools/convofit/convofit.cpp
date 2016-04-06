@@ -48,6 +48,8 @@ bool run_job(const std::string& strJob)
 	std::string strMonCol = prop.Query<std::string>("input/monitor_col");
 
 	std::string strResFile = prop.Query<std::string>("input/instrument_file");
+	if(strResFile == "")	// "instrument_file_0" is synonymous to "instrument_file"
+		strResFile = prop.Query<std::string>("input/instrument_file_0");
 
 	std::string strSqwMod = prop.Query<std::string>("input/sqw_model");
 	std::string strSqwFile = prop.Query<std::string>("input/sqw_file");
@@ -63,6 +65,7 @@ bool run_job(const std::string& strJob)
 	if(filter.bUpper) filter.dUpper = prop.Query<t_real>("input/filter_upper", 0);
 
 
+	// --------------------------------------------------------------------
 	// files in inner vector will be merged
 	// files in outer vector will be used for multi-function fitting
 	std::vector<std::vector<std::string>> vecvecScFiles;
@@ -88,6 +91,31 @@ bool run_job(const std::string& strJob)
 		std::for_each(vecSecScFiles.begin(), vecSecScFiles.end(), [](std::string& str){ tl::trim(str); });
 		vecvecScFiles.emplace_back(std::move(vecSecScFiles));
 	}
+	// --------------------------------------------------------------------
+
+
+	// --------------------------------------------------------------------
+	//primary resolution file
+	std::vector<std::string> vecResFiles({strResFile});
+
+	// get secondary resolution files for multi-function fitting
+	for(std::size_t iSecFile=1; 1; ++iSecFile)
+	{
+		std::string strSecFile = "input/instrument_file_" + tl::var_to_str(iSecFile);
+		std::string strSecResFile = prop.Query<std::string>(strSecFile, "");
+		if(strSecResFile == "")
+			break;
+		tl::trim(strSecResFile);
+		vecResFiles.emplace_back(std::move(strSecResFile));
+	}
+
+	if(vecResFiles.size()!=1 && vecResFiles.size()!=vecvecScFiles.size())
+	{
+		tl::log_err("Number of resolution files has to be either one or match the number of scan files.");
+		tl::log_err("Number of scan files: ", vecvecScFiles.size(), ", number of resolution files: ", vecResFiles.size(), ".");
+		return 0;
+	}
+	// --------------------------------------------------------------------
 
 
 	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
@@ -191,40 +219,46 @@ bool run_job(const std::string& strJob)
 
 
 	// --------------------------------------------------------------------
-	// Resolution file
-	TASReso reso;
-	tl::log_info("Loading instrument file \"", strResFile, "\".");
-	if(!reso.LoadRes(strResFile.c_str()))
-		return 0;
+	// Resolution files
+	std::vector<TASReso> vecResos;
+	for(const std::string& strCurResFile : vecResFiles)
+	{
+		TASReso reso;
+		tl::log_info("Loading instrument resolution file \"", strCurResFile, "\".");
+		if(!reso.LoadRes(strCurResFile.c_str()))
+			return 0;
+
+		if(strResAlgo == "pop")
+			reso.SetAlgo(ResoAlgo::POP);
+		else if(strResAlgo == "cn")
+			reso.SetAlgo(ResoAlgo::CN);
+		else if(strResAlgo == "eck")
+			reso.SetAlgo(ResoAlgo::ECK);
+		else
+		{
+			tl::log_err("Invalid resolution algorithm selected: \"", strResAlgo, "\".");
+			return 0;
+		}
+
+		if(bResFocMonoV || bResFocMonoH || bResFocAnaV || bResFocAnaH)
+		{
+			unsigned iFoc = 0;
+			if(bResFocMonoV) iFoc |= unsigned(ResoFocus::FOC_MONO_V);
+			if(bResFocMonoH) iFoc |= unsigned(ResoFocus::FOC_MONO_H);
+			if(bResFocAnaV) iFoc |= unsigned(ResoFocus::FOC_ANA_V);
+			if(bResFocAnaH) iFoc |= unsigned(ResoFocus::FOC_ANA_H);
+
+			reso.SetOptimalFocus(ResoFocus(iFoc));
+		}
+
+		if(bUseR0 && !reso.GetResoParams().bCalcR0)
+			tl::log_warn("Resolution R0 requested, but not calculated, using raw ellipsoid volume.");
+
+		vecResos.emplace_back(std::move(reso));
+	}
 
 	// base parameter set for single-fits
-	set_tasreso_params_from_scan(reso, vecSc[0]);
-
-	if(strResAlgo == "pop")
-		reso.SetAlgo(ResoAlgo::POP);
-	else if(strResAlgo == "cn")
-		reso.SetAlgo(ResoAlgo::CN);
-	else if(strResAlgo == "eck")
-		reso.SetAlgo(ResoAlgo::ECK);
-	else
-	{
-		tl::log_err("Invalid resolution algorithm selected: \"", strResAlgo, "\".");
-		return 0;
-	}
-
-	if(bResFocMonoV || bResFocMonoH || bResFocAnaV || bResFocAnaH)
-	{
-		unsigned iFoc = 0;
-		if(bResFocMonoV) iFoc |= unsigned(ResoFocus::FOC_MONO_V);
-		if(bResFocMonoH) iFoc |= unsigned(ResoFocus::FOC_MONO_H);
-		if(bResFocAnaV) iFoc |= unsigned(ResoFocus::FOC_ANA_V);
-		if(bResFocAnaH) iFoc |= unsigned(ResoFocus::FOC_ANA_H);
-
-		reso.SetOptimalFocus(ResoFocus(iFoc));
-	}
-
-	if(bUseR0 && !reso.GetResoParams().bCalcR0)
-		tl::log_warn("Resolution R0 requested, but not calculated, using raw ellipsoid volume.");
+	set_tasreso_params_from_scan(vecResos[0], vecSc[0]);
 	// --------------------------------------------------------------------
 
 
@@ -251,7 +285,7 @@ bool run_job(const std::string& strJob)
 
 	if(!pSqw->IsOk())
 		return 0;
-	SqwFuncModel mod(pSqw, reso);
+	SqwFuncModel mod(pSqw, vecResos);
 
 	// only needed for multi-fits
 	if(vecSc.size() > 1)

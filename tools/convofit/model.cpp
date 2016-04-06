@@ -18,12 +18,23 @@ using t_real = t_real_mod;
 
 
 SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const TASReso& reso)
-	: m_pSqw(pSqw), m_reso(reso)
+	: m_pSqw(pSqw)/*, m_reso(reso)*/, m_vecResos({reso})
 {}
+
+SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const std::vector<TASReso>& vecResos)
+	: m_pSqw(pSqw), m_vecResos(vecResos)
+{}
+
 
 tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
 {
-	TASReso reso = m_reso;
+	//TASReso reso = m_reso;
+	TASReso reso;
+	// multi-fits
+	if(m_pScans && m_vecResos.size() > 1)
+		reso = m_vecResos[m_iCurParamSet];
+	else
+		reso = m_vecResos[0];
 	const ublas::vector<t_real> vecScanPos = m_vecScanOrigin + t_real(x)*m_vecScanDir;
 
 	if(!reso.SetHKLE(vecScanPos[0],vecScanPos[1],vecScanPos[2],vecScanPos[3]))
@@ -70,7 +81,7 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
 SqwFuncModel* SqwFuncModel::copy() const
 {
 	// cannot rebuild kd tree in phonon model with only a shallow copy
-	SqwFuncModel* pMod = new SqwFuncModel(m_pSqw->shallow_copy(), m_reso);
+	SqwFuncModel* pMod = new SqwFuncModel(m_pSqw->shallow_copy()/*, m_reso*/, m_vecResos);
 	pMod->m_vecScanOrigin = this->m_vecScanOrigin;
 	pMod->m_vecScanDir = this->m_vecScanDir;
 	pMod->m_iNumNeutrons = this->m_iNumNeutrons;
@@ -303,7 +314,10 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 		m_iCurParamSet = iSet;
 
 		const Scan& sc = m_pScans->operator[](m_iCurParamSet);
-		set_tasreso_params_from_scan(m_reso, sc);
+		if(m_vecResos.size() > 1)
+			set_tasreso_params_from_scan(m_vecResos[m_iCurParamSet], sc);
+		else
+			set_tasreso_params_from_scan(/*m_reso*/ m_vecResos[0], sc);
 		set_model_params_from_scan(*this, sc);
 	}
 }
