@@ -29,6 +29,8 @@ static const tl::t_time_si<t_real> ps = tl::get_one_picosecond<t_real>();
 static const tl::t_time_si<t_real> sec = tl::get_one_second<t_real>();
 static const tl::t_length_si<t_real> meter = tl::get_one_meter<t_real>();
 static const tl::t_flux_si<t_real> tesla = tl::get_one_tesla<t_real>();
+static const tl::t_flux_si<t_real> millitesla = tesla*t_real(1e-3);
+static const tl::t_flux_si<t_real> kilogauss = tl::get_one_kilogauss<t_real>();
 
 
 NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
@@ -455,15 +457,50 @@ void NeutronDlg::setupConstants()
 	{
 		Conversion conv;
 		conv.strName = "k^2 in A^(-2)  ->  E in meV";
-		conv.strVal = tl::var_to_str(tl::get_KSQ2E<t_real>(), g_iPrec);
+		conv.strVal = tl::var_to_str(tl::get_KSQ2E<t_real>(), g_iPrec)
+			+ " meV per A^(-2)";
+
+		vecConvs.emplace_back(std::move(conv));
+	}
+	{
+		Conversion conv;
+		conv.strName = "E in meV  ->  k^2 in A^(-2)";
+		conv.strVal = tl::var_to_str(tl::get_E2KSQ<t_real>(), g_iPrec)
+			+ " A^(-2) per meV";
+
+		vecConvs.emplace_back(std::move(conv));
+	}
+
+	{
+		t_real tConv = meV / tl::get_h<t_real>() * ps;
+
+		Conversion conv;
+		conv.strName = "E in meV  ->  f in THz";
+		conv.strVal = tl::var_to_str(tConv, g_iPrec) + " THz per meV";
+
+		vecConvs.emplace_back(std::move(conv));
+	}
+	{
+		t_real tConv = t_real(1)/(meV / tl::get_h<t_real>() * ps);
+
+		Conversion conv;
+		conv.strName = "f in THz  ->  E in meV";
+		conv.strVal = tl::var_to_str(tConv, g_iPrec) + " meV per THz";
 
 		vecConvs.emplace_back(std::move(conv));
 	}
 
 	{
 		Conversion conv;
-		conv.strName = "E in meV  ->  k^2 in A^(-2)";
-		conv.strVal = tl::var_to_str(tl::get_E2KSQ<t_real>(), g_iPrec);
+		conv.strName = "B in kG  ->  B in mT";
+		conv.strVal = tl::var_to_str(t_real(kilogauss/millitesla), g_iPrec) + " mT per kG";
+
+		vecConvs.emplace_back(std::move(conv));
+	}
+	{
+		Conversion conv;
+		conv.strName = "B in mT  ->  B in kG";
+		conv.strVal = tl::var_to_str(t_real(millitesla/kilogauss), g_iPrec) + " kG per mT";
 
 		vecConvs.emplace_back(std::move(conv));
 	}
