@@ -244,6 +244,8 @@ void NeutronDlg::CalcNeutronT()
 
 void NeutronDlg::setupConstants()
 {
+	// -------------------------------------------------------------------------
+	// constants
 	struct Constant
 	{
 		std::string strSymbol;
@@ -264,7 +266,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "1 electron volt";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -276,7 +278,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Planck constant";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -288,7 +290,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Planck constant";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -300,7 +302,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Planck constant";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -312,7 +314,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Planck constant";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -324,7 +326,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Neutron mass";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -336,7 +338,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Neutron g";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -348,7 +350,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Neutron gyromagnetic ratio";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -361,7 +363,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Neutron magnetic moment";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -374,7 +376,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Nuclear magneton";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -386,19 +388,19 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Bohr magneton";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
 		//ostrVal << std::scientific;
-		ostrVal << (-tl::get_g_e<t_real>() * tl::get_muB<t_real>() / meV * tesla) << " meV/T";
+		ostrVal << t_real(-tl::get_g_e<t_real>() * tl::get_muB<t_real>() / meV * tesla) << " meV/T";
 
 		Constant constant;
 		constant.strSymbol = "-g_e * mu_B";
 		constant.strName = "Zeeman shift";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -410,7 +412,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Vacuum speed of light";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -422,7 +424,7 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Boltzmann constant";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
 	}
 	{
 		std::ostringstream ostrVal;
@@ -434,15 +436,47 @@ void NeutronDlg::setupConstants()
 		constant.strName = "Boltzmann constant";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
-		vecConsts.push_back(constant);
+		vecConsts.push_back(std::move(constant));
+	}
+	// -------------------------------------------------------------------------
+
+
+
+	// -------------------------------------------------------------------------
+	// conversions
+	struct Conversion
+	{
+		std::string strName;
+		std::string strVal;
+	};
+
+	std::vector<Conversion> vecConvs;
+
+	{
+		Conversion conv;
+		conv.strName = "k^2 in A^(-2)  ->  E in meV";
+		conv.strVal = tl::var_to_str(tl::get_KSQ2E<t_real>(), g_iPrec);
+
+		vecConvs.emplace_back(std::move(conv));
 	}
 
+	{
+		Conversion conv;
+		conv.strName = "E in meV  ->  k^2 in A^(-2)";
+		conv.strVal = tl::var_to_str(tl::get_E2KSQ<t_real>(), g_iPrec);
 
+		vecConvs.emplace_back(std::move(conv));
+	}
+	// -------------------------------------------------------------------------
+
+
+
+	// -------------------------------------------------------------------------
+	// constants table
 	tableConst->setColumnCount(2);
 	tableConst->setRowCount(vecConsts.size());
 	tableConst->setColumnWidth(1, 200);
 	//tableConst->verticalHeader()->setDefaultSectionSize(tableConst->verticalHeader()->minimumSectionSize()+2);
-
 
 	for(unsigned int iConst=0; iConst<vecConsts.size(); ++iConst)
 	{
@@ -463,6 +497,32 @@ void NeutronDlg::setupConstants()
 		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
 		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
 	}
+	// -------------------------------------------------------------------------
+
+
+	// -------------------------------------------------------------------------
+	// conversion table
+	tableConv->setColumnCount(1);
+	tableConv->setRowCount(vecConvs.size());
+	tableConv->setColumnWidth(0, 250);
+	//tableConv->verticalHeader()->setDefaultSectionSize(tableConv->verticalHeader()->minimumSectionSize()+2);
+
+	for(unsigned int iConst=0; iConst<vecConvs.size(); ++iConst)
+	{
+		const Conversion& conv = vecConvs[iConst];
+
+		QTableWidgetItem *pConstName = new QTableWidgetItem();
+		pConstName->setText(conv.strName.c_str());
+		tableConv->setVerticalHeaderItem(iConst, pConstName);
+
+		QTableWidgetItem *pConstVal = new QTableWidgetItem();
+		pConstVal->setText(conv.strVal.c_str());
+		tableConv->setItem(iConst, 0, pConstVal);
+
+		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
+		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
+	}
+	// -------------------------------------------------------------------------
 }
 
 

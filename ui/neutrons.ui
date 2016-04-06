@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>416</width>
-    <height>465</height>
+    <width>481</width>
+    <height>467</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -343,6 +343,9 @@
          <property name="alternatingRowColors">
           <bool>true</bool>
          </property>
+         <property name="sortingEnabled">
+          <bool>true</bool>
+         </property>
          <column>
           <property name="text">
            <string>Name</string>
@@ -351,6 +354,25 @@
          <column>
           <property name="text">
            <string>CODATA Value</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>Conversions</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <widget class="QTableWidget" name="tableConv">
+         <property name="sortingEnabled">
+          <bool>true</bool>
+         </property>
+         <column>
+          <property name="text">
+           <string>Factor</string>
           </property>
          </column>
         </widget>
