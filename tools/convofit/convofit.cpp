@@ -13,6 +13,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/signal_set.hpp>
 
 #include "convofit.h"
 #include "scan.h"
@@ -22,6 +24,9 @@
 
 //using t_real = tl::t_real_min;
 using t_real = t_real_reso;
+
+namespace asio = boost::asio;
+namespace sys = boost::system;
 
 
 bool run_job(const std::string& strJob)
@@ -475,6 +480,18 @@ bool run_job(const std::string& strJob)
 
 int main(int argc, char** argv)
 {
+	// install exit signal handlers
+	asio::io_service ioSrv;
+	asio::signal_set sigInt(ioSrv, SIGABRT, SIGTERM, SIGINT);
+	sigInt.async_wait([](const sys::error_code& err, int iSig)
+	{
+		tl::log_warn("Hard exit requested via signal ", iSig, ". This may cause a fault.");
+		if(err) tl::log_err("Error code: ", err.value(), ", error category: ", err.category().name(), ".");
+		exit(-1);
+	});
+	std::thread thSig([&ioSrv]() { ioSrv.run(); });
+
+
 	tl::log_info("This is the Takin command-line convolution fitter.");
 	tl::log_info("Written by Tobias Weber <tobias.weber@tum.de>, 2014-2016.\n");
 	tl::log_debug("Resolution calculation uses ", sizeof(t_real_reso)*8, " bit ", tl::get_typename<t_real_reso>(), "s.");
