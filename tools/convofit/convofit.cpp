@@ -15,6 +15,7 @@
 #include <fstream>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
+#include <boost/scope_exit.hpp>
 
 #include "convofit.h"
 #include "scan.h"
@@ -483,16 +484,24 @@ int main(int argc, char** argv)
 	// install exit signal handlers
 	asio::io_service ioSrv;
 	asio::signal_set sigInt(ioSrv, SIGABRT, SIGTERM, SIGINT);
-	sigInt.async_wait([](const sys::error_code& err, int iSig)
+	sigInt.async_wait([&ioSrv](const sys::error_code& err, int iSig)
 	{
 		tl::log_warn("Hard exit requested via signal ", iSig, ". This may cause a fault.");
 		if(err) tl::log_err("Error code: ", err.value(), ", error category: ", err.category().name(), ".");
+		ioSrv.stop();
 #ifdef SIGKILL
-		raise(SIGKILL);
+		std::raise(SIGKILL);
 #endif
 		exit(-1);
 	});
-	std::thread([&ioSrv]() { ioSrv.run(); }).detach();
+	std::thread thSig([&ioSrv]() { ioSrv.run(); });
+	BOOST_SCOPE_EXIT(&ioSrv, &thSig)
+	{
+		//tl::log_debug("Exiting...");
+		ioSrv.stop();
+		thSig.join();
+	}
+	BOOST_SCOPE_EXIT_END
 
 
 	tl::log_info("This is the Takin command-line convolution fitter.");
