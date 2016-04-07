@@ -487,9 +487,12 @@ int main(int argc, char** argv)
 	{
 		tl::log_warn("Hard exit requested via signal ", iSig, ". This may cause a fault.");
 		if(err) tl::log_err("Error code: ", err.value(), ", error category: ", err.category().name(), ".");
+#ifdef SIGKILL
+		raise(SIGKILL);
+#endif
 		exit(-1);
 	});
-	std::thread thSig([&ioSrv]() { ioSrv.run(); });
+	std::thread([&ioSrv]() { ioSrv.run(); }).detach();
 
 
 	tl::log_info("This is the Takin command-line convolution fitter.");
