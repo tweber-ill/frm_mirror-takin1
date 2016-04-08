@@ -72,9 +72,11 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
 	if(m_bUseR0 && reso.GetResoParams().bCalcR0)
 		dS *= reso.GetResoResults().dR0;
 
-	tl::log_debug("Q = (",
-		vecScanPos[0], ", ", vecScanPos[1], ", ", vecScanPos[2],
-		") rlu, E = ", vecScanPos[3], " meV -> S = ", dS*m_dScale + m_dOffs);
+	if(m_psigFuncResult)
+	{
+		(*m_psigFuncResult)(vecScanPos[0], vecScanPos[1], vecScanPos[2], vecScanPos[3],
+			dS*m_dScale + m_dOffs);
+	}
 	return tl::t_real_min(dS*m_dScale + m_dOffs);
 }
 
@@ -97,6 +99,8 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_bUseR0 = this->m_bUseR0;
 	pMod->m_iCurParamSet = this->m_iCurParamSet;
 	pMod->m_pScans = this->m_pScans;
+	pMod->m_psigFuncResult = this->m_psigFuncResult;
+	pMod->m_psigParamsChanged = this->m_psigParamsChanged;
 
 	return pMod;
 }
@@ -162,7 +166,9 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 					strRet += " (old: " + tl::var_to_str(dOldParam) + ")";
 				return strRet;
 			});
-		tl::log_debug("Changed model parameters: ", ostrDebug.str());
+
+		if(m_psigParamsChanged)
+			(*m_psigParamsChanged)(ostrDebug.str());
 	}
 	// --------------------------------------------------------------------
 

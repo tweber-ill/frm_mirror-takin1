@@ -293,6 +293,18 @@ bool run_job(const std::string& strJob)
 		return 0;
 	SqwFuncModel mod(pSqw, vecResos);
 
+
+	// slots
+	mod.AddFuncResultSlot([](t_real h, t_real k, t_real l, t_real E, t_real S)
+	{
+		tl::log_info("Q = (", h, ", ", k, ", ", l, ") rlu, E = ", E, " meV -> S = ", S);
+	});
+	mod.AddParamsChangedSlot([](const std::string& strDescr)
+	{
+		tl::log_info("Changed model parameters: ", strDescr);
+	});
+
+
 	// only needed for multi-fits
 	if(vecSc.size() > 1)
 		mod.SetScans(&vecSc);

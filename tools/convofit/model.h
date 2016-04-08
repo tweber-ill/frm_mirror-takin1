@@ -18,12 +18,15 @@
 #include <Minuit2/MnSimplex.h>
 #include <Minuit2/MnPrint.h>
 
+#include <boost/signals2.hpp>
+
 #include "../monteconvo/sqw.h"
 #include "../monteconvo/TASReso.h"
 #include "../res/defs.h"
 #include "scan.h"
 
 namespace minuit = ROOT::Minuit2;
+namespace sig = boost::signals2;
 
 //using t_real_mod = tl::t_real_min;
 using t_real_mod = t_real_reso;
@@ -56,6 +59,26 @@ protected:
 	// optional, for multi-fits
 	std::size_t m_iCurParamSet = 0;
 	const std::vector<Scan>* m_pScans = nullptr;
+	// -------------------------------------------------------------------------
+	
+	// -------------------------------------------------------------------------
+	// signals
+	public: using t_sigFuncResult = sig::signal<void(t_real_mod h, t_real_mod k, t_real_mod l, 
+		t_real_mod E, t_real_mod S)>;
+	protected: std::shared_ptr<t_sigFuncResult> m_psigFuncResult;
+	public: void AddFuncResultSlot(const t_sigFuncResult::slot_type& slot)
+	{ 
+		if(!m_psigFuncResult) m_psigFuncResult = std::make_shared<t_sigFuncResult>();
+		m_psigFuncResult->connect(slot);
+	}
+	
+	public: using t_sigParamsChanged = sig::signal<void(const std::string&)>;
+	protected: std::shared_ptr<t_sigParamsChanged> m_psigParamsChanged;
+	public: void AddParamsChangedSlot(const t_sigParamsChanged::slot_type& slot)
+	{ 
+		if(!m_psigParamsChanged) m_psigParamsChanged = std::make_shared<t_sigParamsChanged>();
+		m_psigParamsChanged->connect(slot);
+	}
 	// -------------------------------------------------------------------------
 
 protected:
