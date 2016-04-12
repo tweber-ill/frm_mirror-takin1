@@ -48,8 +48,8 @@ bool run_job(const std::string& strJob)
 	std::string strFieldCol = prop.Query<std::string>("input/field_col");
 	bool bTempOverride = prop.Exists("input/temp_override");
 	bool bFieldOverride = prop.Exists("input/field_override");
-	t_real dTempOverride = prop.Query<t_real>("input/temp_override");
-	t_real dFieldOverride = prop.Query<t_real>("input/field_override");
+	t_real dTempOverride = prop.QueryAndParse<t_real>("input/temp_override");
+	t_real dFieldOverride = prop.QueryAndParse<t_real>("input/field_override");
 	std::string strCntCol = prop.Query<std::string>("input/counts_col");
 	std::string strMonCol = prop.Query<std::string>("input/monitor_col");
 
@@ -67,8 +67,8 @@ bool run_job(const std::string& strJob)
 	Filter filter;
 	filter.bLower = prop.Exists("input/filter_lower");
 	filter.bUpper = prop.Exists("input/filter_upper");
-	if(filter.bLower) filter.dLower = prop.Query<t_real>("input/filter_lower", 0);
-	if(filter.bUpper) filter.dUpper = prop.Query<t_real>("input/filter_upper", 0);
+	if(filter.bLower) filter.dLower = prop.QueryAndParse<t_real>("input/filter_lower", 0);
+	if(filter.bUpper) filter.dUpper = prop.QueryAndParse<t_real>("input/filter_upper", 0);
 
 
 	// --------------------------------------------------------------------
@@ -172,9 +172,9 @@ bool run_job(const std::string& strJob)
 	std::vector<std::string> vecFitParams;
 	tl::get_tokens<std::string, std::string>(strFitParams, " \t\n,;", vecFitParams);
 	std::vector<t_real> vecFitValues;
-	tl::get_tokens<t_real, std::string>(strFitValues, " \t\n,;", vecFitValues);
+	tl::parse_tokens<t_real, std::string>(strFitValues, " \t\n,;", vecFitValues);
 	std::vector<t_real> vecFitErrors;
-	tl::get_tokens<t_real, std::string>(strFitErrors, " \t\n,;", vecFitErrors);
+	tl::parse_tokens<t_real, std::string>(strFitErrors, " \t\n,;", vecFitErrors);
 	std::vector<bool> vecFitFixed;
 	tl::get_tokens<bool, std::string>(strFitFixed, " \t\n,;", vecFitFixed);
 
