@@ -338,7 +338,7 @@
        <string>Constants</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
+       <item row="0" column="0" colspan="2">
         <widget class="QTableWidget" name="tableConst">
          <property name="alternatingRowColors">
           <bool>true</bool>
@@ -365,7 +365,20 @@
        <string>Conversions</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="0" column="0">
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="editEval"/>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLineEdit" name="editEvalRes"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Calc.:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="3">
         <widget class="QTableWidget" name="tableConv">
          <property name="sortingEnabled">
           <bool>true</bool>
@@ -394,6 +407,7 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>tabWidget</tabstop>
   <tabstop>editLam</tabstop>
   <tabstop>editK</tabstop>
   <tabstop>editE</tabstop>
@@ -418,7 +432,9 @@
   <tabstop>editBraggReciT</tabstop>
   <tabstop>editBraggReciTT</tabstop>
   <tabstop>tableConst</tabstop>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>tableConv</tabstop>
+  <tabstop>editEval</tabstop>
+  <tabstop>editEvalRes</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
@@ -430,8 +446,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>257</x>
+     <y>457</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -446,8 +462,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>325</x>
+     <y>457</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

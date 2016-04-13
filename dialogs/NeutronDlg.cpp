@@ -9,9 +9,10 @@
 #include <boost/units/io.hpp>
 
 #include "tlibs/string/string.h"
+#include "tlibs/string/eval.h"
 #include "tlibs/math/math.h"
-#include "tlibs/helper/misc.h"
 #include "tlibs/math/neutrons.hpp"
+#include "tlibs/helper/misc.h"
 #include "libs/globals.h"
 
 #include <sstream>
@@ -82,6 +83,7 @@ NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(EnableRecipEdits()));
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(CalcBraggRecip()));
 	}
+	QObject::connect(editEval, SIGNAL(textEdited(const QString&)), this, SLOT(Eval(const QString&)));
 
 
 	EnableRealEdits();
@@ -700,6 +702,20 @@ void NeutronDlg::CalcBraggRecip()
 	}
 }
 
+
+// -----------------------------------------------------------------------------
+
+void NeutronDlg::Eval(const QString& _str)
+{
+	std::string str = _str.toStdString();
+	std::pair<bool, t_real> pairRes = tl::eval_expr<std::string, t_real>(str);
+	tl::set_eps_0(pairRes.second);
+
+	if(!pairRes.first)
+		editEvalRes->setText("invalid");
+	else
+		editEvalRes->setText(tl::var_to_str(pairRes.second, g_iPrec).c_str());
+}
 
 // -----------------------------------------------------------------------------
 

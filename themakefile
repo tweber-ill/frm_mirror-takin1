@@ -195,7 +195,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/loadinstr.o obj/recent.o obj/globals.o obj/qthelper.o \
 	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
-	obj/scanviewer.o obj/x3d.o \
+	obj/scanviewer.o obj/x3d.o obj/eval.o \
 	obj/tlibs_ver.o obj/AboutDlg.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
@@ -206,7 +206,7 @@ OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/rand.o obj/tasreso.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
-	obj/loadinstr.o ${OBJ_MONTECONVO} ${PY_OBJS}
+	obj/loadinstr.o obj/eval.o ${OBJ_MONTECONVO} ${PY_OBJS}
 OBJ_CONVOSERIES = obj/scanseries.o obj/log.o
 
 OBJ_RESO = obj/log.o obj/rand.o \
@@ -391,6 +391,8 @@ obj/recent.o: tlibs/file/recent.cpp tlibs/file/recent.h
 	${CC} ${FLAGS} -c -o $@ $<
 #obj/minuit.o: tlibs/fit/minuit.cpp tlibs/fit/minuit.h
 #	${CC} ${FLAGS} -c -o $@ $<
+obj/eval.o: tlibs/string/eval.cpp tlibs/string/eval.h tlibs/string/eval_impl.h
+	${CC} ${FLAGS} -c -o $@ $<
 
 obj/cn.o: tools/res/cn.cpp tools/res/cn.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -432,11 +434,11 @@ obj/posextract.o: tools/posextract/posextract.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/convofit.o: tools/convofit/convofit.cpp
-	${CC} ${FLAGS} -DTLIBS_INC_HDR_IMPLS -c -o $@ $<
+	${CC} ${FLAGS} -c -o $@ $<
 obj/convo_scan.o: tools/convofit/scan.cpp tools/convofit/scan.h
-	${CC} ${FLAGS} -DTLIBS_INC_HDR_IMPLS -c -o $@ $<
+	${CC} ${FLAGS} -c -o $@ $<
 obj/convo_model.o: tools/convofit/model.cpp tools/convofit/model.h
-	${CC} ${FLAGS} -DTLIBS_INC_HDR_IMPLS -c -o $@ $<
+	${CC} ${FLAGS} -c -o $@ $<
 obj/scanseries.o: tools/convofit/scanseries.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 

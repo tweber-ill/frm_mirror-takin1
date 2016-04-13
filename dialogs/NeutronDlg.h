@@ -33,21 +33,23 @@ class NeutronDlg : public QDialog, Ui::NeutronDlg
 		void CalcNeutronOm();
 		void CalcNeutronF();
 		void CalcNeutronT();
-		
+
 		void RealThetaEdited();
 		void RecipThetaEdited();
 		void RealTwoThetaEdited();
 		void RecipTwoThetaEdited();
 		void CalcBraggReal();
 		void CalcBraggRecip();
-		
+
 		void EnableRealEdits();
 		void EnableRecipEdits();
+
+		void Eval(const QString&);
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt);
 		virtual void accept();
-		
+
 		static void SetEditTT(QLineEdit *pEditT, QLineEdit *pEditTT);
 		static void SetEditT(QLineEdit *pEditT, QLineEdit *pEditTT);
 };
