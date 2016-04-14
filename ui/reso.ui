@@ -1391,7 +1391,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabEck">
       <attribute name="title">
        <string>Eckold-Sobolev Params</string>
       </attribute>

@@ -507,51 +507,51 @@ void ResoDlg::Calc()
 void ResoDlg::RefreshSimCmd()
 {
 	const t_real_reso dMin = t_real_reso(M_PI/180./60.);
-	
+
 	std::ostringstream ostrCmd;
 	ostrCmd.precision(12);
 
 	ostrCmd << "./templateTAS -n 1e6 verbose=1 ";
 
-	ostrCmd << "KI=" << (m_pop.ki * angs) << " ";
-	ostrCmd << "KF=" << (m_pop.kf * angs) << " ";
-	ostrCmd << "QM=" << (m_pop.Q * angs) << " ";
-	ostrCmd << "EN=" << (m_pop.E / meV) << " ";
+	ostrCmd << "KI=" << t_real_reso(m_pop.ki * angs) << " ";
+	ostrCmd << "KF=" << t_real_reso(m_pop.kf * angs) << " ";
+	ostrCmd << "QM=" << t_real_reso(m_pop.Q * angs) << " ";
+	ostrCmd << "EN=" << t_real_reso(m_pop.E / meV) << " ";
 	//ostrCmt << "FX=" << (m_pop.bki_fix ? "1" : "2") << " ";
 
-	ostrCmd << "L1=" << (m_pop.dist_src_mono / meters) << " ";
-	ostrCmd << "L2=" << (m_pop.dist_mono_sample / meters) << " ";
-	ostrCmd << "L3=" << (m_pop.dist_sample_ana / meters) << " ";
-	ostrCmd << "L4=" << (m_pop.dist_ana_det / meters) << " ";
+	ostrCmd << "L1=" << t_real_reso(m_pop.dist_src_mono / meters) << " ";
+	ostrCmd << "L2=" << t_real_reso(m_pop.dist_mono_sample / meters) << " ";
+	ostrCmd << "L3=" << t_real_reso(m_pop.dist_sample_ana / meters) << " ";
+	ostrCmd << "L4=" << t_real_reso(m_pop.dist_ana_det / meters) << " ";
 
 	ostrCmd << "SM=" << m_pop.dmono_sense << " ";
 	ostrCmd << "SS=" << m_pop.dsample_sense << " ";
 	ostrCmd << "SA=" << m_pop.dana_sense << " ";
 
-	ostrCmd << "DM=" << (m_pop.mono_d / angs) << " ";
-	ostrCmd << "DA=" << (m_pop.ana_d / angs) << " ";
+	ostrCmd << "DM=" << t_real_reso(m_pop.mono_d / angs) << " ";
+	ostrCmd << "DA=" << t_real_reso(m_pop.ana_d / angs) << " ";
 
-	ostrCmd << "RMV=" << (m_pop.mono_curvv / meters) << " ";
-	ostrCmd << "RMH=" << (m_pop.mono_curvh / meters) << " ";
-	ostrCmd << "RAV=" << (m_pop.ana_curvv / meters) << " ";
-	ostrCmd << "RAH=" << (m_pop.ana_curvh / meters) << " ";
+	ostrCmd << "RMV=" << t_real_reso(m_pop.mono_curvv / meters) << " ";
+	ostrCmd << "RMH=" << t_real_reso(m_pop.mono_curvh / meters) << " ";
+	ostrCmd << "RAV=" << t_real_reso(m_pop.ana_curvv / meters) << " ";
+	ostrCmd << "RAH=" << t_real_reso(m_pop.ana_curvh / meters) << " ";
 
-	ostrCmd << "ETAM=" << (m_pop.mono_mosaic/rads/dMin) << " ";
-	ostrCmd << "ETAA=" << (m_pop.ana_mosaic/rads/dMin) << " ";
+	ostrCmd << "ETAM=" << t_real_reso(m_pop.mono_mosaic/rads/dMin) << " ";
+	ostrCmd << "ETAA=" << t_real_reso(m_pop.ana_mosaic/rads/dMin) << " ";
 
-	ostrCmd << "ALF1=" << (m_pop.coll_h_pre_mono/rads/dMin) << " ";
-	ostrCmd << "ALF2=" << (m_pop.coll_h_pre_sample/rads/dMin) << " ";
-	ostrCmd << "ALF3=" << (m_pop.coll_h_post_sample/rads/dMin) << " ";
-	ostrCmd << "ALF4=" << (m_pop.coll_h_post_ana/rads/dMin) << " ";
-	ostrCmd << "BET1=" << (m_pop.coll_v_pre_mono/rads/dMin) << " ";
-	ostrCmd << "BET2=" << (m_pop.coll_v_pre_sample/rads/dMin) << " ";
-	ostrCmd << "BET3=" << (m_pop.coll_v_post_sample/rads/dMin) << " ";
-	ostrCmd << "BET4=" << (m_pop.coll_v_post_ana/rads/dMin) << " ";
+	ostrCmd << "ALF1=" << t_real_reso(m_pop.coll_h_pre_mono/rads/dMin) << " ";
+	ostrCmd << "ALF2=" << t_real_reso(m_pop.coll_h_pre_sample/rads/dMin) << " ";
+	ostrCmd << "ALF3=" << t_real_reso(m_pop.coll_h_post_sample/rads/dMin) << " ";
+	ostrCmd << "ALF4=" << t_real_reso(m_pop.coll_h_post_ana/rads/dMin) << " ";
+	ostrCmd << "BET1=" << t_real_reso(m_pop.coll_v_pre_mono/rads/dMin) << " ";
+	ostrCmd << "BET2=" << t_real_reso(m_pop.coll_v_pre_sample/rads/dMin) << " ";
+	ostrCmd << "BET3=" << t_real_reso(m_pop.coll_v_post_sample/rads/dMin) << " ";
+	ostrCmd << "BET4=" << t_real_reso(m_pop.coll_v_post_ana/rads/dMin) << " ";
 
-	ostrCmd << "WM=" << (m_pop.mono_w / meters) << " ";
-	ostrCmd << "HM=" << (m_pop.mono_h / meters) << " ";
-	ostrCmd << "WA=" << (m_pop.ana_w / meters) << " ";
-	ostrCmd << "HA=" << (m_pop.ana_h / meters) << " ";
+	ostrCmd << "WM=" << t_real_reso(m_pop.mono_w / meters) << " ";
+	ostrCmd << "HM=" << t_real_reso(m_pop.mono_h / meters) << " ";
+	ostrCmd << "WA=" << t_real_reso(m_pop.ana_w / meters) << " ";
+	ostrCmd << "HA=" << t_real_reso(m_pop.ana_h / meters) << " ";
 
 	ostrCmd << "NVM=" << m_pop.mono_numtiles_v << " ";
 	ostrCmd << "NHM=" << m_pop.mono_numtiles_h << " ";
@@ -990,10 +990,35 @@ void ResoDlg::AlgoChanged()
 
 	switch(comboAlgo->currentIndex())
 	{
-		case 0: strAlgo = "M. J. Cooper and R. Nathans\nActa Cryst. 23, 357\n1967"; break;
-		case 1: strAlgo = "M. Popovici\nActa Cryst. A 31, 507\n1975"; break;
-		case 2: strAlgo = "G. Eckold and O. Sobolev\nNIM A 752, pp. 54-64\n2014"; break;
-		default: strAlgo = "unknown"; break;
+		case 0:
+		{
+			tabWidget->setTabEnabled(0,1);
+			tabWidget->setTabEnabled(1,0);
+			tabWidget->setTabEnabled(2,0);
+			strAlgo = "M. J. Cooper and R. Nathans\nActa Cryst. 23, 357\n1967";
+			break;
+		}
+		case 1:
+		{
+			tabWidget->setTabEnabled(0,1);
+			tabWidget->setTabEnabled(1,1);
+			tabWidget->setTabEnabled(2,0);
+			strAlgo = "M. Popovici\nActa Cryst. A 31, 507\n1975";
+			break;
+		}
+		case 2:
+		{
+			tabWidget->setTabEnabled(0,1);
+			tabWidget->setTabEnabled(1,1);
+			tabWidget->setTabEnabled(2,1);
+			strAlgo = "G. Eckold and O. Sobolev\nNIM A 752, pp. 54-64\n2014";
+			break;
+		}
+		default:
+		{
+			strAlgo = "unknown";
+			break;
+		}
 	}
 
 	labelAlgoRef->setText(strAlgo.c_str());
