@@ -132,8 +132,8 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 		dMinTT = (*pairMinMax.first)->dAngle;
 		dMaxTT = (*pairMinMax.second)->dAngle;
 
-		dMinTT -= 10./180.*M_PI;
-		dMaxTT += 10./180.*M_PI;
+		dMinTT -= tl::d2r(10.);
+		dMaxTT += tl::d2r(10.);
 		if(dMinTT < 0.) dMinTT = 0.;
 	}
 
@@ -162,12 +162,12 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 			if(dPeakIntX < 0.) dPeakIntX = 1.;
 
 			constexpr t_real dSig = 0.25;
-			dInt += tl::gauss_model<t_real>(dTT/M_PI*180., dPeakX/M_PI*180., dSig, dPeakInt, 0.);
-			dIntX += tl::gauss_model<t_real>(dTT/M_PI*180., dPeakX/M_PI*180., dSig, dPeakIntX, 0.);
+			dInt += tl::gauss_model<t_real>(tl::r2d(dTT), tl::r2d(dPeakX), dSig, dPeakInt, 0.);
+			dIntX += tl::gauss_model<t_real>(tl::r2d(dTT), tl::r2d(dPeakX), dSig, dPeakIntX, 0.);
 		}
 
-		m_vecTT.push_back(dTT /M_PI*180.);
-		m_vecTTx.push_back(dTT /M_PI*180.);
+		m_vecTT.push_back(tl::r2d(dTT));
+		m_vecTTx.push_back(tl::r2d(dTT));
 		m_vecInt.push_back(dInt);
 		m_vecIntx.push_back(dIntX);
 	}
@@ -188,9 +188,9 @@ void PowderDlg::CalcPeaks()
 		const t_real dA = editA->text().toDouble();
 		const t_real dB = editB->text().toDouble();
 		const t_real dC = editC->text().toDouble();
-		const t_real dAlpha = editAlpha->text().toDouble()/180.*M_PI;
-		const t_real dBeta = editBeta->text().toDouble()/180.*M_PI;
-		const t_real dGamma = editGamma->text().toDouble()/180.*M_PI;
+		const t_real dAlpha = tl::d2r(editAlpha->text().toDouble());
+		const t_real dBeta = tl::d2r(editBeta->text().toDouble());
+		const t_real dGamma = tl::d2r(editGamma->text().toDouble());
 
 		const t_real dLam = spinLam->value();
 		const int iOrder = spinOrder->value();

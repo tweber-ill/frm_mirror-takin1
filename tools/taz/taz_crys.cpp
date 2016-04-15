@@ -36,9 +36,9 @@ void TazDlg::emitSampleParams()
 	t_real b = editB->text().toDouble();
 	t_real c = editC->text().toDouble();
 
-	t_real alpha = editAlpha->text().toDouble()/180.*M_PI;
-	t_real beta = editBeta->text().toDouble()/180.*M_PI;
-	t_real gamma = editGamma->text().toDouble()/180.*M_PI;
+	t_real alpha = tl::d2r(editAlpha->text().toDouble());
+	t_real beta = tl::d2r(editBeta->text().toDouble());
+	t_real gamma = tl::d2r(editGamma->text().toDouble());
 
 	t_real dX0 = editScatX0->text().toDouble();
 	t_real dX1 = editScatX1->text().toDouble();
@@ -86,9 +86,9 @@ void TazDlg::CalcPeaksRecip()
 	t_real b = editBRecip->text().toDouble();
 	t_real c = editCRecip->text().toDouble();
 
-	t_real alpha = editAlphaRecip->text().toDouble()/180.*M_PI;
-	t_real beta = editBetaRecip->text().toDouble()/180.*M_PI;
-	t_real gamma = editGammaRecip->text().toDouble()/180.*M_PI;
+	t_real alpha = tl::d2r(editAlphaRecip->text().toDouble());
+	t_real beta = tl::d2r(editBetaRecip->text().toDouble());
+	t_real gamma = tl::d2r(editGammaRecip->text().toDouble());
 
 	tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
 	tl::Lattice<t_real> recip = lattice.GetRecip();
@@ -96,9 +96,9 @@ void TazDlg::CalcPeaksRecip()
 	editA->setText(dtoqstr(recip.GetA(), g_iPrec));
 	editB->setText(dtoqstr(recip.GetB(), g_iPrec));
 	editC->setText(dtoqstr(recip.GetC(), g_iPrec));
-	editAlpha->setText(dtoqstr(recip.GetAlpha()/M_PI*180., g_iPrec));
-	editBeta->setText(dtoqstr(recip.GetBeta()/M_PI*180., g_iPrec));
-	editGamma->setText(dtoqstr(recip.GetGamma()/M_PI*180., g_iPrec));
+	editAlpha->setText(dtoqstr(tl::r2d(recip.GetAlpha()), g_iPrec));
+	editBeta->setText(dtoqstr(tl::r2d(recip.GetBeta()), g_iPrec));
+	editGamma->setText(dtoqstr(tl::r2d(recip.GetGamma()), g_iPrec));
 
 	m_bUpdateRecipEdits = 0;
 	CalcPeaks();
@@ -119,9 +119,9 @@ void TazDlg::CalcPeaks()
 		const t_real b = editB->text().toDouble();
 		const t_real c = editC->text().toDouble();
 
-		const t_real alpha = editAlpha->text().toDouble()/180.*M_PI;
-		const t_real beta = editBeta->text().toDouble()/180.*M_PI;
-		const t_real gamma = editGamma->text().toDouble()/180.*M_PI;
+		const t_real alpha = tl::d2r(editAlpha->text().toDouble());
+		const t_real beta = tl::d2r(editBeta->text().toDouble());
+		const t_real gamma = tl::d2r(editGamma->text().toDouble());
 
 		tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
 		tl::Lattice<t_real> recip_unrot = lattice.GetRecip();
@@ -251,9 +251,9 @@ void TazDlg::CalcPeaks()
 			editARecip->setText(dtoqstr(recip.GetA(), g_iPrec));
 			editBRecip->setText(dtoqstr(recip.GetB(), g_iPrec));
 			editCRecip->setText(dtoqstr(recip.GetC(), g_iPrec));
-			editAlphaRecip->setText(dtoqstr(recip.GetAlpha()/M_PI*180., g_iPrec));
-			editBetaRecip->setText(dtoqstr(recip.GetBeta()/M_PI*180., g_iPrec));
-			editGammaRecip->setText(dtoqstr(recip.GetGamma()/M_PI*180., g_iPrec));
+			editAlphaRecip->setText(dtoqstr(tl::r2d(recip.GetAlpha()), g_iPrec));
+			editBetaRecip->setText(dtoqstr(tl::r2d(recip.GetBeta()), g_iPrec));
+			editGammaRecip->setText(dtoqstr(tl::r2d(recip.GetGamma()), g_iPrec));
 		}
 
 		const std::wstring& strAA = tl::get_spec_char_utf16("AA");

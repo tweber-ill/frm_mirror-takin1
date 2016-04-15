@@ -1,5 +1,5 @@
-#CC = gcc
-CC = clang
+CC = gcc
+#CC = clang
 
 DO_DEBUG = 0
 NATIVE_OPTS = 1
@@ -206,7 +206,7 @@ OBJ_MONTECONVO = obj/log.o obj/sqw.o \
 	obj/rand.o obj/tasreso.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
-	obj/loadinstr.o obj/eval.o ${OBJ_MONTECONVO} ${PY_OBJS}
+	obj/loadinstr.o obj/eval.o obj/gnuplot.o ${OBJ_MONTECONVO} ${PY_OBJS}
 OBJ_CONVOSERIES = obj/scanseries.o obj/log.o
 
 OBJ_RESO = obj/log.o obj/rand.o \
@@ -380,6 +380,8 @@ obj/rand.o: tlibs/math/rand.cpp tlibs/math/rand.h
 obj/plotgl.o: libs/plotgl.cpp libs/plotgl.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/gnuplot.o: tlibs/gfx/gnuplot.cpp tlibs/gfx/gnuplot.h tlibs/gfx/gnuplot_impl.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
 	${CC} ${FLAGS} -c -o $@ $<

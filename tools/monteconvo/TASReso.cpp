@@ -67,9 +67,9 @@ bool TASReso::LoadLattice(const char* pcXmlFile)
 	t_real a = xml.Query<t_real>((strXmlRoot + "sample/a").c_str(), 0.);
 	t_real b = xml.Query<t_real>((strXmlRoot + "sample/b").c_str(), 0.);
 	t_real c = xml.Query<t_real>((strXmlRoot + "sample/c").c_str(), 0.);
-	t_real alpha = xml.Query<t_real>((strXmlRoot + "sample/alpha").c_str(), 90.) / 180. * M_PI;
-	t_real beta = xml.Query<t_real>((strXmlRoot + "sample/beta").c_str(), 90.) / 180. * M_PI;
-	t_real gamma = xml.Query<t_real>((strXmlRoot + "sample/gamma").c_str(), 90.) / 180. * M_PI;
+	t_real alpha = tl::d2r(xml.Query<t_real>((strXmlRoot + "sample/alpha").c_str(), 90.));
+	t_real beta = tl::d2r(xml.Query<t_real>((strXmlRoot + "sample/beta").c_str(), 90.));
+	t_real gamma = tl::d2r(xml.Query<t_real>((strXmlRoot + "sample/gamma").c_str(), 90.));
 
 	t_real dPlaneX0 = xml.Query<t_real>((strXmlRoot + "plane/x0").c_str(), 1.);
 	t_real dPlaneX1 = xml.Query<t_real>((strXmlRoot + "plane/x1").c_str(), 0.);
@@ -100,20 +100,20 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 
 	// CN
 	m_reso.mono_d = xml.Query<t_real>((strXmlRoot + "reso/mono_d").c_str(), 0.) * angs;
-	m_reso.mono_mosaic = t_real(xml.Query<t_real>((strXmlRoot + "reso/mono_mosaic").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.mono_mosaic = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/mono_mosaic").c_str(), 0.)) * rads;
 	m_reso.ana_d = xml.Query<t_real>((strXmlRoot + "reso/ana_d").c_str(), 0.) * angs;
-	m_reso.ana_mosaic = t_real(xml.Query<t_real>((strXmlRoot + "reso/ana_mosaic").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.sample_mosaic = t_real(xml.Query<t_real>((strXmlRoot + "reso/sample_mosaic").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.ana_mosaic = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/ana_mosaic").c_str(), 0.)) * rads;
+	m_reso.sample_mosaic = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/sample_mosaic").c_str(), 0.)) * rads;
 
-	m_reso.coll_h_pre_mono = t_real(xml.Query<t_real>((strXmlRoot + "reso/h_coll_mono").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.coll_h_pre_sample = t_real(xml.Query<t_real>((strXmlRoot + "reso/h_coll_before_sample").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.coll_h_post_sample = t_real(xml.Query<t_real>((strXmlRoot + "reso/h_coll_after_sample").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.coll_h_post_ana = t_real(xml.Query<t_real>((strXmlRoot + "reso/h_coll_ana").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.coll_h_pre_mono = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/h_coll_mono").c_str(), 0.)) * rads;
+	m_reso.coll_h_pre_sample = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/h_coll_before_sample").c_str(), 0.)) * rads;
+	m_reso.coll_h_post_sample = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/h_coll_after_sample").c_str(), 0.)) * rads;
+	m_reso.coll_h_post_ana = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/h_coll_ana").c_str(), 0.)) * rads;
 
-	m_reso.coll_v_pre_mono = t_real(xml.Query<t_real>((strXmlRoot + "reso/v_coll_mono").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.coll_v_pre_sample = t_real(xml.Query<t_real>((strXmlRoot + "reso/v_coll_before_sample").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.coll_v_post_sample = t_real(xml.Query<t_real>((strXmlRoot + "reso/v_coll_after_sample").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.coll_v_post_ana = t_real(xml.Query<t_real>((strXmlRoot + "reso/v_coll_ana").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.coll_v_pre_mono = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/v_coll_mono").c_str(), 0.)) * rads;
+	m_reso.coll_v_pre_sample = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/v_coll_before_sample").c_str(), 0.)) * rads;
+	m_reso.coll_v_post_sample = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/v_coll_after_sample").c_str(), 0.)) * rads;
+	m_reso.coll_v_post_ana = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/v_coll_ana").c_str(), 0.)) * rads;
 
 	m_reso.dmono_refl = xml.Query<t_real>((strXmlRoot + "reso/mono_refl").c_str(), 0.);
 	m_reso.dana_effic = xml.Query<t_real>((strXmlRoot + "reso/ana_effic").c_str(), 0.);
@@ -158,8 +158,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.det_h = xml.Query<t_real>((strXmlRoot + "reso/pop_det_h").c_str(), 0.)*cm;
 
 	m_reso.bGuide = (xml.Query<int>((strXmlRoot + "reso/use_guide").c_str(), 0) != 0);
-	m_reso.guide_div_h = t_real(xml.Query<t_real>((strXmlRoot + "reso/pop_guide_divh").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.guide_div_v = t_real(xml.Query<t_real>((strXmlRoot + "reso/pop_guide_divv").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.guide_div_h = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/pop_guide_divh").c_str(), 0.)) * rads;
+	m_reso.guide_div_v = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/pop_guide_divv").c_str(), 0.)) * rads;
 
 	m_reso.dist_mono_sample = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_mono_sample").c_str(), 0.)*cm;
 	m_reso.dist_sample_ana = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_sample_ana").c_str(), 0.)*cm;
@@ -168,8 +168,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 
 
 	// Eck
-	m_reso.mono_mosaic_v = t_real(xml.Query<t_real>((strXmlRoot + "reso/eck_mono_mosaic_v").c_str(), 0.) / (180.*60.) * M_PI) * rads;
-	m_reso.ana_mosaic_v = t_real(xml.Query<t_real>((strXmlRoot + "reso/eck_ana_mosaic_v").c_str(), 0.) / (180.*60.) * M_PI) * rads;
+	m_reso.mono_mosaic_v = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/eck_mono_mosaic_v").c_str(), 0.)) * rads;
+	m_reso.ana_mosaic_v = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/eck_ana_mosaic_v").c_str(), 0.)) * rads;
 	m_reso.pos_x = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_x").c_str(), 0.)*cm;
 	m_reso.pos_y = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_y").c_str(), 0.)*cm;
 	m_reso.pos_z = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_z").c_str(), 0.)*cm;

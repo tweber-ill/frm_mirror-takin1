@@ -24,7 +24,7 @@ typedef ublas::vector<t_real> t_vec;
 
 std::ostream& operator<<(std::ostream& ostr, const Ellipse& ell)
 {
-	ostr << "phi = " << ell.phi/M_PI*180. << " deg \n";
+	ostr << "phi = " << tl::r2d(ell.phi) << " deg \n";
 	ostr << "slope = " << ell.slope << " deg \n";
 	ostr << "x_hwhm = " << ell.x_hwhm << ", ";
 	ostr << "y_hwhm = " << ell.y_hwhm << "\n";
@@ -63,8 +63,8 @@ t_vec Ellipse::operator()(t_real t) const
 {
 	t_vec vec(2);
 
-    vec[0] = x_hwhm*std::cos(2.*M_PI*t)*std::cos(phi) - y_hwhm*std::sin(2.*M_PI*t)*std::sin(phi) + x_offs;
-    vec[1] = x_hwhm*std::cos(2.*M_PI*t)*std::sin(phi) + y_hwhm*std::sin(2.*M_PI*t)*std::cos(phi) + y_offs;
+    vec[0] = x_hwhm*std::cos(2.*tl::get_pi<t_real>()*t)*std::cos(phi) - y_hwhm*std::sin(2.*tl::get_pi<t_real>()*t)*std::sin(phi) + x_offs;
+    vec[1] = x_hwhm*std::cos(2.*tl::get_pi<t_real>()*t)*std::sin(phi) + y_hwhm*std::sin(2.*tl::get_pi<t_real>()*t)*std::cos(phi) + y_offs;
 
     return vec;
 }
@@ -229,8 +229,8 @@ Ellipse calc_res_ellipse(const t_mat& reso,
 #ifndef NDEBUG
 	// sanity check, see Shirane p. 267
 	t_mat res_mat0 = ell.quad.GetQ();
-	t_real dMyPhi = ell.phi/M_PI*180.;
-	t_real dPhiShirane = 0.5*atan(2.*res_mat0(0,1) / (res_mat0(0,0)-res_mat0(1,1))) / M_PI*180.;
+	t_real dMyPhi = tl::r2d(ell.phi);
+	t_real dPhiShirane = tl::r2d(t_real(0.5)*atan(2.*res_mat0(0,1) / (res_mat0(0,0)-res_mat0(1,1))));
 	if(!tl::float_equal(dMyPhi, dPhiShirane, 0.01)
 		&& !tl::float_equal(dMyPhi-90., dPhiShirane, 0.01))
 	{

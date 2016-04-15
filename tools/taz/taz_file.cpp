@@ -37,11 +37,11 @@ void TazDlg::New()
 
 	triag.dAnaD = triag.dMonoD = 3.355;
 	triag.bChangedAnaD = triag.bChangedMonoD = 1;
-	triag.dAnaTwoTheta = triag.dMonoTwoTheta = M_PI/2.;
+	triag.dAnaTwoTheta = triag.dMonoTwoTheta = tl::get_pi<t_real_glob>()/2.;
 	triag.bChangedAnaTwoTheta = triag.bChangedMonoTwoTheta = 1;
 
-	triag.dTwoTheta = M_PI/2.;
-	triag.dAngleKiVec0 = M_PI/4.;
+	triag.dTwoTheta = tl::get_pi<t_real_glob>()/2.;
+	triag.dAngleKiVec0 = tl::get_pi<t_real_glob>()/4.;
 	triag.bChangedTwoTheta = triag.bChangedAngleKiVec0 = 1;
 
 	m_vecAtoms.clear();
@@ -555,9 +555,9 @@ bool TazDlg::Import(const char* pcFile)
 		editB->setText(tl::var_to_str(arrLatt[1]).c_str());
 		editC->setText(tl::var_to_str(arrLatt[2]).c_str());
 
-		editAlpha ->setText(tl::var_to_str(arrAng[0]/M_PI*180.).c_str());
-		editBeta->setText(tl::var_to_str(arrAng[1]/M_PI*180.).c_str());
-		editGamma->setText(tl::var_to_str(arrAng[2]/M_PI*180.).c_str());
+		editAlpha ->setText(tl::var_to_str(tl::r2d(arrAng[0])).c_str());
+		editBeta->setText(tl::var_to_str(tl::r2d(arrAng[1])).c_str());
+		editGamma->setText(tl::var_to_str(tl::r2d(arrAng[2])).c_str());
 
 		editMonoD->setText(tl::var_to_str(arrD[0]).c_str());
 		editAnaD->setText(tl::var_to_str(arrD[1]).c_str());

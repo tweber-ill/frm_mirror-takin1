@@ -6,9 +6,11 @@
  */
 
 #include "tlibs/file/prop.h"
+#include "tlibs/file/loaddat.h"
 #include "tlibs/log/log.h"
 #include "tlibs/log/debug.h"
 #include "tlibs/helper/thread.h"
+#include "tlibs/gfx/gnuplot.h"
 //#include "tlibs/math/neutrons.hpp"
 
 #include <iostream>
@@ -145,7 +147,15 @@ bool run_job(const std::string& strJob)
 	std::string strModOutFile = prop.Query<std::string>("output/model_file");
 	std::string strLogOutFile = prop.Query<std::string>("output/log_file");
 	bool bPlot = prop.Query<bool>("output/plot", 0);
+	bool bPlotIntermediate = prop.Query<bool>("output/plot_intermediate", 0);
 	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot_points", 128);
+
+	std::unique_ptr<tl::GnuPlot_gen<t_real>> plt;
+	if(bPlot || bPlotIntermediate)
+	{
+		plt.reset(new tl::GnuPlot_gen<t_real>());
+		plt->Init();
+	}
 
 	// thread-local debug log
 	std::unique_ptr<std::ostream> ofstrLog;
@@ -219,6 +229,16 @@ bool run_job(const std::string& strJob)
 	}
 
 	tl::log_info("Number of scan groups: ", vecSc.size(), ".");
+
+	// scan plot object
+	tl::PlotObj_gen<t_real> pltMeas;
+	if(bPlot || bPlotIntermediate)
+	{
+		pltMeas.vecX = vecSc[0].vecX;
+		pltMeas.vecY = vecSc[0].vecCts;
+		pltMeas.vecErrY = vecSc[0].vecCtsErr;
+		pltMeas.linestyle = tl::STYLE_POINTS;
+	}
 	// --------------------------------------------------------------------
 
 
@@ -294,14 +314,41 @@ bool run_job(const std::string& strJob)
 	SqwFuncModel mod(pSqw, vecResos);
 
 
+	std::vector<t_real> vecModTmpX, vecModTmpY;
 	// slots
-	mod.AddFuncResultSlot([](t_real h, t_real k, t_real l, t_real E, t_real S)
+	mod.AddFuncResultSlot(
+	[&plt, &pltMeas, &vecModTmpX, &vecModTmpY, bPlotIntermediate](t_real h, t_real k, t_real l, t_real E, t_real S)
 	{
 		tl::log_info("Q = (", h, ", ", k, ", ", l, ") rlu, E = ", E, " meV -> S = ", S);
+
+		if(bPlotIntermediate)
+		{
+			vecModTmpX.push_back(E);	// TODO: use scan direction
+			vecModTmpY.push_back(S);
+
+			tl::PlotObj_gen<t_real> pltMod;
+			pltMod.vecX = vecModTmpX;
+			pltMod.vecY = vecModTmpY;
+			pltMod.linestyle = tl::STYLE_LINES_SOLID;
+			pltMod.dSize = 1.5; pltMod.bHasSize = 1;
+
+			plt->StartPlot();
+			plt->SetYLabel("Intensity");
+			plt->AddLine(pltMod);
+			plt->AddLine(pltMeas);
+			plt->FinishPlot();
+		}
 	});
-	mod.AddParamsChangedSlot([](const std::string& strDescr)
+	mod.AddParamsChangedSlot(
+	[&vecModTmpX, &vecModTmpY, bPlotIntermediate](const std::string& strDescr)
 	{
 		tl::log_info("Changed model parameters: ", strDescr);
+
+		if(bPlotIntermediate)
+		{
+			vecModTmpX.clear();
+			vecModTmpY.clear();
+		}
 	});
 
 
@@ -466,12 +513,26 @@ bool run_job(const std::string& strJob)
 	// Plotting
 	if(bPlot)
 	{
-		std::ostringstream ostr;
+		/*std::ostringstream ostr;
 		ostr << "gnuplot -p -e \"plot \\\"" 
 			<< strModOutFile.c_str() << "\\\" using 1:2 w lines lw 1.5 lt 1, \\\""
 			<< strScOutFile.c_str() << "\\\" using 1:2:3 w yerrorbars ps 1 pt 7\"\n";
+		std::system(ostr.str().c_str());*/
 
-		std::system(ostr.str().c_str());
+		tl::DatFile<t_real, char> datMod;
+		datMod.Load(strModOutFile);
+
+		tl::PlotObj_gen<t_real> pltMod;
+		pltMod.vecX = datMod.GetColumn(0);
+		pltMod.vecY = datMod.GetColumn(1);
+		pltMod.linestyle = tl::STYLE_LINES_SOLID;
+		pltMod.dSize = 1.5; pltMod.bHasSize = 1;
+
+		plt->StartPlot();
+		plt->SetYLabel("Intensity");
+		plt->AddLine(pltMod);
+		plt->AddLine(pltMeas);
+		plt->FinishPlot();
 	}
 	// --------------------------------------------------------------------
 

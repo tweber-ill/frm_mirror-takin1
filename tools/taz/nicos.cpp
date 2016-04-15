@@ -243,17 +243,17 @@ void NicosCache::slot_receive(const std::string& str)
 	}
 	else if(strKey == m_strMono2Theta)
 	{
-		triag.dMonoTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
+		triag.dMonoTwoTheta = tl::d2r(tl::str_to_var<t_real>(strVal));
 		triag.bChangedMonoTwoTheta = 1;
 	}
 	else if(strKey == m_strAna2Theta)
 	{
-		triag.dAnaTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
+		triag.dAnaTwoTheta = tl::d2r(tl::str_to_var<t_real>(strVal));
 		triag.bChangedAnaTwoTheta = 1;
 	}
 	else if(strKey == m_strSample2Theta)
 	{
-		triag.dTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
+		triag.dTwoTheta = tl::d2r(tl::str_to_var<t_real>(strVal));
 		triag.bChangedTwoTheta = 1;
 	}
 	else if(strKey == m_strMonoD)
@@ -283,8 +283,8 @@ void NicosCache::slot_receive(const std::string& str)
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 
-		t_real dSth = tl::str_to_var<t_real>(m_mapCache[m_strSampleTheta].strVal) /180.*M_PI;
-		t_real dPsi = tl::str_to_var<t_real>(m_mapCache[m_strSamplePsi0].strVal) /180.*M_PI;
+		t_real dSth = tl::d2r(tl::str_to_var<t_real>(m_mapCache[m_strSampleTheta].strVal));
+		t_real dPsi = tl::d2r(tl::str_to_var<t_real>(m_mapCache[m_strSamplePsi0].strVal));
 
 		// sth and psi0 are arbitrary, but together they form the
 		// angle from ki to the bragg peak at orient1

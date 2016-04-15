@@ -70,7 +70,7 @@ void DynPlaneDlg::Calc()
 
 	const t_real dMinQ = spinMinQ->value();
 	const t_real dMaxQ = spinMaxQ->value();
-	const t_real dAngle = spinAngle->value() / 180. * M_PI;
+	const t_real dAngle = tl::d2r(spinAngle->value());
 	const bool bFixedKi = (comboFixedE->currentIndex()==0);
 
 	if(btnSync->isChecked())

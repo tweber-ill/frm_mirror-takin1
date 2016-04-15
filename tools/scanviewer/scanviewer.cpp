@@ -252,9 +252,9 @@ void ScanViewerDlg::PlotScan()
 	editA->setText(tl::var_to_str(arrLatt[0]).c_str());
 	editB->setText(tl::var_to_str(arrLatt[1]).c_str());
 	editC->setText(tl::var_to_str(arrLatt[2]).c_str());
-	editAlpha->setText(tl::var_to_str(arrAng[0]/M_PI*180.).c_str());
-	editBeta->setText(tl::var_to_str(arrAng[1]/M_PI*180.).c_str());
-	editGamma->setText(tl::var_to_str(arrAng[2]/M_PI*180.).c_str());
+	editAlpha->setText(tl::var_to_str(tl::r2d(arrAng[0])).c_str());
+	editBeta->setText(tl::var_to_str(tl::r2d(arrAng[1])).c_str());
+	editGamma->setText(tl::var_to_str(tl::r2d(arrAng[2])).c_str());
 
 	editPlaneX0->setText(tl::var_to_str(arrPlaneX[0]).c_str());
 	editPlaneX1->setText(tl::var_to_str(arrPlaneX[1]).c_str());

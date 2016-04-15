@@ -334,6 +334,7 @@ CNResults calc_pop(const PopParams& pop)
 
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = 0.;
+	const t_real pi = tl::get_pi<t_real>();
 	if(pop.bCalcR0)
 	{
 		//SI /= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
@@ -351,7 +352,7 @@ CNResults calc_pop(const PopParams& pop)
 		}
 		DSiDti += G;
 		t_real dP0 = pop.dmono_refl*pop.dana_effic * 
-			t_real((2.*M_PI)*(2.*M_PI)*(2.*M_PI)*(2.*M_PI)) /
+			t_real((2.*pi)*(2.*pi)*(2.*pi)*(2.*pi)) /
 			std::sqrt(tl::determinant(DSiDti));
 
 		// [T] = 1/cm, [F] = 1/rad^2, [pop75], equ. 15
@@ -362,11 +363,11 @@ CNResults calc_pop(const PopParams& pop)
 		t_real dDetK = tl::determinant(K);
 
 		// [pop75], equ. 16
-		res.dR0 = dP0 / (t_real(8.*M_PI*8.*M_PI) * units::sin(thetam)*units::sin(thetaa));
+		res.dR0 = dP0 / (t_real(8.*pi*8.*pi) * units::sin(thetam)*units::sin(thetaa));
 		res.dR0 *= std::sqrt(dDetS*dDetF/dDetK);
 
 		// rest of the prefactors, equ. 1 in [pop75]
-		//res.dR0 *= std::sqrt(tl::determinant(res.reso)) / (2.*M_PI*2.*M_PI);
+		//res.dR0 *= std::sqrt(tl::determinant(res.reso)) / (2.*pi*2.*pi);
 		//res.dR0 *= res.dResVol;		// TODO: check
 	}
 

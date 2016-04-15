@@ -409,7 +409,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	for(unsigned int i=0; i<vecDrawAngles.size(); ++i)
 	{
 		// arrow heads
-		t_real dAng = (vecLinesArrow[i]->angle() + 90.) / 180. * M_PI;
+		t_real dAng = tl::d2r(vecLinesArrow[i]->angle() + 90.);
 		t_real dC = std::cos(dAng);
 		t_real dS = std::sin(dAng);
 
@@ -533,7 +533,7 @@ t_real ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 		t_real dAngle = tl::get_angle_ki_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
 		//std::cout << "tt=" << dTT << ", kiQ="<<dAngle << std::endl;
 
-		if(std::fabs(dTT) > M_PI)
+		if(std::fabs(dTT) > tl::get_pi<t_real>())
 			dAngle = -dAngle;
 
 		return dAngle;
@@ -556,9 +556,9 @@ t_real ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 	try
 	{
 		t_real dTT = GetTwoTheta(bPosSense);
-		t_real dAngle = M_PI-tl::get_angle_kf_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
+		t_real dAngle = tl::get_pi<t_real>()-tl::get_angle_kf_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
 
-		if(std::fabs(dTT) > M_PI)
+		if(std::fabs(dTT) > tl::get_pi<t_real>())
 			dAngle = -dAngle;
 
 		return dAngle;
@@ -576,7 +576,7 @@ t_real ScatteringTriangle::GetTheta(bool bPosSense) const
 		- qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
 	vecKi /= ublas::norm_2(vecKi);
 
-	t_real dTh = tl::vec_angle(vecKi) - M_PI/2.;
+	t_real dTh = tl::vec_angle(vecKi) - tl::get_pi<t_real>()/2.;
 	//dTh += m_dAngleRot;
 	if(!bPosSense)
 		dTh = -dTh;
@@ -597,8 +597,8 @@ t_real ScatteringTriangle::GetTwoTheta(bool bPosSense) const
 
 	t_real dTT = tl::vec_angle(vecKi) - tl::vec_angle(vecKf);
 	if(dTT < 0.)
-		dTT += 2.*M_PI;
-	dTT = std::fmod(dTT, 2.*M_PI);
+		dTT += 2.*tl::get_pi<t_real>();
+	dTT = std::fmod(dTT, 2.*tl::get_pi<t_real>());
 
 	if(!bPosSense)
 		dTT = -dTT;
@@ -625,7 +625,7 @@ t_real ScatteringTriangle::GetAnaTwoTheta(t_real dAnaD, bool bPosSense) const
 void ScatteringTriangle::SetAnaTwoTheta(t_real dTT, t_real dAnaD)
 {
 	dTT = std::fabs(dTT);
-	t_real dKf  = M_PI / std::sin(dTT/2.) / dAnaD;
+	t_real dKf  = tl::get_pi<t_real>() / std::sin(dTT/2.) / dAnaD;
 	dKf *= m_dScaleFactor;
 
 	const t_vec vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
@@ -645,7 +645,7 @@ void ScatteringTriangle::SetMonoTwoTheta(t_real dTT, t_real dMonoD)
 	const t_real dSampleTT = GetTwoTheta(1);
 
 	dTT = std::fabs(dTT);
-	t_real dKi  = M_PI / std::sin(dTT/2.) / dMonoD;
+	t_real dKi  = tl::get_pi<t_real>() / std::sin(dTT/2.) / dMonoD;
 	dKi *= m_dScaleFactor;
 
 	const t_vec vecNodeKiKf = qpoint_to_vec(mapFromItem(m_pNodeKiKf,0,0));
@@ -682,7 +682,7 @@ void ScatteringTriangle::SetTwoTheta(t_real dTT)
 
 void ScatteringTriangle::RotateKiVec0To(bool bSense, t_real dAngle)
 {
-	t_real dAngleCorr = bSense ? -M_PI/2. : M_PI/2.;
+	t_real dAngleCorr = bSense ? -tl::get_pi<t_real>()/2. : tl::get_pi<t_real>()/2.;
 	t_real dCurAngle = GetTheta(bSense) + dAngleCorr;
 	if(bSense) dCurAngle = -dCurAngle;
 	//std::cout << "old: " << dCurAngle/M_PI*180. << "new: " << dAngle/M_PI*180. << std::endl;

@@ -128,8 +128,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		if(m_bAllowChanges)
 		{
 			m_dMonoTwoTheta = -(tl::vec_angle(vecMonoSample) - tl::vec_angle(vecSrcMono));
-			if(m_dMonoTwoTheta < -M_PI) m_dMonoTwoTheta += 2.*M_PI;
-			if(m_dMonoTwoTheta > M_PI) m_dMonoTwoTheta -= 2.*M_PI;
+			if(m_dMonoTwoTheta < -tl::get_pi<t_real>()) m_dMonoTwoTheta += 2.*tl::get_pi<t_real>();
+			if(m_dMonoTwoTheta > tl::get_pi<t_real>()) m_dMonoTwoTheta -= 2.*tl::get_pi<t_real>();
 		}
 
 		//std::cout << m_dMonoTwoTheta/M_PI*180. << std::endl;
@@ -206,8 +206,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		if(m_bAllowChanges)
 		{
 			m_dAnaTwoTheta = -(tl::vec_angle(vecAnaDet) - tl::vec_angle(vecSampleAna));
-			if(m_dAnaTwoTheta < -M_PI) m_dAnaTwoTheta += 2.*M_PI;
-			if(m_dAnaTwoTheta > M_PI) m_dAnaTwoTheta -= 2.*M_PI;
+			if(m_dAnaTwoTheta < -tl::get_pi<t_real>()) m_dAnaTwoTheta += 2.*tl::get_pi<t_real>();
+			if(m_dAnaTwoTheta > tl::get_pi<t_real>()) m_dAnaTwoTheta -= 2.*tl::get_pi<t_real>();
 		}
 
 		//std::cout << m_dAnaTwoTheta/M_PI*180. << std::endl;
@@ -239,8 +239,8 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		if(m_bAllowChanges)
 		{
 			m_dTwoTheta = -(tl::vec_angle(vecSampleAna) - tl::vec_angle(vecMonoSample));
-			if(m_dTwoTheta < -M_PI) m_dTwoTheta += 2.*M_PI;
-			if(m_dTwoTheta > M_PI) m_dTwoTheta -= 2.*M_PI;
+			if(m_dTwoTheta < -tl::get_pi<t_real>()) m_dTwoTheta += 2.*tl::get_pi<t_real>();
+			if(m_dTwoTheta > tl::get_pi<t_real>()) m_dTwoTheta -= 2.*tl::get_pi<t_real>();
 		}
 
 		//std::cout << m_dTwoTheta/M_PI*180. << std::endl;
@@ -404,7 +404,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	{
 		t_real dArcSize = (pLines1[i]->length() + pLines2[i]->length()) / 2. / 3.;
 		t_real dBeginArcAngle = pLines1[i]->angle() + dAngleOffs[i];
-		t_real dArcAngle = dAngles[i]/M_PI*180.;
+		t_real dArcAngle = tl::r2d(dAngles[i]);
 
 		painter->setPen(*arcPens[i]);
 		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2.,
@@ -440,7 +440,7 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 		if(!pLines_arrow[i] || !pPoints_arrow[i])
 			continue;
 
-		t_real dAng = (pLines_arrow[i]->angle() - 90.) / 180. * M_PI;
+		t_real dAng = tl::d2r(pLines_arrow[i]->angle() - 90.);
 		t_real dC = std::cos(dAng);
 		t_real dS = std::sin(dAng);
 

@@ -8,15 +8,13 @@
 #ifndef __SG_TAB_H__
 #define __SG_TAB_H__
 
-#include "sghelper.h"
-
-#include <map>
 #include "crystalsys.h"
 #include "sghelper.h"
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
 #include "tlibs/file/prop.h"
 #include "libs/globals.h"
+#include <map>
 
 namespace ublas = boost::numeric::ublas;
 

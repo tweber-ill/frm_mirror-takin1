@@ -506,8 +506,8 @@ void PlotGl::updateViewMatrix()
 			{            0,               0, m_dMouseScale, 0},
 			{            0,               0,             0, 1}});
 
-	tl::t_mat4 matR0 = tl::rotation_matrix_3d_z(m_dMouseRot[0]/180.*M_PI);
-	tl::t_mat4 matR1 = tl::rotation_matrix_3d_x((-90. + m_dMouseRot[1])/180.*M_PI);
+	tl::t_mat4 matR0 = tl::rotation_matrix_3d_z(tl::d2r<t_real>(m_dMouseRot[0]));
+	tl::t_mat4 matR1 = tl::rotation_matrix_3d_x(tl::d2r<t_real>(-90. + m_dMouseRot[1]));
 	matR0.resize(4,4,1); matR1.resize(4,4,1);
 	matR0(3,3) = matR1(3,3) = 1.;
 	for(short i=0; i<3; ++i) matR0(i,3)=matR0(3,i)=matR1(i,3)=matR1(3,i)=0.;

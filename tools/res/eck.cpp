@@ -183,7 +183,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 
 	// [eck14], equ. 54
-	t_real refl = dRefl * std::sqrt(M_PI/Av(1,1));
+	t_real refl = dRefl * std::sqrt(tl::get_pi<t_real>()/Av(1,1));
 
 
 	return std::make_tuple(A, B, C, D, refl);
@@ -396,8 +396,8 @@ CNResults calc_eck(const EckParams& eck)
 	t_real W = (C + D + G + H) - 0.25*V1[5]/U1(5,5) - 0.25*V2[4]/U2(4,4);
 
 	t_real Z = dReflM*dReflA
-		* std::sqrt(M_PI/std::abs(U1(5,5)))
-		* std::sqrt(M_PI/std::abs(U2(4,4)));
+		* std::sqrt(tl::get_pi<t_real>()/std::abs(U1(5,5)))
+		* std::sqrt(tl::get_pi<t_real>()/std::abs(U2(4,4)));
 
 	/*std::cout << "U = " << U << std::endl;
 	std::cout << "V = " << V << std::endl;

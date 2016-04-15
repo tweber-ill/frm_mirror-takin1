@@ -48,9 +48,9 @@ void gen_atoms()
 	std::cout << "Enter unit cell angles: ";
 	std::cin >> alpha >> beta >> gamma;
 
-	alpha = alpha/180.*M_PI;
-	beta = beta/180.*M_PI;
-	gamma = gamma/180.*M_PI;
+	alpha = tl::d2r(alpha);
+	beta = tl::d2r(beta);
+	gamma = tl::d2r(gamma);
 
 	const tl::Lattice<double> lattice(a,b,c, alpha,beta,gamma);
 	const t_mat matA = lattice.GetMetric();

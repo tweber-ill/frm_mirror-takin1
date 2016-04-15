@@ -236,10 +236,10 @@ void ResoDlg::Calc()
 
 	// CN
 	cn.mono_d = t_real_reso(spinMonod->value()) * angs;
-	cn.mono_mosaic = t_real_reso(spinMonoMosaic->value() / (180.*60.) * M_PI) * rads;
+	cn.mono_mosaic = t_real_reso(tl::m2r(spinMonoMosaic->value())) * rads;
 	cn.ana_d = t_real_reso(spinAnad->value()) * angs;
-	cn.ana_mosaic = t_real_reso(spinAnaMosaic->value() / (180.*60.) * M_PI) * rads;
-	cn.sample_mosaic = t_real_reso(spinSampleMosaic->value() / (180.*60.) * M_PI) * rads;
+	cn.ana_mosaic = t_real_reso(tl::m2r(spinAnaMosaic->value())) * rads;
+	cn.sample_mosaic = t_real_reso(tl::m2r(spinSampleMosaic->value())) * rads;
 
 	cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
 	cn.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
@@ -248,15 +248,15 @@ void ResoDlg::Calc()
 	//if(spinQ->value() < 0.)
 	//	cn.dsample_sense = -cn.dsample_sense;
 
-	cn.coll_h_pre_mono = t_real_reso(spinHCollMono->value() / (180.*60.) * M_PI) * rads;
-	cn.coll_h_pre_sample = t_real_reso(spinHCollBSample->value() / (180.*60.) * M_PI) * rads;
-	cn.coll_h_post_sample = t_real_reso(spinHCollASample->value() / (180.*60.) * M_PI) * rads;
-	cn.coll_h_post_ana = t_real_reso(spinHCollAna->value() / (180.*60.) * M_PI) * rads;
+	cn.coll_h_pre_mono = t_real_reso(tl::m2r(spinHCollMono->value())) * rads;
+	cn.coll_h_pre_sample = t_real_reso(tl::m2r(spinHCollBSample->value())) * rads;
+	cn.coll_h_post_sample = t_real_reso(tl::m2r(spinHCollASample->value())) * rads;
+	cn.coll_h_post_ana = t_real_reso(tl::m2r(spinHCollAna->value())) * rads;
 
-	cn.coll_v_pre_mono = t_real_reso(spinVCollMono->value() / (180.*60.) * M_PI) * rads;
-	cn.coll_v_pre_sample = t_real_reso(spinVCollBSample->value() / (180.*60.) * M_PI) * rads;
-	cn.coll_v_post_sample = t_real_reso(spinVCollASample->value() / (180.*60.) * M_PI) * rads;
-	cn.coll_v_post_ana = t_real_reso(spinVCollAna->value() / (180.*60.) * M_PI) * rads;
+	cn.coll_v_pre_mono = t_real_reso(tl::m2r(spinVCollMono->value())) * rads;
+	cn.coll_v_pre_sample = t_real_reso(tl::m2r(spinVCollBSample->value())) * rads;
+	cn.coll_v_post_sample = t_real_reso(tl::m2r(spinVCollASample->value())) * rads;
+	cn.coll_v_post_ana = t_real_reso(tl::m2r(spinVCollAna->value())) * rads;
 
 	cn.dmono_refl = spinMonoRefl->value();
 	cn.dana_effic = spinAnaEffic->value();
@@ -336,8 +336,8 @@ void ResoDlg::Calc()
 	cn.det_h = t_real_reso(spinDetH->value()) * cm;
 
 	cn.bGuide = groupGuide->isChecked();
-	cn.guide_div_h = t_real_reso(spinGuideDivH->value() / (180.*60.) * M_PI) * rads;
-	cn.guide_div_v = t_real_reso(spinGuideDivV->value() / (180.*60.) * M_PI) * rads;
+	cn.guide_div_h = t_real_reso(tl::m2r(spinGuideDivH->value())) * rads;
+	cn.guide_div_v = t_real_reso(tl::m2r(spinGuideDivV->value())) * rads;
 
 	cn.dist_mono_sample = t_real_reso(spinDistMonoSample->value()) * cm;
 	cn.dist_sample_ana = t_real_reso(spinDistSampleAna->value()) * cm;
@@ -346,8 +346,8 @@ void ResoDlg::Calc()
 
 
 	// Eck
-	cn.mono_mosaic_v = t_real_reso(spinMonoMosaicV->value() / (180.*60.) * M_PI) * rads;
-	cn.ana_mosaic_v = t_real_reso(spinAnaMosaicV->value() / (180.*60.) * M_PI) * rads;
+	cn.mono_mosaic_v = t_real_reso(tl::m2r(spinMonoMosaicV->value())) * rads;
+	cn.ana_mosaic_v = t_real_reso(tl::m2r(spinAnaMosaicV->value())) * rads;
 	cn.pos_x = t_real_reso(spinSamplePosX->value()) * cm;
 	cn.pos_y = t_real_reso(spinSamplePosY->value()) * cm;
 	cn.pos_z = t_real_reso(spinSamplePosZ->value()) * cm;
@@ -379,7 +379,7 @@ void ResoDlg::Calc()
 		struct Ellipse ellVa = calc_res_ellipse(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
 		//std::cout << ellVa.phi/M_PI*180. << std::endl;
 		t_real_reso dVanadiumFWHM = ellVa.y_hwhm*2.;
-		if(std::fabs(ellVa.phi) >= M_PI/4.)
+		if(std::fabs(ellVa.phi) >= tl::get_pi<t_real_reso>()/4.)
 			dVanadiumFWHM = ellVa.x_hwhm*2.;
 		// --------------------------------------------------------------------------------
 
@@ -506,7 +506,7 @@ void ResoDlg::Calc()
 
 void ResoDlg::RefreshSimCmd()
 {
-	const t_real_reso dMin = t_real_reso(M_PI/180./60.);
+	const t_real_reso dMin = t_real_reso(tl::get_pi<t_real_reso>()/180./60.);
 
 	std::ostringstream ostrCmd;
 	ostrCmd.precision(12);

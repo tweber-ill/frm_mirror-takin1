@@ -227,11 +227,11 @@ void EllipseDlg::Calc()
 			ostrSlope.precision(4);
 			ostrSlope << "Projected ellipse (green):\n";
 			ostrSlope << "\tSlope: " << m_elliProj[iEll].slope << "\n";
-			ostrSlope << "\tAngle: " << m_elliProj[iEll].phi/M_PI*180. << strDeg << "\n";
+			ostrSlope << "\tAngle: " << tl::r2d(m_elliProj[iEll].phi) << strDeg << "\n";
 			ostrSlope << "\tArea " << m_elliProj[iEll].area << "\n";
 			ostrSlope << "Sliced ellipse (blue):\n";
 			ostrSlope << "\tSlope: " << m_elliSlice[iEll].slope << "\n";
-			ostrSlope << "\tAngle: " << m_elliSlice[iEll].phi/M_PI*180. << strDeg << "\n";
+			ostrSlope << "\tAngle: " << tl::r2d(m_elliSlice[iEll].phi) << strDeg << "\n";
 			ostrSlope << "\tArea " << m_elliSlice[iEll].area;
 			//m_vecplotwrap[iEll]->GetPlot()->setTitle(ostrSlope.str().c_str());
 			//std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;

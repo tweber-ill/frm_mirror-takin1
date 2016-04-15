@@ -151,24 +151,24 @@ void SicsCache::slot_receive(const std::string& str)
 	if(tl::str_is_equal<std::string>(strKey, "A2", false))
 	{
 		triag.bChangedMonoTwoTheta = 1;
-		triag.dMonoTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
+		triag.dMonoTwoTheta = tl::d2r(tl::str_to_var<t_real>(strVal));
 	}
 	// analyser
 	else if(tl::str_is_equal<std::string>(strKey, "A6", false))
 	{
 		triag.bChangedAnaTwoTheta = 1;
-		triag.dAnaTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
+		triag.dAnaTwoTheta = tl::d2r(tl::str_to_var<t_real>(strVal));
 	}
 	// sample
 	else if(tl::str_is_equal<std::string>(strKey, "A4", false))
 	{
 		triag.bChangedTwoTheta = 1;
-		triag.dTwoTheta = tl::str_to_var<t_real>(strVal) /180.*M_PI;
+		triag.dTwoTheta = tl::d2r(tl::str_to_var<t_real>(strVal));
 	}
 	else if(tl::str_is_equal<std::string>(strKey, "A3", false))
 	{
 		triag.bChangedAngleKiVec0 = 1;
-		triag.dAngleKiVec0 = -tl::str_to_var<t_real>(strVal) /180.*M_PI;
+		triag.dAngleKiVec0 = -tl::d2r(tl::str_to_var<t_real>(strVal));
 	}
 	// lattice constants and angles
 	else if(tl::str_is_equal_to_either<std::string>(strKey, {"AS", "BS", "CS", "AA", "BB", "CC"}, false))

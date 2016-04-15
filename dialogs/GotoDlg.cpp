@@ -461,7 +461,7 @@ bool GotoDlg::ApplyCurPos()
 
 	t_real dSampleTheta = m_dSampleTheta;
 	if(!m_bSenseS) dSampleTheta = -dSampleTheta;
-	triag.dAngleKiVec0 = M_PI/2. - dSampleTheta;
+	triag.dAngleKiVec0 = tl::get_pi<t_real>()/2. - dSampleTheta;
 	//log_info("kivec0 = ", triag.dAngleKiVec0/M_PI*180.);
 	//log_info("th = ", m_dSampleTheta/M_PI*180.);
 
