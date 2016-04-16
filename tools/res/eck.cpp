@@ -5,7 +5,7 @@
  * @date feb-2015
  * @license GPLv2
  *
- * @desc algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
+ * @desc for algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
  */
 
 #include "eck.h"
@@ -190,7 +190,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 }
 
 
-CNResults calc_eck(const EckParams& eck)
+ResoResults calc_eck(const EckParams& eck)
 {
 	angle twotheta = eck.twotheta * eck.dsample_sense;
 	angle thetaa = eck.thetaa * eck.dana_sense;
@@ -251,7 +251,7 @@ CNResults calc_eck(const EckParams& eck)
 	//std::cout << "2theta = " << t_real(twotheta/rads/M_PI*180.) << " deg"<< std::endl;
 
 
-	CNResults res;
+	ResoResults res;
 
 	res.Q_avg.resize(4);
 	res.Q_avg[0] = eck.Q*angs;

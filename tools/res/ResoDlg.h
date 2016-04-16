@@ -82,7 +82,7 @@ protected:
 
 
 	EckParams m_pop;
-	CNResults m_res;
+	ResoResults m_res;
 	ublas::matrix<t_real_reso> m_resoHKL, m_resoOrient;
 	ublas::vector<t_real_reso> m_Q_avgHKL, m_Q_avgOrient;
 
@@ -137,7 +137,7 @@ public:
 	}
 
 signals:
-	void ResoResults(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
+	void ResoResultsSig(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
 		const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
 		const ublas::matrix<t_real_reso>& resoHKL_orient, const ublas::vector<t_real_reso>& Q_avgHKL_orient,
 		int iAlgo);

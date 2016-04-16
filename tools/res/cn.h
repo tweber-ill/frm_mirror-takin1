@@ -15,14 +15,8 @@
 #include "defs.h"
 #include "tlibs/math/neutrons.hpp"
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
-
-namespace ublas = boost::numeric::ublas;
 namespace units = boost::units;
 namespace codata = boost::units::si::constants::codata;
-
 
 struct CNParams
 {
@@ -68,23 +62,6 @@ struct CNParams
 	bool bCalcR0 = 1;
 };
 
-struct CNResults
-{
-	bool bOk;
-	std::string strErr;
-
-	ublas::matrix<t_real_reso> reso;		// quadratic part of quadric
-	ublas::vector<t_real_reso> reso_v;		// linear part of quadric
-	t_real_reso reso_s;				// constant part of quadric
-
-	ublas::vector<t_real_reso> Q_avg;
-	t_real_reso dR0;				// resolution prefactor
-	t_real_reso dResVol;				// resolution volume in 1/A^3 * meV
-
-	t_real_reso dBraggFWHMs[4];
-};
-
-
-extern CNResults calc_cn(const CNParams& cn);
+extern ResoResults calc_cn(const CNParams& cn);
 
 #endif

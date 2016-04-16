@@ -35,7 +35,7 @@ protected:
 
 	McNeutronOpts<ublas::matrix<t_real_reso>> m_opts;
 	EckParams m_reso;
-	CNResults m_res;
+	ResoResults m_res;
 
 	bool m_bKiFix = 0;
 	t_real_reso m_dKFix = 1.4;
@@ -63,7 +63,7 @@ public:
 	void SetOptimalFocus(ResoFocus foc) { m_foc = foc; }
 
 	const EckParams& GetResoParams() const { return m_reso; }
-	const CNResults& GetResoResults() const { return m_res; }
+	const ResoResults& GetResoResults() const { return m_res; }
 };
 
 #endif

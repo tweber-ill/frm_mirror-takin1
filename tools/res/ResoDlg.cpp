@@ -232,7 +232,7 @@ void ResoDlg::Calc()
 	if(m_bDontCalc) return;
 
 	EckParams& cn = m_pop;
-	CNResults &res = m_res;
+	ResoResults &res = m_res;
 
 	// CN
 	cn.mono_d = t_real_reso(spinMonod->value()) * angs;
@@ -563,7 +563,7 @@ void ResoDlg::RefreshSimCmd()
 
 void ResoDlg::EmitResults()
 {
-	emit ResoResults(m_res.reso, m_res.Q_avg,
+	emit ResoResultsSig(m_res.reso, m_res.Q_avg,
 		m_resoHKL, m_Q_avgHKL,
 		m_resoOrient, m_Q_avgOrient,
 		comboAlgo->currentIndex());

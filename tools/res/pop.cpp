@@ -34,9 +34,9 @@ static const auto meV = tl::get_one_meV<t_real>();
 static const auto cm = tl::get_one_centimeter<t_real>();
 
 
-CNResults calc_pop(const PopParams& pop)
+ResoResults calc_pop(const PopParams& pop)
 {
-	CNResults res;
+	ResoResults res;
 
 	res.Q_avg.resize(4);
 	res.Q_avg[0] = pop.Q*angs;

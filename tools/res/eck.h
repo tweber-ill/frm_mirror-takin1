@@ -5,14 +5,13 @@
  * @date feb-2015
  * @license GPLv2
  *
- * @desc algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
+ * @desc for algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
  */
 
 #ifndef __RESO_ECK_H__
 #define __RESO_ECK_H__
 
 #include "pop.h"
-
 
 struct EckParams : public PopParams
 {
@@ -23,8 +22,7 @@ struct EckParams : public PopParams
 };
 
 
-extern CNResults calc_eck(const EckParams& eck);
+extern ResoResults calc_eck(const EckParams& eck);
 
 
 #endif
-

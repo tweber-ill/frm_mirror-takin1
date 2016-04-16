@@ -330,7 +330,7 @@ bool run_job(const std::string& strJob)
 			pltMod.vecX = vecModTmpX;
 			pltMod.vecY = vecModTmpY;
 			pltMod.linestyle = tl::STYLE_LINES_SOLID;
-			pltMod.dSize = 1.5; pltMod.bHasSize = 1;
+			pltMod.odSize = 1.5;
 
 			plt->StartPlot();
 			plt->SetYLabel("Intensity");
@@ -526,7 +526,7 @@ bool run_job(const std::string& strJob)
 		pltMod.vecX = datMod.GetColumn(0);
 		pltMod.vecY = datMod.GetColumn(1);
 		pltMod.linestyle = tl::STYLE_LINES_SOLID;
-		pltMod.dSize = 1.5; pltMod.bHasSize = 1;
+		pltMod.odSize = 1.5;
 
 		plt->StartPlot();
 		plt->SetYLabel("Intensity");

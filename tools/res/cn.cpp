@@ -35,9 +35,9 @@ static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
 
 
-CNResults calc_cn(const CNParams& cn)
+ResoResults calc_cn(const CNParams& cn)
 {
-	CNResults res;
+	ResoResults res;
 
 	res.Q_avg.resize(4);
 	res.Q_avg[0] = cn.Q * angs;
@@ -61,14 +61,11 @@ CNResults calc_cn(const CNParams& cn)
 	// -------------------------------------------------------------------------
 	// transformation matrix
 
-	angle twotheta = cn.twotheta;
 	angle thetaa = cn.thetaa * cn.dana_sense;
 	angle thetam = cn.thetam * cn.dmono_sense;
 	angle ki_Q = cn.angle_ki_Q;
 	angle kf_Q = cn.angle_kf_Q;
-	//kf_Q = twotheta + ki_Q;
 
-	twotheta *= cn.dsample_sense;
 	ki_Q *= cn.dsample_sense;
 	kf_Q *= cn.dsample_sense;
 

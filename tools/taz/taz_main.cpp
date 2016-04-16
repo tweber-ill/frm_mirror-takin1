@@ -21,6 +21,8 @@
 #include <QMessageBox>
 #include <QCoreApplication>
 
+#include <system_error>
+#include <boost/system/system_error.hpp>
 
 #ifdef Q_WS_X11
 	extern "C" int XInitThreads();
@@ -48,6 +50,14 @@ static bool add_logfile(std::ofstream* postrLog, bool bAdd=1)
 
 	if(!bAdd) postrLog->operator<<(std::endl);
 	return 1;
+}
+
+template<class SysErr = std::system_error>
+static inline void sys_err(const SysErr& err)
+{
+	tl::log_crit("System error: ", err.what(),
+		", category: ", err.code().category().name(),
+		", value: ", err.code().value(), ".");
 }
 
 int main(int argc, char** argv)
@@ -164,9 +174,11 @@ int main(int argc, char** argv)
 
 		return iRet;
 	}
+	catch(const std::system_error& err) { sys_err(err); }
+	catch(const boost::system::system_error& err) { sys_err(err); }
 	catch(const std::exception& ex)
 	{
-		tl::log_crit(ex.what());
+		tl::log_crit("Exception: ", ex.what());
 	}
 	return -1;
 }

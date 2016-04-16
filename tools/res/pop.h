@@ -58,6 +58,6 @@ struct PopParams : public CNParams
 };
 
 
-extern CNResults calc_pop(const PopParams& pop);
+extern ResoResults calc_pop(const PopParams& pop);
 
 #endif
