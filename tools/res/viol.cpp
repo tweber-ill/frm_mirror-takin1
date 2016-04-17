@@ -201,7 +201,7 @@ ResoResults calc_viol(const ViolParams& params)
 	{
 		res.bOk = false;
 		res.strErr = "Jacobi matrix cannot be inverted.";
-		//return res;
+		return res;
 	}
 
 #ifndef NDEBUG
@@ -211,6 +211,26 @@ ResoResults calc_viol(const ViolParams& params)
 #endif
 	// --------------------------------------------------------------------
 
+	// transform to Q_perp, Q_para system
+	t_mat matKiQ = tl::rotation_matrix_2d(-params.angle_ki_Q / rads);
+	matKiQ.resize(4,4, true);
+	matKiQ(2,2) = matKiQ(3,3) = 1.;
+	matKiQ(2,0) = matKiQ(2,1) = matKiQ(2,3) = matKiQ(3,0) = matKiQ(3,1) =
+	matKiQ(3,2) = matKiQ(0,2) = matKiQ(0,3) = matKiQ(1,2) = matKiQ(1,3) = 0.;
 
+	res.reso = tl::transform(res.reso, matKiQ, 1);
+
+
+	res.dResVol = tl::get_ellipsoid_volume(res.reso);
+	res.dR0 = 0.;   // TODO
+
+	// Bragg widths
+	for(unsigned int i=0; i<4; ++i)
+		res.dBraggFWHMs[i] = tl::SIGMA2FWHM/sqrt(res.reso(i,i));
+
+	res.reso_v = ublas::zero_vector<t_real>(4);
+	res.reso_s = 0.;
+
+	res.bOk = true;
 	return res;
 }

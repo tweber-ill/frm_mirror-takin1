@@ -257,9 +257,10 @@ void EllipseDlg::Calc()
 
 			switch(iAlgo)
 			{
-				case 0: SetTitle("Cooper-Nathans"); break;
-				case 1: SetTitle("Popovici"); break;
-				case 2: SetTitle("Eckold-Sobolev"); break;
+				case 0: SetTitle("Cooper-Nathans Algorithm (TAS)"); break;
+				case 1: SetTitle("Popovici Algorithm (TAS)"); break;
+				case 2: SetTitle("Eckold-Sobolev Algorithm (TAS)"); break;
+				case 3: SetTitle("Violini Algorithm (TOF)"); break;
 				default: SetTitle(""); break;
 			}
 		}

@@ -20,6 +20,7 @@
 #include "cn.h"
 #include "pop.h"
 #include "eck.h"
+#include "viol.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/prop.h"
 #ifndef NO_3D
@@ -81,7 +82,8 @@ protected:
 	// -------------------------------------------------------------------------
 
 
-	EckParams m_pop;
+	EckParams m_tasparams;
+	ViolParams m_tofparams;
 	ResoResults m_res;
 	ublas::matrix<t_real_reso> m_resoHKL, m_resoOrient;
 	ublas::vector<t_real_reso> m_Q_avgHKL, m_Q_avgOrient;

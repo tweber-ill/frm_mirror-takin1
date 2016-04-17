@@ -36,6 +36,7 @@ static const auto rads = tl::get_one_radian<t_real_reso>();
 static const auto meV = tl::get_one_meV<t_real_reso>();
 static const auto cm = tl::get_one_centimeter<t_real_reso>();
 static const auto meters = tl::get_one_meter<t_real_reso>();
+static const auto sec = tl::get_one_second<t_real_reso>();
 
 
 ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
@@ -74,7 +75,14 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinDistMonoSample, spinDistSampleAna, spinDistAnaDet, spinDistSrcMono,
 
 		spinMonoMosaicV, spinAnaMosaicV,
-		spinSamplePosX, spinSamplePosY, spinSamplePosZ};
+		spinSamplePosX, spinSamplePosY, spinSamplePosZ,
+
+		spinDistTofPulseMono, spinDistTofMonoSample, spinDistTofSampleDet,
+		spinDistTofPulseMonoSig, spinDistTofMonoSampleSig, spinDistTofSampleDetSig,
+		spinTofPulseSig, spinTofMonoSig, spinTofDetSig,
+		spinTof2thI, spinTofphI, spinTofphF,
+		spinTof2thISig, spinTof2thFSig, spinTofphISig, spinTofphFSig,
+		};
 
 	m_vecSpinNames = {"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
 		"reso/ana_mosaic", "reso/sample_mosaic",
@@ -93,7 +101,14 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det", "reso/pop_dist_src_mono",
 
 		"reso/eck_mono_mosaic_v", "reso/eck_ana_mosaic_v",
-		"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z"};
+		"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z",
+
+		"reso/viol_dist_pulse_mono", "reso/viol_dist_mono_sample", "reso/viol_dist_sample_det",
+		"reso/viol_dist_pulse_mono_sig", "reso/viol_dist_mono_sample_sig", "reso/viol_dist_sample_det_sig",
+		"reso/viol_time_pulse_sig", "reso/viol_time_mono_sig", "reso/viol_time_det_sig",
+		"reso/viol_angle_tt_i", "reso/viol_angle_ph_i", "reso/viol_angle_ph_f",
+		"reso/viol_angle_tt_i_sig", "reso/viol_angle_tt_f_sig", "reso/viol_angle_ph_i_sig", "reso/viol_angle_ph_f_sig",
+		};
 
 	m_vecEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
@@ -144,14 +159,15 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	Calc();
 }
 
-ResoDlg::~ResoDlg()
-{}
+ResoDlg::~ResoDlg() {}
 
 void ResoDlg::setupAlgos()
 {
 	comboAlgo->addItem("Cooper-Nathans");
 	comboAlgo->addItem("Popovici");
 	comboAlgo->addItem("Eckold-Sobolev");
+	comboAlgo->addItem("Violini (TOF)");
+	//comboAlgo->insertSeparator(3);
 }
 
 void ResoDlg::SaveRes()
@@ -228,279 +244,311 @@ void ResoDlg::LoadRes()
 
 void ResoDlg::Calc()
 {
-	m_bEll4dCurrent = 0;
-	if(m_bDontCalc) return;
-
-	EckParams& cn = m_pop;
-	ResoResults &res = m_res;
-
-	// CN
-	cn.mono_d = t_real_reso(spinMonod->value()) * angs;
-	cn.mono_mosaic = t_real_reso(tl::m2r(spinMonoMosaic->value())) * rads;
-	cn.ana_d = t_real_reso(spinAnad->value()) * angs;
-	cn.ana_mosaic = t_real_reso(tl::m2r(spinAnaMosaic->value())) * rads;
-	cn.sample_mosaic = t_real_reso(tl::m2r(spinSampleMosaic->value())) * rads;
-
-	cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
-	cn.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
-	cn.dsample_sense = (radioSampleScatterPlus->isChecked() ? +1. : -1.);
-	//std::cout << "sample sense: " << cn.dsample_sense << std::endl;
-	//if(spinQ->value() < 0.)
-	//	cn.dsample_sense = -cn.dsample_sense;
-
-	cn.coll_h_pre_mono = t_real_reso(tl::m2r(spinHCollMono->value())) * rads;
-	cn.coll_h_pre_sample = t_real_reso(tl::m2r(spinHCollBSample->value())) * rads;
-	cn.coll_h_post_sample = t_real_reso(tl::m2r(spinHCollASample->value())) * rads;
-	cn.coll_h_post_ana = t_real_reso(tl::m2r(spinHCollAna->value())) * rads;
-
-	cn.coll_v_pre_mono = t_real_reso(tl::m2r(spinVCollMono->value())) * rads;
-	cn.coll_v_pre_sample = t_real_reso(tl::m2r(spinVCollBSample->value())) * rads;
-	cn.coll_v_post_sample = t_real_reso(tl::m2r(spinVCollASample->value())) * rads;
-	cn.coll_v_post_ana = t_real_reso(tl::m2r(spinVCollAna->value())) * rads;
-
-	cn.dmono_refl = spinMonoRefl->value();
-	cn.dana_effic = spinAnaEffic->value();
-
-
-	// Position
-	cn.ki = t_real_reso(editKi->text().toDouble()) / angs;
-	cn.kf = t_real_reso(editKf->text().toDouble()) / angs;
-	cn.E = t_real_reso(editE->text().toDouble()) * meV;
-	//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
-	//std::cout << "E = " << editE->text().toStdString() << std::endl;
-	cn.Q = t_real_reso(editQ->text().toDouble()) / angs;
-
-
-	// Pop
-	cn.mono_w = t_real_reso(spinMonoW->value()) * cm;
-	cn.mono_h = t_real_reso(spinMonoH->value()) * cm;
-	cn.mono_thick = t_real_reso(spinMonoThick->value()) * cm;
-	cn.mono_curvh = t_real_reso(spinMonoCurvH->value()) * cm;
-	cn.mono_curvv = t_real_reso(spinMonoCurvV->value()) * cm;
-	cn.bMonoIsCurvedH = cn.bMonoIsCurvedV = 0;
-	cn.bMonoIsOptimallyCurvedH = cn.bMonoIsOptimallyCurvedV = 0;
-	spinMonoCurvH->setEnabled(0); spinMonoCurvV->setEnabled(0);
-
-	if(comboMonoHori->currentIndex()==2)
+	try
 	{
-		cn.bMonoIsCurvedH = 1;
-		spinMonoCurvH->setEnabled(1);
-	}
-	else if(comboMonoHori->currentIndex()==1)
-		cn.bMonoIsCurvedH = cn.bMonoIsOptimallyCurvedH = 1;
+		m_bEll4dCurrent = 0;
+		if(m_bDontCalc) return;
 
-	if(comboMonoVert->currentIndex()==2)
-	{
-		cn.bMonoIsCurvedV = 1;
-		spinMonoCurvV->setEnabled(1);
-	}
-	else if(comboMonoVert->currentIndex()==1)
-		cn.bMonoIsCurvedV = cn.bMonoIsOptimallyCurvedV = 1;
+		EckParams& cn = m_tasparams;
+		ViolParams& tof = m_tofparams;
+		ResoResults &res = m_res;
 
-	cn.ana_w = t_real_reso(spinAnaW->value()) *cm;
-	cn.ana_h = t_real_reso(spinAnaH->value()) * cm;
-	cn.ana_thick = t_real_reso(spinAnaThick->value()) * cm;
-	cn.ana_curvh = t_real_reso(spinAnaCurvH->value()) * cm;
-	cn.ana_curvv = t_real_reso(spinAnaCurvV->value()) * cm;
-	cn.bAnaIsCurvedH = cn.bAnaIsCurvedV = 0;
-	cn.bAnaIsOptimallyCurvedH = cn.bAnaIsOptimallyCurvedV = 0;
-	spinAnaCurvH->setEnabled(0); spinAnaCurvV->setEnabled(0);
+		// CN
+		cn.mono_d = t_real_reso(spinMonod->value()) * angs;
+		cn.mono_mosaic = t_real_reso(tl::m2r(spinMonoMosaic->value())) * rads;
+		cn.ana_d = t_real_reso(spinAnad->value()) * angs;
+		cn.ana_mosaic = t_real_reso(tl::m2r(spinAnaMosaic->value())) * rads;
+		cn.sample_mosaic = t_real_reso(tl::m2r(spinSampleMosaic->value())) * rads;
 
-	if(comboAnaHori->currentIndex()==2)
-	{
-		cn.bAnaIsCurvedH = 1;
-		spinAnaCurvH->setEnabled(1);
-	}
-	else if(comboAnaHori->currentIndex()==1)
-		cn.bAnaIsCurvedH = cn.bAnaIsOptimallyCurvedH = 1;
+		cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
+		cn.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
+		cn.dsample_sense = (radioSampleScatterPlus->isChecked() ? +1. : -1.);
+		//std::cout << "sample sense: " << cn.dsample_sense << std::endl;
+		//if(spinQ->value() < 0.)
+		//	cn.dsample_sense = -cn.dsample_sense;
 
-	if(comboAnaVert->currentIndex()==2)
-	{
-		cn.bAnaIsCurvedV = 1;
-		spinAnaCurvV->setEnabled(1);
-	}
-	else if(comboAnaVert->currentIndex()==1)
-		cn.bAnaIsCurvedV = cn.bAnaIsOptimallyCurvedV = 1;
+		cn.coll_h_pre_mono = t_real_reso(tl::m2r(spinHCollMono->value())) * rads;
+		cn.coll_h_pre_sample = t_real_reso(tl::m2r(spinHCollBSample->value())) * rads;
+		cn.coll_h_post_sample = t_real_reso(tl::m2r(spinHCollASample->value())) * rads;
+		cn.coll_h_post_ana = t_real_reso(tl::m2r(spinHCollAna->value())) * rads;
 
-	cn.bSampleCub = radioSampleCub->isChecked();
-	cn.sample_w_q = t_real_reso(spinSampleW_Q->value()) * cm;
-	cn.sample_w_perpq = t_real_reso(spinSampleW_perpQ->value()) * cm;
-	cn.sample_h = t_real_reso(spinSampleH->value()) * cm;
+		cn.coll_v_pre_mono = t_real_reso(tl::m2r(spinVCollMono->value())) * rads;
+		cn.coll_v_pre_sample = t_real_reso(tl::m2r(spinVCollBSample->value())) * rads;
+		cn.coll_v_post_sample = t_real_reso(tl::m2r(spinVCollASample->value())) * rads;
+		cn.coll_v_post_ana = t_real_reso(tl::m2r(spinVCollAna->value())) * rads;
 
-	cn.bSrcRect = radioSrcRect->isChecked();
-	cn.src_w = t_real_reso(spinSrcW->value()) * cm;
-	cn.src_h = t_real_reso(spinSrcH->value()) * cm;
-
-	cn.bDetRect = radioDetRect->isChecked();
-	cn.det_w = t_real_reso(spinDetW->value()) * cm;
-	cn.det_h = t_real_reso(spinDetH->value()) * cm;
-
-	cn.bGuide = groupGuide->isChecked();
-	cn.guide_div_h = t_real_reso(tl::m2r(spinGuideDivH->value())) * rads;
-	cn.guide_div_v = t_real_reso(tl::m2r(spinGuideDivV->value())) * rads;
-
-	cn.dist_mono_sample = t_real_reso(spinDistMonoSample->value()) * cm;
-	cn.dist_sample_ana = t_real_reso(spinDistSampleAna->value()) * cm;
-	cn.dist_ana_det = t_real_reso(spinDistAnaDet->value()) * cm;
-	cn.dist_src_mono = t_real_reso(spinDistSrcMono->value()) * cm;
+		cn.dmono_refl = spinMonoRefl->value();
+		cn.dana_effic = spinAnaEffic->value();
 
 
-	// Eck
-	cn.mono_mosaic_v = t_real_reso(tl::m2r(spinMonoMosaicV->value())) * rads;
-	cn.ana_mosaic_v = t_real_reso(tl::m2r(spinAnaMosaicV->value())) * rads;
-	cn.pos_x = t_real_reso(spinSamplePosX->value()) * cm;
-	cn.pos_y = t_real_reso(spinSamplePosY->value()) * cm;
-	cn.pos_z = t_real_reso(spinSamplePosZ->value()) * cm;
-
-	// TODO
-	cn.mono_numtiles_h = 1;
-	cn.mono_numtiles_v = 1;
-	cn.ana_numtiles_h = 1;
-	cn.ana_numtiles_v = 1;
+		// Position
+		cn.ki = t_real_reso(editKi->text().toDouble()) / angs;
+		cn.kf = t_real_reso(editKf->text().toDouble()) / angs;
+		cn.E = t_real_reso(editE->text().toDouble()) * meV;
+		//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
+		//std::cout << "E = " << editE->text().toStdString() << std::endl;
+		cn.Q = t_real_reso(editQ->text().toDouble()) / angs;
 
 
+		// Pop
+		cn.mono_w = t_real_reso(spinMonoW->value()) * cm;
+		cn.mono_h = t_real_reso(spinMonoH->value()) * cm;
+		cn.mono_thick = t_real_reso(spinMonoThick->value()) * cm;
+		cn.mono_curvh = t_real_reso(spinMonoCurvH->value()) * cm;
+		cn.mono_curvv = t_real_reso(spinMonoCurvV->value()) * cm;
+		cn.bMonoIsCurvedH = cn.bMonoIsCurvedV = 0;
+		cn.bMonoIsOptimallyCurvedH = cn.bMonoIsOptimallyCurvedV = 0;
+		spinMonoCurvH->setEnabled(0); spinMonoCurvV->setEnabled(0);
 
-	switch(comboAlgo->currentIndex())
-	{
-		case 0: res = calc_cn(cn); break;
-		case 1: res = calc_pop(cn); break;
-		case 2: res = calc_eck(cn); break;
-		default: tl::log_err("Unknown resolution algorithm selected."); return;
-	}
-
-	editE->setText(std::to_string(cn.E / meV).c_str());
-	//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
-	//if(m_pScatterDlg) m_pScatterDlg->SetParams(cn, res);
-
-	if(res.bOk)
-	{
-		// --------------------------------------------------------------------------------
-		// Vanadium width
-		struct Ellipse ellVa = calc_res_ellipse(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
-		//std::cout << ellVa.phi/M_PI*180. << std::endl;
-		t_real_reso dVanadiumFWHM = ellVa.y_hwhm*2.;
-		if(std::fabs(ellVa.phi) >= tl::get_pi<t_real_reso>()/4.)
-			dVanadiumFWHM = ellVa.x_hwhm*2.;
-		// --------------------------------------------------------------------------------
-
-		const std::string& strAA_1 = tl::get_spec_char_utf8("AA")
-			+ tl::get_spec_char_utf8("sup-")
-			+ tl::get_spec_char_utf8("sup1");
-		const std::string& strAA_3 = tl::get_spec_char_utf8("AA")
-			+ tl::get_spec_char_utf8("sup-")
-			+ tl::get_spec_char_utf8("sup3");
-
-		std::ostringstream ostrRes;
-
-		//ostrRes << std::scientific;
-		ostrRes.precision(g_iPrec);
-		ostrRes << "<html><body>\n";
-
-		ostrRes << "<p><b>Correction Factors:</b>\n";
-		ostrRes << "\t<ul><li>Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "</li>\n";
-		ostrRes << "\t<li>R0: " << res.dR0 << "</li></ul></p>\n\n";
-
-		ostrRes << "<p><b>Bragg FWHMs:</b>\n";
-		ostrRes << "\t<ul><li>Q_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "</li>\n";
-		ostrRes << "\t<li>Q_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "</li>\n";
-		ostrRes << "\t<li>Q_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "</li>\n";
-		ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
-
-		ostrRes << "<p><b>Vanadium FWHM:</b> " << dVanadiumFWHM << " meV</p>\n\n";
-
-		ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
-		ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
-		for(unsigned int i=0; i<res.reso.size1(); ++i)
+		if(comboMonoHori->currentIndex()==2)
 		{
-			ostrRes << "<tr>\n";
-			for(unsigned int j=0; j<res.reso.size2(); ++j)
-				ostrRes << "<td>" << std::setw(g_iPrec*2) << res.reso(i,j) << "</td>";
-			ostrRes << "</tr>\n";
-
-			if(i!=res.reso.size1()-1)
-				ostrRes << "\n";
+			cn.bMonoIsCurvedH = 1;
+			spinMonoCurvH->setEnabled(1);
 		}
-		ostrRes << "</table></blockquote></p>\n";
-		ostrRes << "</body></html>";
+		else if(comboMonoHori->currentIndex()==1)
+			cn.bMonoIsCurvedH = cn.bMonoIsOptimallyCurvedH = 1;
 
-		editResults->setHtml(QString::fromUtf8(ostrRes.str().c_str()));
-		labelStatus->setText("Calculation successful.");
+		if(comboMonoVert->currentIndex()==2)
+		{
+			cn.bMonoIsCurvedV = 1;
+			spinMonoCurvV->setEnabled(1);
+		}
+		else if(comboMonoVert->currentIndex()==1)
+			cn.bMonoIsCurvedV = cn.bMonoIsOptimallyCurvedV = 1;
+
+		cn.ana_w = t_real_reso(spinAnaW->value()) *cm;
+		cn.ana_h = t_real_reso(spinAnaH->value()) * cm;
+		cn.ana_thick = t_real_reso(spinAnaThick->value()) * cm;
+		cn.ana_curvh = t_real_reso(spinAnaCurvH->value()) * cm;
+		cn.ana_curvv = t_real_reso(spinAnaCurvV->value()) * cm;
+		cn.bAnaIsCurvedH = cn.bAnaIsCurvedV = 0;
+		cn.bAnaIsOptimallyCurvedH = cn.bAnaIsOptimallyCurvedV = 0;
+		spinAnaCurvH->setEnabled(0); spinAnaCurvV->setEnabled(0);
+
+		if(comboAnaHori->currentIndex()==2)
+		{
+			cn.bAnaIsCurvedH = 1;
+			spinAnaCurvH->setEnabled(1);
+		}
+		else if(comboAnaHori->currentIndex()==1)
+			cn.bAnaIsCurvedH = cn.bAnaIsOptimallyCurvedH = 1;
+
+		if(comboAnaVert->currentIndex()==2)
+		{
+			cn.bAnaIsCurvedV = 1;
+			spinAnaCurvV->setEnabled(1);
+		}
+		else if(comboAnaVert->currentIndex()==1)
+			cn.bAnaIsCurvedV = cn.bAnaIsOptimallyCurvedV = 1;
+
+		cn.bSampleCub = radioSampleCub->isChecked();
+		cn.sample_w_q = t_real_reso(spinSampleW_Q->value()) * cm;
+		cn.sample_w_perpq = t_real_reso(spinSampleW_perpQ->value()) * cm;
+		cn.sample_h = t_real_reso(spinSampleH->value()) * cm;
+
+		cn.bSrcRect = radioSrcRect->isChecked();
+		cn.src_w = t_real_reso(spinSrcW->value()) * cm;
+		cn.src_h = t_real_reso(spinSrcH->value()) * cm;
+
+		cn.bDetRect = radioDetRect->isChecked();
+		cn.det_w = t_real_reso(spinDetW->value()) * cm;
+		cn.det_h = t_real_reso(spinDetH->value()) * cm;
+
+		cn.bGuide = groupGuide->isChecked();
+		cn.guide_div_h = t_real_reso(tl::m2r(spinGuideDivH->value())) * rads;
+		cn.guide_div_v = t_real_reso(tl::m2r(spinGuideDivV->value())) * rads;
+
+		cn.dist_mono_sample = t_real_reso(spinDistMonoSample->value()) * cm;
+		cn.dist_sample_ana = t_real_reso(spinDistSampleAna->value()) * cm;
+		cn.dist_ana_det = t_real_reso(spinDistAnaDet->value()) * cm;
+		cn.dist_src_mono = t_real_reso(spinDistSrcMono->value()) * cm;
+
+
+		// Eck
+		cn.mono_mosaic_v = t_real_reso(tl::m2r(spinMonoMosaicV->value())) * rads;
+		cn.ana_mosaic_v = t_real_reso(tl::m2r(spinAnaMosaicV->value())) * rads;
+		cn.pos_x = t_real_reso(spinSamplePosX->value()) * cm;
+		cn.pos_y = t_real_reso(spinSamplePosY->value()) * cm;
+		cn.pos_z = t_real_reso(spinSamplePosZ->value()) * cm;
+
+		// TODO
+		cn.mono_numtiles_h = 1;
+		cn.mono_numtiles_v = 1;
+		cn.ana_numtiles_h = 1;
+		cn.ana_numtiles_v = 1;
+
+
+		// TOF
+		tof.len_pulse_mono = t_real_reso(spinDistTofPulseMono->value()) * cm;
+		tof.len_mono_sample = t_real_reso(spinDistTofMonoSample->value()) * cm;
+		tof.len_sample_det = t_real_reso(spinDistTofSampleDet->value()) * cm;
+
+		tof.sig_len_pulse_mono = t_real_reso(spinDistTofPulseMonoSig->value()) * cm;
+		tof.sig_len_mono_sample = t_real_reso(spinDistTofMonoSampleSig->value()) * cm;
+		tof.sig_len_sample_det = t_real_reso(spinDistTofSampleDetSig->value()) * cm;
+
+		tof.sig_pulse = t_real_reso(spinTofPulseSig->value() * 1e-6) * sec;
+		tof.sig_mono = t_real_reso(spinTofMonoSig->value() * 1e-6) * sec;
+		tof.sig_det = t_real_reso(spinTofDetSig->value() * 1e-6) * sec;
+
+		tof.twotheta_i = tl::d2r(t_real_reso(spinTof2thI->value())) * rads;
+		tof.angle_outplane_i = tl::d2r(t_real_reso(spinTofphI->value())) * rads;
+		tof.angle_outplane_f = tl::d2r(t_real_reso(spinTofphF->value())) * rads;
+
+		tof.sig_twotheta_i = tl::d2r(t_real_reso(spinTof2thISig->value())) * rads;
+		tof.sig_twotheta_f = tl::d2r(t_real_reso(spinTof2thFSig->value())) * rads;
+		tof.sig_outplane_i = tl::d2r(t_real_reso(spinTofphISig->value())) * rads;
+		tof.sig_outplane_f = tl::d2r(t_real_reso(spinTofphFSig->value())) * rads;
+
+
+		// Calculation
+		switch(comboAlgo->currentIndex())
+		{
+			case 0: res = calc_cn(cn); break;
+			case 1: res = calc_pop(cn); break;
+			case 2: res = calc_eck(cn); break;
+			case 3: res = calc_viol(tof); break;
+			default: tl::log_err("Unknown resolution algorithm selected."); return;
+		}
+
+		editE->setText(tl::var_to_str(t_real_reso(cn.E/meV), g_iPrec).c_str());
+		//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
+		//if(m_pScatterDlg) m_pScatterDlg->SetParams(cn, res);
+
+		if(res.bOk)
+		{
+			// --------------------------------------------------------------------------------
+			// Vanadium width
+			struct Ellipse ellVa = calc_res_ellipse(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
+			//std::cout << ellVa.phi/M_PI*180. << std::endl;
+			t_real_reso dVanadiumFWHM = ellVa.y_hwhm*2.;
+			if(std::fabs(ellVa.phi) >= tl::get_pi<t_real_reso>()/4.)
+				dVanadiumFWHM = ellVa.x_hwhm*2.;
+			// --------------------------------------------------------------------------------
+
+			const std::string& strAA_1 = tl::get_spec_char_utf8("AA")
+				+ tl::get_spec_char_utf8("sup-")
+				+ tl::get_spec_char_utf8("sup1");
+			const std::string& strAA_3 = tl::get_spec_char_utf8("AA")
+				+ tl::get_spec_char_utf8("sup-")
+				+ tl::get_spec_char_utf8("sup3");
+
+			std::ostringstream ostrRes;
+
+			//ostrRes << std::scientific;
+			ostrRes.precision(g_iPrec);
+			ostrRes << "<html><body>\n";
+
+			ostrRes << "<p><b>Correction Factors:</b>\n";
+			ostrRes << "\t<ul><li>Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "</li>\n";
+			ostrRes << "\t<li>R0: " << res.dR0 << "</li></ul></p>\n\n";
+
+			ostrRes << "<p><b>Bragg FWHMs:</b>\n";
+			ostrRes << "\t<ul><li>Q_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>Q_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>Q_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
+
+			ostrRes << "<p><b>Vanadium FWHM:</b> " << dVanadiumFWHM << " meV</p>\n\n";
+
+			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
+			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
+			for(unsigned int i=0; i<res.reso.size1(); ++i)
+			{
+				ostrRes << "<tr>\n";
+				for(unsigned int j=0; j<res.reso.size2(); ++j)
+					ostrRes << "<td>" << std::setw(g_iPrec*2) << res.reso(i,j) << "</td>";
+				ostrRes << "</tr>\n";
+
+				if(i!=res.reso.size1()-1)
+					ostrRes << "\n";
+			}
+			ostrRes << "</table></blockquote></p>\n";
+			ostrRes << "</body></html>";
+
+			editResults->setHtml(QString::fromUtf8(ostrRes.str().c_str()));
+			labelStatus->setText("Calculation successful.");
 
 #ifndef NDEBUG
-		// check against ELASTIC approximation for perp. slope from Shirane p. 268
-		// valid for small mosaicities
-		t_real_reso dEoverQperp = tl::co::hbar*tl::co::hbar*cn.ki / tl::co::m_n
-			* units::cos(cn.twotheta/2.)
-			* (1. + units::tan(units::abs(cn.twotheta/2.))
-			* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam)))
-				/ meV / angs;
+			// check against ELASTIC approximation for perp. slope from Shirane p. 268
+			// valid for small mosaicities
+			t_real_reso dEoverQperp = tl::co::hbar*tl::co::hbar*cn.ki / tl::co::m_n
+				* units::cos(cn.twotheta/2.)
+				* (1. + units::tan(units::abs(cn.twotheta/2.))
+				* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam)))
+					/ meV / angs;
 
-		tl::log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
-		tl::log_info("E/Q_perp (2nd approximation for ki=kf) = ", t_real_reso(4.*cn.ki * angs), " meV*A");
+			tl::log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
+			tl::log_info("E/Q_perp (2nd approximation for ki=kf) = ", t_real_reso(4.*cn.ki * angs), " meV*A");
 
-		//std::cout << "thetas = " << m_pop.thetas/rads/M_PI*180. << std::endl;
-		//std::cout << "2thetam = " << 2.*m_pop.thetam/rads/M_PI*180. << std::endl;
-		//std::cout << "2thetaa = " << 2.*m_pop.thetaa/rads/M_PI*180. << std::endl;
+			//std::cout << "thetas = " << m_tasparams.thetas/rads/M_PI*180. << std::endl;
+			//std::cout << "2thetam = " << 2.*m_tasparams.thetam/rads/M_PI*180. << std::endl;
+			//std::cout << "2thetaa = " << 2.*m_tasparams.thetaa/rads/M_PI*180. << std::endl;
 #endif
 
-		if(checkElli4dAutoCalc->isChecked())
-		{
-			CalcElli4d();
-			m_bEll4dCurrent = 1;
+			if(checkElli4dAutoCalc->isChecked())
+			{
+				CalcElli4d();
+				m_bEll4dCurrent = 1;
+			}
+
+			if(groupSim->isChecked())
+				RefreshSimCmd();
+
+			// calculate rlu quadric if a sample is defined
+			if(m_bHasUB)
+			{
+				// hkl crystal system:
+				// Qavg system in 1/A -> rotate back to orient system in 1/A ->
+				// transform to hkl rlu system
+				t_mat matQVec0 = tl::rotation_matrix_2d(-m_dAngleQVec0);
+				matQVec0.resize(4,4, true);
+				matQVec0(2,2) = matQVec0(3,3) = 1.;
+				matQVec0(2,0) = matQVec0(2,1) = matQVec0(2,3) = 0.;
+				matQVec0(3,0) = matQVec0(3,1) = matQVec0(3,2) = 0.;
+				matQVec0(0,2) = matQVec0(0,3) = 0.;
+				matQVec0(1,2) = matQVec0(1,3) = 0.;
+				const t_mat matQVec0inv = ublas::trans(matQVec0);
+
+				const t_mat matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
+				const t_mat matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
+				// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
+				m_resoHKL = tl::transform(m_res.reso, matQVec0invUB, 1);
+				//m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
+				//m_resoHKL = ublas::prod(matQVec0invUB, m_resoHKL);
+				m_Q_avgHKL = ublas::prod(matUBinvQVec0, m_res.Q_avg);
+
+				//std::cout << tl::r2d(m_dAngleQVec0) << std::endl;
+				//std::cout << m_Q_avgHKL << std::endl;
+				//std::cout << m_resoHKL << std::endl;
+
+
+				// system of scattering plane: (orient1, orient2, up)
+				// Qavg system in 1/A -> rotate back to orient system in 1/A ->
+				// transform to hkl rlu system -> rotate forward to orient system in rlu
+				const t_mat matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
+				const t_mat matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
+
+				// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
+				m_resoOrient = tl::transform(m_res.reso, matToOrientinv, 1);
+				//m_resoOrient = ublas::prod(m_res.reso, matToOrient);
+				//m_resoOrient = ublas::prod(matToOrientinv, m_resoOrient);
+				m_Q_avgOrient = ublas::prod(matToOrient, m_res.Q_avg);
+				//std::cout << m_Q_avgOrient << std::endl;
+			}
+
+			EmitResults();
 		}
-
-		if(groupSim->isChecked())
-			RefreshSimCmd();
-
-		// calculate rlu quadric if a sample is defined
-		if(m_bHasUB)
+		else
 		{
-			// hkl crystal system:
-			// Qavg system in 1/A -> rotate back to orient system in 1/A ->
-			// transform to hkl rlu system
-			t_mat matQVec0 = tl::rotation_matrix_2d(-m_dAngleQVec0);
-			matQVec0.resize(4,4, true);
-			matQVec0(2,2) = matQVec0(3,3) = 1.;
-			matQVec0(2,0) = matQVec0(2,1) = matQVec0(2,3) = 0.;
-			matQVec0(3,0) = matQVec0(3,1) = matQVec0(3,2) = 0.;
-			matQVec0(0,2) = matQVec0(0,3) = 0.;
-			matQVec0(1,2) = matQVec0(1,3) = 0.;
-			const t_mat matQVec0inv = ublas::trans(matQVec0);
-
-			const t_mat matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
-			const t_mat matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
-			// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
-			m_resoHKL = tl::transform(m_res.reso, matQVec0invUB, 1);
-			//m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
-			//m_resoHKL = ublas::prod(matQVec0invUB, m_resoHKL);
-			m_Q_avgHKL = ublas::prod(matUBinvQVec0, m_res.Q_avg);
-
-			//std::cout << tl::r2d(m_dAngleQVec0) << std::endl;
-			//std::cout << m_Q_avgHKL << std::endl;
-			//std::cout << m_resoHKL << std::endl;
-
-
-			// system of scattering plane: (orient1, orient2, up)
-			// Qavg system in 1/A -> rotate back to orient system in 1/A ->
-			// transform to hkl rlu system -> rotate forward to orient system in rlu
-			const t_mat matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
-			const t_mat matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
-
-			// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
-			m_resoOrient = tl::transform(m_res.reso, matToOrientinv, 1);
-			//m_resoOrient = ublas::prod(m_res.reso, matToOrient);
-			//m_resoOrient = ublas::prod(matToOrientinv, m_resoOrient);
-			m_Q_avgOrient = ublas::prod(matToOrient, m_res.Q_avg);
-			//std::cout << m_Q_avgOrient << std::endl;
+			QString strErr = "Error: ";
+			strErr += res.strErr.c_str();
+			labelStatus->setText(QString("<font color='red'>") + strErr + QString("</font>"));
 		}
-
-		EmitResults();
 	}
-	else
+	catch(const std::exception& ex)
 	{
-		QString strErr = "Error: ";
-		strErr += res.strErr.c_str();
-		labelStatus->setText(QString("<font color='red'>") + strErr + QString("</font>"));
+		tl::log_err("Cannot calculate resolution: ", ex.what(), ".");
 	}
 }
 
@@ -513,50 +561,50 @@ void ResoDlg::RefreshSimCmd()
 
 	ostrCmd << "./templateTAS -n 1e6 verbose=1 ";
 
-	ostrCmd << "KI=" << t_real_reso(m_pop.ki * angs) << " ";
-	ostrCmd << "KF=" << t_real_reso(m_pop.kf * angs) << " ";
-	ostrCmd << "QM=" << t_real_reso(m_pop.Q * angs) << " ";
-	ostrCmd << "EN=" << t_real_reso(m_pop.E / meV) << " ";
-	//ostrCmt << "FX=" << (m_pop.bki_fix ? "1" : "2") << " ";
+	ostrCmd << "KI=" << t_real_reso(m_tasparams.ki * angs) << " ";
+	ostrCmd << "KF=" << t_real_reso(m_tasparams.kf * angs) << " ";
+	ostrCmd << "QM=" << t_real_reso(m_tasparams.Q * angs) << " ";
+	ostrCmd << "EN=" << t_real_reso(m_tasparams.E / meV) << " ";
+	//ostrCmt << "FX=" << (m_tasparams.bki_fix ? "1" : "2") << " ";
 
-	ostrCmd << "L1=" << t_real_reso(m_pop.dist_src_mono / meters) << " ";
-	ostrCmd << "L2=" << t_real_reso(m_pop.dist_mono_sample / meters) << " ";
-	ostrCmd << "L3=" << t_real_reso(m_pop.dist_sample_ana / meters) << " ";
-	ostrCmd << "L4=" << t_real_reso(m_pop.dist_ana_det / meters) << " ";
+	ostrCmd << "L1=" << t_real_reso(m_tasparams.dist_src_mono / meters) << " ";
+	ostrCmd << "L2=" << t_real_reso(m_tasparams.dist_mono_sample / meters) << " ";
+	ostrCmd << "L3=" << t_real_reso(m_tasparams.dist_sample_ana / meters) << " ";
+	ostrCmd << "L4=" << t_real_reso(m_tasparams.dist_ana_det / meters) << " ";
 
-	ostrCmd << "SM=" << m_pop.dmono_sense << " ";
-	ostrCmd << "SS=" << m_pop.dsample_sense << " ";
-	ostrCmd << "SA=" << m_pop.dana_sense << " ";
+	ostrCmd << "SM=" << m_tasparams.dmono_sense << " ";
+	ostrCmd << "SS=" << m_tasparams.dsample_sense << " ";
+	ostrCmd << "SA=" << m_tasparams.dana_sense << " ";
 
-	ostrCmd << "DM=" << t_real_reso(m_pop.mono_d / angs) << " ";
-	ostrCmd << "DA=" << t_real_reso(m_pop.ana_d / angs) << " ";
+	ostrCmd << "DM=" << t_real_reso(m_tasparams.mono_d / angs) << " ";
+	ostrCmd << "DA=" << t_real_reso(m_tasparams.ana_d / angs) << " ";
 
-	ostrCmd << "RMV=" << t_real_reso(m_pop.mono_curvv / meters) << " ";
-	ostrCmd << "RMH=" << t_real_reso(m_pop.mono_curvh / meters) << " ";
-	ostrCmd << "RAV=" << t_real_reso(m_pop.ana_curvv / meters) << " ";
-	ostrCmd << "RAH=" << t_real_reso(m_pop.ana_curvh / meters) << " ";
+	ostrCmd << "RMV=" << t_real_reso(m_tasparams.mono_curvv / meters) << " ";
+	ostrCmd << "RMH=" << t_real_reso(m_tasparams.mono_curvh / meters) << " ";
+	ostrCmd << "RAV=" << t_real_reso(m_tasparams.ana_curvv / meters) << " ";
+	ostrCmd << "RAH=" << t_real_reso(m_tasparams.ana_curvh / meters) << " ";
 
-	ostrCmd << "ETAM=" << t_real_reso(m_pop.mono_mosaic/rads/dMin) << " ";
-	ostrCmd << "ETAA=" << t_real_reso(m_pop.ana_mosaic/rads/dMin) << " ";
+	ostrCmd << "ETAM=" << t_real_reso(m_tasparams.mono_mosaic/rads/dMin) << " ";
+	ostrCmd << "ETAA=" << t_real_reso(m_tasparams.ana_mosaic/rads/dMin) << " ";
 
-	ostrCmd << "ALF1=" << t_real_reso(m_pop.coll_h_pre_mono/rads/dMin) << " ";
-	ostrCmd << "ALF2=" << t_real_reso(m_pop.coll_h_pre_sample/rads/dMin) << " ";
-	ostrCmd << "ALF3=" << t_real_reso(m_pop.coll_h_post_sample/rads/dMin) << " ";
-	ostrCmd << "ALF4=" << t_real_reso(m_pop.coll_h_post_ana/rads/dMin) << " ";
-	ostrCmd << "BET1=" << t_real_reso(m_pop.coll_v_pre_mono/rads/dMin) << " ";
-	ostrCmd << "BET2=" << t_real_reso(m_pop.coll_v_pre_sample/rads/dMin) << " ";
-	ostrCmd << "BET3=" << t_real_reso(m_pop.coll_v_post_sample/rads/dMin) << " ";
-	ostrCmd << "BET4=" << t_real_reso(m_pop.coll_v_post_ana/rads/dMin) << " ";
+	ostrCmd << "ALF1=" << t_real_reso(m_tasparams.coll_h_pre_mono/rads/dMin) << " ";
+	ostrCmd << "ALF2=" << t_real_reso(m_tasparams.coll_h_pre_sample/rads/dMin) << " ";
+	ostrCmd << "ALF3=" << t_real_reso(m_tasparams.coll_h_post_sample/rads/dMin) << " ";
+	ostrCmd << "ALF4=" << t_real_reso(m_tasparams.coll_h_post_ana/rads/dMin) << " ";
+	ostrCmd << "BET1=" << t_real_reso(m_tasparams.coll_v_pre_mono/rads/dMin) << " ";
+	ostrCmd << "BET2=" << t_real_reso(m_tasparams.coll_v_pre_sample/rads/dMin) << " ";
+	ostrCmd << "BET3=" << t_real_reso(m_tasparams.coll_v_post_sample/rads/dMin) << " ";
+	ostrCmd << "BET4=" << t_real_reso(m_tasparams.coll_v_post_ana/rads/dMin) << " ";
 
-	ostrCmd << "WM=" << t_real_reso(m_pop.mono_w / meters) << " ";
-	ostrCmd << "HM=" << t_real_reso(m_pop.mono_h / meters) << " ";
-	ostrCmd << "WA=" << t_real_reso(m_pop.ana_w / meters) << " ";
-	ostrCmd << "HA=" << t_real_reso(m_pop.ana_h / meters) << " ";
+	ostrCmd << "WM=" << t_real_reso(m_tasparams.mono_w / meters) << " ";
+	ostrCmd << "HM=" << t_real_reso(m_tasparams.mono_h / meters) << " ";
+	ostrCmd << "WA=" << t_real_reso(m_tasparams.ana_w / meters) << " ";
+	ostrCmd << "HA=" << t_real_reso(m_tasparams.ana_h / meters) << " ";
 
-	ostrCmd << "NVM=" << m_pop.mono_numtiles_v << " ";
-	ostrCmd << "NHM=" << m_pop.mono_numtiles_h << " ";
-	ostrCmd << "NVA=" << m_pop.ana_numtiles_v << " ";
-	ostrCmd << "NHA=" << m_pop.ana_numtiles_h << " ";
+	ostrCmd << "NVM=" << m_tasparams.mono_numtiles_v << " ";
+	ostrCmd << "NHM=" << m_tasparams.mono_numtiles_h << " ";
+	ostrCmd << "NVA=" << m_tasparams.ana_numtiles_v << " ";
+	ostrCmd << "NHA=" << m_tasparams.ana_numtiles_h << " ";
 
 	editSim->setPlainText(ostrCmd.str().c_str());
 }
@@ -608,7 +656,7 @@ void ResoDlg::ReadLastConfig()
 		if(!m_pSettings->contains(m_vecEditNames[iEditBox].c_str()))
 			continue;
 		t_real_reso dEditVal = m_pSettings->value(m_vecEditNames[iEditBox].c_str()).value<t_real_reso>();
-		m_vecEditBoxes[iEditBox]->setText(std::to_string(dEditVal).c_str());
+		m_vecEditBoxes[iEditBox]->setText(tl::var_to_str(dEditVal, g_iPrec).c_str());
 	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
@@ -691,7 +739,7 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
 	{
 		t_real_reso dEditVal = xml.Query<t_real_reso>((strXmlRoot+m_vecEditNames[iEditBox]).c_str(), 0., &bOk);
-		if(bOk) m_vecEditBoxes[iEditBox]->setText(std::to_string(dEditVal).c_str());
+		if(bOk) m_vecEditBoxes[iEditBox]->setText(tl::var_to_str(dEditVal, g_iPrec).c_str());
 	}
 
 	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
@@ -747,43 +795,59 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	m_pop.twotheta = units::abs(t_real_reso(parms.d2Theta) * rads);
-	//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
+	try
+	{
+		m_tofparams.twotheta = m_tasparams.twotheta =
+			units::abs(t_real_reso(parms.d2Theta) * rads);
+		//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
-	m_pop.ki = t_real_reso(parms.dki) / angs;
-	m_pop.kf = t_real_reso(parms.dkf) / angs;
-	m_pop.E = t_real_reso(parms.dE) * meV;
+		m_tofparams.ki = m_tasparams.ki = t_real_reso(parms.dki) / angs;
+		m_tofparams.kf = m_tasparams.kf = t_real_reso(parms.dkf) / angs;
+		m_tofparams.E = m_tasparams.E = t_real_reso(parms.dE) * meV;
 
-	//m_dAngleQVec0 = parms.dAngleQVec0;
-	//std::cout << "qvec0 in rlu: " << m_dAngleQVec0 << std::endl;
+		//m_dAngleQVec0 = parms.dAngleQVec0;
+		//std::cout << "qvec0 in rlu: " << m_dAngleQVec0 << std::endl;
 
-	t_vec vecHKL = -tl::make_vec({parms.Q_rlu[0], parms.Q_rlu[1], parms.Q_rlu[2]});
-	t_vec vecQ = ublas::prod(m_matUB, vecHKL);
-	vecQ.resize(2,1);
-	m_dAngleQVec0 = -tl::vec_angle(vecQ);
-	t_real_reso dQ = ublas::norm_2(vecQ);
-	m_pop.Q = dQ / angs;
+		t_vec vecHKL = -tl::make_vec({parms.Q_rlu[0], parms.Q_rlu[1], parms.Q_rlu[2]});
+		t_real_reso dQ = parms.dQ;
 
-	//std::cout << "qvec0 in 1/A: " << m_dAngleQVec0 << std::endl;
+		if(m_bHasUB)
+		{
+			if(m_matUB.size1() != vecHKL.size())
+				vecHKL.resize(m_matUB.size1(), true);
+			t_vec vecQ = ublas::prod(m_matUB, vecHKL);
+			vecQ.resize(2,1);
+			m_dAngleQVec0 = -tl::vec_angle(vecQ);
+			dQ = ublas::norm_2(vecQ);
+		}
 
-
-	m_pop.angle_ki_Q = /*M_PI*rads -*/ tl::get_angle_ki_Q(m_pop.ki, m_pop.kf, m_pop.Q, 1);
-	m_pop.angle_kf_Q = /*M_PI*rads -*/ tl::get_angle_kf_Q(m_pop.ki, m_pop.kf, m_pop.Q, 1);
-	//m_pop.angle_ki_Q = units::abs(m_pop.angle_ki_Q);
-	//m_pop.angle_kf_Q = units::abs(m_pop.angle_kf_Q);
-
-	/*std::cout << "ki = " << t_real_reso(m_pop.ki*angs) << std::endl;
-	std::cout << "kf = " << t_real_reso(m_pop.kf*angs) << std::endl;
-	std::cout << "Q = " << t_real_reso(m_pop.Q*angs) << std::endl;
-
-	std::cout << "kiQ = " << t_real_reso(m_pop.angle_ki_Q/M_PI/rads * 180.) << std::endl;
-	std::cout << "kfQ = " << t_real_reso(m_pop.angle_kf_Q/M_PI/rads * 180.) << std::endl;*/
+		m_tofparams.Q = m_tasparams.Q = dQ / angs;
+		//std::cout << "qvec0 in 1/A: " << m_dAngleQVec0 << std::endl;
 
 
-	editQ->setText(std::to_string(dQ).c_str());
-	editE->setText(std::to_string(parms.dE).c_str());
-	editKi->setText(std::to_string(parms.dki).c_str());
-	editKf->setText(std::to_string(parms.dkf).c_str());
+		m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q =
+			/*M_PI*rads -*/ tl::get_angle_ki_Q(m_tasparams.ki, m_tasparams.kf, m_tasparams.Q, 1);
+		m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q =
+			/*M_PI*rads -*/ tl::get_angle_kf_Q(m_tasparams.ki, m_tasparams.kf, m_tasparams.Q, 1);
+		//m_tasparams.angle_ki_Q = units::abs(m_tasparams.angle_ki_Q);
+		//m_tasparams.angle_kf_Q = units::abs(m_tasparams.angle_kf_Q);
+
+		/*std::cout << "ki = " << t_real_reso(m_tasparams.ki*angs) << std::endl;
+		std::cout << "kf = " << t_real_reso(m_tasparams.kf*angs) << std::endl;
+		std::cout << "Q = " << t_real_reso(m_tasparams.Q*angs) << std::endl;
+
+		std::cout << "kiQ = " << t_real_reso(m_tasparams.angle_ki_Q/M_PI/rads * 180.) << std::endl;
+		std::cout << "kfQ = " << t_real_reso(m_tasparams.angle_kf_Q/M_PI/rads * 180.) << std::endl;*/
+
+		editQ->setText(tl::var_to_str(dQ, g_iPrec).c_str());
+		editE->setText(tl::var_to_str(parms.dE, g_iPrec).c_str());
+		editKi->setText(tl::var_to_str(parms.dki, g_iPrec).c_str());
+		editKf->setText(tl::var_to_str(parms.dkf, g_iPrec).c_str());
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_err("Cannot set reciprocal parameters for resolution: ", ex.what(), ".");
+	}
 
 	m_bDontCalc = bOldDontCalc;
 	if(m_bUpdateOnRecipEvent)
@@ -797,11 +861,12 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	m_pop.thetam = units::abs(t_real_reso(parms.dMonoT) * rads);
-	m_pop.thetaa = units::abs(t_real_reso(parms.dAnaT) * rads);
+	m_tasparams.thetam = units::abs(t_real_reso(parms.dMonoT) * rads);
+	m_tasparams.thetaa = units::abs(t_real_reso(parms.dAnaT) * rads);
 
-	m_pop.twotheta = t_real_reso(parms.dSampleTT) * rads;
-	m_pop.twotheta = units::abs(m_pop.twotheta);
+	m_tasparams.twotheta = t_real_reso(parms.dSampleTT) * rads;
+	m_tasparams.twotheta = units::abs(m_tasparams.twotheta);
+	m_tofparams.twotheta = m_tasparams.twotheta;
 
 	//std::cout << parms.dMonoT/M_PI*180. << ", " << parms.dAnaT/M_PI*180. << std::endl;
 	//std::cout << parms.dSampleTT/M_PI*180. << std::endl;
@@ -813,35 +878,43 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 
 void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 {
-	//tl::log_debug("sample params changed");
-
-	tl::Lattice<t_real_reso> lattice(parms.dLattice[0],parms.dLattice[1],parms.dLattice[2],
-		parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
-
-	m_vecOrient1 = tl::make_vec<t_vec>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
-	m_vecOrient2 = tl::make_vec<t_vec>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});
-	//m_vecOrient1 /= ublas::norm_2(m_vecOrient1);
-	//m_vecOrient2 /= ublas::norm_2(m_vecOrient2);
-
-	m_matB = tl::get_B(lattice, 1);
-	m_matU = tl::get_U(m_vecOrient1, m_vecOrient2, &m_matB);
-	m_matUrlu = tl::get_U(m_vecOrient1, m_vecOrient2);
-	m_matUB = ublas::prod(m_matU, m_matB);
-
-	bool bHasB = tl::inverse(m_matB, m_matBinv);
-	bool bHasU = tl::inverse(m_matU, m_matUinv);
-	bool bHasUrlu = tl::inverse(m_matUrlu, m_matUinvrlu);
-	m_matUBinv = ublas::prod(m_matBinv, m_matUinv);
-
-	for(auto* pmat : {&m_matB, &m_matU, &m_matUB, &m_matUBinv, &m_matUrlu, &m_matUinvrlu})
+	try
 	{
-		pmat->resize(4,4,1);
-		(*pmat)(3,0) = (*pmat)(3,1) = (*pmat)(3,2) = 0.;
-		(*pmat)(0,3) = (*pmat)(1,3) = (*pmat)(2,3) = 0.;
-		(*pmat)(3,3) = 1.;
-	}
+		//tl::log_debug("sample params changed");
 
-	m_bHasUB = bHasB && bHasU && bHasUrlu;
+		tl::Lattice<t_real_reso> lattice(parms.dLattice[0],parms.dLattice[1],parms.dLattice[2],
+			parms.dAngles[0],parms.dAngles[1],parms.dAngles[2]);
+
+		m_vecOrient1 = tl::make_vec<t_vec>({parms.dPlane1[0], parms.dPlane1[1], parms.dPlane1[2]});
+		m_vecOrient2 = tl::make_vec<t_vec>({parms.dPlane2[0], parms.dPlane2[1], parms.dPlane2[2]});
+		//m_vecOrient1 /= ublas::norm_2(m_vecOrient1);
+		//m_vecOrient2 /= ublas::norm_2(m_vecOrient2);
+
+		m_matB = tl::get_B(lattice, 1);
+		m_matU = tl::get_U(m_vecOrient1, m_vecOrient2, &m_matB);
+		m_matUrlu = tl::get_U(m_vecOrient1, m_vecOrient2);
+		m_matUB = ublas::prod(m_matU, m_matB);
+
+		bool bHasB = tl::inverse(m_matB, m_matBinv);
+		bool bHasU = tl::inverse(m_matU, m_matUinv);
+		bool bHasUrlu = tl::inverse(m_matUrlu, m_matUinvrlu);
+		m_matUBinv = ublas::prod(m_matBinv, m_matUinv);
+
+		for(auto* pmat : {&m_matB, &m_matU, &m_matUB, &m_matUBinv, &m_matUrlu, &m_matUinvrlu})
+		{
+			pmat->resize(4,4,1);
+			(*pmat)(3,0) = (*pmat)(3,1) = (*pmat)(3,2) = 0.;
+			(*pmat)(0,3) = (*pmat)(1,3) = (*pmat)(2,3) = 0.;
+			(*pmat)(3,3) = 1.;
+		}
+
+		m_bHasUB = bHasB && bHasU && bHasUrlu;
+	}
+	catch(const std::exception& ex)
+	{
+		m_bHasUB = 0;
+		tl::log_err("Cannot set sample parameters for resolution: ", ex.what(), ".");
+	}
 }
 
 
@@ -891,7 +964,7 @@ void ResoDlg::MCGenerate()
 		fileopt = QFileDialog::DontUseNativeDialog;
 
 	QString strLastDir = m_pSettings ? m_pSettings->value("reso/mc_dir", ".").toString() : ".";
-	QString _strFile = QFileDialog::getSaveFileName(this, "Save MC neutron data...", 
+	QString _strFile = QFileDialog::getSaveFileName(this, "Save MC neutron data...",
 		strLastDir, "DAT files (*.dat);;All files (*.*)", nullptr, fileopt);
 	if(_strFile == "")
 		return;
@@ -995,6 +1068,7 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(0,1);
 			tabWidget->setTabEnabled(1,0);
 			tabWidget->setTabEnabled(2,0);
+			tabWidget->setTabEnabled(3,0);
 			strAlgo = "M. J. Cooper and R. Nathans\nActa Cryst. 23, 357\n1967";
 			break;
 		}
@@ -1003,6 +1077,7 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(0,1);
 			tabWidget->setTabEnabled(1,1);
 			tabWidget->setTabEnabled(2,0);
+			tabWidget->setTabEnabled(3,0);
 			strAlgo = "M. Popovici\nActa Cryst. A 31, 507\n1975";
 			break;
 		}
@@ -1011,7 +1086,17 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(0,1);
 			tabWidget->setTabEnabled(1,1);
 			tabWidget->setTabEnabled(2,1);
+			tabWidget->setTabEnabled(3,0);
 			strAlgo = "G. Eckold and O. Sobolev\nNIM A 752, pp. 54-64\n2014";
+			break;
+		}
+		case 3:
+		{
+			tabWidget->setTabEnabled(0,0);
+			tabWidget->setTabEnabled(1,0);
+			tabWidget->setTabEnabled(2,0);
+			tabWidget->setTabEnabled(3,1);
+			strAlgo = "N. Violini et al.\nNIM A 736, pp. 31-39\n2014";
 			break;
 		}
 		default:

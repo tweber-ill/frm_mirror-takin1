@@ -1,5 +1,5 @@
-CC = gcc
-#CC = clang
+#CC = gcc
+CC = clang
 
 DO_DEBUG = 0
 NATIVE_OPTS = 1
@@ -191,7 +191,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/FilePreviewDlg.o obj/AtomsDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/crystalsys.o obj/formfact.o \
-	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
 	obj/loadinstr.o obj/recent.o obj/globals.o obj/qthelper.o \
 	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
@@ -202,7 +202,7 @@ OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
 	obj/qthelper.o obj/globals.o
 
 OBJ_MONTECONVO = obj/log.o obj/sqw.o \
-	obj/cn.o obj/pop.o obj/eck.o obj/ellipse.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ellipse.o \
 	obj/rand.o obj/tasreso.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
@@ -211,7 +211,7 @@ OBJ_CONVOSERIES = obj/scanseries.o obj/log.o
 
 OBJ_RESO = obj/log.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
-	obj/cn.o obj/pop.o obj/eck.o obj/ResoDlg.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
@@ -401,6 +401,8 @@ obj/cn.o: tools/res/cn.cpp tools/res/cn.h
 obj/pop.o: tools/res/pop.cpp tools/res/pop.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/eck.o: tools/res/eck.cpp tools/res/eck.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/viol.o: tools/res/viol.cpp tools/res/viol.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
 	${CC} ${FLAGS} -c -o $@ $<

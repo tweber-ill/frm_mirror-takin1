@@ -33,7 +33,6 @@ struct ViolParams
 	tl::t_length_si<t_real_reso> len_pulse_mono,
 		len_mono_sample, len_sample_det;
 
-
 	// instrument sigmas
 	tl::t_length_si<t_real_reso> sig_len_pulse_mono,
 		sig_len_mono_sample, sig_len_sample_det;
