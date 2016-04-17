@@ -43,9 +43,10 @@ ResoResults calc_viol(const ViolParams& params)
 
 	//const energy E = params.E;
 	//const wavenumber Q = params.Q;
+	const angle& tt = params.twotheta;
 	const wavenumber &ki = params.ki, &kf = params.kf;
 	const energy E = tl::get_energy_transfer(ki, kf);
-	const wavenumber Q = ki - kf;
+	const wavenumber Q = tl::get_sample_Q(ki, kf, tt);
 
 	res.Q_avg[0] = Q * angs;
 	res.Q_avg[1] = 0.;
@@ -55,65 +56,161 @@ ResoResults calc_viol(const ViolParams& params)
 	const velocity vi = tl::k2v(ki);
 	const velocity vf = tl::k2v(kf);
 
-	const length& lp = params.len_pulse_mono;
-	const length& lm = params.len_mono_sample;
-	const length& ls = params.len_sample_det;
-	const length& slp = params.sig_len_pulse_mono;
-	const length& slm = params.sig_len_mono_sample;
-	const length& sls = params.sig_len_sample_det;
-	const t_time &sp = params.sig_pulse;
-	const t_time &sm = params.sig_mono;
-	const t_time &sd = params.sig_det;
+	const length& lp = params.len_pulse_mono,
+		&lm = params.len_mono_sample,
+		&ls = params.len_sample_det;
+	const length& slp = params.sig_len_pulse_mono,
+		&slm = params.sig_len_mono_sample,
+		&sls = params.sig_len_sample_det;
+	const angle &tt_i = params.twotheta_i,
+		&ph_i = params.angle_outplane_i,
+		&ph_f = params.angle_outplane_f;
 
-	const t_time ti = lp / vi;
-	const t_time tf = ls / vf;
+	const t_time &sp = params.sig_pulse,
+		&sm = params.sig_mono,
+		&sd = params.sig_det;
+	const angle &s2ti = params.sig_twotheta_i,
+		&s2tf = params.sig_twotheta_f,
+		&sphi = params.sig_outplane_i,
+		&sphf = params.sig_outplane_f;
+	const t_time ti = lp / vi,
+		tf = ls / vf;
 
+#ifndef NDEBUG
 	tl::log_debug("ki = ", ki, ", kf = ", kf);
 	tl::log_debug("vi = ", vi, ", vf = ", vf);
 	tl::log_debug("ti = ", ti, ", tf = ", tf);
 	tl::log_debug("Q = ", Q, ", E = ", E);
+#endif
 
 	const mass mn = tl::get_m_n<t_real>();
+	const auto mn_hbar = mn / tl::get_hbar<t_real>();
 
 	// formulas 20 & 21 in [viol14]
 	const t_time st = tl::my_units_sqrt<t_time>(sp*sp + sm*sm);
 	const t_time stm = tl::my_units_sqrt<t_time>(sd*sd + sm*sm);
 
+	std::vector<t_real> vecsigs = { st/sec, stm/sec, slp/meter, slm/meter, sls/meter,
+		s2ti/rads, sphi/rads, s2tf/rads, sphf/rads };
+
+
+
+	// --------------------------------------------------------------------
 	// E formulas 14-18 in [viol14]
 	std::vector<std::function<t_real()>> vecEderivs =
 	{
-		[&]()->t_real { return (-mn*lp*lp/(ti*ti*ti) -mn*ls*ls/(tf*tf*tf)*lm/lp) /meV*sec; },
-		[&]()->t_real { return mn*ls*ls/(tf*tf*tf) /meV*sec; },
-		[&]()->t_real { return (mn*lp/(ti*ti) + mn*(ls*ls*ls)/(tf*tf*tf)*ti/(lp*lp)*lm/ls) /meV*meter; },
-		[&]()->t_real { return -mn*(ls*ls)/(tf*tf*tf) * ti/lp /meV*meter; },
-		[&]()->t_real { return -mn*ls/(tf*tf) /meV*meter; },
+		/*1*/ [&]()->t_real { return (-mn*lp*lp/(ti*ti*ti) -mn*ls*ls/(tf*tf*tf)*lm/lp) /meV*sec; },
+		/*2*/ [&]()->t_real { return mn*ls*ls/(tf*tf*tf) /meV*sec; },
+		/*3*/ [&]()->t_real { return (mn*lp/(ti*ti) + mn*(ls*ls*ls)/(tf*tf*tf)*ti/(lp*lp)*lm/ls) /meV*meter; },
+		/*4*/ [&]()->t_real { return -mn*(ls*ls)/(tf*tf*tf) * ti/lp /meV*meter; },
+		/*5*/ [&]()->t_real { return -mn*ls/(tf*tf) /meV*meter; },
 	};
-
-	std::vector<t_real> vecEsigs = { st/sec, stm/sec, slp/meter, slm/meter, sls/meter };
 
 	// formula 19 in [viol14]
 	t_real sigE = std::sqrt(
-		std::inner_product(vecEderivs.begin(), vecEderivs.end(), vecEsigs.begin(), t_real(0),
+		std::inner_product(vecEderivs.begin(), vecEderivs.end(), vecsigs.begin(), t_real(0),
 		[](t_real r1, t_real r2)->t_real { return r1 + r2; },
 		[](const std::function<t_real()>& f1, t_real r2)->t_real { return f1()*f1()*r2*r2; } ));
-
+#ifndef NDEBUG
 	tl::log_debug("sigma E = ", sigE);
+#endif
+	// --------------------------------------------------------------------
 
 
-	// TODO: implement Q part
 
+	// --------------------------------------------------------------------
+	// Q formulas in appendix A.1 of [viol14]
+	t_real ctt_i = std::cos(tt_i/rads), stt_i = std::sin(tt_i/rads);
+	t_real ctt_f = std::cos(tt/rads), stt_f = std::sin(tt/rads);
+	t_real cph_i = std::cos(ph_i/rads), sph_i = std::sin(ph_i/rads);
+	t_real cph_f = std::cos(ph_f/rads), sph_f = std::sin(ph_f/rads);
+	t_mat R = tl::make_mat<t_mat>(
+		{{ ctt_i*cph_i,	-ctt_f*cph_f },
+		{ stt_i*cph_i, 	-stt_f*cph_f },
+		{ sph_i, 	-sph_f }});
+	t_mat R_tt_i = tl::make_mat(		// derivs w.r.t. the angles
+		{{ stt_i*cph_i,	t_real(0) },
+		{ ctt_i*cph_i, 	t_real(0) },
+		{ t_real(0), 	t_real(0) }});
+	t_mat R_ph_i = tl::make_mat(
+		{{ -ctt_i*sph_i, t_real(0) },
+		{ stt_i*sph_i, 	 t_real(0) },
+		{ cph_i, 	 t_real(0) }});
+	t_mat R_tt_f = tl::make_mat(
+		{{ t_real(0),	stt_f*cph_f },
+		{  t_real(0),	-ctt_f*cph_f },
+		{  t_real(0),	t_real(0) }});
+	t_mat R_ph_f = tl::make_mat(
+		{{ t_real(0),	ctt_f*sph_f },
+		{  t_real(0), 	stt_f*sph_f },
+		{  t_real(0), 	-cph_f }});
+//	tl::log_debug("R = ", R);
+
+	t_vec vecViVf = tl::make_vec<t_vec>({ mn_hbar*vi *angs, mn_hbar*vf *angs });
+	std::vector<std::function<t_vec()>> vecQderivs =
+	{
+		/*1*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
+			{ -mn_hbar*vi/ti *angs*sec, mn_hbar*vf/tf * lm/lp *angs*sec })); },
+		/*2*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
+			{ t_real(0), -mn_hbar*vf/tf *angs*sec })); },
+		/*3*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
+			{ mn_hbar/ti *angs*meter, -mn_hbar*vf/tf * lm/(vi*lp) *angs*meter })); },
+		/*4*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
+			{ t_real(0), mn_hbar*vf/tf / vi *angs*meter })); },
+		/*5*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
+			{ t_real(0), mn_hbar/tf *angs*meter })); },
+
+		/*6*/ [&]()->t_vec { return ublas::prod(R_tt_i, vecViVf); },
+		/*7*/ [&]()->t_vec { return ublas::prod(R_ph_i, vecViVf); },
+		/*8*/ [&]()->t_vec { return ublas::prod(R_tt_f, vecViVf); },
+		/*9*/ [&]()->t_vec { return ublas::prod(R_ph_f, vecViVf); },
+	};
+
+	t_vec vecQsq = std::inner_product(vecQderivs.begin(), vecQderivs.end(), vecsigs.begin(), tl::make_vec<t_vec>({0,0,0}),
+		[](const t_vec& vec1, const t_vec& vec2) -> t_vec { return vec1 + vec2; },
+		[](const std::function<t_vec()>& f1, const t_real r2) -> t_vec
+		{
+			t_vec vec1 = f1();
+			return ublas::element_prod(vec1, vec1) * r2*r2;
+		});
+	t_vec sigQ = tl::apply_fkt(vecQsq, static_cast<t_real(*)(t_real)>(std::sqrt));
+#ifndef NDEBUG
+	tl::log_debug("sigma Q = ", sigQ);
+#endif
+	// --------------------------------------------------------------------
+
+
+
+	// --------------------------------------------------------------------
 	// formulas 10 & 11 in [viol14]
 	t_mat matSigSq = tl::diag_matrix({
-		st*st /sec/sec,
-		stm*stm /sec/sec,
-		slp*slp /meter/meter,
-		slm*slm /meter/meter,
-		sls*sls /meter/meter });
+		st*st /sec/sec, stm*stm /sec/sec,
+		slp*slp /meter/meter, slm*slm /meter/meter, sls*sls /meter/meter,
+		s2ti*s2ti /rads/rads, sphi*sphi /rads/rads,
+		s2tf*s2tf /rads/rads, sphf*sphf /rads/rads });
+
 	std::size_t N = matSigSq.size1();
-	t_mat matJacobiInstr(N, N, t_real(0));
+	t_mat matJacobiInstr(4, N, t_real(0));
 	for(std::size_t iDeriv=0; iDeriv<vecEderivs.size(); ++iDeriv)
-		matJacobiInstr(N-1, iDeriv) = vecEderivs[iDeriv]()/E*meV;
+		matJacobiInstr(3, iDeriv) = vecEderivs[iDeriv](); // /E*meV;
+	for(std::size_t iDeriv=0; iDeriv<vecQderivs.size(); ++iDeriv)
+		tl::set_column(matJacobiInstr, iDeriv, vecQderivs[iDeriv]());
+
 	t_mat matJacobiQE = tl::transform_inv(matSigSq, matJacobiInstr, true);
+	if(!tl::inverse(matJacobiQE, res.reso))
+	{
+		res.bOk = false;
+		res.strErr = "Jacobi matrix cannot be inverted.";
+		//return res;
+	}
+
+#ifndef NDEBUG
+	tl::log_debug("J_instr = ", matJacobiInstr);
+	tl::log_debug("J_QE = ", matJacobiQE);
+	tl::log_debug("Reso = ", res.reso);
+#endif
+	// --------------------------------------------------------------------
+
 
 	return res;
 }
