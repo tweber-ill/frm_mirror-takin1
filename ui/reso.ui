@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>783</width>
-    <height>447</height>
+    <width>834</width>
+    <height>461</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1939,6 +1939,9 @@
             <property name="decimals">
              <number>4</number>
             </property>
+            <property name="minimum">
+             <double>-999999.000000000000000</double>
+            </property>
             <property name="maximum">
              <double>999999.000000000000000</double>
             </property>
@@ -1968,6 +1971,9 @@
             <property name="decimals">
              <number>4</number>
             </property>
+            <property name="minimum">
+             <double>-999999.000000000000000</double>
+            </property>
             <property name="maximum">
              <double>999999.000000000000000</double>
             </property>
@@ -1989,6 +1995,9 @@
             </property>
             <property name="decimals">
              <number>4</number>
+            </property>
+            <property name="minimum">
+             <double>-999999.000000000000000</double>
             </property>
             <property name="maximum">
              <double>999999.000000000000000</double>
