@@ -260,6 +260,8 @@ bool run_job(const std::string& strJob)
 			reso.SetAlgo(ResoAlgo::CN);
 		else if(strResAlgo == "eck")
 			reso.SetAlgo(ResoAlgo::ECK);
+		else if(strResAlgo == "viol")
+			reso.SetAlgo(ResoAlgo::VIOL);
 		else
 		{
 			tl::log_err("Invalid resolution algorithm selected: \"", strResAlgo, "\".");

@@ -9,11 +9,12 @@
 #define __DO_RESO_H__
 
 #include "../res/eck.h"
+#include "../res/viol.h"
 #include "../res/ellipse.h"
 #include "../res/mc.h"
 
 
-enum class ResoAlgo { CN, POP, ECK };
+enum class ResoAlgo { CN, POP, ECK, VIOL };
 
 enum class ResoFocus : unsigned
 {
@@ -35,6 +36,7 @@ protected:
 
 	McNeutronOpts<ublas::matrix<t_real_reso>> m_opts;
 	EckParams m_reso;
+	ViolParams m_tofreso;
 	ResoResults m_res;
 
 	bool m_bKiFix = 0;
@@ -63,6 +65,7 @@ public:
 	void SetOptimalFocus(ResoFocus foc) { m_foc = foc; }
 
 	const EckParams& GetResoParams() const { return m_reso; }
+	const ViolParams& GetTofResoParams() const { return m_tofreso; }
 	const ResoResults& GetResoResults() const { return m_res; }
 };
 

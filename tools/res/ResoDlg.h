@@ -58,8 +58,8 @@ protected:
 	std::vector<QCheckBox*> m_vecCheckBoxes;
 	std::vector<std::string> m_vecCheckNames;
 
-	std::vector<QLineEdit*> m_vecEditBoxes;
-	std::vector<std::string> m_vecEditNames;
+	std::vector<QLineEdit*> m_vecPosEditBoxes;
+	std::vector<std::string> m_vecPosEditNames;
 
 	std::vector<QRadioButton*> m_vecRadioPlus;
 	std::vector<QRadioButton*> m_vecRadioMinus;
@@ -89,6 +89,8 @@ protected:
 	ublas::vector<t_real_reso> m_Q_avgHKL, m_Q_avgOrient;
 
 	bool m_bDontCalc;
+	t_real_reso m_dCachedE=0., m_dCachedQ=0.,
+		m_dCachedKi=0., m_dCachedKf=0.;
 
 	bool m_bEll4dCurrent = 0;
 	Ellipsoid4d m_ell4d;
@@ -117,6 +119,8 @@ protected slots:
 	void checkAutoCalcElli4dChanged();
 	void CalcElli4d();
 	void MCGenerate();
+
+	void RefreshQEPos();
 
 protected:
 	void setupAlgos();

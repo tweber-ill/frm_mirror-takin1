@@ -24,6 +24,7 @@ static const auto rads = tl::get_one_radian<t_real_reso>();
 static const auto meV = tl::get_one_meV<t_real_reso>();
 static const auto cm = tl::get_one_centimeter<t_real_reso>();
 static const auto meters = tl::get_one_meter<t_real_reso>();
+static const auto sec = tl::get_one_second<t_real_reso>();
 
 using wavenumber = tl::t_wavenumber_si<t_real>;
 
@@ -45,6 +46,7 @@ const TASReso& TASReso::operator=(const TASReso& res)
 	this->m_foc = res.m_foc;
 	this->m_opts = res.m_opts;
 	this->m_reso = res.m_reso;
+	this->m_tofreso = res.m_tofreso;
 	this->m_res = res.m_res;
 	this->m_bKiFix = res.m_bKiFix;
 	this->m_dKFix = res.m_dKFix;
@@ -174,9 +176,6 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.pos_y = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_y").c_str(), 0.)*cm;
 	m_reso.pos_z = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_z").c_str(), 0.)*cm;
 
-
-	m_algo = ResoAlgo(xml.Query<int>((strXmlRoot + "reso/algo").c_str(), 0));
-
 	// TODO
 	m_reso.mono_numtiles_h = 1;
 	m_reso.mono_numtiles_v = 1;
@@ -184,11 +183,37 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.ana_numtiles_v = 1;
 
 
+	// TOF
+	m_tofreso.len_pulse_mono = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_pulse_mono").c_str(), 0.) * cm;
+	m_tofreso.len_mono_sample = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_mono_sample").c_str(), 0.) * cm;
+	m_tofreso.len_sample_det = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_sample_det").c_str(), 0.) * cm;
+
+	m_tofreso.sig_len_pulse_mono = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_pulse_mono_sig").c_str(), 0.) * cm;
+	m_tofreso.sig_len_mono_sample = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_mono_sample_sig").c_str(), 0.) * cm;
+	m_tofreso.sig_len_sample_det = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_sample_det_sig").c_str(), 0.) * cm;
+
+	m_tofreso.sig_pulse = (xml.Query<t_real>((strXmlRoot + "reso/viol_time_pulse_sig").c_str(), 0.) * 1e-6) * sec;
+	m_tofreso.sig_mono = (xml.Query<t_real>((strXmlRoot + "reso/viol_time_mono_sig").c_str(), 0.) * 1e-6) * sec;
+	m_tofreso.sig_det = (xml.Query<t_real>((strXmlRoot + "reso/viol_time_det_sig").c_str(), 0.) * 1e-6) * sec;
+
+	m_tofreso.twotheta_i = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/viol_angle_tt_i").c_str(), 0.)) * rads;
+	m_tofreso.angle_outplane_i = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/viol_angle_ph_i").c_str(), 0.)) * rads;
+	m_tofreso.angle_outplane_f = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/viol_angle_ph_f").c_str(), 0.)) * rads;
+
+	m_tofreso.sig_twotheta_i = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/viol_angle_tt_i_sig").c_str(), 0.)) * rads;
+	m_tofreso.sig_twotheta_f = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/viol_angle_tt_f_sig").c_str(), 0.)) * rads;
+	m_tofreso.sig_outplane_i = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/viol_angle_ph_i_sig").c_str(), 0.)) * rads;
+	m_tofreso.sig_outplane_f = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/viol_angle_ph_f_sig").c_str(), 0.)) * rads;
+
+
+	m_algo = ResoAlgo(xml.Query<int>((strXmlRoot + "reso/algo").c_str(), 0));
+
+
 	// preliminary position
-	m_reso.ki = xml.Query<t_real>((strXmlRoot + "reso/ki").c_str(), 0.) / angs;
-	m_reso.kf = xml.Query<t_real>((strXmlRoot + "reso/kf").c_str(), 0.) / angs;
-	m_reso.E = xml.Query<t_real>((strXmlRoot + "reso/E").c_str(), 0.) * meV;
-	m_reso.Q = xml.Query<t_real>((strXmlRoot + "reso/Q").c_str(), 0.) / angs;
+	m_tofreso.ki = m_reso.ki = xml.Query<t_real>((strXmlRoot + "reso/ki").c_str(), 0.) / angs;
+	m_tofreso.kf = m_reso.kf = xml.Query<t_real>((strXmlRoot + "reso/kf").c_str(), 0.) / angs;
+	m_tofreso.E = m_reso.E = xml.Query<t_real>((strXmlRoot + "reso/E").c_str(), 0.) * meV;
+	m_tofreso.Q = m_reso.Q = xml.Query<t_real>((strXmlRoot + "reso/Q").c_str(), 0.) / angs;
 
 	m_dKFix = m_bKiFix ? m_reso.ki*angs : m_reso.kf*angs;
 	return true;
@@ -256,20 +281,20 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	if(vecQ.size() > 3)
 		vecQ.resize(3, true);
 
-	m_reso.Q = ublas::norm_2(vecQ) / angs;
-	m_reso.E = E * meV;
+	m_tofreso.Q = m_reso.Q = ublas::norm_2(vecQ) / angs;
+	m_tofreso.E = m_reso.E = E * meV;
 
 	//tl::log_info("kfix = ", m_dKFix);
 	wavenumber kother = tl::get_other_k(m_reso.E, m_dKFix/angs, m_bKiFix);
 	if(m_bKiFix)
 	{
-		m_reso.ki = m_dKFix / angs;
-		m_reso.kf = kother;
+		m_tofreso.ki = m_reso.ki = m_dKFix / angs;
+		m_tofreso.kf = m_reso.kf = kother;
 	}
 	else
 	{
-		m_reso.ki = kother;
-		m_reso.kf = m_dKFix / angs;
+		m_tofreso.ki = m_reso.ki = kother;
+		m_tofreso.kf = m_reso.kf = m_dKFix / angs;
 	}
 
 	//tl::log_info("ki = ", m_reso.ki, ", kf = ", m_reso.kf);
@@ -277,14 +302,14 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 	m_reso.thetam = units::abs(tl::get_mono_twotheta(m_reso.ki, m_reso.mono_d, /*m_reso.dmono_sense>=0.*/1)*t_real(0.5));
 	m_reso.thetaa = units::abs(tl::get_mono_twotheta(m_reso.kf, m_reso.ana_d, /*m_reso.dana_sense>=0.*/1)*t_real(0.5));
-	m_reso.twotheta = units::abs(tl::get_sample_twotheta(m_reso.ki, m_reso.kf, m_reso.Q, 1));
+	m_tofreso.twotheta = m_reso.twotheta = units::abs(tl::get_sample_twotheta(m_reso.ki, m_reso.kf, m_reso.Q, 1));
 
 	//tl::log_info("thetam = ", tl::r2d(m_reso.thetam/rads));
 	//tl::log_info("thetaa = ", tl::r2d(m_reso.thetaa/rads));
 	//tl::log_info("twothetas = ", tl::r2d(m_reso.twotheta/rads));
 
-	m_reso.angle_ki_Q = tl::get_angle_ki_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
-	m_reso.angle_kf_Q = tl::get_angle_kf_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
+	m_tofreso.angle_ki_Q = m_reso.angle_ki_Q = tl::get_angle_ki_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
+	m_tofreso.angle_kf_Q = m_reso.angle_kf_Q = tl::get_angle_kf_Q(m_reso.ki, m_reso.kf, m_reso.Q, /*m_reso.dsample_sense>=0.*/1);
 
 	//tl::log_info("kiQ = ", tl::r2d(m_reso.angle_ki_Q/rads));
 	//m_reso.angle_ki_Q = units::abs(m_reso.angle_ki_Q);
@@ -350,21 +375,26 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	// calculate resolution at (hkl) and E
 	if(m_algo == ResoAlgo::CN)
 	{
-		//tl::log_info("Algorithm: Cooper-Nathans");
+		//tl::log_info("Algorithm: Cooper-Nathans (TAS)");
 		m_reso.bCalcR0 = false;
 		m_res = calc_cn(m_reso);
 	}
 	else if(m_algo == ResoAlgo::POP)
 	{
-		//tl::log_info("Algorithm: Popovici");
+		//tl::log_info("Algorithm: Popovici (TAS)");
 		//m_reso.bCalcR0 = true;
 		m_res = calc_pop(m_reso);
 	}
 	else if(m_algo == ResoAlgo::ECK)
 	{
-		//tl::log_info("Algorithm: Eckold-Sobolev");
+		//tl::log_info("Algorithm: Eckold-Sobolev (TAS)");
 		m_reso.bCalcR0 = true;
 		m_res = calc_eck(m_reso);
+	}
+	else if(m_algo == ResoAlgo::VIOL)
+	{
+		//tl::log_info("Algorithm: Violini (TOF)");
+		m_res = calc_viol(m_tofreso);
 	}
 	else
 	{

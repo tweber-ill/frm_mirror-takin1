@@ -110,8 +110,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/viol_angle_tt_i_sig", "reso/viol_angle_tt_f_sig", "reso/viol_angle_ph_i_sig", "reso/viol_angle_ph_f_sig",
 		};
 
-	m_vecEditBoxes = {editE, editQ, editKi, editKf};
-	m_vecEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
+	m_vecPosEditBoxes = {editE, editQ, editKi, editKf};
+	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
 	m_vecCheckBoxes = {};
 	m_vecCheckNames = {};
@@ -140,8 +140,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 	for(QDoubleSpinBox* pSpinBox : m_vecSpinBoxes)
 		QObject::connect(pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(Calc()));
-	for(QLineEdit* pEditBox : m_vecEditBoxes)
-		QObject::connect(pEditBox, SIGNAL(textEdited(const QString&)), this, SLOT(Calc()));
+	for(QLineEdit* pEditBox : m_vecPosEditBoxes)
+		QObject::connect(pEditBox, SIGNAL(textEdited(const QString&)), this, SLOT(RefreshQEPos()));
 	for(QRadioButton* pRadio : m_vecRadioPlus)
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(Calc()));
 	for(QComboBox* pCombo : m_vecComboBoxes)
@@ -242,6 +242,16 @@ void ResoDlg::LoadRes()
 
 }
 
+void ResoDlg::RefreshQEPos()
+{
+	m_dCachedQ = editQ->text().toDouble();
+	m_dCachedE = editE->text().toDouble();
+	m_dCachedKi = editKi->text().toDouble();
+	m_dCachedKf = editKf->text().toDouble();
+
+	Calc();
+}
+
 void ResoDlg::Calc()
 {
 	try
@@ -282,12 +292,17 @@ void ResoDlg::Calc()
 
 
 		// Position
-		cn.ki = t_real_reso(editKi->text().toDouble()) / angs;
+		/*cn.ki = t_real_reso(editKi->text().toDouble()) / angs;
 		cn.kf = t_real_reso(editKf->text().toDouble()) / angs;
+		cn.Q = t_real_reso(editQ->text().toDouble()) / angs;
 		cn.E = t_real_reso(editE->text().toDouble()) * meV;
 		//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
-		//std::cout << "E = " << editE->text().toStdString() << std::endl;
-		cn.Q = t_real_reso(editQ->text().toDouble()) / angs;
+		//std::cout << "E = " << editE->text().toStdString() << std::endl;*/
+
+		cn.ki = m_dCachedKi / angs;
+		cn.kf = m_dCachedKf / angs;
+		cn.E = m_dCachedE * meV;
+		cn.Q = m_dCachedQ / angs;
 
 
 		// Pop
@@ -411,7 +426,7 @@ void ResoDlg::Calc()
 			default: tl::log_err("Unknown resolution algorithm selected."); return;
 		}
 
-		editE->setText(tl::var_to_str(t_real_reso(cn.E/meV), g_iPrec).c_str());
+		//editE->setText(tl::var_to_str(t_real_reso(cn.E/meV), g_iPrec).c_str());
 		//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
 		//if(m_pScatterDlg) m_pScatterDlg->SetParams(cn, res);
 
@@ -624,8 +639,8 @@ void ResoDlg::WriteLastConfig()
 
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 		m_pSettings->setValue(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());
-	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
-		m_pSettings->setValue(m_vecEditNames[iEditBox].c_str(), m_vecEditBoxes[iEditBox]->text().toDouble());
+	for(unsigned int iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
+		m_pSettings->setValue(m_vecPosEditNames[iEditBox].c_str(), m_vecPosEditBoxes[iEditBox]->text().toDouble());
 	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 		m_pSettings->setValue(m_vecRadioNames[iRadio].c_str(), m_vecRadioPlus[iRadio]->isChecked());
 	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
@@ -651,12 +666,12 @@ void ResoDlg::ReadLastConfig()
 		m_vecSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecSpinNames[iSpinBox].c_str()).value<t_real_reso>());
 	}
 
-	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	for(unsigned int iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 	{
-		if(!m_pSettings->contains(m_vecEditNames[iEditBox].c_str()))
+		if(!m_pSettings->contains(m_vecPosEditNames[iEditBox].c_str()))
 			continue;
-		t_real_reso dEditVal = m_pSettings->value(m_vecEditNames[iEditBox].c_str()).value<t_real_reso>();
-		m_vecEditBoxes[iEditBox]->setText(tl::var_to_str(dEditVal, g_iPrec).c_str());
+		t_real_reso dEditVal = m_pSettings->value(m_vecPosEditNames[iEditBox].c_str()).value<t_real_reso>();
+		m_vecPosEditBoxes[iEditBox]->setText(tl::var_to_str(dEditVal, g_iPrec).c_str());
 	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
@@ -709,10 +724,10 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 		mapConf[strXmlRoot + m_vecSpinNames[iSpinBox]] = ostrVal.str();
 	}
 
-	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	for(unsigned int iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 	{
-		std::string strVal = m_vecEditBoxes[iEditBox]->text().toStdString();
-		mapConf[strXmlRoot + m_vecEditNames[iEditBox]] = strVal;
+		std::string strVal = m_vecPosEditBoxes[iEditBox]->text().toStdString();
+		mapConf[strXmlRoot + m_vecPosEditNames[iEditBox]] = strVal;
 	}
 
 	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
@@ -732,38 +747,44 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	bool bOk=0;
 	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
-		m_vecSpinBoxes[iSpinBox]->setValue(xml.Query<t_real_reso>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str(), 0., &bOk));
-
-	for(unsigned int iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
 	{
-		t_real_reso dEditVal = xml.Query<t_real_reso>((strXmlRoot+m_vecEditNames[iEditBox]).c_str(), 0., &bOk);
-		if(bOk) m_vecEditBoxes[iEditBox]->setText(tl::var_to_str(dEditVal, g_iPrec).c_str());
+		boost::optional<t_real_reso> odSpinVal = xml.QueryOpt<t_real_reso>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str());
+		if(odSpinVal) m_vecSpinBoxes[iSpinBox]->setValue(*odSpinVal);
+	}
+
+	for(unsigned int iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
+	{
+		boost::optional<t_real_reso> odEditVal = xml.QueryOpt<t_real_reso>((strXmlRoot+m_vecPosEditNames[iEditBox]).c_str());
+		if(odEditVal) m_vecPosEditBoxes[iEditBox]->setText(tl::var_to_str(*odEditVal, g_iPrec).c_str());
 	}
 
 	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
-		int bChecked = xml.Query<int>((strXmlRoot+m_vecCheckNames[iCheck]).c_str(), 0, &bOk);
-		m_vecCheckBoxes[iCheck]->setChecked(bChecked);
+		boost::optional<int> obChecked = xml.QueryOpt<int>((strXmlRoot+m_vecCheckNames[iCheck]).c_str());
+		if(obChecked) m_vecCheckBoxes[iCheck]->setChecked(*obChecked);
 	}
 
 	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 	{
-		int bChecked = xml.Query<int>((strXmlRoot+m_vecRadioNames[iRadio]).c_str(), 0, &bOk);
-		if(bChecked)
-			m_vecRadioPlus[iRadio]->setChecked(1);
-		else
-			m_vecRadioMinus[iRadio]->setChecked(1);;
+		boost::optional<int> obChecked = xml.QueryOpt<int>((strXmlRoot+m_vecRadioNames[iRadio]).c_str());
+		if(obChecked)
+		{
+			if(*obChecked)
+				m_vecRadioPlus[iRadio]->setChecked(1);
+			else
+				m_vecRadioMinus[iRadio]->setChecked(1);
+		}
 	}
 
 	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 	{
-		int iComboIdx = xml.Query<int>((strXmlRoot+m_vecComboNames[iCombo]).c_str(), 0, &bOk);
-		m_vecComboBoxes[iCombo]->setCurrentIndex(iComboIdx);
+		boost::optional<int> oiComboIdx = xml.QueryOpt<int>((strXmlRoot+m_vecComboNames[iCombo]).c_str());
+		if(oiComboIdx) m_vecComboBoxes[iCombo]->setCurrentIndex(*oiComboIdx);
 	}
 
-	groupGuide->setChecked(xml.Query<int>((strXmlRoot+"reso/use_guide").c_str(), 0, &bOk));
+	boost::optional<int> obGroupVal = xml.QueryOpt<int>((strXmlRoot+"reso/use_guide").c_str());
+	if(obGroupVal) groupGuide->setChecked(*obGroupVal);
 
 	m_bDontCalc = bOldDontCalc;
 	Calc();
@@ -839,6 +860,11 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 		std::cout << "kiQ = " << t_real_reso(m_tasparams.angle_ki_Q/M_PI/rads * 180.) << std::endl;
 		std::cout << "kfQ = " << t_real_reso(m_tasparams.angle_kf_Q/M_PI/rads * 180.) << std::endl;*/
 
+
+		m_dCachedQ = dQ;
+		m_dCachedE = parms.dE;
+		m_dCachedKi = parms.dki;
+		m_dCachedKf = parms.dkf;
 		editQ->setText(tl::var_to_str(dQ, g_iPrec).c_str());
 		editE->setText(tl::var_to_str(parms.dE, g_iPrec).c_str());
 		editKi->setText(tl::var_to_str(parms.dki, g_iPrec).c_str());
