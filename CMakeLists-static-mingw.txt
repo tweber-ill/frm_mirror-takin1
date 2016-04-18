@@ -91,7 +91,6 @@ add_executable(takin
 	tlibs/file/recent.cpp  tlibs/file/x3d.cpp
 	tlibs/log/log.cpp tlibs/log/debug.cpp
 	tlibs/math/rand.cpp
-	tlibs/net/tcp.cpp
 	tlibs/string/spec_char.cpp
 	tlibs/helper/flags.cpp  tlibs/version.cpp
 )

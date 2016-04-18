@@ -123,7 +123,6 @@ add_executable(takin
 	tlibs/file/recent.cpp  tlibs/file/x3d.cpp
 	tlibs/log/log.cpp tlibs/log/debug.cpp
 	tlibs/math/rand.cpp
-	tlibs/net/tcp.cpp
 	tlibs/string/spec_char.cpp
 	tlibs/helper/flags.cpp  tlibs/version.cpp
 )
@@ -161,7 +160,7 @@ add_dependencies(takin gentab)
 # convofit, convoseries
 # -----------------------------------------------------------------------------
 add_executable(convofit 
-	tools/res/cn.cpp tools/res/pop.cpp tools/res/eck.cpp
+	tools/res/cn.cpp tools/res/pop.cpp tools/res/eck.cpp tools/res/viol.cpp
 	tools/res/ellipse.cpp tools/res/
 
 	tools/monteconvo/TASReso.cpp
