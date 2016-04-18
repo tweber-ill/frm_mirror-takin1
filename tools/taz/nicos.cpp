@@ -43,8 +43,8 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 		if(!m_pSettings->contains(strKey.c_str()))
 			continue;
 
-		*pair.second = m_pSettings->value(strKey.c_str(), pair.second->c_str()
-										).toString().toStdString();
+		*pair.second = m_pSettings->value(strKey.c_str(), pair.second->c_str()).
+			toString().toStdString();
 	}
 
 	m_bFlipOrient2 = m_pSettings->value("net/flip_orient2", true).toBool();
@@ -66,7 +66,7 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 
 		// additional info fields (not needed for calculation)
 		"logbook/remark",
-		"nicos/ctr1/value",
+		//"nicos/ctr1/value",
 		"nicos/timer/value",
 		"nicos/timer/preselection",
 	};
@@ -153,8 +153,9 @@ void NicosCache::slot_disconnected(const std::string& strHost, const std::string
 
 void NicosCache::slot_receive(const std::string& str)
 {
-	//tl::log_debug("Received: ", str);
-
+#ifndef NDEBUG
+	tl::log_debug("Received: ", str);
+#endif
 	std::pair<std::string, std::string> pairTimeVal = tl::split_first<std::string>(str, "@", 1);
 	std::pair<std::string, std::string> pairKeyVal = tl::split_first<std::string>(pairTimeVal.second, "=", 1);
 	if(pairKeyVal.second == "")
@@ -279,7 +280,7 @@ void NicosCache::slot_receive(const std::string& str)
 
 
 	if(bUpdatedVals && m_mapCache.find(m_strSampleTheta) != m_mapCache.end()
-			&& m_mapCache.find(m_strSamplePsi0) != m_mapCache.end())
+		&& m_mapCache.find(m_strSamplePsi0) != m_mapCache.end())
 	{
 		// rotation of crystal -> rotation of plane (or triangle) -> sample theta
 

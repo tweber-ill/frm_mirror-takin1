@@ -125,7 +125,7 @@ ifeq ($(DO_DEBUG), 0)
 	FLAGS += ${DEFINES}
 	STRIP = strip -v 
 else
-	FLAGS = ${INC} -std=c++11 -ggdb -DDEBUG -Wall -Weffc++ -fPIC ${DEFINES}
+	FLAGS = ${INC} -std=c++11 -rdynamic -ggdb -DDEBUG -Wall -Weffc++ -fPIC ${DEFINES}
 	STRIP = echo Retaining debug symbols of 
 endif
 
@@ -180,7 +180,7 @@ LIBS_RESO = ${QWT_LIB} ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS}
 # -----------------------------------------------------------------------------
 
 
-OBJ_COMMON = obj/log.o obj/rand.o obj/linalg2.o \
+OBJ_COMMON = obj/log.o obj/debug.o obj/rand.o obj/linalg2.o \
 	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
 
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
@@ -201,30 +201,31 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
 	obj/qthelper.o obj/globals.o
 
-OBJ_MONTECONVO = obj/log.o obj/sqw.o \
+OBJ_MONTECONVO = obj/log.o obj/debug.o obj/sqw.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ellipse.o \
 	obj/rand.o obj/tasreso.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
 	obj/loadinstr.o obj/eval.o obj/gnuplot.o ${OBJ_MONTECONVO} ${PY_OBJS}
-OBJ_CONVOSERIES = obj/scanseries.o obj/log.o
+OBJ_CONVOSERIES = obj/scanseries.o obj/log.o obj/debug.o
 
-OBJ_RESO = obj/log.o obj/rand.o \
+OBJ_RESO = obj/log.o obj/debug.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
 	obj/ellipse.o obj/linalg2.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
-	obj/loadinstr.o obj/log.o obj/qthelper.o \
+	obj/loadinstr.o obj/log.o obj/debug.o obj/qthelper.o \
 	obj/globals.o
 
 OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup.o obj/crystalsys.o \
-	obj/log.o obj/globals.o
+	obj/log.o obj/debug.o obj/globals.o
 
-OBJ_GENTAB = obj/spacegroup_clp.o obj/gentab.o obj/crystalsys_noqt.o obj/log.o
+OBJ_GENTAB = obj/spacegroup_clp.o obj/gentab.o obj/crystalsys_noqt.o obj/log.o \
+	obj/debug.o
 
 OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals_noqt.o \
-	obj/formfact.o obj/log.o
+	obj/formfact.o obj/log.o obj/debug.o
 
 
 ifeq ($(USE_3D), 1)
@@ -272,7 +273,7 @@ convofit: ${OBJ_CONVOFIT}
 convoseries: ${OBJ_CONVOSERIES}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/convoseries $+ ${BASIC_LIBS} ${STD_LIBS}
 
-posextract: obj/posextract.o obj/loadinstr.o obj/log.o
+posextract: obj/posextract.o obj/loadinstr.o obj/log.o obj/debug.o
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/posextract $+ ${STD_LIBS} ${BASIC_LIBS}
 	${STRIP} posextract
 
@@ -362,6 +363,8 @@ obj/tlibs_ver.o: tlibs/version.cpp tlibs/version.h
 obj/spec_char.o: tlibs/string/spec_char.cpp tlibs/string/spec_char.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/log.o: tlibs/log/log.cpp tlibs/log/log.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/debug.o: tlibs/log/debug.cpp tlibs/log/debug.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tcp.o: tlibs/net/tcp.cpp tlibs/net/tcp.h
 	${CC} ${FLAGS} -c -o $@ $<

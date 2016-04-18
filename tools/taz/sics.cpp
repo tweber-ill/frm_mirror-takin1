@@ -107,7 +107,9 @@ void SicsCache::slot_disconnected(const std::string& strHost, const std::string&
 
 void SicsCache::slot_receive(const std::string& str)
 {
-	//log_debug("Received: ", str);
+#ifndef NDEBUG
+	tl::log_debug("Received: ", str);
+#endif
 	if(str=="OK" || str=="Login OK")
 		return;
 

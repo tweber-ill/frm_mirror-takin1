@@ -226,7 +226,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(checkSenseS, SIGNAL(stateChanged(int)), this, SLOT(UpdateSampleSense()));
 	QObject::connect(checkSenseA, SIGNAL(stateChanged(int)), this, SLOT(UpdateAnaSense()));
 
-	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
+	QObject::connect(editSpaceGroupsFilter, SIGNAL(textEdited(const QString&)), this, SLOT(RepopulateSpaceGroups()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SetCrystalType()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(CalcPeaks()));
 	QObject::connect(checkPowder, SIGNAL(stateChanged(int)), this, SLOT(CalcPeaks()));
@@ -808,6 +808,8 @@ void TazDlg::showEvent(QShowEvent *pEvt)
 
 void TazDlg::closeEvent(QCloseEvent* pEvt)
 {
+	m_bReady = 0;
+
 	//m_settings.setValue("main/width", this->width());
 	//m_settings.setValue("main/height", this->height());
 	m_settings.setValue("main/geo", saveGeometry());

@@ -122,6 +122,10 @@ void TazDlg::CalcPeaks()
 		const t_real alpha = tl::d2r(editAlpha->text().toDouble());
 		const t_real beta = tl::d2r(editBeta->text().toDouble());
 		const t_real gamma = tl::d2r(editGamma->text().toDouble());
+#ifndef NDEBUG
+		tl::log_debug("lattice consts = ", a, ", ", b, ", ", c);
+		tl::log_debug("lattice angles = ", alpha, ", ", beta, ", ", gamma);
+#endif
 
 		tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
 		tl::Lattice<t_real> recip_unrot = lattice.GetRecip();

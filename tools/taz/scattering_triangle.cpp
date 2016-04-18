@@ -945,9 +945,9 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 						tl::set_eps_0(vecPeak);
 						ostrTip << " rlu\n";
 						ostrTip << "("
-								<< vecPeak[0] << ", "
-								<< vecPeak[1] << ", "
-								<< vecPeak[2] << ") " << strAA;
+							<< vecPeak[0] << ", "
+							<< vecPeak[1] << ", "
+							<< vecPeak[2] << ") " << strAA;
 
 						//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
 						pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
@@ -960,16 +960,16 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 						if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
 						{
 							t_vec vecCentral = tl::make_vec({dX, dY});
-							//log_debug("Central ", ih, ik, il, ": ", vecCentral);
+							//tl::log_debug("Central ", ih, ik, il, ": ", vecCentral);
 							m_bz.SetCentralReflex(vecCentral);
 						}
 						// TODO: check if 2 next neighbours is sufficient for all space groups
-						else if(std::abs(ih-veciCent[0])<=2
-								&& std::abs(ik-veciCent[1])<=2
-								&& std::abs(il-veciCent[2])<=2)
+						else if(std::abs(ih-veciCent[0]) <= 2
+							&& std::abs(ik-veciCent[1]) <= 2
+							&& std::abs(il-veciCent[2]) <= 2)
 						{
 							t_vec vecN = tl::make_vec({dX, dY});
-							//log_debug("Reflex: ", vecN);
+							//tl::log_debug("Reflex: ", vecN);
 							m_bz.AddReflex(vecN);
 						}
 					}
@@ -978,6 +978,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 
 	if(!bIsPowder)
 	{
+		//for(const auto& vec : m_bz.GetNeighbours()) std::cout << vec << std::endl;
 		m_bz.CalcBZ();
 		//for(RecipPeak* pPeak : m_vecPeaks)
 		//	pPeak->SetBZ(&m_bz);

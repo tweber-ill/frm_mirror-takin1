@@ -64,7 +64,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="labelSubtitle">
          <property name="text">
-          <string>Triple-Axis Resolution and Crystallography Software Package</string>
+          <string>Inelastic Neutron Scattering Software Package</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
