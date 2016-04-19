@@ -661,8 +661,8 @@ void NeutronDlg::CalcBraggReal()
 	else if(radioBraggDirTT->isChecked())
 	{
 		tt = tl::bragg_real_twotheta(d, lam, t_real(iOrder));
-		std::string strTT = tl::var_to_str(tl::r2d(tt/rads), g_iPrec);
-		std::string strT = tl::var_to_str(tl::r2d(t_real(0.5)*tt/rads), g_iPrec);
+		std::string strTT = tl::var_to_str<t_real>(tl::r2d(tt/rads), g_iPrec);
+		std::string strT = tl::var_to_str<t_real>(tl::r2d(t_real(0.5)*tt/rads), g_iPrec);
 		editBraggDirTT->setText(strTT.c_str());
 		editBraggDirT->setText(strT.c_str());
 	}
@@ -695,8 +695,8 @@ void NeutronDlg::CalcBraggRecip()
 	else if(radioBraggReciTT->isChecked())
 	{
 		tt = tl::bragg_recip_twotheta(Q, lam, t_real(iOrder));
-		std::string strTT = tl::var_to_str(tl::r2d(tt/rads), g_iPrec);
-		std::string strT = tl::var_to_str(tl::r2d(t_real(0.5)*tt/rads), g_iPrec);
+		std::string strTT = tl::var_to_str<t_real>(tl::r2d(tt/rads), g_iPrec);
+		std::string strT = tl::var_to_str<t_real>(tl::r2d(t_real(0.5)*tt/rads), g_iPrec);
 		editBraggReciTT->setText(strTT.c_str());
 		editBraggReciT->setText(strT.c_str());
 	}
