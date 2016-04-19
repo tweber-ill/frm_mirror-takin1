@@ -203,7 +203,7 @@ OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
 
 OBJ_MONTECONVO = obj/log.o obj/debug.o obj/sqw.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ellipse.o \
-	obj/rand.o obj/tasreso.o
+	obj/rand.o obj/tasreso.o obj/eval.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
 	obj/loadinstr.o obj/eval.o obj/gnuplot.o ${OBJ_MONTECONVO} ${PY_OBJS}

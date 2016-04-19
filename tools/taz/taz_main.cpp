@@ -58,6 +58,7 @@ static inline void sys_err(const SysErr& err)
 	tl::log_crit("System error: ", err.what(),
 		", category: ", err.code().category().name(),
 		", value: ", err.code().value(), ".");
+	tl::log_backtrace();
 }
 
 int main(int argc, char** argv)
@@ -179,6 +180,7 @@ int main(int argc, char** argv)
 	catch(const std::exception& ex)
 	{
 		tl::log_crit("Exception: ", ex.what());
+		tl::log_backtrace();
 	}
 	return -1;
 }

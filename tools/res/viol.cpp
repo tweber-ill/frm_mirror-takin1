@@ -106,13 +106,13 @@ ResoResults calc_viol(const ViolParams& params)
 		/*5*/ [&]()->t_real { return -mn*ls/(tf*tf) /meV*meter; },
 	};
 
+#ifndef NDEBUG
 	// formula 19 in [viol14]
 	t_real sigE = std::sqrt(
 		std::inner_product(vecEderivs.begin(), vecEderivs.end(), vecsigs.begin(), t_real(0),
 		[](t_real r1, t_real r2)->t_real { return r1 + r2; },
 		[](const std::function<t_real()>& f1, t_real r2)->t_real { return f1()*f1()*r2*r2; } ));
-#ifndef NDEBUG
-	tl::log_debug("sigma E = ", sigE);
+	tl::log_debug("dE (Vanadium fwhm) = ", tl::SIGMA2FWHM*sigE);
 #endif
 	// --------------------------------------------------------------------
 
@@ -173,9 +173,10 @@ ResoResults calc_viol(const ViolParams& params)
 			t_vec vec1 = f1();
 			return ublas::element_prod(vec1, vec1) * r2*r2;
 		});
-	t_vec sigQ = tl::apply_fkt(vecQsq, static_cast<t_real(*)(t_real)>(std::sqrt));
+
 #ifndef NDEBUG
-	tl::log_debug("sigma Q = ", sigQ);
+	t_vec sigQ = tl::apply_fkt(vecQsq, static_cast<t_real(*)(t_real)>(std::sqrt));
+	tl::log_debug("dQ (Vanadium fwhm) = ", tl::SIGMA2FWHM*sigQ);
 #endif
 	// --------------------------------------------------------------------
 

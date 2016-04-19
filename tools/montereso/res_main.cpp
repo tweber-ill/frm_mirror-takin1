@@ -227,7 +227,7 @@ static EllipseDlg* show_ellipses(const Resolution& res)
 	vector<double> vecDummy;
 	pdlg->SetParams(res.res, res.Q_avg,
 		matDummy, vecDummy, matDummy, vecDummy,
-		-1);
+		ResoAlgo::UNKNOWN);
 
 	return pdlg;
 }

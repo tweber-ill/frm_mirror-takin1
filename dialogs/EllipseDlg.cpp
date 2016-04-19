@@ -112,7 +112,6 @@ void EllipseDlg::Calc()
 	}
 
 
-	int iAlgo = m_iAlgo;
 	const ublas::matrix<t_real_reso>& reso = *pReso;
 	const ublas::vector<t_real_reso>& _Q_avg = *pQavg;
 
@@ -254,14 +253,13 @@ void EllipseDlg::Calc()
 			if(m_vecplotwrap[iEll]->GetZoomer())
 				m_vecplotwrap[iEll]->GetZoomer()->setZoomBase(rect);
 
-
-			switch(iAlgo)
+			switch(m_algo)
 			{
-				case 0: SetTitle("Cooper-Nathans Algorithm (TAS)"); break;
-				case 1: SetTitle("Popovici Algorithm (TAS)"); break;
-				case 2: SetTitle("Eckold-Sobolev Algorithm (TAS)"); break;
-				case 3: SetTitle("Violini Algorithm (TOF)"); break;
-				default: SetTitle(""); break;
+				case ResoAlgo::CN: SetTitle("Cooper-Nathans Algorithm (TAS)"); break;
+				case ResoAlgo::POP: SetTitle("Popovici Algorithm (TAS)"); break;
+				case ResoAlgo::ECK: SetTitle("Eckold-Sobolev Algorithm (TAS)"); break;
+				case ResoAlgo::VIOL: SetTitle("Violini Algorithm (TOF)"); break;
+				default: SetTitle("Unknown Resolution Algorithm"); break;
 			}
 		}
 	}
@@ -275,7 +273,7 @@ void EllipseDlg::Calc()
 void EllipseDlg::SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
 	const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
 	const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
-	int iAlgo)
+	ResoAlgo algo)
 {
 	m_reso = reso;
 	m_resoHKL = resoHKL;
@@ -283,7 +281,7 @@ void EllipseDlg::SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::
 	m_Q_avg = Q_avg;
 	m_Q_avgHKL = Q_avgHKL;
 	m_Q_avgOrient = Q_avgOrient;
-	m_iAlgo = iAlgo;
+	m_algo = algo;
 
 	Calc();
 }

@@ -163,11 +163,11 @@ ResoDlg::~ResoDlg() {}
 
 void ResoDlg::setupAlgos()
 {
-	comboAlgo->addItem("Cooper-Nathans");
-	comboAlgo->addItem("Popovici");
-	comboAlgo->addItem("Eckold-Sobolev");
-	comboAlgo->addItem("Violini (TOF)");
-	//comboAlgo->insertSeparator(3);
+	comboAlgo->addItem("TAS: Cooper-Nathans", static_cast<int>(ResoAlgo::CN));
+	comboAlgo->addItem("TAS: Popovici", static_cast<int>(ResoAlgo::POP));
+	comboAlgo->addItem("TAS: Eckold-Sobolev", static_cast<int>(ResoAlgo::ECK));
+	comboAlgo->insertSeparator(3);
+	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIOL));
 }
 
 void ResoDlg::SaveRes()
@@ -417,12 +417,12 @@ void ResoDlg::Calc()
 
 
 		// Calculation
-		switch(comboAlgo->currentIndex())
+		switch(ResoDlg::GetSelectedAlgo())
 		{
-			case 0: res = calc_cn(cn); break;
-			case 1: res = calc_pop(cn); break;
-			case 2: res = calc_eck(cn); break;
-			case 3: res = calc_viol(tof); break;
+			case ResoAlgo::CN: res = calc_cn(cn); break;
+			case ResoAlgo::POP: res = calc_pop(cn); break;
+			case ResoAlgo::ECK: res = calc_eck(cn); break;
+			case ResoAlgo::VIOL: res = calc_viol(tof); break;
 			default: tl::log_err("Unknown resolution algorithm selected."); return;
 		}
 
@@ -624,12 +624,25 @@ void ResoDlg::RefreshSimCmd()
 	editSim->setPlainText(ostrCmd.str().c_str());
 }
 
+ResoAlgo ResoDlg::GetSelectedAlgo() const
+{
+	ResoAlgo algoSel = ResoAlgo::UNKNOWN;
+	QVariant varAlgo = comboAlgo->itemData(comboAlgo->currentIndex());
+	if(varAlgo == QVariant::Invalid)
+		tl::log_err("Unknown resolution algorithm selected.");
+	else
+		algoSel = static_cast<ResoAlgo>(varAlgo.toInt());
+	return algoSel;
+}
+
 void ResoDlg::EmitResults()
 {
+	ResoAlgo algoSel = ResoDlg::GetSelectedAlgo();
+
 	emit ResoResultsSig(m_res.reso, m_res.Q_avg,
 		m_resoHKL, m_Q_avgHKL,
 		m_resoOrient, m_Q_avgOrient,
-		comboAlgo->currentIndex());
+		algoSel);
 }
 
 void ResoDlg::WriteLastConfig()
@@ -1085,53 +1098,66 @@ void ResoDlg::MCGenerate()
 
 void ResoDlg::AlgoChanged()
 {
-	std::string strAlgo;
+	std::string strAlgo = "<html><body>\n";
 
-	switch(comboAlgo->currentIndex())
+	switch(GetSelectedAlgo())
 	{
-		case 0:
+		case ResoAlgo::CN:
 		{
 			tabWidget->setTabEnabled(0,1);
 			tabWidget->setTabEnabled(1,0);
 			tabWidget->setTabEnabled(2,0);
 			tabWidget->setTabEnabled(3,0);
-			strAlgo = "M. J. Cooper and R. Nathans\nActa Cryst. 23, 357\n1967";
+			strAlgo = "<b>M. J. Cooper and <br>R. Nathans</b><br>\n";
+			strAlgo += "<a href=http://dx.doi.org/10.1107/S0365110X67002816>"
+				"Acta Cryst. 23, <br>pp. 357-367</a><br>\n";
+			strAlgo += "1967";
 			break;
 		}
-		case 1:
+		case ResoAlgo::POP:
 		{
 			tabWidget->setTabEnabled(0,1);
 			tabWidget->setTabEnabled(1,1);
 			tabWidget->setTabEnabled(2,0);
 			tabWidget->setTabEnabled(3,0);
-			strAlgo = "M. Popovici\nActa Cryst. A 31, 507\n1975";
+			strAlgo = "<b>M. Popovici</b><br>\n";
+			strAlgo += "<a href=http://dx.doi.org/10.1107/S0567739475001088>"
+				"Acta Cryst. A 31, <br>pp. 507-513</a><br>\n";
+			strAlgo += "1975";
 			break;
 		}
-		case 2:
+		case ResoAlgo::ECK:
 		{
 			tabWidget->setTabEnabled(0,1);
 			tabWidget->setTabEnabled(1,1);
 			tabWidget->setTabEnabled(2,1);
 			tabWidget->setTabEnabled(3,0);
-			strAlgo = "G. Eckold and O. Sobolev\nNIM A 752, pp. 54-64\n2014";
+			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b><br>\n";
+			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2014.03.019>"
+				"NIM A 752, <br>pp. 54-64</a><br>\n";
+			strAlgo += "2014";
 			break;
 		}
-		case 3:
+		case ResoAlgo::VIOL:
 		{
 			tabWidget->setTabEnabled(0,0);
 			tabWidget->setTabEnabled(1,0);
 			tabWidget->setTabEnabled(2,0);
 			tabWidget->setTabEnabled(3,1);
-			strAlgo = "N. Violini et al.\nNIM A 736, pp. 31-39\n2014";
+			strAlgo = "<b>N. Violini et al.</b><br>\n";
+			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2013.10.042>"
+				"NIM A 736, <br>pp. 31-39</a><br>\n";
+			strAlgo += "2014";
 			break;
 		}
 		default:
 		{
-			strAlgo = "unknown";
+			strAlgo += "<i>unknown</i>";
 			break;
 		}
 	}
 
+	strAlgo += "\n</body></html>\n";
 	labelAlgoRef->setText(strAlgo.c_str());
 }
 

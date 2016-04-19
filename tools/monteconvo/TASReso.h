@@ -14,8 +14,6 @@
 #include "../res/mc.h"
 
 
-enum class ResoAlgo { CN, POP, ECK, VIOL };
-
 enum class ResoFocus : unsigned
 {
 	FOC_NONE = 0,

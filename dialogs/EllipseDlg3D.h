@@ -32,7 +32,7 @@ class EllipseDlg3D : public QDialog
 
 		ublas::matrix<t_real_reso> m_reso, m_resoHKL, m_resoOrient;
 		ublas::vector<t_real_reso> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
-		int m_iAlgo = -1;
+		ResoAlgo m_algo = ResoAlgo::UNKNOWN;
 
 	protected:
 		ublas::vector<t_real_reso>
@@ -51,7 +51,7 @@ class EllipseDlg3D : public QDialog
 		void SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
 			const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
 			const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
-			int iAlgo);
+			ResoAlgo algo);
 		void Calc();
 };
 

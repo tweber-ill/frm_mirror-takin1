@@ -99,6 +99,8 @@ protected:
 	bool m_bUpdateOnRealEvent = 1;
 	bool m_bUpdateOnRecipEvent = 1;
 
+	ResoAlgo GetSelectedAlgo() const;
+
 public:
 	ResoDlg(QWidget* pParent, QSettings* pSettings=0);
 	virtual ~ResoDlg();
@@ -146,7 +148,7 @@ signals:
 	void ResoResultsSig(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
 		const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
 		const ublas::matrix<t_real_reso>& resoHKL_orient, const ublas::vector<t_real_reso>& Q_avgHKL_orient,
-		int iAlgo);
+		ResoAlgo algo);
 };
 
 #endif

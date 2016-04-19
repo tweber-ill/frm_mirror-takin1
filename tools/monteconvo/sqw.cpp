@@ -371,46 +371,53 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 {
 	std::ifstream ifstr(pcFile);
 	if(!ifstr)
+	{
+		tl::log_err("Cannot open phonon config file \"", pcFile, "\".");
 		return;
+	}
 
 	std::string strLine;
 	while(std::getline(ifstr, strLine))
 	{
 		std::vector<std::string> vecToks;
-		tl::get_tokens<std::string>(strLine, std::string(" \t"), vecToks);
-		if(vecToks.size() == 0)
-			continue;
+		tl::get_tokens<std::string>(strLine, std::string("=,"), vecToks);
+		std::for_each(vecToks.begin(), vecToks.end(), [](std::string& str) {tl::trim(str); });
+
+		if(vecToks.size() == 0) continue;
+
+		//for(const auto& tok : vecToks) std::cout << tok << ", ";
+		//std::cout << std::endl;
 
 		if(vecToks[0] == "num_qs") m_iNumqs = tl::str_to_var<unsigned int>(vecToks[1]);
 		if(vecToks[0] == "num_arc") m_iNumArc = tl::str_to_var<unsigned int>(vecToks[1]);
-		if(vecToks[0] == "arc_max") m_dArcMax = tl::str_to_var<t_real>(vecToks[1]);
+		if(vecToks[0] == "arc_max") m_dArcMax = tl::str_to_var_parse<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var<t_real>(vecToks[1]), tl::str_to_var<t_real>(vecToks[2]), tl::str_to_var<t_real>(vecToks[3])});
-		else if(vecToks[0] == "TA1") m_vecTA1 = tl::make_vec({tl::str_to_var<t_real>(vecToks[1]), tl::str_to_var<t_real>(vecToks[2]), tl::str_to_var<t_real>(vecToks[3])});
-		else if(vecToks[0] == "TA2") m_vecTA2 = tl::make_vec({tl::str_to_var<t_real>(vecToks[1]), tl::str_to_var<t_real>(vecToks[2]), tl::str_to_var<t_real>(vecToks[3])});
+		else if(vecToks[0] == "G") m_vecLA = m_vecBragg = tl::make_vec({tl::str_to_var_parse<t_real>(vecToks[1]), tl::str_to_var_parse<t_real>(vecToks[2]), tl::str_to_var_parse<t_real>(vecToks[3])});
+		else if(vecToks[0] == "TA1") m_vecTA1 = tl::make_vec({tl::str_to_var_parse<t_real>(vecToks[1]), tl::str_to_var_parse<t_real>(vecToks[2]), tl::str_to_var_parse<t_real>(vecToks[3])});
+		else if(vecToks[0] == "TA2") m_vecTA2 = tl::make_vec({tl::str_to_var_parse<t_real>(vecToks[1]), tl::str_to_var_parse<t_real>(vecToks[2]), tl::str_to_var_parse<t_real>(vecToks[3])});
 
-		else if(vecToks[0] == "LA_amp") m_dLA_amp = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "LA_freq") m_dLA_freq = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "LA_S0") m_dLA_S0 = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_amp") m_dLA_amp = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_freq") m_dLA_freq = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_E_HWHM") m_dLA_E_HWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_q_HWHM") m_dLA_q_HWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "LA_S0") m_dLA_S0 = tl::str_to_var_parse<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "TA1_amp") m_dTA1_amp = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "TA1_freq") m_dTA1_freq = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "TA1_S0") m_dTA1_S0 = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_amp") m_dTA1_amp = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_freq") m_dTA1_freq = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_E_HWHM") m_dTA1_E_HWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_q_HWHM") m_dTA1_q_HWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA1_S0") m_dTA1_S0 = tl::str_to_var_parse<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "TA2_amp") m_dTA2_amp = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "TA2_freq") m_dTA2_freq = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "TA2_S0") m_dTA2_S0 = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_amp") m_dTA2_amp = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_freq") m_dTA2_freq = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_E_HWHM") m_dTA2_E_HWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_q_HWHM") m_dTA2_q_HWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "TA2_S0") m_dTA2_S0 = tl::str_to_var_parse<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var<t_real>(vecToks[1]);
-		else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var_parse<t_real>(vecToks[1]);
 
-		else if(vecToks[0] == "T") m_dT = tl::str_to_var<t_real>(vecToks[1]);
+		else if(vecToks[0] == "T") m_dT = tl::str_to_var_parse<t_real>(vecToks[1]);
 	}
 
 	create();

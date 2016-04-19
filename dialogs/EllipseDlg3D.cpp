@@ -138,7 +138,6 @@ void EllipseDlg3D::Calc()
 	}
 
 
-	int iAlgo = m_iAlgo;
 	const ublas::matrix<t_real_reso>& reso = *pReso;
 	const ublas::vector<t_real_reso>& _Q_avg = *pQavg;
 
@@ -204,7 +203,7 @@ void EllipseDlg3D::Calc()
 void EllipseDlg3D::SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
 	const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
 	const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
-	int iAlgo)
+	ResoAlgo algo)
 {
 	m_reso = reso;
 	m_resoHKL = resoHKL;
@@ -212,7 +211,7 @@ void EllipseDlg3D::SetParams(const ublas::matrix<t_real_reso>& reso, const ublas
 	m_Q_avg = Q_avg;
 	m_Q_avgHKL = Q_avgHKL;
 	m_Q_avgOrient = Q_avgOrient;
-	m_iAlgo = iAlgo;
+	m_algo = algo;
 
 	Calc();
 }
