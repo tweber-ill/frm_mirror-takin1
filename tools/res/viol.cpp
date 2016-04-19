@@ -166,6 +166,7 @@ ResoResults calc_viol(const ViolParams& params)
 		/*9*/ [&]()->t_vec { return ublas::prod(R_ph_f, vecViVf); },
 	};
 
+#ifndef NDEBUG
 	t_vec vecQsq = std::inner_product(vecQderivs.begin(), vecQderivs.end(), vecsigs.begin(), tl::make_vec<t_vec>({0,0,0}),
 		[](const t_vec& vec1, const t_vec& vec2) -> t_vec { return vec1 + vec2; },
 		[](const std::function<t_vec()>& f1, const t_real r2) -> t_vec
@@ -174,7 +175,6 @@ ResoResults calc_viol(const ViolParams& params)
 			return ublas::element_prod(vec1, vec1) * r2*r2;
 		});
 
-#ifndef NDEBUG
 	t_vec sigQ = tl::apply_fkt(vecQsq, static_cast<t_real(*)(t_real)>(std::sqrt));
 	tl::log_debug("dQ (Vanadium fwhm) = ", tl::SIGMA2FWHM*sigQ);
 #endif
