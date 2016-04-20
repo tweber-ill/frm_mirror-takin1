@@ -1,4 +1,4 @@
-/*
+/**
  * TAS tool
  * @author tweber
  * @date feb-2014
@@ -14,15 +14,18 @@
 #include "dialogs/AboutDlg.h"
 #include "libs/globals.h"
 
+#include <system_error>
+#include <boost/version.hpp>
+#include <boost/system/system_error.hpp>
+
 #include <clocale>
 #include <memory>
+
 #include <QMetaType>
 #include <QDir>
 #include <QMessageBox>
 #include <QCoreApplication>
 
-#include <system_error>
-#include <boost/system/system_error.hpp>
 
 #ifdef Q_WS_X11
 	extern "C" int XInitThreads();
@@ -161,6 +164,15 @@ int main(int argc, char** argv)
 
 
 		// ------------------------------------------------------------
+
+#ifdef IS_EXPERIMENTAL_BUILD
+		std::string strExp = "This " BOOST_PLATFORM " version of Takin is still experimental, "
+			"does not include all features and may show unexpected behaviour. Please report "
+			"bugs to tobias.weber@tum.de. Thanks!";
+		tl::log_warn(strExp);
+		QMessageBox::warning(0, "Takin", strExp.c_str());
+#endif
+
 		std::unique_ptr<TazDlg> dlg(new TazDlg(0));
 		if(argc > 1)
 			dlg->Load(argv[1]);
