@@ -35,9 +35,9 @@ class RealParamDlg : public QDialog, Ui::RealParamDlg
 		void paramsChanged(const RealParams& parms);
 
 	protected:
-		virtual void closeEvent(QCloseEvent *pEvt);
-		virtual void showEvent(QShowEvent *pEvt);
-		virtual void accept();
+		virtual void closeEvent(QCloseEvent *pEvt) override;
+		virtual void showEvent(QShowEvent *pEvt) override;
+		virtual void accept() override;
 };
 
 #endif

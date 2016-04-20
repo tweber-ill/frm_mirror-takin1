@@ -42,8 +42,8 @@ class SpurionDlg : public QDialog, Ui::SpurionDlg
 		void paramsChanged(const RecipParams& parms);
 
 	protected:
-		virtual void showEvent(QShowEvent *pEvt);
-		virtual void accept();
+		virtual void showEvent(QShowEvent *pEvt) override;
+		virtual void accept() override;
 };
 
 

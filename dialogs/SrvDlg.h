@@ -26,7 +26,7 @@ class SrvDlg : public QDialog, Ui::SrvDlg
 			const QString& strUser, const QString& strPass);
 
 	protected:
-		virtual void accept();
+		virtual void accept() override;
 };
 
 #endif

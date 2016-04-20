@@ -20,6 +20,8 @@ class AboutDlg : public QDialog, Ui::AboutDlg
 	protected:
 		QSettings *m_pSettings = 0;
 
+		virtual void accept() override;
+
 	public:
 		AboutDlg(QWidget* pParent=0, QSettings *pSett=0);
 		virtual ~AboutDlg() = default;

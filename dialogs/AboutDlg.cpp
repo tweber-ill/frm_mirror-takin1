@@ -28,6 +28,9 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 		QFont font;
 		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
 			setFont(font);
+
+		if(m_pSettings->contains("about/geo"))
+			restoreGeometry(m_pSettings->value("about/geo").toByteArray());
 	}
 
 	labelVersion->setText("Version " TAKIN_VER);
@@ -136,6 +139,15 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 		strLicenses += strLic + "\n";
 	}
 	editAllLicenses->setPlainText(strLicenses.c_str());
+}
+
+
+void AboutDlg::accept()
+{
+	if(m_pSettings)
+		m_pSettings->setValue("about/geo", saveGeometry());
+
+	QDialog::accept();
 }
 
 

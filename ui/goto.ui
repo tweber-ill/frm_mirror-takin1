@@ -7,11 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>691</width>
-    <height>350</height>
+    <height>354</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Go to Position</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout_5">
    <item row="0" column="0">

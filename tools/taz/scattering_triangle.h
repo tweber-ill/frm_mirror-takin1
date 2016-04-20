@@ -201,7 +201,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		const tl::Lattice<t_real_glob>& GetRecipLattice() const { return m_recip; }
 		QPointF GetGfxMid() const;
-		
+
 		void AllowMouseMove(bool bAllow);
 };
 

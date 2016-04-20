@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>409</width>
-    <height>349</height>
+    <width>438</width>
+    <height>364</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>About Takin</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">

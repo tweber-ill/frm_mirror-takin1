@@ -85,8 +85,8 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		void cursorMoved(const QPointF& pt);
 
 	protected:
-		virtual void showEvent(QShowEvent *pEvt);
-		virtual void accept();
+		virtual void showEvent(QShowEvent *pEvt) override;
+		virtual void accept() override;
 
 		const SpaceGroup* GetCurSpaceGroup() const;
 

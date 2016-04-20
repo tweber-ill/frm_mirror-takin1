@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Kinematic Plane</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="2" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">

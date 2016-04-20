@@ -51,8 +51,8 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		virtual ~EllipseDlg();
 
 	protected:
-		virtual void showEvent(QShowEvent *pEvt);
-		virtual void accept();
+		virtual void showEvent(QShowEvent *pEvt) override;
+		virtual void accept() override;
 
 	protected slots:
 		void cursorMoved(const QPointF& pt);

@@ -45,14 +45,14 @@ class RecipParamDlg : public QDialog, Ui::RecipParamDlg
 	protected slots:
 		void KiChanged();
 		void KfChanged();
-		
+
 		void SetGOrigin();
 		void OriginChanged();
 
 	protected:
-		virtual void closeEvent(QCloseEvent *pEvt);
-		virtual void showEvent(QShowEvent *pEvt);
-		virtual void accept();
+		virtual void closeEvent(QCloseEvent *pEvt) override;
+		virtual void showEvent(QShowEvent *pEvt) override;
+		virtual void accept() override;
 };
 
 #endif

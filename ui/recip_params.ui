@@ -7,11 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>698</width>
-    <height>499</height>
+    <height>503</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Reciprocal Space Parameters</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout_7">
    <item row="0" column="0">

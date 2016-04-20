@@ -99,7 +99,7 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 		void vars_changed(const CrystalOptions& crys, const TriangleOptions& triag);
 
 	protected:
-		virtual void showEvent(QShowEvent *pEvt);
+		virtual void showEvent(QShowEvent *pEvt) override;
 
 	public:
 		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);

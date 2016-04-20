@@ -30,7 +30,7 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		// checkboxes
 		typedef std::tuple<std::string, bool, QCheckBox*> t_tupCheck;
 		std::vector<t_tupCheck> m_vecChecks;
-		
+
 		// spins
 		typedef std::tuple<std::string, int, QSpinBox*> t_tupSpin;
 		std::vector<t_tupSpin> m_vecSpins;
@@ -38,7 +38,7 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 	public:
 		SettingsDlg(QWidget* pParent=0, QSettings* pSett=0);
 		virtual ~SettingsDlg();
-		
+
 	signals:
 		void SettingsChanged() const;
 
@@ -50,7 +50,7 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		void SetGlobals() const;
 
 	protected:
-		virtual void showEvent(QShowEvent *pEvt);
+		virtual void showEvent(QShowEvent *pEvt) override;
 
 	protected slots:
 		void ButtonBoxClicked(QAbstractButton* pBtn);

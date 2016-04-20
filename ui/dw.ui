@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Scattering Factors</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="1" column="0">
     <widget class="QLabel" name="labelStatus">

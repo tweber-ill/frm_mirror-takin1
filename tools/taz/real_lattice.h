@@ -182,7 +182,7 @@ class LatticeView : public QGraphicsView
 	Q_OBJECT
 	protected:
 		t_real_glob m_dTotalScale = 1.;
-		virtual void wheelEvent(QWheelEvent* pEvt);
+		virtual void wheelEvent(QWheelEvent* pEvt) override;
 
 	public:
 		LatticeView(QWidget* pParent = 0);

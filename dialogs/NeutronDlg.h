@@ -47,8 +47,8 @@ class NeutronDlg : public QDialog, Ui::NeutronDlg
 		void Eval(const QString&);
 
 	protected:
-		virtual void showEvent(QShowEvent *pEvt);
-		virtual void accept();
+		virtual void showEvent(QShowEvent *pEvt) override;
+		virtual void accept() override;
 
 		static void SetEditTT(QLineEdit *pEditT, QLineEdit *pEditTT);
 		static void SetEditT(QLineEdit *pEditT, QLineEdit *pEditTT);
