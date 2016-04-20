@@ -9,6 +9,7 @@
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
 #include "tlibs/log/debug.h"
+#include "tlibs/time/chrono.h"
 #include "tlibs/version.h"
 #include "dialogs/NetCacheDlg.h"
 #include "dialogs/AboutDlg.h"
@@ -32,8 +33,7 @@
 #endif
 
 
-#define TAKIN_CHECK " Please check if Takin is correctly installed and the current working directory is set to the Takin main directory."
-
+namespace chr = std::chrono;
 
 static bool add_logfile(std::ofstream* postrLog, bool bAdd=1)
 {
@@ -63,6 +63,9 @@ static inline void sys_err(const SysErr& err)
 		", value: ", err.code().value(), ".");
 	tl::log_backtrace();
 }
+
+
+#define TAKIN_CHECK " Please check if Takin is correctly installed and the current working directory is set to the Takin main directory."
 
 int main(int argc, char** argv)
 {
@@ -166,11 +169,26 @@ int main(int argc, char** argv)
 		// ------------------------------------------------------------
 
 #ifdef IS_EXPERIMENTAL_BUILD
-		std::string strExp = "This " BOOST_PLATFORM " version of Takin is still experimental, "
-			"does not include all features and may show unexpected behaviour. Please report "
-			"bugs to tobias.weber@tum.de. Thanks!";
-		tl::log_warn(strExp);
-		QMessageBox::warning(0, "Takin", strExp.c_str());
+		{
+			QSettings settings("tobis_stuff", "takin");
+			int iPrevDaysSinceEpoch = 0;
+			if(settings.contains("debug/last_warned"))
+				iPrevDaysSinceEpoch = settings.value("debug/last_warned").toInt();
+			int iDaysSinceEpoch = tl::epoch_dur<tl::t_dur_days<int>>().count();
+
+			std::string strExp = "This " BOOST_PLATFORM " version of Takin is still experimental, "
+				"does not include all features and may show unexpected behaviour. Please report "
+				"bugs to tobias.weber@tum.de. Thanks!";
+			tl::log_warn(strExp);
+			//tl::log_debug("Days since last warning: ", iDaysSinceEpoch-iPrevDaysSinceEpoch, ".");
+
+			// show warning message box every 5 days
+			if(iDaysSinceEpoch - iPrevDaysSinceEpoch > 5)
+			{
+				QMessageBox::warning(0, "Takin", strExp.c_str());
+				settings.setValue("debug/last_warned", iDaysSinceEpoch);
+			}
+		}
 #endif
 
 		std::unique_ptr<TazDlg> dlg(new TazDlg(0));
