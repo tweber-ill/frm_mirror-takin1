@@ -89,9 +89,6 @@ protected:
 	ublas::vector<t_real_reso> m_Q_avgHKL, m_Q_avgOrient;
 
 	bool m_bDontCalc;
-	t_real_reso m_dCachedE=0., m_dCachedQ=0.,
-		m_dCachedKi=0., m_dCachedKf=0.;
-
 	bool m_bEll4dCurrent = 0;
 	Ellipsoid4d m_ell4d;
 

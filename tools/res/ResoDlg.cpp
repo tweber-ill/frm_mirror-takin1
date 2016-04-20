@@ -1,4 +1,4 @@
-/*
+/**
  * resolution calculation
  * @author tweber
  * @date 2013 - 2016
@@ -156,7 +156,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadRes()));
 
 	m_bDontCalc = 0;
-	Calc();
+	RefreshQEPos();
+	//Calc();
 }
 
 ResoDlg::~ResoDlg() {}
@@ -244,12 +245,44 @@ void ResoDlg::LoadRes()
 
 void ResoDlg::RefreshQEPos()
 {
-	m_dCachedQ = editQ->text().toDouble();
-	m_dCachedE = editE->text().toDouble();
-	m_dCachedKi = editKi->text().toDouble();
-	m_dCachedKf = editKf->text().toDouble();
+	try
+	{
+		tl::t_wavenumber_si<t_real_reso> Q = editQ->text().toDouble() / angs;
+		tl::t_wavenumber_si<t_real_reso> ki = editKi->text().toDouble() / angs;
+		tl::t_wavenumber_si<t_real_reso> kf = editKf->text().toDouble() / angs;
+		//t_real_reso dE = editE->text().toDouble();
+		tl::t_energy_si<t_real_reso> E = tl::get_energy_transfer(ki, kf);
 
-	Calc();
+		tl::t_angle_si<t_real_reso> kiQ = tl::get_angle_ki_Q(ki, kf, Q, 1);
+		tl::t_angle_si<t_real_reso> kfQ = tl::get_angle_kf_Q(ki, kf, Q, 1);
+		tl::t_angle_si<t_real_reso> twotheta = tl::get_sample_twotheta(ki, kf, Q, 1);
+
+		const t_real_reso dMono = spinMonod->value();
+		const t_real_reso dAna = spinAnad->value();
+
+		m_tofparams.ki = m_tasparams.ki = ki;
+		m_tofparams.kf = m_tasparams.kf = kf;
+		m_tofparams.E = m_tasparams.E = E;
+		m_tofparams.Q = m_tasparams.Q = Q;
+
+		m_tofparams.twotheta = m_tasparams.twotheta = twotheta;
+		m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q = kiQ;
+		m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q = kfQ;
+
+		m_tasparams.thetam = 0.5 * tl::get_mono_twotheta(ki, dMono*angs, 1);
+		m_tasparams.thetaa = 0.5 * tl::get_mono_twotheta(kf, dAna*angs, 1);
+
+#ifndef NDEBUG
+		tl::log_debug("Manually changed parameters: ",
+			"ki=",ki, ", kf=", kf, ", Q=",Q, ", E=", E,
+			", tt=", twotheta, ", kiQ=", kiQ, ", kfQ=", kfQ, ".");
+#endif
+		Calc();
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_err(ex.what());
+	}
 }
 
 void ResoDlg::Calc()
@@ -298,11 +331,6 @@ void ResoDlg::Calc()
 		cn.E = t_real_reso(editE->text().toDouble()) * meV;
 		//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);
 		//std::cout << "E = " << editE->text().toStdString() << std::endl;*/
-
-		cn.ki = m_dCachedKi / angs;
-		cn.kf = m_dCachedKf / angs;
-		cn.E = m_dCachedE * meV;
-		cn.Q = m_dCachedQ / angs;
 
 
 		// Pop
@@ -415,6 +443,10 @@ void ResoDlg::Calc()
 		tof.sig_outplane_i = tl::d2r(t_real_reso(spinTofphISig->value())) * rads;
 		tof.sig_outplane_f = tl::d2r(t_real_reso(spinTofphFSig->value())) * rads;
 
+		//tl::log_debug(m_tofparams.angle_ki_Q);
+		//tl::log_debug(m_tofparams.angle_kf_Q);
+		//tl::log_debug(m_tofparams.twotheta);
+
 
 		// Calculation
 		switch(ResoDlg::GetSelectedAlgo())
@@ -426,7 +458,7 @@ void ResoDlg::Calc()
 			default: tl::log_err("Unknown resolution algorithm selected."); return;
 		}
 
-		//editE->setText(tl::var_to_str(t_real_reso(cn.E/meV), g_iPrec).c_str());
+		editE->setText(tl::var_to_str(t_real_reso(cn.E/meV), g_iPrec).c_str());
 		//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
 		//if(m_pScatterDlg) m_pScatterDlg->SetParams(cn, res);
 
@@ -874,10 +906,6 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 		std::cout << "kfQ = " << t_real_reso(m_tasparams.angle_kf_Q/M_PI/rads * 180.) << std::endl;*/
 
 
-		m_dCachedQ = dQ;
-		m_dCachedE = parms.dE;
-		m_dCachedKi = parms.dki;
-		m_dCachedKf = parms.dkf;
 		editQ->setText(tl::var_to_str(dQ, g_iPrec).c_str());
 		editE->setText(tl::var_to_str(parms.dE, g_iPrec).c_str());
 		editKi->setText(tl::var_to_str(parms.dki, g_iPrec).c_str());

@@ -217,7 +217,7 @@ OBJ_CONVOSERIES = obj/scanseries.o obj/log.o obj/debug.o
 OBJ_RESO = obj/log.o obj/debug.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
-	obj/ellipse.o obj/linalg2.o
+	obj/ellipse.o obj/linalg2.o obj/globals.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 	obj/loadinstr.o obj/log.o obj/debug.o obj/qthelper.o \
@@ -253,7 +253,7 @@ OBJ_TAZ += obj/SgListDlg.o obj/spacegroup.o
 
 .PHONY: all clean
 
-all: takin  montereso  monteconvo xmonteconvo posextract  scanviewer  gentab sglist sfact  convofit convoseries
+all: takin  montereso  monteconvo xmonteconvo posextract  scanviewer  gentab sglist sfact  convofit convoseries reso
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
