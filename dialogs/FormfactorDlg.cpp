@@ -185,7 +185,7 @@ void FormfactorDlg::PlotScatteringLengths()
 
 void FormfactorDlg::cursorMoved(const QPointF& pt)
 {
-	if(tabWidget->currentIndex() == 0)
+	if(tabWidget->currentIndex() == 1)
 	{
 		std::wstring strX = std::to_wstring(pt.x());
 		std::wstring strY = std::to_wstring(pt.y());
@@ -200,7 +200,7 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 
 		labelStatus->setText(QString::fromWCharArray(ostr.str().c_str()));
 	}
-	else if(tabWidget->currentIndex() == 1)
+	else if(tabWidget->currentIndex() == 0)
 	{
 		ScatlenList lst;
 
