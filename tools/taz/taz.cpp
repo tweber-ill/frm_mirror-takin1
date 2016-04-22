@@ -183,6 +183,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 		&m_sceneTof, SLOT(recipParamsChanged(const RecipParams&)));
 
+	// connections between instruments
+	QObject::connect(&m_sceneTof, SIGNAL(tasChanged(const TriangleOptions&)),
+		&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));
+	QObject::connect(&m_sceneReal, SIGNAL(tasChanged(const TriangleOptions&)),
+		&m_sceneTof, SLOT(triangleChanged(const TriangleOptions&)));
+
 	// scale factor
 	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(t_real_glob)),
 		&m_sceneRecip, SLOT(scaleChanged(t_real_glob)));
@@ -426,9 +432,14 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pMenuViewReal->addAction(pRealLatticeExport);
 
 	QAction *pRealExport = new QAction(this);
-	pRealExport->setText("Export Instrument Graphics...");
+	pRealExport->setText("Export TAS Layout...");
 	pRealExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pRealExport);
+
+	QAction *pTofExport = new QAction(this);
+	pTofExport->setText("Export TOF Layout...");
+	pTofExport->setIcon(load_icon("res/image-x-generic.svg"));
+	m_pMenuViewReal->addAction(pTofExport);
 
 #ifdef USE_GIL
 	QAction *pWSExport = new QAction(this);
@@ -618,6 +629,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
+	QObject::connect(pTofExport, SIGNAL(triggered()), this, SLOT(ExportTof()));
 	QObject::connect(pRealLatticeExport, SIGNAL(triggered()), this, SLOT(ExportRealLattice()));
 
 	QObject::connect(pExportUC, SIGNAL(triggered()), this, SLOT(ExportUCModel()));
@@ -663,12 +675,15 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pviewRecip->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_pviewRealLattice->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_pviewReal->setContextMenuPolicy(Qt::CustomContextMenu);
+	m_pviewTof->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	QObject::connect(m_pviewRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(RecipContextMenu(const QPoint&)));
 	QObject::connect(m_pviewRealLattice, SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(RealContextMenu(const QPoint&)));
 	QObject::connect(m_pviewReal, SIGNAL(customContextMenuRequested(const QPoint&)),
+		this, SLOT(RealContextMenu(const QPoint&)));
+	QObject::connect(m_pviewTof, SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(RealContextMenu(const QPoint&)));
 
 

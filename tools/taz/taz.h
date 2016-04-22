@@ -209,6 +209,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		bool ImportFile(const QString& strFile);
 
 		void ExportReal();
+		void ExportTof();
 		void ExportRealLattice();
 		void ExportRecip();
 		void ExportBZImage();

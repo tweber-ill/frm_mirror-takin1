@@ -367,6 +367,9 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 		painter->restore();
 	}
 
+	painter->drawText(ptMono - vec_to_qpoint(vecSrcMono*1.1), "R");
+	painter->drawText(ptAna + vec_to_qpoint(vecAnaDet*1.1), "D");
+
 
 	// dashed extended lines
 	painter->setPen(Qt::DashLine);

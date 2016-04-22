@@ -30,6 +30,16 @@ void TazDlg::ExportReal()
 	pTas->SetZoom(dZoom);
 }
 
+void TazDlg::ExportTof()
+{
+	TofLayout *pTof = m_sceneTof.GetTofLayout();
+
+	const t_real dZoom = pTof->GetZoom();
+	pTof->SetZoom(1.);
+	ExportSceneSVG(m_sceneTof);
+	pTof->SetZoom(dZoom);
+}
+
 void TazDlg::ExportRealLattice()
 {
 	RealLattice *pLatt = m_sceneRealLattice.GetLattice();

@@ -187,6 +187,7 @@ void TofLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	painter->drawArc(QRectF(ptSample.x()-dLenKf, ptSample.y()-dLenKf,
 		dLenKf*2., dLenKf*2.), (m_dBeginDetArcAngle+90.)*16., m_dDetArcAngle*16.);
 
+
 	// draw choppers
 	QPointF ptChopper1 = ptSrc + (ptSample-ptSrc) * 1./3.;
 	QPointF ptChopper2 = ptSrc + (ptSample-ptSrc) * 2./3.;
@@ -241,6 +242,10 @@ void TofLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 		painter->drawText(QPointF(0., 0.), "S");
 	painter->restore();
 
+	painter->drawText(ptSample - vec_to_qpoint(vecSrcSample*1.1), "Src");
+	painter->drawText(ptSample + vec_to_qpoint(vecSampleDet*1.1), "D");
+	painter->drawText(ptChopper1 + vec_to_qpoint(vecOrthKi*2.), "ChP");
+	painter->drawText(ptChopper2 + vec_to_qpoint(vecOrthKi*2.), "ChM");
 
 
 	// dashed extended lines
@@ -286,7 +291,7 @@ void TofLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	const QPointF* pPoints[] = {&ptSample, &ptSample};
 	const QPointF* pPoints_ext[] = {&ptSrc, &ptThP};
 	const t_real dAngles[] = {m_dTwoTheta, -m_dTheta};
-	const t_real dAngleOffs[] = {0., 0., 180.};
+	const t_real dAngleOffs[] = {0., 180.};
 
 	QPen pen1(Qt::blue), pen2(Qt::red);
 	QPen* arcPens[] = {&pen1, &pen2};
