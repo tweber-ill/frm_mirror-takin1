@@ -17,6 +17,8 @@ namespace units = boost::units;
 namespace codata = boost::units::si::constants::codata;
 
 
+enum class TofDetShape { SPH, CYL, UNKNOWN };
+
 struct ViolParams
 {
 	// scattering triangle
@@ -29,9 +31,11 @@ struct ViolParams
 	tl::t_angle_si<t_real_reso> angle_outplane_i, angle_outplane_f;
 	tl::t_angle_si<t_real_reso> twotheta_i;
 
+
 	// instrument lengths
 	tl::t_length_si<t_real_reso> len_pulse_mono,
 		len_mono_sample, len_sample_det;
+
 
 	// instrument sigmas
 	tl::t_length_si<t_real_reso> sig_len_pulse_mono,
@@ -41,6 +45,9 @@ struct ViolParams
 
 	tl::t_angle_si<t_real_reso> sig_twotheta_f, sig_outplane_f,
 		sig_twotheta_i, sig_outplane_i;
+
+
+	TofDetShape det_shape = TofDetShape::SPH;
 };
 
 

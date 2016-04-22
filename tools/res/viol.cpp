@@ -97,6 +97,7 @@ ResoResults calc_viol(const ViolParams& params)
 
 	// --------------------------------------------------------------------
 	// E formulas 14-18 in [viol14]
+
 	std::vector<std::function<t_real()>> vecEderivs =
 	{
 		/*1*/ [&]()->t_real { return (-mn*lp*lp/(ti*ti*ti) -mn*ls*ls/(tf*tf*tf)*lm/lp) /meV*sec; },
@@ -119,16 +120,16 @@ ResoResults calc_viol(const ViolParams& params)
 
 
 	// --------------------------------------------------------------------
-	// Q formulas in appendix A.1 of [viol14]
+	// Q formulas in appendices A.1 and A.3 of [viol14]
+
 	t_real ctt_i = std::cos(tt_i/rads), stt_i = std::sin(tt_i/rads);
 	t_real ctt_f = std::cos(tt/rads), stt_f = std::sin(tt/rads);
 	t_real cph_i = std::cos(ph_i/rads), sph_i = std::sin(ph_i/rads);
 	t_real cph_f = std::cos(ph_f/rads), sph_f = std::sin(ph_f/rads);
-	t_mat R = tl::make_mat<t_mat>(
-		{{ ctt_i*cph_i,	-ctt_f*cph_f },
-		{ stt_i*cph_i, 	-stt_f*cph_f },
-		{ sph_i, 	-sph_f }});
-	t_mat R_tt_i = tl::make_mat(		// derivs w.r.t. the angles
+	t_real tph_f = std::tan(ph_f/rads), dtph_f = t_real(1) + std::pow(std::tan(ph_f/rads), t_real(2));
+
+	t_mat R, R_tt_f, R_ph_f;
+	t_mat R_tt_i = tl::make_mat(	// R derivs w.r.t the angles
 		{{ stt_i*cph_i,	t_real(0) },
 		{ ctt_i*cph_i, 	t_real(0) },
 		{ t_real(0), 	t_real(0) }});
@@ -136,15 +137,44 @@ ResoResults calc_viol(const ViolParams& params)
 		{{ -ctt_i*sph_i, t_real(0) },
 		{ stt_i*sph_i, 	 t_real(0) },
 		{ cph_i, 	 t_real(0) }});
-	t_mat R_tt_f = tl::make_mat(
-		{{ t_real(0),	stt_f*cph_f },
-		{  t_real(0),	-ctt_f*cph_f },
-		{  t_real(0),	t_real(0) }});
-	t_mat R_ph_f = tl::make_mat(
-		{{ t_real(0),	ctt_f*sph_f },
-		{  t_real(0), 	stt_f*sph_f },
-		{  t_real(0), 	-cph_f }});
-//	tl::log_debug("R = ", R);
+
+	if(params.det_shape == TofDetShape::SPH)
+	{
+		R = tl::make_mat<t_mat>(	// R: spherical coordinates
+			{{ ctt_i*cph_i,	-ctt_f*cph_f },
+			{ stt_i*cph_i, 	-stt_f*cph_f },
+			{ sph_i, 	-sph_f }});
+		R_tt_f = tl::make_mat(		// R derivs w.r.t the angles
+			{{ t_real(0),	stt_f*cph_f },
+			{  t_real(0),	-ctt_f*cph_f },
+			{  t_real(0),	t_real(0) }});
+		R_ph_f = tl::make_mat(
+			{{ t_real(0),	ctt_f*sph_f },
+			{  t_real(0), 	stt_f*sph_f },
+			{  t_real(0), 	-cph_f }});
+	}
+	else if(params.det_shape == TofDetShape::CYL)
+	{	// modified original formulas; TODO: check if still correct
+		R = tl::make_mat<t_mat>(	// R: cylindrical coordinates
+			{{ ctt_i*cph_i,	-ctt_f },
+			{ stt_i*cph_i, 	-stt_f },
+			{ sph_i, 	-tph_f }});
+		R_tt_f = tl::make_mat(		// R derivs w.r.t the angles
+			{{ t_real(0),	stt_f },
+			{  t_real(0),	-ctt_f },
+			{  t_real(0),	t_real(0) }});
+		R_ph_f = tl::make_mat(
+			{{ t_real(0),	t_real(0) },
+			{  t_real(0), 	t_real(0) },
+			{  t_real(0), 	-dtph_f }});
+	}
+	else
+	{
+		res.bOk = false;
+		res.strErr = "Unknown detector shape.";
+		return res;
+	}
+	//	tl::log_debug("R = ", R);
 
 	t_vec vecViVf = tl::make_vec<t_vec>({ mn_hbar*vi *angs, mn_hbar*vf *angs });
 	std::vector<std::function<t_vec()>> vecQderivs =

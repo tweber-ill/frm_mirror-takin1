@@ -133,7 +133,7 @@
            </sizepolicy>
           </property>
           <property name="title">
-           <string>TAS Instrument</string>
+           <string>Instrument</string>
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <property name="margin">

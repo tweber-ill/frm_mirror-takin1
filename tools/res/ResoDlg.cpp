@@ -119,13 +119,16 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
 		radioSampleScatterPlus,
-		radioSampleCub, radioSrcRect, radioDetRect};
+		radioSampleCub, radioSrcRect, radioDetRect,
+		radioTofDetSph};
 	m_vecRadioMinus = {radioMonoScatterMinus, radioAnaScatterMinus,
 		radioSampleScatterMinus, radioSampleCyl,
-		radioSrcCirc, radioDetCirc};
+		radioSrcCirc, radioDetCirc,
+		radioTofDetCyl};
 	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense",
 		"reso/sample_scatter_sense", "reso/pop_sample_cuboid",
-		"reso/pop_source_rect", "reso/pop_det_rect"};
+		"reso/pop_source_rect", "reso/pop_det_rect",
+		"reso/viol_det_sph"};
 
 	m_vecComboBoxes = {comboAlgo,
 		comboAnaHori, comboAnaVert,
@@ -442,6 +445,8 @@ void ResoDlg::Calc()
 		tof.sig_twotheta_f = tl::d2r(t_real_reso(spinTof2thFSig->value())) * rads;
 		tof.sig_outplane_i = tl::d2r(t_real_reso(spinTofphISig->value())) * rads;
 		tof.sig_outplane_f = tl::d2r(t_real_reso(spinTofphFSig->value())) * rads;
+
+		tof.det_shape = radioTofDetSph->isChecked() ? TofDetShape::SPH : TofDetShape::CYL;
 
 		//tl::log_debug(m_tofparams.angle_ki_Q);
 		//tl::log_debug(m_tofparams.angle_kf_Q);
