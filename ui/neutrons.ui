@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>481</width>
-    <height>467</height>
+    <width>421</width>
+    <height>445</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,34 @@
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_5">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>Calculator:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="editEval"/>
+   </item>
+   <item row="1" column="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="4">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -349,6 +375,14 @@
          <property name="sortingEnabled">
           <bool>true</bool>
          </property>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>Variable</string>
+          </property>
+         </column>
          <column>
           <property name="text">
            <string>Name</string>
@@ -368,24 +402,19 @@
        <string>Conversions</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="editEval"/>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLineEdit" name="editEvalRes"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_8">
-         <property name="text">
-          <string>Calc.:</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="0" colspan="3">
         <widget class="QTableWidget" name="tableConv">
          <property name="sortingEnabled">
           <bool>true</bool>
          </property>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>Conversion</string>
+          </property>
+         </column>
          <column>
           <property name="text">
            <string>Factor</string>
@@ -397,15 +426,8 @@
      </widget>
     </widget>
    </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
+   <item row="1" column="2">
+    <widget class="QLineEdit" name="editEvalRes"/>
    </item>
   </layout>
  </widget>
@@ -436,8 +458,6 @@
   <tabstop>editBraggReciTT</tabstop>
   <tabstop>tableConst</tabstop>
   <tabstop>tableConv</tabstop>
-  <tabstop>editEval</tabstop>
-  <tabstop>editEvalRes</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>

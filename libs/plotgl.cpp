@@ -221,9 +221,9 @@ void PlotGl::paintGLThread()
 			glTranslated(obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]);
 
 			GLdouble dMatRot[] = {obj.vecParams[6], obj.vecParams[7], obj.vecParams[8], 0.,
-								obj.vecParams[9], obj.vecParams[10], obj.vecParams[11], 0.,
-								obj.vecParams[12], obj.vecParams[13], obj.vecParams[14], 0.,
-								0., 0., 0., 1. };
+				obj.vecParams[9], obj.vecParams[10], obj.vecParams[11], 0.,
+				obj.vecParams[12], obj.vecParams[13], obj.vecParams[14], 0.,
+				0., 0., 0., 1. };
 			glMultMatrixd(dMatRot);
 			glScaled(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
 		}
@@ -501,10 +501,10 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 void PlotGl::updateViewMatrix()
 {
 	tl::t_mat4 matScale = tl::make_mat<tl::t_mat4>(
-			{{m_dMouseScale,              0,             0, 0},
-			{            0,   m_dMouseScale,             0, 0},
-			{            0,               0, m_dMouseScale, 0},
-			{            0,               0,             0, 1}});
+		{{m_dMouseScale,              0,             0, 0},
+		{            0,   m_dMouseScale,             0, 0},
+		{            0,               0, m_dMouseScale, 0},
+		{            0,               0,             0, 1}});
 
 	tl::t_mat4 matR0 = tl::rotation_matrix_3d_z(tl::d2r<t_real>(m_dMouseRot[0]));
 	tl::t_mat4 matR1 = tl::rotation_matrix_3d_x(tl::d2r<t_real>(-90. + m_dMouseRot[1]));
@@ -514,10 +514,10 @@ void PlotGl::updateViewMatrix()
 	tl::t_mat4 matRot0 = matR0, matRot1 = matR1;
 
 	tl::t_mat4 matTrans = tl::make_mat<tl::t_mat4>(
-			{{ 1, 0, 0,  0},
-			{  0, 1, 0,  0},
-			{  0, 0, 1, -2},
-			{  0, 0, 0,  1}});
+		{{ 1, 0, 0,  0},
+		{  0, 1, 0,  0},
+		{  0, 0, 1, -2},
+		{  0, 0, 0,  1}});
 
 	{
 		std::lock_guard<QMutex> _lck(m_mutex);
@@ -550,9 +550,9 @@ void PlotGl::mouseSelectObj(double dX, double dY)
 
 			vecOffs = tl::make_vec<tl::t_vec3>({obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]});
 			tl::t_mat3 matRot = tl::make_mat<tl::t_mat3>(
-					{{obj.vecParams[6],  obj.vecParams[7],  obj.vecParams[8]},
-					 {obj.vecParams[9],  obj.vecParams[10], obj.vecParams[11]},
-					 {obj.vecParams[12], obj.vecParams[13], obj.vecParams[14]}});
+				{{obj.vecParams[6],  obj.vecParams[7],  obj.vecParams[8]},
+				 {obj.vecParams[9],  obj.vecParams[10], obj.vecParams[11]},
+				 {obj.vecParams[12], obj.vecParams[13], obj.vecParams[14]}});
 			pQuad->transform(matRot);
 		}
 

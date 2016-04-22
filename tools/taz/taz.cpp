@@ -146,7 +146,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	groupReal->addTab(m_pviewRealLattice, "Real Lattice");
 
 	m_pviewReal = new TasLayoutView(groupReal);
-	groupReal->addTab(m_pviewReal, "Instrument Layout");
+	groupReal->addTab(m_pviewReal, "TAS Instrument");
+
+	m_pviewTof = new TofLayoutView(groupReal);
+	groupReal->addTab(m_pviewTof, "TOF Instrument");
 
 	if(m_settings.contains("main/real_tab"))
 		groupReal->setCurrentIndex(m_settings.value("main/real_tab").value<int>());
@@ -155,13 +158,16 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pviewRecip->setScene(&m_sceneRecip);
 	m_pviewRealLattice->setScene(&m_sceneRealLattice);
 	m_pviewReal->setScene(&m_sceneReal);
+	m_pviewTof->setScene(&m_sceneTof);
 
 
 	QObject::connect(m_pSettingsDlg, SIGNAL(SettingsChanged()), this, SLOT(SettingsChanged()));
 
 	QObject::connect(&m_sceneReal, SIGNAL(nodeEvent(bool)), this, SLOT(RealNodeEvent(bool)));
 	QObject::connect(&m_sceneRecip, SIGNAL(nodeEvent(bool)), this, SLOT(RecipNodeEvent(bool)));
+	QObject::connect(&m_sceneTof, SIGNAL(nodeEvent(bool)), this, SLOT(TofNodeEvent(bool)));
 
+	// TAS
 	QObject::connect(&m_sceneRecip, SIGNAL(triangleChanged(const TriangleOptions&)),
 		&m_sceneReal, SLOT(triangleChanged(const TriangleOptions&)));
 	QObject::connect(&m_sceneReal, SIGNAL(tasChanged(const TriangleOptions&)),
@@ -169,13 +175,25 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 		&m_sceneReal, SLOT(recipParamsChanged(const RecipParams&)));
 
+	// TOF
+	QObject::connect(&m_sceneRecip, SIGNAL(triangleChanged(const TriangleOptions&)),
+		&m_sceneTof, SLOT(triangleChanged(const TriangleOptions&)));
+	QObject::connect(&m_sceneTof, SIGNAL(tasChanged(const TriangleOptions&)),
+		&m_sceneRecip, SLOT(tasChanged(const TriangleOptions&)));
+	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+		&m_sceneTof, SLOT(recipParamsChanged(const RecipParams&)));
+
+	// scale factor
 	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(t_real_glob)),
 		&m_sceneRecip, SLOT(scaleChanged(t_real_glob)));
 	QObject::connect(m_pviewRealLattice, SIGNAL(scaleChanged(t_real_glob)),
 		&m_sceneRealLattice, SLOT(scaleChanged(t_real_glob)));
 	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(t_real_glob)),
 		&m_sceneReal, SLOT(scaleChanged(t_real_glob)));
+	QObject::connect(m_pviewTof, SIGNAL(scaleChanged(t_real_glob)),
+		&m_sceneTof, SLOT(scaleChanged(t_real_glob)));
 
+	// parameter dialogs
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 		&m_dlgRecipParam, SLOT(paramsChanged(const RecipParams&)));
 	QObject::connect(&m_sceneReal, SIGNAL(paramsChanged(const RealParams&)),
@@ -740,6 +758,7 @@ TazDlg::~TazDlg()
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
 	if(m_pviewRealLattice) { delete m_pviewRealLattice; m_pviewRealLattice = 0; }
 	if(m_pviewReal) { delete m_pviewReal; m_pviewReal = 0; }
+	if(m_pviewTof) { delete m_pviewTof; m_pviewTof = 0; }
 
 	comboSpaceGroups->clear();
 }
@@ -778,6 +797,7 @@ void TazDlg::SettingsChanged()
 	setFont(g_fontGen);
 
 	m_sceneReal.update();
+	m_sceneTof.update();
 	m_sceneRealLattice.update();
 	m_sceneRecip.update();
 }
@@ -792,6 +812,7 @@ void TazDlg::showEvent(QShowEvent *pEvt)
 		bInitialShow = 0;
 
 		m_pviewReal->centerOn(m_sceneReal.GetTasLayout());
+		m_pviewTof->centerOn(m_sceneTof.GetTofLayout());
 		m_pviewRecip->centerOn(m_sceneRecip.GetTriangle()->GetGfxMid());
 		m_pviewRealLattice->centerOn(0.,0.);
 
@@ -962,29 +983,25 @@ void TazDlg::UpdateAnaSense()
 void TazDlg::RecipNodeEvent(bool bStarted)
 {
 	//tl::log_info("recip node movement: ", bStarted);
-
 	// optimises reso dialog update policy
 	if(m_pReso)
-	{
-		if(bStarted)
-			m_pReso->SetUpdateOn(0, 1);
-		else
-			m_pReso->SetUpdateOn(1, 1);
-	}
+			m_pReso->SetUpdateOn(!bStarted, 1);
 }
 
 void TazDlg::RealNodeEvent(bool bStarted)
 {
 	//tl::log_info("real node movement: ", bStarted);
-
 	// optimises reso dialog update policy
 	if(m_pReso)
-	{
-		if(bStarted)
-			m_pReso->SetUpdateOn(1, 0);
-		else
-			m_pReso->SetUpdateOn(1, 1);
-	}
+		m_pReso->SetUpdateOn(1, !bStarted);
+}
+
+void TazDlg::TofNodeEvent(bool bStarted)
+{
+	//tl::log_info("tof node movement: ", bStarted);
+	// optimises reso dialog update policy
+	if(m_pReso)
+		m_pReso->SetUpdateOn(1, !bStarted);
 }
 
 
@@ -1033,6 +1050,7 @@ void TazDlg::ShowEwaldSphere(bool bEnable)
 void TazDlg::EnableRealQDir(bool bEnable)
 {
 	m_sceneReal.GetTasLayout()->SetRealQVisible(bEnable);
+	m_sceneTof.GetTofLayout()->SetRealQVisible(bEnable);
 }
 
 // Q position

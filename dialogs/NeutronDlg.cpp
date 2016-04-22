@@ -1,4 +1,4 @@
-/*
+/**
  * Neutron Properties Dialog
  * @author Tobias Weber
  * @date jul-2013, 28-may-2014
@@ -512,9 +512,9 @@ void NeutronDlg::setupConstants()
 
 	// -------------------------------------------------------------------------
 	// constants table
-	tableConst->setColumnCount(2);
+	tableConst->setColumnCount(3);
 	tableConst->setRowCount(vecConsts.size());
-	tableConst->setColumnWidth(1, 200);
+	tableConst->setColumnWidth(2, 200);
 	//tableConst->verticalHeader()->setDefaultSectionSize(tableConst->verticalHeader()->minimumSectionSize()+2);
 
 	for(unsigned int iConst=0; iConst<vecConsts.size(); ++iConst)
@@ -523,15 +523,15 @@ void NeutronDlg::setupConstants()
 
 		QTableWidgetItem *pConstSym = new QTableWidgetItem();
 		pConstSym->setText(constant.strSymbol.c_str());
-		tableConst->setVerticalHeaderItem(iConst, pConstSym);
+		tableConst->setItem(iConst,0,pConstSym);
 
 		QTableWidgetItem *pConstName = new QTableWidgetItem();
 		pConstName->setText(constant.strName.c_str());
-		tableConst->setItem(iConst,0,pConstName);
+		tableConst->setItem(iConst,1,pConstName);
 
 		QTableWidgetItem *pConstVal = new QTableWidgetItem();
 		pConstVal->setText(constant.strVal.c_str());
-		tableConst->setItem(iConst,1,pConstVal);
+		tableConst->setItem(iConst,2,pConstVal);
 
 		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
 		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
@@ -541,9 +541,10 @@ void NeutronDlg::setupConstants()
 
 	// -------------------------------------------------------------------------
 	// conversion table
-	tableConv->setColumnCount(1);
+	tableConv->setColumnCount(2);
 	tableConv->setRowCount(vecConvs.size());
-	tableConv->setColumnWidth(0, 250);
+	tableConv->setColumnWidth(0, 200);
+	tableConv->setColumnWidth(1, 200);
 	//tableConv->verticalHeader()->setDefaultSectionSize(tableConv->verticalHeader()->minimumSectionSize()+2);
 
 	for(unsigned int iConst=0; iConst<vecConvs.size(); ++iConst)
@@ -552,11 +553,11 @@ void NeutronDlg::setupConstants()
 
 		QTableWidgetItem *pConstName = new QTableWidgetItem();
 		pConstName->setText(conv.strName.c_str());
-		tableConv->setVerticalHeaderItem(iConst, pConstName);
+		tableConv->setItem(iConst, 0, pConstName);
 
 		QTableWidgetItem *pConstVal = new QTableWidgetItem();
 		pConstVal->setText(conv.strVal.c_str());
-		tableConv->setItem(iConst, 0, pConstVal);
+		tableConv->setItem(iConst, 1, pConstVal);
 
 		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
 		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);

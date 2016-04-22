@@ -29,6 +29,7 @@
 #include "scattering_triangle.h"
 #include "real_lattice.h"
 #include "tas_layout.h"
+#include "tof_layout.h"
 
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"
@@ -116,6 +117,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		// real lattice
 		TasLayoutView *m_pviewReal = nullptr;
 		TasLayoutScene m_sceneReal;
+		TofLayoutView *m_pviewTof = nullptr;
+		TofLayoutScene m_sceneTof;
 		LatticeView *m_pviewRealLattice = nullptr;
 		LatticeScene m_sceneRealLattice;
 
@@ -265,6 +268,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		void RecipNodeEvent(bool bStarted);
 		void RealNodeEvent(bool bStarted);
+		void TofNodeEvent(bool bStarted);
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);

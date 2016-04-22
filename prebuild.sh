@@ -62,6 +62,7 @@ declare -a hfiles=(
         "${TAKINROOT}/tools/taz/scattering_triangle.h"
         "${TAKINROOT}/tools/taz/real_lattice.h"
         "${TAKINROOT}/tools/taz/tas_layout.h"
+        "${TAKINROOT}/tools/taz/tof_layout.h"
         "${TAKINROOT}/tools/taz/recip3d.h"
         "${TAKINROOT}/tools/taz/net.h"
         "${TAKINROOT}/tools/taz/nicos.h"

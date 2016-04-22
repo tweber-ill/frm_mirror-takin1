@@ -24,16 +24,18 @@ NetCacheDlg::NetCacheDlg(QWidget* pParent, QSettings* pSett)
 			setFont(font);
 	}
 
-	tableCache->setColumnCount(3);
+	tableCache->setColumnCount(4);
 	tableCache->setRowCount(0);
 	tableCache->setColumnWidth(0, 200);
-	tableCache->setColumnWidth(1, 140);
+	tableCache->setColumnWidth(1, 200);
 	tableCache->setColumnWidth(2, 140);
+	tableCache->setColumnWidth(3, 140);
 	tableCache->verticalHeader()->setDefaultSectionSize(tableCache->verticalHeader()->minimumSectionSize()+2);
 
-	tableCache->setHorizontalHeaderItem(0, new QTableWidgetItem("Value"));
-	tableCache->setHorizontalHeaderItem(1, new QTableWidgetItem("Time Stamp"));
-	tableCache->setHorizontalHeaderItem(2, new QTableWidgetItem("Age"));
+	tableCache->setHorizontalHeaderItem(0, new QTableWidgetItem("Name"));
+	tableCache->setHorizontalHeaderItem(1, new QTableWidgetItem("Value"));
+	tableCache->setHorizontalHeaderItem(2, new QTableWidgetItem("Time Stamp"));
+	tableCache->setHorizontalHeaderItem(3, new QTableWidgetItem("Age"));
 
 	QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(UpdateTimer()));
 	m_timer.start(s_iTimer);
@@ -79,26 +81,26 @@ void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 
 	for(iRow=0; iRow<tableCache->rowCount(); ++iRow)
 	{
-		if(tableCache->verticalHeaderItem(iRow)->text() == qstrKey)
+		if(tableCache->item(iRow, 0)->text() == qstrKey)
 		{
-			pItem = tableCache->verticalHeaderItem(iRow);
+			pItem = tableCache->item(iRow, 0);
 			break;
 		}
 	}
 
 	if(pItem) 	// update items
 	{
-		tableCache->item(iRow, 0)->setText(qstrVal);
-		tableCache->item(iRow, 1)->setText(qstrTimestamp);
+		tableCache->item(iRow, 1)->setText(qstrVal);
+		tableCache->item(iRow, 2)->setText(qstrTimestamp);
 	}
 	else		// insert new items
 	{
 		iRow = tableCache->rowCount();
 		tableCache->setRowCount(iRow+1);
 		tableCache->setVerticalHeaderItem(iRow, new QTableWidgetItem(qstrKey));
-		tableCache->setItem(iRow, 0, new QTableWidgetItem(qstrVal));
-		tableCache->setItem(iRow, 1, new QTableWidgetItem(qstrTimestamp));
-		tableCache->setItem(iRow, 2, new QTableWidgetItem());
+		tableCache->setItem(iRow, 1, new QTableWidgetItem(qstrVal));
+		tableCache->setItem(iRow, 2, new QTableWidgetItem(qstrTimestamp));
+		tableCache->setItem(iRow, 3, new QTableWidgetItem());
 	}
 
 	UpdateAge(iRow);

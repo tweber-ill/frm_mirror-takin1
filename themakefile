@@ -190,7 +190,8 @@ OBJ_COMMON = obj/log.o obj/debug.o obj/rand.o obj/linalg2.o \
 
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/taz_file.o obj/taz_export.o \
-	obj/scattering_triangle.o obj/real_lattice.o obj/tas_layout.o \
+	obj/scattering_triangle.o obj/real_lattice.o \
+	obj/tas_layout.o obj/tof_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
 	obj/SettingsDlg.o obj/DWDlg.o obj/DynPlaneDlg.o obj/FormfactorDlg.o \
 	obj/FilePreviewDlg.o obj/AtomsDlg.o \
@@ -325,6 +326,8 @@ obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scatterin
 obj/real_lattice.o: tools/taz/real_lattice.cpp tools/taz/real_lattice.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tas_layout.o: tools/taz/tas_layout.cpp tools/taz/tas_layout.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/tof_layout.o: tools/taz/tof_layout.cpp tools/taz/tof_layout.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/RecipParamDlg.o: dialogs/RecipParamDlg.cpp dialogs/RecipParamDlg.h
 	${CC} ${FLAGS} -c -o $@ $<

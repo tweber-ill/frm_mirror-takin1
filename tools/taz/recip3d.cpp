@@ -36,7 +36,7 @@ Recip3DDlg::~Recip3DDlg()
 
 
 void Recip3DDlg::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Lattice<t_real>& recip,
-							const tl::Plane<t_real>& planeRLU, const SpaceGroup* pSpaceGroup)
+	const tl::Plane<t_real>& planeRLU, const SpaceGroup* pSpaceGroup)
 {
 	ublas::vector<t_real> vecX0 = ublas::zero_vector<t_real>(3);
 	ublas::vector<t_real> vecPlaneX = planeRLU.GetDir0()[0]*recip.GetVec(0) +
