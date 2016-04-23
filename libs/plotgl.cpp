@@ -118,7 +118,12 @@ void PlotGl::initializeGLThread()
 	}
 
 	glActiveTexture(GL_TEXTURE0);
+#if QT_VER >= 5
+	// TODO: get selected font path
+	m_pFont = new tl::GlFontMap(DEF_FONT, g_fontGL.pointSize());
+#else
 	m_pFont = new tl::GlFontMap(g_fontGL.freetypeFace());
+#endif
 
 #if QT_VER>=5
 	QWidget::

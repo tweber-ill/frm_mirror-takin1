@@ -379,13 +379,13 @@ obj/tcp.o: tlibs/net/tcp.cpp tlibs/net/tcp.h
 obj/linalg2.o: tlibs/math/linalg2.cpp tlibs/math/linalg2.h tlibs/math/geo.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/spacegroup_clp.o: libs/spacegroups/spacegroup_clp.cpp libs/spacegroups/spacegroup_clp.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/spacegroup.o: libs/spacegroups/spacegroup.cpp libs/spacegroups/spacegroup.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/crystalsys.o: libs/spacegroups/crystalsys.cpp libs/spacegroups/crystalsys.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/formfact.o: libs/formfactors/formfact.cpp libs/formfactors/formfact.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/rand.o: tlibs/math/rand.cpp tlibs/math/rand.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/plotgl.o: libs/plotgl.cpp libs/plotgl.h
@@ -408,15 +408,15 @@ obj/eval.o: tlibs/string/eval.cpp tlibs/string/eval.h tlibs/string/eval_impl.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/cn.o: tools/res/cn.cpp tools/res/cn.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/pop.o: tools/res/pop.cpp tools/res/pop.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/eck.o: tools/res/eck.cpp tools/res/eck.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/viol.o: tools/res/viol.cpp tools/res/viol.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/ResoDlg.o: tools/res/ResoDlg.cpp tools/res/ResoDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/ConvoDlg.o: tools/monteconvo/ConvoDlg.cpp tools/monteconvo/ConvoDlg.h
@@ -436,26 +436,26 @@ obj/reso_res_main.o: tools/res/res_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/mconv_main.o: tools/monteconvo/mconv_main.cpp
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/xmconv_main.o: tools/monteconvo/xmconv_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 obj/sqw.o: tools/monteconvo/sqw.cpp tools/monteconvo/sqw.h tlibs/math/kd.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/sqw_py.o: tools/monteconvo/sqw_py.cpp tools/monteconvo/sqw_py.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/tasreso.o: tools/monteconvo/TASReso.cpp tools/monteconvo/TASReso.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/posextract.o: tools/posextract/posextract.cpp
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 
 obj/convofit.o: tools/convofit/convofit.cpp
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/convo_scan.o: tools/convofit/scan.cpp tools/convofit/scan.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/convo_model.o: tools/convofit/model.cpp tools/convofit/model.h
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/scanseries.o: tools/convofit/scanseries.cpp
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 
 obj/scanviewer_main.o: tools/scanviewer/main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
@@ -463,7 +463,7 @@ obj/scanviewer.o: tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer.h
 	${CC} ${FLAGS} -c -o $@ $<
 
 obj/gentab.o: tools/gentab/gentab.cpp
-	${CC} ${FLAGS} -c -o $@ $<
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 
 obj/sglist_main.o: tools/sglist/main.cpp
 	${CC} ${FLAGS} -c -o $@ $<

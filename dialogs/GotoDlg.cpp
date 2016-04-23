@@ -34,7 +34,30 @@ GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSett
 	btnSave->setIcon(load_icon("res/document-save.svg"));
 	btnLoad->setIcon(load_icon("res/document-open.svg"));
 
-	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
+	std::vector<QLineEdit*> vecObjs {editH, editK, editL};
+	std::vector<QLineEdit*> vecAngles {edit2ThetaM, editThetaM, edit2ThetaA, editThetaA, edit2ThetaS, editThetaS};
+
+#if QT_VER >= 5
+	QObject::connect(buttonBox, &QDialogButtonBox::clicked, this, &GotoDlg::ButtonBoxClicked);
+
+	QObject::connect(btnAdd, &QAbstractButton::clicked, this, static_cast<void(GotoDlg::*)()>(&GotoDlg::AddPosToList));
+	QObject::connect(btnDel, &QAbstractButton::clicked, this, &GotoDlg::RemPosFromList);
+	QObject::connect(btnLoad, &QAbstractButton::clicked, this, &GotoDlg::LoadList);
+	QObject::connect(btnSave, &QAbstractButton::clicked, this, &GotoDlg::SaveList);
+	QObject::connect(listSeq, &QListWidget::itemSelectionChanged, this, &GotoDlg::ListItemSelected);
+	QObject::connect(listSeq, &QListWidget::itemDoubleClicked, this, &GotoDlg::ListItemDoubleClicked);
+
+	QObject::connect(editKi, &QLineEdit::textEdited, this, &GotoDlg::EditedKiKf);
+	QObject::connect(editKf, &QLineEdit::textEdited, this, &GotoDlg::EditedKiKf);
+	QObject::connect(editE, &QLineEdit::textEdited, this, &GotoDlg::EditedE);
+	QObject::connect(btnGetPos, &QAbstractButton::clicked, this, &GotoDlg::GetCurPos);
+
+	for(QLineEdit* pObj : vecObjs)
+		QObject::connect(pObj, &QLineEdit::textEdited, this, &GotoDlg::CalcSample);
+	for(QLineEdit* pObj : vecAngles)
+		QObject::connect(pObj, &QLineEdit::textEdited, this, &GotoDlg::EditedAngles);
+#else
+	QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 
 	QObject::connect(btnAdd, SIGNAL(clicked()), this, SLOT(AddPosToList()));
 	QObject::connect(btnDel, SIGNAL(clicked()), this, SLOT(RemPosFromList()));
@@ -49,14 +72,11 @@ GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSett
 	QObject::connect(editE, SIGNAL(textEdited(const QString&)), this, SLOT(EditedE()));
 	QObject::connect(btnGetPos, SIGNAL(clicked()), this, SLOT(GetCurPos()));
 
-	std::vector<QObject*> vecObjs {editH, editK, editL};
 	for(QObject* pObj : vecObjs)
 		QObject::connect(pObj, SIGNAL(textEdited(const QString&)), this, SLOT(CalcSample()));
-
-	std::vector<QObject*> vecAngles {edit2ThetaM, editThetaM, edit2ThetaA, editThetaA, edit2ThetaS, editThetaS};
 	for(QObject* pObj : vecAngles)
 		QObject::connect(pObj, SIGNAL(textEdited(const QString&)), this, SLOT(EditedAngles()));
-
+#endif
 
 	if(m_pSettings)
 	{

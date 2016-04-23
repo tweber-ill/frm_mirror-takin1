@@ -30,6 +30,16 @@ RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
 			setFont(font);
 	}
 
+#if QT_VER >= 5
+	QObject::connect(editKi, &QLineEdit::textChanged, this, &RecipParamDlg::KiChanged);
+	QObject::connect(editKf, &QLineEdit::textChanged, this, &RecipParamDlg::KfChanged);
+
+	QObject::connect(btnUseG, &QAbstractButton::clicked, this, &RecipParamDlg::SetGOrigin);
+	QObject::connect(editOriginH, &QLineEdit::textEdited, this, &RecipParamDlg::OriginChanged);
+	QObject::connect(editOriginK, &QLineEdit::textEdited, this, &RecipParamDlg::OriginChanged);
+	QObject::connect(editOriginL, &QLineEdit::textEdited, this, &RecipParamDlg::OriginChanged);
+	QObject::connect(radioEm, &QRadioButton::toggled, this, &RecipParamDlg::OriginChanged);
+#else
 	QObject::connect(editKi, SIGNAL(textChanged(const QString&)), this, SLOT(KiChanged()));
 	QObject::connect(editKf, SIGNAL(textChanged(const QString&)), this, SLOT(KfChanged()));
 
@@ -38,7 +48,7 @@ RecipParamDlg::RecipParamDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(editOriginK, SIGNAL(textEdited(const QString&)), this, SLOT(OriginChanged()));
 	QObject::connect(editOriginL, SIGNAL(textEdited(const QString&)), this, SLOT(OriginChanged()));
 	QObject::connect(radioEm, SIGNAL(toggled(bool)), this, SLOT(OriginChanged()));
-
+#endif
 
 	if(m_pSettings)
 	{

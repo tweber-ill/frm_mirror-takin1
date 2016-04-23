@@ -35,7 +35,6 @@ void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPor
 	std::string strUser = _strUser.toStdString();
 	std::string strPass = _strPass.toStdString();
 
-	const QObject* pNetCache = nullptr;
 	if(iSys == 0)
 		m_pNetCache = new NicosCache(&m_settings);
 	else if(iSys == 1)

@@ -53,9 +53,12 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 
 	resize(640,480);
 
-
+#if QT_VER >= 5
+	QObject::connect(m_pComboCoord, static_cast<void(QComboBox::*)(int)>
+		(&QComboBox::currentIndexChanged), this, &EllipseDlg3D::Calc);
+#else
 	QObject::connect(m_pComboCoord, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
-
+#endif
 
 	if(m_pSettings && m_pSettings->contains("reso/ellipsoid3d_geo"))
 		restoreGeometry(m_pSettings->value("reso/ellipsoid3d_geo").toByteArray());

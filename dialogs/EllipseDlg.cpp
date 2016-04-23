@@ -51,11 +51,23 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 		m_vecplotwrap[i]->GetCurve(1)->setPen(penSlice);
 
 		if(m_vecplotwrap[i]->HasTrackerSignal())
-			connect(m_vecplotwrap[i]->GetPicker(), SIGNAL(moved(const QPointF&)), 
+		{
+#if QT_VER >= 5
+			connect(m_vecplotwrap[i]->GetPicker(), &QwtPlotPicker::moved,
+				this, &EllipseDlg::cursorMoved);
+#else
+			connect(m_vecplotwrap[i]->GetPicker(), SIGNAL(moved(const QPointF&)),
 				this, SLOT(cursorMoved(const QPointF&)));
+#endif
+		}
 	}
 
+#if QT_VER >= 5
+	QObject::connect(comboCoord, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+		this, &EllipseDlg::Calc);
+#else
 	QObject::connect(comboCoord, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
+#endif
 
 	if(m_pSettings && m_pSettings->contains("reso/ellipse_geo"))
 		restoreGeometry(m_pSettings->value("reso/ellipse_geo").toByteArray());

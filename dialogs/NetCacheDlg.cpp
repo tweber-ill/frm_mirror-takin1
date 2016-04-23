@@ -37,7 +37,11 @@ NetCacheDlg::NetCacheDlg(QWidget* pParent, QSettings* pSett)
 	tableCache->setHorizontalHeaderItem(2, new QTableWidgetItem("Time Stamp"));
 	tableCache->setHorizontalHeaderItem(3, new QTableWidgetItem("Age"));
 
+#if QT_VER >= 5
+	QObject::connect(&m_timer, &QTimer::timeout, this, &NetCacheDlg::UpdateTimer);
+#else
 	QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(UpdateTimer()));
+#endif
 	m_timer.start(s_iTimer);
 
 

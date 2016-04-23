@@ -27,10 +27,16 @@ AtomsDlg::AtomsDlg(QWidget* pParent, QSettings *pSettings)
 	btnAdd->setIcon(load_icon("res/list-add.svg"));
 	btnDel->setIcon(load_icon("res/list-remove.svg"));
 
+#if QT_VER >= 5
+	QObject::connect(btnAdd, &QAbstractButton::clicked, this, &AtomsDlg::AddAtom);
+	QObject::connect(btnDel, &QAbstractButton::clicked, this, &AtomsDlg::RemoveAtom);
+	QObject::connect(buttonBox, &QDialogButtonBox::clicked, this, &AtomsDlg::ButtonBoxClicked);
+#else
 	QObject::connect(btnAdd, SIGNAL(clicked(bool)), this, SLOT(AddAtom()));
 	QObject::connect(btnDel, SIGNAL(clicked(bool)), this, SLOT(RemoveAtom()));
 	QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this,
 		SLOT(ButtonBoxClicked(QAbstractButton*)));
+#endif
 
 	if(m_pSettings && m_pSettings->contains("atoms/geo"))
 		restoreGeometry(m_pSettings->value("atoms/geo").toByteArray());

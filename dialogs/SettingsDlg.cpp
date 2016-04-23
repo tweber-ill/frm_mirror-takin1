@@ -33,10 +33,17 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	g_fontGL.setStyleHint(QFont::Monospace, QFont::OpenGLCompatible);
 	setFont(g_fontGen);
 
+#if QT_VER >= 5
+	connect(buttonBox, &QDialogButtonBox::clicked, this, &SettingsDlg::ButtonBoxClicked);
+	connect(btnGLFont, &QAbstractButton::clicked, this, &SettingsDlg::SelectGLFont);
+	connect(btnGfxFont, &QAbstractButton::clicked, this, &SettingsDlg::SelectGfxFont);
+	connect(btnGenFont, &QAbstractButton::clicked, this, &SettingsDlg::SelectGenFont);
+#else
 	connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 	connect(btnGLFont, SIGNAL(clicked()), this, SLOT(SelectGLFont()));
 	connect(btnGfxFont, SIGNAL(clicked()), this, SLOT(SelectGfxFont()));
 	connect(btnGenFont, SIGNAL(clicked()), this, SLOT(SelectGenFont()));
+#endif
 
 	m_vecEdits =
 	{
