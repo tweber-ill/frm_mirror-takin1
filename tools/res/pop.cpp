@@ -315,8 +315,7 @@ ResoResults calc_pop(const PopParams& pop)
 	MI(1,1) += pop.Q*pop.Q*angs*angs * pop.sample_mosaic*pop.sample_mosaic /rads/rads;
 	MI(2,2) += pop.Q*pop.Q*angs*angs * sample_mosaic_spread*sample_mosaic_spread /rads/rads;
 
-	t_mat M;
-	if(!tl::inverse(MI, M))
+	if(!tl::inverse(MI, res.reso))
 	{
 		res.bOk = false;
 		res.strErr = "Covariance matrix cannot be inverted.";
@@ -327,7 +326,7 @@ ResoResults calc_pop(const PopParams& pop)
 	// -------------------------------------------------------------------------
 
 
-	res.reso = M * tl::SIGMA2FWHM*tl::SIGMA2FWHM;
+	res.reso *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 	res.reso_v = ublas::zero_vector<t_real>(4);
 	res.reso_s = 0.;
 

@@ -63,8 +63,8 @@ class TofLayout : public QGraphicsItem
 		t_real_glob m_dLenSampleDet = 100.;
 		t_real_glob m_dLenSample = 25.;
 
-		t_real_glob m_dBeginDetArcAngle = -20.;
-		t_real_glob m_dDetArcAngle = 180.;
+		t_real_glob m_dBeginDetArcAngle = -140.;
+		t_real_glob m_dDetArcAngle = -m_dBeginDetArcAngle*2.;
 
 		t_real_glob m_dScaleFactor = 1.4; 	// pixels per cm for zoom == 1
 		t_real_glob m_dZoom = 1.;

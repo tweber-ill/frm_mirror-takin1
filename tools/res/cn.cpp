@@ -159,13 +159,12 @@ ResoResults calc_cn(const CNParams& cn)
 	N = ellipsoid_gauss_int(N, 4);
 
 	t_vec vec1 = tl::get_column<t_vec>(N, 1);
-	t_mat NP = N - ublas::outer_prod(vec1,vec1)
+	res.reso = N - ublas::outer_prod(vec1,vec1)
 		/ (1./((cn.sample_mosaic/rads * cn.Q*angs)
 		* (cn.sample_mosaic/rads * cn.Q*angs)) + N(1,1));
-	NP(2,2) = N(2,2);
-	NP *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
+	res.reso(2,2) = N(2,2);
+	res.reso *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
-	res.reso = NP;
 	res.reso_v = ublas::zero_vector<t_real>(4);
 	res.reso_s = 0.;
 

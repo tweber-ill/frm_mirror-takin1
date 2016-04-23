@@ -1,4 +1,4 @@
-/*
+/**
  * TOF layout
  * @author tweber
  * @date apr-2016
@@ -182,7 +182,10 @@ void TofLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 
 
 	// draw detector bank
-	painter->setPen(Qt::gray);
+	QPen penArc(Qt::gray);
+	penArc.setWidthF(1.5);
+	painter->setPen(penArc);
+
 	t_real dLenKf = lineKf.length();
 	painter->drawArc(QRectF(ptSample.x()-dLenKf, ptSample.y()-dLenKf,
 		dLenKf*2., dLenKf*2.), (m_dBeginDetArcAngle+90.)*16., m_dDetArcAngle*16.);

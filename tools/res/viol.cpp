@@ -4,7 +4,8 @@
  * @date apr-2016
  * @license GPLv2
  *
- * @desc for algo, see: [viol14] N. Violini et al., NIM A 736 (2014) pp. 31-39
+ * @desc for used algo, see: [viol14] N. Violini et al., NIM A 736 (2014) pp. 31-39
+ * @desc results checked with: [ehl11] G. Ehlers et al., http://arxiv.org/abs/1109.1482 (2011)
  */
 
 #include "viol.h"
@@ -102,10 +103,11 @@ ResoResults calc_viol(const ViolParams& params)
 	{
 		/*1*/ [&]()->t_real { return (-mn*lp*lp/(ti*ti*ti) -mn*ls*ls/(tf*tf*tf)*lm/lp) /meV*sec; },
 		/*2*/ [&]()->t_real { return mn*ls*ls/(tf*tf*tf) /meV*sec; },
-		/*3*/ [&]()->t_real { return (mn*lp/(ti*ti) + mn*(ls*ls*ls)/(tf*tf*tf)*ti/(lp*lp)*lm/ls) /meV*meter; },
+		/*3*/ [&]()->t_real { return (mn*lp/(ti*ti) + mn*(ls*ls)/(tf*tf*tf)*ti/(lp*lp)*lm) /meV*meter; },
 		/*4*/ [&]()->t_real { return -mn*(ls*ls)/(tf*tf*tf) * ti/lp /meV*meter; },
 		/*5*/ [&]()->t_real { return -mn*ls/(tf*tf) /meV*meter; },
 	};
+
 
 #ifndef NDEBUG
 	// formula 19 in [viol14]
@@ -114,13 +116,29 @@ ResoResults calc_viol(const ViolParams& params)
 		[](t_real r1, t_real r2)->t_real { return r1 + r2; },
 		[](const std::function<t_real()>& f1, t_real r2)->t_real { return f1()*f1()*r2*r2; } ));
 	tl::log_debug("dE (Vanadium fwhm) = ", tl::SIGMA2FWHM*sigE);
+
+
+	// --------------------------------------------------------------------
+	// checking results against the E resolution formula from [ehl11], p. 6
+	auto vi3 = vi*vi*vi/lp; auto vf3 = vf*vf*vf/ls;
+	ublas::vector<energy> vecE2 = tl::make_vec<ublas::vector<energy>>(
+	{
+		mn * sp * (vi3 + vf3*lm/lp),
+		mn * sm * (vi3 + vf3*(lp+lm)/lp),
+		mn * sd * vf3
+	});
+	t_real sigE2 = tl::my_units_norm2<energy>(vecE2) / meV;
+	tl::log_debug("dE (Vanadium fwhm, check) = ", tl::SIGMA2FWHM*sigE2);
+	// --------------------------------------------------------------------
+
 #endif
 	// --------------------------------------------------------------------
 
 
 
 	// --------------------------------------------------------------------
-	// Q formulas in appendices A.1 and A.3 of [viol14]
+	// spherical: Q formulas in appendices A.1 and p. 34 of [viol14]
+	// cylindrical: Q formulas in appendices A.3 and p. 35 of [viol14]
 
 	t_real ctt_i = std::cos(tt_i/rads), stt_i = std::sin(tt_i/rads);
 	t_real ctt_f = std::cos(tt/rads), stt_f = std::sin(tt/rads);
@@ -130,12 +148,12 @@ ResoResults calc_viol(const ViolParams& params)
 
 	t_mat R, R_tt_f, R_ph_f;
 	t_mat R_tt_i = tl::make_mat(	// R derivs w.r.t the angles
-		{{ stt_i*cph_i,	t_real(0) },
+		{{ -stt_i*cph_i, t_real(0) },
 		{ ctt_i*cph_i, 	t_real(0) },
 		{ t_real(0), 	t_real(0) }});
 	t_mat R_ph_i = tl::make_mat(
 		{{ -ctt_i*sph_i, t_real(0) },
-		{ stt_i*sph_i, 	 t_real(0) },
+		{ -stt_i*sph_i,  t_real(0) },
 		{ cph_i, 	 t_real(0) }});
 
 	if(params.det_shape == TofDetShape::SPH)
@@ -196,17 +214,46 @@ ResoResults calc_viol(const ViolParams& params)
 		/*9*/ [&]()->t_vec { return ublas::prod(R_ph_f, vecViVf); },
 	};
 
+
 #ifndef NDEBUG
-	t_vec vecQsq = std::inner_product(vecQderivs.begin(), vecQderivs.end(), vecsigs.begin(), tl::make_vec<t_vec>({0,0,0}),
+	t_vec vecQsq = std::inner_product(vecQderivs.begin(), vecQderivs.end(),
+		vecsigs.begin(), tl::make_vec<t_vec>({0,0,0}),
 		[](const t_vec& vec1, const t_vec& vec2) -> t_vec { return vec1 + vec2; },
 		[](const std::function<t_vec()>& f1, const t_real r2) -> t_vec
 		{
-			t_vec vec1 = f1();
+			const t_vec vec1 = f1();
 			return ublas::element_prod(vec1, vec1) * r2*r2;
 		});
 
 	t_vec sigQ = tl::apply_fkt(vecQsq, static_cast<t_real(*)(t_real)>(std::sqrt));
 	tl::log_debug("dQ (Vanadium fwhm) = ", tl::SIGMA2FWHM*sigQ);
+
+
+	// --------------------------------------------------------------------
+	// checking results against the Q resolution formulas from [ehl11], pp. 6-7
+	auto vi2 = vi*vi/lp; auto vf2 = vf*vf/ls;
+	ublas::vector<wavenumber> vecQ2[] = {
+	tl::make_vec<ublas::vector<wavenumber>>(
+	{
+		mn_hbar * sp * (vi2 + vf2*lm/lp * ctt_f),
+		mn_hbar * sm * (vi2 + vf2*(lp+lm)/lp * ctt_f),
+		mn_hbar * sd * (vf2 * ctt_f),
+		mn_hbar * s2tf/rads * (vf * stt_f)
+	}),
+	tl::make_vec<ublas::vector<wavenumber>>(
+	{
+		mn_hbar * sp * (vf2*lm/lp * stt_f),
+		mn_hbar * sm * (vf2*(lp+lm)/lp * stt_f),
+		mn_hbar * sd * (vf2 * stt_f),
+		mn_hbar * s2tf/rads * (vf * ctt_f)
+	}) };
+
+	t_vec sigQ2 = tl::make_vec<t_vec>({ 
+		tl::my_units_norm2<wavenumber>(vecQ2[0]) * angs, 
+		tl::my_units_norm2<wavenumber>(vecQ2[1]) * angs });
+	tl::log_debug("dQ (Vanadium fwhm, check) = ", tl::SIGMA2FWHM*sigQ2);
+	// --------------------------------------------------------------------
+
 #endif
 	// --------------------------------------------------------------------
 
@@ -222,10 +269,10 @@ ResoResults calc_viol(const ViolParams& params)
 
 	std::size_t N = matSigSq.size1();
 	t_mat matJacobiInstr(4, N, t_real(0));
-	for(std::size_t iDeriv=0; iDeriv<vecEderivs.size(); ++iDeriv)
-		matJacobiInstr(3, iDeriv) = vecEderivs[iDeriv](); // /E*meV;
 	for(std::size_t iDeriv=0; iDeriv<vecQderivs.size(); ++iDeriv)
 		tl::set_column(matJacobiInstr, iDeriv, vecQderivs[iDeriv]());
+	for(std::size_t iDeriv=0; iDeriv<vecEderivs.size(); ++iDeriv)
+		matJacobiInstr(3, iDeriv) = vecEderivs[iDeriv]();
 
 	t_mat matJacobiQE = tl::transform_inv(matSigSq, matJacobiInstr, true);
 	if(!tl::inverse(matJacobiQE, res.reso))
@@ -242,15 +289,15 @@ ResoResults calc_viol(const ViolParams& params)
 #endif
 	// --------------------------------------------------------------------
 
-	// transform to Q_perp, Q_para system
+	// transform from  (ki, ki_perp, Qz)  to  (Q_perp, Q_para, Q_z)  system
 	t_mat matKiQ = tl::rotation_matrix_2d(-params.angle_ki_Q / rads);
 	matKiQ.resize(4,4, true);
 	matKiQ(2,2) = matKiQ(3,3) = 1.;
 	matKiQ(2,0) = matKiQ(2,1) = matKiQ(2,3) = matKiQ(3,0) = matKiQ(3,1) =
 	matKiQ(3,2) = matKiQ(0,2) = matKiQ(0,3) = matKiQ(1,2) = matKiQ(1,3) = 0.;
 
-	res.reso = tl::transform(res.reso, matKiQ, 1);
-
+	res.reso = tl::transform(res.reso, matKiQ, true);
+	//res.reso *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = 0.;   // TODO
