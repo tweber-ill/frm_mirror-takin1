@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>978</width>
-    <height>745</height>
+    <width>782</width>
+    <height>567</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,12 +55,6 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <widget class="QTabWidget" name="groupRecip">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="sizeIncrement">
          <size>
           <width>0</width>
@@ -72,12 +66,6 @@
         </property>
        </widget>
        <widget class="QTabWidget" name="groupReal">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="sizeIncrement">
          <size>
           <width>0</width>

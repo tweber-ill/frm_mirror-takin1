@@ -59,9 +59,7 @@ TazDlg::TazDlg(QWidget* pParent)
 		QByteArray geo = m_settings.value("main/geo").toByteArray();
 		restoreGeometry(geo);
 	}
-
-/*
-	if(m_settings.contains("main/width") && m_settings.contains("main/height"))
+	/*if(m_settings.contains("main/width") && m_settings.contains("main/height"))
 	{
 		int iW = m_settings.value("main/width").toInt();
 		int iH = m_settings.value("main/height").toInt();
@@ -71,6 +69,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	m_pCoordQStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	m_pCoordCursorStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	for(QLabel* pLabel : {m_pStatusMsg/*, m_pCoordQStatusMsg, m_pCoordCursorStatusMsg*/})
+		pLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
 	QStatusBar *pStatusBar = new QStatusBar(this);
 	pStatusBar->addWidget(m_pStatusMsg, 1);
@@ -545,7 +545,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuNet->addAction(pDisconn);
 
 	QAction *pNetCache = new QAction(this);
-	pNetCache->setText("Show Network Cache...");
+	pNetCache->setText("Network Cache...");
 	pMenuNet->addSeparator();
 	pMenuNet->addAction(pNetCache);
 

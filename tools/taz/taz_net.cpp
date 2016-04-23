@@ -109,7 +109,7 @@ void TazDlg::NetRefresh()
 	if(m_pNetCache)
 		m_pNetCache->refresh();
 	else
-		QMessageBox::warning(this, "Warning", "Not connected to a server.");
+		QMessageBox::warning(this, "Warning", "Not connected to an instrument server.");
 }
 
 void TazDlg::Connected(const QString& strHost, const QString& strSrv)

@@ -6,6 +6,7 @@
  */
 
 #include "EllipseDlg.h"
+#include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/helper/flags.h"
 
@@ -117,7 +118,7 @@ void EllipseDlg::Calc()
 
 	try
 	{
-		static const int iParams[2][4][5] =
+		int iParams[2][4][5] =
 		{
 			{	// projected
 				{0, 3, 1, 2, -1},
@@ -136,9 +137,9 @@ void EllipseDlg::Calc()
 		static const std::string strDeg = tl::get_spec_char_utf8("deg");
 
 
-		//Xml xmlparams;
-		bool bXMLLoaded = 0; //xmlparams.Load("res/res.conf");
-		bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
+		bool bCenterOn0 = 1;
+		if(m_pSettings)
+			bCenterOn0 = m_pSettings->value("reso/center_around_origin", 1).toInt() != 0;
 
 		ublas::vector<t_real_reso> Q_avg = _Q_avg;
 		if(bCenterOn0)
@@ -148,17 +149,16 @@ void EllipseDlg::Calc()
 		std::vector<std::future<Ellipse>> tasks_ell_proj, tasks_ell_slice;
 
 		for(unsigned int iEll=0; iEll<4; ++iEll)
-		{/*
-			if(bXMLLoaded)
+		{
+			if(m_pSettings)
 			{
 				std::ostringstream ostrCfg;
-				ostrCfg << "/res/ellipse_2d_" << iEll;
-
+				ostrCfg << "reso/ellipse_2d_" << iEll;
 				std::string strProjPath = ostrCfg.str() + "_proj";
 				std::string strSlicePath = ostrCfg.str() + "_slice";
 
-				std::string strProj = xmlparams.QueryString(strProjPath.c_str(), "");
-				std::string strSlice = xmlparams.QueryString(strSlicePath.c_str(), "");
+				std::string strProj = m_pSettings->value(strProjPath.c_str(), "").toString().toStdString();
+				std::string strSlice = m_pSettings->value(strSlicePath.c_str(), "").toString().toStdString();
 
 				const std::string* strEllis[] = {&strProj, &strSlice};
 
@@ -167,7 +167,7 @@ void EllipseDlg::Calc()
 					if(*strEllis[iWhichEll] != "")
 					{
 						std::vector<int> vecIdx;
-						::get_tokens(*strEllis[iWhichEll], std::string(","), vecIdx);
+						tl::get_tokens<int>(*strEllis[iWhichEll], std::string(","), vecIdx);
 
 						if(vecIdx.size() == 5)
 						{
@@ -176,22 +176,22 @@ void EllipseDlg::Calc()
 						}
 						else
 						{
-							std::cerr << "Error in res.conf: Wrong size of parameters for "
-									 << strProj << "." << std::endl;
+							tl::log_err("Error in res.conf: Wrong size of parameters for ",
+								strProj,  ".");
 						}
 					}
 				}
-			}*/
+			}
 
 			const int *iP = iParams[0][iEll];
 			const int *iS = iParams[1][iEll];
 
 			std::future<Ellipse> ell_proj = std::async(std::launch::deferred|std::launch::async,
-						[=, &reso, &Q_avg]()
-						{ return ::calc_res_ellipse(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+				[=, &reso, &Q_avg]()
+				{ return ::calc_res_ellipse(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
 			std::future<Ellipse> ell_slice = std::async(std::launch::deferred|std::launch::async,
-						[=, &reso, &Q_avg]()
-						{ return ::calc_res_ellipse(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+				[=, &reso, &Q_avg]()
+				{ return ::calc_res_ellipse(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
 
 			tasks_ell_proj.push_back(std::move(ell_proj));
 			tasks_ell_slice.push_back(std::move(ell_slice));
