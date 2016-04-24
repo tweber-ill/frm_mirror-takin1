@@ -562,7 +562,7 @@ int main(int argc, char** argv)
 	sigInt.async_wait([&ioSrv](const sys::error_code& err, int iSig)
 	{
 		tl::log_warn("Hard exit requested via signal ", iSig, ". This may cause a fault.");
-		if(err) tl::log_err("Error code: ", err.value(), ", error category: ", err.category().name(), ".");
+		if(err) tl::log_err("Error: ", err.message(), ", error category: ", err.category().name(), ".");
 		ioSrv.stop();
 #ifdef SIGKILL
 		std::raise(SIGKILL);

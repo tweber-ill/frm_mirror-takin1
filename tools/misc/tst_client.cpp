@@ -1,10 +1,10 @@
 /*
- * clang -o tst_client tst_client.cpp ../../tlibs/net/tcp.cpp ../../tlibs/helper/log.cpp -lstdc++ -std=c++11 -lboost_system -lpthread
+ * clang -o tst_client tools/misc/tst_client.cpp tlibs/net/tcp.cpp tlibs/log/log.cpp -lstdc++ -std=c++11 -lboost_system -lpthread -lm
  */
 
-#include <iostream>
 #include <fstream>
 #include "../../tlibs/net/tcp.h"
+#include "../../tlibs/log/log.h"
 
 using namespace tl;
 
@@ -24,17 +24,17 @@ struct TstOut
 
 static void disconnected(const std::string& strHost, const std::string& strSrv)
 {
-	std::cout << "Disconnected from " << strHost << " on port " << strSrv << "." << std::endl;
+	log_info("Disconnected from ", strHost, " on port ", strSrv, ".");
 }
 
 static void connected(const std::string& strHost, const std::string& strSrv)
 {
-	std::cout << "Connected to " << strHost << " on port " << strSrv << "." << std::endl;
+	log_info("Connected to ", strHost, " on port ", strSrv, ".");
 }
 
 static void received(const std::string& strMsg)
 {
-	std::cout << strMsg << std::endl;
+	log_info("Received: ", strMsg, ".");
 }
 
 
@@ -48,24 +48,22 @@ int main(int argc, char** argv)
 
 
 	TcpClient client;
-	TstOut tstout;
-	client.add_receiver(boost::bind(&TstOut::print, &tstout, _1));
-	//client.add_receiver(received);
+	//TstOut tstout;
+	//client.add_receiver(boost::bind(&TstOut::print, &tstout, _1));
+	client.add_receiver(received);
 	client.add_disconnect(disconnected);
 	client.add_connect(connected);
 
 
 	if(!client.connect(argv[1], argv[2]))
 	{
-		std::cerr << "Error: Cannot connect." << std::endl;
+		log_err("Cannot connect.");
 		return -1;
 	}
 
 	std::string strMsg;
 	while(client.is_connected())
 	{
-		//std::cout << "in: ";
-
 		std::getline(std::cin, strMsg);
 		if(strMsg == "!exit!")
 			break;
