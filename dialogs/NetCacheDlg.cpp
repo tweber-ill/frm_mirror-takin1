@@ -8,6 +8,7 @@
 #include "NetCacheDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/flags.h"
+#include "tlibs/log/log.h"
 #include <chrono>
 #include <iostream>
 
@@ -82,8 +83,9 @@ void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 	QString qstrKey = strKey.c_str();
 	QString qstrVal = val.strVal.c_str();
 	QString qstrTimestamp = std::to_string(val.dTimestamp).c_str();
+	//tl::log_debug("updating net cache: ", strKey, ", ", val.strVal);
 
-	for(iRow=0; iRow<tableCache->rowCount(); ++iRow)
+	for(iRow=0; iRow < tableCache->rowCount(); ++iRow)
 	{
 		if(tableCache->item(iRow, 0)->text() == qstrKey)
 		{
@@ -101,7 +103,7 @@ void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 	{
 		iRow = tableCache->rowCount();
 		tableCache->setRowCount(iRow+1);
-		tableCache->setVerticalHeaderItem(iRow, new QTableWidgetItem(qstrKey));
+		tableCache->setItem(iRow, 0, new QTableWidgetItem(qstrKey));
 		tableCache->setItem(iRow, 1, new QTableWidgetItem(qstrVal));
 		tableCache->setItem(iRow, 2, new QTableWidgetItem(qstrTimestamp));
 		tableCache->setItem(iRow, 3, new QTableWidgetItem());
@@ -132,8 +134,8 @@ void NetCacheDlg::UpdateAge(int iRow)
 		return;
 	}
 
-	QTableWidgetItem *pItemTimestamp = tableCache->item(iRow, 1);
-	QTableWidgetItem *pItem = tableCache->item(iRow, 2);
+	QTableWidgetItem *pItemTimestamp = tableCache->item(iRow, 2);
+	QTableWidgetItem *pItem = tableCache->item(iRow, 3);
 	if(!pItemTimestamp || !pItem) return;
 
 	t_real dTimestamp = tl::str_to_var<t_real, std::string>(pItemTimestamp->text().toStdString());

@@ -101,7 +101,7 @@ void SicsCache::slot_connected(const std::string& strHost, const std::string& st
 void SicsCache::slot_disconnected(const std::string& strHost, const std::string& strSrv)
 {
 	tl::log_info("Disconnected from ", strHost, " on port ", strSrv, ".");
-
+	m_bPollerActive.store(false);
 	emit disconnected();
 }
 

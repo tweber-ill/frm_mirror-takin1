@@ -1,10 +1,15 @@
-/*
- * clang -o tst_server tools/misc/tst_server.cpp tlibs/net/tcp.cpp tlibs/log/log.cpp -lstdc++ -std=c++11 -lboost_system -lpthread -lm
+/**
+ * test instrument server
+ * @author tweber
+ * @date apr-2016
+ * clang -o tst_server -I. tools/misc/tst_server.cpp tlibs/net/tcp.cpp tlibs/log/log.cpp -lstdc++ -std=c++11 -lboost_system -lboost_iostreams -lpthread -lm
  */
 
-#include "../../tlibs/net/tcp.h"
-#include "../../tlibs/log/log.h"
-#include "../../tlibs/string/string.h"
+#include "tlibs/net/tcp.h"
+#include "tlibs/log/log.h"
+#include "tlibs/string/string.h"
+#include "tlibs/file/prop.h"
+
 
 using namespace tl;
 
@@ -34,7 +39,14 @@ int main(int argc, char** argv)
 	server.add_receiver([&server](const std::string& strMsg)
 	{
 		log_info("Received: ", strMsg);
-		server.write(std::string("Server got string: ") + strMsg + "\n");
+		tl::Prop<> prop;
+		if(prop.Load("replies.ini"))
+		{
+			std::string strKey = strMsg;
+			std::string strVal = prop.Query<std::string>("replies/" + strMsg, "0");
+
+			server.write(strKey + "=" + strVal + "\n");
+		}
 	});
 
 
