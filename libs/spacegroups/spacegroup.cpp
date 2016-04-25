@@ -17,7 +17,7 @@ static std::string s_strSrc, s_strUrl;
 bool init_space_groups()
 {
 	using t_mat = typename SpaceGroup::t_mat;
-	using t_vec = typename SpaceGroup::t_vec;
+	//using t_vec = typename SpaceGroup::t_vec;
 
 	if(!g_mapSpaceGroups.empty())
 	{
