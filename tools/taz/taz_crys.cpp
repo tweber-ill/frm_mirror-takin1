@@ -154,9 +154,9 @@ void TazDlg::CalcPeaks()
 				int(dY1*std::pow(10, iMaxDec)),
 				int(dY2*std::pow(10, iMaxDec))}));
 		ivecUp = tl::get_gcd_vec(ivecUp);
-		editScatZ0->setText(std::to_string(ivecUp[0]).c_str());
-		editScatZ1->setText(std::to_string(ivecUp[1]).c_str());
-		editScatZ2->setText(std::to_string(ivecUp[2]).c_str());
+		editScatZ0->setText(tl::var_to_str(ivecUp[0], g_iPrec).c_str());
+		editScatZ1->setText(tl::var_to_str(ivecUp[1], g_iPrec).c_str());
+		editScatZ2->setText(tl::var_to_str(ivecUp[2], g_iPrec).c_str());
 		//----------------------------------------------------------------------
 
 		ublas::vector<t_real> vecX0 = ublas::zero_vector<t_real>(3);
@@ -193,9 +193,9 @@ void TazDlg::CalcPeaks()
 				int(dY1R*std::pow(10, iMaxDecR)),
 				int(dY2R*std::pow(10, iMaxDecR))}));
 		ivecUpR = tl::get_gcd_vec(ivecUpR);
-		editRealZ0->setText(std::to_string(ivecUpR[0]).c_str());
-		editRealZ1->setText(std::to_string(ivecUpR[1]).c_str());
-		editRealZ2->setText(std::to_string(ivecUpR[2]).c_str());
+		editRealZ0->setText(tl::var_to_str(ivecUpR[0], g_iPrec).c_str());
+		editRealZ1->setText(tl::var_to_str(ivecUpR[1], g_iPrec).c_str());
+		editRealZ2->setText(tl::var_to_str(ivecUpR[2], g_iPrec).c_str());
 		//----------------------------------------------------------------------
 
 		ublas::vector<t_real> vecX0R = ublas::zero_vector<t_real>(3);

@@ -15,6 +15,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <locale>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/scope_exit.hpp>
@@ -556,6 +558,10 @@ bool run_job(const std::string& strJob)
 
 int main(int argc, char** argv)
 {
+	// plain C locale
+	std::setlocale(LC_ALL, "C");
+	std::locale::global(std::locale::classic());
+
 	// install exit signal handlers
 	asio::io_service ioSrv;
 	asio::signal_set sigInt(ioSrv, SIGABRT, SIGTERM, SIGINT);

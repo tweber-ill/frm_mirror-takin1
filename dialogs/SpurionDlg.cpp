@@ -187,8 +187,8 @@ void SpurionDlg::CalcBragg()
 
 void SpurionDlg::cursorMoved(const QPointF& pt)
 {
-	std::string strX = std::to_string(pt.x());
-	std::string strY = std::to_string(pt.y());
+	std::string strX = tl::var_to_str(pt.x(), g_iPrecGfx);
+	std::string strY = tl::var_to_str(pt.y(), g_iPrecGfx);
 
 	std::ostringstream ostr;
 	ostr << "(" << strX << ", " << strY << ")";

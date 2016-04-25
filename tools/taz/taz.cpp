@@ -27,6 +27,7 @@
 #include "tlibs/file/recent.h"
 #include "tlibs/log/log.h"
 
+namespace algo = boost::algorithm;
 
 using t_real = t_real_glob;
 const std::string TazDlg::s_strTitle = "Takin";
@@ -759,6 +760,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_sceneRealLattice.GetLattice()->SetWSVisible(bWSVisible);
 	m_sceneRecip.emitUpdate();
 	//m_sceneRecip.emitAllParams();
+
+	setAcceptDrops(1);
 }
 
 TazDlg::~TazDlg()
@@ -839,6 +842,39 @@ void TazDlg::showEvent(QShowEvent *pEvt)
 			m_pviewRecip->horizontalScrollBar(),
 			m_pviewRecip->verticalScrollBar() })
 			pSB->setValue(pSB->minimum() + (pSB->maximum()-pSB->minimum())/2);*/
+	}
+}
+
+void TazDlg::dragEnterEvent(QDragEnterEvent *pEvt)
+{
+	if(pEvt) pEvt->accept();
+}
+
+void TazDlg::dropEvent(QDropEvent *pEvt)
+{
+	if(!pEvt) return;
+
+	const QMimeData* pMime = pEvt->mimeData();
+	if(pMime)
+	{
+		std::string strFiles = pMime->text().toStdString();
+		std::vector<std::string> vecFiles;
+		tl::get_tokens<std::string, std::string>(strFiles, "\n", vecFiles);
+		if(vecFiles.size() > 1)
+			tl::log_warn("More than one file dropped, using first one.");
+
+		if(vecFiles.size() >= 1)
+		{
+			std::string& strFile = vecFiles[0];
+			tl::trim(strFile);
+
+			const std::string strHead = "file://";
+			if(algo::starts_with(strFile, strHead))
+				algo::replace_head(strFile, strHead.length(), "");
+			//tl::log_debug("dropped: ", strFile);
+
+			Load(strFile.c_str());
+		}
 	}
 }
 

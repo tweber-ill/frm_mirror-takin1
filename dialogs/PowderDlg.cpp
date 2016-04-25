@@ -408,7 +408,7 @@ void PowderDlg::CalcPeaks()
 					tablePowderLines->setItem(iRow, iCol, new QTableWidgetItem());
 			}
 
-			QString strMult = tl::var_to_str(vecPowderLines[iRow]->iMult).c_str();
+			QString strMult = tl::var_to_str(vecPowderLines[iRow]->iMult, iPrec).c_str();
 			QString strFn, strIn, strFx, strIx;
 			if(vecPowderLines[iRow]->dFn >= 0.)
 				strFn = tl::var_to_str(vecPowderLines[iRow]->dFn, iPrec).c_str();
@@ -578,8 +578,8 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 	mapConf[strXmlRoot + "sample/beta"] = editBeta->text().toStdString();
 	mapConf[strXmlRoot + "sample/gamma"] = editGamma->text().toStdString();
 
-	mapConf[strXmlRoot + "powder/maxhkl"] = tl::var_to_str<int>(spinOrder->value());
-	mapConf[strXmlRoot + "powder/lambda"] = tl::var_to_str<t_real>(spinLam->value());
+	mapConf[strXmlRoot + "powder/maxhkl"] = tl::var_to_str<int>(spinOrder->value(), g_iPrec);
+	mapConf[strXmlRoot + "powder/lambda"] = tl::var_to_str<t_real>(spinLam->value(), g_iPrec);
 
 	mapConf[strXmlRoot + "sample/spacegroup"] = comboSpaceGroups->currentText().toStdString();
 
@@ -593,11 +593,11 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/name"] =
 			atom.strAtomName;
 		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/x"] =
-			tl::var_to_str(atom.vecPos[0]);
+			tl::var_to_str(atom.vecPos[0], g_iPrec);
 		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/y"] =
-			tl::var_to_str(atom.vecPos[1]);
+			tl::var_to_str(atom.vecPos[1], g_iPrec);
 		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/z"] =
-			tl::var_to_str(atom.vecPos[2]);
+			tl::var_to_str(atom.vecPos[2], g_iPrec);
 	}
 }
 
@@ -606,13 +606,13 @@ void PowderDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	m_bDontCalc = 1;
 	bool bOk=0;
 
-	editA->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "sample/a").c_str(), 5., &bOk)).c_str());
-	editB->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "sample/b").c_str(), 5., &bOk)).c_str());
-	editC->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "sample/c").c_str(), 5., &bOk)).c_str());
+	editA->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "sample/a").c_str(), 5., &bOk), g_iPrec).c_str());
+	editB->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "sample/b").c_str(), 5., &bOk), g_iPrec).c_str());
+	editC->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "sample/c").c_str(), 5., &bOk), g_iPrec).c_str());
 
-	editAlpha->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "sample/alpha").c_str(), 90., &bOk)).c_str());
-	editBeta->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "sample/beta").c_str(), 90., &bOk)).c_str());
-	editGamma->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "sample/gamma").c_str(), 90., &bOk)).c_str());
+	editAlpha->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "sample/alpha").c_str(), 90., &bOk), g_iPrec).c_str());
+	editBeta->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "sample/beta").c_str(), 90., &bOk), g_iPrec).c_str());
+	editGamma->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "sample/gamma").c_str(), 90., &bOk), g_iPrec).c_str());
 
 	spinOrder->setValue(xml.Query<int>((strXmlRoot + "powder/maxhkl").c_str(), 10, &bOk));
 	spinLam->setValue(xml.Query<t_real>((strXmlRoot + "powder/lambda").c_str(), 5., &bOk));

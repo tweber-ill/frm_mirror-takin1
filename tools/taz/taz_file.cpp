@@ -98,7 +98,9 @@ bool TazDlg::Load(const char* pcFile)
 	tl::Prop<std::string> xml;
 	if(!xml.Load(strFile1.c_str(), tl::PropType::XML))
 	{
-		QMessageBox::critical(this, "Error", "Could not load configuration file.");
+		std::string strErr = "Could not load file \""
+			+ std::string(pcFile) + "\".";
+		QMessageBox::critical(this, "Error", strErr.c_str());
 		return false;
 	}
 

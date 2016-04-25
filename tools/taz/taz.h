@@ -167,6 +167,9 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		virtual void showEvent(QShowEvent *pEvt) override;
 		virtual void closeEvent(QCloseEvent* pEvt) override;
 
+		virtual void dragEnterEvent(QDragEnterEvent *pEvt) override;
+		virtual void dropEvent(QDropEvent *pEvt) override;
+
 	public:
 		TazDlg(QWidget *pParent);
 		TazDlg() : TazDlg(0) { }

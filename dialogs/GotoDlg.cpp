@@ -704,11 +704,11 @@ void GotoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	bool bOk=0;
 
-	editH->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/h").c_str(), 1., &bOk)).c_str());
-	editK->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/k").c_str(), 0., &bOk)).c_str());
-	editL->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/l").c_str(), 0., &bOk)).c_str());
-	editKi->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/ki").c_str(), 1.4, &bOk)).c_str());
-	editKf->setText(std::to_string(xml.Query<t_real>((strXmlRoot + "goto_pos/kf").c_str(), 1.4, &bOk)).c_str());
+	editH->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "goto_pos/h").c_str(), 1., &bOk), g_iPrec).c_str());
+	editK->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "goto_pos/k").c_str(), 0., &bOk), g_iPrec).c_str());
+	editL->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "goto_pos/l").c_str(), 0., &bOk), g_iPrec).c_str());
+	editKi->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "goto_pos/ki").c_str(), 1.4, &bOk), g_iPrec).c_str());
+	editKf->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "goto_pos/kf").c_str(), 1.4, &bOk), g_iPrec).c_str());
 	radioFixedKi->setChecked(xml.Query<bool>((strXmlRoot + "goto_pos/cki").c_str(), 0, &bOk));
 
 	// favlist

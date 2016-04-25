@@ -19,6 +19,7 @@
 #include <boost/version.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <locale>
 #include <clocale>
 #include <memory>
 
@@ -95,6 +96,7 @@ int main(int argc, char** argv)
 
 		std::unique_ptr<QApplication> app(new QApplication(argc, argv));
 		std::setlocale(LC_ALL, "C");
+		std::locale::global(std::locale::classic());
 		QLocale::setDefault(QLocale::English);
 
 		QCoreApplication::setApplicationName("Takin");
