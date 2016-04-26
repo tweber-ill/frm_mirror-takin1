@@ -13,6 +13,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
 #include "libs/formfactors/formfact.h"
+#include "libs/qthelper.h"
 
 #include <iostream>
 #include <boost/algorithm/string.hpp>
@@ -405,28 +406,42 @@ void PowderDlg::CalcPeaks()
 			for(int iCol=0; iCol<8; ++iCol)
 			{
 				if(!tablePowderLines->item(iRow, iCol))
-					tablePowderLines->setItem(iRow, iCol, new QTableWidgetItem());
+				{
+					if(iCol == TABLE_PEAK)
+						tablePowderLines->setItem(iRow, iCol, new QTableWidgetItem());
+					else if(iCol == TABLE_MULT)
+						tablePowderLines->setItem(iRow, iCol, new QTableWidgetItemWrapper<unsigned int>());
+					else
+						tablePowderLines->setItem(iRow, iCol, new QTableWidgetItemWrapper<t_real>());
+				}
 			}
 
-			QString strMult = tl::var_to_str(vecPowderLines[iRow]->iMult, iPrec).c_str();
-			QString strFn, strIn, strFx, strIx;
+			std::string strMult = tl::var_to_str(vecPowderLines[iRow]->iMult, iPrec);
+			std::string strFn, strIn, strFx, strIx;
 			if(vecPowderLines[iRow]->dFn >= 0.)
-				strFn = tl::var_to_str(vecPowderLines[iRow]->dFn, iPrec).c_str();
+				strFn = tl::var_to_str(vecPowderLines[iRow]->dFn, iPrec);
 			if(vecPowderLines[iRow]->dIn >= 0.)
-				strIn = tl::var_to_str(vecPowderLines[iRow]->dIn, iPrec).c_str();
+				strIn = tl::var_to_str(vecPowderLines[iRow]->dIn, iPrec);
 			if(vecPowderLines[iRow]->dFx >= 0.)
-				strFx = tl::var_to_str(vecPowderLines[iRow]->dFx, iPrec).c_str();
+				strFx = tl::var_to_str(vecPowderLines[iRow]->dFx, iPrec);
 			if(vecPowderLines[iRow]->dIx >= 0.)
-				strIx = tl::var_to_str(vecPowderLines[iRow]->dIx, iPrec).c_str();
+				strIx = tl::var_to_str(vecPowderLines[iRow]->dIx, iPrec);
 
-			tablePowderLines->item(iRow, TABLE_ANGLE)->setText(vecPowderLines[iRow]->strAngle.c_str());
-			tablePowderLines->item(iRow, TABLE_Q)->setText(vecPowderLines[iRow]->strQ.c_str());
 			tablePowderLines->item(iRow, TABLE_PEAK)->setText(vecPowderLines[iRow]->strPeaks.c_str());
-			tablePowderLines->item(iRow, TABLE_MULT)->setText(strMult);
-			tablePowderLines->item(iRow, TABLE_FN)->setText(strFn);
-			tablePowderLines->item(iRow, TABLE_IN)->setText(strIn);
-			tablePowderLines->item(iRow, TABLE_FX)->setText(strFx);
-			tablePowderLines->item(iRow, TABLE_IX)->setText(strIx);
+			dynamic_cast<QTableWidgetItemWrapper<t_real>*>(tablePowderLines->item(iRow, TABLE_ANGLE))->
+				SetValue(vecPowderLines[iRow]->dAngle, vecPowderLines[iRow]->strAngle);
+			dynamic_cast<QTableWidgetItemWrapper<t_real>*>(tablePowderLines->item(iRow, TABLE_Q))->
+				SetValue(vecPowderLines[iRow]->dQ, vecPowderLines[iRow]->strQ);
+			dynamic_cast<QTableWidgetItemWrapper<unsigned int>*>(tablePowderLines->item(iRow, TABLE_MULT))->
+				SetValue(vecPowderLines[iRow]->iMult, strMult);
+			dynamic_cast<QTableWidgetItemWrapper<t_real>*>(tablePowderLines->item(iRow, TABLE_FN))->
+				SetValue(vecPowderLines[iRow]->dFn, strFn);
+			dynamic_cast<QTableWidgetItemWrapper<t_real>*>(tablePowderLines->item(iRow, TABLE_IN))->
+				SetValue(vecPowderLines[iRow]->dIn, strIn);
+			dynamic_cast<QTableWidgetItemWrapper<t_real>*>(tablePowderLines->item(iRow, TABLE_FX))->
+				SetValue(vecPowderLines[iRow]->dFx, strFx);
+			dynamic_cast<QTableWidgetItemWrapper<t_real>*>(tablePowderLines->item(iRow, TABLE_IX))->
+				SetValue(vecPowderLines[iRow]->dIx, strIx);
 		}
 
 		PlotPowderLines(vecPowderLines);

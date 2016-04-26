@@ -251,6 +251,9 @@
             <property name="alternatingRowColors">
              <bool>true</bool>
             </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
             <attribute name="horizontalHeaderVisible">
              <bool>false</bool>
             </attribute>
