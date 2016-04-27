@@ -9,6 +9,8 @@
 #define __POWDER_DLG_H__
 
 #include <QDialog>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QSettings>
 #include "ui/ui_powder.h"
 
@@ -83,6 +85,9 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		void ApplyAtoms(const std::vector<AtomPos>&);
 
 		void cursorMoved(const QPointF& pt);
+
+		virtual void dragEnterEvent(QDragEnterEvent *pEvt) override;
+		virtual void dropEvent(QDropEvent *pEvt) override;
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt) override;

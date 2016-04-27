@@ -24,6 +24,7 @@
 using t_real = t_real_glob;
 static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
 namespace ublas = boost::numeric::ublas;
+namespace algo = boost::algorithm;
 
 
 #define TABLE_ANGLE	0
@@ -106,6 +107,7 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	RepopulateSpaceGroups();
 	CalcPeaks();
 
+	setAcceptDrops(1);
 
 	if(m_pSettings && m_pSettings->contains("powder/geo"))
 		restoreGeometry(m_pSettings->value("powder/geo").toByteArray());
@@ -547,6 +549,44 @@ void PowderDlg::SavePowder()
 
 	if(bOk && m_pSettings)
 		m_pSettings->setValue("powder/last_dir", QString(strDir.c_str()));
+}
+
+void PowderDlg::dragEnterEvent(QDragEnterEvent *pEvt)
+{
+	if(pEvt) pEvt->accept();
+}
+
+void PowderDlg::dropEvent(QDropEvent *pEvt)
+{
+	if(!pEvt) return;
+	const QMimeData* pMime = pEvt->mimeData();
+	if(!pMime) return;
+
+	std::string strFiles = pMime->text().toStdString();
+	std::vector<std::string> vecFiles;
+	tl::get_tokens<std::string, std::string>(strFiles, "\n", vecFiles);
+	if(vecFiles.size() > 1)
+		tl::log_warn("More than one file dropped, using first one.");
+
+	if(vecFiles.size() >= 1)
+	{
+		std::string& strFile = vecFiles[0];
+		tl::trim(strFile);
+
+		const std::string strHead = "file://";
+		if(algo::starts_with(strFile, strHead))
+			algo::replace_head(strFile, strHead.length(), "");
+
+		tl::Prop<std::string> xml;
+		if(!xml.Load(strFile.c_str(), tl::PropType::XML))
+		{
+			QMessageBox::critical(this, "Error", "Could not load powder file.");
+			return;
+		}
+
+		const std::string strXmlRoot("taz/");
+		Load(xml, strXmlRoot);
+	}
 }
 
 void PowderDlg::LoadPowder()
