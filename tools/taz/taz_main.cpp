@@ -11,9 +11,9 @@
 #include "tlibs/log/debug.h"
 #include "tlibs/time/chrono.h"
 #include "tlibs/version.h"
-#include "dialogs/NetCacheDlg.h"
-#include "dialogs/AboutDlg.h"
+#include "libs/version.h"
 #include "libs/globals.h"
+#include "dialogs/NetCacheDlg.h"
 
 #include <system_error>
 #include <boost/version.hpp>

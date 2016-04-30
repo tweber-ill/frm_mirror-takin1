@@ -270,6 +270,14 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 {
 	//std::cout << "UB = " << m_opts.matUB << std::endl;
 	//std::cout << h << " " << k << " " << l << ", " << E << std::endl;
+	if(m_opts.matUB.size1() < 3 || m_opts.matUB.size2() < 3)
+	{
+		const char* pcErr = "Invalid UB matrix.";
+		tl::log_err(pcErr);
+		m_res.strErr = pcErr;
+		m_res.bOk = false;
+		return false;
+	}
 
 	t_vec vecHKLE;
 	if(m_opts.matUB.size1() == 3)
@@ -325,10 +333,14 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	}
 	else
 	{
-		m_reso.bMonoIsCurvedH = m_reso.bMonoIsOptimallyCurvedH = (unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_H));
-		m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV = (unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V));
-		m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH = (unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H));
-		m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV = (unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V));
+		m_reso.bMonoIsCurvedH = m_reso.bMonoIsOptimallyCurvedH =
+			(unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_H));
+		m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV =
+			(unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V));
+		m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH =
+			(unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H));
+		m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV =
+			(unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V));
 
 		//tl::log_info("Mono focus (h,v): ", m_reso.bMonoIsOptimallyCurvedH, ", ", m_reso.bMonoIsOptimallyCurvedV);
 		//tl::log_info("Ana focus (h,v): ", m_reso.bAnaIsOptimallyCurvedH, ", ", m_reso.bAnaIsOptimallyCurvedV);
@@ -363,7 +375,11 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 	if(std::fabs(vecQ[2]) > tl::get_plane_dist_tolerance<t_real>())
 	{
-		tl::log_err("Position Q = (", h, " ", k, " ", l, "), E = ", E, " meV not in scattering plane.");
+		tl::log_err("Position Q = (", h, " ", k, " ", l, "),",
+			" E = ", E, " meV not in scattering plane.");
+
+		m_res.strErr = "Not in scattering plane.";
+		m_res.bOk = false;
 		return false;
 	}
 
@@ -398,7 +414,10 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	}
 	else
 	{
-		tl::log_err("Unknown algorithm selected.");
+		const char* pcErr = "Unknown algorithm selected.";
+		tl::log_err(pcErr);
+		m_res.strErr = pcErr;
+		m_res.bOk = false;
 		return false;
 	}
 

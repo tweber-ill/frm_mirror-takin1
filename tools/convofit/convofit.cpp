@@ -12,6 +12,7 @@
 #include "tlibs/helper/thread.h"
 #include "tlibs/gfx/gnuplot.h"
 //#include "tlibs/math/neutrons.hpp"
+#include "libs/version.h"
 
 #include <iostream>
 #include <fstream>
@@ -585,8 +586,8 @@ int main(int argc, char** argv)
 	BOOST_SCOPE_EXIT_END
 
 
-	tl::log_info("This is the Takin command-line convolution fitter.");
-	tl::log_info("Written by Tobias Weber <tobias.weber@tum.de>, 2014-2016.\n");
+	tl::log_info("This is the Takin command-line convolution fitter, version " TAKIN_VER ".");
+	tl::log_info("Written by Tobias Weber <tobias.weber@tum.de>, 2014-2016.");
 	tl::log_debug("Resolution calculation uses ", sizeof(t_real_reso)*8, " bit ", tl::get_typename<t_real_reso>(), "s.");
 	tl::log_debug("Fitting uses ", sizeof(tl::t_real_min)*8, " bit ", tl::get_typename<tl::t_real_min>(), "s.");
 

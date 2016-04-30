@@ -16,6 +16,7 @@
 #include "libs/formfactors/formfact.h"
 #include "libs/spacegroups/spacegroup.h"
 #include "libs/globals.h"
+#include "libs/version.h"
 #include <sstream>
 
 
