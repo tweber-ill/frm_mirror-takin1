@@ -186,7 +186,7 @@ LIBS_RESO = ${QWT_LIB} ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS}
 
 
 OBJ_COMMON = obj/log.o obj/debug.o obj/rand.o obj/linalg2.o \
-	obj/spec_char.o obj/EllipseDlg.o obj/ellipse.o
+	obj/spec_char.o obj/EllipseDlg.o
 
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/taz_file.o obj/taz_export.o \
@@ -208,7 +208,7 @@ OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
 	obj/qthelper.o obj/globals.o
 
 OBJ_MONTECONVO = obj/log.o obj/debug.o obj/sqw.o \
-	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ellipse.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/viol.o \
 	obj/rand.o obj/tasreso.o obj/eval.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
@@ -218,7 +218,7 @@ OBJ_CONVOSERIES = obj/scanseries.o obj/log.o obj/debug.o
 OBJ_RESO = obj/log.o obj/debug.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
-	obj/ellipse.o obj/linalg2.o obj/globals.o
+	obj/linalg2.o obj/globals.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 	obj/loadinstr.o obj/log.o obj/debug.o obj/qthelper.o \
@@ -415,8 +415,8 @@ obj/eck.o: tools/res/eck.cpp tools/res/eck.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/viol.o: tools/res/viol.cpp tools/res/viol.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
-obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
-	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
+#obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
+#	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/ResoDlg.o: tools/res/ResoDlg.cpp tools/res/ResoDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/ConvoDlg.o: tools/monteconvo/ConvoDlg.cpp tools/monteconvo/ConvoDlg.h

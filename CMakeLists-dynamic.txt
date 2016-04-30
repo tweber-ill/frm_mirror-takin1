@@ -99,7 +99,7 @@ add_executable(takin
 	tools/taz/nicos.cpp tools/taz/sics.cpp tools/taz/taz_net.cpp
 
 	tools/res/cn.cpp tools/res/pop.cpp tools/res/eck.cpp tools/res/viol.cpp
-	tools/res/ellipse.cpp tools/res/ResoDlg.cpp
+	tools/res/ResoDlg.cpp
 
 	tools/monteconvo/ConvoDlg.cpp tools/monteconvo/SqwParamDlg.cpp tools/monteconvo/TASReso.cpp
 	tools/monteconvo/sqw.cpp tools/monteconvo/sqw_py.cpp
@@ -154,7 +154,6 @@ add_dependencies(takin gentab)
 # -----------------------------------------------------------------------------
 add_executable(convofit 
 	tools/res/cn.cpp tools/res/pop.cpp tools/res/eck.cpp tools/res/viol.cpp
-	tools/res/ellipse.cpp
 
 	tools/monteconvo/TASReso.cpp
 	tools/monteconvo/sqw.cpp tools/monteconvo/sqw_py.cpp

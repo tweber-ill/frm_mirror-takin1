@@ -17,15 +17,15 @@
 #include "libs/plotgl.h"
 #include "tlibs/math/linalg.h"
 #include "tools/res/ellipse.h"
-#include "tools/res/pop.h"
+#include "tools/res/defs.h"
 
 
 class EllipseDlg3D : public QDialog
 {Q_OBJECT
 	protected:
 		std::vector<PlotGl*> m_pPlots;
-		std::vector<Ellipsoid> m_elliProj;
-		std::vector<Ellipsoid> m_elliSlice;
+		std::vector<Ellipsoid<t_real_reso>> m_elliProj;
+		std::vector<Ellipsoid<t_real_reso>> m_elliSlice;
 
 		QComboBox *m_pComboCoord = nullptr;
 		QSettings *m_pSettings = nullptr;

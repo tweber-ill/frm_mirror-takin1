@@ -19,12 +19,12 @@ typedef t_real_reso t_real;
 using t_vec = ublas::vector<t_real>;
 using t_mat = ublas::matrix<t_real>;
 
-static const auto angs = tl::get_one_angstrom<t_real_reso>();
-static const auto rads = tl::get_one_radian<t_real_reso>();
-static const auto meV = tl::get_one_meV<t_real_reso>();
-static const auto cm = tl::get_one_centimeter<t_real_reso>();
-static const auto meters = tl::get_one_meter<t_real_reso>();
-static const auto sec = tl::get_one_second<t_real_reso>();
+static const auto angs = tl::get_one_angstrom<t_real>();
+static const auto rads = tl::get_one_radian<t_real>();
+static const auto meV = tl::get_one_meV<t_real>();
+static const auto cm = tl::get_one_centimeter<t_real>();
+static const auto meters = tl::get_one_meter<t_real>();
+static const auto sec = tl::get_one_second<t_real>();
 
 using wavenumber = tl::t_wavenumber_si<t_real>;
 
@@ -386,7 +386,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	vecQ.resize(2, true);
 	m_opts.dAngleQVec0 = -tl::vec_angle(vecQ);
 	//tl::log_info("angle Q vec0 = ", m_opts.dAngleQVec0);
-
+	//tl::log_info("calc r0: ", m_reso.bCalcR0);
 
 	// calculate resolution at (hkl) and E
 	if(m_algo == ResoAlgo::CN)
@@ -431,9 +431,9 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	return m_res.bOk;
 }
 
-Ellipsoid4d TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& vecNeutrons) const
+Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& vecNeutrons) const
 {
-	Ellipsoid4d ell4d = calc_res_ellipsoid4d(m_res.reso, m_res.Q_avg);
+	Ellipsoid4d<t_real> ell4d = calc_res_ellipsoid4d<t_real>(m_res.reso, m_res.Q_avg);
 	if(vecNeutrons.size() != iNum)
 		vecNeutrons.resize(iNum);
 

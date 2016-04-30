@@ -82,7 +82,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinTofPulseSig, spinTofMonoSig, spinTofDetSig,
 		spinTof2thI, spinTofphI, spinTofphF,
 		spinTof2thISig, spinTof2thFSig, spinTofphISig, spinTofphFSig,
-		};
+	};
 
 	m_vecSpinNames = {"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
 		"reso/ana_mosaic", "reso/sample_mosaic",
@@ -108,7 +108,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/viol_time_pulse_sig", "reso/viol_time_mono_sig", "reso/viol_time_det_sig",
 		"reso/viol_angle_tt_i", "reso/viol_angle_ph_i", "reso/viol_angle_ph_f",
 		"reso/viol_angle_tt_i_sig", "reso/viol_angle_tt_f_sig", "reso/viol_angle_ph_i_sig", "reso/viol_angle_ph_f_sig",
-		};
+	};
 
 	m_vecPosEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
@@ -130,10 +130,10 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/pop_source_rect", "reso/pop_det_rect",
 		"reso/viol_det_sph"};
 
-	m_vecComboBoxes = {comboAlgo,
+	m_vecComboBoxes = {/*comboAlgo,*/
 		comboAnaHori, comboAnaVert,
 		comboMonoHori, comboMonoVert};
-	m_vecComboNames = {"reso/algo",
+	m_vecComboNames = {/*"reso/algo",*/
 		"reso/pop_ana_use_curvh", "reso/pop_ana_use_curvv",
 		"reso/pop_mono_use_curvh", "reso/pop_mono_use_curvv"};
 
@@ -149,6 +149,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(Calc()));
 	for(QComboBox* pCombo : m_vecComboBoxes)
 		QObject::connect(pCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
+	QObject::connect(comboAlgo, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
 
 
 	connect(checkElli4dAutoCalc, SIGNAL(stateChanged(int)), this, SLOT(checkAutoCalcElli4dChanged()));
@@ -471,7 +472,8 @@ void ResoDlg::Calc()
 		{
 			// --------------------------------------------------------------------------------
 			// Vanadium width
-			struct Ellipse ellVa = calc_res_ellipse(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
+			struct Ellipse<t_real_reso> ellVa =
+				calc_res_ellipse<t_real_reso>(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
 			//std::cout << ellVa.phi/M_PI*180. << std::endl;
 			t_real_reso dVanadiumFWHM = ellVa.y_hwhm*2.;
 			if(std::fabs(ellVa.phi) >= tl::get_pi<t_real_reso>()/4.)
@@ -661,6 +663,22 @@ void ResoDlg::RefreshSimCmd()
 	editSim->setPlainText(ostrCmd.str().c_str());
 }
 
+void ResoDlg::SetSelectedAlgo(ResoAlgo algo)
+{
+	for(int iItem=0; iItem<comboAlgo->count(); ++iItem)
+	{
+		QVariant varAlgo = comboAlgo->itemData(iItem);
+		if(algo == static_cast<ResoAlgo>(varAlgo.toInt()))
+		{
+			comboAlgo->setCurrentIndex(iItem);
+			//tl::log_debug("Set algo: ", iItem);
+			return;
+		}
+	}
+
+	tl::log_err("Unknown resolution algorithm set.");
+}
+
 ResoAlgo ResoDlg::GetSelectedAlgo() const
 {
 	ResoAlgo algoSel = ResoAlgo::UNKNOWN;
@@ -697,6 +715,9 @@ void ResoDlg::WriteLastConfig()
 		m_pSettings->setValue(m_vecCheckNames[iCheck].c_str(), m_vecCheckBoxes[iCheck]->isChecked());
 	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 		m_pSettings->setValue(m_vecComboNames[iCombo].c_str(), m_vecComboBoxes[iCombo]->currentIndex());
+
+	const int iAlgo = static_cast<int>(ResoDlg::GetSelectedAlgo());
+		m_pSettings->setValue("reso/algo", iAlgo);
 
 	m_pSettings->setValue("reso/use_guide", groupGuide->isChecked());
 }
@@ -757,6 +778,9 @@ void ResoDlg::ReadLastConfig()
 			m_pSettings->value(m_vecComboNames[iCombo].c_str()).value<int>());
 	}
 
+	if(m_pSettings->contains("reso/algo"))
+		SetSelectedAlgo(static_cast<ResoAlgo>(m_pSettings->value("reso/algo").value<int>()));
+
 	groupGuide->setChecked(m_pSettings->value("reso/use_guide").value<bool>());
 
 	m_bDontCalc = bOldDontCalc;
@@ -788,6 +812,9 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 
 	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 		mapConf[strXmlRoot + m_vecComboNames[iCombo]] = tl::var_to_str<int>(m_vecComboBoxes[iCombo]->currentIndex());
+
+	const int iAlgo = static_cast<int>(ResoDlg::GetSelectedAlgo());
+		mapConf[strXmlRoot + "reso/algo"] = tl::var_to_str<int>(iAlgo);
 
 	mapConf[strXmlRoot + "reso/use_guide"] = groupGuide->isChecked() ? "1" : "0";
 }
@@ -832,6 +859,9 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		boost::optional<int> oiComboIdx = xml.QueryOpt<int>((strXmlRoot+m_vecComboNames[iCombo]).c_str());
 		if(oiComboIdx) m_vecComboBoxes[iCombo]->setCurrentIndex(*oiComboIdx);
 	}
+
+	boost::optional<int> oiAlgo = xml.QueryOpt<int>(strXmlRoot + "reso/algo");
+	if(oiAlgo) SetSelectedAlgo(static_cast<ResoAlgo>(*oiAlgo));
 
 	boost::optional<int> obGroupVal = xml.QueryOpt<int>((strXmlRoot+"reso/use_guide").c_str());
 	if(obGroupVal) groupGuide->setChecked(*obGroupVal);
@@ -1001,7 +1031,7 @@ void ResoDlg::checkAutoCalcElli4dChanged()
 
 void ResoDlg::CalcElli4d()
 {
-	m_ell4d = calc_res_ellipsoid4d(m_res.reso, m_res.Q_avg);
+	m_ell4d = calc_res_ellipsoid4d<t_real_reso>(m_res.reso, m_res.Q_avg);
 
 	std::ostringstream ostrElli;
 	ostrElli << "<html><body>\n";

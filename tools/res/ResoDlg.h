@@ -90,13 +90,14 @@ protected:
 
 	bool m_bDontCalc;
 	bool m_bEll4dCurrent = 0;
-	Ellipsoid4d m_ell4d;
+	Ellipsoid4d<t_real_reso> m_ell4d;
 
 	QSettings* m_pSettings = 0;
 	bool m_bUpdateOnRealEvent = 1;
 	bool m_bUpdateOnRecipEvent = 1;
 
 	ResoAlgo GetSelectedAlgo() const;
+	void SetSelectedAlgo(ResoAlgo algo);
 
 public:
 	ResoDlg(QWidget* pParent, QSettings* pSettings=0);

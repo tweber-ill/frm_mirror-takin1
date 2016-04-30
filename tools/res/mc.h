@@ -53,8 +53,8 @@ struct McNeutronOpts
  */
 template<class t_vec=ublas::vector<double>, class t_mat=ublas::matrix<double>, 
 	class t_iter = typename std::vector<t_vec>::iterator>
-void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
-	const McNeutronOpts<t_mat>& opts, t_iter iterResult)
+void mc_neutrons(const Ellipsoid4d<typename t_vec::value_type>& ell4d,
+	std::size_t iNum, const McNeutronOpts<t_mat>& opts, t_iter iterResult)
 {
 	static bool bInited = 0;
 	if(!bInited)
@@ -84,7 +84,7 @@ void mc_neutrons(const Ellipsoid4d& ell4d, unsigned int iNum,
 
 	t_mat matUBinvQVec0 = ublas::prod(opts.matUBinv, matQVec0);
 
-	for(unsigned int iCur=0; iCur<iNum; ++iCur)
+	for(std::size_t iCur=0; iCur<iNum; ++iCur)
 	{
 		t_vec vecMC = tl::rand_norm_nd<t_vec>({0.,0.,0.,0.},
 			{ell4d.x_hwhm*tl::HWHM2SIGMA, ell4d.y_hwhm*tl::HWHM2SIGMA,

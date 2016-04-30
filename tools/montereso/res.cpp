@@ -1,16 +1,15 @@
-/*
+/**
  * Monte-Carlo resolution calculation
  *
  * @author Tobias Weber
  * @date July 2012, Sep. 2014
- * @copyright GPLv2
+ * @license GPLv2
  *
- * (based on the Mcstas' mcresplot perl program (www.mcstas.org)
- * 	and the rescal5 matlab program)
+ * (based on Mcstas' mcresplot.pl perl program (www.mcstas.org)
+ *  and the rescal5 matlab program)
  */
 
 #include "res.h"
-#include "../res/cn.h"
 
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/log/log.h"
@@ -29,20 +28,20 @@ using namespace ublas;
  * this function tries to be a 1:1 C++ reimplementation of the Perl function
  * 'read_mcstas_res' of the McStas 'mcresplot' program
  */
-Resolution calc_res(const std::vector<vector<double>>& Q_vec,
-	const vector<double>& Q_avg, const std::vector<double>* pp_vec)
+Resolution calc_res(const std::vector<vector<t_real_reso>>& Q_vec,
+	const vector<t_real_reso>& Q_avg, const std::vector<t_real_reso>* pp_vec)
 {
-	vector<double> Q_dir = tl::make_vec({Q_avg[0], Q_avg[1], Q_avg[2]});
+	vector<t_real_reso> Q_dir = tl::make_vec({Q_avg[0], Q_avg[1], Q_avg[2]});
 	Q_dir = Q_dir / norm_2(Q_dir);
 
-	vector<double> vecUp = tl::make_vec({0., 0., 1.});
-	vector<double> Q_perp = tl::cross_3(vecUp, Q_dir);
+	vector<t_real_reso> vecUp = tl::make_vec({0., 0., 1.});
+	vector<t_real_reso> Q_perp = tl::cross_3(vecUp, Q_dir);
 	vecUp = tl::cross_3(Q_dir, Q_perp);
 
 	Q_perp[0]=Q_dir[1]; Q_perp[1]=Q_dir[0]; Q_perp[2]=Q_dir[2];
 
 
-	matrix<double> trafo(4, 4);
+	matrix<t_real_reso> trafo(4, 4);
 	trafo(0,0)=Q_dir[0];	trafo(1,0)=Q_dir[1];	trafo(2,0)=Q_dir[2];
 	trafo(0,1)=Q_perp[0];	trafo(1,1)=Q_perp[1];	trafo(2,1)=Q_perp[2];
 	trafo(0,2)=vecUp[0];	trafo(1,2)=vecUp[1];	trafo(2,2)=vecUp[2];
@@ -55,13 +54,13 @@ Resolution calc_res(const std::vector<vector<double>>& Q_vec,
 	Resolution reso;
 	reso.Q_avg = prod(trans(trafo), Q_avg);
 
-	matrix<double>& res = reso.res;
-	matrix<double>& cov = reso.cov;
+	matrix<t_real_reso>& res = reso.res;
+	matrix<t_real_reso>& cov = reso.cov;
 	res.resize(4,4,0);
 	cov.resize(4,4,0);
 
 	cov = tl::covariance(Q_vec, pp_vec);
-	cov = tl::transform<matrix<double>>(cov, trafo, true);
+	cov = tl::transform<matrix<t_real_reso>>(cov, trafo, true);
 
 	tl::log_info("Covariance matrix: ", cov);
 	reso.bHasRes = tl::inverse(cov, res);
@@ -74,16 +73,16 @@ Resolution calc_res(const std::vector<vector<double>>& Q_vec,
 
 		tl::log_info("Resolution matrix: ", res);
 
-		const vector<double>& dQ = reso.dQ;
-		const vector<double>& Q_avg = reso.Q_avg;
+		const vector<t_real_reso>& dQ = reso.dQ;
+		const vector<t_real_reso>& Q_avg = reso.Q_avg;
 
 		std::ostringstream ostrVals;
 		ostrVals << "Gaussian HWHM values: ";
-		std::copy(dQ.begin(), dQ.end(), std::ostream_iterator<double>(ostrVals, ", "));
+		std::copy(dQ.begin(), dQ.end(), std::ostream_iterator<t_real_reso>(ostrVals, ", "));
 
 		std::ostringstream ostrElli;
 		ostrElli << "Ellipsoid offsets: ";
-		std::copy(Q_avg.begin(), Q_avg.end(), std::ostream_iterator<double>(ostrElli, ", "));
+		std::copy(Q_avg.begin(), Q_avg.end(), std::ostream_iterator<t_real_reso>(ostrElli, ", "));
 
 		tl::log_info(ostrVals.str());
 		tl::log_info(ostrElli.str());
@@ -98,18 +97,18 @@ Resolution calc_res(const std::vector<vector<double>>& Q_vec,
 
 
 Resolution calc_res(unsigned int uiLen,
-	const double *_Q_x, const double *_Q_y, const double *_Q_z,
-	const double *_E)
+	const t_real_reso *_Q_x, const t_real_reso *_Q_y, const t_real_reso *_Q_z,
+	const t_real_reso *_E)
 {
-	vector<double> Q_avg(4);
+	vector<t_real_reso> Q_avg(4);
 	Q_avg[0] = Q_avg[1] = Q_avg[2] = Q_avg[3] = 0.;
 
-	std::vector<vector<double>> Q_vec;
+	std::vector<vector<t_real_reso>> Q_vec;
 	Q_vec.reserve(uiLen);
 
 	for(unsigned int uiRow=0; uiRow<uiLen; ++uiRow)
 	{
-		vector<double> Q(4);
+		vector<t_real_reso> Q(4);
 
 		Q[0] = _Q_x[uiRow];
 		Q[1] = _Q_y[uiRow];
@@ -120,7 +119,7 @@ Resolution calc_res(unsigned int uiLen,
 
 		Q_vec.push_back(Q);
 	}
-	Q_avg /= double(uiLen);
+	Q_avg /= t_real_reso(uiLen);
 	tl::log_info("Average Q vector: ", Q_avg);
 
 	return calc_res(Q_vec, Q_avg);
@@ -132,50 +131,50 @@ Resolution calc_res(unsigned int uiLen,
  * 'read_mcstas_res' of the McStas 'mcresplot' program
  */
 Resolution calc_res(unsigned int uiLen,
-	const double *_ki_x, const double *_ki_y, const double *_ki_z,
-	const double *_kf_x, const double *_kf_y, const double *_kf_z,
-	const double *_p_i, const double *_p_f)
+	const t_real_reso *_ki_x, const t_real_reso *_ki_y, const t_real_reso *_ki_z,
+	const t_real_reso *_kf_x, const t_real_reso *_kf_y, const t_real_reso *_kf_z,
+	const t_real_reso *_p_i, const t_real_reso *_p_f)
 {
 	tl::log_info("Calculating resolution...");
 
-	std::vector<vector<double>> Q_vec;
-	std::vector<double> p_vec;
+	std::vector<vector<t_real_reso>> Q_vec;
+	std::vector<t_real_reso> p_vec;
 	Q_vec.reserve(uiLen);
 	p_vec.reserve(uiLen);
 
-	std::unique_ptr<double[]> ptr_dE_vec(new double[uiLen]);
+	std::unique_ptr<t_real_reso[]> ptr_dE_vec(new t_real_reso[uiLen]);
 
-	double *dE_vec = ptr_dE_vec.get();
-
-
-	const double pi_max = _p_i ? *std::max_element(_p_i, _p_i+uiLen) : 1.;
-	const double pf_max = _p_f ? *std::max_element(_p_f, _p_f+uiLen) : 1.;
-	const double p_max = fabs(pi_max*pf_max);
+	t_real_reso *dE_vec = ptr_dE_vec.get();
 
 
-	vector<double> Q_avg(4);
+	const t_real_reso pi_max = _p_i ? *std::max_element(_p_i, _p_i+uiLen) : 1.;
+	const t_real_reso pf_max = _p_f ? *std::max_element(_p_f, _p_f+uiLen) : 1.;
+	const t_real_reso p_max = fabs(pi_max*pf_max);
+
+
+	vector<t_real_reso> Q_avg(4);
 	Q_avg[0] = Q_avg[1] = Q_avg[2] = Q_avg[3] = 0.;
 
-	double p_sum = 0.;
+	t_real_reso p_sum = 0.;
 
 	for(unsigned int uiRow=0; uiRow<uiLen; ++uiRow)
 	{
-		vector<double> Q(3);
-		double p;
+		vector<t_real_reso> Q(3);
+		t_real_reso p;
 
 		p = (_p_i && _p_f) ? fabs(_p_i[uiRow]*_p_f[uiRow]) : 1.;
 		p /= p_max;		// normalize p to 0..1
 		p_sum += p;
 
-		double &dE = dE_vec[uiRow];
+		t_real_reso &dE = dE_vec[uiRow];
 
-		vector<double> ki(3), kf(3);
+		vector<t_real_reso> ki(3), kf(3);
 		ki[0]=_ki_x[uiRow]; ki[1]=_ki_y[uiRow]; ki[2]=_ki_z[uiRow];
 		kf[0]=_kf_x[uiRow]; kf[1]=_kf_y[uiRow]; kf[2]=_kf_z[uiRow];
 
 		Q = ki - kf;
-		double Ei = tl::KSQ2E * inner_prod(ki, ki);
-		double Ef = tl::KSQ2E * inner_prod(kf, kf);
+		t_real_reso Ei = tl::KSQ2E * inner_prod(ki, ki);
+		t_real_reso Ef = tl::KSQ2E * inner_prod(kf, kf);
 		dE = Ei - Ef;
 
 		// insert the energy into the Q vector

@@ -394,7 +394,8 @@ void ConvoDlg::Start()
 					return std::pair<bool, t_real>(false, 0.);
 				}
 
-				Ellipsoid4d elli = localreso.GenerateMC(iNumNeutrons, vecNeutrons);
+				Ellipsoid4d<t_real> elli =
+					localreso.GenerateMC(iNumNeutrons, vecNeutrons);
 
 				t_real dS = 0.;
 				t_real dhklE_mean[4] = {0., 0., 0., 0.};

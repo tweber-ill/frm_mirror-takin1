@@ -2,7 +2,7 @@
  * Montereso
  * @author tweber
  * @date 2012, 22-sep-2014
- * @copyright GPLv2
+ * @license GPLv2
  */
 
 #include "res.h"
@@ -60,8 +60,8 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 		return 0;
 	}
 
-	matrix<double>& res = reso.res;
-	matrix<double>& cov = reso.cov;
+	matrix<t_real_reso>& res = reso.res;
+	matrix<t_real_reso>& cov = reso.cov;
 	res.resize(4,4,0);
 	cov.resize(4,4,0);
 
@@ -88,7 +88,7 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 
 	if(reso.bHasRes)
 	{
-		vector<double>& dQ = reso.dQ;
+		vector<t_real_reso>& dQ = reso.dQ;
 
 		dQ.resize(4, 0);
 		reso.Q_avg.resize(4, 0);
@@ -97,7 +97,7 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 
 		std::ostringstream ostrVals;
 		ostrVals << "Gaussian HWHM values: ";
-		std::copy(dQ.begin(), dQ.end(), std::ostream_iterator<double>(ostrVals, ", "));
+		std::copy(dQ.begin(), dQ.end(), std::ostream_iterator<t_real_reso>(ostrVals, ", "));
 
 		tl::log_info(ostrVals.str());
 	}
@@ -117,11 +117,11 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 	}
 
 	// neutron Q list
-	std::vector<double> vecQx, vecQy, vecQz, vecE;
+	std::vector<t_real_reso> vecQx, vecQy, vecQz, vecE;
 
 	// neutron ki, kf list
-	std::vector<double> vecKi[3], vecKf[3], vecPos[3];
-	std::vector<double> vecPi, vecPf;
+	std::vector<t_real_reso> vecKi[3], vecKf[3], vecPos[3];
+	std::vector<t_real_reso> vecPi, vecPf;
 	std::string strLine;
 
 	std::unordered_map<std::string, std::string> mapParams;
@@ -163,7 +163,7 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 
 		if(ft == FileType::NEUTRON_Q_LIST)
 		{
-			double dQx=0., dQy=0., dQz=0., dE=0.;
+			t_real_reso dQx=0., dQy=0., dQz=0., dE=0.;
 
 			istr >> dQx >> dQy >> dQz >> dE;
 
@@ -174,7 +174,7 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 		}
 		else if(ft == FileType::NEUTRON_KIKF_LIST)
 		{
-			double dKi[3], dKf[3], dPos[3], dPi=0., dPf=0.;
+			t_real_reso dKi[3], dKf[3], dPos[3], dPi=0., dPf=0.;
 
 			istr >> dKi[0] >> dKi[2] >> dKi[1];
 			istr >> dKf[0] >> dKf[2] >> dKf[1];
@@ -223,8 +223,8 @@ static EllipseDlg* show_ellipses(const Resolution& res)
 	EllipseDlg* pdlg = new EllipseDlg(0);
 	pdlg->show();
 
-	matrix<double> matDummy;
-	vector<double> vecDummy;
+	matrix<t_real_reso> matDummy;
+	vector<t_real_reso> vecDummy;
 	pdlg->SetParams(res.res, res.Q_avg,
 		matDummy, vecDummy, matDummy, vecDummy,
 		ResoAlgo::UNKNOWN);

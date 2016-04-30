@@ -211,7 +211,7 @@ static inline int monteconvo(const char* pcRes, const char* pcCrys,
 			<< std::setprecision(3) << dProgress <<  "%"
 			<< " - generating MC neutrons"
 			<< "\x07" << std::flush;
-		Ellipsoid4d elli = reso.GenerateMC(iNumNeutrons, vecNeutrons);
+		Ellipsoid4d<t_real> elli = reso.GenerateMC(iNumNeutrons, vecNeutrons);
 
 		t_real dS = 0.;
 		t_real dhklE_mean[4] = {0., 0., 0., 0.};

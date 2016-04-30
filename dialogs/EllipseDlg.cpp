@@ -114,7 +114,7 @@ void EllipseDlg::Calc()
 		case EllipseCoordSys::Q_AVG:		// Q|| Qperp system in 1/A
 			pReso = &m_reso; pQavg = &m_Q_avg;
 			break;
-		case EllipseCoordSys::RLU:			// rlu system
+		case EllipseCoordSys::RLU:		// rlu system
 			pReso = &m_resoHKL; pQavg = &m_Q_avgHKL;
 			break;
 		case EllipseCoordSys::RLU_ORIENT:	// rlu system
@@ -158,7 +158,7 @@ void EllipseDlg::Calc()
 			Q_avg = ublas::zero_vector<t_real_reso>(Q_avg.size());
 
 
-		std::vector<std::future<Ellipse>> tasks_ell_proj, tasks_ell_slice;
+		std::vector<std::future<Ellipse<t_real_reso>>> tasks_ell_proj, tasks_ell_slice;
 
 		for(unsigned int iEll=0; iEll<4; ++iEll)
 		{
@@ -198,12 +198,14 @@ void EllipseDlg::Calc()
 			const int *iP = iParams[0][iEll];
 			const int *iS = iParams[1][iEll];
 
-			std::future<Ellipse> ell_proj = std::async(std::launch::deferred|std::launch::async,
+			std::future<Ellipse<t_real_reso>> ell_proj =
+				std::async(std::launch::deferred|std::launch::async,
 				[=, &reso, &Q_avg]()
-				{ return ::calc_res_ellipse(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
-			std::future<Ellipse> ell_slice = std::async(std::launch::deferred|std::launch::async,
+				{ return ::calc_res_ellipse<t_real_reso>(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+			std::future<Ellipse<t_real_reso>> ell_slice =
+				std::async(std::launch::deferred|std::launch::async,
 				[=, &reso, &Q_avg]()
-				{ return ::calc_res_ellipse(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+				{ return ::calc_res_ellipse<t_real_reso>(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
 
 			tasks_ell_proj.push_back(std::move(ell_proj));
 			tasks_ell_slice.push_back(std::move(ell_slice));

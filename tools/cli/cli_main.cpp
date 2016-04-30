@@ -1,4 +1,4 @@
-/*
+/**
  * Minimalistic takin command line client
  * @author tweber
  * @date apr-2016
@@ -10,8 +10,8 @@
 #include "libs/version.h"
 #include "tools/monteconvo/TASReso.h"
 
-//#include <unordered_map>
 #include <map>
+#include <future>
 
 namespace ublas = boost::numeric::ublas;
 
@@ -20,6 +20,8 @@ std::ostream& ostr = std::cout;
 
 using t_real = t_real_reso;
 template<class KEY, class VAL> using t_map = std::/*unordered_*/map<KEY, VAL>;
+using t_mat = ublas::matrix<t_real>;
+using t_vec = ublas::vector<t_real>;
 
 
 // ----------------------------------------------------------------------------
@@ -58,10 +60,15 @@ void show_help(const std::vector<std::string>& vecArgs)
 {
 	std::string strHelp = "Available client functions: ";
 
-	for(const t_funcmap::value_type& pair : g_funcmap)
-		strHelp += pair.first + ", ";
+	for(t_funcmap::const_iterator iter=g_funcmap.begin(); iter!=g_funcmap.end(); ++iter)
+	{
+		const t_funcmap::value_type& pair = *iter;
+		strHelp += pair.first;
+		if(std::next(iter) != g_funcmap.end())
+			strHelp += ", ";
+	}
 
-	ostr << strHelp << std::endl;
+	ostr << strHelp << "." << std::endl;
 }
 
 void load_sample(const std::vector<std::string>& vecArgs)
@@ -118,7 +125,7 @@ void fix(const std::vector<std::string>& vecArgs)
 	ostr << "OK" << std::endl;
 }
 
-std::ostream& operator<<(std::ostream& ostr, const ublas::matrix<t_real>& m)
+std::ostream& operator<<(std::ostream& ostr, const t_mat& m)
 {
 	for(std::size_t i=0; i<m.size1(); ++i)
 	{
@@ -129,6 +136,13 @@ std::ostream& operator<<(std::ostream& ostr, const ublas::matrix<t_real>& m)
 		ostr << " ";
 	}
 
+	return ostr;
+}
+
+std::ostream& operator<<(std::ostream& ostr, const t_vec& v)
+{
+	for(std::size_t i=0; i<v.size(); ++i)
+		ostr << v(i) << " ";
 	return ostr;
 }
 
@@ -147,6 +161,9 @@ void calc(const std::vector<std::string>& vecArgs)
 
 	const ResoResults& res = g_tas.GetResoResults();
 
+	g_tas.GetResoParams().bCalcR0 = 1;
+	//g_tas.GetTofResoParams().bCalcR0 = 1;
+
 	if(!g_tas.SetHKLE(dH, dK, dL, dE))
 	{
 		ostr << "Error: At postion Q=("
@@ -155,6 +172,25 @@ void calc(const std::vector<std::string>& vecArgs)
 			<< std::endl;
 		return;
 	}
+
+	//Ellipsoid4d<t_real> ell4d = calc_res_ellipsoid4d(res.reso, res.Q_avg);
+
+	int iParams[2][4][5] =
+	{
+		{	// projected
+			{0, 3, 1, 2, -1},
+			{1, 3, 0, 2, -1},
+			{2, 3, 0, 1, -1},
+			{0, 1, 3, 2, -1}
+		},
+		{	// sliced
+			{0, 3, -1, 2, 1},
+			{1, 3, -1, 2, 0},
+			{2, 3, -1, 1, 0},
+			{0, 1, -1, 2, 3}
+		}
+	};
+
 
 	ostr << "OK" << std::endl;
 
@@ -166,6 +202,49 @@ void calc(const std::vector<std::string>& vecArgs)
 		<< res.dBraggFWHMs[1] << " " 
 		<< res.dBraggFWHMs[2] << " "
 		<< res.dBraggFWHMs[3] << "\n";
+
+
+	std::vector<std::future<Ellipse<t_real>>> tasks_ell_proj, tasks_ell_slice;
+
+	for(unsigned int iEll=0; iEll<4; ++iEll)
+	{
+		const int *iP = iParams[0][iEll];
+		const int *iS = iParams[1][iEll];
+		
+		const t_vec& Q_avg = res.Q_avg;
+		const t_mat& reso = res.reso;
+
+		std::future<Ellipse<t_real>> ell_proj =
+			std::async(std::launch::deferred|std::launch::async,
+			[=, &reso, &Q_avg]()
+			{ return ::calc_res_ellipse<t_real>(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+		std::future<Ellipse<t_real>> ell_slice =
+			std::async(std::launch::deferred|std::launch::async,
+			[=, &reso, &Q_avg]()
+			{ return ::calc_res_ellipse<t_real>(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+
+		tasks_ell_proj.push_back(std::move(ell_proj));
+		tasks_ell_slice.push_back(std::move(ell_slice));
+	}
+	for(unsigned int iEll=0; iEll<4; ++iEll)
+	{
+		Ellipse<t_real> elliProj = tasks_ell_proj[iEll].get();
+		Ellipse<t_real> elliSlice = tasks_ell_slice[iEll].get();
+		const std::string& strLabX = ::ellipse_labels(iParams[0][iEll][0], EllipseCoordSys::Q_AVG);
+		const std::string& strLabY = ::ellipse_labels(iParams[0][iEll][1], EllipseCoordSys::Q_AVG);
+
+		ostr << "Ellipse_" << iEll << "_labels: " << strLabX << ", " << strLabY << "\n";
+
+		ostr << "Ellipse_" << iEll << "_proj_angle: " << elliProj.phi << "\n";
+		ostr << "Ellipse_" << iEll << "_proj_HWHMs: " << elliProj.x_hwhm << " " << elliProj.y_hwhm << "\n";
+		ostr << "Ellipse_" << iEll << "_proj_offs: " << elliProj.x_offs << " " << elliProj.y_offs << "\n";
+		//ostr << "Ellipse_" << iEll << "_proj_area: " << elliProj.area << "\n";
+
+		ostr << "Ellipse_" << iEll << "_slice_angle: " << elliSlice.phi << "\n";
+		ostr << "Ellipse_" << iEll << "_slice_HWHMs: " << elliSlice.x_hwhm << " " << elliSlice.y_hwhm << "\n";
+		ostr << "Ellipse_" << iEll << "_slice_offs: " << elliSlice.x_offs << " " << elliSlice.y_offs << "\n";
+		//ostr << "Ellipse_" << iEll << "_slice_area: " << elliSlice.area << "\n";
+	}
 
 	ostr.flush();
 }

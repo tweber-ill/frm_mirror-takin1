@@ -50,7 +50,7 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
 
 
 	std::vector<ublas::vector<t_real_reso>> vecNeutrons;
-	Ellipsoid4d elli = reso.GenerateMC(m_iNumNeutrons, vecNeutrons);
+	Ellipsoid4d<t_real_reso> elli = reso.GenerateMC(m_iNumNeutrons, vecNeutrons);
 
 	t_real dS = 0.;
 	t_real dhklE_mean[4] = {0., 0., 0., 0.};

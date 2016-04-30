@@ -45,8 +45,6 @@ add_executable(takincli
 	tools/cli/cli_main.cpp
 
 	tools/res/cn.cpp tools/res/pop.cpp tools/res/eck.cpp tools/res/viol.cpp
-	tools/res/ellipse.cpp
-
 	tools/monteconvo/TASReso.cpp
 
 	# statically link to tlibs externals
