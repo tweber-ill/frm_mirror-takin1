@@ -1,4 +1,4 @@
-/*
+/**
  * monte carlo neutrons
  * @author tweber
  * @date 2014
@@ -73,6 +73,7 @@ void mc_neutrons(const Ellipsoid4d<typename t_vec::value_type>& ell4d,
 	//if(vecResult.size() != iNum)
 	//	vecResult.resize(iNum);
 
+	//tl::log_debug("rot: ", rot);
 	//tl::log_debug("Qvec0 = ", opts.dAngleQVec0/M_PI*180.);
 	t_mat matQVec0 = tl::rotation_matrix_2d(-opts.dAngleQVec0);
 	matQVec0.resize(4,4, true);
