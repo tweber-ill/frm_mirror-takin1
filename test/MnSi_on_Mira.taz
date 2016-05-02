@@ -55,7 +55,7 @@
 	<reso>
 		<E>0.000000</E>
 		<Q>1.948633</Q>
-		<algo>1</algo>
+		<algo>3</algo>
 		<ana_d>3.355000e+00</ana_d>
 		<ana_effic>1.000000e+00</ana_effic>
 		<ana_mosaic>4.500000e+01</ana_mosaic>

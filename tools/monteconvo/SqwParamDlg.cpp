@@ -34,6 +34,9 @@ SqwParamDlg::~SqwParamDlg()
 
 void SqwParamDlg::SqwLoaded(const std::vector<SqwBase::t_var>& vecVars)
 {
+	const bool bSortTable = tableParams->isSortingEnabled();
+	tableParams->setSortingEnabled(0);
+
 	tableParams->setRowCount(vecVars.size());
 	tableParams->setColumnWidth(0, 100);
 	tableParams->setColumnWidth(1, 75);
@@ -78,6 +81,8 @@ void SqwParamDlg::SqwLoaded(const std::vector<SqwBase::t_var>& vecVars)
 
 		++iRow;
 	}
+
+	tableParams->setSortingEnabled(bSortTable);
 }
 
 void SqwParamDlg::SaveSqwParams()

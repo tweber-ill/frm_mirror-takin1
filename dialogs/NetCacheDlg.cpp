@@ -87,6 +87,9 @@ void NetCacheDlg::accept()
 
 void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 {
+	const bool bSortTable = tableCache->isSortingEnabled();
+	tableCache->setSortingEnabled(0);
+
 	int iRow = 0;
 	QTableWidgetItem *pItem = 0;
 	QString qstrKey = strKey.c_str();
@@ -121,6 +124,7 @@ void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 	}
 
 	UpdateAge(iRow);
+	tableCache->setSortingEnabled(bSortTable);
 }
 
 void NetCacheDlg::UpdateAll(const t_mapCacheVal& map)
@@ -136,6 +140,9 @@ void NetCacheDlg::UpdateAll(const t_mapCacheVal& map)
 
 void NetCacheDlg::UpdateAge(int iRow)
 {
+	const bool bSortTable = tableCache->isSortingEnabled();
+	tableCache->setSortingEnabled(0);
+
 	// update all
 	if(iRow<0)
 	{
@@ -184,6 +191,8 @@ void NetCacheDlg::UpdateAge(int iRow)
 	if(iAgeM || bHadPrev) { strAge += tl::var_to_str(iAgeM) + "m "; bHadPrev = 1; }
 	/*if(iAgeS || bHadPrev)*/ { strAge += tl::var_to_str(iAgeS) + "s "; bHadPrev = 1; }
 	pItem->setText(strAge.c_str());
+
+	tableCache->setSortingEnabled(bSortTable);
 }
 
 void NetCacheDlg::ClearAll()

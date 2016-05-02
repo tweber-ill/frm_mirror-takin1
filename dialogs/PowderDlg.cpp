@@ -400,6 +400,9 @@ void PowderDlg::CalcPeaks()
 				{ return pLine1->dAngle < pLine2->dAngle; });
 
 
+		const bool bSortTable = tablePowderLines->isSortingEnabled();
+		tablePowderLines->setSortingEnabled(0);
+
 		const int iNumRows = vecPowderLines.size();
 		tablePowderLines->setRowCount(iNumRows);
 
@@ -446,6 +449,7 @@ void PowderDlg::CalcPeaks()
 				SetValue(vecPowderLines[iRow]->dIx, strIx);
 		}
 
+		tablePowderLines->setSortingEnabled(bSortTable);
 		PlotPowderLines(vecPowderLines);
 		labelStatus->setText("OK.");
 	}

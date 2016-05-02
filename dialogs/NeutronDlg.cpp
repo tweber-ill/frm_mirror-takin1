@@ -512,6 +512,9 @@ void NeutronDlg::setupConstants()
 
 	// -------------------------------------------------------------------------
 	// constants table
+	const bool bSortConst = tableConst->isSortingEnabled();
+	tableConst->setSortingEnabled(0);
+
 	tableConst->setColumnCount(3);
 	tableConst->setRowCount(vecConsts.size());
 	tableConst->setColumnWidth(2, 200);
@@ -536,11 +539,16 @@ void NeutronDlg::setupConstants()
 		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
 		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
 	}
+
+	tableConst->setSortingEnabled(bSortConst);
 	// -------------------------------------------------------------------------
 
 
 	// -------------------------------------------------------------------------
 	// conversion table
+	const bool bSortConv = tableConv->isSortingEnabled();
+	tableConv->setSortingEnabled(0);
+
 	tableConv->setColumnCount(2);
 	tableConv->setRowCount(vecConvs.size());
 	tableConv->setColumnWidth(0, 200);
@@ -562,6 +570,8 @@ void NeutronDlg::setupConstants()
 		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
 		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
 	}
+
+	tableConv->setSortingEnabled(bSortConv);
 	// -------------------------------------------------------------------------
 }
 

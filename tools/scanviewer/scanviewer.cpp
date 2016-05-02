@@ -586,6 +586,8 @@ void ScanViewerDlg::ShowProps()
 	const tl::FileInstrBase<t_real>::t_mapParams& params = m_pInstr->GetAllParams();
 	tableProps->setRowCount(params.size());
 
+	const bool bSort = tableProps->isSortingEnabled();
+	tableProps->setSortingEnabled(0);
 	unsigned int iItem = 0;
 	for(const tl::FileInstrBase<t_real>::t_mapParams::value_type& pair : params)
 	{
@@ -595,7 +597,6 @@ void ScanViewerDlg::ShowProps()
 			pItemKey = new QTableWidgetItem();
 			tableProps->setItem(iItem, 0, pItemKey);
 		}
-		pItemKey->setText(pair.first.c_str());
 
 		QTableWidgetItem* pItemVal = tableProps->item(iItem, 1);
 		if(!pItemVal)
@@ -603,12 +604,15 @@ void ScanViewerDlg::ShowProps()
 			pItemVal = new QTableWidgetItem();
 			tableProps->setItem(iItem, 1, pItemVal);
 		}
+
+		pItemKey->setText(pair.first.c_str());
 		pItemVal->setText(pair.second.c_str());
 
 		++iItem;
 	}
 
-	tableProps->sortItems(0, Qt::AscendingOrder);
+	tableProps->setSortingEnabled(bSort);
+	//tableProps->sortItems(0, Qt::AscendingOrder);
 
 
 	// retain previous selection

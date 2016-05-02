@@ -48,6 +48,9 @@ AtomsDlg::~AtomsDlg()
 
 void AtomsDlg::RemoveAtom()
 {
+	const bool bSort = tableAtoms->isSortingEnabled();
+	tableAtoms->setSortingEnabled(0);
+
 	bool bNothingRemoved = 1;
 
 	// remove selected rows
@@ -65,20 +68,30 @@ void AtomsDlg::RemoveAtom()
 	// remove last row if nothing is selected
 	if(bNothingRemoved)
 		tableAtoms->removeRow(tableAtoms->rowCount()-1);
+
+	tableAtoms->setSortingEnabled(bSort);
 }
 
 void AtomsDlg::AddAtom()
 {
+	const bool bSort = tableAtoms->isSortingEnabled();
+	tableAtoms->setSortingEnabled(0);
+
 	int iRow = tableAtoms->rowCount();
 	tableAtoms->insertRow(iRow);
 	tableAtoms->setItem(iRow, 0, new QTableWidgetItem("H"));
 	for(unsigned int i=0; i<3; ++i)
 		tableAtoms->setItem(iRow, i+1, new QTableWidgetItem("0"));
+
+	tableAtoms->setSortingEnabled(bSort);
 }
 
 
 void AtomsDlg::SetAtoms(const std::vector<AtomPos>& vecAtoms)
 {
+	const bool bSort = tableAtoms->isSortingEnabled();
+	tableAtoms->setSortingEnabled(0);
+
 	tableAtoms->setRowCount(vecAtoms.size());
 
 	for(unsigned int iRow=0; iRow<vecAtoms.size(); ++iRow)
@@ -93,6 +106,8 @@ void AtomsDlg::SetAtoms(const std::vector<AtomPos>& vecAtoms)
 		for(unsigned int i=0; i<3; ++i)
 			tableAtoms->item(iRow, i+1)->setText(tl::var_to_str(atom.vecPos[i]).c_str());
 	}
+
+	tableAtoms->setSortingEnabled(bSort);
 }
 
 void AtomsDlg::SendApplyAtoms()
@@ -119,7 +134,7 @@ void AtomsDlg::SendApplyAtoms()
 void AtomsDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 {
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ApplyRole ||
-	   buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
+		buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
 		SendApplyAtoms();
 	}
