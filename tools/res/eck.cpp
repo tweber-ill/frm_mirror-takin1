@@ -284,8 +284,8 @@ ResoResults calc_eck(const EckParams& eck)
 	// ana part
 
 	// equ 43 in [eck14]
-	length pos_y2 = -eck.pos_x*units::sin(twotheta)
-					+eck.pos_y*units::cos(twotheta);
+	length pos_y2 = - eck.pos_x*units::sin(twotheta)
+		+ eck.pos_y*units::cos(twotheta);
 	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futAna
 		= std::async(lpol, get_mono_vals,
 			eck.det_w, eck.det_h,

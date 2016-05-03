@@ -68,44 +68,42 @@ void show_help(const std::vector<std::string>& vecArgs)
 			strHelp += ", ";
 	}
 
-	ostr << strHelp << "." << std::endl;
+	ostr << strHelp << ".\n";
 }
 
 void load_sample(const std::vector<std::string>& vecArgs)
 {
 	if(vecArgs.size() < 2)
 	{
-		ostr << "Error: No filename given." << std::endl;
+		ostr << "Error: No filename given.\n";
 		return;
 	}
 
 	if(g_tas.LoadLattice(vecArgs[1].c_str()))
-		ostr << "OK" << std::endl;
+		ostr << "OK.\n";
 	else
-		ostr << "Error: Unable to load "
-			<< vecArgs[1] << "." << std::endl;
+		ostr << "Error: Unable to load " << vecArgs[1] << ".\n";
 }
 
 void load_instr(const std::vector<std::string>& vecArgs)
 {
 	if(vecArgs.size() < 2)
 	{
-		ostr << "Error: No filename given." << std::endl;
+		ostr << "Error: No filename given.\n";
 		return;
 	}
 
 	if(g_tas.LoadRes(vecArgs[1].c_str()))
-		ostr << "OK" << std::endl;
+		ostr << "OK.\n";
 	else
-		ostr << "Error: Unable to load "
-			<< vecArgs[1] << "." << std::endl;
+		ostr << "Error: Unable to load " << vecArgs[1] << ".\n";
 }
 
 void fix(const std::vector<std::string>& vecArgs)
 {
 	if(vecArgs.size() < 3)
 	{
-		ostr << "Error: No variable or value given." << std::endl;
+		ostr << "Error: No variable or value given.\n";
 		return;
 	}
 
@@ -115,14 +113,13 @@ void fix(const std::vector<std::string>& vecArgs)
 		g_tas.SetKiFix(0);
 	else
 	{
-		ostr << "Error: Unknown variable "
-			<< vecArgs[1] << "." << std::endl;
+		ostr << "Error: Unknown variable " << vecArgs[1] << ".\n";
 		return;
 	}
 
 	const t_real dVal = tl::str_to_var<t_real>(vecArgs[2]);
 	g_tas.SetKFix(dVal);
-	ostr << "OK" << std::endl;
+	ostr << "OK.\n";
 }
 
 std::ostream& operator<<(std::ostream& ostr, const t_mat& m)
@@ -150,7 +147,7 @@ void calc(const std::vector<std::string>& vecArgs)
 {
 	if(vecArgs.size() < 5)
 	{
-		ostr << "Error: No hkl and E position given." << std::endl;
+		ostr << "Error: No hkl and E position given.\n";
 		return;
 	}
 
@@ -169,7 +166,7 @@ void calc(const std::vector<std::string>& vecArgs)
 		ostr << "Error: At postion Q=("
 			<< dH << "," << dK << "," << dL
 			<< "), E=" << dE << ": " << res.strErr
-			<< std::endl;
+			<< ".\n";
 		return;
 	}
 
@@ -192,14 +189,14 @@ void calc(const std::vector<std::string>& vecArgs)
 	};
 
 
-	ostr << "OK" << std::endl;
+	ostr << "OK.\n";
 
 	ostr << "Reso: " << res.reso << "\n";
 	ostr << "R0: " << res.dR0 << "\n";
 	ostr << "Vol: " << res.dResVol << "\n";
 	ostr << "Q_avg: " << res.Q_avg << "\n";
 	ostr << "Bragg_FWHMs: " << res.dBraggFWHMs[0] << " "
-		<< res.dBraggFWHMs[1] << " " 
+		<< res.dBraggFWHMs[1] << " "
 		<< res.dBraggFWHMs[2] << " "
 		<< res.dBraggFWHMs[3] << "\n";
 
@@ -210,7 +207,7 @@ void calc(const std::vector<std::string>& vecArgs)
 	{
 		const int *iP = iParams[0][iEll];
 		const int *iS = iParams[1][iEll];
-		
+
 		const t_vec& Q_avg = res.Q_avg;
 		const t_mat& reso = res.reso;
 
@@ -280,11 +277,12 @@ int main()
 		if(iter == g_funcmap.end())
 		{
 			ostr << "Error: No such function: "
-				<< vecToks[0] << std::endl;
+				<< vecToks[0] << ".\n" << std::endl;
 			continue;
 		}
 
 		(*iter->second)(vecToks);
+		ostr << "\n";
 	}
 
 	return 0;
