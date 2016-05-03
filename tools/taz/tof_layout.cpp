@@ -186,9 +186,10 @@ void TofLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	penArc.setWidthF(1.5);
 	painter->setPen(penArc);
 
+	t_real dBaseAngle = tl::r2d(tl::vec_angle(vecSrcSample));
 	t_real dLenKf = lineKf.length();
 	painter->drawArc(QRectF(ptSample.x()-dLenKf, ptSample.y()-dLenKf,
-		dLenKf*2., dLenKf*2.), (m_dBeginDetArcAngle+90.)*16., m_dDetArcAngle*16.);
+		dLenKf*2., dLenKf*2.), (m_dBeginDetArcAngle-dBaseAngle)*16., m_dDetArcAngle*16.);
 
 
 	// draw choppers
