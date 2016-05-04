@@ -213,7 +213,7 @@ void PowderDlg::CalcPeaks()
 		ScatlenList lstsl;
 		FormfactList lstff;
 
-		std::vector<ublas::vector<t_real>> vecAllAtoms;
+		std::vector<ublas::vector<t_real>> vecAllAtoms, vecAllAtomsFrac;
 		std::vector<std::complex<t_real>> vecScatlens;
 		std::vector<t_real> vecFormfacts;
 		std::vector<std::string> vecElems;
@@ -224,12 +224,15 @@ void PowderDlg::CalcPeaks()
 
 		if(pvecSymTrafos && pvecSymTrafos->size() && g_bHasFormfacts && g_bHasScatlens && m_vecAtoms.size())
 		{
-			for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
+			for(std::size_t iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
 			{
 				ublas::vector<t_real> vecAtom = m_vecAtoms[iAtom].vecPos;
 				// homogeneous coordinates
 				vecAtom.resize(4,1); vecAtom[3] = 1.;
 				const std::string& strElem = m_vecAtoms[iAtom].strAtomName;
+				
+				std::vector<AtomPos> vecOtherAtoms = m_vecAtoms;
+				vecOtherAtoms.erase(vecOtherAtoms.begin() + iAtom);
 
 				std::vector<ublas::vector<t_real>> vecSymPos =
 					tl::generate_atoms<ublas::matrix<t_real>, ublas::vector<t_real>, std::vector>
@@ -240,6 +243,7 @@ void PowderDlg::CalcPeaks()
 				{
 					tl::log_err("Element \"", strElem, "\" not found in scattering length table.");
 					vecAllAtoms.clear();
+					vecAllAtomsFrac.clear();
 					vecScatlens.clear();
 					break;
 				}
@@ -247,15 +251,38 @@ void PowderDlg::CalcPeaks()
 
 				const std::complex<t_real> b = pElem->GetCoherent()/* / 10.*/;
 
+				std::size_t iGeneratedAtoms = 0;
 				for(ublas::vector<t_real> vecThisAtom : vecSymPos)
 				{
 					vecThisAtom.resize(3,1);
-					// converts from fractional coordinates
-					vecThisAtom = matA*vecThisAtom;
-					vecAllAtoms.push_back(std::move(vecThisAtom));
-					vecScatlens.push_back(b);
-					vecElems.push_back(strElem);
+
+					// is the atom position in the unit cell still free?
+					if(std::find_if(vecAllAtomsFrac.begin(), vecAllAtomsFrac.end(),
+						[&vecThisAtom](const ublas::vector<t_real>& _v) -> bool
+						{ return tl::vec_equal(_v, vecThisAtom, g_dEps); }) == vecAllAtomsFrac.end() 
+						&& // and is it not at a given initial atom position?
+						std::find_if(vecOtherAtoms.begin(), vecOtherAtoms.end(),
+						[&vecThisAtom](const AtomPos& _v) -> bool
+						{ return tl::vec_equal(_v.vecPos, vecThisAtom, g_dEps); }) == vecOtherAtoms.end())
+					{
+						vecAllAtomsFrac.push_back(vecThisAtom);
+						//tl::log_debug(strElem, " at position ", vecThisAtom);
+
+						// converts from fractional coordinates
+						vecThisAtom = matA*vecThisAtom;
+						vecAllAtoms.push_back(std::move(vecThisAtom));
+						vecScatlens.push_back(b);
+						vecElems.push_back(strElem);
+						
+						++iGeneratedAtoms;
+					}
+					else
+					{
+						tl::log_warn("Position ", vecThisAtom, " is already occupied,",
+							" skipping current ", strElem, " atom.");
+					}
 				}
+				//tl::log_info("Unit cell has ", iGeneratedAtoms, " ", strElem, " atom(s).");
 			}
 		}
 		// ----------------------------------------------------------------------------
@@ -308,7 +335,7 @@ void PowderDlg::CalcPeaks()
 					vecFormfacts.clear();
 					if(g_bHasFormfacts)
 					{
-						for(unsigned int iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
+						for(std::size_t iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
 						{
 							//const t_vec& vecAtom = vecAllAtoms[iAtom];
 							const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
@@ -644,7 +671,7 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 
 	// atom positions
 	mapConf[strXmlRoot + "sample/atoms/num"] = tl::var_to_str(m_vecAtoms.size());
-	for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
+	for(std::size_t iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
 	{
 		const AtomPos& atom = m_vecAtoms[iAtom];
 
@@ -694,7 +721,7 @@ void PowderDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	{
 		m_vecAtoms.reserve(iNumAtoms);
 
-		for(unsigned int iAtom=0; iAtom<iNumAtoms; ++iAtom)
+		for(std::size_t iAtom=0; iAtom<std::size_t(iNumAtoms); ++iAtom)
 		{
 			AtomPos atom;
 			atom.vecPos.resize(3,0);
