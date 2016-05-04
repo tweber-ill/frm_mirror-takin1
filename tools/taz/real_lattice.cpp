@@ -223,76 +223,65 @@ void RealLattice::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Plane<
 	std::vector<QColor> colors = {QColor(127,0,0), QColor(0,127,0), QColor(0,0,127),
 		QColor(127,127,0), QColor(0,127,127), QColor(127,0,127)};
 
-	std::vector<t_vec> vecAllAtomsFrac;
 	if(pvecSymTrafos && pvecSymTrafos->size() && pvecAtomPos && pvecAtomPos->size())
 	{
+		std::vector<t_vec> vecAtoms;
+		std::vector<std::string> vecNames;
 		for(std::size_t iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
 		{
-			t_vec vecAtom = (*pvecAtomPos)[iAtom].vecPos;
-			// homogeneous coordinates
-			vecAtom.resize(4,1); vecAtom[3] = 1.;
-			const std::string& strElem = (*pvecAtomPos)[iAtom].strAtomName;
-			//std::cout << strElem << ": " << vecAtom << std::endl;
+			vecAtoms.push_back((*pvecAtomPos)[iAtom].vecPos);
+			vecNames.push_back((*pvecAtomPos)[iAtom].strAtomName);
+		}
 
-			std::vector<AtomPos> vecOtherAtoms = *pvecAtomPos;
-			vecOtherAtoms.erase(vecOtherAtoms.begin() + iAtom);
+		const t_real dUCSize = 1.;
+		std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
+		std::vector<std::string> vecAllNames;
+		std::vector<std::size_t> vecAllAtomTypes;
 
-			const t_real dUCSize = 1.;
-			std::vector<t_vec> vecSymPos =
-				tl::generate_atoms<t_mat, t_vec, std::vector>
-					(*pvecSymTrafos, vecAtom, -dUCSize/2., dUCSize/2., g_dEps);
+		std::tie(vecAllNames, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
+		tl::generate_all_atoms<t_mat, t_vec, std::vector>
+			(*pvecSymTrafos, vecAtoms, &vecNames, matA,
+			-dUCSize/2., dUCSize/2., g_dEps);
 
-			for(t_vec vecThisAtomFrac : vecSymPos)
-			{
-				vecThisAtomFrac.resize(3,1);
-				// frac -> angstr.
-				t_vec vecThisAtom = matA * vecThisAtomFrac;
+		for(std::size_t iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
+		{
+			const std::string& strElem = vecAllNames[iAtom];
+			t_vec& vecThisAtom = vecAllAtoms[iAtom];
+			t_vec& vecThisAtomFrac = vecAllAtomsFrac[iAtom];
+			std::size_t iCurAtomType = vecAllAtomTypes[iAtom];
 
-				// is the atom position in the unit cell still free?
-				if(std::find_if(vecAllAtomsFrac.begin(), vecAllAtomsFrac.end(),
-					[&vecThisAtom](const ublas::vector<t_real>& _v) -> bool
-					{ return tl::vec_equal(_v, vecThisAtom, g_dEps); }) == vecAllAtomsFrac.end() 
-					&& // and is it not at a given initial atom position?
-					std::find_if(vecOtherAtoms.begin(), vecOtherAtoms.end(),
-					[&vecThisAtom](const AtomPos& _v) -> bool
-					{ return tl::vec_equal(_v.vecPos, vecThisAtom, g_dEps); }) == vecOtherAtoms.end())
-				{
-					vecAllAtomsFrac.push_back(vecThisAtom);
+			LatticeAtom *pAtom = new LatticeAtom();
+			m_vecAtoms.push_back(pAtom);
 
-					LatticeAtom *pAtom = new LatticeAtom();
-					m_vecAtoms.push_back(pAtom);
+			pAtom->m_strElem = strElem;
+			pAtom->m_vecPos = std::move(vecThisAtom);
+			pAtom->m_vecProj = plane.GetDroppedPerp(pAtom->m_vecPos/*, &pAtom->m_dProjDist*/);
+			pAtom->m_dProjDist = plane.GetDist(pAtom->m_vecPos);
 
-					pAtom->m_strElem = strElem;
-					pAtom->m_vecPos = std::move(vecThisAtom);
-					pAtom->m_vecProj = plane.GetDroppedPerp(pAtom->m_vecPos/*, &pAtom->m_dProjDist*/);
-					pAtom->m_dProjDist = plane.GetDist(pAtom->m_vecPos);
+			t_vec vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
+			t_real dX = vecCoord[0], dY = -vecCoord[1];
 
-					t_vec vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
-					t_real dX = vecCoord[0], dY = -vecCoord[1];
+			pAtom->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
+			pAtom->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE_ATOM);
 
-					pAtom->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
-					pAtom->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE_ATOM);
+			tl::set_eps_0(vecThisAtom);
+			tl::set_eps_0(vecThisAtomFrac);
+			std::ostringstream ostrTip;
+			ostrTip.precision(g_iPrecGfx);
+			ostrTip << pAtom->m_strElem;
+			ostrTip << "\n("
+				<< vecThisAtomFrac[0] << ", "
+				<< vecThisAtomFrac[1] << ", "
+				<< vecThisAtomFrac[2] << ") frac";
+			ostrTip << "\n("
+				<< vecThisAtom[0] << ", "
+				<< vecThisAtom[1] << ", "
+				<< vecThisAtom[2] << ") " << strAA;
+			ostrTip << "\nDistance to Plane: " << pAtom->m_dProjDist << " " << strAA;
+			pAtom->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
+			pAtom->SetColor(colors[iCurAtomType % colors.size()]);
 
-					tl::set_eps_0(vecThisAtom);
-					tl::set_eps_0(vecThisAtomFrac);
-					std::ostringstream ostrTip;
-					ostrTip.precision(g_iPrecGfx);
-					ostrTip << pAtom->m_strElem;
-					ostrTip << "\n("
-						<< vecThisAtomFrac[0] << ", "
-						<< vecThisAtomFrac[1] << ", "
-						<< vecThisAtomFrac[2] << ") frac";
-					ostrTip << "\n("
-						<< vecThisAtom[0] << ", "
-						<< vecThisAtom[1] << ", "
-						<< vecThisAtom[2] << ") " << strAA;
-					ostrTip << "\nDistance to Plane: " << pAtom->m_dProjDist << " " << strAA;
-					pAtom->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
-					pAtom->SetColor(colors[iAtom % colors.size()]);
-
-					m_scene.addItem(pAtom);
-				}
-			}
+			m_scene.addItem(pAtom);
 		}
 	}
 	// --------------------------------------------------------------------

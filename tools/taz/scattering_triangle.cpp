@@ -806,7 +806,9 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 	ScatlenList lstsl;
 	//FormfactList lstff;
 
+	std::vector<std::string> vecAllNames;
 	std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
+	std::vector<std::size_t> vecAllAtomTypes;
 	std::vector<std::complex<t_real>> vecScatlens;
 
 	const std::vector<t_mat>* pvecSymTrafos = nullptr;
@@ -814,67 +816,29 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 		pvecSymTrafos = &pSpaceGroup->GetTrafos();
 	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
 
-	if(pvecSymTrafos && pvecSymTrafos->size() && /*g_bHasFormfacts &&*/ g_bHasScatlens && pvecAtomPos && pvecAtomPos->size())
+	if(pvecSymTrafos && pvecSymTrafos->size() && /*g_bHasFormfacts &&*/
+		g_bHasScatlens && pvecAtomPos && pvecAtomPos->size())
 	{
+		std::vector<t_vec> vecAtoms;
+		std::vector<std::string> vecNames;
 		for(std::size_t iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
 		{
-			t_vec vecAtom = (*pvecAtomPos)[iAtom].vecPos;
-			// homogeneous coordinates
-			vecAtom.resize(4,1); vecAtom[3] = 1.;
-			const std::string& strElem = (*pvecAtomPos)[iAtom].strAtomName;
-			//std::cout << strElem << ": " << vecAtom << std::endl;
+			vecAtoms.push_back((*pvecAtomPos)[iAtom].vecPos);
+			vecNames.push_back((*pvecAtomPos)[iAtom].strAtomName);
+		}
 
-			std::vector<AtomPos> vecOtherAtoms = *pvecAtomPos;
-			vecOtherAtoms.erase(vecOtherAtoms.begin() + iAtom);
+		std::tie(vecAllNames, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
+		tl::generate_all_atoms<t_mat, t_vec, std::vector>
+			(*pvecSymTrafos, vecAtoms, &vecNames, matA,
+			t_real(0), t_real(1), g_dEps);
 
-			std::vector<t_vec> vecSymPos =
-				tl::generate_atoms<t_mat, t_vec, std::vector>
-					(*pvecSymTrafos, vecAtom, t_real(0), t_real(1), g_dEps);
-
+		for(const std::string& strElem : vecAllNames)
+		{
 			const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
+			vecScatlens.push_back(pElem ? pElem->GetCoherent() : std::complex<t_real>(0.,0.));
 			if(!pElem)
-			{
-				tl::log_err("Element \"", strElem, "\" not found in scattering length table.");
-				vecAllAtoms.clear();
-				vecAllAtomsFrac.clear();
-				vecScatlens.clear();
-				break;
-			}
-
-
-			const std::complex<t_real> b = pElem->GetCoherent() /*/ 10.*/;
-			//std::cout << "b = " << b << std::endl;
-
-			std::size_t iGeneratedAtoms = 0;
-			for(t_vec vecThisAtom : vecSymPos)
-			{
-				vecThisAtom.resize(3,1);
-
-				// is the atom position in the unit cell still free?
-				if(std::find_if(vecAllAtomsFrac.begin(), vecAllAtomsFrac.end(),
-					[&vecThisAtom](const ublas::vector<t_real>& _v) -> bool
-					{ return tl::vec_equal(_v, vecThisAtom, g_dEps); }) == vecAllAtomsFrac.end() 
-					&& // and is it not at a given initial atom position?
-					std::find_if(vecOtherAtoms.begin(), vecOtherAtoms.end(),
-					[&vecThisAtom](const AtomPos& _v) -> bool
-					{ return tl::vec_equal(_v.vecPos, vecThisAtom, g_dEps); }) == vecOtherAtoms.end())
-				{
-					vecAllAtomsFrac.push_back(vecThisAtom);
-
-					// converts from fractional coordinates
-					vecThisAtom = matA * vecThisAtom;
-					vecAllAtoms.push_back(std::move(vecThisAtom));
-					vecScatlens.push_back(b);
-					
-					++iGeneratedAtoms;
-				}
-				else
-				{
-					tl::log_warn("Position ", vecThisAtom, " is already occupied,",
-						" skipping current ", strElem, " atom.");
-				}
-			}
-			//tl::log_info("Unit cell has ", iGeneratedAtoms, " ", strElem, " atom(s).");
+				tl::log_err("Element \"", strElem, "\" not found in scattering length table.",
+					" Using b=0.");
 		}
 
 		//for(const t_vec& vecAt : vecAllAtoms)

@@ -179,7 +179,6 @@ void TazDlg::ExportUCModel()
 		vecAtomPos.resize(4, 1);
 		vecAtomPos[3] = 1.;
 		vecAtoms.push_back(std::move(vecAtomPos));
-
 		vecAtomNames.push_back(atom.strAtomName);
 	}
 
@@ -225,58 +224,34 @@ void TazDlg::ExportUCModel()
 	tl::X3d x3d;
 	std::ostringstream ostrComment;
 
-	std::vector<t_vec> vecAllAtomsFrac;
-	for(std::size_t iAtom=0; iAtom<vecAtoms.size(); ++iAtom)
+	std::vector<std::string> vecAllNames;
+	std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
+	std::vector<std::size_t> vecAllAtomTypes;
+
+	const t_real dUCSize = 1.;
+	std::tie(vecAllNames, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
+	tl::generate_all_atoms<t_mat, t_vec, std::vector>
+		(vecTrafos, vecAtoms,
+		static_cast<const std::vector<std::string>*>(0), matA,
+		-dUCSize*0.5, dUCSize*0.5, g_dEps);
+
+	for(std::size_t iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
 	{
-		const t_vec& vecAtom = vecAtoms[iAtom];
-		const std::string& strAtomName = vecAtomNames[iAtom];
+		std::size_t iAtomType = vecAllAtomTypes[iAtom];
+		t_vec vecCoord = vecAllAtoms[iAtom];
+		vecCoord.resize(4,1); vecCoord[3] = 1.;
 
-		std::vector<t_vec> vecOtherAtoms = vecAtoms;
-		vecOtherAtoms.erase(vecOtherAtoms.begin() + iAtom);
+		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
+		pTrafo->SetTrans(matGlobal * vecCoord);
+		tl::X3dSphere *pSphere = new tl::X3dSphere(0.1);
+		pSphere->SetColor(vecColors[iAtomType % vecColors.size()]);
+		pTrafo->AddChild(pSphere);
 
-		const t_real dUCSize = 1.;
-		std::vector<t_vec> vecPos =
-			tl::generate_atoms<t_mat, t_vec, std::vector>
-			(vecTrafos, vecAtom, -dUCSize*0.5, dUCSize*0.5, g_dEps);
+		x3d.GetScene().AddChild(pTrafo);
 
-		std::size_t iGeneratedAtoms = 0;
-		for(std::size_t iPos=0; iPos<vecPos.size(); ++iPos)
-		{
-			t_vec vecCoord = vecPos[iPos];
-			vecCoord.resize(3,1);
-
-			// is the atom position in the unit cell still free?
-			if(std::find_if(vecAllAtomsFrac.begin(), vecAllAtomsFrac.end(),
-				[&vecCoord](const t_vec& _v) -> bool
-				{ return tl::vec_equal(_v, vecCoord, g_dEps); }) == vecAllAtomsFrac.end()
-				&& // and is it not at a given initial atom position?
-				std::find_if(vecOtherAtoms.begin(), vecOtherAtoms.end(),
-				[&vecCoord](const t_vec& _v) -> bool
-				{ return tl::vec_equal(_v, vecCoord, g_dEps); }) == vecOtherAtoms.end())
-			{
-				vecAllAtomsFrac.push_back(vecCoord);
-				vecCoord = matA * vecCoord;
-				vecCoord.resize(4,1); vecCoord[3] = 1.;
-
-				tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
-				pTrafo->SetTrans(matGlobal * vecCoord);
-				tl::X3dSphere *pSphere = new tl::X3dSphere(0.1);
-				pSphere->SetColor(vecColors[iAtom % vecColors.size()]);
-				pTrafo->AddChild(pSphere);
-
-				x3d.GetScene().AddChild(pTrafo);
-				++iGeneratedAtoms;
-			}
-			else
-			{
-				tl::log_warn("Position ", vecCoord, " is already occupied,",
-					" skipping current ", strAtomName, " atom.");
-			}
-
-			ostrComment << "Unit cell contains " << iGeneratedAtoms /*vecPos.size()*/ 
-				<< " " << strAtomName << " atoms (color: " 
-				<< vecColors[iAtom % vecColors.size()] <<  ").\n";
-		}
+		/*ostrComment << "Unit cell contains " << iGeneratedAtoms
+			<< " " << strAtomName << " atoms (color: "
+			<< vecColors[iAtomType % vecColors.size()] <<  ").\n";*/
 	}
 
 	// only for cubic unit cells!

@@ -23,9 +23,12 @@
 
 using t_real = t_real_glob;
 static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
+
 namespace ublas = boost::numeric::ublas;
 namespace algo = boost::algorithm;
 
+using t_mat = ublas::matrix<t_real>;
+using t_vec = ublas::vector<t_real>;
 
 #define TABLE_ANGLE	0
 #define TABLE_Q		1
@@ -202,8 +205,8 @@ void PowderDlg::CalcPeaks()
 		tl::Lattice<t_real> lattice(dA, dB, dC, dAlpha, dBeta, dGamma);
 		tl::Lattice<t_real> recip = lattice.GetRecip();
 
-		const ublas::matrix<t_real> matA = lattice.GetMetric();
-		const ublas::matrix<t_real> matB = recip.GetMetric();
+		const t_mat matA = lattice.GetMetric();
+		const t_mat matB = recip.GetMetric();
 
 		const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 
@@ -213,76 +216,39 @@ void PowderDlg::CalcPeaks()
 		ScatlenList lstsl;
 		FormfactList lstff;
 
-		std::vector<ublas::vector<t_real>> vecAllAtoms, vecAllAtomsFrac;
-		std::vector<std::complex<t_real>> vecScatlens;
-		std::vector<t_real> vecFormfacts;
 		std::vector<std::string> vecElems;
+		std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
+		std::vector<std::complex<t_real>> vecScatlens;
+		std::vector<std::size_t> vecAllAtomTypes;
+		std::vector<t_real> vecFormfacts;
 
-		const std::vector<ublas::matrix<t_real>>* pvecSymTrafos = nullptr;
+		const std::vector<t_mat>* pvecSymTrafos = nullptr;
 		if(pSpaceGroup)
 			pvecSymTrafos = &pSpaceGroup->GetTrafos();
 
-		if(pvecSymTrafos && pvecSymTrafos->size() && g_bHasFormfacts && g_bHasScatlens && m_vecAtoms.size())
+		if(pvecSymTrafos && pvecSymTrafos->size() && g_bHasFormfacts &&
+			g_bHasScatlens && m_vecAtoms.size())
 		{
+			std::vector<t_vec> vecAtoms;
+			std::vector<std::string> vecNames;
 			for(std::size_t iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
 			{
-				ublas::vector<t_real> vecAtom = m_vecAtoms[iAtom].vecPos;
-				// homogeneous coordinates
-				vecAtom.resize(4,1); vecAtom[3] = 1.;
-				const std::string& strElem = m_vecAtoms[iAtom].strAtomName;
+				vecAtoms.push_back(m_vecAtoms[iAtom].vecPos);
+				vecNames.push_back(m_vecAtoms[iAtom].strAtomName);
+			}
 
-				std::vector<AtomPos> vecOtherAtoms = m_vecAtoms;
-				vecOtherAtoms.erase(vecOtherAtoms.begin() + iAtom);
+			std::tie(vecElems, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
+			tl::generate_all_atoms<t_mat, t_vec, std::vector>
+				(*pvecSymTrafos, vecAtoms, &vecNames, matA,
+				t_real(0), t_real(1), g_dEps);
 
-				std::vector<ublas::vector<t_real>> vecSymPos =
-					tl::generate_atoms<ublas::matrix<t_real>, ublas::vector<t_real>, std::vector>
-						(*pvecSymTrafos, vecAtom, t_real(0), t_real(1), g_dEps);
-
+			for(const std::string& strElem : vecElems)
+			{
 				const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
+				vecScatlens.push_back(pElem ? pElem->GetCoherent() : std::complex<t_real>(0.,0.));
 				if(!pElem)
-				{
-					tl::log_err("Element \"", strElem, "\" not found in scattering length table.");
-					vecAllAtoms.clear();
-					vecAllAtomsFrac.clear();
-					vecScatlens.clear();
-					break;
-				}
-
-
-				const std::complex<t_real> b = pElem->GetCoherent()/* / 10.*/;
-
-				std::size_t iGeneratedAtoms = 0;
-				for(ublas::vector<t_real> vecThisAtom : vecSymPos)
-				{
-					vecThisAtom.resize(3,1);
-
-					// is the atom position in the unit cell still free?
-					if(std::find_if(vecAllAtomsFrac.begin(), vecAllAtomsFrac.end(),
-						[&vecThisAtom](const ublas::vector<t_real>& _v) -> bool
-						{ return tl::vec_equal(_v, vecThisAtom, g_dEps); }) == vecAllAtomsFrac.end() 
-						&& // and is it not at a given initial atom position?
-						std::find_if(vecOtherAtoms.begin(), vecOtherAtoms.end(),
-						[&vecThisAtom](const AtomPos& _v) -> bool
-						{ return tl::vec_equal(_v.vecPos, vecThisAtom, g_dEps); }) == vecOtherAtoms.end())
-					{
-						vecAllAtomsFrac.push_back(vecThisAtom);
-						//tl::log_debug(strElem, " at position ", vecThisAtom);
-
-						// converts from fractional coordinates
-						vecThisAtom = matA*vecThisAtom;
-						vecAllAtoms.push_back(std::move(vecThisAtom));
-						vecScatlens.push_back(b);
-						vecElems.push_back(strElem);
-						
-						++iGeneratedAtoms;
-					}
-					else
-					{
-						tl::log_warn("Position ", vecThisAtom, " is already occupied,",
-							" skipping current ", strElem, " atom.");
-					}
-				}
-				//tl::log_info("Unit cell has ", iGeneratedAtoms, " ", strElem, " atom(s).");
+					tl::log_err("Element \"", strElem, "\" not found in scattering length table.",
+						" Using b=0.");
 			}
 		}
 		// ----------------------------------------------------------------------------
@@ -301,7 +267,7 @@ void PowderDlg::CalcPeaks()
 						continue;
 
 
-					ublas::vector<t_real> vecBragg = recip.GetPos(ih, ik, il);
+					t_vec vecBragg = recip.GetPos(ih, ik, il);
 					t_real dQ = ublas::norm_2(vecBragg);
 					if(tl::is_nan_or_inf<t_real>(dQ)) continue;
 
@@ -311,7 +277,7 @@ void PowderDlg::CalcPeaks()
 					//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;
 
 
-					ublas::vector<t_real> vechkl = tl::make_vec({t_real(ih), t_real(ik), t_real(il)});
+					t_vec vechkl = tl::make_vec({t_real(ih), t_real(ik), t_real(il)});
 					t_real dF = -1., dI = -1.;
 					t_real dFx = -1., dIx = -1.;
 
@@ -320,7 +286,7 @@ void PowderDlg::CalcPeaks()
 					if(vecScatlens.size())
 					{
 						std::complex<t_real> cF =
-							tl::structfact<t_real, std::complex<t_real>, ublas::vector<t_real>, std::vector>
+							tl::structfact<t_real, std::complex<t_real>, t_vec, std::vector>
 								(vecAllAtoms, vecBragg, vecScatlens);
 						t_real dFsq = (std::conj(cF)*cF).real();
 						dF = std::sqrt(dFsq);
@@ -355,7 +321,7 @@ void PowderDlg::CalcPeaks()
 					if(vecFormfacts.size())
 					{
 						std::complex<t_real> cFx =
-							tl::structfact<t_real, t_real, ublas::vector<t_real>, std::vector>
+							tl::structfact<t_real, t_real, t_vec, std::vector>
 								(vecAllAtoms, vecBragg, vecFormfacts);
 
 						t_real dFxsq = (std::conj(cFx)*cFx).real();
