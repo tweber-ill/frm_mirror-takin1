@@ -829,7 +829,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 
 			std::vector<t_vec> vecSymPos =
 				tl::generate_atoms<t_mat, t_vec, std::vector>
-					(*pvecSymTrafos, vecAtom);
+					(*pvecSymTrafos, vecAtom, t_real(0), t_real(1), g_dEps);
 
 			const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
 			if(!pElem)
@@ -849,7 +849,7 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 			for(t_vec vecThisAtom : vecSymPos)
 			{
 				vecThisAtom.resize(3,1);
-				
+
 				// is the atom position in the unit cell still free?
 				if(std::find_if(vecAllAtomsFrac.begin(), vecAllAtomsFrac.end(),
 					[&vecThisAtom](const ublas::vector<t_real>& _v) -> bool

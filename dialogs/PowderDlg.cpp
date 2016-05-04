@@ -230,13 +230,13 @@ void PowderDlg::CalcPeaks()
 				// homogeneous coordinates
 				vecAtom.resize(4,1); vecAtom[3] = 1.;
 				const std::string& strElem = m_vecAtoms[iAtom].strAtomName;
-				
+
 				std::vector<AtomPos> vecOtherAtoms = m_vecAtoms;
 				vecOtherAtoms.erase(vecOtherAtoms.begin() + iAtom);
 
 				std::vector<ublas::vector<t_real>> vecSymPos =
 					tl::generate_atoms<ublas::matrix<t_real>, ublas::vector<t_real>, std::vector>
-						(*pvecSymTrafos, vecAtom);
+						(*pvecSymTrafos, vecAtom, t_real(0), t_real(1), g_dEps);
 
 				const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
 				if(!pElem)

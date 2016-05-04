@@ -230,24 +230,25 @@ void TazDlg::ExportUCModel()
 	{
 		const t_vec& vecAtom = vecAtoms[iAtom];
 		const std::string& strAtomName = vecAtomNames[iAtom];
-		
+
 		std::vector<t_vec> vecOtherAtoms = vecAtoms;
 		vecOtherAtoms.erase(vecOtherAtoms.begin() + iAtom);
 
 		const t_real dUCSize = 1.;
 		std::vector<t_vec> vecPos =
-			tl::generate_atoms<t_mat, t_vec, std::vector>(vecTrafos, vecAtom, -dUCSize*0.5, dUCSize*0.5);
+			tl::generate_atoms<t_mat, t_vec, std::vector>
+			(vecTrafos, vecAtom, -dUCSize*0.5, dUCSize*0.5, g_dEps);
 
 		std::size_t iGeneratedAtoms = 0;
 		for(std::size_t iPos=0; iPos<vecPos.size(); ++iPos)
 		{
 			t_vec vecCoord = vecPos[iPos];
 			vecCoord.resize(3,1);
-			
+
 			// is the atom position in the unit cell still free?
 			if(std::find_if(vecAllAtomsFrac.begin(), vecAllAtomsFrac.end(),
 				[&vecCoord](const t_vec& _v) -> bool
-				{ return tl::vec_equal(_v, vecCoord, g_dEps); }) == vecAllAtomsFrac.end() 
+				{ return tl::vec_equal(_v, vecCoord, g_dEps); }) == vecAllAtomsFrac.end()
 				&& // and is it not at a given initial atom position?
 				std::find_if(vecOtherAtoms.begin(), vecOtherAtoms.end(),
 				[&vecCoord](const t_vec& _v) -> bool
@@ -271,7 +272,7 @@ void TazDlg::ExportUCModel()
 				tl::log_warn("Position ", vecCoord, " is already occupied,",
 					" skipping current ", strAtomName, " atom.");
 			}
-			
+
 			ostrComment << "Unit cell contains " << iGeneratedAtoms /*vecPos.size()*/ 
 				<< " " << strAtomName << " atoms (color: " 
 				<< vecColors[iAtom % vecColors.size()] <<  ").\n";
