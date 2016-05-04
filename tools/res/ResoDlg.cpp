@@ -475,9 +475,13 @@ void ResoDlg::Calc()
 			struct Ellipse<t_real_reso> ellVa =
 				calc_res_ellipse<t_real_reso>(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
 			//std::cout << ellVa.phi/M_PI*180. << std::endl;
-			t_real_reso dVanadiumFWHM = ellVa.y_hwhm*2.;
+			t_real_reso dVanadiumFWHM_Q = ellVa.x_hwhm*2.;
+			t_real_reso dVanadiumFWHM_E = ellVa.y_hwhm*2.;
 			if(std::fabs(ellVa.phi) >= tl::get_pi<t_real_reso>()/4.)
-				dVanadiumFWHM = ellVa.x_hwhm*2.;
+			{
+				dVanadiumFWHM_Q = ellVa.y_hwhm*2.;
+				dVanadiumFWHM_E = ellVa.x_hwhm*2.;
+			}
 			// --------------------------------------------------------------------------------
 
 			const std::string& strAA_1 = tl::get_spec_char_utf8("AA")
@@ -503,7 +507,9 @@ void ResoDlg::Calc()
 			ostrRes << "\t<li>Q_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
 
-			ostrRes << "<p><b>Vanadium FWHM:</b> " << dVanadiumFWHM << " meV</p>\n\n";
+			ostrRes << "<p><b>Vanadium FWHM:</b> "
+				<< dVanadiumFWHM_Q << " " << strAA_1 << ", "
+				<< dVanadiumFWHM_E << " meV</p>\n\n";
 
 			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
 			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
