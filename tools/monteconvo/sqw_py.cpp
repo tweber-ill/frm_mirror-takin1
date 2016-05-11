@@ -45,6 +45,8 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 
 		m_bOk = 0;
 	}
+
+	if(!!m_Init) m_Init();
 }
 
 SqwPy::~SqwPy()
