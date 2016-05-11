@@ -315,7 +315,10 @@ bool run_job(const std::string& strJob)
 	}
 
 	if(!pSqw->IsOk())
+	{
+		tl::log_err("S(q,w) model cannot be initialised.");
 		return 0;
+	}
 	SqwFuncModel mod(pSqw, vecResos);
 
 

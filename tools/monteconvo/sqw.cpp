@@ -118,10 +118,10 @@ void SqwElast::SetVars(const std::vector<SqwBase::t_var>&)
 SqwBase* SqwElast::shallow_copy() const
 {
 	SqwElast *pElast = new SqwElast();
+	*static_cast<SqwBase*>(pElast) = *static_cast<const SqwBase*>(this);
 
 	pElast->m_bLoadedFromFile = m_bLoadedFromFile;
 	pElast->m_lstPeaks = m_lstPeaks;	// not a shallow copy!
-	pElast->m_bOk = m_bOk;
 	return pElast;
 }
 
@@ -214,10 +214,10 @@ void SqwKdTree::SetVars(const std::vector<SqwBase::t_var>&)
 SqwBase* SqwKdTree::shallow_copy() const
 {
 	SqwKdTree *pTree = new SqwKdTree();
+	*static_cast<SqwBase*>(pTree) = *static_cast<const SqwBase*>(this);
 
 	pTree->m_mapParams = m_mapParams;
 	pTree->m_kd = m_kd;
-	pTree->m_bOk = m_bOk;
 
 	return pTree;
 }
@@ -611,6 +611,7 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 SqwBase* SqwPhonon::shallow_copy() const
 {
 	SqwPhonon *pCpy = new SqwPhonon();
+	*static_cast<SqwBase*>(pCpy) = *static_cast<const SqwBase*>(this);
 
 #ifdef USE_RTREE
 	pCpy->m_rt = m_rt;
@@ -648,7 +649,5 @@ SqwBase* SqwPhonon::shallow_copy() const
 	pCpy->m_dIncSig = m_dIncSig;
 
 	pCpy->m_dT = m_dT;
-
-	pCpy->m_bOk = m_bOk;
 	return pCpy;
 }

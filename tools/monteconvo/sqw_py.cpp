@@ -17,7 +17,7 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 	std::string strDir = tl::get_dir(strFile);
 	std::string strMod = tl::get_file_noext(tl::get_file(strFile));
 
-	try
+	try	// mandatory stuff
 	{
 		::Py_Initialize();
 
@@ -29,9 +29,14 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 
 		m_mod = py::import(strMod.c_str());
 		py::dict moddict = py::extract<py::dict>(m_mod.attr("__dict__"));
-		m_Sqw = moddict["Sqw"];
-
+		m_Sqw = moddict["TakinSqw"];
 		m_bOk = !!m_Sqw;
+
+		try	// optional stuff
+		{
+			m_Init = moddict["TakinInit"];
+		}
+		catch(const py::error_already_set& ex) {}
 	}
 	catch(const py::error_already_set& ex)
 	{
@@ -50,6 +55,8 @@ SqwPy::~SqwPy()
 
 t_real SqwPy::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
+	if(!m_bOk) return t_real(0);
+
 	std::lock_guard<std::mutex> lock(*m_pmtx);
 	try
 	{
@@ -68,6 +75,7 @@ t_real SqwPy::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 std::vector<SqwBase::t_var> SqwPy::GetVars() const
 {
 	std::vector<SqwBase::t_var> vecVars;
+	if(!m_bOk) return vecVars;
 
 	try
 	{
@@ -112,6 +120,8 @@ std::vector<SqwBase::t_var> SqwPy::GetVars() const
 
 void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 {
+	if(!m_bOk) return;
+
 	try
 	{
 		py::dict dict = py::extract<py::dict>(m_mod.attr("__dict__"));
@@ -143,6 +153,9 @@ void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 			//dict[strName] = tyVar(strNewVal);
 			dict[strName] = py::eval(py::str(strNewVal), dict);
 		}
+
+		// TODO: check for changed parameters and if reinit is needed
+		if(!!m_Init) m_Init();
 	}
 	catch(const py::error_already_set& ex)
 	{
@@ -155,10 +168,13 @@ void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 SqwBase* SqwPy::shallow_copy() const
 {
 	SqwPy* pSqw = new SqwPy();
+	*static_cast<SqwBase*>(pSqw) = *static_cast<const SqwBase*>(this);
+
 	pSqw->m_pmtx = this->m_pmtx;
 	pSqw->m_sys = this->m_sys;
 	pSqw->m_mod = this->m_mod;
 	pSqw->m_Sqw = this->m_Sqw;
+	pSqw->m_Init = this->m_Init;
 
 	return pSqw;
 }
