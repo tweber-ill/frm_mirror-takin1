@@ -23,12 +23,15 @@ struct AtomPos
 {
 	std::string strAtomName;
 	ublas::vector<t_real_glob> vecPos;
+
+	t_real_glob J;		// optional: coupling
 };
 
 
 class AtomsDlg : public QDialog, Ui::AtomsDlg
 { Q_OBJECT
 protected:
+	bool m_bEnableJ = 0;
 	QSettings *m_pSettings = nullptr;
 
 protected:
@@ -41,7 +44,8 @@ protected slots:
 	void AddAtom();
 
 public:
-	AtomsDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr);
+	AtomsDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr,
+		bool bEnableJ=0);
 	virtual ~AtomsDlg();
 
 	void SetAtoms(const std::vector<AtomPos>& vecAtoms);

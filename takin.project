@@ -195,6 +195,8 @@
     <File Name="dialogs/AtomsDlg.h"/>
     <File Name="dialogs/AboutDlg.cpp"/>
     <File Name="dialogs/AboutDlg.h"/>
+    <File Name="dialogs/DispDlg.cpp"/>
+    <File Name="dialogs/DispDlg.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>

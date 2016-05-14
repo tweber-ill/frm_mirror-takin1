@@ -518,6 +518,11 @@ TazDlg::TazDlg(QWidget* pParent)
 	pSgList->setText("Space Group Types...");
 	pMenuCalc->addAction(pSgList);
 
+	QAction *pDisp = new QAction(this);
+	pDisp->setText("Dispersions...");
+	//pDisp->setIcon(load_icon("disp.svg"));
+	pMenuCalc->addAction(pDisp);
+
 	pMenuCalc->addSeparator();
 
 	QAction *pDynPlane = new QAction(this);
@@ -647,6 +652,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pNeutronProps, SIGNAL(triggered()), this, SLOT(ShowNeutronDlg()));
 	QObject::connect(m_pGoto, SIGNAL(triggered()), this, SLOT(ShowGotoDlg()));
 	QObject::connect(pPowder, SIGNAL(triggered()), this, SLOT(ShowPowderDlg()));
+	QObject::connect(pDisp, SIGNAL(triggered()), this, SLOT(ShowDispDlg()));
 	QObject::connect(pSpuri, SIGNAL(triggered()), this, SLOT(ShowSpurions()));
 	QObject::connect(pDW, SIGNAL(triggered()), this, SLOT(ShowDWDlg()));
 	QObject::connect(pDynPlane, SIGNAL(triggered()), this, SLOT(ShowDynPlaneDlg()));
@@ -790,6 +796,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pSpuri) { delete m_pSpuri; m_pSpuri = 0; }
 	if(m_pNeutronDlg) { delete m_pNeutronDlg; m_pNeutronDlg = 0; }
 	if(m_pPowderDlg) { delete m_pPowderDlg; m_pPowderDlg = 0; }
+	if(m_pDispDlg) { delete m_pDispDlg; m_pDispDlg = 0; }
 	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
 	if(m_pScanViewer) { delete m_pScanViewer; m_pScanViewer = nullptr; }
@@ -918,6 +925,15 @@ void TazDlg::ShowPowderDlg()
 
 	m_pPowderDlg->show();
 	m_pPowderDlg->activateWindow();
+}
+
+void TazDlg::ShowDispDlg()
+{
+	if(!m_pDispDlg)
+		m_pDispDlg = new DispDlg(this, &m_settings);
+
+	m_pDispDlg->show();
+	m_pDispDlg->activateWindow();
 }
 
 void TazDlg::ShowSettingsDlg()

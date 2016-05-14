@@ -41,6 +41,7 @@
 #include "dialogs/NeutronDlg.h"
 #include "dialogs/GotoDlg.h"
 #include "dialogs/PowderDlg.h"
+#include "dialogs/DispDlg.h"
 #include "dialogs/SettingsDlg.h"
 #include "dialogs/DWDlg.h"
 #include "dialogs/DynPlaneDlg.h"
@@ -139,6 +140,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		NeutronDlg *m_pNeutronDlg = nullptr;
 		GotoDlg *m_pGotoDlg = nullptr;
 		PowderDlg *m_pPowderDlg = nullptr;
+		DispDlg *m_pDispDlg = nullptr;
 		DWDlg *m_pDWDlg = nullptr;
 		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
 		FormfactorDlg* m_pFormfactorDlg = nullptr;
@@ -231,6 +233,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowNeutronDlg();
 		void ShowGotoDlg();
 		void ShowPowderDlg();
+		void ShowDispDlg();
 		void ShowSettingsDlg();
 		void ShowDWDlg();
 		void ShowDynPlaneDlg();

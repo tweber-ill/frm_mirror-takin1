@@ -1,4 +1,4 @@
-/*
+/**
  * Atom Positions Dialog
  * @author Tobias Weber
  * @date nov-2015
@@ -12,8 +12,18 @@
 using t_real = t_real_glob;
 
 
-AtomsDlg::AtomsDlg(QWidget* pParent, QSettings *pSettings)
-	: QDialog(pParent), m_pSettings(pSettings)
+enum class AtInfo : int
+{
+	NAME = 0,
+	POS_X = 1,
+	POS_Y = 2,
+	POS_Z = 3,
+
+	J = 4
+};
+
+AtomsDlg::AtomsDlg(QWidget* pParent, QSettings *pSettings, bool bEnableJ)
+	: QDialog(pParent), m_pSettings(pSettings), m_bEnableJ(bEnableJ)
 {
 	setupUi(this);
 	if(m_pSettings)
@@ -22,6 +32,11 @@ AtomsDlg::AtomsDlg(QWidget* pParent, QSettings *pSettings)
 		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
 			setFont(font);
 	}
+
+	if(m_bEnableJ)
+	{
+		tableAtoms->setColumnCount(5);
+		tableAtoms->setHorizontalHeaderItem(static_cast<int>(AtInfo::J), new QTableWidgetItem("J (meV/K)"));	}
 
 	tableAtoms->setColumnWidth(0, 75);
 	btnAdd->setIcon(load_icon("res/list-add.svg"));
@@ -42,8 +57,7 @@ AtomsDlg::AtomsDlg(QWidget* pParent, QSettings *pSettings)
 		restoreGeometry(m_pSettings->value("atoms/geo").toByteArray());
 }
 
-AtomsDlg::~AtomsDlg()
-{}
+AtomsDlg::~AtomsDlg() {}
 
 
 void AtomsDlg::RemoveAtom()
@@ -81,7 +95,9 @@ void AtomsDlg::AddAtom()
 	tableAtoms->insertRow(iRow);
 	tableAtoms->setItem(iRow, 0, new QTableWidgetItem("H"));
 	for(unsigned int i=0; i<3; ++i)
-		tableAtoms->setItem(iRow, i+1, new QTableWidgetItem("0"));
+		tableAtoms->setItem(iRow, static_cast<int>(AtInfo::POS_X)+i, new QTableWidgetItem("0"));
+	if(m_bEnableJ)
+		tableAtoms->setItem(iRow, static_cast<int>(AtInfo::J), new QTableWidgetItem("0"));
 
 	tableAtoms->setSortingEnabled(bSort);
 }
@@ -94,17 +110,20 @@ void AtomsDlg::SetAtoms(const std::vector<AtomPos>& vecAtoms)
 
 	tableAtoms->setRowCount(vecAtoms.size());
 
-	for(unsigned int iRow=0; iRow<vecAtoms.size(); ++iRow)
+	for(std::size_t iRow=0; iRow<vecAtoms.size(); ++iRow)
 	{
 		// add missing items
-		for(int iCol=0; iCol<4; ++iCol)
+		for(int iCol=0; iCol<tableAtoms->columnCount(); ++iCol)
 			if(!tableAtoms->item(iRow, iCol))
 				tableAtoms->setItem(iRow, iCol, new QTableWidgetItem(""));
 
 		const AtomPos& atom = vecAtoms[iRow];
 		tableAtoms->item(iRow, 0)->setText(atom.strAtomName.c_str());
 		for(unsigned int i=0; i<3; ++i)
-			tableAtoms->item(iRow, i+1)->setText(tl::var_to_str(atom.vecPos[i]).c_str());
+			tableAtoms->item(iRow, static_cast<int>(AtInfo::POS_X)+i)->setText(tl::var_to_str(atom.vecPos[i]).c_str());
+
+		if(m_bEnableJ)
+			tableAtoms->item(iRow, static_cast<int>(AtInfo::J))->setText(tl::var_to_str(atom.J).c_str());
 	}
 
 	tableAtoms->setSortingEnabled(bSort);
@@ -118,12 +137,15 @@ void AtomsDlg::SendApplyAtoms()
 	for(int iRow=0; iRow<tableAtoms->rowCount(); ++iRow)
 	{
 		AtomPos atom;
-		atom.strAtomName = tableAtoms->item(iRow, 0)->text().toStdString();
+		atom.strAtomName = tableAtoms->item(iRow, static_cast<int>(AtInfo::NAME))->text().toStdString();
 		tl::trim(atom.strAtomName);
-		t_real dX = tl::str_to_var<t_real>(tableAtoms->item(iRow, 1)->text().toStdString());
-		t_real dY = tl::str_to_var<t_real>(tableAtoms->item(iRow, 2)->text().toStdString());
-		t_real dZ = tl::str_to_var<t_real>(tableAtoms->item(iRow, 3)->text().toStdString());
+		t_real dX = tl::str_to_var<t_real>(tableAtoms->item(iRow, static_cast<int>(AtInfo::POS_X))->text().toStdString());
+		t_real dY = tl::str_to_var<t_real>(tableAtoms->item(iRow, static_cast<int>(AtInfo::POS_Y))->text().toStdString());
+		t_real dZ = tl::str_to_var<t_real>(tableAtoms->item(iRow, static_cast<int>(AtInfo::POS_Z))->text().toStdString());
 		atom.vecPos = tl::make_vec({dX, dY, dZ});
+
+		if(m_bEnableJ)
+			atom.J = tl::str_to_var<t_real>(tableAtoms->item(iRow, static_cast<int>(AtInfo::J))->text().toStdString());
 
 		vecAtoms.push_back(std::move(atom));
 	}

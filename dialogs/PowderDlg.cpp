@@ -1,4 +1,4 @@
-/*
+/**
  * Powder Line Dialog
  * @author Tobias Weber
  * @date 2013, 2-dec-2014
@@ -206,7 +206,7 @@ void PowderDlg::CalcPeaks()
 		tl::Lattice<t_real> recip = lattice.GetRecip();
 
 		const t_mat matA = lattice.GetMetric();
-		const t_mat matB = recip.GetMetric();
+		//const t_mat matB = recip.GetMetric();
 
 		const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
 
@@ -774,5 +774,6 @@ void PowderDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
 }
+
 
 #include "PowderDlg.moc"
