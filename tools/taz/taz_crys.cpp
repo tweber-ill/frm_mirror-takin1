@@ -82,27 +82,34 @@ void TazDlg::CalcPeaksRecip()
 {
 	if(!m_bReady) return;
 
-	t_real a = editARecip->text().toDouble();
-	t_real b = editBRecip->text().toDouble();
-	t_real c = editCRecip->text().toDouble();
+	try
+	{
+		t_real a = editARecip->text().toDouble();
+		t_real b = editBRecip->text().toDouble();
+		t_real c = editCRecip->text().toDouble();
 
-	t_real alpha = tl::d2r(editAlphaRecip->text().toDouble());
-	t_real beta = tl::d2r(editBetaRecip->text().toDouble());
-	t_real gamma = tl::d2r(editGammaRecip->text().toDouble());
+		t_real alpha = tl::d2r(editAlphaRecip->text().toDouble());
+		t_real beta = tl::d2r(editBetaRecip->text().toDouble());
+		t_real gamma = tl::d2r(editGammaRecip->text().toDouble());
 
-	tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
-	tl::Lattice<t_real> recip = lattice.GetRecip();
+		tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
+		tl::Lattice<t_real> recip = lattice.GetRecip();
 
-	editA->setText(dtoqstr(recip.GetA(), g_iPrec));
-	editB->setText(dtoqstr(recip.GetB(), g_iPrec));
-	editC->setText(dtoqstr(recip.GetC(), g_iPrec));
-	editAlpha->setText(dtoqstr(tl::r2d(recip.GetAlpha()), g_iPrec));
-	editBeta->setText(dtoqstr(tl::r2d(recip.GetBeta()), g_iPrec));
-	editGamma->setText(dtoqstr(tl::r2d(recip.GetGamma()), g_iPrec));
+		editA->setText(dtoqstr(recip.GetA(), g_iPrec));
+		editB->setText(dtoqstr(recip.GetB(), g_iPrec));
+		editC->setText(dtoqstr(recip.GetC(), g_iPrec));
+		editAlpha->setText(dtoqstr(tl::r2d(recip.GetAlpha()), g_iPrec));
+		editBeta->setText(dtoqstr(tl::r2d(recip.GetBeta()), g_iPrec));
+		editGamma->setText(dtoqstr(tl::r2d(recip.GetGamma()), g_iPrec));
 
-	m_bUpdateRecipEdits = 0;
-	CalcPeaks();
-	m_bUpdateRecipEdits = 1;
+		m_bUpdateRecipEdits = 0;
+		CalcPeaks();
+		m_bUpdateRecipEdits = 1;
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_err(ex.what());
+	}
 }
 
 void TazDlg::CalcPeaks()
