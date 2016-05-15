@@ -1,7 +1,7 @@
-/*
+/**
  * popovici calculation
  * @author tweber
- * @date 08-may-2013
+ * @date 2013-2016
  * @license GPLv2
  *
  * @desc This is a reimplementation in C++ of the file rc_popma.m of the
@@ -137,7 +137,7 @@ ResoResults calc_pop(const PopParams& pop)
 	t_real dSiSrc[] =
 	{
 		dMult * pop.src_w*pop.src_w /cm/cm,
-		dMult * pop.src_h*pop.src_h /cm/cm 
+		dMult * pop.src_h*pop.src_h /cm/cm
 	};
 
 	// mono
@@ -358,7 +358,7 @@ ResoResults calc_pop(const PopParams& pop)
 			return res;
 		}
 		DSiDti += G;
-		t_real dP0 = pop.dmono_refl*pop.dana_effic * 
+		t_real dP0 = pop.dmono_refl*pop.dana_effic *
 			t_real((2.*pi)*(2.*pi)*(2.*pi)*(2.*pi)) /
 			std::sqrt(tl::determinant(DSiDti));
 

@@ -1,16 +1,18 @@
-/*
+/**
  * cooper-nathans calculation
  * @author tweber
- * @date 01-may-2013
+ * @date 2013-2016
  * @license GPLv2
  *
  * @desc This is a reimplementation in C++ of the file rc_cnmat.m of the
  *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
  *		http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
+ * @desc see: [cn67] M. J. Cooper and R. Nathans, Acta Cryst. 23, 357 (1967),
+ * 		[ch73] N. J. Chesser and J. D. Axe, Acta Cryst. A 29, 160 (1973)
  */
 
-#ifndef __CN_H__
-#define __CN_H__
+#ifndef __TAKIN_CN_H__
+#define __TAKIN_CN_H__
 
 #include "defs.h"
 #include "tlibs/math/neutrons.hpp"

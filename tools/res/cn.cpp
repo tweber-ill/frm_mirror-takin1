@@ -1,13 +1,14 @@
-/*
+/**
  * cooper-nathans calculation
  * @author tweber
- * @date 01-may-2013
+ * @date 2013-2016
  * @license GPLv2
  *
  * @desc This is a reimplementation in C++ of the file rc_cnmat.m of the
  *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
  *		http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
- * @desc see: [cn67] M. J. Cooper and R. Nathans, Acta Cryst. 23, 357 (1967)
+ * @desc see: [cn67] M. J. Cooper and R. Nathans, Acta Cryst. 23, 357 (1967),
+ * 		[ch73] N. J. Chesser and J. D. Axe, Acta Cryst. A 29, 160 (1973)
  */
 
 #include "cn.h"
@@ -33,6 +34,45 @@ using length = tl::t_length_si<t_real>;
 static const auto angs = tl::get_one_angstrom<t_real>();
 static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
+static const auto sec = tl::get_one_second<t_real>();
+static const t_real pi = tl::get_pi<t_real>();
+static const auto mn = tl::get_m_n<t_real>();
+static const auto hbar = tl::get_hbar<t_real>();
+
+
+// -----------------------------------------------------------------------------
+// R0 factor from formula (2) in [ch73]
+
+t_real R0_P(angle theta, angle coll, angle mosaic)
+{
+	t_real tS = units::sin(theta);
+	return std::sqrt(t_real(2)*pi) / rads *
+		tl::my_units_sqrt<angle>(t_real(1) / (
+		t_real(1)/(coll*coll) + t_real(1)/(t_real(4)*mosaic*mosaic*tS*tS)));
+}
+
+t_real R0_N(angle theta, angle mosaic, t_real refl)
+{
+	t_real tS = units::sin(theta);
+	return (refl / (t_real(2)*mosaic * tS)) / std::sqrt(t_real(2)*pi) * rads;
+}
+
+t_real R0_J(wavenumber ki, wavenumber kf, angle twotheta)
+{
+	t_real tS = units::sin(twotheta);
+	return mn/hbar / (ki*ki * kf*kf*kf * tS) / angs/angs/angs/sec;
+}
+
+t_real chess_R0(wavenumber ki, wavenumber kf,
+	angle theta_m, angle theta_a, angle twotheta_s,
+	angle mos_m, angle mos_a, angle coll_pre_mono_v, angle coll_post_ana_v,
+	t_real refl_m, t_real refl_a)
+{
+	return R0_J(ki, kf, twotheta_s) *
+		R0_P(theta_m, coll_pre_mono_v, mos_m) * R0_P(theta_a, coll_post_ana_v, mos_a) *
+		R0_N(theta_m, mos_m, refl_m) * R0_N(theta_a, mos_a, refl_a);
+}
+// -----------------------------------------------------------------------------
 
 
 ResoResults calc_cn(const CNParams& cn)
@@ -77,8 +117,8 @@ ResoResults calc_cn(const CNParams& cn)
 	tl::submatrix_copy(U, Ti, 0, 0);
 	tl::submatrix_copy(U, Tf, 0, 3);
 	U(2,2) = 1.; U(2,5) = -1.;
-	U(3,0) = t_real(2)*cn.ki * tl::get_KSQ2E<t_real>() * angs;
-	U(3,3) = t_real(-2)*cn.kf * tl::get_KSQ2E<t_real>() * angs;
+	U(3,0) = +t_real(2)*cn.ki * tl::get_KSQ2E<t_real>() * angs;
+	U(3,3) = -t_real(2)*cn.kf * tl::get_KSQ2E<t_real>() * angs;
 	U(4,0) = 1.; U(5,2) = 1.;
 	//tl::log_info("Trafo matrix (CN) = ", U);
 
@@ -99,12 +139,12 @@ ResoResults calc_cn(const CNParams& cn)
 	t_vec pm(2);
 	pm[0] = units::tan(thetam);
 	pm[1] = 1.;
-	pm /= cn.ki * angs * cn.mono_mosaic/rads;
+	pm /= cn.ki*angs * cn.mono_mosaic/rads;
 
 	t_vec pa(2);
 	pa[0] = -units::tan(thetaa);
 	pa[1] = 1.;
-	pa /= cn.kf * angs * cn.ana_mosaic/rads;
+	pa /= cn.kf*angs * cn.ana_mosaic/rads;
 
 	t_vec palf0(2);
 	palf0[0] = 2.*units::tan(thetam);
@@ -139,17 +179,19 @@ ResoResults calc_cn(const CNParams& cn)
 	tl::submatrix_copy(M, m01, 0, 0);
 	tl::submatrix_copy(M, m34, 3, 3);
 
-	M(2,2) = t_real(1)/(cn.ki*cn.ki * angs*angs) *
+	M(2,2) = t_real(1)/(cn.ki*cn.ki * angs*angs) * rads*rads *
 	(
-		t_real(1)/(cn.coll_v_pre_sample*cn.coll_v_pre_sample/rads/rads) +
-		t_real(1)/((t_real(2)*units::sin(thetam)*cn.mono_mosaic/rads)*(t_real(2)*units::sin(thetam)*cn.mono_mosaic/rads) +
-			coll_v_pre_mono*coll_v_pre_mono/rads/rads)
+		t_real(1)/(cn.coll_v_pre_sample*cn.coll_v_pre_sample) +
+		t_real(1)/((t_real(2)*units::sin(thetam)*cn.mono_mosaic)*
+			(t_real(2)*units::sin(thetam)*cn.mono_mosaic) +
+			coll_v_pre_mono*coll_v_pre_mono)
 	);
-	M(5,5) = t_real(1)/(cn.kf*cn.kf * angs*angs) *
+	M(5,5) = t_real(1)/(cn.kf*cn.kf * angs*angs) * rads*rads *
 	(
-		t_real(1)/(cn.coll_v_post_sample*cn.coll_v_post_sample/rads/rads) +
-		t_real(1)/((t_real(2)*units::sin(thetaa)*cn.ana_mosaic/rads)*(t_real(2)*units::sin(thetaa)*cn.ana_mosaic/rads) +
-			cn.coll_v_post_ana*cn.coll_v_post_ana/rads/rads)
+		t_real(1) / (cn.coll_v_post_sample*cn.coll_v_post_sample) +
+		t_real(1) / ((t_real(2)*units::sin(thetaa)*cn.ana_mosaic)*
+			(t_real(2)*units::sin(thetaa)*cn.ana_mosaic) +
+			cn.coll_v_post_ana*cn.coll_v_post_ana)
 	);
 	// -------------------------------------------------------------------------
 
@@ -180,7 +222,8 @@ ResoResults calc_cn(const CNParams& cn)
 
 
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
-	res.dR0 = 0.;	// TODO
+	res.dR0 = chess_R0(cn.ki,cn.kf, thetam, thetaa, cn.twotheta, cn.mono_mosaic,
+		cn.ana_mosaic, cn.coll_v_pre_mono, cn.coll_v_post_ana, cn.dmono_refl, cn.dana_effic);
 
 	// Bragg widths
 	for(unsigned int i=0; i<4; ++i)

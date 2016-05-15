@@ -1,16 +1,17 @@
-/*
+/**
  * popovici calculation
  * @author tweber
- * @date 08-may-2013
+ * @date 2013-2016
  * @license GPLv2
  *
  * @desc This is a reimplementation in C++ of the file rc_popma.m of the
  *		rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
  *		http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
+ * @desc see: [pop75] M. Popovici, Acta Cryst. A 31, 507 (1975)
  */
 
-#ifndef __POP_H__
-#define __POP_H__
+#ifndef __TAKIN_POP_H__
+#define __TAKIN_POP_H__
 
 #include "cn.h"
 

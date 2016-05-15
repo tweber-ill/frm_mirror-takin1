@@ -8,8 +8,8 @@
  * @desc for algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
  */
 
-#ifndef __RESO_ECK_H__
-#define __RESO_ECK_H__
+#ifndef __TAKIN_ECK_H__
+#define __TAKIN_ECK_H__
 
 #include "pop.h"
 
