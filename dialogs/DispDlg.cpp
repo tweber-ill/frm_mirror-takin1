@@ -279,7 +279,7 @@ void DispDlg::Calc()
 		{
 			t_real tPos = t_real(iPt)/t_real(NUM_POINTS-1) * 1.5;
 			t_vec vecq = tl::make_vec<t_vec>({1.,0.,0.}) * tPos;
-			t_vec vecq_AA = ublas::prod(matB, vecq);
+			t_vec vecq_AA = matB * vecq;
 			t_real dE = tl::ferromag(vecAtomsNN, vecJNN, vecq_AA, dS);
 
 			m_vecFerroQ.push_back(ublas::norm_2(vecq));

@@ -300,6 +300,7 @@ void TazDlg::CalcPeaks()
 		m_sceneRecip.emitUpdate();
 
 		m_sceneRealLattice.GetLattice()->CalcPeaks(lattice, planeRealFrac, pSpaceGroup, &m_vecAtoms);
+		m_dlgRealParam.CrystalChanged(lattice, recip, pSpaceGroup, &m_vecAtoms);
 
 #ifndef NO_3D
 		if(m_pRecip3d)

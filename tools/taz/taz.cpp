@@ -338,7 +338,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pMenuViewRecip->addAction(m_pGoto);
 
 	QAction *pRecipParams = new QAction(this);
-	pRecipParams->setText("Parameters...");
+	pRecipParams->setText("Information...");
 	m_pMenuViewRecip->addAction(pRecipParams);
 	m_pMenuViewRecip->addSeparator();
 
@@ -407,7 +407,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pMenuViewReal->addAction(m_pGoto);
 
 	QAction *pRealParams = new QAction(this);
-	pRealParams->setText("Parameters...");
+	pRealParams->setText("Information...");
 	m_pMenuViewReal->addAction(pRealParams);
 
 	m_pMenuViewReal->addSeparator();

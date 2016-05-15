@@ -1,7 +1,7 @@
-/*
+/**
  * Real Space Parameters
  * @author tweber
- * @date 29-mar-2014
+ * @date 2014-2016
  * @license GPLv2
  */
 
@@ -10,8 +10,13 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <vector>
+
 #include "ui/ui_real_params.h"
 #include "libs/globals.h"
+#include "libs/spacegroups/spacegroup.h"
+#include "tlibs/math/lattice.h"
+#include "AtomsDlg.h"
 
 
 struct RealParams
@@ -33,6 +38,9 @@ class RealParamDlg : public QDialog, Ui::RealParamDlg
 
 	public slots:
 		void paramsChanged(const RealParams& parms);
+		void CrystalChanged(const tl::Lattice<t_real_glob>& latt,
+			const tl::Lattice<t_real_glob>& recip, const SpaceGroup* pSG,
+			const std::vector<AtomPos>* pAtoms);
 
 	protected:
 		virtual void closeEvent(QCloseEvent *pEvt) override;
