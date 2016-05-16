@@ -20,6 +20,7 @@ t_real_glob g_dEpsGfx = 1e-4;
 
 bool g_bHasFormfacts = 0;
 bool g_bHasScatlens = 0;
+bool g_bShowFsq = 1;
 
 #ifndef NO_QT
 	QFont g_fontGen("DejaVu Sans",10);

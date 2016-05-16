@@ -1,4 +1,4 @@
-/*
+/**
  * Settings
  * @author tweber
  * @date 5-dec-2014
@@ -34,6 +34,10 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		// spins
 		typedef std::tuple<std::string, int, QSpinBox*> t_tupSpin;
 		std::vector<t_tupSpin> m_vecSpins;
+
+		// combos
+		typedef std::tuple<std::string, int, QComboBox*> t_tupCombo;
+		std::vector<t_tupCombo> m_vecCombos;
 
 	public:
 		SettingsDlg(QWidget* pParent=0, QSettings* pSett=0);

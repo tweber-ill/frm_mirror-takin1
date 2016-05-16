@@ -910,7 +910,10 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 
 							std::ostringstream ostrStructfact;
 							ostrStructfact.precision(g_iPrecGfx);
-							ostrStructfact << "S = " << dFsq;
+							if(g_bShowFsq)
+								ostrStructfact << "S = " << dFsq;
+							else
+								ostrStructfact << "F = " << std::sqrt(dFsq);
 							strStructfact = ostrStructfact.str();
 						}
 						// --------------------------------------------------------------------

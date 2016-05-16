@@ -1,4 +1,4 @@
-/*
+/**
  * Settings
  * @author tweber
  * @date 5-dec-2014
@@ -89,6 +89,11 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupSpin("net/poll", 750, spinNetPoll),
 	};
 
+	m_vecCombos =
+	{
+		t_tupCombo("main/sfact_sq", 1, comboSFact),
+	};
+
 	spinPrecGen->setMaximum(std::numeric_limits<t_real>::max_digits10);
 	spinPrecGfx->setMaximum(std::numeric_limits<t_real>::max_digits10);
 
@@ -141,6 +146,17 @@ void SettingsDlg::SetDefaults(bool bOverwrite)
 
 		m_pSettings->setValue(strKey.c_str(), iDef);
 	}
+
+	for(const t_tupCombo& tup : m_vecCombos)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		const int iDef = std::get<1>(tup);
+
+		bool bKeyExists = m_pSettings->contains(strKey.c_str());
+		if(bKeyExists && !bOverwrite) continue;
+
+		m_pSettings->setValue(strKey.c_str(), iDef);
+	}
 }
 
 
@@ -178,6 +194,16 @@ void SettingsDlg::LoadSettings()
 		pSpin->setValue(iVal);
 	}
 
+	for(const t_tupCombo& tup : m_vecCombos)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		int iDef = std::get<1>(tup);
+		QComboBox* pCombo = std::get<2>(tup);
+
+		int iVal = m_pSettings->value(strKey.c_str(), iDef).toInt();
+		pCombo->setCurrentIndex(iVal);
+	}
+
 	SetGlobals();
 }
 
@@ -209,6 +235,14 @@ void SettingsDlg::SaveSettings()
 		m_pSettings->setValue(strKey.c_str(), pSpin->value());
 	}
 
+	for(const t_tupCombo& tup : m_vecCombos)
+	{
+		const std::string& strKey = std::get<0>(tup);
+		QComboBox* pCombo = std::get<2>(tup);
+
+		m_pSettings->setValue(strKey.c_str(), pCombo->currentIndex());
+	}
+
 	SetGlobals();
 }
 
@@ -222,6 +256,7 @@ void SettingsDlg::SetGlobals() const
 	g_dEps = std::pow(10., -t_real(g_iPrec));
 	g_dEpsGfx = std::pow(10., -t_real(g_iPrecGfx));
 
+	g_bShowFsq = (comboSFact->currentIndex() == 1);
 
 	// fonts
 	QString strGfxFont = editGfxFont->text();

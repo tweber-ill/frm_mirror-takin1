@@ -73,7 +73,7 @@ DispDlg::DispDlg(QWidget* pParent, QSettings* pSett)
 
 	m_plotwrapFerro.reset(new QwtPlotWrapper(plotFerro));
 	m_plotwrapFerro->GetCurve(0)->setTitle("Ferromagnetic Dispersion");
-	m_plotwrapFerro->GetPlot()->setAxisTitle(QwtPlot::xBottom, "q (1/A)");
+	m_plotwrapFerro->GetPlot()->setAxisTitle(QwtPlot::xBottom, "q (rlu)");
 	m_plotwrapFerro->GetPlot()->setAxisTitle(QwtPlot::yLeft, "E (meV)");
 	if(m_plotwrapFerro->HasTrackerSignal())
 		connect(m_plotwrapFerro->GetPicker(), SIGNAL(moved(const QPointF&)),
