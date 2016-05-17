@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>448</width>
-    <height>470</height>
+    <width>443</width>
+    <height>499</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,6 +29,12 @@
       <string>Sample Unit Cell</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <property name="horizontalSpacing">
+       <number>4</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>2</number>
+      </property>
       <property name="margin">
        <number>4</number>
       </property>
@@ -131,6 +137,12 @@
       <string>Space Group</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_7">
+      <property name="horizontalSpacing">
+       <number>4</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>2</number>
+      </property>
       <property name="margin">
        <number>4</number>
       </property>
@@ -207,6 +219,15 @@
       <string>Neighbours</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <property name="horizontalSpacing">
+       <number>4</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>2</number>
+      </property>
+      <property name="margin">
+       <number>4</number>
+      </property>
       <item row="1" column="0">
        <widget class="QLabel" name="label_9">
         <property name="text">
@@ -317,6 +338,15 @@
       <string>Unit Cell</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
+      <property name="horizontalSpacing">
+       <number>4</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>2</number>
+      </property>
+      <property name="margin">
+       <number>4</number>
+      </property>
       <item row="0" column="0" colspan="2">
        <widget class="QPushButton" name="btnAtoms">
         <property name="text">
