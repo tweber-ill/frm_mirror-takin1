@@ -1,4 +1,4 @@
-/*
+/**
  * Reciprocal Space Parameters
  * @author tweber
  * @date 26-mar-2014

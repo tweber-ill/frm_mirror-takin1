@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>656</width>
-    <height>449</height>
+    <width>634</width>
+    <height>443</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,6 +38,9 @@
          <layout class="QGridLayout" name="gridLayout">
           <property name="margin">
            <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label">
@@ -107,6 +110,9 @@
           <property name="margin">
            <number>4</number>
           </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
@@ -174,6 +180,9 @@
          <layout class="QGridLayout" name="gridLayout_4">
           <property name="margin">
            <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
           </property>
           <item row="1" column="1">
            <widget class="QLineEdit" name="editQ">
@@ -243,6 +252,9 @@
           <property name="margin">
            <number>4</number>
           </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <item row="3" column="0">
            <widget class="QLabel" name="label_12">
             <property name="text">
@@ -310,6 +322,9 @@
          <layout class="QGridLayout" name="gridLayout_5">
           <property name="margin">
            <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
           </property>
           <item row="0" column="1">
            <widget class="QLineEdit" name="editQx">
@@ -379,6 +394,9 @@
           <property name="margin">
            <number>4</number>
           </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <item row="0" column="1">
            <widget class="QLineEdit" name="editqx">
             <property name="readOnly">
@@ -447,6 +465,9 @@
           <property name="margin">
            <number>4</number>
           </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <item row="0" column="1">
            <widget class="QLineEdit" name="editGx">
             <property name="readOnly">
@@ -514,6 +535,9 @@
          <layout class="QGridLayout" name="gridLayout_9">
           <property name="margin">
            <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
           </property>
           <item row="0" column="1">
            <widget class="QLineEdit" name="editFpx">
@@ -610,6 +634,9 @@
           <property name="margin">
            <number>4</number>
           </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <item row="1" column="1">
            <widget class="QLineEdit" name="editOriginK">
             <property name="text">
@@ -672,6 +699,9 @@
           <property name="margin">
            <number>4</number>
           </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <item row="0" column="0">
            <widget class="QRadioButton" name="radioEp">
             <property name="text">
@@ -719,6 +749,9 @@
          <layout class="QGridLayout" name="gridLayout_13">
           <property name="margin">
            <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
           </property>
           <item row="0" column="0">
            <widget class="QTextEdit" name="editDefs">
