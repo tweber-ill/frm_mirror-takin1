@@ -17,7 +17,7 @@
 #include "libs/qthelper.h"
 #include "SqwParamDlg.h"
 #include "ui/ui_monteconvo.h"
-#include "sqw.h"
+#include "sqwfactory.h"
 #include "../res/defs.h"
 
 
@@ -30,7 +30,7 @@ protected:
 	QSettings *m_pSett = nullptr;
 	SqwParamDlg *m_pSqwParamDlg = nullptr;
 
-	SqwBase *m_pSqw = nullptr;
+	std::shared_ptr<SqwBase> m_pSqw;
 	std::vector<t_real_reso> m_vecQ, m_vecS;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 

@@ -676,26 +676,6 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <item>
-             <property name="text">
-              <string>File with &quot;h k l E S&quot; Table</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Python Script</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Phonon Model</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Elastic Model</string>
-             </property>
-            </item>
            </widget>
           </item>
           <item row="1" column="0">

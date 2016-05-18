@@ -109,8 +109,8 @@ endif
 INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/usr/local/include \
 	-I/opt/include -I/usr/include/freetype2 -I/usr/include/lapacke \
 	-I/usr/include/python2.7 -I/usr/include/root -I/usr/include
-LIB_DIRS = -L/opt/local/lib -L/usr/lib64 -L/usr/lib64/root -L/usr/lib/x86_64-linux-gnu \
-	-L/usr/local/lib -L/opt/lib
+LIB_DIRS = -L/opt/local/lib -L/opt/lib -L/usr/local/lib -L/usr/local/lib64 \
+	-L/usr/lib64 -L/usr/lib64/root -L/usr/lib/x86_64-linux-gnu
 
 
 STD_LIBS = -lstdc++ -lm
@@ -200,7 +200,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/crystalsys.o obj/formfact.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
 	obj/loadinstr.o obj/recent.o obj/globals.o obj/qthelper.o \
-	obj/sqw.o ${PY_OBJS} obj/tasreso.o \
+	obj/sqw.o obj/sqwbase.o obj/sqwfact.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
 	obj/scanviewer.o obj/x3d.o obj/eval.o \
 	obj/tlibs_ver.o obj/AboutDlg.o
@@ -208,13 +208,13 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
 	obj/qthelper.o obj/globals.o
 
-OBJ_MONTECONVO = obj/log.o obj/debug.o obj/sqw.o \
-	obj/cn.o obj/pop.o obj/eck.o obj/viol.o \
+OBJ_MONTECONVO = obj/log.o obj/debug.o obj/sqw.o obj/sqwbase.o \
+	obj/sqwfact.o ${PY_OBJS} obj/cn.o obj/pop.o obj/eck.o obj/viol.o \
 	obj/rand.o obj/tasreso.o obj/eval.o \
 	obj/linalg2.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
-	obj/loadinstr.o obj/eval.o obj/gnuplot.o ${OBJ_MONTECONVO} ${PY_OBJS}
+	obj/loadinstr.o obj/eval.o obj/gnuplot.o ${OBJ_MONTECONVO}
 OBJ_CONVOSERIES = obj/scanseries.o obj/log.o obj/debug.o
 
 OBJ_RESO = obj/log.o obj/debug.o obj/rand.o \
@@ -270,11 +270,11 @@ montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
 
 monteconvo: ${OBJ_MONTECONVO} obj/mconv_main.o
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/monteconvo $+ \
-		${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${LAPACK_LIBS}
+		${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${PY_LIBS} ${LAPACK_LIBS} 
 	${STRIP} monteconvo
 
 xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/qthelper.o \
-	obj/globals.o obj/SqwParamDlg.o ${PY_OBJS}
+	obj/globals.o obj/SqwParamDlg.o
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/xmonteconvo $+ \
 		${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} \
 		${PY_LIBS} ${LAPACK_LIBS}
@@ -455,6 +455,10 @@ obj/mconv_main.o: tools/monteconvo/mconv_main.cpp
 obj/xmconv_main.o: tools/monteconvo/xmconv_main.cpp
 	${CC} ${FLAGS} -c -o $@ $<
 obj/sqw.o: tools/monteconvo/sqw.cpp tools/monteconvo/sqw.h tlibs/math/kd.h
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
+obj/sqwbase.o: tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwbase.h
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
+obj/sqwfact.o: tools/monteconvo/sqwfactory.cpp tools/monteconvo/sqwfactory.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/sqw_py.o: tools/monteconvo/sqw_py.cpp tools/monteconvo/sqw_py.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<

@@ -1,7 +1,7 @@
-/*
+/**
  * monte carlo convolution tool
  * @author tweber
- * @date jun-2015
+ * @date 2015, 2016
  * @license GPLv2
  */
 
@@ -16,9 +16,11 @@
 #include <tuple>
 #include <memory>
 #include <boost/numeric/ublas/vector.hpp>
+
 #include "tlibs/math/math.h"
 #include "tlibs/math/kd.h"
 #include "../res/defs.h"
+#include "sqwbase.h"
 
 #ifdef USE_RTREE
 	#include "tlibs/math/rt.h"
@@ -26,29 +28,6 @@
 #endif
 
 namespace ublas = boost::numeric::ublas;
-
-
-class SqwBase
-{
-public:
-	// name, type, value
-	using t_var = std::tuple<std::string, std::string, std::string>;
-
-protected:
-	bool m_bOk = false;
-
-public:
-	virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const = 0;
-	bool IsOk() const { return m_bOk; }
-
-	virtual std::vector<t_var> GetVars() const = 0;
-	virtual void SetVars(const std::vector<t_var>&) = 0;
-	virtual bool SetVarIfAvailable(const std::string& strKey, const std::string& strNewVal);
-
-	virtual SqwBase* shallow_copy() const = 0;
-
-	virtual ~SqwBase() {}
-};
 
 
 // -----------------------------------------------------------------------------

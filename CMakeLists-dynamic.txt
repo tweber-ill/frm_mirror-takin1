@@ -102,7 +102,8 @@ add_executable(takin
 	tools/res/ResoDlg.cpp
 
 	tools/monteconvo/ConvoDlg.cpp tools/monteconvo/SqwParamDlg.cpp tools/monteconvo/TASReso.cpp
-	tools/monteconvo/sqw.cpp tools/monteconvo/sqw_py.cpp
+	tools/monteconvo/sqw.cpp tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
+	tools/monteconvo/sqw_py.cpp
 
 	tools/scanviewer/scanviewer.cpp
 
@@ -157,7 +158,8 @@ add_executable(convofit
 	tools/res/cn.cpp tools/res/pop.cpp tools/res/eck.cpp tools/res/viol.cpp
 
 	tools/monteconvo/TASReso.cpp
-	tools/monteconvo/sqw.cpp tools/monteconvo/sqw_py.cpp
+	tools/monteconvo/sqw.cpp tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
+	tools/monteconvo/sqw_py.cpp
 
 	tools/convofit/convofit.cpp
 	tools/convofit/model.cpp tools/convofit/scan.cpp

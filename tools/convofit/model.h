@@ -20,7 +20,7 @@
 
 #include <boost/signals2.hpp>
 
-#include "../monteconvo/sqw.h"
+#include "../monteconvo/sqwbase.h"
 #include "../monteconvo/TASReso.h"
 #include "../res/defs.h"
 #include "scan.h"
@@ -35,7 +35,7 @@ using t_real_mod = t_real_reso;
 class SqwFuncModel : public tl::MinuitMultiFuncModel<t_real_mod>
 {
 protected:
-	std::unique_ptr<SqwBase> m_pSqw;
+	std::shared_ptr<SqwBase> m_pSqw;
 	std::vector<TASReso> m_vecResos;
 	//TASReso m_reso;
 	unsigned int m_iNumNeutrons = 1000;
@@ -60,22 +60,22 @@ protected:
 	std::size_t m_iCurParamSet = 0;
 	const std::vector<Scan>* m_pScans = nullptr;
 	// -------------------------------------------------------------------------
-	
+
 	// -------------------------------------------------------------------------
 	// signals
 	public: using t_sigFuncResult = sig::signal<void(t_real_mod h, t_real_mod k, t_real_mod l, 
 		t_real_mod E, t_real_mod S)>;
 	protected: std::shared_ptr<t_sigFuncResult> m_psigFuncResult;
 	public: void AddFuncResultSlot(const t_sigFuncResult::slot_type& slot)
-	{ 
+	{
 		if(!m_psigFuncResult) m_psigFuncResult = std::make_shared<t_sigFuncResult>();
 		m_psigFuncResult->connect(slot);
 	}
-	
+
 	public: using t_sigParamsChanged = sig::signal<void(const std::string&)>;
 	protected: std::shared_ptr<t_sigParamsChanged> m_psigParamsChanged;
 	public: void AddParamsChangedSlot(const t_sigParamsChanged::slot_type& slot)
-	{ 
+	{
 		if(!m_psigParamsChanged) m_psigParamsChanged = std::make_shared<t_sigParamsChanged>();
 		m_psigParamsChanged->connect(slot);
 	}
@@ -85,8 +85,8 @@ protected:
 	void SetModelParams();
 
 public:
-	SqwFuncModel(SqwBase* pSqw, const TASReso& reso);
-	SqwFuncModel(SqwBase* pSqw, const std::vector<TASReso>& vecResos);
+	SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const TASReso& reso);
+	SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const std::vector<TASReso>& vecResos);
 	SqwFuncModel() = delete;
 	virtual ~SqwFuncModel() = default;
 

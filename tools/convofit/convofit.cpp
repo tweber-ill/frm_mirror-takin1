@@ -25,7 +25,7 @@
 #include "convofit.h"
 #include "scan.h"
 #include "model.h"
-#include "../monteconvo/sqw_py.h"
+#include "../monteconvo/sqwfactory.h"
 #include "../res/defs.h"
 
 //using t_real = tl::t_real_min;
@@ -298,17 +298,9 @@ bool run_job(const std::string& strJob)
 	// --------------------------------------------------------------------
 	// Model file
 	tl::log_info("Loading S(q,w) file \"", strSqwFile, "\".");
-	SqwBase *pSqw = nullptr;
+	std::shared_ptr<SqwBase> pSqw = construct_sqw(strSqwMod, strSqwFile);
 
-	if(strSqwMod == "phonons")
-		pSqw = new SqwPhonon(strSqwFile.c_str());
-	else if(strSqwMod == "elastic")
-		pSqw = new SqwElast(strSqwFile.c_str());
-	else if(strSqwMod == "tree")
-		pSqw = new SqwKdTree(strSqwFile.c_str());
-	else if(strSqwMod == "py")
-		pSqw = new SqwPy(strSqwFile.c_str());
-	else
+	if(!pSqw)
 	{
 		tl::log_err("Invalid S(q,w) model selected: \"", strSqwMod, "\".");
 		return 0;

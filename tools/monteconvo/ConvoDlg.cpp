@@ -60,6 +60,17 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_plotwrap->GetCurve(1)->setTitle("S(Q,w)");
 
 
+	// fill sqw combo box
+	auto vecSqwNames = get_sqw_names();
+	for(const auto& tupSqw : vecSqwNames)
+	{
+		QString strIdent = std::get<0>(tupSqw).c_str();
+		QString strName = std::get<1>(tupSqw).c_str();
+
+		comboSqw->addItem(strName, strIdent);
+	}
+
+
 	m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);
 	QObject::connect(this, SIGNAL(SqwLoaded(const std::vector<SqwBase::t_var>&)),
 		m_pSqwParamDlg, SLOT(SqwLoaded(const std::vector<SqwBase::t_var>&)));
@@ -92,12 +103,6 @@ ConvoDlg::~ConvoDlg()
 			m_pth->join();
 		delete m_pth;
 		m_pth = nullptr;
-	}
-
-	if(m_pSqw)
-	{
-		delete m_pSqw;
-		m_pSqw = nullptr;
 	}
 
 	if(m_pSqwParamDlg)
@@ -152,55 +157,33 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 {
 	if(m_pSqw)
 	{
-		delete m_pSqw;
-		m_pSqw = nullptr;
-
+		m_pSqw.reset();
 		emit SqwLoaded(std::vector<SqwBase::t_var>{});
 	}
 
-
-	const int iSqwModel = comboSqw->currentIndex();
+	std::string strSqwIdent = comboSqw->itemData(comboSqw->currentIndex()).toString().toStdString();
 	std::string strSqwFile = qstrFile.toStdString();
 	tl::trim(strSqwFile);
 
-	if(iSqwModel!=3 && strSqwFile == "")
+	if(strSqwFile == "")
 	{
-		QMessageBox::critical(this, "Error", "Could not load S(q,w) config file.");
+		QMessageBox::critical(this, "Error", "No S(q,w) config file given.");
 		return;
 	}
 
-	switch(iSqwModel)
-	{
-		case 0:
-			m_pSqw = new SqwKdTree(strSqwFile.c_str());
-			break;
-		case 1:
 #ifdef NO_PY
-			QMessageBox::critical(this, "Error", "Compiled without python support.");
-			return;
-#else
-			m_pSqw = new SqwPy(strSqwFile.c_str());
-			break;
+	if(strSqwIdent == "py")
+	{
+		QMessageBox::critical(this, "Error", "Compiled without python support.");
+		return;		
+	}
 #endif
-		case 2:
-			/*m_pSqw = new SqwPhonon(tl::make_vec({4.,4.,0}),
-					tl::make_vec({0.,0.,1.}), tl::make_vec({1.,-1.,0.}),
-					55.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1,
-					22.5/(M_PI/2.), M_PI/2., 0.1, 0.1,
-					28.5/(M_PI/2.)/std::sqrt(2.), M_PI/2., 0.1, 0.1);*/
-			m_pSqw = new SqwPhonon(strSqwFile.c_str());
-			break;
-		case 3:
-			if(strSqwFile.length())
-				m_pSqw = new SqwElast(strSqwFile.c_str());
-			else
-				m_pSqw = new SqwElast();
-			break;
-		default:
-		{
-			QMessageBox::critical(this, "Error", "Unknown S(q,w) model selected.");
-			return;
-		}
+
+	m_pSqw = construct_sqw(strSqwIdent, strSqwFile);
+	if(!m_pSqw)
+	{
+		QMessageBox::critical(this, "Error", "Unknown S(q,w) model selected.");
+		return;		
 	}
 
 	if(m_pSqw && m_pSqw->IsOk())
@@ -236,8 +219,8 @@ void ConvoDlg::Start()
 	tabWidget->setCurrentWidget(tabPlot);
 
 	bool bForceDeferred = false;
-	const int iSqwModel = comboSqw->currentIndex();
-	if(iSqwModel == 1)
+	std::string strSqwIdent = comboSqw->itemData(comboSqw->currentIndex()).toString().toStdString();
+	if(strSqwIdent == "py")
 		bForceDeferred = true;
 	Qt::ConnectionType connty = bForceDeferred ? Qt::ConnectionType::DirectConnection
 			: Qt::ConnectionType::BlockingQueuedConnection;
@@ -582,7 +565,7 @@ void ConvoDlg::LoadSettings()
 		if(m_pSett->contains("monteconvo/ana_foc"))
 			comboFocAna->setCurrentIndex(m_pSett->value("monteconvo/ana_foc").toInt());
 		if(m_pSett->contains("monteconvo/sqw"))
-			comboSqw->setCurrentIndex(m_pSett->value("monteconvo/sqw").toInt());
+			comboSqw->setCurrentIndex(comboSqw->findData(m_pSett->value("monteconvo/sqw").toString()));
 
 		if(m_pSett->contains("monteconvo/crys"))
 			editCrys->setText(m_pSett->value("monteconvo/crys").toString());
@@ -635,7 +618,7 @@ void ConvoDlg::ButtonBoxClicked(QAbstractButton *pBtn)
 			m_pSett->setValue("monteconvo/fixedk", comboFixedK->currentIndex());
 			m_pSett->setValue("monteconvo/mono_foc", comboFocMono->currentIndex());
 			m_pSett->setValue("monteconvo/ana_foc", comboFocAna->currentIndex());
-			m_pSett->setValue("monteconvo/sqw", comboSqw->currentIndex());
+			m_pSett->setValue("monteconvo/sqw", comboSqw->itemData(comboSqw->currentIndex()).toString());
 
 			m_pSett->setValue("monteconvo/crys", editCrys->text());
 			m_pSett->setValue("monteconvo/instr", editRes->text());

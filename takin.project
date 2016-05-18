@@ -148,6 +148,10 @@
       <File Name="tools/monteconvo/sqw_py.h"/>
       <File Name="tools/monteconvo/SqwParamDlg.cpp"/>
       <File Name="tools/monteconvo/SqwParamDlg.h"/>
+      <File Name="tools/monteconvo/sqwbase.h"/>
+      <File Name="tools/monteconvo/sqwbase.cpp"/>
+      <File Name="tools/monteconvo/sqwfactory.cpp"/>
+      <File Name="tools/monteconvo/sqwfactory.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="scanviewer">
       <File Name="tools/scanviewer/scanviewer.cpp"/>

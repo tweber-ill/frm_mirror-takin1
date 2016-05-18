@@ -17,11 +17,11 @@
 using t_real = t_real_mod;
 
 
-SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const TASReso& reso)
+SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const TASReso& reso)
 	: m_pSqw(pSqw)/*, m_reso(reso)*/, m_vecResos({reso})
 {}
 
-SqwFuncModel::SqwFuncModel(SqwBase* pSqw, const std::vector<TASReso>& vecResos)
+SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const std::vector<TASReso>& vecResos)
 	: m_pSqw(pSqw), m_vecResos(vecResos)
 {}
 
@@ -83,7 +83,8 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
 SqwFuncModel* SqwFuncModel::copy() const
 {
 	// cannot rebuild kd tree in phonon model with only a shallow copy
-	SqwFuncModel* pMod = new SqwFuncModel(m_pSqw->shallow_copy()/*, m_reso*/, m_vecResos);
+	SqwFuncModel* pMod = new SqwFuncModel(
+		std::shared_ptr<SqwBase>(m_pSqw->shallow_copy())/*, m_reso*/, m_vecResos);
 	pMod->m_vecScanOrigin = this->m_vecScanOrigin;
 	pMod->m_vecScanDir = this->m_vecScanDir;
 	pMod->m_iNumNeutrons = this->m_iNumNeutrons;
