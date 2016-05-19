@@ -142,7 +142,7 @@ void DispDlg::Calc()
 		const int iNN = spinNN->value();
 		const int iSC = spinSC->value();
 		int iIdxCentre = spinCentreIdx->value();
-		if(iIdxCentre >= m_vecAtoms.size()) iIdxCentre = m_vecAtoms.size()-1;
+		if(iIdxCentre >= int(m_vecAtoms.size())) iIdxCentre = int(m_vecAtoms.size())-1;
 		if(iIdxCentre < 0) iIdxCentre = 0;
 
 		// lattice
@@ -224,7 +224,7 @@ void DispDlg::Calc()
 				const t_cplx& cplxThisJ = vecJSC[iIdx];
 				const std::string& strThisAtom = vecNamesSC[iIdx];
 
-				if(iOuterIdx>0 && iOuterIdx <= iNN)
+				if(iOuterIdx > 0 && int(iOuterIdx) <= iNN)
 				{
 					vecAtomsNN.push_back(vecThisAtom - vecCentre);
 					vecJNN.push_back(cplxThisJ);
