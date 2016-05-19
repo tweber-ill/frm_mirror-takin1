@@ -19,4 +19,6 @@ extern std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 // [identifier, long name]
 extern std::vector<std::tuple<std::string, std::string>> get_sqw_names();
 
+
+extern void load_sqw_plugins();
 #endif

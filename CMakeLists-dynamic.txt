@@ -117,7 +117,7 @@ add_executable(takin
 	dialogs/AtomsDlg.cpp dialogs/AboutDlg.cpp
 
 	libs/spacegroups/spacegroup.cpp tools/sglist/SgListDlg.cpp
-	libs/globals.cpp libs/spacegroups/crystalsys.cpp
+	libs/globals.cpp libs/globals_qt.cpp libs/spacegroups/crystalsys.cpp
 	libs/formfactors/formfact.cpp libs/qthelper.cpp
 #	libs/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp
 )

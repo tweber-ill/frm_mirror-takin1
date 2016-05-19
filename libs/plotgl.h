@@ -21,6 +21,7 @@
 
 #include "tlibs/gfx/gl.h"
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>

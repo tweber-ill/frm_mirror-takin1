@@ -13,7 +13,9 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <vector>
 #include <string>
+
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 
 #include "ui/ui_atoms.h"
 namespace ublas = boost::numeric::ublas;

@@ -10,6 +10,7 @@
 
 #include "tlibs/helper/flags.h"
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 
 #include <cmath>
 #include <QGraphicsScene>

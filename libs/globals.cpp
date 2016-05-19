@@ -1,4 +1,4 @@
-/*
+/**
  * globals
  * @author tweber
  * @date 20-mar-2015
@@ -7,8 +7,8 @@
 
 #include "globals.h"
 #include "tlibs/log/log.h"
+#include "tlibs/file/file.h"
 
-#include <boost/filesystem.hpp>
 
 // -----------------------------------------------------------------------------
 
@@ -22,11 +22,6 @@ bool g_bHasFormfacts = 0;
 bool g_bHasScatlens = 0;
 bool g_bShowFsq = 1;
 
-#ifndef NO_QT
-	QFont g_fontGen("DejaVu Sans",10);
-	QFont g_fontGfx("DejaVu Sans",10);
-	QFont g_fontGL("DejaVu Sans Mono",10);
-#endif
 
 // -----------------------------------------------------------------------------
 
@@ -39,16 +34,6 @@ static std::vector<std::string> s_vecInstallPaths =
 #endif
 };
 
-#ifndef NO_QT
-QIcon load_icon(const std::string& strIcon)
-{
-	std::string strFile = find_resource(strIcon);
-	if(strFile != "")
-		return QIcon(strFile.c_str());
-
-	return QIcon();
-}
-#endif
 
 void add_resource_path(const std::string& strPath)
 {
@@ -61,15 +46,28 @@ std::string find_resource(const std::string& strFile)
 	{
 		std::string _strFile = strPrefix + "/" + strFile;
 		//tl::log_debug("Looking for file: ", _strFile);
-		if(boost::filesystem::exists(_strFile))
+		if(tl::file_exists(_strFile.c_str()))
 			return _strFile;
-		else if(boost::filesystem::exists(_strFile + ".gz"))
+		else if(tl::file_exists((_strFile + ".gz").c_str()))
 			return _strFile + ".gz";
-		else if(boost::filesystem::exists(_strFile + ".bz2"))
+		else if(tl::file_exists((_strFile + ".bz2").c_str()))
 			return _strFile + ".bz2";
 	}
 
 	tl::log_err("Could not load resource file \"", strFile, "\".");
+	return "";
+}
+
+std::string find_resource_dir(const std::string& strDir)
+{
+	for(const std::string& strPrefix : s_vecInstallPaths)
+	{
+		std::string _strDir = strPrefix + "/" + strDir;
+		if(tl::dir_exists(_strDir.c_str()))
+			return _strDir;
+	}
+
+	tl::log_err("Could not load resource directory \"", strDir, "\".");
 	return "";
 }
 

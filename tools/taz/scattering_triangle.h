@@ -16,6 +16,7 @@
 #include "tlibs/math/kd.h"
 #include "dialogs/AtomsDlg.h"
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 #include "libs/spacegroups/spacegroup.h"
 
 #include <QGraphicsScene>

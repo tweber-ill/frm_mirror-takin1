@@ -16,6 +16,7 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/prop.h"
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 #include "tools/taz/tasoptions.h"
 #include "RecipParamDlg.h"
 

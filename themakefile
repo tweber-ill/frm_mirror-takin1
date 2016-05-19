@@ -13,6 +13,7 @@ USE_IOSTR = 1
 USE_BOOST_REGEX = 0
 USE_GIL = 1
 USE_PY = 1
+USE_PLUGINS = 0
 
 BOOST_SUFFIX = 
 #BOOST_SUFFIX = -mt
@@ -199,14 +200,14 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/crystalsys.o obj/formfact.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
-	obj/loadinstr.o obj/recent.o obj/globals.o obj/qthelper.o \
+	obj/loadinstr.o obj/recent.o obj/globals.o obj/globals_qt.o obj/qthelper.o \
 	obj/sqw.o obj/sqwbase.o obj/sqwfact.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
 	obj/scanviewer.o obj/x3d.o obj/eval.o \
 	obj/tlibs_ver.o obj/AboutDlg.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
-	obj/qthelper.o obj/globals.o
+	obj/qthelper.o obj/globals.o obj/globals_qt.o
 
 OBJ_MONTECONVO = obj/log.o obj/debug.o obj/sqw.o obj/sqwbase.o \
 	obj/sqwfact.o ${PY_OBJS} obj/cn.o obj/pop.o obj/eck.o obj/viol.o \
@@ -214,25 +215,26 @@ OBJ_MONTECONVO = obj/log.o obj/debug.o obj/sqw.o obj/sqwbase.o \
 	obj/linalg2.o
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
-	obj/loadinstr.o obj/eval.o obj/gnuplot.o ${OBJ_MONTECONVO}
+	obj/loadinstr.o obj/eval.o obj/gnuplot.o ${OBJ_MONTECONVO} \
+	obj/globals.o
 OBJ_CONVOSERIES = obj/scanseries.o obj/log.o obj/debug.o
 
 OBJ_RESO = obj/log.o obj/debug.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
 	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
-	obj/linalg2.o obj/globals.o
+	obj/linalg2.o obj/globals.o obj/globals_qt.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 	obj/loadinstr.o obj/log.o obj/debug.o obj/qthelper.o \
-	obj/globals.o
+	obj/globals.o obj/globals_qt.o
 
 OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup.o obj/crystalsys.o \
-	obj/log.o obj/debug.o obj/globals.o
+	obj/log.o obj/debug.o obj/globals.o obj/globals_qt.o
 
 OBJ_GENTAB = obj/spacegroup_clp.o obj/gentab.o obj/crystalsys_noqt.o obj/log.o \
 	obj/debug.o
 
-OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals_noqt.o \
+OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals.o \
 	obj/formfact.o obj/log.o obj/debug.o
 
 
@@ -268,13 +270,13 @@ montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
 		${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${LAPACK_LIBS}
 	${STRIP} montereso
 
-monteconvo: ${OBJ_MONTECONVO} obj/mconv_main.o
+monteconvo: ${OBJ_MONTECONVO} obj/globals.o obj/mconv_main.o
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/monteconvo $+ \
 		${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${PY_LIBS} ${LAPACK_LIBS} 
 	${STRIP} monteconvo
 
 xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/qthelper.o \
-	obj/globals.o obj/SqwParamDlg.o
+	obj/globals.o obj/globals_qt.o obj/SqwParamDlg.o
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/xmonteconvo $+ \
 		${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} \
 		${PY_LIBS} ${LAPACK_LIBS}
@@ -353,6 +355,8 @@ obj/AtomsDlg.o: dialogs/AtomsDlg.cpp dialogs/AtomsDlg.h
 obj/SettingsDlg.o: dialogs/SettingsDlg.cpp dialogs/SettingsDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/globals.o: libs/globals.cpp libs/globals.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/globals_qt.o: libs/globals_qt.cpp libs/globals_qt.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/qthelper.o: libs/qthelper.cpp libs/qthelper.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -489,8 +493,6 @@ obj/sglist_main.o: tools/sglist/main.cpp
 obj/SgListDlg.o: tools/sglist/SgListDlg.cpp tools/sglist/SgListDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 
-obj/globals_noqt.o: libs/globals.cpp libs/globals.h
-	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/crystalsys_noqt.o: libs/spacegroups/crystalsys.cpp libs/spacegroups/crystalsys.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/sfact.o: tools/sggen/sfact.cpp

@@ -7,6 +7,7 @@
 
 #include "qthelper.h"
 #include "globals.h"
+#include "globals_qt.h"
 #include "tlibs/math/math.h"
 #include "tlibs/string/string.h"
 

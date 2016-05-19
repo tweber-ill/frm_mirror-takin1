@@ -13,6 +13,7 @@
 #include "libs/spacegroups/spacegroup.h"
 #include "libs/qthelper.h"
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 #include "tlibs/file/prop.h"
 #include "AtomsDlg.h"
 

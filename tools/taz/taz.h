@@ -57,6 +57,7 @@
 #include "tools/sglist/SgListDlg.h"
 #include "libs/spacegroups/spacegroup.h"
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 #include "tlibs/math/lattice.h"
 
 

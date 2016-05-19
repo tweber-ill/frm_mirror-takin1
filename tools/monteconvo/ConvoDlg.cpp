@@ -15,6 +15,7 @@
 #endif
 #include "TASReso.h"
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 
 #include <iostream>
 #include <fstream>
@@ -45,6 +46,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::xBottom, "");
 	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "S (a.u.)");
 
+
+	// --------------------------------------------------------------------
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
 	penCurve.setWidth(2);
@@ -58,9 +61,13 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_plotwrap->GetCurve(1)->setPen(penPoints);
 	m_plotwrap->GetCurve(1)->setStyle(QwtPlotCurve::CurveStyle::Dots);
 	m_plotwrap->GetCurve(1)->setTitle("S(Q,w)");
+	// --------------------------------------------------------------------
 
 
+
+	// --------------------------------------------------------------------
 	// fill sqw combo box
+	load_sqw_plugins();
 	auto vecSqwNames = get_sqw_names();
 	for(const auto& tupSqw : vecSqwNames)
 	{
@@ -69,6 +76,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 		comboSqw->addItem(strName, strIdent);
 	}
+	// --------------------------------------------------------------------
+
 
 
 	m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);

@@ -12,6 +12,7 @@
 	#include "tlibs/gfx/gl.h"
 #endif
 #include "libs/globals.h"
+#include "libs/globals_qt.h"
 
 #include <QFileDialog>
 #include <QFontDialog>

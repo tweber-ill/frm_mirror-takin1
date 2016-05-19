@@ -10,7 +10,10 @@
 #ifndef NO_PY
 	#include "sqw_py.h"
 #endif
+
 #include "tlibs/log/log.h"
+#include "tlibs/file/file.h"
+#include "libs/globals.h"
 
 #include <algorithm>
 #include <unordered_map>
@@ -63,7 +66,7 @@ std::vector<std::tuple<std::string, std::string>> get_sqw_names()
 	{
 		const std::string& str0 = std::get<1>(tup0);
 		const std::string& str1 = std::get<1>(tup1);
-		
+
 		return std::lexicographical_compare(str0.begin(), str0.end(), str1.begin(), str1.end());
 	});
 	return vec;
@@ -81,3 +84,38 @@ std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 
 	return (*std::get<0>(iter->second))(strConfigFile);
 }
+
+
+#ifdef USE_PLUGINS
+
+#include <boost/dll/import.hpp>
+
+void load_sqw_plugins()
+{
+	static bool bPluginsLoaded = 0;
+	if(bPluginsLoaded) return;
+
+	std::string strPlugins = find_resource_dir("plugins");
+	if(strPlugins != "")
+	{
+		tl::log_info("Plugin directory: ", strPlugins);
+
+		std::vector<std::string> vecPlugins = tl::get_all_files(strPlugins.c_str());
+		for(const std::string& strPlugin : vecPlugins)
+		{
+			// TODO
+		}
+	}
+
+	bPluginsLoaded = 1;
+}
+
+#else
+
+void load_sqw_plugins()
+{
+	tl::log_err("No S(q,w) plugin interface available.");
+}
+
+#endif
+
