@@ -10,8 +10,10 @@
 
 #include "sqwbase.h"
 #include <tuple>
+#include <memory>
 #include <vector>
 #include <string>
+
 
 extern std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 	const std::string& strConfigFile);

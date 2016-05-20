@@ -14,11 +14,19 @@
 #include "tlibs/log/log.h"
 #include "tlibs/file/file.h"
 #include "libs/globals.h"
+#include "libs/version.h"
 
 #include <algorithm>
+#include <functional>
 #include <unordered_map>
 
 
+// sqw info function: "takin_sqw_info"
+// returns: [takin ver, ident, long name]
+using t_pfkt_info = std::tuple<std::string, std::string, std::string>(*)();
+using t_fkt_info = typename std::remove_pointer<t_pfkt_info>::type;
+
+// sqw module function: "takin_sqw"
 using t_pfkt = std::shared_ptr<SqwBase>(*)(const std::string&);
 using t_fkt = typename std::remove_pointer<t_pfkt>::type;
 
@@ -49,10 +57,6 @@ static t_mapSqw g_mapSqw =
 };
 
 
-// keeping track of loaded so functions
-using t_vecExtMods = std::vector<std::function<t_fkt>>;
-static t_vecExtMods g_vecExtMods;
-
 
 std::vector<std::tuple<std::string, std::string>> get_sqw_names()
 {
@@ -79,7 +83,7 @@ std::vector<std::tuple<std::string, std::string>> get_sqw_names()
 	return vec;
 }
 
-std::shared_ptr<SqwBase> construct_sqw(const std::string& strName, 
+std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 	const std::string& strConfigFile)
 {
 	typename t_mapSqw::const_iterator iter = g_mapSqw.find(strName);
@@ -89,17 +93,21 @@ std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 		return nullptr;
 	}
 
+	//tl::log_debug("Constructing ", iter->first, ".");
 	return (*std::get<0>(iter->second))(strConfigFile);
 }
 
 
 #ifdef USE_PLUGINS
 
+#include <boost/dll/shared_library.hpp>
 #include <boost/dll/import.hpp>
 
 void load_sqw_plugins()
 {
 	namespace so = boost::dll;
+	// tracking modules for refcounting
+	static std::vector<std::shared_ptr<so::shared_library>> g_vecMods;
 
 	static bool bPluginsLoaded = 0;
 	if(bPluginsLoaded) return;
@@ -114,17 +122,39 @@ void load_sqw_plugins()
 		{
 			try
 			{
-				std::function<t_fkt> fkt = so::import<t_fkt>(strPlugin, "takin_sqw");
+				std::shared_ptr<so::shared_library> pmod =
+					std::make_shared<so::shared_library>(strPlugin);
+				if(!pmod) continue;
 
-				std::string strModIdent = "";		// TODO
-				std::string strModLongName = "";	// TODO
+				// import info function
+				std::function<t_fkt_info> fktInfo =
+					pmod->get<t_pfkt_info>("takin_sqw_info");
+
+				auto tupInfo = fktInfo();
+				const std::string& strTakVer = std::get<0>(tupInfo);
+				const std::string& strModIdent = std::get<1>(tupInfo);
+				const std::string& strModLongName = std::get<2>(tupInfo);
+				tl::log_debug("Module ident: ", strModIdent);
+
+				if(strTakVer != TAKIN_VER)
+				{
+					tl::log_err("Skipping S(q,w) plugin \"", strPlugin,
+					"\" as it was compiled for Takin version ", strTakVer,
+					" but this is version ", TAKIN_VER, ".");
+					continue;
+				}
+
+
+				// import factory function
+				t_pfkt pFkt = pmod->get<t_pfkt>("takin_sqw");
 
 				g_mapSqw.insert( t_mapSqw::value_type {
 					strModIdent,
-					t_mapSqw::mapped_type { fkt.target<t_fkt>(), strModLongName }
+					t_mapSqw::mapped_type { pFkt, strModLongName }
 				});
 
-				g_vecExtMods.push_back(std::move(fkt));
+
+				g_vecMods.push_back(pmod);
 				tl::log_info("Loaded plugin: ", strPlugin);
 			}
 			catch(const std::exception& ex)
@@ -145,4 +175,3 @@ void load_sqw_plugins()
 }
 
 #endif
-

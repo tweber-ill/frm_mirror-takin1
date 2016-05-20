@@ -8,7 +8,7 @@
 #include "sqwbase.h"
 
 
-bool SqwBase::SetVarIfAvailable(const std::string& strKey, const std::string& strNewVal)
+bool SqwBase::SetVarIfAvail(const std::string& strKey, const std::string& strNewVal)
 {
 	std::vector<t_var> vecVars = GetVars();
 	for(const t_var& var : vecVars)

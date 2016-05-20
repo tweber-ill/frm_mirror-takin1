@@ -29,7 +29,7 @@ public:
 
 	virtual std::vector<t_var> GetVars() const = 0;
 	virtual void SetVars(const std::vector<t_var>&) = 0;
-	virtual bool SetVarIfAvailable(const std::string& strKey, const std::string& strNewVal);
+	virtual bool SetVarIfAvail(const std::string& strKey, const std::string& strNewVal);
 
 	virtual SqwBase* shallow_copy() const = 0;
 	virtual ~SqwBase() {}

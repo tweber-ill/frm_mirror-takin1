@@ -398,7 +398,7 @@ bool run_job(const std::string& strJob)
 			tl::trim(vecModParam[0]);
 			tl::trim(vecModParam[1]);
 
-			if(mod.GetSqwBase()->SetVarIfAvailable(vecModParam[0], vecModParam[1]))
+			if(mod.GetSqwBase()->SetVarIfAvail(vecModParam[0], vecModParam[1]))
 				tl::log_info("Setting model parameter \"", vecModParam[0], "\" to \"", vecModParam[1], "\".");
 			else
 				tl::log_err("No parameter named \"", vecModParam[0], "\" available in S(q,w) model.");

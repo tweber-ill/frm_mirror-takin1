@@ -184,7 +184,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	if(strSqwIdent == "py")
 	{
 		QMessageBox::critical(this, "Error", "Compiled without python support.");
-		return;		
+		return;
 	}
 #endif
 
@@ -192,7 +192,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	if(!m_pSqw)
 	{
 		QMessageBox::critical(this, "Error", "Unknown S(q,w) model selected.");
-		return;		
+		return;
 	}
 
 	if(m_pSqw && m_pSqw->IsOk())

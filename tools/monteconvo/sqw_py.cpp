@@ -1,4 +1,4 @@
-/*
+/**
  * S(Q,w) python interface
  * @author tweber
  * @date aug-2015
