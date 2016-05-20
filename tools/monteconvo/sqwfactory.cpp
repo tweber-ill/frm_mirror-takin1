@@ -19,9 +19,11 @@
 #include <unordered_map>
 
 
+using t_pfkt = std::shared_ptr<SqwBase>(*)(const std::string&);
+using t_fkt = typename std::remove_pointer<t_pfkt>::type;
+
 // key: identifier, value: [func, long name]
-using t_mapSqw = std::unordered_map<std::string,
-	std::tuple<std::shared_ptr<SqwBase>(*)(const std::string&), std::string>>;
+using t_mapSqw = std::unordered_map<std::string, std::tuple<t_pfkt, std::string>>;
 
 static t_mapSqw g_mapSqw =
 {
@@ -45,6 +47,11 @@ static t_mapSqw g_mapSqw =
 		{ return std::make_shared<SqwElast>(strCfgFile.c_str()); }, 
 		"Elastic Model" } },
 };
+
+
+// keeping track of loaded so functions
+using t_vecExtMods = std::vector<std::function<t_fkt>>;
+static t_vecExtMods g_vecExtMods;
 
 
 std::vector<std::tuple<std::string, std::string>> get_sqw_names()
@@ -92,6 +99,8 @@ std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 
 void load_sqw_plugins()
 {
+	namespace so = boost::dll;
+
 	static bool bPluginsLoaded = 0;
 	if(bPluginsLoaded) return;
 
@@ -103,7 +112,25 @@ void load_sqw_plugins()
 		std::vector<std::string> vecPlugins = tl::get_all_files(strPlugins.c_str());
 		for(const std::string& strPlugin : vecPlugins)
 		{
-			// TODO
+			try
+			{
+				std::function<t_fkt> fkt = so::import<t_fkt>(strPlugin, "takin_sqw");
+
+				std::string strModIdent = "";		// TODO
+				std::string strModLongName = "";	// TODO
+
+				g_mapSqw.insert( t_mapSqw::value_type {
+					strModIdent,
+					t_mapSqw::mapped_type { fkt.target<t_fkt>(), strModLongName }
+				});
+
+				g_vecExtMods.push_back(std::move(fkt));
+				tl::log_info("Loaded plugin: ", strPlugin);
+			}
+			catch(const std::exception& ex)
+			{
+				//tl::log_err("Could not load ", strPlugin, ". Reason: ", ex.what());
+			}
 		}
 	}
 

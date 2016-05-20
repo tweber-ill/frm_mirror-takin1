@@ -1,7 +1,7 @@
-/*
+/**
  * monte carlo convolution tool
  * @author tweber
- * @date aug-2015
+ * @date 2015, 2016
  * @license GPLv2
  */
 
