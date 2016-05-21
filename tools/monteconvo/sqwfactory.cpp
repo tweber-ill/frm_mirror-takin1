@@ -49,8 +49,7 @@ static t_mapSqw g_mapSqw =
 		{ return std::make_shared<SqwPy>(strCfgFile.c_str()); }, 
 		"Python Model" } },
 #endif
-	{ "elastic",
-		t_mapSqw::mapped_type {
+	{ "elastic", t_mapSqw::mapped_type {
 		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 		{ return std::make_shared<SqwElast>(strCfgFile.c_str()); }, 
 		"Elastic Model" } },
@@ -129,6 +128,7 @@ void load_sqw_plugins()
 				// import info function
 				std::function<t_fkt_info> fktInfo =
 					pmod->get<t_pfkt_info>("takin_sqw_info");
+				if(!fktInfo) continue;
 
 				auto tupInfo = fktInfo();
 				const std::string& strTakVer = std::get<0>(tupInfo);
@@ -147,6 +147,7 @@ void load_sqw_plugins()
 
 				// import factory function
 				t_pfkt pFkt = pmod->get<t_pfkt>("takin_sqw");
+				if(!pFkt) continue;
 
 				g_mapSqw.insert( t_mapSqw::value_type {
 					strModIdent,
