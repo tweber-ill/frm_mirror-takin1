@@ -1,4 +1,3 @@
-// clang -o gentab gentab.cpp -lstdc++ -lm -std=c++11 -lclipper-core
 /**
  * Creates needed tables
  * @author tweber
@@ -299,7 +298,6 @@ bool gen_magformfacts()
 	propOut.SetSeparator('.');
 	propOut.Add("magffacts.source", "Magnetic form factor coefficients extracted from ILL table");
 	propOut.Add("magffacts.source_url", "https://www.ill.eu/sites/ccsl/ffacts/");
-	//propOut.Add("magffacts.num_atoms", tl::var_to_str(vecRows.size()));
 
 	std::size_t iAtom=0;
 	std::set<std::string> setAtoms;
@@ -377,6 +375,10 @@ bool gen_magformfacts()
 			auto iterElem = iter->second.begin();
 			std::string strElem = iterElem++->second.data();
 			tl::trim(strElem);
+			if(*strElem.rbegin() == '0')
+				strElem.resize(strElem.length()-1);
+			else
+				strElem += "+";
 
 			if(setAtoms.find(strElem) != setAtoms.end())
 			{
@@ -406,6 +408,8 @@ bool gen_magformfacts()
 			++iAtom;
 		}
 	}
+
+	propOut.Add("magffacts.num_atoms", tl::var_to_str(iAtom));
 
 	if(!propOut.Save("res/magffacts.xml.gz"))
 	{

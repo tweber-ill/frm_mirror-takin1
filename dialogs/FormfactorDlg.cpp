@@ -1,4 +1,4 @@
-/*
+/**
  * Form Factor & Scattering Length Dialog
  * @author tweber
  * @date nov-2015
@@ -25,6 +25,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	}
 
 	SetupAtoms();
+	SetupMagAtoms();
 
 	// form factors
 	m_plotwrap.reset(new QwtPlotWrapper(plotF));
@@ -34,6 +35,13 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	if(m_plotwrap->HasTrackerSignal())
 		connect(m_plotwrap->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
+	// mag. form factors
+	m_plotwrap_m.reset(new QwtPlotWrapper(plotMF));
+	m_plotwrap_m->GetCurve(0)->setTitle("Magnetic Form Factor");
+	m_plotwrap_m->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Wavenumber Q (1/A)");
+	m_plotwrap_m->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Magnetic Form Factor");
+	if(m_plotwrap_m->HasTrackerSignal())
+		connect(m_plotwrap_m->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
 	// scattering lengths
 	m_plotwrapSc.reset(new QwtPlotWrapper(plotSc));
@@ -48,6 +56,14 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 		this, SLOT(AtomSelected(QListWidgetItem*, QListWidgetItem*)));
 	QObject::connect(editFilter, SIGNAL(textEdited(const QString&)),
 		this, SLOT(SearchAtom(const QString&)));
+
+	QObject::connect(listMAtoms, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
+		this, SLOT(MagAtomSelected(QListWidgetItem*, QListWidgetItem*)));
+	QObject::connect(editMFilter, SIGNAL(textEdited(const QString&)),
+		this, SLOT(SearchMagAtom(const QString&)));
+	QObject::connect(spinL, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
+	QObject::connect(spinS, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
+	QObject::connect(spinJ, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
 
 	QObject::connect(radioCoherent, SIGNAL(toggled(bool)),
 		this, SLOT(PlotScatteringLengths()));
@@ -84,6 +100,7 @@ static QListWidgetItem* create_header_item(const char *pcTitle, bool bSubheader=
 
 	return pHeaderItem;
 }
+
 
 void FormfactorDlg::SetupAtoms()
 {
@@ -125,6 +142,25 @@ void FormfactorDlg::SetupAtoms()
 	}
 }
 
+void FormfactorDlg::SetupMagAtoms()
+{
+	MagFormfactList lstff;
+	listMAtoms->addItem(create_header_item("Atoms"));
+	for(unsigned int iFF=0; iFF<lstff.GetNumAtoms(); ++iFF)
+	{
+		const MagFormfact<t_real>& ff = lstff.GetAtom(iFF);
+		const std::string& strAtom = ff.GetAtomIdent();
+
+		std::ostringstream ostrAtom;
+		ostrAtom << (iFF+1) << " " << strAtom;
+		QListWidgetItem* pItem = new QListWidgetItem(ostrAtom.str().c_str());
+		pItem->setData(Qt::UserRole, 1);
+		pItem->setData(Qt::UserRole+1, iFF);
+		listMAtoms->addItem(pItem);
+	}
+}
+
+
 void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 {
 	if(!pItem) return;
@@ -162,6 +198,62 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecFF);
 }
 
+void FormfactorDlg::MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
+{
+	if(!pItem || !pItem->data(Qt::UserRole).toUInt()) return;
+	const unsigned int iAtom = pItem->data(Qt::UserRole+1).toUInt();
+	const unsigned int NUM_POINTS = 512;
+
+	t_real dMinQ = 0.;
+	t_real dMaxQ = 15.;
+
+	m_vecQ_m.clear();
+	m_vecFF_m.clear();
+
+	m_vecQ_m.reserve(NUM_POINTS);
+	m_vecFF_m.reserve(NUM_POINTS);
+	
+	t_real dL = spinL->value();
+	t_real dS = spinS->value();
+	t_real dJ = spinJ->value();
+
+	MagFormfactList lstff;
+	if(iAtom >= lstff.GetNumAtoms()) return;
+
+	const MagFormfact<t_real>& ff = lstff.GetAtom(iAtom);
+
+	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
+	{
+		const t_real dQ = (dMinQ + (dMaxQ - dMinQ)/t_real(NUM_POINTS)*t_real(iPt));
+		const t_real dFF = ff.GetFormfact(dQ, dL, dS, dJ);
+
+		m_vecQ_m.push_back(dQ);
+		m_vecFF_m.push_back(dFF);
+	}
+
+	set_qwt_data<t_real>()(*m_plotwrap_m, m_vecQ_m, m_vecFF_m);
+}
+
+void FormfactorDlg::RefreshMagAtom()
+{
+		MagAtomSelected(listMAtoms->currentItem(), nullptr);
+}
+
+
+void FormfactorDlg::SearchAtom(const QString& qstr)
+{
+	QList<QListWidgetItem*> lstItems = listAtoms->findItems(qstr, Qt::MatchContains);
+	if(lstItems.size())
+		listAtoms->setCurrentItem(lstItems[0], QItemSelectionModel::SelectCurrent);
+}
+
+void FormfactorDlg::SearchMagAtom(const QString& qstr)
+{
+	QList<QListWidgetItem*> lstItems = listMAtoms->findItems(qstr, Qt::MatchContains);
+	if(lstItems.size())
+		listMAtoms->setCurrentItem(lstItems[0], QItemSelectionModel::SelectCurrent);
+}
+
 
 void FormfactorDlg::PlotScatteringLengths()
 {
@@ -182,6 +274,7 @@ void FormfactorDlg::PlotScatteringLengths()
 
 	set_qwt_data<t_real>()(*m_plotwrapSc, m_vecElem, m_vecSc);
 }
+
 
 void FormfactorDlg::cursorMoved(const QPointF& pt)
 {
@@ -222,18 +315,11 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 	}
 }
 
+
 void FormfactorDlg::closeEvent(QCloseEvent* pEvt)
 {
 	if(m_pSettings)
 		m_pSettings->setValue("formfactors/geo", saveGeometry());
-}
-
-
-void FormfactorDlg::SearchAtom(const QString& qstr)
-{
-	QList<QListWidgetItem*> lstItems = listAtoms->findItems(qstr, Qt::MatchContains);
-	if(lstItems.size())
-		listAtoms->setCurrentItem(lstItems[0], QItemSelectionModel::SelectCurrent);
 }
 
 

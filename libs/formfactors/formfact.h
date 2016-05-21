@@ -13,6 +13,7 @@
 #include <complex>
 #include "tlibs/helper/array.h"
 #include "tlibs/math/atoms.h"
+#include "tlibs/math/mag.h"
 #include "libs/globals.h"
 
 using t_real_ff = ::t_real_glob;
@@ -64,13 +65,71 @@ class FormfactList
 		FormfactList();
 		virtual ~FormfactList();
 
-		unsigned int GetNumAtoms() const { return s_vecAtoms.size(); }
-		const elem_type& GetAtom(unsigned int iFormfact) const
+		std::size_t GetNumAtoms() const { return s_vecAtoms.size(); }
+		const elem_type& GetAtom(std::size_t iFormfact) const
 		{ return s_vecAtoms[iFormfact]; }
 
-		unsigned int GetNumIons() const { return s_vecIons.size(); }
-		const elem_type& GetIon(unsigned int iFormfact) const
+		std::size_t GetNumIons() const { return s_vecIons.size(); }
+		const elem_type& GetIon(std::size_t iFormfact) const
 		{ return s_vecIons[iFormfact]; }
+
+		const elem_type* Find(const std::string& strElem) const;
+
+		static const std::string& GetSource() { return s_strSrc; }
+		static const std::string& GetSourceUrl() { return s_strSrcUrl; }
+};
+
+
+// ----------------------------------------------------------------------------
+
+
+class MagFormfactList;
+
+template<typename T=double>
+struct MagFormfact
+{
+	friend class MagFormfactList;
+
+	public:
+		typedef T value_type;
+
+	protected:
+		std::string strAtom;
+		T A0,a0, B0,b0, C0,c0, D0;
+		T A2,a2, B2,b2, C2,c2, D2;
+
+	public:
+		const std::string& GetAtomIdent() const { return strAtom; }
+
+		T GetFormfact(T Q, T L, T S, T J) const
+		{
+			return tl::mag_formfact<T>(Q, L, S, J,
+				A0,a0, B0,b0, C0,c0, D0,
+				A2,a2, B2,b2, C2,c2, D2);
+		}
+};
+
+
+class MagFormfactList
+{
+	public:
+		typedef MagFormfact<t_real_ff> elem_type;
+		typedef typename elem_type::value_type value_type;
+
+	private:
+		static void Init();
+
+	protected:
+		static std::vector<elem_type> s_vecAtoms;
+		static std::string s_strSrc, s_strSrcUrl;
+
+	public:
+		MagFormfactList();
+		virtual ~MagFormfactList();
+
+		std::size_t GetNumAtoms() const { return s_vecAtoms.size(); }
+		const elem_type& GetAtom(std::size_t iFormfact) const
+		{ return s_vecAtoms[iFormfact]; }
 
 		const elem_type* Find(const std::string& strElem) const;
 
@@ -132,12 +191,12 @@ class ScatlenList
 		ScatlenList();
 		virtual ~ScatlenList();
 
-		unsigned int GetNumElems() const { return s_vecElems.size(); }
-		const elem_type& GetElem(unsigned int i) const
+		std::size_t GetNumElems() const { return s_vecElems.size(); }
+		const elem_type& GetElem(std::size_t i) const
 		{ return s_vecElems[i]; }
 
-		unsigned int GetNumIsotopes() const { return s_vecIsotopes.size(); }
-		const elem_type& GetIsotope(unsigned int i) const
+		std::size_t GetNumIsotopes() const { return s_vecIsotopes.size(); }
+		const elem_type& GetIsotope(std::size_t i) const
 		{ return s_vecIsotopes[i]; }
 
 		const elem_type* Find(const std::string& strElem) const;

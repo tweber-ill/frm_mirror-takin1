@@ -1,4 +1,4 @@
-/*
+/**
  * Form Factor & Scattering Length Dialog
  * @author tweber
  * @date nov-2015
@@ -26,6 +26,10 @@ protected:
 	std::vector<t_real_glob> m_vecQ, m_vecFF;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 
+	// mag form factors
+	std::vector<t_real_glob> m_vecQ_m, m_vecFF_m;
+	std::unique_ptr<QwtPlotWrapper> m_plotwrap_m;
+
 	// scattering lengths
 	std::vector<t_real_glob> m_vecElem, m_vecSc;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrapSc;
@@ -33,13 +37,19 @@ protected:
 
 protected:
 	virtual void closeEvent(QCloseEvent* pEvt) override;
+
 	void SetupAtoms();
+	void SetupMagAtoms();
 
 protected slots:
 	void SearchAtom(const QString& qstr);
 	void AtomSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
 
+	void SearchMagAtom(const QString& qstr);
+	void MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
+
 	void PlotScatteringLengths();
+	void RefreshMagAtom();
 
 	void cursorMoved(const QPointF& pt);
 

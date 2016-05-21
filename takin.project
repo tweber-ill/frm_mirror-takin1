@@ -421,5 +421,7 @@
     <File Name="libs/spacegroups/sghelper.h"/>
     <File Name="libs/spacegroups/spacegroup.cpp"/>
     <File Name="libs/spacegroups/spacegroup.h"/>
+    <File Name="libs/globals_qt.cpp"/>
+    <File Name="libs/globals_qt.h"/>
   </VirtualDirectory>
 </CodeLite_Project>

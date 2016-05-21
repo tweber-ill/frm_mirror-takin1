@@ -99,6 +99,94 @@ const FormfactList::elem_type* FormfactList::Find(const std::string& strElem) co
 // =============================================================================
 
 
+void MagFormfactList::Init()
+{
+	tl::Prop<std::string, true> xml;
+	if(!xml.Load(find_resource("res/magffacts.xml").c_str(), tl::PropType::XML))
+		return;
+
+	unsigned int iNumDat = xml.Query<unsigned int>("magffacts/num_atoms", 0);
+	for(unsigned int iSf=0; iSf<iNumDat; ++iSf)
+	{
+		elem_type ffact;
+		std::string strAtom = "magffacts/j0/atom_" + tl::var_to_str(iSf);
+
+		ffact.strAtom = xml.Query<std::string>((strAtom + "/name").c_str(), "");
+		ffact.A0 = xml.Query<value_type>((strAtom + "/A").c_str(), 0.);
+		ffact.a0 = xml.Query<value_type>((strAtom + "/a").c_str(), 0.);
+		ffact.B0 = xml.Query<value_type>((strAtom + "/B").c_str(), 0.);
+		ffact.b0 = xml.Query<value_type>((strAtom + "/b").c_str(), 0.);
+		ffact.C0 = xml.Query<value_type>((strAtom + "/C").c_str(), 0.);
+		ffact.c0 = xml.Query<value_type>((strAtom + "/c").c_str(), 0.);
+		ffact.D0 = xml.Query<value_type>((strAtom + "/D").c_str(), 0.);
+
+		s_vecAtoms.push_back(std::move(ffact));
+	}
+
+	MagFormfactList _lst;
+	for(unsigned int iSf=0; iSf<iNumDat; ++iSf)
+	{
+		std::string strAtom = "magffacts/j2/atom_" + tl::var_to_str(iSf);
+		std::string strAtomName = xml.Query<std::string>((strAtom + "/name").c_str(), "");
+
+		MagFormfactList::elem_type* pElem =
+			const_cast<MagFormfactList::elem_type*>(_lst.Find(strAtomName));
+		if(!pElem)
+		{
+			tl::log_err("Mismatch in j0 and j2 form factor tables.");
+			continue;
+		}
+
+		pElem->A2 = xml.Query<value_type>((strAtom + "/A").c_str(), 0.);
+		pElem->a2 = xml.Query<value_type>((strAtom + "/a").c_str(), 0.);
+		pElem->B2 = xml.Query<value_type>((strAtom + "/B").c_str(), 0.);
+		pElem->b2 = xml.Query<value_type>((strAtom + "/b").c_str(), 0.);
+		pElem->C2 = xml.Query<value_type>((strAtom + "/C").c_str(), 0.);
+		pElem->c2 = xml.Query<value_type>((strAtom + "/c").c_str(), 0.);
+		pElem->D2 = xml.Query<value_type>((strAtom + "/D").c_str(), 0.);
+	}
+
+	s_strSrc = xml.Query<std::string>("magffacts/source", "");
+	s_strSrcUrl = xml.Query<std::string>("magffacts/source_url", "");
+}
+
+std::vector<MagFormfact<t_real_ff>> MagFormfactList::s_vecAtoms;
+
+std::string MagFormfactList::s_strSrc;
+std::string MagFormfactList::s_strSrcUrl;
+
+// -----------------------------------------------------------------------------
+
+
+MagFormfactList::MagFormfactList()
+{
+	if(!s_vecAtoms.size())
+		Init();
+}
+
+MagFormfactList::~MagFormfactList()
+{}
+
+const MagFormfactList::elem_type* MagFormfactList::Find(const std::string& strElem) const
+{
+	typedef typename decltype(s_vecAtoms)::const_iterator t_iter;
+
+	t_iter iter = std::find_if(s_vecAtoms.begin(), s_vecAtoms.end(),
+		[&strElem](const elem_type& elem)->bool
+		{
+			//std::cout << elem.GetAtomIdent() << std::endl;
+			return elem.GetAtomIdent() == strElem;
+		});
+	if(iter != s_vecAtoms.end())
+		return &*iter;
+
+	return nullptr;
+}
+
+
+
+// =============================================================================
+
 
 
 void ScatlenList::Init()
