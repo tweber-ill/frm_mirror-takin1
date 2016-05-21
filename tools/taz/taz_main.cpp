@@ -128,6 +128,7 @@ int main(int argc, char** argv)
 		// check tables
 		g_bHasScatlens = (find_resource("res/scatlens.xml") != "");
 		g_bHasFormfacts = (find_resource("res/ffacts.xml") != "");
+		g_bHasMagFormfacts = (find_resource("res/magffacts.xml") != "");
 		if(!g_bHasScatlens)
 		{
 			const char* pcErr = "Scattering length table could not be found." TAKIN_CHECK;
@@ -138,7 +139,15 @@ int main(int argc, char** argv)
 		}
 		if(!g_bHasFormfacts)
 		{
-			const char* pcErr = "Form factor coefficient table could not be found." TAKIN_CHECK;
+			const char* pcErr = "Atomic form factor coefficient table could not be found." TAKIN_CHECK;
+			tl::log_err(pcErr);
+
+			QMessageBox::critical(0, "Takin - Error", pcErr);
+			return -1;
+		}
+		if(!g_bHasMagFormfacts)
+		{
+			const char* pcErr = "Magnetic form factor coefficient table could not be found." TAKIN_CHECK;
 			tl::log_err(pcErr);
 
 			QMessageBox::critical(0, "Takin - Error", pcErr);

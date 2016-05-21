@@ -8,6 +8,8 @@
 #include "FormfactorDlg.h"
 #include "libs/formfactors/formfact.h"
 #include "tlibs/string/spec_char.h"
+#include "tlibs/math/term.h"
+
 #include <qwt_picker_machine.h>
 
 using t_real = t_real_glob;
@@ -52,6 +54,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 		connect(m_plotwrapSc->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
 
+	// connections
 	QObject::connect(listAtoms, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
 		this, SLOT(AtomSelected(QListWidgetItem*, QListWidgetItem*)));
 	QObject::connect(editFilter, SIGNAL(textEdited(const QString&)),
@@ -64,6 +67,9 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 	QObject::connect(spinL, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
 	QObject::connect(spinS, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
 	QObject::connect(spinJ, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
+
+	QObject::connect(editOrbital, SIGNAL(textEdited(const QString&)),
+		this, SLOT(CalcTermSymbol(const QString&)));
 
 	QObject::connect(radioCoherent, SIGNAL(toggled(bool)),
 		this, SLOT(PlotScatteringLengths()));
@@ -212,7 +218,7 @@ void FormfactorDlg::MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 
 	m_vecQ_m.reserve(NUM_POINTS);
 	m_vecFF_m.reserve(NUM_POINTS);
-	
+
 	t_real dL = spinL->value();
 	t_real dS = spinS->value();
 	t_real dJ = spinJ->value();
@@ -237,6 +243,26 @@ void FormfactorDlg::MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 void FormfactorDlg::RefreshMagAtom()
 {
 		MagAtomSelected(listMAtoms->currentItem(), nullptr);
+}
+
+
+void FormfactorDlg::CalcTermSymbol(const QString& qstr)
+{
+	try
+	{
+		std::string strOrbitals = qstr.toStdString();
+
+		t_real dS, dL, dJ;
+		std::tie(dS,dL,dJ) = tl::hund(strOrbitals);
+
+		spinS->setValue(dS);
+		spinL->setValue(dL);
+		spinJ->setValue(dJ);
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_err(ex.what());
+	}
 }
 
 
