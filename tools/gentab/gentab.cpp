@@ -8,12 +8,21 @@
 
 #include <iostream>
 #include <sstream>
+#include <set>
 
 #include "tlibs/string/string.h"
 #include "tlibs/file/prop.h"
 #include "tlibs/log/log.h"
 #include "tlibs/math/linalg.h"
 #include "libs/spacegroups/spacegroup_clp.h"
+
+#ifndef USE_BOOST_REX
+	#include <regex>
+	namespace rex = ::std;
+#else
+	#include <boost/tr1/regex.hpp>
+	namespace rex = ::boost;
+#endif
 
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/version.hpp>
@@ -79,7 +88,7 @@ bool gen_formfacts()
 
 	if(!prop.Save("res/ffacts.xml.gz"))
 	{
-		tl::log_err("Error: Cannot write \"res/ffacts.xml.gz\".");
+		tl::log_err("Cannot write \"res/ffacts.xml.gz\".");
 		return false;
 	}
 	return true;
@@ -118,7 +127,7 @@ bool gen_scatlens()
 	std::ifstream ifstr("tmp/scatlens.html");
 	if(!ifstr)
 	{
-		tl::log_err("Error: Cannot open \"tmp/scatlens.html\".");
+		tl::log_err("Cannot open \"tmp/scatlens.html\".");
 		return false;
 	}
 
@@ -204,7 +213,7 @@ bool gen_scatlens()
 
 	if(!prop.Save("res/scatlens.xml.gz"))
 	{
-		tl::log_err("Error: Cannot write \"res/scatlens.xml.gz\".");
+		tl::log_err("Cannot write \"res/scatlens.xml.gz\".");
 		return false;
 	}
 	return true;
@@ -273,7 +282,134 @@ bool gen_spacegroups()
 
 	if(!prop.Save("res/sgroups.xml.gz"))
 	{
-		tl::log_err("Error: Cannot write \"res/sgroups.xml.gz\".");
+		tl::log_err("Cannot write \"res/sgroups.xml.gz\".");
+		return false;
+	}
+
+	return true;
+}
+
+
+// ============================================================================
+
+
+bool gen_magformfacts()
+{
+	tl::Prop<std::string> propOut;
+	propOut.SetSeparator('.');
+	propOut.Add("magffacts.source", "Magnetic form factor coefficients extracted from ILL table");
+	propOut.Add("magffacts.source_url", "https://www.ill.eu/sites/ccsl/ffacts/");
+	//propOut.Add("magffacts.num_atoms", tl::var_to_str(vecRows.size()));
+
+	std::size_t iAtom=0;
+	std::set<std::string> setAtoms;
+
+	std::vector<std::string> vecFiles =
+		{"tmp/j0_1.html", "tmp/j0_2.html",
+		"tmp/j0_3.html" , "tmp/j0_4.html",
+
+		"tmp/j2_1.html", "tmp/j2_2.html",
+		"tmp/j2_3.html", "tmp/j2_4.html",};
+
+	for(std::size_t iFile=0; iFile<vecFiles.size(); ++iFile)
+	{
+		const std::string& strFile = vecFiles[iFile];
+		std::string strJ = iFile < 4 ? "j0" : "j2";
+
+		// switching to j2 files
+		if(iFile==4)
+		{
+			iAtom = 0;
+			setAtoms.clear();
+		}
+
+		std::ifstream ifstr(strFile);
+		if(!ifstr)
+		{
+			tl::log_err("Cannot open \"", strFile, "\".");
+			continue;
+		}
+
+		std::string strTable;
+		bool bTableStarted=0;
+		while(!ifstr.eof())
+		{
+			std::string strLine;
+			std::getline(ifstr, strLine);
+			std::string strLineLower = tl::str_to_lower(strLine);
+
+			if(bTableStarted)
+			{
+				strTable += strLine + "\n";
+				if(strLineLower.find("</table") != std::string::npos)
+				break;
+			}
+			else
+			{
+				std::size_t iPos = strLineLower.find("<table");
+				if(iPos != std::string::npos)
+				{
+					std::string strSub = strLine.substr(iPos);
+					strTable += strSub + "\n";
+
+					bTableStarted = 1;
+				}
+			}
+		}
+
+		// removing attributes
+		rex::basic_regex<char> rex("<([A-Za-z]*)[A-Za-z0-9\\=\\\"\\ ]*>", rex::regex::ECMAScript);
+		strTable = rex::regex_replace(strTable, rex, "<$1>");
+
+		tl::find_all_and_replace<std::string>(strTable, "<P>", "");
+		tl::find_all_and_replace<std::string>(strTable, "<p>", "");
+		//std::cout << strTable << std::endl;
+
+
+		std::istringstream istrTab(strTable);
+		tl::Prop<std::string> prop;
+		prop.Load(istrTab, tl::PropType::XML);
+		const auto& tab = prop.GetProp().begin()->second;
+
+		auto iter = tab.begin(); ++iter;
+		for(; iter!=tab.end(); ++iter)
+		{
+			auto iterElem = iter->second.begin();
+			std::string strElem = iterElem++->second.data();
+			tl::trim(strElem);
+
+			if(setAtoms.find(strElem) != setAtoms.end())
+			{
+				tl::log_warn("Atom ", strElem, " already in set. Ignoring.");
+				continue;
+			}
+			setAtoms.insert(strElem);
+
+			t_real dA = tl::str_to_var<t_real>(iterElem++->second.data());
+			t_real da = tl::str_to_var<t_real>(iterElem++->second.data());
+			t_real dB = tl::str_to_var<t_real>(iterElem++->second.data());
+			t_real db = tl::str_to_var<t_real>(iterElem++->second.data());
+			t_real dC = tl::str_to_var<t_real>(iterElem++->second.data());
+			t_real dc = tl::str_to_var<t_real>(iterElem++->second.data());
+			t_real dD = tl::str_to_var<t_real>(iterElem->second.data());
+
+			std::ostringstream ostrAtom;
+			ostrAtom << "magffacts." + strJ + ".atom_" << iAtom;
+			propOut.Add(ostrAtom.str() + ".name", strElem);
+			propOut.Add(ostrAtom.str() + ".A", tl::var_to_str(dA));
+			propOut.Add(ostrAtom.str() + ".a", tl::var_to_str(da));
+			propOut.Add(ostrAtom.str() + ".B", tl::var_to_str(dB));
+			propOut.Add(ostrAtom.str() + ".b", tl::var_to_str(db));
+			propOut.Add(ostrAtom.str() + ".C", tl::var_to_str(dC));
+			propOut.Add(ostrAtom.str() + ".c", tl::var_to_str(dc));
+			propOut.Add(ostrAtom.str() + ".D", tl::var_to_str(dD));
+			++iAtom;
+		}
+	}
+
+	if(!propOut.Save("res/magffacts.xml.gz"))
+	{
+		tl::log_err("Cannot write \"res/magffacts.xml.gz\".");
 		return false;
 	}
 
@@ -286,7 +422,7 @@ bool gen_spacegroups()
 
 int main()
 {
-	std::cout << "Generating form factor coefficient table ... ";
+	std::cout << "Generating atomic form factor coefficient table ... ";
 	if(gen_formfacts())
 		std::cout << "OK" << std::endl;
 
@@ -296,6 +432,10 @@ int main()
 
 	std::cout << "Generating space group table ... ";
 	if(gen_spacegroups())
+		std::cout << "OK" << std::endl;
+
+	std::cout << "Generating magnetic form factor coefficient table ... ";
+	if(gen_magformfacts())
 		std::cout << "OK" << std::endl;
 
 	return 0;
