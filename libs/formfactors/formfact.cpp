@@ -112,13 +112,10 @@ void MagFormfactList::Init()
 		std::string strAtom = "magffacts/j0/atom_" + tl::var_to_str(iSf);
 
 		ffact.strAtom = xml.Query<std::string>((strAtom + "/name").c_str(), "");
-		ffact.A0 = xml.Query<value_type>((strAtom + "/A").c_str(), 0.);
-		ffact.a0 = xml.Query<value_type>((strAtom + "/a").c_str(), 0.);
-		ffact.B0 = xml.Query<value_type>((strAtom + "/B").c_str(), 0.);
-		ffact.b0 = xml.Query<value_type>((strAtom + "/b").c_str(), 0.);
-		ffact.C0 = xml.Query<value_type>((strAtom + "/C").c_str(), 0.);
-		ffact.c0 = xml.Query<value_type>((strAtom + "/c").c_str(), 0.);
-		ffact.D0 = xml.Query<value_type>((strAtom + "/D").c_str(), 0.);
+		for(const std::string& strA : {"/A", "/B", "/C", "/D"})
+			ffact.A0.push_back(xml.Query<value_type>((strAtom + strA).c_str(), 0.));
+		for(const std::string& stra : {"/a", "/b", "/c"})
+			ffact.a0.push_back(xml.Query<value_type>((strAtom + stra).c_str(), 0.));
 
 		s_vecAtoms.push_back(std::move(ffact));
 	}
@@ -137,13 +134,10 @@ void MagFormfactList::Init()
 			continue;
 		}
 
-		pElem->A2 = xml.Query<value_type>((strAtom + "/A").c_str(), 0.);
-		pElem->a2 = xml.Query<value_type>((strAtom + "/a").c_str(), 0.);
-		pElem->B2 = xml.Query<value_type>((strAtom + "/B").c_str(), 0.);
-		pElem->b2 = xml.Query<value_type>((strAtom + "/b").c_str(), 0.);
-		pElem->C2 = xml.Query<value_type>((strAtom + "/C").c_str(), 0.);
-		pElem->c2 = xml.Query<value_type>((strAtom + "/c").c_str(), 0.);
-		pElem->D2 = xml.Query<value_type>((strAtom + "/D").c_str(), 0.);
+		for(const std::string& strA : {"/A", "/B", "/C", "/D"})
+			pElem->A2.push_back(xml.Query<value_type>((strAtom + strA).c_str(), 0.));
+		for(const std::string& stra : {"/a", "/b", "/c"})
+			pElem->a2.push_back(xml.Query<value_type>((strAtom + stra).c_str(), 0.));
 	}
 
 	s_strSrc = xml.Query<std::string>("magffacts/source", "");
@@ -172,9 +166,8 @@ const MagFormfactList::elem_type* MagFormfactList::Find(const std::string& strEl
 	typedef typename decltype(s_vecAtoms)::const_iterator t_iter;
 
 	t_iter iter = std::find_if(s_vecAtoms.begin(), s_vecAtoms.end(),
-		[&strElem](const elem_type& elem)->bool
+		[&strElem](const elem_type& elem) -> bool
 		{
-			//std::cout << elem.GetAtomIdent() << std::endl;
 			return elem.GetAtomIdent() == strElem;
 		});
 	if(iter != s_vecAtoms.end())

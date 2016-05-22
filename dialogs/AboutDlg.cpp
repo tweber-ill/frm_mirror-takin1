@@ -111,12 +111,18 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrConst << "<dd><a href=\"" << get_sgsource(1) << "\">" << get_sgsource(1) << "</a></dd>";
 
 	FormfactList ff;	// ensure that the static vars are inited
+	MagFormfactList mff;
 	ScatlenList sl;
 
 	if(g_bHasFormfacts)
 	{
 		ostrConst << "<dt>" << FormfactList::GetSource() << "</dt>";
 		ostrConst << "<dd><a href=\"" << FormfactList::GetSourceUrl() << "\">" << FormfactList::GetSourceUrl() << "</a></dd>";
+	}
+	if(g_bHasMagFormfacts)
+	{
+		ostrConst << "<dt>" << MagFormfactList::GetSource() << "</dt>";
+		ostrConst << "<dd><a href=\"" << MagFormfactList::GetSourceUrl() << "\">" << MagFormfactList::GetSourceUrl() << "</a></dd>";
 	}
 	if(g_bHasScatlens)
 	{

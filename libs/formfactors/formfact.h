@@ -95,17 +95,16 @@ struct MagFormfact
 
 	protected:
 		std::string strAtom;
-		T A0,a0, B0,b0, C0,c0, D0;
-		T A2,a2, B2,b2, C2,c2, D2;
+		std::vector<T> A0, a0;
+		std::vector<T> A2, a2;
 
 	public:
 		const std::string& GetAtomIdent() const { return strAtom; }
 
 		T GetFormfact(T Q, T L, T S, T J) const
 		{
-			return tl::mag_formfact<T>(Q, L, S, J,
-				A0,a0, B0,b0, C0,c0, D0,
-				A2,a2, B2,b2, C2,c2, D2);
+			return tl::mag_formfact<T, std::vector>
+				(Q, L,S,J, A0,a0, A2,a2);
 		}
 };
 

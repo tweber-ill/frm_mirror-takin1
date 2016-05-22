@@ -151,11 +151,35 @@ void FormfactorDlg::SetupAtoms()
 void FormfactorDlg::SetupMagAtoms()
 {
 	MagFormfactList lstff;
-	listMAtoms->addItem(create_header_item("Atoms"));
+	listMAtoms->addItem(create_header_item("Atoms / Ions"));
+
+	bool bHad3d=0, bHad4d=0, bHad4f=0, bHad5f=0;
 	for(unsigned int iFF=0; iFF<lstff.GetNumAtoms(); ++iFF)
 	{
 		const MagFormfact<t_real>& ff = lstff.GetAtom(iFF);
 		const std::string& strAtom = ff.GetAtomIdent();
+
+		if(strAtom.find("Sc") != std::string::npos && !bHad3d)
+		{
+			listMAtoms->addItem(create_header_item("3d (4s) Orbitals", 1));
+			bHad3d = 1;
+		}
+		if(strAtom.find("Y") != std::string::npos && !bHad4d)
+		{
+			listMAtoms->addItem(create_header_item("4d (5s) Orbitals", 1));
+			bHad4d = 1;
+		}
+		if(strAtom.find("Ce") != std::string::npos && !bHad4f)
+		{
+			listMAtoms->addItem(create_header_item("4f (5d 6s) Orbitals", 1));
+			bHad4f = 1;
+		}
+		if((strAtom.find("Pa")!=std::string::npos || strAtom.find("U")!=std::string::npos)
+			&& !bHad5f)
+		{
+			listMAtoms->addItem(create_header_item("5f (6d 7s) Orbitals", 1));
+			bHad5f = 1;
+		}
 
 		std::ostringstream ostrAtom;
 		ostrAtom << (iFF+1) << " " << strAtom;
