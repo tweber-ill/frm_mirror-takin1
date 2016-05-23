@@ -325,7 +325,7 @@ bool gen_magformfacts()
 		if(!ifstr)
 		{
 			tl::log_err("Cannot open \"", strFile, "\".");
-			continue;
+			return false;
 		}
 
 		std::string strTable;
@@ -353,6 +353,11 @@ bool gen_magformfacts()
 					bTableStarted = 1;
 				}
 			}
+		}
+		if(strTable.length() == 0)
+		{
+			tl::log_err("Invalid table: \"", strFile, "\".");
+			return 0;
 		}
 
 		// removing attributes

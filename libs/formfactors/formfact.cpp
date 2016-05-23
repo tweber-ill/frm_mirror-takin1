@@ -22,6 +22,12 @@ void FormfactList::Init()
 		return;
 
 	unsigned int iNumDat = xml.Query<unsigned int>("ffacts/num_atoms", 0);
+	if(!iNumDat)
+	{
+		tl::log_err("No data in atomic form factor list.");
+		return;
+	}
+
 	bool bIonStart = 0;
 	for(unsigned int iSf=0; iSf<iNumDat; ++iSf)
 	{
@@ -106,6 +112,11 @@ void MagFormfactList::Init()
 		return;
 
 	unsigned int iNumDat = xml.Query<unsigned int>("magffacts/num_atoms", 0);
+	if(!iNumDat)
+	{
+		tl::log_err("No data in magnetic form factor list.");
+		return;
+	}
 	for(unsigned int iSf=0; iSf<iNumDat; ++iSf)
 	{
 		elem_type ffact;
@@ -189,6 +200,11 @@ void ScatlenList::Init()
 		return;
 
 	const unsigned int iNumDat = xml.Query<unsigned int>("scatlens/num_atoms", 0);
+	if(!iNumDat)
+	{
+		tl::log_err("No data in scattering length list.");
+		return;
+	}
 
 	for(unsigned int iSl=0; iSl<iNumDat; ++iSl)
 	{
