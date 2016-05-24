@@ -9,6 +9,7 @@
 #include "libs/formfactors/formfact.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/math/term.h"
+#include "libs/qthelper.h"
 
 #include <qwt_picker_machine.h>
 
@@ -73,6 +74,8 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 
 	QObject::connect(radioCoherent, SIGNAL(toggled(bool)),
 		this, SLOT(PlotScatteringLengths()));
+	QObject::connect(editSLSearch, SIGNAL(textEdited(const QString&)),
+		this, SLOT(SearchSLAtom(const QString&)));
 
 
 	if(m_pSettings && m_pSettings->contains("formfactors/geo"))
@@ -81,6 +84,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 
 	SearchAtom("H");
 	//radioCoherent->setChecked(1);
+	SetupScatteringLengths();
 	PlotScatteringLengths();
 }
 
@@ -266,7 +270,7 @@ void FormfactorDlg::MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 
 void FormfactorDlg::RefreshMagAtom()
 {
-		MagAtomSelected(listMAtoms->currentItem(), nullptr);
+	MagAtomSelected(listMAtoms->currentItem(), nullptr);
 }
 
 
@@ -304,6 +308,13 @@ void FormfactorDlg::SearchMagAtom(const QString& qstr)
 		listMAtoms->setCurrentItem(lstItems[0], QItemSelectionModel::SelectCurrent);
 }
 
+void FormfactorDlg::SearchSLAtom(const QString& qstr)
+{
+	QList<QTableWidgetItem*> lstItems = tableSL->findItems(qstr, Qt::MatchContains);
+	if(lstItems.size())
+		tableSL->setCurrentItem(lstItems[0]);
+}
+
 
 void FormfactorDlg::PlotScatteringLengths()
 {
@@ -323,6 +334,64 @@ void FormfactorDlg::PlotScatteringLengths()
 	}
 
 	set_qwt_data<t_real>()(*m_plotwrapSc, m_vecElem, m_vecSc);
+}
+
+
+enum
+{
+	SL_ITEM_NR = 0,
+	SL_ITEM_NAME = 1,
+	SL_ITEM_COH_R = 2,
+	SL_ITEM_COH_I = 3,
+	SL_ITEM_INC_R = 4,
+	SL_ITEM_INC_I = 5,
+};
+
+void FormfactorDlg::SetupScatteringLengths()
+{
+	ScatlenList lstsc;
+
+	const bool bSortTable = tableSL->isSortingEnabled();
+	tableSL->setSortingEnabled(0);
+
+	tableSL->setRowCount(lstsc.GetNumElems() + lstsc.GetNumIsotopes());
+	tableSL->setColumnWidth(SL_ITEM_NR, 50);
+	tableSL->setColumnWidth(SL_ITEM_NAME, 70);
+	tableSL->setColumnWidth(SL_ITEM_COH_R, 75);
+	tableSL->setColumnWidth(SL_ITEM_COH_I, 75);
+	tableSL->setColumnWidth(SL_ITEM_INC_R, 75);
+	tableSL->setColumnWidth(SL_ITEM_INC_I, 75);
+
+	tableSL->verticalHeader()->setDefaultSectionSize(tableSL->verticalHeader()->minimumSectionSize()+2);
+
+	for(std::size_t iElem=0; iElem<lstsc.GetNumElems()+lstsc.GetNumIsotopes(); ++iElem)
+	{
+		const typename ScatlenList::elem_type* pelem = nullptr;
+		if(iElem < lstsc.GetNumElems())
+			pelem = &lstsc.GetElem(iElem);
+		else
+			pelem = &lstsc.GetIsotope(iElem-lstsc.GetNumElems());
+
+		t_real dCohR = pelem->GetCoherent().real();
+		t_real dCohI = pelem->GetCoherent().imag();
+		t_real dIncR = pelem->GetIncoherent().real();
+		t_real dIncI = pelem->GetIncoherent().imag();
+
+		std::string strCohR = tl::var_to_str(dCohR, g_iPrec) + " fm";
+		std::string strCohI = tl::var_to_str(dCohI, g_iPrec) + " fm";
+		std::string strIncR = tl::var_to_str(dIncR, g_iPrec) + " fm";
+		std::string strIncI = tl::var_to_str(dIncI, g_iPrec) + " fm";
+
+		tableSL->setItem(iElem, SL_ITEM_NR, new QTableWidgetItemWrapper<std::size_t>(iElem+1));
+		tableSL->setItem(iElem, SL_ITEM_NAME, new QTableWidgetItem(pelem->GetAtomIdent().c_str()));
+		tableSL->setItem(iElem, SL_ITEM_COH_R, new QTableWidgetItemWrapper<t_real>(dCohR, strCohR));
+		tableSL->setItem(iElem, SL_ITEM_COH_I, new QTableWidgetItemWrapper<t_real>(dCohI, strCohI));
+		tableSL->setItem(iElem, SL_ITEM_INC_R, new QTableWidgetItemWrapper<t_real>(dIncR, strIncR));
+		tableSL->setItem(iElem, SL_ITEM_INC_I, new QTableWidgetItemWrapper<t_real>(dIncI, strIncI));
+	}
+
+	tableSL->setSortingEnabled(bSortTable);
+	tableSL->sortByColumn(SL_ITEM_NR, Qt::AscendingOrder);
 }
 
 

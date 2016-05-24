@@ -166,7 +166,6 @@ bool gen_scatlens()
 	prop.SetSeparator('.');
 	prop.Add("scatlens.source", "Scattering lengths and cross-sections extracted from NIST table");
 	prop.Add("scatlens.source_url", "https://www.ncnr.nist.gov/resources/n-lengths/list.html");
-	prop.Add("scatlens.num_atoms", tl::var_to_str(vecRows.size()));
 
 	unsigned int iAtom = 0;
 	for(const std::string& strRow : vecRows)
@@ -189,6 +188,7 @@ bool gen_scatlens()
 
 		std::string strName = vecCol[1];
 		tl::trim(strName);
+		if(strName == "") continue;
 
 		t_cplx cCoh = get_number(vecCol[3]);
 		t_cplx cIncoh = get_number(vecCol[4]);
@@ -208,6 +208,8 @@ bool gen_scatlens()
 
 		++iAtom;
 	}
+
+	prop.Add("scatlens.num_atoms", tl::var_to_str(iAtom));
 
 
 	if(!prop.Save("res/scatlens.xml.gz"))

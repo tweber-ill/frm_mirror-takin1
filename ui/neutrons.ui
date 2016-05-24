@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>421</width>
-    <height>445</height>
+    <height>467</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -404,6 +404,9 @@
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0" colspan="3">
         <widget class="QTableWidget" name="tableConv">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
          <property name="sortingEnabled">
           <bool>true</bool>
          </property>
