@@ -237,7 +237,39 @@
            <property name="spacing">
             <number>4</number>
            </property>
+           <item row="4" column="0">
+            <widget class="QDoubleSpinBox" name="spinL">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="prefix">
+              <string>L=</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="singleStep">
+              <double>0.500000000000000</double>
+             </property>
+            </widget>
+           </item>
            <item row="3" column="1">
+            <widget class="QDoubleSpinBox" name="spinJ">
+             <property name="prefix">
+              <string>J=</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="singleStep">
+              <double>0.500000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
             <widget class="QDoubleSpinBox" name="spinS">
              <property name="sizePolicy">
               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -269,39 +301,21 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0" colspan="2">
-            <widget class="QLineEdit" name="editOrbital">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Orbitals</string>
-             </property>
-            </widget>
-           </item>
            <item row="3" column="0">
-            <widget class="QDoubleSpinBox" name="spinL">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="prefix">
-              <string>L=</string>
-             </property>
-             <property name="decimals">
-              <number>1</number>
-             </property>
-             <property name="singleStep">
-              <double>0.500000000000000</double>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Term Sym.:</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0" colspan="2">
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Search:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
             <widget class="QLineEdit" name="editMFilter">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -314,23 +328,23 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QDoubleSpinBox" name="spinJ">
-             <property name="prefix">
-              <string>J=</string>
-             </property>
-             <property name="decimals">
-              <number>1</number>
-             </property>
-             <property name="singleStep">
-              <double>0.500000000000000</double>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Orbitals:</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Term Sym.:</string>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="editOrbital">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Orbitals</string>
              </property>
             </widget>
            </item>
@@ -460,11 +474,9 @@
   <tabstop>radioCoherent</tabstop>
   <tabstop>radioIncoherent</tabstop>
   <tabstop>listMAtoms</tabstop>
-  <tabstop>editMFilter</tabstop>
   <tabstop>spinJ</tabstop>
   <tabstop>spinL</tabstop>
   <tabstop>spinS</tabstop>
-  <tabstop>editOrbital</tabstop>
   <tabstop>listAtoms</tabstop>
   <tabstop>editFilter</tabstop>
   <tabstop>buttonBox</tabstop>

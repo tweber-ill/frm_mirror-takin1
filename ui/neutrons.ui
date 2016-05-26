@@ -372,6 +372,9 @@
          <property name="alternatingRowColors">
           <bool>true</bool>
          </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
          <property name="sortingEnabled">
           <bool>true</bool>
          </property>
@@ -406,6 +409,9 @@
         <widget class="QTableWidget" name="tableConv">
          <property name="alternatingRowColors">
           <bool>true</bool>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
          </property>
          <property name="sortingEnabled">
           <bool>true</bool>
