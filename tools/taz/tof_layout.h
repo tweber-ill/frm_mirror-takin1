@@ -35,10 +35,10 @@ class TofLayoutNode : public QGraphicsItem
 		TofLayout *m_pParentItem;
 
 	protected:
-		QRectF boundingRect() const;
-		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+		virtual QRectF boundingRect() const override;
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
-		QVariant itemChange(GraphicsItemChange change, const QVariant &val);
+		virtual QVariant itemChange(GraphicsItemChange change, const QVariant &val) override;
 
 	public:
 		TofLayoutNode(TofLayout* pSupItem);
@@ -88,7 +88,7 @@ class TofLayout : public QGraphicsItem
 
 		bool IsReady() const { return m_bReady; }
 
-		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
 		void SetSampleTwoTheta(t_real_glob dTT);
 		void SetSampleTheta(t_real_glob dT);

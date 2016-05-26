@@ -204,6 +204,7 @@ OBJ_COMMON = obj/log.o obj/debug.o obj/rand.o obj/linalg2.o \
 OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/taz_file.o obj/taz_export.o \
 	obj/scattering_triangle.o obj/real_lattice.o \
+	obj/proj_lattice.o \
 	obj/tas_layout.o obj/tof_layout.o \
 	obj/RecipParamDlg.o obj/RealParamDlg.o obj/GotoDlg.o obj/PowderDlg.o \
 	obj/DispDlg.o \
@@ -351,6 +352,8 @@ obj/recip3d.o: tools/taz/recip3d.cpp tools/taz/recip3d.h
 obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scattering_triangle.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/real_lattice.o: tools/taz/real_lattice.cpp tools/taz/real_lattice.h tlibs/math/lattice.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/proj_lattice.o: tools/taz/proj_lattice.cpp tools/taz/proj_lattice.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tas_layout.o: tools/taz/tas_layout.cpp tools/taz/tas_layout.h
 	${CC} ${FLAGS} -c -o $@ $<

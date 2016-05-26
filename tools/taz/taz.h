@@ -1,4 +1,4 @@
-/*
+/**
  * TAS tool
  * @author tweber
  * @date feb-2014
@@ -28,6 +28,7 @@
 #include "ui/ui_taz.h"
 #include "scattering_triangle.h"
 #include "real_lattice.h"
+#include "proj_lattice.h"
 #include "tas_layout.h"
 #include "tof_layout.h"
 
@@ -115,6 +116,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		// reciprocal lattice
 		ScatteringTriangleView *m_pviewRecip = nullptr;
 		ScatteringTriangleScene m_sceneRecip;
+		ProjLatticeView *m_pviewProjRecip = nullptr;
+		ProjLatticeScene m_sceneProjRecip;
 
 		// real lattice
 		TasLayoutView *m_pviewReal = nullptr;

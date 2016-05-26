@@ -1,4 +1,4 @@
-/*
+/**
  * Scattering Triangle
  * @author tweber
  * @date feb-2014
@@ -54,12 +54,12 @@ class ScatteringTriangleNode : public QGraphicsItem
 		ScatteringTriangle *m_pParentItem;
 
 	protected:
-		QRectF boundingRect() const;
-		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+		virtual QRectF boundingRect() const override;
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
-		void mousePressEvent(QGraphicsSceneMouseEvent *pEvt);
-		void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt);
-		QVariant itemChange(GraphicsItemChange change, const QVariant &val);
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent *pEvt) override;
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt) override;
+		virtual QVariant itemChange(GraphicsItemChange change, const QVariant &val) override;
 
 	public:
 		ScatteringTriangleNode(ScatteringTriangle* pSupItem);
@@ -69,8 +69,8 @@ class RecipPeak : public QGraphicsItem
 {
 	protected:
 		QColor m_color = Qt::red;
-		QRectF boundingRect() const;
-		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+		virtual QRectF boundingRect() const override;
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
 	protected:
 		QString m_strLabel;
@@ -120,13 +120,13 @@ class ScatteringTriangle : public QGraphicsItem
 		bool m_bShowEwaldSphere = 1;
 
 	protected:
-		QRectF boundingRect() const;
+		virtual QRectF boundingRect() const override;
 
 	public:
 		ScatteringTriangle(ScatteringTriangleScene& scene);
 		virtual ~ScatteringTriangle();
 
-		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget *) override;
 
 		void SetReady(bool bReady) { m_bReady = bReady; }
 		void nodeMoved(const ScatteringTriangleNode* pNode=0);
@@ -157,11 +157,11 @@ class ScatteringTriangle : public QGraphicsItem
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_recip.IsInited(); }
 		void ClearPeaks();
 		void CalcPeaks(const tl::Lattice<t_real_glob>& lattice,
-						const tl::Lattice<t_real_glob>& recip,
-						const tl::Plane<t_real_glob>& planeRLU,
-						const SpaceGroup* pSpaceGroup=nullptr,
-						bool bIsPowder=0,
-						const std::vector<AtomPos>* pvecAtomPos=nullptr);
+			const tl::Lattice<t_real_glob>& recip,
+			const tl::Plane<t_real_glob>& planeRLU,
+			const SpaceGroup* pSpaceGroup=nullptr,
+			bool bIsPowder=0,
+			const std::vector<AtomPos>* pvecAtomPos=nullptr);
 
 		void SetPlaneDistTolerance(t_real_glob dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
@@ -265,8 +265,8 @@ class ScatteringTriangleScene : public QGraphicsScene
 		void paramsChanged(const RecipParams& parms);
 
 		void spurionInfo(const tl::ElasticSpurion& spuris,
-					const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKI,
-					const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKF);
+			const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKI,
+			const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKF);
 
 		void coordsChanged(t_real_glob dh, t_real_glob dk, t_real_glob dl,
 			bool bHasNearest,
@@ -291,7 +291,7 @@ class ScatteringTriangleView : public QGraphicsView
 	Q_OBJECT
 	protected:
 		t_real_glob m_dTotalScale = 1.;
-		virtual void wheelEvent(QWheelEvent* pEvt);
+		virtual void wheelEvent(QWheelEvent* pEvt) override;
 
 	public:
 		ScatteringTriangleView(QWidget* pParent = 0);

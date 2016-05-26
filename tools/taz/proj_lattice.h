@@ -1,20 +1,18 @@
 /**
- * Real crystal lattice
+ * Crystal lattice projections
  * @author tweber
- * @date feb-2014
+ * @date may-2016
  * @license GPLv2
  */
 
-#ifndef __TAZ_REAL_LATTICE_H__
-#define __TAZ_REAL_LATTICE_H__
+#ifndef __TAZ_PROJ_LATTICE_H__
+#define __TAZ_PROJ_LATTICE_H__
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/lattice.h"
-#include "tlibs/math/bz.h"
-#include "tlibs/math/neutrons.hpp"
-#include "tlibs/math/kd.h"
+#include "tlibs/math/neutrons.h"
+#include "tlibs/math/geo.h"
 #include "tasoptions.h"
-#include "dialogs/AtomsDlg.h"
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 #include "libs/spacegroups/spacegroup.h"
@@ -32,9 +30,9 @@
 namespace ublas = boost::numeric::ublas;
 
 
-class RealLattice;
+class ProjLattice;
 
-class LatticePoint : public QGraphicsItem
+class ProjLatticePoint : public QGraphicsItem
 {
 	protected:
 		QColor m_color = Qt::red;
@@ -43,64 +41,40 @@ class LatticePoint : public QGraphicsItem
 
 	protected:
 		QString m_strLabel;
+		QString m_strTT;
 
 	public:
-		LatticePoint();
+		ProjLatticePoint();
 
 		void SetLabel(const QString& str) { m_strLabel = str; }
 		void SetColor(const QColor& col) { m_color = col; }
+
+		void AddTooltip(const QString& strTT) { if(m_strTT.length()) m_strTT+=", "; m_strTT += strTT; }
+		void SetTooltip() { setToolTip(m_strTT);}
 };
 
 
-class LatticeAtom : public QGraphicsItem
-{
-	friend class RealLattice;
-
-	protected:
-		QColor m_color = Qt::cyan;
-		virtual QRectF boundingRect() const override;
-		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
-
-	protected:
-		std::string m_strElem;
-		ublas::vector<t_real_glob> m_vecPos;
-		ublas::vector<t_real_glob> m_vecProj;
-		t_real_glob m_dProjDist = 0.;
-
-	public:
-		LatticeAtom();
-		void SetColor(const QColor& col) { m_color = col; }
-};
-
-
-class LatticeScene;
-class RealLattice : public QGraphicsItem
+class ProjLatticeScene;
+class ProjLattice : public QGraphicsItem
 {
 	protected:
 		bool m_bReady = 0;
-		LatticeScene &m_scene;
+		ProjLatticeScene &m_scene;
 
-		t_real_glob m_dScaleFactor = 48.;	// pixels per A for zoom == 1.
+		t_real_glob m_dScaleFactor = 150.;	// pixels per A for zoom == 1.
 		t_real_glob m_dZoom = 1.;
-		t_real_glob m_dPlaneDistTolerance = 0.01;
-		int m_iMaxPeaks = 7;
+		int m_iMaxPeaks = 5;
 
 		tl::Lattice<t_real_glob> m_lattice;
 		ublas::matrix<t_real_glob> m_matPlane, m_matPlane_inv;
-		std::vector<LatticePoint*> m_vecPeaks;
-		std::vector<LatticeAtom*> m_vecAtoms;
-
-		tl::Kd<t_real_glob> m_kdLattice;
-
-		bool m_bShowWS = 1;
-		tl::Brillouin2D<t_real_glob> m_ws;	// Wigner-Seitz cell
+		std::vector<ProjLatticePoint*> m_vecPeaks;
 
 	protected:
 		virtual QRectF boundingRect() const override;
 
 	public:
-		RealLattice(LatticeScene& scene);
-		virtual ~RealLattice();
+		ProjLattice(ProjLatticeScene& scene);
+		virtual ~ProjLattice();
 
 		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
@@ -112,43 +86,36 @@ class RealLattice : public QGraphicsItem
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_lattice.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const tl::Lattice<t_real_glob>& lattice, const tl::Plane<t_real_glob>& planeFrac,
-			const SpaceGroup* pSpaceGroup=nullptr, const std::vector<AtomPos>* pvecAtomPos=nullptr);
+		void CalcPeaks(const tl::Lattice<t_real_glob>& recip, const tl::Plane<t_real_glob>& planeRlu,
+			const SpaceGroup* pSpaceGroup=nullptr);
 
-		void SetPlaneDistTolerance(t_real_glob dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
 		unsigned int GetMaxPeaks() const { return m_iMaxPeaks; }
 		void SetZoom(t_real_glob dZoom);
 		t_real_glob GetZoom() const { return m_dZoom; }
 
-		void SetWSVisible(bool bVisible);
-
-		const tl::Kd<t_real_glob>& GetKdLattice() const { return m_kdLattice; }
-
 	public:
 		t_real_glob GetScaleFactor() const { return m_dScaleFactor; }
 		void SetScaleFactor(t_real_glob dScale) { m_dScaleFactor = dScale; }
 
-		ublas::vector<t_real_glob> GetHKLFromPlanePos(t_real_glob x, t_real_glob y) const;
-		const tl::Lattice<t_real_glob>& GetRealLattice() const { return m_lattice; }
+		const tl::Lattice<t_real_glob>& GetProjLattice() const { return m_lattice; }
 };
 
 
-class LatticeScene : public QGraphicsScene
+class ProjLatticeScene : public QGraphicsScene
 {	Q_OBJECT
 	protected:
-		RealLattice *m_pLatt;
+		ProjLattice *m_pLatt;
+
 		bool m_bSnap = 0;
 		bool m_bMousePressed = 0;
 
 	public:
-		LatticeScene();
-		virtual ~LatticeScene();
+		ProjLatticeScene();
+		virtual ~ProjLatticeScene();
 
-		const RealLattice* GetLattice() const { return m_pLatt; }
-		RealLattice* GetLattice() { return m_pLatt; }
-
-		bool ExportWSAccurate(const char* pcFile) const;
+		const ProjLattice* GetLattice() const { return m_pLatt; }
+		ProjLattice* GetLattice() { return m_pLatt; }
 
 	public slots:
 		void scaleChanged(t_real_glob dTotalScale);
@@ -170,7 +137,7 @@ class LatticeScene : public QGraphicsScene
 };
 
 
-class LatticeView : public QGraphicsView
+class ProjLatticeView : public QGraphicsView
 {
 	Q_OBJECT
 	protected:
@@ -178,8 +145,8 @@ class LatticeView : public QGraphicsView
 		virtual void wheelEvent(QWheelEvent* pEvt) override;
 
 	public:
-		LatticeView(QWidget* pParent = 0);
-		virtual ~LatticeView();
+		ProjLatticeView(QWidget* pParent = 0);
+		virtual ~ProjLatticeView();
 
 	signals:
 		void scaleChanged(t_real_glob dTotalScale);

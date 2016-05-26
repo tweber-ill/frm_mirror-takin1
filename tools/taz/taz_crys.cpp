@@ -1,4 +1,4 @@
-/*
+/**
  * TAS tool (crystal stuff)
  * @author tweber
  * @date feb-2014
@@ -298,6 +298,8 @@ void TazDlg::CalcPeaks()
 		if(m_sceneRecip.getSnapq())
 			m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
 		m_sceneRecip.emitUpdate();
+
+		m_sceneProjRecip.GetLattice()->CalcPeaks(recip, planeRLU, pSpaceGroup);
 
 		m_sceneRealLattice.GetLattice()->CalcPeaks(lattice, planeRealFrac, pSpaceGroup, &m_vecAtoms);
 		m_dlgRealParam.CrystalChanged(lattice, recip, pSpaceGroup, &m_vecAtoms);

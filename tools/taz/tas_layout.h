@@ -35,10 +35,10 @@ class TasLayoutNode : public QGraphicsItem
 		TasLayout *m_pParentItem;
 
 	protected:
-		QRectF boundingRect() const;
-		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+		virtual QRectF boundingRect() const override;
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
-		QVariant itemChange(GraphicsItemChange change, const QVariant &val);
+		virtual QVariant itemChange(GraphicsItemChange change, const QVariant &val) override;
 
 	public:
 		TasLayoutNode(TasLayout* pSupItem);
@@ -87,7 +87,7 @@ class TasLayout : public QGraphicsItem
 		t_real_glob GetLenAnaDet() const { return m_dLenAnaDet; }
 
 	protected:
-		QRectF boundingRect() const;
+		virtual QRectF boundingRect() const override;
 
 	public:
 		TasLayout(TasLayoutScene& scene);
@@ -95,7 +95,7 @@ class TasLayout : public QGraphicsItem
 
 		bool IsReady() const { return m_bReady; }
 
-		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
 		void SetSampleTwoTheta(t_real_glob dTT);
 		void SetSampleTheta(t_real_glob dT);

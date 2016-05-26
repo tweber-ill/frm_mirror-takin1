@@ -140,9 +140,21 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_vecCheckBoxNamesSenses = {"tas/sense_m", "tas/sense_s", "tas/sense_a"};
 
 
+	// recip
 	m_pviewRecip = new ScatteringTriangleView(groupRecip);
 	groupRecip->addTab(m_pviewRecip, "Reciprocal Lattice");
 
+	m_pviewProjRecip = new ProjLatticeView(groupRecip);
+	groupRecip->addTab(m_pviewProjRecip, "Projection");
+
+	m_pviewRecip->setScene(&m_sceneRecip);
+	m_pviewProjRecip->setScene(&m_sceneProjRecip);
+
+	if(m_settings.contains("main/recip_tab"))
+		groupRecip->setCurrentIndex(m_settings.value("main/recip_tab").value<int>());
+
+
+	// real
 	m_pviewRealLattice = new LatticeView(groupReal);
 	groupReal->addTab(m_pviewRealLattice, "Real Lattice");
 
@@ -152,14 +164,13 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pviewTof = new TofLayoutView(groupReal);
 	groupReal->addTab(m_pviewTof, "TOF Instrument");
 
-	if(m_settings.contains("main/real_tab"))
-		groupReal->setCurrentIndex(m_settings.value("main/real_tab").value<int>());
-
-
-	m_pviewRecip->setScene(&m_sceneRecip);
 	m_pviewRealLattice->setScene(&m_sceneRealLattice);
 	m_pviewReal->setScene(&m_sceneReal);
 	m_pviewTof->setScene(&m_sceneTof);
+
+	if(m_settings.contains("main/real_tab"))
+		groupReal->setCurrentIndex(m_settings.value("main/real_tab").value<int>());
+
 
 
 	QObject::connect(m_pSettingsDlg, SIGNAL(SettingsChanged()), this, SLOT(SettingsChanged()));
@@ -193,6 +204,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	// scale factor
 	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(t_real_glob)),
 		&m_sceneRecip, SLOT(scaleChanged(t_real_glob)));
+	QObject::connect(m_pviewProjRecip, SIGNAL(scaleChanged(t_real_glob)),
+		&m_sceneProjRecip, SLOT(scaleChanged(t_real_glob)));
 	QObject::connect(m_pviewRealLattice, SIGNAL(scaleChanged(t_real_glob)),
 		&m_sceneRealLattice, SLOT(scaleChanged(t_real_glob)));
 	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(t_real_glob)),
@@ -208,6 +221,8 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	// cursor position
 	QObject::connect(&m_sceneRecip, SIGNAL(coordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)),
+		this, SLOT(RecipCoordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)));
+	QObject::connect(&m_sceneProjRecip, SIGNAL(coordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)),
 		this, SLOT(RecipCoordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)));
 	QObject::connect(&m_sceneRealLattice, SIGNAL(coordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)),
 		this, SLOT(RealCoordsChanged(t_real_glob, t_real_glob, t_real_glob, bool, t_real_glob, t_real_glob, t_real_glob)));
@@ -680,11 +695,14 @@ TazDlg::TazDlg(QWidget* pParent)
 	// --------------------------------------------------------------------------------
 	// context menus
 	m_pviewRecip->setContextMenuPolicy(Qt::CustomContextMenu);
+	m_pviewProjRecip->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_pviewRealLattice->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_pviewReal->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_pviewTof->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	QObject::connect(m_pviewRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
+		this, SLOT(RecipContextMenu(const QPoint&)));
+	QObject::connect(m_pviewProjRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(RecipContextMenu(const QPoint&)));
 	QObject::connect(m_pviewRealLattice, SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(RealContextMenu(const QPoint&)));
@@ -744,6 +762,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_sceneRecip.GetTriangle()->SetMaxPeaks(iMaxPeaks);
 	m_sceneRecip.GetTriangle()->SetPlaneDistTolerance(s_dPlaneDistTolerance);
 
+	m_sceneProjRecip.GetLattice()->SetMaxPeaks(iMaxPeaks/2);
+
 	m_sceneRealLattice.GetLattice()->SetMaxPeaks(iMaxPeaks);
 	m_sceneRealLattice.GetLattice()->SetPlaneDistTolerance(s_dPlaneDistTolerance);
 
@@ -780,6 +800,7 @@ TazDlg::~TazDlg()
 	if(m_pSettingsDlg) { delete m_pSettingsDlg; m_pSettingsDlg = 0; }
 
 	if(m_pviewRecip) { delete m_pviewRecip; m_pviewRecip = 0; }
+	if(m_pviewProjRecip) { delete m_pviewProjRecip; m_pviewProjRecip = 0; }
 	if(m_pviewRealLattice) { delete m_pviewRealLattice; m_pviewRealLattice = 0; }
 	if(m_pviewReal) { delete m_pviewReal; m_pviewReal = 0; }
 	if(m_pviewTof) { delete m_pviewTof; m_pviewTof = 0; }
@@ -836,9 +857,10 @@ void TazDlg::showEvent(QShowEvent *pEvt)
 	{
 		bInitialShow = 0;
 
+		m_pviewRecip->centerOn(m_sceneRecip.GetTriangle()->GetGfxMid());
+		m_pviewProjRecip->centerOn(0.,0.);
 		m_pviewReal->centerOn(m_sceneReal.GetTasLayout());
 		m_pviewTof->centerOn(m_sceneTof.GetTofLayout());
-		m_pviewRecip->centerOn(m_sceneRecip.GetTriangle()->GetGfxMid());
 		m_pviewRealLattice->centerOn(0.,0.);
 
 		/*for(QScrollBar* pSB : {
@@ -890,6 +912,7 @@ void TazDlg::closeEvent(QCloseEvent* pEvt)
 	//m_settings.setValue("main/width", this->width());
 	//m_settings.setValue("main/height", this->height());
 	m_settings.setValue("main/geo", saveGeometry());
+	m_settings.setValue("main/recip_tab", groupRecip->currentIndex());
 	m_settings.setValue("main/real_tab", groupReal->currentIndex());
 
 	QMainWindow::closeEvent(pEvt);

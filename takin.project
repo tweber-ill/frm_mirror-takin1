@@ -136,6 +136,8 @@
       <File Name="tools/taz/net.h"/>
       <File Name="tools/taz/tof_layout.cpp"/>
       <File Name="tools/taz/tof_layout.h"/>
+      <File Name="tools/taz/proj_lattice.cpp"/>
+      <File Name="tools/taz/proj_lattice.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="monteconvo">
       <File Name="tools/monteconvo/sqw.cpp"/>

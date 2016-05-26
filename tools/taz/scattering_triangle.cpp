@@ -41,7 +41,7 @@ QRectF ScatteringTriangleNode::boundingRect() const
 	return QRectF(-5., -5., 10., 10.);
 }
 
-void ScatteringTriangleNode::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+void ScatteringTriangleNode::paint(QPainter *painter, const QStyleOptionGraphicsItem* popt, QWidget* pwid)
 {
 	painter->drawEllipse(QRectF(-2., -2., 4., 4.));
 }
@@ -84,7 +84,7 @@ QRectF RecipPeak::boundingRect() const
 	return QRectF(-35., -10., 70., 50.);
 }
 
-void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem* pOpt, QWidget* pWid)
 {
 	painter->setFont(g_fontGfx);
 	painter->setBrush(m_color);
@@ -205,7 +205,7 @@ QPointF ScatteringTriangle::GetGfxMid() const
 	return (ptKiQ + ptKfQ + ptKiKf) / 3.;
 }
 
-void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem* pOpt, QWidget* pWid)
 {
 	painter->setFont(g_fontGfx);
 

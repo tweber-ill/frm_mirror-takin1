@@ -1,4 +1,4 @@
-/*
+/**
  * Real crystal lattice
  * @author tweber
  * @date feb-2014
