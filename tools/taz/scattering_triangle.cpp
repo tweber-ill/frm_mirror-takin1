@@ -1,5 +1,5 @@
-/*
- * Scattering Triangle
+/**
+ * Reciprocal Lattice
  * @author tweber
  * @date feb-2014
  * @license GPLv2
@@ -9,7 +9,6 @@
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
-#include "libs/formfactors/formfact.h"
 #include "scattering_triangle.h"
 
 #include <QToolTip>
@@ -24,6 +23,11 @@ using t_mat = ublas::matrix<t_real>;
 static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
 static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
 static const tl::t_angle_si<t_real> rads = tl::get_one_radian<t_real>();
+
+// symbol drawing sizes
+#define DEF_PEAK_SIZE 3.
+#define MIN_PEAK_SIZE 0.2
+#define MAX_PEAK_SIZE 5.5
 
 
 ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem)
@@ -88,7 +92,7 @@ void RecipPeak::paint(QPainter *painter, const QStyleOptionGraphicsItem* pOpt, Q
 {
 	painter->setFont(g_fontGfx);
 	painter->setBrush(m_color);
-	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
+	painter->drawEllipse(QRectF(-m_dRadius, -m_dRadius, m_dRadius*2., m_dRadius*2.));
 
 	if(m_strLabel != "")
 	{
@@ -701,55 +705,19 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, t_real dAngle)
 	nodeMoved(m_pNodeKfQ);
 }
 
-void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
-	const tl::Lattice<t_real>& recip, const tl::Plane<t_real>& planeRLU,
-	const SpaceGroup* pSpaceGroup,
-	bool bIsPowder, const std::vector<AtomPos>* pvecAtomPos)
+void ScatteringTriangle::CalcPeaks(const RecipCommon<t_real>& recipcommon, bool bIsPowder)
 {
 	ClearPeaks();
 	m_powder.clear();
 	m_kdLattice.Unload();
 
-	m_lattice = lattice;
-	m_recip = recip;
-	//m_recip_unrot = recip_unrot;
-
-	t_vec vecX0 = ublas::zero_vector<t_real>(3);
-	t_vec vecPlaneX = planeRLU.GetDir0()[0]*recip.GetVec(0) +
-		planeRLU.GetDir0()[1]*recip.GetVec(1) +
-		planeRLU.GetDir0()[2]*recip.GetVec(2);
-	t_vec vecPlaneY = planeRLU.GetDir1()[0]*recip.GetVec(0) +
-		planeRLU.GetDir1()[1]*recip.GetVec(1) +
-		planeRLU.GetDir1()[2]*recip.GetVec(2);
-	tl::Plane<t_real> plane(vecX0, vecPlaneX, vecPlaneY);
+	m_lattice = recipcommon.lattice;
+	m_recip = recipcommon.recip;
+	m_matPlane = recipcommon.matPlane;
+	m_matPlane_inv = recipcommon.matPlane_inv;
 
 	m_powder.SetRecipLattice(&m_recip);
 
-	const t_mat matA = m_lattice.GetMetric();
-	const t_mat matB = m_recip.GetMetric();
-
-	t_vec dir0RLU = planeRLU.GetDir0();
-	t_vec dir1RLU = planeRLU.GetDir1();
-
-	std::vector<t_vec> vecOrth =
-		tl::gram_schmidt<t_vec>(
-			{plane.GetDir0(), plane.GetDir1(), plane.GetNorm()}, 1);
-	m_matPlane = tl::column_matrix(vecOrth);
-	t_real dDir0Len = ublas::norm_2(vecOrth[0]), dDir1Len = ublas::norm_2(vecOrth[1]);
-
-	if(tl::float_equal<t_real>(dDir0Len, 0.) || tl::float_equal<t_real>(dDir1Len, 0.)
-		|| tl::is_nan_or_inf<t_real>(dDir0Len) || tl::is_nan_or_inf<t_real>(dDir1Len))
-	{
-		tl::log_err("Invalid scattering plane.");
-		return;
-	}
-
-	bool bInv = tl::inverse(m_matPlane, m_matPlane_inv);
-	if(!bInv)
-	{
-		tl::log_err("Cannot invert scattering plane metric.");
-		return;
-	}
 
 	// -------------------------------------------------------------------------
 	// central peak for BZ calculation
@@ -767,9 +735,11 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 	{
 		veciCent.clear();
 
-		t_vec vecdCent = std::get<0>(tup)*dir0RLU + std::get<1>(tup)*dir1RLU;
+		t_vec vecdCent = std::get<0>(tup) * recipcommon.dir0RLU +
+			std::get<1>(tup) * recipcommon.dir1RLU;
 		veciCent = tl::convert_vec<t_real, int>(vecdCent);
-		if(pSpaceGroup && !pSpaceGroup->HasReflection(veciCent[0], veciCent[1], veciCent[2]))
+		if(recipcommon.pSpaceGroup &&
+			!recipcommon.pSpaceGroup->HasReflection(veciCent[0], veciCent[1], veciCent[2]))
 			continue;
 		break;
 	}
@@ -798,60 +768,13 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 	}*/
 
 
-
 	//const t_mat matB = recip.GetMetric();
-
-	// --------------------------------------------------------------------
-	// structure factors
-	ScatlenList lstsl;
-	//FormfactList lstff;
-
-	std::vector<std::string> vecAllNames;
-	std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
-	std::vector<std::size_t> vecAllAtomTypes;
-	std::vector<std::complex<t_real>> vecScatlens;
-
-	const std::vector<t_mat>* pvecSymTrafos = nullptr;
-	if(pSpaceGroup)
-		pvecSymTrafos = &pSpaceGroup->GetTrafos();
-	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
-
-	if(pvecSymTrafos && pvecSymTrafos->size() && /*g_bHasFormfacts &&*/
-		g_bHasScatlens && pvecAtomPos && pvecAtomPos->size())
-	{
-		std::vector<t_vec> vecAtoms;
-		std::vector<std::string> vecNames;
-		for(std::size_t iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
-		{
-			vecAtoms.push_back((*pvecAtomPos)[iAtom].vecPos);
-			vecNames.push_back((*pvecAtomPos)[iAtom].strAtomName);
-		}
-
-		std::tie(vecAllNames, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
-		tl::generate_all_atoms<t_mat, t_vec, std::vector>
-			(*pvecSymTrafos, vecAtoms, &vecNames, matA,
-			t_real(0), t_real(1), g_dEps);
-
-		for(const std::string& strElem : vecAllNames)
-		{
-			const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
-			vecScatlens.push_back(pElem ? pElem->GetCoherent() : std::complex<t_real>(0.,0.));
-			if(!pElem)
-				tl::log_err("Element \"", strElem, "\" not found in scattering length table.",
-					" Using b=0.");
-		}
-
-		//for(const t_vec& vecAt : vecAllAtoms)
-		//	std::cout << vecAt << std::endl;
-		//for(const std::complex<t_real>& b : vecScatlens)
-		//	std::cout << b << std::endl;
-	}
-	// --------------------------------------------------------------------
 
 	const std::string strAA = tl::get_spec_char_utf8("AA") +
 		tl::get_spec_char_utf8("sup-") +
 		tl::get_spec_char_utf8("sup1");
 	std::list<std::vector<t_real>> lstPeaksForKd;
+	t_real dMinF = std::numeric_limits<t_real>::max(), dMaxF = -1.;
 
 	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
 		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
@@ -861,9 +784,9 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 				const t_real k = t_real(ik);
 				const t_real l = t_real(il);
 
-				if(pSpaceGroup)
+				if(recipcommon.pSpaceGroup)
 				{
-					if(!pSpaceGroup->HasReflection(ih, ik, il))
+					if(!recipcommon.pSpaceGroup->HasReflection(ih, ik, il))
 						continue;
 				}
 
@@ -880,10 +803,11 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 				if(!bIsPowder || (ih==0 && ik==0 && il==0))
 				{
 					// add peak in 1/A and rlu units
-					lstPeaksForKd.push_back(std::vector<t_real>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/});
+					lstPeaksForKd.push_back(std::vector<t_real>
+						{ vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/ });
 
 					t_real dDist = 0.;
-					t_vec vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
+					t_vec vecDropped = recipcommon.plane.GetDroppedPerp(vecPeak, &dDist);
 
 					if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
 					{
@@ -896,24 +820,25 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 
 						// --------------------------------------------------------------------
 						// structure factors
-						if(vecScatlens.size())
+						if(recipcommon.CanCalcStructFact())
 						{
-							std::complex<t_real> cF =
-								tl::structfact<t_real, std::complex<t_real>, t_vec, std::vector>
-									(vecAllAtoms, vecPeak, vecScatlens);
-							t_real dFsq = (std::conj(cF)*cF).real();
+							t_real dFsq;
+							std::tie(std::ignore, dF, dFsq) =
+								recipcommon.GetStructFact(vecPeak);
+
 							//dFsq *= tl::lorentz_factor(dAngle);
 							tl::set_eps_0(dFsq, g_dEpsGfx);
 
-							//dF = std::sqrt(dFsq);
-							//tl::set_eps_0(dF, g_dEpsGfx);
+							tl::set_eps_0(dF, g_dEpsGfx);
+							dMinF = std::min(dF, dMinF);
+							dMaxF = std::max(dF, dMaxF);
 
 							std::ostringstream ostrStructfact;
 							ostrStructfact.precision(g_iPrecGfx);
 							if(g_bShowFsq)
 								ostrStructfact << "S = " << dFsq;
 							else
-								ostrStructfact << "F = " << std::sqrt(dFsq);
+								ostrStructfact << "F = " << dF;
 							strStructfact = ostrStructfact.str();
 						}
 						// --------------------------------------------------------------------
@@ -923,21 +848,26 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 						if(ih==0 && ik==0 && il==0)
 							pPeak->SetColor(Qt::green);
 						pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
+						if(dF >= 0.) pPeak->SetRadius(dF);
 						pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
-						std::ostringstream ostrTip;
+						std::ostringstream ostrLabel, ostrTip;
+						ostrLabel.precision(g_iPrecGfx);
 						ostrTip.precision(g_iPrecGfx);
 
-						ostrTip << "(" << ih << " " << ik << " " << il << ")";
+						ostrLabel << "(" << ih << " " << ik << " " << il << ")";
+						ostrTip << "(" << ih << " " << ik << " " << il << ") rlu";
 						if(strStructfact.length())
-							ostrTip << "\n" << strStructfact;
+						{
+							ostrLabel << "\n" << strStructfact;
+							ostrTip << "\n" << strStructfact << " fm";
+						}
 
 						if(ih!=0 || ik!=0 || il!=0)
-							pPeak->SetLabel(ostrTip.str().c_str());
+							pPeak->SetLabel(ostrLabel.str().c_str());
 
 						tl::set_eps_0(vecPeak);
-						ostrTip << " rlu\n";
-						ostrTip << "("
+						ostrTip << "\n("
 							<< vecPeak[0] << ", "
 							<< vecPeak[1] << ", "
 							<< vecPeak[2] << ") " << strAA;
@@ -977,6 +907,22 @@ void ScatteringTriangle::CalcPeaks(const tl::Lattice<t_real>& lattice,
 		//	pPeak->SetBZ(&m_bz);
 
 		m_kdLattice.Load(lstPeaksForKd, 3);
+	}
+
+	if(dMaxF >= 0.)
+	{
+		for(RecipPeak *pPeak : m_vecPeaks)
+		{
+			if(!tl::float_equal(dMinF, dMaxF, g_dEpsGfx))
+			{
+				t_real dFScale = (pPeak->GetRadius()-dMinF) / (dMaxF-dMinF);
+				pPeak->SetRadius(tl::lerp(MIN_PEAK_SIZE, MAX_PEAK_SIZE, dFScale));
+			}
+			else
+			{
+				pPeak->SetRadius(DEF_PEAK_SIZE);
+			}
+		}
 	}
 
 	m_scene.emitAllParams();

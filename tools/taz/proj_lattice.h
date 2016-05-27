@@ -12,10 +12,13 @@
 #include "tlibs/math/lattice.h"
 #include "tlibs/math/neutrons.h"
 #include "tlibs/math/geo.h"
-#include "tasoptions.h"
+
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 #include "libs/spacegroups/spacegroup.h"
+
+#include "scattering_triangle.h"	// for RecipCommon
+#include "tasoptions.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -36,12 +39,13 @@ class ProjLatticePoint : public QGraphicsItem
 {
 	protected:
 		QColor m_color = Qt::red;
-		virtual QRectF boundingRect() const override;
-		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
-
-	protected:
 		QString m_strLabel;
 		QString m_strTT;
+		t_real_glob m_dRadius = 0.;
+
+	protected:
+		virtual QRectF boundingRect() const override;
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
 	public:
 		ProjLatticePoint();
@@ -51,6 +55,10 @@ class ProjLatticePoint : public QGraphicsItem
 
 		void AddTooltip(const QString& strTT) { if(m_strTT.length()) m_strTT+=", "; m_strTT += strTT; }
 		void SetTooltip() { setToolTip(m_strTT);}
+
+		void SetRadius(t_real_glob dRad) { m_dRadius = dRad; }
+		void AddRadius(t_real_glob dRad) { m_dRadius += dRad; }
+		t_real_glob GetRadius() const { return m_dRadius; }
 };
 
 
@@ -86,8 +94,7 @@ class ProjLattice : public QGraphicsItem
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_lattice.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const tl::Lattice<t_real_glob>& recip, const tl::Plane<t_real_glob>& planeRlu,
-			const SpaceGroup* pSpaceGroup=nullptr);
+		void CalcPeaks(const RecipCommon<t_real_glob>& recipcommon, bool bIsRecip=1);
 
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
 		unsigned int GetMaxPeaks() const { return m_iMaxPeaks; }

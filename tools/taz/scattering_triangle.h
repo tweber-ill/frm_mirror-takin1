@@ -14,10 +14,11 @@
 #include "tlibs/math/bz.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/kd.h"
-#include "dialogs/AtomsDlg.h"
+
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 #include "libs/spacegroups/spacegroup.h"
+#include "libs/formfactors/formfact.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -31,6 +32,136 @@
 
 #include "tasoptions.h"
 #include "dialogs/RecipParamDlg.h"	// for RecipParams struct
+#include "dialogs/AtomsDlg.h"
+
+
+template<class t_real = t_real_glob>
+struct RecipCommon
+{
+	using t_mat = ublas::matrix<t_real>;
+	using t_vec = ublas::vector<t_real>;
+
+	tl::Lattice<t_real> lattice, recip;
+	tl::Plane<t_real> planeRLU;
+
+	const SpaceGroup* pSpaceGroup = nullptr;
+	const std::vector<AtomPos>* pvecAtomPos = nullptr;
+
+	t_mat matPlane, matPlane_inv;
+
+	std::vector<std::string> vecAllNames;
+	std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
+	std::vector<std::size_t> vecAllAtomTypes;
+	std::vector<std::complex<t_real>> vecScatlens;
+
+	t_vec dir0RLU, dir1RLU;
+	t_mat matA, matB;
+
+	tl::Plane<t_real> plane;
+
+
+	RecipCommon() = default;
+	~RecipCommon() = default;
+
+	bool Calc(const tl::Lattice<t_real>& lat, const tl::Lattice<t_real>& rec,
+		const tl::Plane<t_real>& plRLU, const SpaceGroup *pSG,
+		const std::vector<AtomPos>* pvecAt)
+	{
+		lattice = lat;
+		recip = rec;
+		planeRLU = plRLU;
+		pSpaceGroup = pSG;
+		pvecAtomPos = pvecAt;
+
+		t_vec vecX0 = ublas::zero_vector<t_real>(3);
+		t_vec vecPlaneX = planeRLU.GetDir0()[0] * recip.GetVec(0) +
+			planeRLU.GetDir0()[1] * recip.GetVec(1) +
+			planeRLU.GetDir0()[2] * recip.GetVec(2);
+		t_vec vecPlaneY = planeRLU.GetDir1()[0] * recip.GetVec(0) +
+			planeRLU.GetDir1()[1] * recip.GetVec(1) +
+			planeRLU.GetDir1()[2] * recip.GetVec(2);
+		plane = tl::Plane<t_real>(vecX0, vecPlaneX, vecPlaneY);
+
+		matA = lattice.GetMetric();
+		matB = recip.GetMetric();
+
+		dir0RLU = planeRLU.GetDir0();
+		dir1RLU = planeRLU.GetDir1();
+
+		std::vector<t_vec> vecOrth =
+			tl::gram_schmidt<t_vec>(
+				{plane.GetDir0(), plane.GetDir1(), plane.GetNorm()}, 1);
+		matPlane = tl::column_matrix(vecOrth);
+		t_real dDir0Len = ublas::norm_2(vecOrth[0]), dDir1Len = ublas::norm_2(vecOrth[1]);
+
+		if(tl::float_equal<t_real>(dDir0Len, 0.) || tl::float_equal<t_real>(dDir1Len, 0.)
+			|| tl::is_nan_or_inf<t_real>(dDir0Len) || tl::is_nan_or_inf<t_real>(dDir1Len))
+		{
+			tl::log_err("Invalid scattering plane.");
+			return false;
+		}
+
+		bool bInv = tl::inverse(matPlane, matPlane_inv);
+		if(!bInv)
+		{
+			tl::log_err("Cannot invert scattering plane metric.");
+			return false;
+		}
+
+
+		// --------------------------------------------------------------------
+		// structure factors
+		ScatlenList lstsl;
+		//FormfactList lstff;
+
+		const std::vector<t_mat>* pvecSymTrafos = nullptr;
+		if(pSpaceGroup)
+			pvecSymTrafos = &pSpaceGroup->GetTrafos();
+
+		if(pvecSymTrafos && pvecSymTrafos->size() && /*g_bHasFormfacts &&*/
+			g_bHasScatlens && pvecAtomPos && pvecAtomPos->size())
+		{
+			std::vector<t_vec> vecAtoms;
+			std::vector<std::string> vecNames;
+			for(std::size_t iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
+			{
+				vecAtoms.push_back((*pvecAtomPos)[iAtom].vecPos);
+				vecNames.push_back((*pvecAtomPos)[iAtom].strAtomName);
+			}
+
+			std::tie(vecAllNames, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
+			tl::generate_all_atoms<t_mat, t_vec, std::vector>
+				(*pvecSymTrafos, vecAtoms, &vecNames, matA,
+				t_real(0), t_real(1), g_dEps);
+
+			for(const std::string& strElem : vecAllNames)
+			{
+				const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
+				vecScatlens.push_back(pElem ? pElem->GetCoherent() : std::complex<t_real>(0.,0.));
+				if(!pElem)
+					tl::log_err("Element \"", strElem, "\" not found in scattering length table.",
+						" Using b=0.");
+			}
+		}
+		// --------------------------------------------------------------------
+
+		return true;
+	}
+
+
+	bool CanCalcStructFact() const { return vecScatlens.size() != 0; }
+
+	std::tuple<std::complex<t_real>, t_real, t_real> GetStructFact(const t_vec& vecPeak) const
+	{
+		std::complex<t_real> cF =
+			tl::structfact<t_real, std::complex<t_real>, t_vec, std::vector>
+				(vecAllAtoms, vecPeak, vecScatlens);
+		t_real dFsq = (std::conj(cF)*cF).real();
+		t_real dF = std::sqrt(dFsq);
+
+		return std::make_tuple(cF, dF, dFsq);
+	}
+};
 
 
 #define TRIANGLE_NODE_TYPE_KEY	0
@@ -69,12 +200,13 @@ class RecipPeak : public QGraphicsItem
 {
 	protected:
 		QColor m_color = Qt::red;
-		virtual QRectF boundingRect() const override;
-		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
-
-	protected:
 		QString m_strLabel;
 		//const Brillouin2D<t_real_glob>* m_pBZ = 0;
+		t_real_glob m_dRadius = 3.;
+
+	protected:
+		virtual QRectF boundingRect() const override;
+		virtual void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
 	public:
 		RecipPeak();
@@ -82,6 +214,8 @@ class RecipPeak : public QGraphicsItem
 		void SetLabel(const QString& str) { m_strLabel = str; }
 		void SetColor(const QColor& col) { m_color = col; }
 
+		void SetRadius(t_real_glob dRad) { m_dRadius = dRad; }
+		t_real_glob GetRadius() const { return m_dRadius; }
 		//void SetBZ(const Brillouin2D<t_real_glob>* pBZ) { this->m_pBZ = pBZ; }
 };
 
@@ -156,12 +290,7 @@ class ScatteringTriangle : public QGraphicsItem
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_recip.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const tl::Lattice<t_real_glob>& lattice,
-			const tl::Lattice<t_real_glob>& recip,
-			const tl::Plane<t_real_glob>& planeRLU,
-			const SpaceGroup* pSpaceGroup=nullptr,
-			bool bIsPowder=0,
-			const std::vector<AtomPos>* pvecAtomPos=nullptr);
+		void CalcPeaks(const RecipCommon<t_real_glob>& recipcommon, bool bIsPowder=0);
 
 		void SetPlaneDistTolerance(t_real_glob dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }

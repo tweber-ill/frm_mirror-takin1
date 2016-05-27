@@ -24,6 +24,12 @@ using t_vec = ublas::vector<t_real>;
 using t_mat = ublas::matrix<t_real>;
 
 
+// symbol drawing sizes
+#define DEF_PEAK_SIZE 3.
+#define MIN_PEAK_SIZE 0.5
+#define MAX_PEAK_SIZE 5.5
+
+
 #define PROJ_LATTICE_NODE_TYPE_KEY	0
 
 enum ProjLatticeNodeType
@@ -52,7 +58,7 @@ void ProjLatticePoint::paint(QPainter *painter, const QStyleOptionGraphicsItem*,
 {
 	painter->setFont(g_fontGfx);
 	painter->setBrush(m_color);
-	painter->drawEllipse(QRectF(-3., -3., 6., 6.));
+	painter->drawEllipse(QRectF(-m_dRadius, -m_dRadius, m_dRadius*2., m_dRadius*2.));
 
 	if(m_strLabel != "")
 	{
@@ -106,47 +112,31 @@ void to_gnomonic(T x, T y, T z, T& xg, T& yg)
 	std::tie(xg, yg) = tl::gnomonic_proj(phi_crys, theta_crys);
 }
 
-void ProjLattice::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Plane<t_real>& planeRlu,
-	const SpaceGroup* pSpaceGroup)
+void ProjLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon, bool bIsRecip)
 {
 	ClearPeaks();
-	m_lattice = lattice;
 
-	t_vec vecX0 = ublas::zero_vector<t_real>(3);
-	t_vec vecPlaneX = planeRlu.GetDir0()[0]*lattice.GetVec(0) +
-		planeRlu.GetDir0()[1]*lattice.GetVec(1) +
-		planeRlu.GetDir0()[2]*lattice.GetVec(2);
-	t_vec vecPlaneY = planeRlu.GetDir1()[0]*lattice.GetVec(0) +
-		planeRlu.GetDir1()[1]*lattice.GetVec(1) +
-		planeRlu.GetDir1()[2]*lattice.GetVec(2);
-	tl::Plane<t_real> plane(vecX0, vecPlaneX, vecPlaneY);
-
-	std::vector<t_vec> vecOrth =
-		tl::gram_schmidt<t_vec>(
-			{plane.GetDir0(), plane.GetDir1(), plane.GetNorm()}, 1);
-	m_matPlane = tl::column_matrix(vecOrth);
-	t_real dDir0Len = ublas::norm_2(vecOrth[0]), dDir1Len = ublas::norm_2(vecOrth[1]);
-
-	if(tl::float_equal<t_real>(dDir0Len, 0.) || tl::float_equal<t_real>(dDir1Len, 0.)
-		|| tl::is_nan_or_inf<t_real>(dDir0Len) || tl::is_nan_or_inf<t_real>(dDir1Len))
+	if(bIsRecip)
 	{
-		tl::log_err("Invalid plane in projected lattice.");
-		return;
+		m_lattice = recipcommon.recip;
+		m_matPlane_inv = recipcommon.matPlane_inv;
+	}
+	else
+	{
+		m_lattice = recipcommon.lattice;
+		// m_matPlane_inv = ! TODO !
 	}
 
-	if(!tl::inverse(m_matPlane, m_matPlane_inv))
-	{
-		tl::log_err("Cannot invert plane metric in projected lattice.");
-		return;
-	}
 
 	const std::string strAA = tl::get_spec_char_utf8("AA");
+	bool bModifiedRadii = 0;
 
 	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
 		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
 			for(int il=-m_iMaxPeaks; il<=m_iMaxPeaks; ++il)
 			{
-				if(pSpaceGroup && !pSpaceGroup->HasReflection(ih, ik, il))
+				if(bIsRecip && recipcommon.pSpaceGroup &&
+					!recipcommon.pSpaceGroup->HasReflection(ih, ik, il))
 					continue;
 
 				const t_real h = t_real(ih), k = t_real(ik), l = t_real(il);
@@ -184,6 +174,20 @@ void ProjLattice::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Plane<
 					pPeak = *iterPeak;
 				}
 
+				if(bIsRecip && recipcommon.CanCalcStructFact())
+				{
+					t_real dF = 0.;
+					std::tie(std::ignore, dF, std::ignore) =
+						recipcommon.GetStructFact(vecPeak);
+
+					pPeak->AddRadius(dF);
+					bModifiedRadii = 1;
+				}
+				else
+				{
+					pPeak->SetRadius(DEF_PEAK_SIZE);
+				}
+
 				std::ostringstream ostrTip;
 				ostrTip.precision(g_iPrecGfx);
 
@@ -191,8 +195,36 @@ void ProjLattice::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Plane<
 				pPeak->AddTooltip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 			}
 
+
+	t_real dMinRad = std::numeric_limits<t_real>::max(), dMaxRad = -1.;
+
+	if(bModifiedRadii)
+	{
+		for(ProjLatticePoint* pPeak : m_vecPeaks)
+		{
+			dMinRad = std::min(dMinRad, pPeak->GetRadius());
+			dMaxRad = std::max(dMaxRad, pPeak->GetRadius());
+		}
+	}
+
 	for(ProjLatticePoint* pPeak : m_vecPeaks)
+	{
+		if(bModifiedRadii)
+		{
+			if(!tl::float_equal(dMinRad, dMaxRad, g_dEpsGfx))
+			{
+				t_real dRadScale = (pPeak->GetRadius()-dMinRad) / (dMaxRad-dMinRad);
+				pPeak->SetRadius(tl::lerp(MIN_PEAK_SIZE, MAX_PEAK_SIZE, dRadScale));
+			}
+			else
+			{
+				pPeak->SetRadius(DEF_PEAK_SIZE);
+			}
+		}
+
 		pPeak->SetTooltip();
+	}
+
 	this->update();
 }
 

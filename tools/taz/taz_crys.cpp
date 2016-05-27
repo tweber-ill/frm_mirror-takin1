@@ -294,12 +294,21 @@ void TazDlg::CalcPeaks()
 
 		editCrystalSystem->setText(strCryTy.c_str());
 
-		m_sceneRecip.GetTriangle()->CalcPeaks(lattice, recip, planeRLU, pSpaceGroup, bPowder, &m_vecAtoms);
-		if(m_sceneRecip.getSnapq())
-			m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
-		m_sceneRecip.emitUpdate();
 
-		m_sceneProjRecip.GetLattice()->CalcPeaks(recip, planeRLU, pSpaceGroup);
+		m_recipcommon = RecipCommon<t_real_glob>();
+		if(m_recipcommon.Calc(lattice, recip, planeRLU, pSpaceGroup, &m_vecAtoms))
+		{
+			m_sceneRecip.GetTriangle()->CalcPeaks(m_recipcommon, bPowder);
+			if(m_sceneRecip.getSnapq())
+				m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
+			m_sceneRecip.emitUpdate();
+
+			m_sceneProjRecip.GetLattice()->CalcPeaks(m_recipcommon, true);
+		}
+		else
+		{
+			tl::log_err("Reciprocal lattice calculation failed.");
+		}
 
 		m_sceneRealLattice.GetLattice()->CalcPeaks(lattice, planeRealFrac, pSpaceGroup, &m_vecAtoms);
 		m_dlgRealParam.CrystalChanged(lattice, recip, pSpaceGroup, &m_vecAtoms);

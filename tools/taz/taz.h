@@ -114,6 +114,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		QMenu *m_pMenuRecentImport = nullptr;
 
 		// reciprocal lattice
+		RecipCommon<t_real_glob> m_recipcommon;
 		ScatteringTriangleView *m_pviewRecip = nullptr;
 		ScatteringTriangleScene m_sceneRecip;
 		ProjLatticeView *m_pviewProjRecip = nullptr;
