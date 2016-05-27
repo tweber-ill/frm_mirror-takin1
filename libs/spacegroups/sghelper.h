@@ -260,7 +260,11 @@ t_str get_pointgroup(const t_str& str)
 }
 
 
-// algo based on Clipper's HKL_class constructor in clipper/core/coords.cpp
+/**
+ * check allowed Bragg reflections
+ * algorithm based on Clipper's HKL_class
+ *    constructor in clipper/core/coords.cpp by K. Cowtan
+ */
 template<template<class...> class t_cont = std::vector,
 	class t_mat = ublas::matrix<double>,
 	class t_vec = ublas::vector<typename t_mat::value_type>>
@@ -283,7 +287,7 @@ bool is_reflection_allowed(int h, int k, int l, const t_cont<t_mat>& vecTrafos)
 			t_real dMod = std::abs(std::fmod(dInner, t_real(1)));	// map into [0,1]
 
 			// not allowed if vecTrans and vecHKL2 not perpendicular
-			if(!tl::float_equal<t_real>(dMod, t_real(0), dEps) && 
+			if(!tl::float_equal<t_real>(dMod, t_real(0), dEps) &&
 				!tl::float_equal<t_real>(dMod, t_real(1), dEps))
 				return false;
 		}

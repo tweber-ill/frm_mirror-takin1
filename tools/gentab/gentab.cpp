@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <set>
+#include <limits>
 
 #include "tlibs/string/string.h"
 #include "tlibs/file/prop.h"
@@ -34,6 +35,8 @@ using t_real = double;
 using t_cplx = std::complex<t_real>;
 using t_mat = ublas::matrix<t_real>;
 
+
+unsigned g_iPrec = std::numeric_limits<t_real>::max_digits10-1;
 
 // ============================================================================
 
@@ -74,14 +77,14 @@ bool gen_formfacts()
 		std::string strA, strB;
 		for(int i=0; i<5; ++i)
 		{
-			strA += tl::var_to_str(dat::sfdata[iFF].a[i]) + " ";
-			strB += tl::var_to_str(dat::sfdata[iFF].b[i]) + " ";
+			strA += tl::var_to_str(dat::sfdata[iFF].a[i], g_iPrec) + " ";
+			strB += tl::var_to_str(dat::sfdata[iFF].b[i], g_iPrec) + " ";
 		}
 
 		prop.Add(strAtom + ".name", std::string(dat::sfdata[iFF].atomname));
 		prop.Add(strAtom + ".a", strA);
 		prop.Add(strAtom + ".b", strB);
-		prop.Add(strAtom + ".c", tl::var_to_str(dat::sfdata[iFF].c));
+		prop.Add(strAtom + ".c", tl::var_to_str(dat::sfdata[iFF].c, g_iPrec));
 	}
 
 
@@ -198,13 +201,13 @@ bool gen_scatlens()
 		t_real dXsecAbsTherm = get_number(vecCol[8]).real();
 
 		prop.Add(strAtom + ".name", strName);
-		prop.Add(strAtom + ".coh", tl::var_to_str(cCoh));
-		prop.Add(strAtom + ".incoh", tl::var_to_str(cIncoh));
+		prop.Add(strAtom + ".coh", tl::var_to_str(cCoh, g_iPrec));
+		prop.Add(strAtom + ".incoh", tl::var_to_str(cIncoh, g_iPrec));
 
-		prop.Add(strAtom + ".xsec_coh", tl::var_to_str(dXsecCoh));
-		prop.Add(strAtom + ".xsec_incoh", tl::var_to_str(dXsecIncoh));
-		prop.Add(strAtom + ".xsec_scat", tl::var_to_str(dXsecScat));
-		prop.Add(strAtom + ".xsec_abs", tl::var_to_str(dXsecAbsTherm));
+		prop.Add(strAtom + ".xsec_coh", tl::var_to_str(dXsecCoh, g_iPrec));
+		prop.Add(strAtom + ".xsec_incoh", tl::var_to_str(dXsecIncoh, g_iPrec));
+		prop.Add(strAtom + ".xsec_scat", tl::var_to_str(dXsecScat, g_iPrec));
+		prop.Add(strAtom + ".xsec_abs", tl::var_to_str(dXsecAbsTherm, g_iPrec));
 
 		++iAtom;
 	}
@@ -274,7 +277,7 @@ bool gen_spacegroups()
 			ostrTrafo << strGroup << ".trafo_" << iTrafo;
 			std::string strTrafo = ostrTrafo.str();
 
-			prop.Add(strTrafo, tl::var_to_str(matTrafo) + strOpts);
+			prop.Add(strTrafo, tl::var_to_str(matTrafo, g_iPrec) + strOpts);
 
 			++iTrafo;
 		}
@@ -405,13 +408,13 @@ bool gen_magformfacts()
 			std::ostringstream ostrAtom;
 			ostrAtom << "magffacts." + strJ + ".atom_" << iAtom;
 			propOut.Add(ostrAtom.str() + ".name", strElem);
-			propOut.Add(ostrAtom.str() + ".A", tl::var_to_str(dA));
-			propOut.Add(ostrAtom.str() + ".a", tl::var_to_str(da));
-			propOut.Add(ostrAtom.str() + ".B", tl::var_to_str(dB));
-			propOut.Add(ostrAtom.str() + ".b", tl::var_to_str(db));
-			propOut.Add(ostrAtom.str() + ".C", tl::var_to_str(dC));
-			propOut.Add(ostrAtom.str() + ".c", tl::var_to_str(dc));
-			propOut.Add(ostrAtom.str() + ".D", tl::var_to_str(dD));
+			propOut.Add(ostrAtom.str() + ".A", tl::var_to_str(dA, g_iPrec));
+			propOut.Add(ostrAtom.str() + ".a", tl::var_to_str(da, g_iPrec));
+			propOut.Add(ostrAtom.str() + ".B", tl::var_to_str(dB, g_iPrec));
+			propOut.Add(ostrAtom.str() + ".b", tl::var_to_str(db, g_iPrec));
+			propOut.Add(ostrAtom.str() + ".C", tl::var_to_str(dC, g_iPrec));
+			propOut.Add(ostrAtom.str() + ".c", tl::var_to_str(dc, g_iPrec));
+			propOut.Add(ostrAtom.str() + ".D", tl::var_to_str(dD, g_iPrec));
 			++iAtom;
 		}
 	}
