@@ -277,23 +277,19 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	// --------------------------------------------------------------------------------
 	// file menu
-	QMenu *pMenuFile = new QMenu(this);
-	pMenuFile->setTitle("File");
+	QMenu *pMenuFile = new QMenu("File", this);
 
-	QAction *pNew = new QAction(this);
-	pNew->setText("New");
+	QAction *pNew = new QAction("New", this);
 	pNew->setIcon(load_icon("res/document-new.svg"));
 	pMenuFile->addAction(pNew);
 
 	pMenuFile->addSeparator();
 
-	QAction *pLoad = new QAction(this);
-	pLoad->setText("Load...");
+	QAction *pLoad = new QAction("Load...", this);
 	pLoad->setIcon(load_icon("res/document-open.svg"));
 	pMenuFile->addAction(pLoad);
 
-	m_pMenuRecent = new QMenu(this);
-	m_pMenuRecent->setTitle("Recently Loaded");
+	m_pMenuRecent = new QMenu("Recently Loaded", this);
 	tl::RecentFiles recent(&m_settings, "main/recent");
 	m_pMapperRecent = new QSignalMapper(m_pMenuRecent);
 	QObject::connect(m_pMapperRecent, SIGNAL(mapped(const QString&)),
@@ -301,25 +297,21 @@ TazDlg::TazDlg(QWidget* pParent)
 	recent.FillMenu(m_pMenuRecent, m_pMapperRecent);
 	pMenuFile->addMenu(m_pMenuRecent);
 
-	QAction *pSave = new QAction(this);
-	pSave->setText("Save");
+	QAction *pSave = new QAction("Save", this);
 	pSave->setIcon(load_icon("res/document-save.svg"));
 	pMenuFile->addAction(pSave);
 
-	QAction *pSaveAs = new QAction(this);
-	pSaveAs->setText("Save as...");
+	QAction *pSaveAs = new QAction("Save as...", this);
 	pSaveAs->setIcon(load_icon("res/document-save-as.svg"));
 	pMenuFile->addAction(pSaveAs);
 
 	pMenuFile->addSeparator();
 
-	QAction *pImport = new QAction(this);
-	pImport->setText("Import...");
+	QAction *pImport = new QAction("Import...", this);
 	pImport->setIcon(load_icon("res/drive-harddisk.svg"));
 	pMenuFile->addAction(pImport);
 
-	m_pMenuRecentImport = new QMenu(this);
-	m_pMenuRecentImport->setTitle("Recently Imported");
+	m_pMenuRecentImport = new QMenu("Recently Imported", this);
 	tl::RecentFiles recentimport(&m_settings, "main/recent_import");
 	m_pMapperRecentImport = new QSignalMapper(m_pMenuRecentImport);
 	QObject::connect(m_pMapperRecentImport, SIGNAL(mapped(const QString&)),
@@ -329,62 +321,52 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	pMenuFile->addSeparator();
 
-	QAction *pSettings = new QAction(this);
-	pSettings->setText("Settings...");
+	QAction *pSettings = new QAction("Settings...", this);
 	pSettings->setIcon(load_icon("res/preferences-system.svg"));
 	pMenuFile->addAction(pSettings);
 
 	pMenuFile->addSeparator();
 
-	QAction *pExit = new QAction(this);
-	pExit->setText("Exit");
+	QAction *pExit = new QAction("Exit", this);
 	pExit->setIcon(load_icon("res/system-log-out.svg"));
 	pMenuFile->addAction(pExit);
 
 
 	// --------------------------------------------------------------------------------
 	// recip menu
-	m_pMenuViewRecip = new QMenu(this);
-	m_pMenuViewRecip->setTitle("Reciprocal Space");
+	m_pMenuViewRecip = new QMenu("Reciprocal Space", this);
 
-	m_pGoto = new QAction(this);
-	m_pGoto->setText("Go to Position...");
+	m_pGoto = new QAction("Go to Position...", this);
 	m_pGoto->setIcon(load_icon("res/goto.svg"));
 	m_pMenuViewRecip->addAction(m_pGoto);
 
-	QAction *pRecipParams = new QAction(this);
-	pRecipParams->setText("Information...");
+	QAction *pRecipParams = new QAction("Information...", this);
 	m_pMenuViewRecip->addAction(pRecipParams);
 	m_pMenuViewRecip->addSeparator();
 
-	m_pSmallq = new QAction(this);
-	m_pSmallq->setText("Show Reduced Scattering Vector q");
+	m_pSmallq = new QAction("Show Reduced Scattering Vector q", this);
 	m_pSmallq->setIcon(load_icon("res/q.svg"));
 	m_pSmallq->setCheckable(1);
 	m_pSmallq->setChecked(bSmallqVisible);
 	m_pMenuViewRecip->addAction(m_pSmallq);
 
-	m_pSnapSmallq = new QAction(this);
-	m_pSnapSmallq->setText("Snap G to Bragg Peak");
+	m_pSnapSmallq = new QAction("Snap G to Bragg Peak", this);
 	m_pSnapSmallq->setCheckable(1);
 	m_pSnapSmallq->setChecked(m_sceneRecip.getSnapq());
 	m_pMenuViewRecip->addAction(m_pSnapSmallq);
 
-	QAction *pKeepAbsKiKf = new QAction(this);
-	pKeepAbsKiKf->setText("Keep |ki| and |kf| Fixed");
+	QAction *pKeepAbsKiKf = new QAction("Keep |ki| and |kf| Fixed", this);
 	pKeepAbsKiKf->setCheckable(1);
 	pKeepAbsKiKf->setChecked(m_sceneRecip.getKeepAbsKiKf());
 	m_pMenuViewRecip->addAction(pKeepAbsKiKf);
 
-	m_pBZ = new QAction(this);
-	m_pBZ->setText("Show First Brillouin Zone");
+	m_pBZ = new QAction("Show First Brillouin Zone", this);
 	m_pBZ->setIcon(load_icon("res/brillouin.svg"));
 	m_pBZ->setCheckable(1);
 	m_pBZ->setChecked(bBZVisible);
 	m_pMenuViewRecip->addAction(m_pBZ);
 
-	m_pEwaldSphere = new QAction(this);
-	m_pEwaldSphere->setText("Show Ewald Sphere");
+	m_pEwaldSphere = new QAction("Show Ewald Sphere", this);
 	//m_pEwaldSphere->setIcon(load_icon("res/brillouin.svg"));
 	m_pEwaldSphere->setCheckable(1);
 	m_pEwaldSphere->setChecked(bEwald);
@@ -392,23 +374,41 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pMenuViewRecip->addSeparator();
 
+	QMenu *pMenuProj = new QMenu("Projection", this);
+	pMenuProj->setTearOffEnabled(1);
+
+	m_pProjGnom = new QAction("Gnomonic", this);
+	m_pProjStereo = new QAction("Stereographic", this);
+	m_pProjPara = new QAction("Parallel", this);
+	m_pProjPersp = new QAction("Perspective", this);
+	m_pProjGnom->setCheckable(1);
+	m_pProjStereo->setCheckable(1);
+	m_pProjPara->setCheckable(1);
+	m_pProjPersp->setCheckable(1);
+	m_pProjStereo->setChecked(1);
+	QActionGroup *pGroupProj = new QActionGroup(this);
+	pGroupProj->addAction(m_pProjStereo);
+	pGroupProj->addAction(m_pProjGnom);
+	pGroupProj->addAction(m_pProjPara);
+	pGroupProj->addAction(m_pProjPersp);
+	pMenuProj->addActions(pGroupProj->actions());
+
+	m_pMenuViewRecip->addMenu(pMenuProj);
+
 #if !defined NO_3D
-	QAction *pView3D = new QAction(this);
-	pView3D->setText("3D View...");
+	QAction *pView3D = new QAction("3D View...", this);
 	//pView3D->setIcon(QIcon::fromTheme("applications-graphics"));
 	m_pMenuViewRecip->addAction(pView3D);
-
-	m_pMenuViewRecip->addSeparator();
 #endif
 
-	QAction *pRecipExport = new QAction(this);
-	pRecipExport->setText("Export Lattice Graphics...");
+	m_pMenuViewRecip->addSeparator();
+
+	QAction *pRecipExport = new QAction("Export Lattice Graphics...", this);
 	pRecipExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pRecipExport);
 
 #ifdef USE_GIL
-	QAction *pBZExport = new QAction(this);
-	pBZExport->setText("Export Brillouin Zone Image...");
+	QAction *pBZExport = new QAction("Export Brillouin Zone Image...", this);
 	pBZExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pBZExport);
 #endif
@@ -416,25 +416,20 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	// --------------------------------------------------------------------------------
 	// real menu
-	m_pMenuViewReal = new QMenu(this);
-	m_pMenuViewReal->setTitle("Real Space");
-
+	m_pMenuViewReal = new QMenu("Real Space", this);
 	m_pMenuViewReal->addAction(m_pGoto);
 
-	QAction *pRealParams = new QAction(this);
-	pRealParams->setText("Information...");
+	QAction *pRealParams = new QAction("Information...", this);
 	m_pMenuViewReal->addAction(pRealParams);
 
 	m_pMenuViewReal->addSeparator();
 
-	m_pShowRealQDir = new QAction(this);
-	m_pShowRealQDir->setText("Show Q Direction");
+	m_pShowRealQDir = new QAction("Show Q Direction", this);
 	m_pShowRealQDir->setCheckable(1);
 	m_pShowRealQDir->setChecked(m_sceneReal.GetTasLayout()->GetRealQVisible());
 	m_pMenuViewReal->addAction(m_pShowRealQDir);
 
-	m_pWS = new QAction(this);
-	m_pWS->setText("Show Wigner-Seitz Cell");
+	m_pWS = new QAction("Show Wigner-Seitz Cell", this);
 	m_pWS->setIcon(load_icon("res/brillouin.svg"));
 	m_pWS->setCheckable(1);
 	m_pWS->setChecked(bWSVisible);
@@ -442,136 +437,112 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_pMenuViewReal->addSeparator();
 
-	QAction *pRealLatticeExport = new QAction(this);
-	pRealLatticeExport->setText("Export Lattice Graphics...");
+	QAction *pRealLatticeExport = new QAction("Export Lattice Graphics...", this);
 	pRealLatticeExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pRealLatticeExport);
 
-	QAction *pRealExport = new QAction(this);
-	pRealExport->setText("Export TAS Layout...");
+	QAction *pRealExport = new QAction("Export TAS Layout...", this);
 	pRealExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pRealExport);
 
-	QAction *pTofExport = new QAction(this);
-	pTofExport->setText("Export TOF Layout...");
+	QAction *pTofExport = new QAction("Export TOF Layout...", this);
 	pTofExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pTofExport);
 
 #ifdef USE_GIL
-	QAction *pWSExport = new QAction(this);
-	pWSExport->setText("Export Wigner-Seitz Cell Image...");
+	QAction *pWSExport = new QAction("Export Wigner-Seitz Cell Image...", this);
 	pWSExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pWSExport);
 #endif
 
-	QAction *pExportUC = new QAction(this);
-	pExportUC->setText("Export Unit Cell Model...");
+	QAction *pExportUC = new QAction("Export Unit Cell Model...", this);
 	pExportUC->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pExportUC);
 
 
 	// --------------------------------------------------------------------------------
 	// resolution menu
-	QMenu *pMenuReso = new QMenu(this);
-	pMenuReso->setTitle("Resolution");
+	QMenu *pMenuReso = new QMenu("Resolution", this);
 
-	QAction *pResoParams = new QAction(this);
-	pResoParams->setText("Parameters...");
+	QAction *pResoParams = new QAction("Parameters...", this);
 	pResoParams->setIcon(load_icon("res/accessories-calculator.svg"));
 	pMenuReso->addAction(pResoParams);
 
 	pMenuReso->addSeparator();
 
-	QAction *pResoEllipses = new QAction(this);
-	pResoEllipses->setText("Ellipses...");
+	QAction *pResoEllipses = new QAction("Ellipses...", this);
 	pResoEllipses->setIcon(load_icon("res/ellipses.svg"));
 	pMenuReso->addAction(pResoEllipses);
 
 #if !defined NO_3D
-	QAction *pResoEllipses3D = new QAction(this);
-	pResoEllipses3D->setText("3D Ellipsoids...");
+	QAction *pResoEllipses3D = new QAction("3D Ellipsoids...", this);
 	pMenuReso->addAction(pResoEllipses3D);
 #endif
 
 	pMenuReso->addSeparator();
 
-	QAction *pResoConv = new QAction(this);
-	pResoConv->setText("Convolution...");
+	QAction *pResoConv = new QAction("Convolution...", this);
 	pMenuReso->addAction(pResoConv);
 
 
 	// --------------------------------------------------------------------------------
 	// calc menu
-	QMenu *pMenuCalc = new QMenu(this);
-	pMenuCalc->setTitle("Calculation");
+	QMenu *pMenuCalc = new QMenu("Calculation", this);
 
-	QAction *pNeutronProps = new QAction(this);
-	pNeutronProps->setText("Neutron Properties...");
+	QAction *pNeutronProps = new QAction("Neutron Properties...", this);
 	pNeutronProps->setIcon(load_icon("res/x-office-spreadsheet-template.svg"));
 	pMenuCalc->addAction(pNeutronProps);
 
 	pMenuCalc->addSeparator();
 
-	QAction *pPowder = new QAction(this);
-	pPowder->setText("Powder Lines...");
+	QAction *pPowder = new QAction("Powder Lines...", this);
 	pPowder->setIcon(load_icon("res/weather-snow.svg"));
 	pMenuCalc->addAction(pPowder);
 
-	QAction *pDW = new QAction(this);
-	pDW->setText("Scattering Factors...");
+	QAction *pDW = new QAction("Scattering Factors...", this);
 	pMenuCalc->addAction(pDW);
 
 	QAction *pFormfactor = nullptr;
 	if(g_bHasFormfacts && g_bHasScatlens)
 	{
-		pFormfactor = new QAction(this);
-		pFormfactor->setText("Form Factors...");
+		pFormfactor = new QAction("Form Factors...", this);
 		pMenuCalc->addAction(pFormfactor);
 	}
 
-	QAction *pSgList = new QAction(this);
-	pSgList->setText("Space Group Types...");
+	QAction *pSgList = new QAction("Space Group Types...", this);
 	pMenuCalc->addAction(pSgList);
 
-	QAction *pDisp = new QAction(this);
-	pDisp->setText("Dispersions...");
+	QAction *pDisp = new QAction("Dispersions...", this);
 	//pDisp->setIcon(load_icon("disp.svg"));
 	pMenuCalc->addAction(pDisp);
 
 	pMenuCalc->addSeparator();
 
-	QAction *pDynPlane = new QAction(this);
-	pDynPlane->setText("Kinematic Plane...");
+	QAction *pDynPlane = new QAction("Kinematic Plane...", this);
 	pMenuCalc->addAction(pDynPlane);
 
-	QAction *pSpuri = new QAction(this);
-	pSpuri->setText("Spurious Scattering...");
+	QAction *pSpuri = new QAction("Spurious Scattering...", this);
 	pMenuCalc->addAction(pSpuri);
 
 
 #if !defined NO_NET
 	// --------------------------------------------------------------------------------
 	// network menu
-	QMenu *pMenuNet = new QMenu(this);
-	pMenuNet->setTitle("Network");
+	QMenu *pMenuNet = new QMenu("Network", this);
 
-	QAction *pConn = new QAction(this);
-	pConn->setText("Connect to Instrument...");
+	QAction *pConn = new QAction("Connect to Instrument...", this);
 	pConn->setIcon(load_icon("res/network-transmit-receive.svg"));
 	pMenuNet->addAction(pConn);
 
-	QAction *pDisconn = new QAction(this);
-	pDisconn->setText("Disconnect");
+	QAction *pDisconn = new QAction("Disconnect", this);
 	pDisconn->setIcon(load_icon("res/network-offline.svg"));
 	pMenuNet->addAction(pDisconn);
 
-	QAction *pNetCache = new QAction(this);
-	pNetCache->setText("Network Cache...");
+	QAction *pNetCache = new QAction("Network Cache...", this);
 	pMenuNet->addSeparator();
 	pMenuNet->addAction(pNetCache);
 
-	QAction *pNetRefresh = new QAction(this);
-	pNetRefresh->setText("Refresh");
+	QAction *pNetRefresh = new QAction("Refresh", this);
 	pNetRefresh->setIcon(load_icon("res/view-refresh.svg"));
 	pMenuNet->addSeparator();
 	pMenuNet->addAction(pNetRefresh);
@@ -580,29 +551,23 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	// --------------------------------------------------------------------------------
 	// tools menu
+	QMenu *pMenuTools = new QMenu("Tools", this);
 
-	QMenu *pMenuTools = new QMenu(this);
-	pMenuTools->setTitle("Tools");
-
-	QAction *pScanViewer = new QAction(this);
-	pScanViewer->setText("Scan Viewer...");
+	QAction *pScanViewer = new QAction("Scan Viewer...", this);
 	pMenuTools->addAction(pScanViewer);
 
 
 
 	// --------------------------------------------------------------------------------
 	// help menu
-	QMenu *pMenuHelp = new QMenu(this);
-	pMenuHelp->setTitle("Help");
+	QMenu *pMenuHelp = new QMenu("Help", this);
 
-	QAction *pAboutQt = new QAction(this);
-	pAboutQt->setText("About Qt...");
+	QAction *pAboutQt = new QAction("About Qt...", this);
 	//pAboutQt->setIcon(QIcon::fromTheme("help-about"));
 	pMenuHelp->addAction(pAboutQt);
 
 	//pMenuHelp->addSeparator();
-	QAction *pAbout = new QAction(this);
-	pAbout->setText("About Takin...");
+	QAction *pAbout = new QAction("About Takin...", this);
 	pAbout->setIcon(load_icon("res/dialog-information.svg"));
 	pMenuHelp->addAction(pAbout);
 
@@ -642,6 +607,9 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	QObject::connect(pRecipParams, SIGNAL(triggered()), this, SLOT(ShowRecipParams()));
 	QObject::connect(pRealParams, SIGNAL(triggered()), this, SLOT(ShowRealParams()));
+
+	for(QAction *pProj : {m_pProjGnom, m_pProjStereo, m_pProjPara, m_pProjPersp})
+		QObject::connect(pProj, SIGNAL(triggered()), this, SLOT(RecipProjChanged()));
 
 #if !defined NO_3D
 	QObject::connect(pView3D, SIGNAL(triggered()), this, SLOT(Show3D()));
@@ -1092,6 +1060,22 @@ void TazDlg::TofNodeEvent(bool bStarted)
 		m_pReso->SetUpdateOn(1, !bStarted);
 }
 
+
+void TazDlg::RecipProjChanged()
+{
+	LatticeProj proj = LatticeProj::PARALLEL;
+	if(m_pProjGnom->isChecked())
+		proj = LatticeProj::GNOMONIC;
+	else if(m_pProjStereo->isChecked())
+		proj = LatticeProj::STEREOGRAPHIC;
+	else if(m_pProjPara->isChecked())
+		proj = LatticeProj::PARALLEL;
+	else if(m_pProjPersp->isChecked())
+		proj = LatticeProj::PERSPECTIVE;
+
+	m_sceneProjRecip.GetLattice()->SetProjection(proj);
+	m_sceneProjRecip.GetLattice()->CalcPeaks(m_recipcommon, true);
+}
 
 
 #if !defined NO_3D

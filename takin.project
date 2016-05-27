@@ -101,7 +101,6 @@
     <VirtualDirectory Name="res">
       <File Name="tools/res/ResoDlg.h"/>
       <File Name="tools/res/pop.h"/>
-      <File Name="tools/res/ellipse.cpp"/>
       <File Name="tools/res/pop.cpp"/>
       <File Name="tools/res/cn.cpp"/>
       <File Name="tools/res/ellipse.h"/>

@@ -32,6 +32,13 @@
 
 namespace ublas = boost::numeric::ublas;
 
+enum class LatticeProj
+{
+	GNOMONIC,
+	STEREOGRAPHIC,
+	PARALLEL,
+	PERSPECTIVE
+};
 
 class ProjLattice;
 
@@ -77,6 +84,8 @@ class ProjLattice : public QGraphicsItem
 		ublas::matrix<t_real_glob> m_matPlane, m_matPlane_inv;
 		std::vector<ProjLatticePoint*> m_vecPeaks;
 
+		LatticeProj m_proj = LatticeProj::STEREOGRAPHIC;
+
 	protected:
 		virtual QRectF boundingRect() const override;
 
@@ -90,6 +99,8 @@ class ProjLattice : public QGraphicsItem
 		bool IsReady() const { return m_bReady; }
 
 		const ublas::matrix<t_real_glob>& GetPlane() const { return m_matPlane; }
+
+		void SetProjection(LatticeProj proj) { m_proj = proj; }
 
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_lattice.IsInited(); }

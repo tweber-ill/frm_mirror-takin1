@@ -70,13 +70,13 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 	private:
 		bool m_bUpdateRecipEdits = 1;
 
-		QAction *m_pSmallq = nullptr;
-		QAction *m_pSnapSmallq = nullptr;
+		QAction *m_pSmallq = nullptr, *m_pSnapSmallq = nullptr;
 		QAction *m_pGoto = nullptr;
-		QAction *m_pBZ = nullptr;
-		QAction *m_pWS = nullptr;
+		QAction *m_pBZ = nullptr, *m_pWS = nullptr;
 		QAction *m_pEwaldSphere = nullptr;
 		QAction *m_pShowRealQDir = nullptr;
+		QAction *m_pProjGnom = nullptr, *m_pProjStereo = nullptr,
+			*m_pProjPara = nullptr, *m_pProjPersp = nullptr;
 
 		std::vector<QLineEdit*> m_vecEdits_real;
 		std::vector<QLineEdit*> m_vecEdits_recip;
@@ -95,7 +95,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::vector<std::string> m_vecCheckBoxNamesSenses;
 
 	protected:
-		static constexpr t_real_glob s_dPlaneDistTolerance = tl::get_plane_dist_tolerance<t_real_glob>();
+		static constexpr t_real_glob s_dPlaneDistTolerance =
+			tl::get_plane_dist_tolerance<t_real_glob>();
 
 		bool m_bReady = false;
 		QSettings m_settings;
@@ -201,6 +202,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void EnableWS(bool bEnable);
 		void EnableRealQDir(bool bEnable);
 		void ShowEwaldSphere(bool bEnable);
+		void RecipProjChanged();
 
 		void RecipContextMenu(const QPoint&);
 		void RealContextMenu(const QPoint&);

@@ -104,29 +104,44 @@ void ProjLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 }
 
 template<class T = double>
-void to_gnomonic(T x, T y, T z, T& xg, T& yg)
+static void to_proj(T x, T y, T z, T& xg, T& yg, bool bGnom=1)
 {
 	T rho, phi, theta, phi_crys, theta_crys;
 	std::tie(rho, phi, theta) = tl::cart_to_sph(x, y, z);
 	std::tie(phi_crys, theta_crys) = tl::sph_to_crys(phi, theta);
-	std::tie(xg, yg) = tl::gnomonic_proj(phi_crys, theta_crys);
+
+	if(bGnom)
+		std::tie(xg, yg) = tl::gnomonic_proj(phi_crys, theta_crys);
+	else
+		std::tie(xg, yg) = tl::stereographic_proj(phi_crys, theta_crys, T(1));
 }
 
 void ProjLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon, bool bIsRecip)
 {
 	ClearPeaks();
 
+	const tl::Lattice<t_real>* pLatticeOther = nullptr;
 	if(bIsRecip)
 	{
 		m_lattice = recipcommon.recip;
+		pLatticeOther = &recipcommon.lattice;
 		m_matPlane_inv = recipcommon.matPlane_inv;
 	}
 	else
 	{
 		m_lattice = recipcommon.lattice;
+		pLatticeOther = &recipcommon.recip;
 		// m_matPlane_inv = ! TODO !
 	}
 
+
+	t_mat matPersp;
+	t_real dLattConst = std::min(pLatticeOther->GetA(), pLatticeOther->GetB());
+	dLattConst = std::min(dLattConst, pLatticeOther->GetC());
+	dLattConst = 2.*tl::get_pi<t_real>() / dLattConst;
+
+	if(m_proj == LatticeProj::PERSPECTIVE)
+		matPersp = tl::perspective_matrix<t_mat>(tl::d2r(5.), 1., 0.01, 100.);
 
 	const std::string strAA = tl::get_spec_char_utf8("AA");
 	bool bModifiedRadii = 0;
@@ -144,9 +159,28 @@ void ProjLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon, bool bIsReci
 
 				t_vec vecCoord = ublas::prod(m_matPlane_inv, vecPeak);
 				t_real dX = vecCoord[0], dY = vecCoord[1];
-				to_gnomonic(vecCoord[0], vecCoord[2], vecCoord[1], dX, dY);
-				dX *=m_dScaleFactor; dY = -dY*m_dScaleFactor;
+				switch(m_proj)
+				{
+					case LatticeProj::PARALLEL:
+						break;
+					case LatticeProj::PERSPECTIVE:
+						vecCoord.resize(4,1);
+						vecCoord[2] += dLattConst*m_iMaxPeaks*4.75;
+						vecCoord[3] = 1.;
+						vecCoord = ublas::prod(matPersp, vecCoord);
+						vecCoord /= vecCoord[3];
+						dX = -vecCoord[0];
+						dY = -vecCoord[1];
+						break;
+					case LatticeProj::GNOMONIC:
+						to_proj(vecCoord[0], vecCoord[2], vecCoord[1], dX, dY, true);
+						break;
+					case LatticeProj::STEREOGRAPHIC:
+						to_proj(vecCoord[0], vecCoord[2], vecCoord[1], dX, dY, false);
+						break;
+				}
 
+				dX *=m_dScaleFactor; dY = -dY*m_dScaleFactor;
 				if(tl::is_nan_or_inf(dX) || tl::is_nan_or_inf(dY))
 					continue;
 
