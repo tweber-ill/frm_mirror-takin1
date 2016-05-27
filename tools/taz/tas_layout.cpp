@@ -567,7 +567,7 @@ std::vector<std::string> TasLayout::GetNodeNames() const
 // --------------------------------------------------------------------------------
 
 
-TasLayoutScene::TasLayoutScene()
+TasLayoutScene::TasLayoutScene(QObject *pParent) : QGraphicsScene(pParent)
 {
 	m_pTas = new TasLayout(*this);
 	this->addItem(m_pTas);

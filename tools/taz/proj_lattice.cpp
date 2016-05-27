@@ -25,9 +25,9 @@ using t_mat = ublas::matrix<t_real>;
 
 
 // symbol drawing sizes
-#define DEF_PEAK_SIZE 3.
-#define MIN_PEAK_SIZE 0.5
-#define MAX_PEAK_SIZE 5.5
+#define DEF_PEAK_SIZE	3.
+#define MIN_PEAK_SIZE	0.5
+#define MAX_PEAK_SIZE	5.5
 
 
 #define PROJ_LATTICE_NODE_TYPE_KEY	0
@@ -279,7 +279,8 @@ void ProjLattice::ClearPeaks()
 // --------------------------------------------------------------------------------
 
 
-ProjLatticeScene::ProjLatticeScene() : m_pLatt(new ProjLattice(*this))
+ProjLatticeScene::ProjLatticeScene(QObject *pParent)
+	: QGraphicsScene(pParent), m_pLatt(new ProjLattice(*this))
 {
 	this->addItem(m_pLatt);
 }

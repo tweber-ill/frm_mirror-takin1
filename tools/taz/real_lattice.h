@@ -142,7 +142,7 @@ class LatticeScene : public QGraphicsScene
 		bool m_bMousePressed = 0;
 
 	public:
-		LatticeScene();
+		LatticeScene(QObject *pParent=nullptr);
 		virtual ~LatticeScene();
 
 		const RealLattice* GetLattice() const { return m_pLatt; }

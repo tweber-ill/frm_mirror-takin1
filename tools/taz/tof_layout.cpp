@@ -424,7 +424,7 @@ std::vector<std::string> TofLayout::GetNodeNames() const
 // --------------------------------------------------------------------------------
 
 
-TofLayoutScene::TofLayoutScene()
+TofLayoutScene::TofLayoutScene(QObject *pParent) : QGraphicsScene(pParent)
 {
 	m_pTof = new TofLayout(*this);
 	this->addItem(m_pTof);

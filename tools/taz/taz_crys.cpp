@@ -215,7 +215,6 @@ void TazDlg::CalcPeaks()
 		//----------------------------------------------------------------------
 
 
-
 		/*
 		// rotated lattice
 		t_real dPhi = spinRotPhi->value() / 180. * M_PI;
@@ -323,6 +322,45 @@ void TazDlg::CalcPeaks()
 		m_sceneRecip.GetTriangle()->ClearPeaks();
 		tl::log_err(ex.what());
 	}
+}
+
+void TazDlg::RotatePlane(unsigned iAxis, t_real dAngle)
+{
+	m_bReady = false;
+
+	t_real dX0 = editScatX0->text().toDouble();
+	t_real dX1 = editScatX1->text().toDouble();
+	t_real dX2 = editScatX2->text().toDouble();
+	ublas::vector<t_real> vecX = tl::make_vec({dX0, dX1, dX2});
+
+	t_real dY0 = editScatY0->text().toDouble();
+	t_real dY1 = editScatY1->text().toDouble();
+	t_real dY2 = editScatY2->text().toDouble();
+	ublas::vector<t_real> vecY = tl::make_vec({dY0, dY1, dY2});
+
+	ublas::vector<t_real> vecZ = tl::cross_3(vecX, vecY);
+
+	std::vector<ublas::vector<t_real>> vecOrth =
+		tl::gram_schmidt<ublas::vector<t_real>>
+			({vecX, vecY, vecZ}, 1);
+
+	ublas::matrix<t_real> matRot =
+		tl::rotation_matrix(vecOrth[iAxis], dAngle);
+	vecX = ublas::prod(matRot, vecOrth[0]);
+	vecY = ublas::prod(matRot, vecOrth[1]);
+
+	tl::set_eps_0(vecX, g_dEps);
+	tl::set_eps_0(vecY, g_dEps);
+
+	editScatX0->setText(tl::var_to_str(vecX[0], g_iPrec).c_str());
+	editScatX1->setText(tl::var_to_str(vecX[1], g_iPrec).c_str());
+	editScatX2->setText(tl::var_to_str(vecX[2], g_iPrec).c_str());
+	editScatY0->setText(tl::var_to_str(vecY[0], g_iPrec).c_str());
+	editScatY1->setText(tl::var_to_str(vecY[1], g_iPrec).c_str());
+	editScatY2->setText(tl::var_to_str(vecY[2], g_iPrec).c_str());
+
+	m_bReady = true;
+	CalcPeaks();
 }
 
 void TazDlg::RepopulateSpaceGroups()

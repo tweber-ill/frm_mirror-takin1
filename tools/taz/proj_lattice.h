@@ -129,7 +129,7 @@ class ProjLatticeScene : public QGraphicsScene
 		bool m_bMousePressed = 0;
 
 	public:
-		ProjLatticeScene();
+		ProjLatticeScene(QObject *pParent=nullptr);
 		virtual ~ProjLatticeScene();
 
 		const ProjLattice* GetLattice() const { return m_pLatt; }

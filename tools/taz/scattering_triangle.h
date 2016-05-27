@@ -356,7 +356,7 @@ class ScatteringTriangleScene : public QGraphicsScene
 		bool m_bSnapKiKfToElastic = 0;
 
 	public:
-		ScatteringTriangleScene();
+		ScatteringTriangleScene(QObject *pParent=nullptr);
 		virtual ~ScatteringTriangleScene();
 
 		void SetEmitChanges(bool bEmit) { m_bDontEmitChange = !bEmit; }

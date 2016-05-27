@@ -136,7 +136,7 @@ class TasLayoutScene : public QGraphicsScene
 
 
 	public:
-		TasLayoutScene();
+		TasLayoutScene(QObject *pParent=nullptr);
 		virtual ~TasLayoutScene();
 
 		void SetEmitChanges(bool bEmit) { m_bDontEmitChange = !bEmit; }

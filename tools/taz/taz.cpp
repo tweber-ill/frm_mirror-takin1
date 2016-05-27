@@ -35,6 +35,7 @@ const std::string TazDlg::s_strTitle = "Takin";
 
 TazDlg::TazDlg(QWidget* pParent)
 	: QMainWindow(pParent), m_settings("tobis_stuff", "takin"),
+		m_sceneRecip(this),
 		m_pSettingsDlg(new SettingsDlg(this, &m_settings)),
 		m_pStatusMsg(new QLabel(this)),
 		m_pCoordQStatusMsg(new QLabel(this)),
@@ -380,7 +381,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pProjGnom = new QAction("Gnomonic", this);
 	m_pProjStereo = new QAction("Stereographic", this);
 	m_pProjPara = new QAction("Parallel", this);
-	m_pProjPersp = new QAction("Perspective", this);
+	m_pProjPersp = new QAction("Perspectivic", this);
 	m_pProjGnom->setCheckable(1);
 	m_pProjStereo->setCheckable(1);
 	m_pProjPara->setCheckable(1);
@@ -815,6 +816,36 @@ void TazDlg::SettingsChanged()
 	m_sceneRealLattice.update();
 	m_sceneRecip.update();
 }
+
+
+void TazDlg::keyPressEvent(QKeyEvent *pEvt)
+{
+	// x rotation
+	if(pEvt->key() == Qt::Key_8)
+		RotatePlane(0, tl::d2r(-5.));
+	else if(pEvt->key() == Qt::Key_2)
+		RotatePlane(0, tl::d2r(5.));
+
+	// y rotation
+	else if(pEvt->key() == Qt::Key_4)
+		RotatePlane(1, tl::d2r(-5.));
+	else if(pEvt->key() == Qt::Key_6)
+		RotatePlane(1, tl::d2r(5.));
+
+	// z rotation
+	else if(pEvt->key() == Qt::Key_9)
+		RotatePlane(2, tl::d2r(-5.));
+	else if(pEvt->key() == Qt::Key_7)
+		RotatePlane(2, tl::d2r(5.));
+
+	QMainWindow::keyPressEvent(pEvt);
+}
+
+void TazDlg::keyReleaseEvent(QKeyEvent *pEvt)
+{
+	QMainWindow::keyReleaseEvent(pEvt);
+}
+
 
 void TazDlg::showEvent(QShowEvent *pEvt)
 {

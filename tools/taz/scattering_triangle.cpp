@@ -1198,7 +1198,8 @@ bool ScatteringTriangle::KeepAbsKiKf(t_real dQx, t_real dQy)
 // --------------------------------------------------------------------------------
 
 
-ScatteringTriangleScene::ScatteringTriangleScene() : m_pTri(0)
+ScatteringTriangleScene::ScatteringTriangleScene(QObject* pParent)
+	: QGraphicsScene(pParent), m_pTri(0)
 {
 	m_pTri = new ScatteringTriangle(*this);
 	this->addItem(m_pTri);

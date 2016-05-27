@@ -127,7 +127,7 @@ class TofLayoutScene : public QGraphicsScene
 
 
 	public:
-		TofLayoutScene();
+		TofLayoutScene(QObject *pParent=nullptr);
 		virtual ~TofLayoutScene();
 
 		void SetEmitChanges(bool bEmit) { m_bDontEmitChange = !bEmit; }

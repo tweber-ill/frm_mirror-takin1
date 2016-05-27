@@ -401,7 +401,8 @@ void RealLattice::ClearPeaks()
 // --------------------------------------------------------------------------------
 
 
-LatticeScene::LatticeScene() : m_pLatt(new RealLattice(*this))
+LatticeScene::LatticeScene(QObject *pParent)
+	: QGraphicsScene(pParent), m_pLatt(new RealLattice(*this))
 {
 	this->addItem(m_pLatt);
 }
