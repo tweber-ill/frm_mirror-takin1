@@ -111,7 +111,7 @@ struct RecipCommon
 
 		// --------------------------------------------------------------------
 		// structure factors
-		ScatlenList lstsl;
+		std::shared_ptr<const ScatlenList> lstsl = ScatlenList::GetInstance();
 		//FormfactList lstff;
 
 		const std::vector<t_mat>* pvecSymTrafos = nullptr;
@@ -136,7 +136,7 @@ struct RecipCommon
 
 			for(const std::string& strElem : vecAllNames)
 			{
-				const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
+				const ScatlenList::elem_type* pElem = lstsl->Find(strElem);
 				vecScatlens.push_back(pElem ? pElem->GetCoherent() : std::complex<t_real>(0.,0.));
 				if(!pElem)
 					tl::log_err("Element \"", strElem, "\" not found in scattering length table.",

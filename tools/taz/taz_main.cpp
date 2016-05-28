@@ -129,6 +129,8 @@ int main(int argc, char** argv)
 		g_bHasScatlens = (find_resource("res/scatlens.xml") != "");
 		g_bHasFormfacts = (find_resource("res/ffacts.xml") != "");
 		g_bHasMagFormfacts = (find_resource("res/magffacts.xml") != "");
+		g_bHasSpaceGroups = (find_resource("res/sgroups.xml") != "");
+
 		if(!g_bHasScatlens)
 		{
 			const char* pcErr = "Scattering length table could not be found." TAKIN_CHECK;
@@ -154,7 +156,7 @@ int main(int argc, char** argv)
 			return -1;
 		}
 
-		if(!init_space_groups())
+		if(!g_bHasSpaceGroups)
 		{
 			const char* pcErr = "Space group table could not be found!" TAKIN_CHECK;
 			tl::log_err(pcErr);

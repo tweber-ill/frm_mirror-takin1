@@ -41,7 +41,7 @@ using t_vec = ublas::vector<t_real>;
 
 PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett),
-	m_pmapSpaceGroups(get_space_groups())
+	m_pmapSpaceGroups(SpaceGroups::GetInstance()->get_space_groups())
 {
 	this->setupUi(this);
 	if(m_pSettings)
@@ -213,8 +213,8 @@ void PowderDlg::CalcPeaks()
 
 		// ----------------------------------------------------------------------------
 		// structure factor stuff
-		ScatlenList lstsl;
-		FormfactList lstff;
+		std::shared_ptr<const ScatlenList> lstsl = ScatlenList::GetInstance();
+		std::shared_ptr<const FormfactList> lstff = FormfactList::GetInstance();
 
 		std::vector<std::string> vecElems;
 		std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
@@ -244,7 +244,7 @@ void PowderDlg::CalcPeaks()
 
 			for(const std::string& strElem : vecElems)
 			{
-				const ScatlenList::elem_type* pElem = lstsl.Find(strElem);
+				const ScatlenList::elem_type* pElem = lstsl->Find(strElem);
 				vecScatlens.push_back(pElem ? pElem->GetCoherent() : std::complex<t_real>(0.,0.));
 				if(!pElem)
 					tl::log_err("Element \"", strElem, "\" not found in scattering length table.",
@@ -304,7 +304,7 @@ void PowderDlg::CalcPeaks()
 						for(std::size_t iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
 						{
 							//const t_vec& vecAtom = vecAllAtoms[iAtom];
-							const FormfactList::elem_type* pElemff = lstff.Find(vecElems[iAtom]);
+							const FormfactList::elem_type* pElemff = lstff->Find(vecElems[iAtom]);
 
 							if(pElemff == nullptr)
 							{
@@ -491,7 +491,7 @@ void PowderDlg::RepopulateSpaceGroups()
 
 	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
 
-	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
+	for(const SpaceGroups::t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
 	{
 		const std::string& strName = pair.second.GetName();
 

@@ -24,6 +24,7 @@ extern t_real_glob g_dEpsGfx;
 extern bool g_bHasFormfacts;
 extern bool g_bHasMagFormfacts;
 extern bool g_bHasScatlens;
+extern bool g_bHasSpaceGroups;
 extern bool g_bShowFsq;
 
 extern void add_resource_path(const std::string& strPath);

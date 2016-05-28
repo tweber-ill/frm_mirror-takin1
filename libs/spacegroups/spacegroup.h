@@ -14,7 +14,9 @@
 #include "tlibs/log/log.h"
 #include "tlibs/file/prop.h"
 #include "libs/globals.h"
+
 #include <map>
+#include <mutex>
 
 namespace ublas = boost::numeric::ublas;
 
@@ -102,12 +104,34 @@ public:
 };
 
 
-typedef std::vector<const SpaceGroup*> t_vecSpaceGroups;
-typedef std::map<std::string, SpaceGroup> t_mapSpaceGroups;
-extern const t_mapSpaceGroups* get_space_groups();
-extern const t_vecSpaceGroups* get_space_groups_vec();
-extern bool init_space_groups();
-extern const std::string& get_sgsource(bool bUrl=0);
+class SpaceGroups
+{
+	public:
+		typedef std::vector<const SpaceGroup*> t_vecSpaceGroups;
+		typedef std::map<std::string, SpaceGroup> t_mapSpaceGroups;
+
+	private:
+		static std::shared_ptr<SpaceGroups> s_inst;
+		static std::mutex s_mutex;
+
+		SpaceGroups();
+
+	protected:
+		t_mapSpaceGroups g_mapSpaceGroups;
+		t_vecSpaceGroups g_vecSpaceGroups;
+		std::string s_strSrc, s_strUrl;
+		bool m_bOk = 0;
+
+	public:
+		virtual ~SpaceGroups();
+		static std::shared_ptr<const SpaceGroups> GetInstance();
+
+		const t_mapSpaceGroups* get_space_groups() const;
+		const t_vecSpaceGroups* get_space_groups_vec() const;
+		const std::string& get_sgsource(bool bUrl=0) const;
+
+		bool IsOk() const { return m_bOk; }
+};
 
 
 #endif

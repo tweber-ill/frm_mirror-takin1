@@ -107,27 +107,28 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrConst << "<dt>Physical constants from Boost Units</dt>";
 	ostrConst << "<dd><a href=\"http://www.boost.org/doc/libs/release/libs/units/\">http://www.boost.org/doc/libs/release/libs/units/</a></dd>";
 
-	ostrConst << "<dt>" << get_sgsource(0) <<"</dt>";
-	ostrConst << "<dd><a href=\"" << get_sgsource(1) << "\">" << get_sgsource(1) << "</a></dd>";
+	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
+	ostrConst << "<dt>" << sgs->get_sgsource(0) <<"</dt>";
+	ostrConst << "<dd><a href=\"" << sgs->get_sgsource(1) << "\">" << sgs->get_sgsource(1) << "</a></dd>";
 
-	FormfactList ff;	// ensure that the static vars are inited
-	MagFormfactList mff;
-	ScatlenList sl;
+	std::shared_ptr<const FormfactList> ff = FormfactList::GetInstance();
+	std::shared_ptr<const MagFormfactList> mff = MagFormfactList::GetInstance();
+	std::shared_ptr<const ScatlenList> sl = ScatlenList::GetInstance();
 
 	if(g_bHasFormfacts)
 	{
-		ostrConst << "<dt>" << FormfactList::GetSource() << "</dt>";
-		ostrConst << "<dd><a href=\"" << FormfactList::GetSourceUrl() << "\">" << FormfactList::GetSourceUrl() << "</a></dd>";
+		ostrConst << "<dt>" << ff->GetSource() << "</dt>";
+		ostrConst << "<dd><a href=\"" << ff->GetSourceUrl() << "\">" << ff->GetSourceUrl() << "</a></dd>";
 	}
 	if(g_bHasMagFormfacts)
 	{
-		ostrConst << "<dt>" << MagFormfactList::GetSource() << "</dt>";
-		ostrConst << "<dd><a href=\"" << MagFormfactList::GetSourceUrl() << "\">" << MagFormfactList::GetSourceUrl() << "</a></dd>";
+		ostrConst << "<dt>" << mff->GetSource() << "</dt>";
+		ostrConst << "<dd><a href=\"" << mff->GetSourceUrl() << "\">" << mff->GetSourceUrl() << "</a></dd>";
 	}
 	if(g_bHasScatlens)
 	{
-		ostrConst << "<dt>" << ScatlenList::GetSource() << "</dt>";
-		ostrConst << "<dd><a href=\"" << ScatlenList::GetSourceUrl() << "\">" << ScatlenList::GetSourceUrl() << "</a></dd>";
+		ostrConst << "<dt>" << sl->GetSource() << "</dt>";
+		ostrConst << "<dd><a href=\"" << sl->GetSourceUrl() << "\">" << sl->GetSourceUrl() << "</a></dd>";
 	}
 
 	ostrConst << "</dl>";

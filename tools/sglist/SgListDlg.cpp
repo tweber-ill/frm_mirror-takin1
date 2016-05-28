@@ -74,7 +74,8 @@ void SgListDlg::SetupSpacegroups()
 {
 	listSGs->clear();
 
-	const t_vecSpaceGroups* pvecSG = get_space_groups_vec();
+	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
+	const SpaceGroups::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
 
 	// actually: space group TYPE, not space group...
 	for(unsigned int iSG=0; iSG<pvecSG->size(); ++iSG)
@@ -115,7 +116,8 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	if(!pItem) return;
 
 
-	const t_vecSpaceGroups* pvecSG = get_space_groups_vec();
+	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
+	const SpaceGroups::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
 
 	// header selected?
 	unsigned int iSG = pItem->data(Qt::UserRole).toUInt();
@@ -223,7 +225,8 @@ void SgListDlg::RecalcBragg()
 
 	//std::cout << h << k << l << std::endl;
 
-	const t_vecSpaceGroups* pvecSG = get_space_groups_vec();
+	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
+	const SpaceGroups::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
 	const unsigned int iSG = pItem->data(Qt::UserRole).toUInt();
 	if(iSG >= pvecSG->size())
 		return;
@@ -253,7 +256,8 @@ void SgListDlg::CalcTrafo()
 	if(!pItem)
 		return;
 
-	const t_vecSpaceGroups* pvecSG = get_space_groups_vec();
+	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
+	const SpaceGroups::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
 	const unsigned int iSG = pItem->data(Qt::UserRole).toUInt();
 	if(iSG >= pvecSG->size())
 		return;

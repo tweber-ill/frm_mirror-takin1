@@ -365,7 +365,8 @@ void TazDlg::RotatePlane(unsigned iAxis, t_real dAngle)
 
 void TazDlg::RepopulateSpaceGroups()
 {
-	const t_mapSpaceGroups* pmapSpaceGroups = get_space_groups();
+	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
+	const SpaceGroups::t_mapSpaceGroups* pmapSpaceGroups = sgs->get_space_groups();
 	if(!pmapSpaceGroups)
 		return;
 
@@ -377,7 +378,7 @@ void TazDlg::RepopulateSpaceGroups()
 
 	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
 
-	for(const t_mapSpaceGroups::value_type& pair : *pmapSpaceGroups)
+	for(const SpaceGroups::t_mapSpaceGroups::value_type& pair : *pmapSpaceGroups)
 	{
 		const std::string& strName = pair.second.GetName();
 

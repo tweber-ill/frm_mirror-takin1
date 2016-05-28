@@ -45,7 +45,7 @@ using t_cplx = std::complex<t_real>;
 
 DispDlg::DispDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett),
-	m_pmapSpaceGroups(get_space_groups())
+	m_pmapSpaceGroups(SpaceGroups::GetInstance()->get_space_groups())
 {
 	this->setupUi(this);
 	if(m_pSettings)
@@ -331,7 +331,7 @@ void DispDlg::RepopulateSpaceGroups()
 
 	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
 
-	for(const t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
+	for(const SpaceGroups::t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
 	{
 		const std::string& strName = pair.second.GetName();
 

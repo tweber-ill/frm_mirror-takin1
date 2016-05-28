@@ -35,7 +35,7 @@ class DispDlg : public QDialog, Ui::DispDlg
 		bool m_bDontCalc = 1;
 
 		CrystalSystem m_crystalsys = CRYS_NOT_SET;
-		const t_mapSpaceGroups* m_pmapSpaceGroups;
+		const SpaceGroups::t_mapSpaceGroups* m_pmapSpaceGroups;
 
 		AtomsDlg *m_pAtomsDlg = nullptr;
 		std::vector<AtomPos> m_vecAtoms;

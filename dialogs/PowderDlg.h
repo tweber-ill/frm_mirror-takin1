@@ -59,7 +59,7 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		QSettings *m_pSettings = 0;
 
 		CrystalSystem m_crystalsys = CRYS_NOT_SET;
-		const t_mapSpaceGroups* m_pmapSpaceGroups;
+		const SpaceGroups::t_mapSpaceGroups* m_pmapSpaceGroups;
 
 		AtomsDlg *m_pAtomsDlg = nullptr;
 		std::vector<AtomPos> m_vecAtoms;

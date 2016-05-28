@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 #include <complex>
+#include <mutex>
+
 #include "tlibs/helper/array.h"
 #include "tlibs/math/atoms.h"
 #include "tlibs/math/mag.h"
@@ -55,15 +57,18 @@ class FormfactList
 		typedef typename elem_type::value_type value_type;
 
 	private:
-		static void Init();
+		static std::shared_ptr<FormfactList> s_inst;
+		static std::mutex s_mutex;
+
+		FormfactList();
 
 	protected:
-		static std::vector<elem_type> s_vecAtoms, s_vecIons;
-		static std::string s_strSrc, s_strSrcUrl;
+		std::vector<elem_type> s_vecAtoms, s_vecIons;
+		std::string s_strSrc, s_strSrcUrl;
 
 	public:
-		FormfactList();
 		virtual ~FormfactList();
+		static std::shared_ptr<const FormfactList> GetInstance();
 
 		std::size_t GetNumAtoms() const { return s_vecAtoms.size(); }
 		const elem_type& GetAtom(std::size_t iFormfact) const
@@ -75,8 +80,8 @@ class FormfactList
 
 		const elem_type* Find(const std::string& strElem) const;
 
-		static const std::string& GetSource() { return s_strSrc; }
-		static const std::string& GetSourceUrl() { return s_strSrcUrl; }
+		const std::string& GetSource() const { return s_strSrc; }
+		const std::string& GetSourceUrl() const { return s_strSrcUrl; }
 };
 
 
@@ -116,15 +121,18 @@ class MagFormfactList
 		typedef typename elem_type::value_type value_type;
 
 	private:
-		static void Init();
+		static std::shared_ptr<MagFormfactList> s_inst;
+		static std::mutex s_mutex;
+
+		MagFormfactList();
 
 	protected:
-		static std::vector<elem_type> s_vecAtoms;
-		static std::string s_strSrc, s_strSrcUrl;
+		std::vector<elem_type> s_vecAtoms;
+		std::string s_strSrc, s_strSrcUrl;
 
 	public:
-		MagFormfactList();
 		virtual ~MagFormfactList();
+		static std::shared_ptr<const MagFormfactList> GetInstance();
 
 		std::size_t GetNumAtoms() const { return s_vecAtoms.size(); }
 		const elem_type& GetAtom(std::size_t iFormfact) const
@@ -132,8 +140,8 @@ class MagFormfactList
 
 		const elem_type* Find(const std::string& strElem) const;
 
-		static const std::string& GetSource() { return s_strSrc; }
-		static const std::string& GetSourceUrl() { return s_strSrcUrl; }
+		const std::string& GetSource() const { return s_strSrc; }
+		const std::string& GetSourceUrl() const { return s_strSrcUrl; }
 };
 
 
@@ -180,15 +188,18 @@ class ScatlenList
 		typedef typename elem_type::value_type value_type;
 
 	private:
-		static void Init();
+		static std::shared_ptr<ScatlenList> s_inst;
+		static std::mutex s_mutex;
+
+		ScatlenList();
 
 	protected:
-		static std::vector<elem_type> s_vecElems, s_vecIsotopes;
-		static std::string s_strSrc, s_strSrcUrl;
+		std::vector<elem_type> s_vecElems, s_vecIsotopes;
+		std::string s_strSrc, s_strSrcUrl;
 
 	public:
-		ScatlenList();
 		virtual ~ScatlenList();
+		static std::shared_ptr<const ScatlenList> GetInstance();
 
 		std::size_t GetNumElems() const { return s_vecElems.size(); }
 		const elem_type& GetElem(std::size_t i) const
@@ -200,8 +211,8 @@ class ScatlenList
 
 		const elem_type* Find(const std::string& strElem) const;
 
-		static const std::string& GetSource() { return s_strSrc; }
-		static const std::string& GetSourceUrl() { return s_strSrcUrl; }
+		const std::string& GetSource() const { return s_strSrc; }
+		const std::string& GetSourceUrl() const { return s_strSrcUrl; }
 };
 
 

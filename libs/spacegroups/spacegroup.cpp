@@ -10,25 +10,20 @@
 #include <sstream>
 
 
-static t_mapSpaceGroups g_mapSpaceGroups;
-static t_vecSpaceGroups g_vecSpaceGroups;
-static std::string s_strSrc, s_strUrl;
+std::shared_ptr<SpaceGroups> SpaceGroups::s_inst = nullptr;
+std::mutex SpaceGroups::s_mutex;
 
-bool init_space_groups()
+
+SpaceGroups::SpaceGroups()
 {
+	tl::log_debug("Loading space groups.");
+
 	using t_mat = typename SpaceGroup::t_mat;
 	//using t_vec = typename SpaceGroup::t_vec;
 
-	if(!g_mapSpaceGroups.empty())
-	{
-		tl::log_warn("Space Groups have already been initialised.");
-		return false;
-	}
-
 	tl::Prop<std::string> xml;
-	//if(!xml.Load("/home/tw/Projects/tastools/res/sgroups.xml", tl::PropType::XML))
 	if(!xml.Load(find_resource("res/sgroups.xml").c_str(), tl::PropType::XML))
-		return false;
+		return;
 
 	unsigned int iNumSGs = xml.Query<unsigned int>("sgroups/num_groups", 0);
 	if(iNumSGs < 230)
@@ -99,33 +94,38 @@ bool init_space_groups()
 
 	s_strSrc = xml.Query<std::string>("sgroups/source", "");
 	s_strUrl = xml.Query<std::string>("sgroups/source_url", "");
-
-	return true;
+	m_bOk = 1;
 }
 
-const t_mapSpaceGroups* get_space_groups()
+SpaceGroups::~SpaceGroups() {}
+
+std::shared_ptr<const SpaceGroups> SpaceGroups::GetInstance()
+{
+	std::lock_guard<std::mutex> _guard(s_mutex);
+	
+	if(!s_inst)
+		s_inst = std::shared_ptr<SpaceGroups>(new SpaceGroups());
+
+	return s_inst;
+}
+
+const SpaceGroups::t_mapSpaceGroups* SpaceGroups::get_space_groups() const
 {
 	if(g_mapSpaceGroups.empty())
-	{
 		tl::log_warn("Space Groups had not been initialised properly.");
-		init_space_groups();
-	}
 
 	return &g_mapSpaceGroups;
 }
 
-const t_vecSpaceGroups* get_space_groups_vec()
+const SpaceGroups::t_vecSpaceGroups* SpaceGroups::get_space_groups_vec() const
 {
 	if(g_vecSpaceGroups.empty())
-	{
 		tl::log_warn("Space Groups had not been initialised properly.");
-		init_space_groups();
-	}
 
 	return &g_vecSpaceGroups;
 }
 
-extern const std::string& get_sgsource(bool bUrl)
+const std::string& SpaceGroups::get_sgsource(bool bUrl) const
 {
 	return bUrl ? s_strUrl : s_strSrc ;
 }
