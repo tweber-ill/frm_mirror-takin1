@@ -82,12 +82,12 @@
             </property>
             <item>
              <property name="text">
-              <string>Show |F|</string>
+              <string>Show Structure Factor |F|</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Show S=|F|²</string>
+              <string>Show Intensity S=|F|²</string>
              </property>
             </item>
            </widget>

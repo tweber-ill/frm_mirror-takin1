@@ -1,7 +1,7 @@
 /**
  * TAS tool (crystal stuff)
  * @author tweber
- * @date feb-2014
+ * @date 2014 - 2016
  * @license GPLv2
  */
 
@@ -295,7 +295,7 @@ void TazDlg::CalcPeaks()
 
 
 		m_recipcommon = RecipCommon<t_real_glob>();
-		if(m_recipcommon.Calc(lattice, recip, planeRLU, pSpaceGroup, &m_vecAtoms))
+		if(m_recipcommon.Calc(lattice, recip, planeRLU, planeRealFrac, pSpaceGroup, &m_vecAtoms))
 		{
 			m_sceneRecip.GetTriangle()->CalcPeaks(m_recipcommon, bPowder);
 			if(m_sceneRecip.getSnapq())
@@ -303,13 +303,14 @@ void TazDlg::CalcPeaks()
 			m_sceneRecip.emitUpdate();
 
 			m_sceneProjRecip.GetLattice()->CalcPeaks(m_recipcommon, true);
+
+			m_sceneRealLattice.GetLattice()->CalcPeaks(m_recipcommon);
 		}
 		else
 		{
-			tl::log_err("Reciprocal lattice calculation failed.");
+			tl::log_err("Lattice calculations failed.");
 		}
 
-		m_sceneRealLattice.GetLattice()->CalcPeaks(lattice, planeRealFrac, pSpaceGroup, &m_vecAtoms);
 		m_dlgRealParam.CrystalChanged(lattice, recip, pSpaceGroup, &m_vecAtoms);
 
 #ifndef NO_3D

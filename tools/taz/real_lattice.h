@@ -1,7 +1,7 @@
 /**
  * Real crystal lattice
  * @author tweber
- * @date feb-2014
+ * @date 2014 - 2016
  * @license GPLv2
  */
 
@@ -13,11 +13,14 @@
 #include "tlibs/math/bz.h"
 #include "tlibs/math/neutrons.hpp"
 #include "tlibs/math/kd.h"
-#include "tasoptions.h"
-#include "dialogs/AtomsDlg.h"
+
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 #include "libs/spacegroups/spacegroup.h"
+
+#include "tasoptions.h"
+#include "scattering_triangle.h"	// for RecipCommon
+#include "dialogs/AtomsDlg.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -112,8 +115,7 @@ class RealLattice : public QGraphicsItem
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_lattice.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const tl::Lattice<t_real_glob>& lattice, const tl::Plane<t_real_glob>& planeFrac,
-			const SpaceGroup* pSpaceGroup=nullptr, const std::vector<AtomPos>* pvecAtomPos=nullptr);
+		void CalcPeaks(const RecipCommon<t_real_glob>& recipcommon);
 
 		void SetPlaneDistTolerance(t_real_glob dTol) { m_dPlaneDistTolerance = dTol; }
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }

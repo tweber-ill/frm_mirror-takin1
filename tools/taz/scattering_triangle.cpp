@@ -1,7 +1,7 @@
 /**
  * Reciprocal Lattice
  * @author tweber
- * @date feb-2014
+ * @date 2014 - 2016
  * @license GPLv2
  */
 

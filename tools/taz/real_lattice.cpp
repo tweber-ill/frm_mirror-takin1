@@ -1,7 +1,7 @@
 /**
  * Real crystal lattice
  * @author tweber
- * @date feb-2014
+ * @date 2014 - 2016
  * @license GPLv2
  */
 
@@ -168,121 +168,61 @@ void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 	}
 }
 
-void RealLattice::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Plane<t_real>& planeFrac,
-	const SpaceGroup* pSpaceGroup, const std::vector<AtomPos>* pvecAtomPos)
+void RealLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon)
 {
 	ClearPeaks();
 	m_kdLattice.Unload();
-	m_lattice = lattice;
-
-	t_vec vecX0 = ublas::zero_vector<t_real>(3);
-	t_vec vecPlaneX = planeFrac.GetDir0()[0]*lattice.GetVec(0) +
-		planeFrac.GetDir0()[1]*lattice.GetVec(1) +
-		planeFrac.GetDir0()[2]*lattice.GetVec(2);
-	t_vec vecPlaneY = planeFrac.GetDir1()[0]*lattice.GetVec(0) +
-		planeFrac.GetDir1()[1]*lattice.GetVec(1) +
-		planeFrac.GetDir1()[2]*lattice.GetVec(2);
-	tl::Plane<t_real> plane(vecX0, vecPlaneX, vecPlaneY);
-
-
-	const t_mat matA = m_lattice.GetMetric();
-
-	std::vector<t_vec> vecOrth =
-		tl::gram_schmidt<t_vec>(
-			{plane.GetDir0(), plane.GetDir1(), plane.GetNorm()}, 1);
-	m_matPlane = tl::column_matrix(vecOrth);
-	t_real dDir0Len = ublas::norm_2(vecOrth[0]), dDir1Len = ublas::norm_2(vecOrth[1]);
-
-	if(tl::float_equal<t_real>(dDir0Len, 0.) || tl::float_equal<t_real>(dDir1Len, 0.)
-		|| tl::is_nan_or_inf<t_real>(dDir0Len) || tl::is_nan_or_inf<t_real>(dDir1Len))
-	{
-		tl::log_err("Invalid plane in real lattice.");
-		return;
-	}
-
-	bool bInv = tl::inverse(m_matPlane, m_matPlane_inv);
-	if(!bInv)
-	{
-		tl::log_err("Cannot invert plane metric in real lattice.");
-		return;
-	}
-
+	m_lattice = recipcommon.lattice;
+	m_matPlane = recipcommon.matPlaneReal;
+	m_matPlane_inv = recipcommon.matPlaneReal_inv;
 
 	// central peak for WS cell calculation
 	ublas::vector<int> veciCent = tl::make_vec({0.,0.,0.});
 
-
 	const std::string strAA = tl::get_spec_char_utf8("AA");
+
 	// --------------------------------------------------------------------
 	// atom positions in unit cell
-	const std::vector<t_mat>* pvecSymTrafos = nullptr;
-	if(pSpaceGroup)
-		pvecSymTrafos = &pSpaceGroup->GetTrafos();
-	//if(pSpaceGroup) std::cout << pSpaceGroup->GetName() << std::endl;
-
 	std::vector<QColor> colors = {QColor(127,0,0), QColor(0,127,0), QColor(0,0,127),
 		QColor(127,127,0), QColor(0,127,127), QColor(127,0,127)};
 
-	if(pvecSymTrafos && pvecSymTrafos->size() && pvecAtomPos && pvecAtomPos->size())
+	for(std::size_t iAtom=0; iAtom<recipcommon.vecAllAtoms.size(); ++iAtom)
 	{
-		std::vector<t_vec> vecAtoms;
-		std::vector<std::string> vecNames;
-		for(std::size_t iAtom=0; iAtom<pvecAtomPos->size(); ++iAtom)
-		{
-			vecAtoms.push_back((*pvecAtomPos)[iAtom].vecPos);
-			vecNames.push_back((*pvecAtomPos)[iAtom].strAtomName);
-		}
+		const std::string& strElem = recipcommon.vecAllNames[iAtom];
+		const t_vec& vecThisAtom = recipcommon.vecAllAtoms[iAtom];
+		const t_vec& vecThisAtomFrac = recipcommon.vecAllAtomsFrac[iAtom];
+		std::size_t iCurAtomType = recipcommon.vecAllAtomTypes[iAtom];
 
-		const t_real dUCSize = 1.;
-		std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
-		std::vector<std::string> vecAllNames;
-		std::vector<std::size_t> vecAllAtomTypes;
+		LatticeAtom *pAtom = new LatticeAtom();
+		m_vecAtoms.push_back(pAtom);
 
-		std::tie(vecAllNames, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
-		tl::generate_all_atoms<t_mat, t_vec, std::vector>
-			(*pvecSymTrafos, vecAtoms, &vecNames, matA,
-			-dUCSize/2., dUCSize/2., g_dEps);
+		pAtom->m_strElem = strElem;
+		pAtom->m_vecPos = std::move(vecThisAtom);
+		pAtom->m_vecProj = recipcommon.planeReal.GetDroppedPerp(pAtom->m_vecPos/*, &pAtom->m_dProjDist*/);
+		pAtom->m_dProjDist = recipcommon.planeReal.GetDist(pAtom->m_vecPos);
 
-		for(std::size_t iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
-		{
-			const std::string& strElem = vecAllNames[iAtom];
-			t_vec& vecThisAtom = vecAllAtoms[iAtom];
-			t_vec& vecThisAtomFrac = vecAllAtomsFrac[iAtom];
-			std::size_t iCurAtomType = vecAllAtomTypes[iAtom];
+		t_vec vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
+		t_real dX = vecCoord[0], dY = -vecCoord[1];
 
-			LatticeAtom *pAtom = new LatticeAtom();
-			m_vecAtoms.push_back(pAtom);
+		pAtom->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
+		pAtom->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE_ATOM);
 
-			pAtom->m_strElem = strElem;
-			pAtom->m_vecPos = std::move(vecThisAtom);
-			pAtom->m_vecProj = plane.GetDroppedPerp(pAtom->m_vecPos/*, &pAtom->m_dProjDist*/);
-			pAtom->m_dProjDist = plane.GetDist(pAtom->m_vecPos);
+		std::ostringstream ostrTip;
+		ostrTip.precision(g_iPrecGfx);
+		ostrTip << pAtom->m_strElem;
+		ostrTip << "\n("
+			<< vecThisAtomFrac[0] << ", "
+			<< vecThisAtomFrac[1] << ", "
+			<< vecThisAtomFrac[2] << ") frac";
+		ostrTip << "\n("
+			<< vecThisAtom[0] << ", "
+			<< vecThisAtom[1] << ", "
+			<< vecThisAtom[2] << ") " << strAA;
+		ostrTip << "\nDistance to Plane: " << pAtom->m_dProjDist << " " << strAA;
+		pAtom->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
+		pAtom->SetColor(colors[iCurAtomType % colors.size()]);
 
-			t_vec vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
-			t_real dX = vecCoord[0], dY = -vecCoord[1];
-
-			pAtom->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
-			pAtom->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE_ATOM);
-
-			tl::set_eps_0(vecThisAtom);
-			tl::set_eps_0(vecThisAtomFrac);
-			std::ostringstream ostrTip;
-			ostrTip.precision(g_iPrecGfx);
-			ostrTip << pAtom->m_strElem;
-			ostrTip << "\n("
-				<< vecThisAtomFrac[0] << ", "
-				<< vecThisAtomFrac[1] << ", "
-				<< vecThisAtomFrac[2] << ") frac";
-			ostrTip << "\n("
-				<< vecThisAtom[0] << ", "
-				<< vecThisAtom[1] << ", "
-				<< vecThisAtom[2] << ") " << strAA;
-			ostrTip << "\nDistance to Plane: " << pAtom->m_dProjDist << " " << strAA;
-			pAtom->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
-			pAtom->SetColor(colors[iCurAtomType % colors.size()]);
-
-			m_scene.addItem(pAtom);
-		}
+		m_scene.addItem(pAtom);
 	}
 	// --------------------------------------------------------------------
 
@@ -301,7 +241,7 @@ void RealLattice::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Plane<
 				lstPeaksForKd.push_back(std::vector<t_real>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
 
 				t_real dDist = 0.;
-				t_vec vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
+				t_vec vecDropped = recipcommon.planeReal.GetDroppedPerp(vecPeak, &dDist);
 
 				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
 				{
