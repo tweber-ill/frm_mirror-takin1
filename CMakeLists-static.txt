@@ -74,7 +74,7 @@ add_executable(gentab
 )
 
 target_link_libraries(gentab 
-	${Boost_LIBRARIES} ${Clipper_LIBRARIES}
+	${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${Clipper_LIBRARIES}
 	Qt4::QtCore Qt4::QtGui
 )
 
@@ -207,7 +207,7 @@ add_executable(convoseries
 set_target_properties(convoseries PROPERTIES COMPILE_FLAGS "-DNO_QT")
 
 target_link_libraries(convoseries
-	${Boost_LIBRARIES}
+	${Boost_LIBRARIES} ${PYTHON_LIBRARIES}
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
