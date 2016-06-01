@@ -57,6 +57,7 @@
 
 #include "tools/sglist/SgListDlg.h"
 #include "libs/spacegroups/spacegroup.h"
+#include "libs/spacegroups/latticehelper.h"
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 #include "tlibs/math/lattice.h"
@@ -115,7 +116,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		QMenu *m_pMenuRecentImport = nullptr;
 
 		// reciprocal lattice
-		RecipCommon<t_real_glob> m_recipcommon;
+		LatticeCommon<t_real_glob> m_latticecommon;
 		ScatteringTriangleView *m_pviewRecip = nullptr;
 		ScatteringTriangleScene m_sceneRecip;
 		ProjLatticeView *m_pviewProjRecip = nullptr;
@@ -132,7 +133,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::string m_strCurFile;
 		static const std::string s_strTitle;
 
-		std::vector<AtomPos> m_vecAtoms;
+		std::vector<AtomPos<t_real_glob>> m_vecAtoms;
 		CrystalSystem m_crystalsys = CRYS_NOT_SET;
 
 		RecipParamDlg m_dlgRecipParam;
@@ -257,7 +258,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowFormfactorDlg();
 
 		void ShowAtomsDlg();
-		void ApplyAtoms(const std::vector<AtomPos>& vecAtoms);
+		void ApplyAtoms(const std::vector<AtomPos<t_real_glob>>& vecAtoms);
 
 
 		void ShowSpurions();

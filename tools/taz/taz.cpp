@@ -1105,7 +1105,7 @@ void TazDlg::RecipProjChanged()
 		proj = LatticeProj::PERSPECTIVE;
 
 	m_sceneProjRecip.GetLattice()->SetProjection(proj);
-	m_sceneProjRecip.GetLattice()->CalcPeaks(m_recipcommon, true);
+	m_sceneProjRecip.GetLattice()->CalcPeaks(m_latticecommon, true);
 }
 
 

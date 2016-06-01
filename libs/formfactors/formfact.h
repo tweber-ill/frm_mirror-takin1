@@ -18,17 +18,11 @@
 #include "tlibs/math/mag.h"
 #include "libs/globals.h"
 
-using t_real_ff = ::t_real_glob;
-
-
-// ----------------------------------------------------------------------------
-
-class FormfactList;
 
 template<typename T=double>
-struct Formfact
+class Formfact
 {
-	friend class FormfactList;
+	template<typename> friend class FormfactList;
 
 	public:
 		typedef T value_type;
@@ -49,11 +43,11 @@ struct Formfact
 		}
 };
 
-
+template<typename T/*=double*/>
 class FormfactList
 {
 	public:
-		typedef Formfact<t_real_ff> elem_type;
+		typedef Formfact<T> elem_type;
 		typedef typename elem_type::value_type value_type;
 
 	private:
@@ -88,12 +82,10 @@ class FormfactList
 // ----------------------------------------------------------------------------
 
 
-class MagFormfactList;
-
 template<typename T=double>
-struct MagFormfact
+class MagFormfact
 {
-	friend class MagFormfactList;
+	template<typename> friend class MagFormfactList;
 
 	public:
 		typedef T value_type;
@@ -114,10 +106,11 @@ struct MagFormfact
 };
 
 
+template<typename T/*=double*/>
 class MagFormfactList
 {
 	public:
-		typedef MagFormfact<t_real_ff> elem_type;
+		typedef MagFormfact<T> elem_type;
 		typedef typename elem_type::value_type value_type;
 
 	private:
@@ -148,12 +141,10 @@ class MagFormfactList
 // ----------------------------------------------------------------------------
 
 
-class ScatlenList;
-
 template<typename T=std::complex<double>>
-struct Scatlen
+class Scatlen
 {
-	friend class ScatlenList;
+	template<typename> friend class ScatlenList;
 
 	public:
 		typedef T value_type;
@@ -181,10 +172,11 @@ struct Scatlen
 };
 
 
+template<typename T/*=double*/>
 class ScatlenList
 {
 	public:
-		typedef Scatlen<std::complex<t_real_ff>> elem_type;
+		typedef Scatlen<std::complex<T>> elem_type;
 		typedef typename elem_type::value_type value_type;
 
 	private:

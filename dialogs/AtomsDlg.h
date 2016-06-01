@@ -16,18 +16,11 @@
 
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
+#include "libs/spacegroups/latticehelper.h"
 
 #include "ui/ui_atoms.h"
 namespace ublas = boost::numeric::ublas;
 
-
-struct AtomPos
-{
-	std::string strAtomName;
-	ublas::vector<t_real_glob> vecPos;
-
-	t_real_glob J;		// optional: coupling
-};
 
 
 class AtomsDlg : public QDialog, Ui::AtomsDlg
@@ -50,10 +43,10 @@ public:
 		bool bEnableJ=0);
 	virtual ~AtomsDlg();
 
-	void SetAtoms(const std::vector<AtomPos>& vecAtoms);
+	void SetAtoms(const std::vector<AtomPos<t_real_glob>>& vecAtoms);
 
 signals:
-	void ApplyAtoms(const std::vector<AtomPos>& vecAtoms);
+	void ApplyAtoms(const std::vector<AtomPos<t_real_glob>>& vecAtoms);
 };
 
 

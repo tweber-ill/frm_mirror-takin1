@@ -705,7 +705,7 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, t_real dAngle)
 	nodeMoved(m_pNodeKfQ);
 }
 
-void ScatteringTriangle::CalcPeaks(const RecipCommon<t_real>& recipcommon, bool bIsPowder)
+void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, bool bIsPowder)
 {
 	ClearPeaks();
 	m_powder.clear();

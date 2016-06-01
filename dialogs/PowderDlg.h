@@ -59,10 +59,10 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		QSettings *m_pSettings = 0;
 
 		CrystalSystem m_crystalsys = CRYS_NOT_SET;
-		const SpaceGroups::t_mapSpaceGroups* m_pmapSpaceGroups;
+		const SpaceGroups<t_real_glob>::t_mapSpaceGroups* m_pmapSpaceGroups;
 
 		AtomsDlg *m_pAtomsDlg = nullptr;
-		std::vector<AtomPos> m_vecAtoms;
+		std::vector<AtomPos<t_real_glob>> m_vecAtoms;
 
 	public:
 		PowderDlg(QWidget* pParent=0, QSettings* pSett=0);
@@ -83,7 +83,7 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		void LoadPowder();
 
 		void ShowAtomDlg();
-		void ApplyAtoms(const std::vector<AtomPos>&);
+		void ApplyAtoms(const std::vector<AtomPos<t_real_glob>>&);
 
 		void cursorMoved(const QPointF& pt);
 
@@ -94,7 +94,7 @@ class PowderDlg : public QDialog, Ui::PowderDlg
 		virtual void showEvent(QShowEvent *pEvt) override;
 		virtual void accept() override;
 
-		const SpaceGroup* GetCurSpaceGroup() const;
+		const SpaceGroup<t_real_glob>* GetCurSpaceGroup() const;
 
 		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 		void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);

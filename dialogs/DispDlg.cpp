@@ -45,7 +45,7 @@ using t_cplx = std::complex<t_real>;
 
 DispDlg::DispDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett),
-	m_pmapSpaceGroups(SpaceGroups::GetInstance()->get_space_groups())
+	m_pmapSpaceGroups(SpaceGroups<t_real>::GetInstance()->get_space_groups())
 {
 	this->setupUi(this);
 	if(m_pSettings)
@@ -162,7 +162,7 @@ void DispDlg::Calc()
 
 
 		// spacegroup
-		const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
+		const SpaceGroup<t_real> *pSpaceGroup = GetCurSpaceGroup();
 		if(!pSpaceGroup)
 		{
 			tl::log_err("No spacegroup defined.");
@@ -174,7 +174,7 @@ void DispDlg::Calc()
 		// all primitive atoms
 		std::vector<t_vec> vecAtoms, vecAtomsUC, vecAtomsSC, vecAtomsNN;
 		std::vector<t_cplx> vecJ, vecJUC, vecJSC, vecJNN;
-		for(const AtomPos& atom : m_vecAtoms)
+		for(const AtomPos<t_real>& atom : m_vecAtoms)
 		{
 			vecAtoms.push_back(atom.vecPos);
 			vecJ.push_back(atom.J * t_real(k_B / one_meV * kelvin));
@@ -295,12 +295,12 @@ void DispDlg::Calc()
 }
 
 
-const SpaceGroup* DispDlg::GetCurSpaceGroup() const
+const SpaceGroup<t_real>* DispDlg::GetCurSpaceGroup() const
 {
-	SpaceGroup *pSpaceGroup = 0;
+	SpaceGroup<t_real> *pSpaceGroup = 0;
 	int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
 	if(iSpaceGroupIdx != 0)
-		pSpaceGroup = (SpaceGroup*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
+		pSpaceGroup = (SpaceGroup<t_real>*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
 	return pSpaceGroup;
 }
 
@@ -309,7 +309,7 @@ void DispDlg::SpaceGroupChanged()
 	m_crystalsys = CrystalSystem::CRYS_NOT_SET;
 	std::string strCryTy = "<not set>";
 
-	const SpaceGroup *pSpaceGroup = GetCurSpaceGroup();
+	const SpaceGroup<t_real>* pSpaceGroup = GetCurSpaceGroup();
 	if(pSpaceGroup)
 	{
 		m_crystalsys = pSpaceGroup->GetCrystalSystem();
@@ -331,7 +331,7 @@ void DispDlg::RepopulateSpaceGroups()
 
 	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
 
-	for(const SpaceGroups::t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
+	for(const SpaceGroups<t_real>::t_mapSpaceGroups::value_type& pair : *m_pmapSpaceGroups)
 	{
 		const std::string& strName = pair.second.GetName();
 
@@ -482,7 +482,7 @@ void DispDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 	mapConf[strXmlRoot + "sample/atoms/num"] = tl::var_to_str(m_vecAtoms.size());
 	for(std::size_t iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
 	{
-		const AtomPos& atom = m_vecAtoms[iAtom];
+		const AtomPos<t_real>& atom = m_vecAtoms[iAtom];
 
 		std::string strAtomNr = tl::var_to_str(iAtom);
 		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/name"] =
@@ -538,7 +538,7 @@ void DispDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 		for(std::size_t iAtom=0; iAtom<std::size_t(iNumAtoms); ++iAtom)
 		{
-			AtomPos atom;
+			AtomPos<t_real> atom;
 			atom.vecPos.resize(3,0);
 
 			std::string strNr = tl::var_to_str(iAtom);
@@ -558,7 +558,7 @@ void DispDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	Calc();
 }
 
-void DispDlg::ApplyAtoms(const std::vector<AtomPos>& vecAtoms)
+void DispDlg::ApplyAtoms(const std::vector<AtomPos<t_real>>& vecAtoms)
 {
 	m_vecAtoms = vecAtoms;
 	spinCentreIdx->setMaximum(int(m_vecAtoms.size())-1);
@@ -573,8 +573,8 @@ void DispDlg::ShowAtomDlg()
 		m_pAtomsDlg = new AtomsDlg(this, m_pSettings, true);
 		m_pAtomsDlg->setWindowTitle(m_pAtomsDlg->windowTitle() + QString(" (Dispersion)"));
 
-		QObject::connect(m_pAtomsDlg, SIGNAL(ApplyAtoms(const std::vector<AtomPos>&)),
-			this, SLOT(ApplyAtoms(const std::vector<AtomPos>&)));
+		QObject::connect(m_pAtomsDlg, SIGNAL(ApplyAtoms(const std::vector<AtomPos<t_real_glob>>&)),
+			this, SLOT(ApplyAtoms(const std::vector<AtomPos<t_real_glob>>&)));
 	}
 
 	m_pAtomsDlg->SetAtoms(m_vecAtoms);

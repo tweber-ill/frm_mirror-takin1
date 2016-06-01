@@ -14,6 +14,7 @@
 #include "tlibs/math/geo.h"
 #include "tlibs/math/lattice.h"
 #include "libs/spacegroups/spacegroup.h"
+#include "libs/spacegroups/latticehelper.h"
 #include "libs/globals.h"
 
 
@@ -28,8 +29,7 @@ public:
 	Recip3DDlg(QWidget* pParent, QSettings* = 0);
 	virtual ~Recip3DDlg();
 
-	void CalcPeaks(const tl::Lattice<t_real_glob>& lattice, const tl::Lattice<t_real_glob>& recip,
-		const tl::Plane<t_real_glob>& planeRLU, const SpaceGroup* pSpaceGroup=0);
+	void CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon);
 
 	void SetPlaneDistTolerance(t_real_glob dTol) { m_dPlaneDistTolerance = dTol; }
 	void SetMaxPeaks(t_real_glob dMax) { m_dMaxPeaks = dMax; }

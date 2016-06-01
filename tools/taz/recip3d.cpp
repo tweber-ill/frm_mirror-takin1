@@ -35,17 +35,11 @@ Recip3DDlg::~Recip3DDlg()
 }
 
 
-void Recip3DDlg::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Lattice<t_real>& recip,
-	const tl::Plane<t_real>& planeRLU, const SpaceGroup* pSpaceGroup)
+void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 {
-	ublas::vector<t_real> vecX0 = ublas::zero_vector<t_real>(3);
-	ublas::vector<t_real> vecPlaneX = planeRLU.GetDir0()[0]*recip.GetVec(0) +
-		planeRLU.GetDir0()[1]*recip.GetVec(1) +
-		planeRLU.GetDir0()[2]*recip.GetVec(2);
-	ublas::vector<t_real> vecPlaneY = planeRLU.GetDir1()[0]*recip.GetVec(0) +
-		planeRLU.GetDir1()[1]*recip.GetVec(1) +
-		planeRLU.GetDir1()[2]*recip.GetVec(2);
-	tl::Plane<t_real> plane(vecX0, vecPlaneX, vecPlaneY);
+	const tl::Lattice<t_real>& recip = recipcommon.recip;
+	const SpaceGroup<t_real>* pSpaceGroup = recipcommon.pSpaceGroup;
+	const tl::Plane<t_real>& plane = recipcommon.plane;
 
 
 	const unsigned int iObjCnt = (unsigned int)((m_dMaxPeaks*2 + 1)*
@@ -60,7 +54,7 @@ void Recip3DDlg::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Lattice
 	const t_real dLimMax = std::numeric_limits<t_real>::max();
 
 	std::vector<t_real> vecMin = {dLimMax, dLimMax, dLimMax},
-						vecMax = {-dLimMax, -dLimMax, -dLimMax};
+		vecMax = {-dLimMax, -dLimMax, -dLimMax};
 
 	for(t_real h=-m_dMaxPeaks; h<=m_dMaxPeaks; h+=1.)
 		for(t_real k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
@@ -88,7 +82,9 @@ void Recip3DDlg::CalcPeaks(const tl::Lattice<t_real>& lattice, const tl::Lattice
 				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
 				{
 					bool bIsDirectBeam = 0;
-					if(tl::float_equal<t_real>(h, 0.) && tl::float_equal<t_real>(k, 0.) && tl::float_equal<t_real>(l, 0.))
+					if(tl::float_equal<t_real>(h, 0.) &&
+						tl::float_equal<t_real>(k, 0.) &&
+						tl::float_equal<t_real>(l, 0.))
 						bIsDirectBeam = 1;
 
 					if(bIsDirectBeam)

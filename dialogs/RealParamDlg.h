@@ -39,8 +39,9 @@ class RealParamDlg : public QDialog, Ui::RealParamDlg
 	public slots:
 		void paramsChanged(const RealParams& parms);
 		void CrystalChanged(const tl::Lattice<t_real_glob>& latt,
-			const tl::Lattice<t_real_glob>& recip, const SpaceGroup* pSG,
-			const std::vector<AtomPos>* pAtoms);
+			const tl::Lattice<t_real_glob>& recip,
+			const SpaceGroup<t_real_glob>* pSG,
+			const std::vector<AtomPos<t_real_glob>>* pAtoms);
 
 	protected:
 		virtual void closeEvent(QCloseEvent *pEvt) override;

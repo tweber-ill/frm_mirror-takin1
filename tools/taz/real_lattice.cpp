@@ -168,13 +168,13 @@ void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 	}
 }
 
-void RealLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon)
+void RealLattice::CalcPeaks(const LatticeCommon<t_real>& latticecommon)
 {
 	ClearPeaks();
 	m_kdLattice.Unload();
-	m_lattice = recipcommon.lattice;
-	m_matPlane = recipcommon.matPlaneReal;
-	m_matPlane_inv = recipcommon.matPlaneReal_inv;
+	m_lattice = latticecommon.lattice;
+	m_matPlane = latticecommon.matPlaneReal;
+	m_matPlane_inv = latticecommon.matPlaneReal_inv;
 
 	// central peak for WS cell calculation
 	ublas::vector<int> veciCent = tl::make_vec({0.,0.,0.});
@@ -186,20 +186,20 @@ void RealLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon)
 	std::vector<QColor> colors = {QColor(127,0,0), QColor(0,127,0), QColor(0,0,127),
 		QColor(127,127,0), QColor(0,127,127), QColor(127,0,127)};
 
-	for(std::size_t iAtom=0; iAtom<recipcommon.vecAllAtoms.size(); ++iAtom)
+	for(std::size_t iAtom=0; iAtom<latticecommon.vecAllAtoms.size(); ++iAtom)
 	{
-		const std::string& strElem = recipcommon.vecAllNames[iAtom];
-		const t_vec& vecThisAtom = recipcommon.vecAllAtoms[iAtom];
-		const t_vec& vecThisAtomFrac = recipcommon.vecAllAtomsFrac[iAtom];
-		std::size_t iCurAtomType = recipcommon.vecAllAtomTypes[iAtom];
+		const std::string& strElem = latticecommon.vecAllNames[iAtom];
+		const t_vec& vecThisAtom = latticecommon.vecAllAtoms[iAtom];
+		const t_vec& vecThisAtomFrac = latticecommon.vecAllAtomsFrac[iAtom];
+		std::size_t iCurAtomType = latticecommon.vecAllAtomTypes[iAtom];
 
 		LatticeAtom *pAtom = new LatticeAtom();
 		m_vecAtoms.push_back(pAtom);
 
 		pAtom->m_strElem = strElem;
 		pAtom->m_vecPos = std::move(vecThisAtom);
-		pAtom->m_vecProj = recipcommon.planeReal.GetDroppedPerp(pAtom->m_vecPos/*, &pAtom->m_dProjDist*/);
-		pAtom->m_dProjDist = recipcommon.planeReal.GetDist(pAtom->m_vecPos);
+		pAtom->m_vecProj = latticecommon.planeReal.GetDroppedPerp(pAtom->m_vecPos/*, &pAtom->m_dProjDist*/);
+		pAtom->m_dProjDist = latticecommon.planeReal.GetDist(pAtom->m_vecPos);
 
 		t_vec vecCoord = ublas::prod(m_matPlane_inv, pAtom->m_vecProj);
 		t_real dX = vecCoord[0], dY = -vecCoord[1];
@@ -241,7 +241,7 @@ void RealLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon)
 				lstPeaksForKd.push_back(std::vector<t_real>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
 
 				t_real dDist = 0.;
-				t_vec vecDropped = recipcommon.planeReal.GetDroppedPerp(vecPeak, &dDist);
+				t_vec vecDropped = latticecommon.planeReal.GetDroppedPerp(vecPeak, &dDist);
 
 				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
 				{

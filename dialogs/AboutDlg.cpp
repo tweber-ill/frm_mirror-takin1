@@ -107,13 +107,13 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrConst << "<dt>Physical constants from Boost Units</dt>";
 	ostrConst << "<dd><a href=\"http://www.boost.org/doc/libs/release/libs/units/\">http://www.boost.org/doc/libs/release/libs/units/</a></dd>";
 
-	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
+	std::shared_ptr<const SpaceGroups<t_real_glob>> sgs = SpaceGroups<t_real_glob>::GetInstance();
 	ostrConst << "<dt>" << sgs->get_sgsource(0) <<"</dt>";
 	ostrConst << "<dd><a href=\"" << sgs->get_sgsource(1) << "\">" << sgs->get_sgsource(1) << "</a></dd>";
 
-	std::shared_ptr<const FormfactList> ff = FormfactList::GetInstance();
-	std::shared_ptr<const MagFormfactList> mff = MagFormfactList::GetInstance();
-	std::shared_ptr<const ScatlenList> sl = ScatlenList::GetInstance();
+	std::shared_ptr<const FormfactList<t_real_glob>> ff = FormfactList<t_real_glob>::GetInstance();
+	std::shared_ptr<const MagFormfactList<t_real_glob>> mff = MagFormfactList<t_real_glob>::GetInstance();
+	std::shared_ptr<const ScatlenList<t_real_glob>> sl = ScatlenList<t_real_glob>::GetInstance();
 
 	if(g_bHasFormfacts)
 	{

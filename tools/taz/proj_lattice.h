@@ -16,8 +16,8 @@
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 #include "libs/spacegroups/spacegroup.h"
+#include "libs/spacegroups/latticehelper.h"
 
-#include "scattering_triangle.h"	// for RecipCommon
 #include "tasoptions.h"
 
 #include <QGraphicsScene>
@@ -105,7 +105,7 @@ class ProjLattice : public QGraphicsItem
 	public:
 		bool HasPeaks() const { return m_vecPeaks.size()!=0 && m_lattice.IsInited(); }
 		void ClearPeaks();
-		void CalcPeaks(const RecipCommon<t_real_glob>& recipcommon, bool bIsRecip=1);
+		void CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon, bool bIsRecip=1);
 
 		void SetMaxPeaks(int iMax) { m_iMaxPeaks = iMax; }
 		unsigned int GetMaxPeaks() const { return m_iMaxPeaks; }

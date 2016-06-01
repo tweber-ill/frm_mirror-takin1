@@ -55,8 +55,8 @@ void RealParamDlg::paramsChanged(const RealParams& parms)
 
 
 void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
-	const tl::Lattice<t_real>& recip, const SpaceGroup* pSG,
-	const std::vector<AtomPos>* pAtoms)
+	const tl::Lattice<t_real>& recip, const SpaceGroup<t_real>* pSG,
+	const std::vector<AtomPos<t_real>>* pAtoms)
 {
 	treeNN->clear();
 	listAtoms->clear();
@@ -75,7 +75,7 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 		// all primitive atoms
 		std::vector<t_vec> vecAtoms, vecAtomsUC, vecAtomsUCFrac,
 			vecAtomsSC, vecAtomsNN;
-		for(const AtomPos& atom : *pAtoms)
+		for(const AtomPos<t_real>& atom : *pAtoms)
 			vecAtoms.push_back(atom.vecPos);
 
 		// all atoms in unit cell
@@ -112,7 +112,7 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 			vecNamesSC.push_back((*pAtoms)[vecIdxUC[iIdxSC]].strAtomName);
 
 		// get neighbours of all atoms
-		for(const AtomPos& atom : *pAtoms)
+		for(const AtomPos<t_real>& atom : *pAtoms)
 		{
 			const std::string& strName = atom.strAtomName;
 			QTreeWidgetItem *pWidParent = new QTreeWidgetItem(treeNN);

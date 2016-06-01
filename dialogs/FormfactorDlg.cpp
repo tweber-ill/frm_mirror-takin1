@@ -114,7 +114,7 @@ static QListWidgetItem* create_header_item(const char *pcTitle, bool bSubheader=
 
 void FormfactorDlg::SetupAtoms()
 {
-	std::shared_ptr<const FormfactList> lstff = FormfactList::GetInstance();
+	std::shared_ptr<const FormfactList<t_real>> lstff = FormfactList<t_real>::GetInstance();
 	listAtoms->addItem(create_header_item("Atoms"));
 	for(unsigned int iFF=0; iFF<lstff->GetNumAtoms(); ++iFF)
 	{
@@ -154,7 +154,7 @@ void FormfactorDlg::SetupAtoms()
 
 void FormfactorDlg::SetupMagAtoms()
 {
-	std::shared_ptr<const MagFormfactList> lstff = MagFormfactList::GetInstance();
+	std::shared_ptr<const MagFormfactList<t_real>> lstff = MagFormfactList<t_real>::GetInstance();
 	listMAtoms->addItem(create_header_item("Atoms / Ions"));
 
 	bool bHad3d=0, bHad4d=0, bHad4f=0, bHad5f=0;
@@ -213,7 +213,7 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	m_vecQ.reserve(NUM_POINTS);
 	m_vecFF.reserve(NUM_POINTS);
 
-	std::shared_ptr<const FormfactList> lstff = FormfactList::GetInstance();
+	std::shared_ptr<const FormfactList<t_real>> lstff = FormfactList<t_real>::GetInstance();
 	if((iAtomOrIon==1 && iAtom < lstff->GetNumAtoms()) ||
 		(iAtomOrIon==2 && iAtom < lstff->GetNumIons()))
 	{
@@ -251,7 +251,7 @@ void FormfactorDlg::MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	t_real dS = spinS->value();
 	t_real dJ = spinJ->value();
 
-	std::shared_ptr<const MagFormfactList> lstff = MagFormfactList::GetInstance();
+	std::shared_ptr<const MagFormfactList<t_real>> lstff = MagFormfactList<t_real>::GetInstance();
 	if(iAtom >= lstff->GetNumAtoms()) return;
 
 	const MagFormfact<t_real>& ff = lstff->GetAtom(iAtom);
@@ -323,10 +323,10 @@ void FormfactorDlg::PlotScatteringLengths()
 	m_vecElem.clear();
 	m_vecSc.clear();
 
-	std::shared_ptr<const ScatlenList> lstsc = ScatlenList::GetInstance();
+	std::shared_ptr<const ScatlenList<t_real>> lstsc = ScatlenList<t_real>::GetInstance();
 	for(unsigned int iAtom=0; iAtom<lstsc->GetNumElems(); ++iAtom)
 	{
-		const ScatlenList::elem_type& sc = lstsc->GetElem(iAtom);
+		const ScatlenList<t_real>::elem_type& sc = lstsc->GetElem(iAtom);
 		std::complex<t_real> b = bCoh ? sc.GetCoherent() : sc.GetIncoherent();
 
 		m_vecElem.push_back(t_real(iAtom+1));
@@ -349,7 +349,7 @@ enum
 
 void FormfactorDlg::SetupScatteringLengths()
 {
-	std::shared_ptr<const ScatlenList> lstsc = ScatlenList::GetInstance();
+	std::shared_ptr<const ScatlenList<t_real>> lstsc = ScatlenList<t_real>::GetInstance();
 
 	const bool bSortTable = tableSL->isSortingEnabled();
 	tableSL->setSortingEnabled(0);
@@ -366,7 +366,7 @@ void FormfactorDlg::SetupScatteringLengths()
 
 	for(std::size_t iElem=0; iElem<lstsc->GetNumElems()+lstsc->GetNumIsotopes(); ++iElem)
 	{
-		const typename ScatlenList::elem_type* pelem = nullptr;
+		const typename ScatlenList<t_real>::elem_type* pelem = nullptr;
 		if(iElem < lstsc->GetNumElems())
 			pelem = &lstsc->GetElem(iElem);
 		else
@@ -414,7 +414,7 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 	}
 	else if(tabWidget->currentIndex() == 0)
 	{
-		std::shared_ptr<const ScatlenList> lst = ScatlenList::GetInstance();
+		std::shared_ptr<const ScatlenList<t_real>> lst = ScatlenList<t_real>::GetInstance();
 
 		int iElem = std::round(pt.x());
 		if(iElem<=0 || iElem>=int(lst->GetNumElems()))

@@ -295,4 +295,5 @@ bool is_reflection_allowed(int h, int k, int l, const t_cont<t_mat>& vecTrafos)
 	return true;
 }
 
+
 #endif

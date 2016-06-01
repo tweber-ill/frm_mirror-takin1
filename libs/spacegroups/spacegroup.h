@@ -13,7 +13,6 @@
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
 #include "tlibs/file/prop.h"
-#include "libs/globals.h"
 
 #include <map>
 #include <mutex>
@@ -21,10 +20,10 @@
 namespace ublas = boost::numeric::ublas;
 
 
+template<class t_real = double>
 class SpaceGroup
 {
 public:
-	using t_real = ::t_real_glob;
 	using t_mat = ublas::matrix<t_real>;
 	using t_vec = ublas::vector<t_real>;
 
@@ -104,14 +103,15 @@ public:
 };
 
 
+template<class t_real = double>
 class SpaceGroups
 {
 	public:
-		typedef std::vector<const SpaceGroup*> t_vecSpaceGroups;
-		typedef std::map<std::string, SpaceGroup> t_mapSpaceGroups;
+		typedef std::vector<const SpaceGroup<t_real>*> t_vecSpaceGroups;
+		typedef std::map<std::string, SpaceGroup<t_real>> t_mapSpaceGroups;
 
 	private:
-		static std::shared_ptr<SpaceGroups> s_inst;
+		static std::shared_ptr<SpaceGroups<t_real>> s_inst;
 		static std::mutex s_mutex;
 
 		SpaceGroups();
@@ -124,7 +124,7 @@ class SpaceGroups
 
 	public:
 		virtual ~SpaceGroups();
-		static std::shared_ptr<const SpaceGroups> GetInstance();
+		static std::shared_ptr<const SpaceGroups<t_real>> GetInstance();
 
 		const t_mapSpaceGroups* get_space_groups() const;
 		const t_vecSpaceGroups* get_space_groups_vec() const;

@@ -116,21 +116,21 @@ static void to_proj(T x, T y, T z, T& xg, T& yg, bool bGnom=1)
 		std::tie(xg, yg) = tl::stereographic_proj(phi_crys, theta_crys, T(1));
 }
 
-void ProjLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon, bool bIsRecip)
+void ProjLattice::CalcPeaks(const LatticeCommon<t_real>& latticecommon, bool bIsRecip)
 {
 	ClearPeaks();
 
 	const tl::Lattice<t_real>* pLatticeOther = nullptr;
 	if(bIsRecip)
 	{
-		m_lattice = recipcommon.recip;
-		pLatticeOther = &recipcommon.lattice;
-		m_matPlane_inv = recipcommon.matPlane_inv;
+		m_lattice = latticecommon.recip;
+		pLatticeOther = &latticecommon.lattice;
+		m_matPlane_inv = latticecommon.matPlane_inv;
 	}
 	else
 	{
-		m_lattice = recipcommon.lattice;
-		pLatticeOther = &recipcommon.recip;
+		m_lattice = latticecommon.lattice;
+		pLatticeOther = &latticecommon.recip;
 		// m_matPlane_inv = ! TODO !
 	}
 
@@ -150,8 +150,8 @@ void ProjLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon, bool bIsReci
 		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
 			for(int il=-m_iMaxPeaks; il<=m_iMaxPeaks; ++il)
 			{
-				if(bIsRecip && recipcommon.pSpaceGroup &&
-					!recipcommon.pSpaceGroup->HasReflection(ih, ik, il))
+				if(bIsRecip && latticecommon.pSpaceGroup &&
+					!latticecommon.pSpaceGroup->HasReflection(ih, ik, il))
 					continue;
 
 				const t_real h = t_real(ih), k = t_real(ik), l = t_real(il);
@@ -208,11 +208,11 @@ void ProjLattice::CalcPeaks(const RecipCommon<t_real>& recipcommon, bool bIsReci
 					pPeak = *iterPeak;
 				}
 
-				if(bIsRecip && recipcommon.CanCalcStructFact())
+				if(bIsRecip && latticecommon.CanCalcStructFact())
 				{
 					t_real dF = 0.;
 					std::tie(std::ignore, dF, std::ignore) =
-						recipcommon.GetStructFact(vecPeak);
+						latticecommon.GetStructFact(vecPeak);
 
 					pPeak->AddRadius(dF);
 					bModifiedRadii = 1;

@@ -25,8 +25,8 @@ typedef tl::ublas::matrix<t_real> t_mat;
 
 void gen_atoms_sfact()
 {
-	std::shared_ptr<const ScatlenList> lst = ScatlenList::GetInstance();
-	std::shared_ptr<const FormfactList> lstff = FormfactList::GetInstance();
+	std::shared_ptr<const ScatlenList<t_real>> lst = ScatlenList<t_real>::GetInstance();
+	std::shared_ptr<const FormfactList<t_real>> lstff = FormfactList<t_real>::GetInstance();
 
 
 	t_real a,b,c, alpha,beta,gamma;
@@ -118,7 +118,7 @@ void gen_atoms_sfact()
 		for(const t_vec& vec : vecPos)
 			std::cout << vec << std::endl;
 
-		const ScatlenList::elem_type* pElem = lst->Find(vecElems[iAtom]);
+		const ScatlenList<t_real>::elem_type* pElem = lst->Find(vecElems[iAtom]);
 
 		if(pElem == nullptr)
 		{
@@ -169,7 +169,7 @@ void gen_atoms_sfact()
 		for(unsigned int iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
 		{
 			//const t_vec& vecAtom = vecAllAtoms[iAtom];
-			const FormfactList::elem_type* pElemff = lstff->Find(vecElems[vecAtomIndices[iAtom]]);
+			const FormfactList<t_real>::elem_type* pElemff = lstff->Find(vecElems[vecAtomIndices[iAtom]]);
 
 			if(pElemff == nullptr)
 			{

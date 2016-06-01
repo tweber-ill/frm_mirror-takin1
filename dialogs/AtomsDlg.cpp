@@ -103,7 +103,7 @@ void AtomsDlg::AddAtom()
 }
 
 
-void AtomsDlg::SetAtoms(const std::vector<AtomPos>& vecAtoms)
+void AtomsDlg::SetAtoms(const std::vector<AtomPos<t_real>>& vecAtoms)
 {
 	const bool bSort = tableAtoms->isSortingEnabled();
 	tableAtoms->setSortingEnabled(0);
@@ -117,7 +117,7 @@ void AtomsDlg::SetAtoms(const std::vector<AtomPos>& vecAtoms)
 			if(!tableAtoms->item(iRow, iCol))
 				tableAtoms->setItem(iRow, iCol, new QTableWidgetItem(""));
 
-		const AtomPos& atom = vecAtoms[iRow];
+		const AtomPos<t_real>& atom = vecAtoms[iRow];
 		tableAtoms->item(iRow, 0)->setText(atom.strAtomName.c_str());
 		for(unsigned int i=0; i<3; ++i)
 			tableAtoms->item(iRow, static_cast<int>(AtInfo::POS_X)+i)->setText(tl::var_to_str(atom.vecPos[i]).c_str());
@@ -131,12 +131,12 @@ void AtomsDlg::SetAtoms(const std::vector<AtomPos>& vecAtoms)
 
 void AtomsDlg::SendApplyAtoms()
 {
-	std::vector<AtomPos> vecAtoms;
+	std::vector<AtomPos<t_real>> vecAtoms;
 	vecAtoms.reserve(tableAtoms->rowCount());
 
 	for(int iRow=0; iRow<tableAtoms->rowCount(); ++iRow)
 	{
-		AtomPos atom;
+		AtomPos<t_real> atom;
 		atom.strAtomName = tableAtoms->item(iRow, static_cast<int>(AtInfo::NAME))->text().toStdString();
 		tl::trim(atom.strAtomName);
 		t_real dX = tl::str_to_var<t_real>(tableAtoms->item(iRow, static_cast<int>(AtInfo::POS_X))->text().toStdString());

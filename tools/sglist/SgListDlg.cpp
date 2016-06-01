@@ -10,6 +10,9 @@
 //#include <iostream>
 #include "tlibs/string/string.h"
 #include "libs/spacegroups/spacegroup.h"
+#include "libs/globals.h"
+
+using t_real = t_real_glob;
 
 
 SgListDlg::SgListDlg(QWidget *pParent)
@@ -74,13 +77,13 @@ void SgListDlg::SetupSpacegroups()
 {
 	listSGs->clear();
 
-	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
-	const SpaceGroups::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
+	std::shared_ptr<const SpaceGroups<t_real>> sgs = SpaceGroups<t_real>::GetInstance();
+	const SpaceGroups<t_real>::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
 
 	// actually: space group TYPE, not space group...
 	for(unsigned int iSG=0; iSG<pvecSG->size(); ++iSG)
 	{
-		const SpaceGroup* psg = pvecSG->at(iSG);
+		const SpaceGroup<t_real>* psg = pvecSG->at(iSG);
 		unsigned int iSgNr = psg->GetNr();
 
 		// list headers
@@ -116,15 +119,15 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	if(!pItem) return;
 
 
-	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
-	const SpaceGroups::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
+	std::shared_ptr<const SpaceGroups<t_real>> sgs = SpaceGroups<t_real>::GetInstance();
+	const SpaceGroups<t_real>::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
 
 	// header selected?
 	unsigned int iSG = pItem->data(Qt::UserRole).toUInt();
 	if(iSG >= pvecSG->size())
 		return;
 
-	const SpaceGroup* psg = pvecSG->at(iSG);
+	const SpaceGroup<t_real>* psg = pvecSG->at(iSG);
 	unsigned int iSgNr = psg->GetNr();
 
 	const std::string& strHM = psg->GetName();
@@ -141,7 +144,7 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	bool bShowMatrices = checkMatrices->isChecked();
 
 	// all trafos
-	const std::vector<SpaceGroup::t_mat>& vecTrafos = psg->GetTrafos();
+	const std::vector<SpaceGroup<t_real>::t_mat>& vecTrafos = psg->GetTrafos();
 	{
 		std::ostringstream ostr;
 		ostr << "All Symmetry Operations (" << vecTrafos.size() << ")";
@@ -225,13 +228,13 @@ void SgListDlg::RecalcBragg()
 
 	//std::cout << h << k << l << std::endl;
 
-	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
-	const SpaceGroups::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
+	std::shared_ptr<const SpaceGroups<t_real>> sgs = SpaceGroups<t_real>::GetInstance();
+	const SpaceGroups<t_real>::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
 	const unsigned int iSG = pItem->data(Qt::UserRole).toUInt();
 	if(iSG >= pvecSG->size())
 		return;
 
-	const SpaceGroup* psg = pvecSG->at(iSG);
+	const SpaceGroup<t_real>* psg = pvecSG->at(iSG);
 	const bool bForbidden = !psg->HasReflection(h,k,l);;
 
 	QFont font = spinH->font();
@@ -256,31 +259,31 @@ void SgListDlg::CalcTrafo()
 	if(!pItem)
 		return;
 
-	std::shared_ptr<const SpaceGroups> sgs = SpaceGroups::GetInstance();
-	const SpaceGroups::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
+	std::shared_ptr<const SpaceGroups<t_real>> sgs = SpaceGroups<t_real>::GetInstance();
+	const SpaceGroups<t_real>::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
 	const unsigned int iSG = pItem->data(Qt::UserRole).toUInt();
 	if(iSG >= pvecSG->size())
 		return;
-	const SpaceGroup* psg = pvecSG->at(iSG);
+	const SpaceGroup<t_real>* psg = pvecSG->at(iSG);
 
-	SpaceGroup::t_vec vecIn =
+	SpaceGroup<t_real>::t_vec vecIn =
 		tl::make_vec({spinX->value(), spinY->value(), spinZ->value(), spinW->value()});
 
-	const std::vector<SpaceGroup::t_mat>& vecTrafos = psg->GetTrafos();
-	std::vector<SpaceGroup::t_vec> vecUnique;
+	const std::vector<SpaceGroup<t_real>::t_mat>& vecTrafos = psg->GetTrafos();
+	std::vector<SpaceGroup<t_real>::t_vec> vecUnique;
 
 	listTrafo->addItem(create_header_item("All Transformation Results"));
-	for(const SpaceGroup::t_mat& mat : vecTrafos)
+	for(const SpaceGroup<t_real>::t_mat& mat : vecTrafos)
 	{
-		SpaceGroup::t_vec vec = ublas::prod(mat, vecIn);
+		SpaceGroup<t_real>::t_vec vec = ublas::prod(mat, vecIn);
 		listTrafo->addItem(print_vector(vec).c_str());
 
-		if(!is_vec_in_container<std::vector, SpaceGroup::t_vec>(vecUnique, vec))
+		if(!is_vec_in_container<std::vector, SpaceGroup<t_real>::t_vec>(vecUnique, vec))
 			vecUnique.push_back(vec);
 	}
 
 	listTrafo->addItem(create_header_item("Unique Transformation Results"));
-	for(const SpaceGroup::t_vec& vec : vecUnique)
+	for(const SpaceGroup<t_real>::t_vec& vec : vecUnique)
 	{
 		listTrafo->addItem(print_vector(vec).c_str());
 	}

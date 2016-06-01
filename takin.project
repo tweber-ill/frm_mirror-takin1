@@ -424,5 +424,8 @@
     <File Name="libs/spacegroups/spacegroup.h"/>
     <File Name="libs/globals_qt.cpp"/>
     <File Name="libs/globals_qt.h"/>
+    <File Name="libs/spacegroups/latticehelper.h"/>
+    <File Name="libs/spacegroups/spacegroup_impl.h"/>
+    <File Name="libs/formfactors/formfact_impl.h"/>
   </VirtualDirectory>
 </CodeLite_Project>

@@ -78,8 +78,8 @@ bool TazDlg::Load(const char* pcFile)
 {
 	m_bReady = 0;
 	BOOST_SCOPE_EXIT(&m_bReady, &m_sceneReal, &m_sceneRecip)
-	{ 
-		m_bReady = 1; 
+	{
+		m_bReady = 1;
 		m_sceneReal.GetTasLayout()->SetReady(true);
 		m_sceneReal.SetEmitChanges(true);
 
@@ -245,7 +245,7 @@ bool TazDlg::Load(const char* pcFile)
 
 		for(unsigned int iAtom=0; iAtom<iNumAtoms; ++iAtom)
 		{
-			AtomPos atom;
+			AtomPos<t_real_glob> atom;
 			atom.vecPos.resize(3,0);
 
 			std::string strNr = tl::var_to_str(iAtom);
@@ -412,7 +412,7 @@ bool TazDlg::Save()
 	mapConf[strXmlRoot + "sample/atoms/num"] = tl::var_to_str(m_vecAtoms.size());
 	for(unsigned int iAtom=0; iAtom<m_vecAtoms.size(); ++iAtom)
 	{
-		const AtomPos& atom = m_vecAtoms[iAtom];
+		const AtomPos<t_real_glob>& atom = m_vecAtoms[iAtom];
 
 		std::string strAtomNr = tl::var_to_str(iAtom);
 		mapConf[strXmlRoot + "sample/atoms/" + strAtomNr + "/name"] =
