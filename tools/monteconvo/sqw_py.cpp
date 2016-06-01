@@ -34,7 +34,11 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 
 		try	// optional stuff
 		{
-			m_Init = moddict["TakinInit"];
+			if(moddict.has_key("TakinInit"))
+			{
+				m_Init = moddict["TakinInit"];
+				if(!!m_Init) m_Init();
+			}
 		}
 		catch(const py::error_already_set& ex) {}
 	}
@@ -45,8 +49,6 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 
 		m_bOk = 0;
 	}
-
-	if(!!m_Init) m_Init();
 }
 
 SqwPy::~SqwPy()
