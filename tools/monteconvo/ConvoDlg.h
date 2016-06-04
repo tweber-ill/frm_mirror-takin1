@@ -1,4 +1,4 @@
-/*
+/**
  * monte carlo convolution tool
  * @author tweber
  * @date aug-2015
@@ -19,6 +19,7 @@
 #include "ui/ui_monteconvo.h"
 #include "sqwfactory.h"
 #include "../res/defs.h"
+#include "../convofit/scan.h"
 
 
 class ConvoDlg : public QDialog, Ui::ConvoDlg
@@ -31,8 +32,11 @@ protected:
 	SqwParamDlg *m_pSqwParamDlg = nullptr;
 
 	std::shared_ptr<SqwBase> m_pSqw;
-	std::vector<t_real_reso> m_vecQ, m_vecS;
+	std::vector<t_real_reso> m_vecQ, m_vecS, m_vecScaledS;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
+
+	bool m_bUseScan = 0;
+	Scan m_scan;
 
 protected:
 	void LoadSettings();
@@ -44,10 +48,14 @@ protected slots:
 	void browseCrysFiles();
 	void browseResoFiles();
 	void browseSqwFiles();
+	void browseScanFiles();
 
 	void SqwModelChanged(int);
 	void createSqwModel(const QString& qstrFile);
 	void SqwParamsChanged(const std::vector<SqwBase::t_var>&);
+
+	void scanFileChanged(const QString& qstrFile);
+	void scaleChanged();
 
 	void SaveResult();
 

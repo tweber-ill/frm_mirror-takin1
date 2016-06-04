@@ -203,16 +203,21 @@ TazDlg::TazDlg(QWidget* pParent)
 		&m_sceneTof, SLOT(triangleChanged(const TriangleOptions&)));
 
 	// scale factor
-	QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(t_real_glob)),
-		&m_sceneRecip, SLOT(scaleChanged(t_real_glob)));
-	QObject::connect(m_pviewProjRecip, SIGNAL(scaleChanged(t_real_glob)),
-		&m_sceneProjRecip, SLOT(scaleChanged(t_real_glob)));
-	QObject::connect(m_pviewRealLattice, SIGNAL(scaleChanged(t_real_glob)),
-		&m_sceneRealLattice, SLOT(scaleChanged(t_real_glob)));
-	QObject::connect(m_pviewReal, SIGNAL(scaleChanged(t_real_glob)),
-		&m_sceneReal, SLOT(scaleChanged(t_real_glob)));
-	QObject::connect(m_pviewTof, SIGNAL(scaleChanged(t_real_glob)),
-		&m_sceneTof, SLOT(scaleChanged(t_real_glob)));
+	if(m_pviewRecip)
+		QObject::connect(m_pviewRecip, SIGNAL(scaleChanged(t_real_glob)),
+			&m_sceneRecip, SLOT(scaleChanged(t_real_glob)));
+	if(m_pviewProjRecip)
+		QObject::connect(m_pviewProjRecip, SIGNAL(scaleChanged(t_real_glob)),
+			&m_sceneProjRecip, SLOT(scaleChanged(t_real_glob)));
+	if(m_pviewRealLattice)
+		QObject::connect(m_pviewRealLattice, SIGNAL(scaleChanged(t_real_glob)),
+			&m_sceneRealLattice, SLOT(scaleChanged(t_real_glob)));
+	if(m_pviewReal)
+		QObject::connect(m_pviewReal, SIGNAL(scaleChanged(t_real_glob)),
+			&m_sceneReal, SLOT(scaleChanged(t_real_glob)));
+	if(m_pviewTof)
+		QObject::connect(m_pviewTof, SIGNAL(scaleChanged(t_real_glob)),
+			&m_sceneTof, SLOT(scaleChanged(t_real_glob)));
 
 	// parameter dialogs
 	QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
@@ -663,22 +668,27 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	// --------------------------------------------------------------------------------
 	// context menus
-	m_pviewRecip->setContextMenuPolicy(Qt::CustomContextMenu);
-	m_pviewProjRecip->setContextMenuPolicy(Qt::CustomContextMenu);
-	m_pviewRealLattice->setContextMenuPolicy(Qt::CustomContextMenu);
-	m_pviewReal->setContextMenuPolicy(Qt::CustomContextMenu);
-	m_pviewTof->setContextMenuPolicy(Qt::CustomContextMenu);
+	if(m_pviewRecip) m_pviewRecip->setContextMenuPolicy(Qt::CustomContextMenu);
+	if(m_pviewProjRecip) m_pviewProjRecip->setContextMenuPolicy(Qt::CustomContextMenu);
+	if(m_pviewRealLattice) m_pviewRealLattice->setContextMenuPolicy(Qt::CustomContextMenu);
+	if(m_pviewReal) m_pviewReal->setContextMenuPolicy(Qt::CustomContextMenu);
+	if(m_pviewTof) m_pviewTof->setContextMenuPolicy(Qt::CustomContextMenu);
 
-	QObject::connect(m_pviewRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
-		this, SLOT(RecipContextMenu(const QPoint&)));
-	QObject::connect(m_pviewProjRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
-		this, SLOT(RecipContextMenu(const QPoint&)));
-	QObject::connect(m_pviewRealLattice, SIGNAL(customContextMenuRequested(const QPoint&)),
-		this, SLOT(RealContextMenu(const QPoint&)));
-	QObject::connect(m_pviewReal, SIGNAL(customContextMenuRequested(const QPoint&)),
-		this, SLOT(RealContextMenu(const QPoint&)));
-	QObject::connect(m_pviewTof, SIGNAL(customContextMenuRequested(const QPoint&)),
-		this, SLOT(RealContextMenu(const QPoint&)));
+	if(m_pviewRecip)
+		QObject::connect(m_pviewRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
+			this, SLOT(RecipContextMenu(const QPoint&)));
+	if(m_pviewProjRecip)
+		QObject::connect(m_pviewProjRecip, SIGNAL(customContextMenuRequested(const QPoint&)),
+			this, SLOT(RecipContextMenu(const QPoint&)));
+	if(m_pviewRealLattice)
+		QObject::connect(m_pviewRealLattice, SIGNAL(customContextMenuRequested(const QPoint&)),
+			this, SLOT(RealContextMenu(const QPoint&)));
+	if(m_pviewReal)
+		QObject::connect(m_pviewReal, SIGNAL(customContextMenuRequested(const QPoint&)),
+			this, SLOT(RealContextMenu(const QPoint&)));
+	if(m_pviewTof)
+		QObject::connect(m_pviewTof, SIGNAL(customContextMenuRequested(const QPoint&)),
+			this, SLOT(RealContextMenu(const QPoint&)));
 
 
 	// --------------------------------------------------------------------------------
@@ -856,11 +866,11 @@ void TazDlg::showEvent(QShowEvent *pEvt)
 	{
 		bInitialShow = 0;
 
-		m_pviewRecip->centerOn(m_sceneRecip.GetTriangle()->GetGfxMid());
-		m_pviewProjRecip->centerOn(0.,0.);
-		m_pviewReal->centerOn(m_sceneReal.GetTasLayout());
-		m_pviewTof->centerOn(m_sceneTof.GetTofLayout());
-		m_pviewRealLattice->centerOn(0.,0.);
+		if(m_pviewRecip) m_pviewRecip->centerOn(m_sceneRecip.GetTriangle()->GetGfxMid());
+		if(m_pviewProjRecip) m_pviewProjRecip->centerOn(0.,0.);
+		if(m_pviewReal) m_pviewReal->centerOn(m_sceneReal.GetTasLayout());
+		if(m_pviewTof) m_pviewTof->centerOn(m_sceneTof.GetTofLayout());
+		if(m_pviewRealLattice) m_pviewRealLattice->centerOn(0.,0.);
 
 		/*for(QScrollBar* pSB : {
 			m_pviewRealLattice->horizontalScrollBar(),
@@ -1104,8 +1114,11 @@ void TazDlg::RecipProjChanged()
 	else if(m_pProjPersp->isChecked())
 		proj = LatticeProj::PERSPECTIVE;
 
-	m_sceneProjRecip.GetLattice()->SetProjection(proj);
-	m_sceneProjRecip.GetLattice()->CalcPeaks(m_latticecommon, true);
+	if(m_sceneProjRecip.GetLattice())
+	{
+		m_sceneProjRecip.GetLattice()->SetProjection(proj);
+		m_sceneProjRecip.GetLattice()->CalcPeaks(m_latticecommon, true);
+	}
 }
 
 

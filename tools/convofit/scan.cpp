@@ -54,7 +54,7 @@ bool save_file(const char* pcFile, const Scan& sc)
 }
 
 
-bool load_file(std::vector<std::string> vecFiles, Scan& scan, bool bNormToMon, const Filter& filter)
+bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormToMon, const Filter& filter)
 {
 	if(!vecFiles.size()) return 0;
 	tl::log_info("Loading \"", vecFiles[0], "\".");

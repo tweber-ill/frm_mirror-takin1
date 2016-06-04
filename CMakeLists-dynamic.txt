@@ -105,6 +105,7 @@ add_executable(takin
 	tools/monteconvo/sqw.cpp tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
 	tools/monteconvo/sqw_py.cpp
 
+	tools/convofit/scan.cpp
 	tools/scanviewer/scanviewer.cpp
 
 	dialogs/SettingsDlg.cpp dialogs/FilePreviewDlg.cpp

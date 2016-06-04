@@ -99,7 +99,7 @@ struct Scan
 };
 
 
-extern bool load_file(std::vector<std::string> vecFiles, Scan& scan,
+extern bool load_file(const std::vector<std::string>& vecFiles, Scan& scan,
 	bool bNormToMon=1, const Filter& filter = Filter());
 extern bool load_file(const char* pcFile, Scan& scan,
 	bool bNormToMon=1, const Filter& filter=Filter());

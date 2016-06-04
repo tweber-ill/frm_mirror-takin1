@@ -71,6 +71,7 @@ add_executable(takin
 	tools/monteconvo/ConvoDlg.cpp tools/monteconvo/SqwParamDlg.cpp tools/monteconvo/TASReso.cpp
 	tools/monteconvo/sqw.cpp tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
 
+	tools/convofit/scan.cpp
 	tools/scanviewer/scanviewer.cpp
 
 	dialogs/SettingsDlg.cpp dialogs/FilePreviewDlg.cpp
