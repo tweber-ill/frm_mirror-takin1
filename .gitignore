@@ -42,4 +42,11 @@ res/*
 !res/q.svg
 *.htm
 *.html
+!doc/takin.html
+!doc/basics.html
+!doc/reso.html
+!doc/convo.html
+!doc/fit.html
 takin.log
+*.qch
+*.qhc

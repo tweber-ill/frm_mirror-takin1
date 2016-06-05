@@ -1,0 +1,25 @@
+<QtHelpProject version="1.0">
+
+	<namespace>tobis_stuff.takin</namespace>
+	<virtualFolder>help</virtualFolder>
+
+	<filterSection>
+
+		<toc>
+			<section title="Takin" ref="takin.html"/>
+			<section title="Basic Usage" ref="basics.html"/>
+			<section title="Resolution Calculation" ref="reso.html"/>
+			<section title="Resolution Convolution" ref="convo.html"/>
+			<section title="Convolution Fitting" ref="fit.html"/>
+		</toc>
+
+		<keywords>
+		</keywords>
+
+		<files>
+			<file>*.html</file>
+		</files>
+
+	</filterSection>
+
+</QtHelpProject>

@@ -271,7 +271,9 @@ OBJ_TAZ += obj/SgListDlg.o obj/spacegroup.o
 
 .PHONY: all clean
 
-all: takin  montereso  monteconvo xmonteconvo posextract  scanviewer  gentab sglist sfact  convofit convoseries reso
+all: takin  montereso  monteconvo xmonteconvo posextract \
+	scanviewer  gentab sglist sfact  convofit convoseries reso \
+	doc
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -328,6 +330,11 @@ gentab: ${OBJ_GENTAB}
 sfact: ${OBJ_SFACT}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/sfact $+ \
 		${STD_LIBS} ${BASIC_LIBS} -lclipper-core
+
+doc: doc/takin.qhcp doc/takin.qhp
+	qcollectiongenerator doc/takin.qhcp -o doc/takin.qhc
+	cp -v doc/takin.qhc res/
+	cp -v doc/takin.qch res/
 
 
 # -----------------------------------------------------------------------------

@@ -16,9 +16,9 @@
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
-#include <QMessageBox>
 #include <QFileDialog>
 #include <QScrollBar>
+#include <QMessageBox>
 
 #include "tlibs/math/lattice.h"
 #include "tlibs/string/spec_char.h"
@@ -568,6 +568,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	// help menu
 	QMenu *pMenuHelp = new QMenu("Help", this);
 
+	QAction *pHelp = new QAction("Show Help...", this);
+	pHelp->setIcon(load_icon("res/help-browser.svg"));
+	pMenuHelp->addAction(pHelp);
+
+	pMenuHelp->addSeparator();
+
 	QAction *pAboutQt = new QAction("About Qt...", this);
 	//pAboutQt->setIcon(QIcon::fromTheme("help-about"));
 	pMenuHelp->addAction(pAboutQt);
@@ -658,6 +664,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	if(pFormfactor)
 		QObject::connect(pFormfactor, SIGNAL(triggered()), this, SLOT(ShowFormfactorDlg()));
 
+	QObject::connect(pHelp, SIGNAL(triggered()), this, SLOT(ShowHelp()));
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
@@ -1266,7 +1273,7 @@ void TazDlg::RealContextMenu(const QPoint& _pt)
 
 
 //--------------------------------------------------------------------------------
-// about dialog
+// about & help dialogs
 
 void TazDlg::ShowAbout()
 {
@@ -1275,6 +1282,26 @@ void TazDlg::ShowAbout()
 
 	m_pAboutDlg->show();
 	m_pAboutDlg->activateWindow();
+}
+
+void TazDlg::ShowHelp()
+{
+	std::string strHelpProg = "assistant";
+	std::string strHelpProgVer = strHelpProg + "-qt" + tl::var_to_str(QT_VER);
+
+	std::string strHelp = find_resource("res/takin.qhc");
+	if(strHelp == "")
+	{
+		QMessageBox::critical(this, "Error", "Help file could not be found.");
+		return;
+	}
+
+	if(std::system((strHelpProgVer + " -collectionFile " + strHelp + "&").c_str()) == 0)
+		return;
+	if(std::system((strHelpProg + " -collectionFile " + strHelp + "&").c_str()) == 0)
+		return;
+
+	QMessageBox::critical(this, "Error", "Help viewer could not be started.");
 }
 
 #include "taz.moc"

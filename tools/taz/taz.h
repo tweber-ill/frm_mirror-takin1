@@ -213,6 +213,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void RecipContextMenu(const QPoint&);
 		void RealContextMenu(const QPoint&);
 
+		void ShowHelp();
 		void ShowAbout();
 
 		void New();
