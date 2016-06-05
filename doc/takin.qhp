@@ -9,7 +9,9 @@
 			<section title="Takin" ref="takin.html"/>
 			<section title="Basic Usage" ref="basics.html"/>
 			<section title="Resolution Calculation" ref="reso.html"/>
-			<section title="Resolution Convolution" ref="convo.html"/>
+			<section title="Resolution Convolution" ref="convo.html">
+				<section title="S(q,w) models" ref="reso-sqw.html"/>
+			</section>
 			<section title="Convolution Fitting" ref="fit.html"/>
 		</toc>
 

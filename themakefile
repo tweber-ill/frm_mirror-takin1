@@ -331,7 +331,7 @@ sfact: ${OBJ_SFACT}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/sfact $+ \
 		${STD_LIBS} ${BASIC_LIBS} -lclipper-core
 
-doc: doc/takin.qhcp doc/takin.qhp
+doc: doc/takin.qhcp doc/takin.qhp doc/*.html
 	qcollectiongenerator doc/takin.qhcp -o doc/takin.qhc
 	cp -v doc/takin.qhc res/
 	cp -v doc/takin.qch res/
