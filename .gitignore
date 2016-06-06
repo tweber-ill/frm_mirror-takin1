@@ -47,6 +47,7 @@ res/*
 !doc/reso.html
 !doc/convo.html
 !doc/fit.html
+!doc/reso-sqw.html
 takin.log
 *.qch
 *.qhc

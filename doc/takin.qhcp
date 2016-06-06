@@ -23,7 +23,7 @@
 		<homePage>about:blank</homePage>
 
 		<aboutMenuText> <text>About Takin...</text> </aboutMenuText>
-		<aboutDialog> <file>takin.txt</file> </aboutDialog>
+		<aboutDialog> <file>takin_info.txt</file> </aboutDialog>
 
 	</assistant>
 
