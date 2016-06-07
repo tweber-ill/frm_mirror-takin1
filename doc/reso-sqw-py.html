@@ -15,7 +15,12 @@
 	and returns a single floating-point value S, the dynamical structure factor.
 	The function is called for every Monte-Carlo point.
 
+	<p>All global variables that are defined in an S(q,w) Python module are made
+	available as fit parameters for the convolution fitter.
+
+
 	<p>Here's a minimal example of the interface:
+
 	<code><pre>
 	def TakinInit():
 	    # reinitialise variables here
@@ -26,6 +31,7 @@
 	    # calculate S here
 	    return S
 	</pre></code>
+
 
 </body>
 
