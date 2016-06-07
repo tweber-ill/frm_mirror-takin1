@@ -48,6 +48,8 @@ res/*
 !doc/convo.html
 !doc/fit.html
 !doc/reso-sqw.html
+!doc/reso-sqw-native.html
+!doc/reso-sqw-py.html
 takin.log
 *.qch
 *.qhc

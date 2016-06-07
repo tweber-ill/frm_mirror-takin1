@@ -42,7 +42,7 @@ static t_mapSqw g_mapSqw =
 	{ "phonon", t_mapSqw::mapped_type {
 		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 		{ return std::make_shared<SqwPhonon>(strCfgFile.c_str()); }, 
-		"Phonon Model" } },
+		"Simple Phonon Model" } },
 #ifndef NO_PY
 	{ "py", t_mapSqw::mapped_type {
 		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>

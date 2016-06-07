@@ -4,7 +4,7 @@ a = 12.3
 b = np.array([12., 34., 56.])
 str = "Test"
 
-def Sqw(h,k,l,E):
+def TakinSqw(h,k,l,E):
 	print("in tstsqw.py: in Sqw")
 	return h*k*l*E + a
 
