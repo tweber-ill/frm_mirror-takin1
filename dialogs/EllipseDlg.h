@@ -33,8 +33,8 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		bool m_bReady = 0;
 		std::vector<std::unique_ptr<QwtPlotWrapper>> m_vecplotwrap;
 
-		std::vector<struct Ellipse<t_real_reso>> m_elliProj;
-		std::vector<struct Ellipse<t_real_reso>> m_elliSlice;
+		std::vector<struct Ellipse2d<t_real_reso>> m_elliProj;
+		std::vector<struct Ellipse2d<t_real_reso>> m_elliSlice;
 
 		std::vector<std::vector<t_real_reso> > m_vecXCurvePoints;
 		std::vector<std::vector<t_real_reso> > m_vecYCurvePoints;

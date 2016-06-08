@@ -8,6 +8,16 @@
 #ifndef __TAZ_SCATT_TRIAG_H__
 #define __TAZ_SCATT_TRIAG_H__
 
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsItem>
+#include <QGraphicsSceneDragDropEvent>
+#include <QGraphicsTextItem>
+#include <QWheelEvent>
+#if QT_VER>=5
+	#include <QtWidgets>
+#endif
+
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/lattice.h"
 #include "tlibs/math/powder.h"
@@ -20,16 +30,6 @@
 #include "libs/spacegroups/spacegroup.h"
 #include "libs/formfactors/formfact.h"
 #include "libs/spacegroups/latticehelper.h"
-
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QGraphicsItem>
-#include <QGraphicsSceneDragDropEvent>
-#include <QGraphicsTextItem>
-#include <QWheelEvent>
-#if QT_VER>=5
-	#include <QtWidgets>
-#endif
 
 #include "tasoptions.h"
 #include "dialogs/RecipParamDlg.h"	// for RecipParams struct

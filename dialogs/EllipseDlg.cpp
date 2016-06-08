@@ -158,7 +158,7 @@ void EllipseDlg::Calc()
 			Q_avg = ublas::zero_vector<t_real_reso>(Q_avg.size());
 
 
-		std::vector<std::future<Ellipse<t_real_reso>>> tasks_ell_proj, tasks_ell_slice;
+		std::vector<std::future<Ellipse2d<t_real_reso>>> tasks_ell_proj, tasks_ell_slice;
 
 		for(unsigned int iEll=0; iEll<4; ++iEll)
 		{
@@ -198,11 +198,11 @@ void EllipseDlg::Calc()
 			const int *iP = iParams[0][iEll];
 			const int *iS = iParams[1][iEll];
 
-			std::future<Ellipse<t_real_reso>> ell_proj =
+			std::future<Ellipse2d<t_real_reso>> ell_proj =
 				std::async(std::launch::deferred|std::launch::async,
 				[=, &reso, &Q_avg]()
 				{ return ::calc_res_ellipse<t_real_reso>(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
-			std::future<Ellipse<t_real_reso>> ell_slice =
+			std::future<Ellipse2d<t_real_reso>> ell_slice =
 				std::async(std::launch::deferred|std::launch::async,
 				[=, &reso, &Q_avg]()
 				{ return ::calc_res_ellipse<t_real_reso>(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });

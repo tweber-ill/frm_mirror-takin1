@@ -30,7 +30,7 @@ namespace ublas = boost::numeric::ublas;
 
 
 template<class t_real = t_real_reso>
-struct Ellipse
+struct Ellipse2d
 {
 	tl::QuadEllipsoid<t_real> quad;
 
@@ -47,7 +47,7 @@ struct Ellipse
 };
 
 template<class t_real = t_real_reso>
-struct Ellipsoid
+struct Ellipsoid3d
 {
 	tl::QuadEllipsoid<t_real> quad;
 
@@ -133,7 +133,7 @@ ublas::vector<T> ellipsoid_gauss_int(const ublas::vector<T>& vec,
 // --------------------------------------------------------------------------------
 
 template<class t_real = t_real_reso>
-std::ostream& operator<<(std::ostream& ostr, const Ellipse<t_real>& ell)
+std::ostream& operator<<(std::ostream& ostr, const Ellipse2d<t_real>& ell)
 {
 	ostr << "phi = " << tl::r2d(ell.phi) << " deg \n";
 	ostr << "slope = " << ell.slope << " deg \n";
@@ -171,7 +171,7 @@ std::ostream& operator<<(std::ostream& ostr, const Ellipsoid4d<t_real>& ell)
 // --------------------------------------------------------------------------------
 
 template<class t_real>
-ublas::vector<t_real> Ellipse<t_real>::operator()(t_real t) const
+ublas::vector<t_real> Ellipse2d<t_real>::operator()(t_real t) const
 {
 	ublas::vector<t_real> vec(2);
 
@@ -184,7 +184,7 @@ ublas::vector<t_real> Ellipse<t_real>::operator()(t_real t) const
 }
 
 template<class t_real>
-void Ellipse<t_real>::GetCurvePoints(std::vector<t_real>& x, std::vector<t_real>& y,
+void Ellipse2d<t_real>::GetCurvePoints(std::vector<t_real>& x, std::vector<t_real>& y,
 	std::size_t iPoints, t_real *pLRTB)
 {
 	x.resize(iPoints);
@@ -251,11 +251,11 @@ static const std::string& ellipse_labels(int iCoord, EllipseCoordSys sys)
  */
 
 template<class t_real = t_real_reso>
-Ellipse<t_real> calc_res_ellipse(const ublas::matrix<t_real>& reso,
+Ellipse2d<t_real> calc_res_ellipse(const ublas::matrix<t_real>& reso,
 	const ublas::vector<t_real>& Q_avg,
 	int iX, int iY, int iInt, int iRem1, int iRem2)
 {
-	Ellipse<t_real> ell;
+	Ellipse2d<t_real> ell;
 	ell.quad.SetDim(4);
 	ell.quad.SetQ(reso);
 
@@ -363,11 +363,11 @@ Ellipse<t_real> calc_res_ellipse(const ublas::matrix<t_real>& reso,
 // --------------------------------------------------------------------------------
 
 template<class t_real = t_real_reso>
-Ellipsoid<t_real> calc_res_ellipsoid(const ublas::matrix<t_real>& reso,
+Ellipsoid3d<t_real> calc_res_ellipsoid(const ublas::matrix<t_real>& reso,
 	const ublas::vector<t_real>& Q_avg,
 	int iX, int iY, int iZ, int iInt, int iRem)
 {
-	Ellipsoid<t_real> ell;
+	Ellipsoid3d<t_real> ell;
 
 	ell.quad.SetDim(4);
 	ell.quad.SetQ(reso);

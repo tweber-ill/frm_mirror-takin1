@@ -24,8 +24,8 @@ class EllipseDlg3D : public QDialog
 {Q_OBJECT
 	protected:
 		std::vector<PlotGl*> m_pPlots;
-		std::vector<Ellipsoid<t_real_reso>> m_elliProj;
-		std::vector<Ellipsoid<t_real_reso>> m_elliSlice;
+		std::vector<Ellipsoid3d<t_real_reso>> m_elliProj;
+		std::vector<Ellipsoid3d<t_real_reso>> m_elliSlice;
 
 		QComboBox *m_pComboCoord = nullptr;
 		QSettings *m_pSettings = nullptr;

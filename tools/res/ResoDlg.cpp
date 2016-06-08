@@ -472,7 +472,7 @@ void ResoDlg::Calc()
 		{
 			// --------------------------------------------------------------------------------
 			// Vanadium width
-			struct Ellipse<t_real_reso> ellVa =
+			struct Ellipse2d<t_real_reso> ellVa =
 				calc_res_ellipse<t_real_reso>(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
 			//std::cout << ellVa.phi/M_PI*180. << std::endl;
 			t_real_reso dVanadiumFWHM_Q = ellVa.x_hwhm*2.;
