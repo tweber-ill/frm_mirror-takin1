@@ -68,6 +68,28 @@
 		TA2_S0          = 1
 		</pre></code> </p>
 
+
+
+	<h3>Simple Magnon Model</h3>
+		<p>The simple magnon model creates quadratic (ferromagnetic) or linear (antiferromagnetic)
+		branches spherically around a given Bragg peak.</p>
+		
+		<p>In the following input file we define magnons with a stiffness of D=20 around the 
+		(110) peak:
+
+		<code><pre>
+		disp            = 0
+		G               = 1,  1, 0
+
+		D               = 20
+		offs            = 0.
+		E_HWHM          = 0.05
+		q_HWHM          = 0.05
+		S0              = 1
+
+		num_points      = 50
+	</pre></code> </p>
+
 </body>
 
 </html>
