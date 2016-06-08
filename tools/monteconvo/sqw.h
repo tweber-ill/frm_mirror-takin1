@@ -39,7 +39,10 @@ struct ElastPeak
 	t_real_reso dS;
 };
 
-// Test S(q,w): only bragg peaks
+
+/**
+ * Bragg peaks
+ */
 class SqwElast : public SqwBase
 {
 protected:
@@ -63,6 +66,9 @@ public:
 // -----------------------------------------------------------------------------
 
 
+/**
+ * tabulated model
+ */
 class SqwKdTree : public SqwBase
 {
 protected:
@@ -86,6 +92,9 @@ public:
 // -----------------------------------------------------------------------------
 
 
+/**
+ * simple phonon model
+ */
 class SqwPhonon : public SqwBase
 {
 private:
@@ -139,6 +148,58 @@ public:
 	const ublas::vector<t_real_reso>& GetLA() const { return m_vecLA; }
 	const ublas::vector<t_real_reso>& GetTA1() const { return m_vecTA1; }
 	const ublas::vector<t_real_reso>& GetTA2() const { return m_vecTA2; }
+
+	virtual std::vector<SqwBase::t_var> GetVars() const override;
+	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
+
+	virtual SqwBase* shallow_copy() const override;
+};
+
+
+// -----------------------------------------------------------------------------
+
+
+/**
+ * simple magnon model
+ */
+class SqwMagnon : public SqwBase
+{
+private:
+	SqwMagnon() {};
+
+protected:
+	static t_real_reso ferro_disp(t_real_reso dq, t_real_reso dD, t_real_reso doffs);
+	static t_real_reso antiferro_disp(t_real_reso dq, t_real_reso dD, t_real_reso doffs);
+
+	void create();
+	void destroy();
+
+protected:
+#ifdef USE_RTREE
+	std::shared_ptr<tl::Rt<t_real_reso, 3, RT_ELEMS>> m_rt;
+#else
+	std::shared_ptr<tl::Kd<t_real_reso>> m_kd;
+#endif
+
+	unsigned short m_iWhichDisp = 0;		// 0: ferro, 1: antiferro
+	unsigned int m_iNumPoints = 100;
+
+	ublas::vector<t_real_reso> m_vecBragg;
+
+	t_real_reso m_dD = 1., m_dOffs = 0.;
+	t_real_reso m_dE_HWHM = 0.1, m_dq_HWHM = 0.1;
+	t_real_reso m_dS0 = 1.;
+
+	t_real_reso m_dIncAmp = 0., m_dIncSig = 0.1;
+	t_real_reso m_dT = 300.;
+
+public:
+	SqwMagnon(const char* pcFile);
+	virtual ~SqwMagnon() = default;
+
+	virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
+
+	const ublas::vector<t_real_reso>& GetBragg() const { return m_vecBragg; }
 
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;

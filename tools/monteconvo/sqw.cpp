@@ -8,6 +8,7 @@
 #include "sqw.h"
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
+#include "tlibs/math/math.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/neutrons.hpp"
 #include <fstream>
@@ -208,6 +209,32 @@ SqwBase* SqwKdTree::shallow_copy() const
 
 //------------------------------------------------------------------------------
 
+template<class t_vec>
+static std::string vec_to_str(const t_vec& vec)
+{
+	std::ostringstream ostr;
+	for(const typename t_vec::value_type& t : vec)
+		ostr << t << " ";
+	return ostr.str();
+}
+
+template<class t_vec>
+static t_vec str_to_vec(const std::string& str)
+{
+	typedef typename t_vec::value_type T;
+
+	std::vector<T> vec0;
+	tl::get_tokens<T, std::string, std::vector<T>>(str, " \t", vec0);
+
+	t_vec vec(vec0.size());
+	for(unsigned int i=0; i<vec0.size(); ++i)
+		vec[i] = vec0[i];
+	return vec;
+}
+
+
+//------------------------------------------------------------------------------
+
 
 t_real SqwPhonon::disp(t_real dq, t_real da, t_real df)
 {
@@ -336,14 +363,17 @@ SqwPhonon::SqwPhonon(const ublas::vector<t_real>& vecBragg,
 	t_real dT)
 		: m_vecBragg(vecBragg), m_vecLA(vecBragg),
 		m_vecTA1(vecTA1), m_vecTA2(vecTA2),
-		m_dLA_amp(dLA_amp), m_dLA_freq(dLA_freq), m_dLA_S0(dLA_S0),
+		m_dLA_amp(dLA_amp), m_dLA_freq(dLA_freq),
 		m_dLA_E_HWHM(dLA_E_HWHM), m_dLA_q_HWHM(dLA_q_HWHM),
+		m_dLA_S0(dLA_S0),
 
-		m_dTA1_amp(dTA1_amp), m_dTA1_freq(dTA1_freq), m_dTA1_S0(dTA1_S0),
+		m_dTA1_amp(dTA1_amp), m_dTA1_freq(dTA1_freq),
 		m_dTA1_E_HWHM(dTA1_E_HWHM), m_dTA1_q_HWHM(dTA1_q_HWHM),
+		m_dTA1_S0(dTA1_S0),
 
-		m_dTA2_amp(dTA2_amp), m_dTA2_freq(dTA2_freq), m_dTA2_S0(dTA2_S0),
+		m_dTA2_amp(dTA2_amp), m_dTA2_freq(dTA2_freq), 
 		m_dTA2_E_HWHM(dTA2_E_HWHM), m_dTA2_q_HWHM(dTA2_q_HWHM),
+		m_dTA2_S0(dTA2_S0),
 
 		m_dT(dT)
 {
@@ -466,30 +496,6 @@ t_real SqwPhonon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 	return dS * std::abs(tl::DHO_model<t_real>(dE, dT, dE0, dE_HWHM, 1., 0.))
 		* tl::gauss_model<t_real>(dqDist, 0., dQ_HWHM*tl::HWHM2SIGMA, 1., 0.)
 		+ dInc;
-}
-
-
-template<class t_vec>
-static std::string vec_to_str(const t_vec& vec)
-{
-	std::ostringstream ostr;
-	for(const typename t_vec::value_type& t : vec)
-		ostr << t << " ";
-	return ostr.str();
-}
-
-template<class t_vec>
-static t_vec str_to_vec(const std::string& str)
-{
-	typedef typename t_vec::value_type T;
-
-	std::vector<T> vec0;
-	tl::get_tokens<T, std::string, std::vector<T>>(str, " \t", vec0);
-
-	t_vec vec(vec0.size());
-	for(unsigned int i=0; i<vec0.size(); ++i)
-		vec[i] = vec0[i];
-	return vec;
 }
 
 std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
@@ -632,5 +638,257 @@ SqwBase* SqwPhonon::shallow_copy() const
 	pCpy->m_dIncSig = m_dIncSig;
 
 	pCpy->m_dT = m_dT;
+	return pCpy;
+}
+
+
+//------------------------------------------------------------------------------
+
+
+t_real SqwMagnon::ferro_disp(t_real dq, t_real dD, t_real doffs)
+{
+	return dq*dq * dD + doffs;
+}
+
+t_real SqwMagnon::antiferro_disp(t_real dq, t_real dD, t_real doffs)
+{
+	return std::abs(dq)*dD + doffs;
+}
+
+void SqwMagnon::create()
+{
+#ifdef USE_RTREE
+	m_rt = std::make_shared<tl::Rt<t_real,3,RT_ELEMS>>();
+#else
+	m_kd = std::make_shared<tl::Kd<t_real>>();
+#endif
+
+	destroy();
+
+	if(m_vecBragg.size() == 0)
+	{
+		m_bOk = 0;
+		return;
+	}
+
+	std::list<std::vector<t_real>> lst;
+
+	const t_real MAX_Q = 1.;
+
+	for(t_real q=0.; q<MAX_Q; q += MAX_Q/t_real(m_iNumPoints))
+	{
+		t_real dE = 0.;
+		switch(m_iWhichDisp)
+		{
+			case 0: dE = ferro_disp(q, m_dD, m_dOffs); break;
+			case 1: dE = antiferro_disp(q, m_dD, m_dOffs); break;
+		}
+
+		for(unsigned int iPhi=0; iPhi<m_iNumPoints; ++iPhi)
+		{
+			for(unsigned int iTh=0; iTh<m_iNumPoints; ++iTh)
+			{
+				t_real phi = tl::lerp(0., 2.*tl::get_pi<t_real>(), t_real(iPhi)/t_real(m_iNumPoints));
+				t_real theta = tl::lerp(0., tl::get_pi<t_real>(), t_real(iTh)/t_real(m_iNumPoints));
+
+				t_real qx, qy, qz;
+				std::tie(qx, qy, qz) = tl::sph_to_cart(q, phi, theta);
+				qx += m_vecBragg[0];
+				qy += m_vecBragg[1];
+				qz += m_vecBragg[2];
+
+				lst.push_back(std::vector<t_real>({qx, qy, qz, dE, m_dS0, m_dE_HWHM, m_dq_HWHM}));
+			}
+		}
+	}
+
+	tl::log_info("Generated ", lst.size(), " S(q,w) points.");
+#ifdef USE_RTREE
+	m_rt->Load(lst);
+	tl::log_info("Generated R* tree.");
+#else
+	m_kd->Load(lst, 3);
+	tl::log_info("Generated k-d tree.");
+#endif
+
+	m_bOk = 1;
+}
+
+void SqwMagnon::destroy()
+{
+#ifdef USE_RTREE
+	m_rt->Unload();
+#else
+	m_kd->Unload();
+#endif
+}
+
+SqwMagnon::SqwMagnon(const char* pcFile)
+{
+	std::ifstream ifstr(pcFile);
+	if(!ifstr)
+	{
+		tl::log_err("Cannot open magnon config file \"", pcFile, "\".");
+		return;
+	}
+
+	std::string strLine;
+	while(std::getline(ifstr, strLine))
+	{
+		std::vector<std::string> vecToks;
+		tl::get_tokens<std::string>(strLine, std::string("=,"), vecToks);
+		std::for_each(vecToks.begin(), vecToks.end(), [](std::string& str) {tl::trim(str); });
+
+		if(vecToks.size() == 0) continue;
+
+		//for(const auto& tok : vecToks) std::cout << tok << ", ";
+		//std::cout << std::endl;
+
+		if(vecToks[0] == "num_points") m_iNumPoints = tl::str_to_var<unsigned int>(vecToks[1]);
+
+		else if(vecToks[0] == "G") m_vecBragg = tl::make_vec({tl::str_to_var_parse<t_real>(vecToks[1]), tl::str_to_var_parse<t_real>(vecToks[2]), tl::str_to_var_parse<t_real>(vecToks[3])});
+		else if(vecToks[0] == "disp") m_iWhichDisp = tl::str_to_var<decltype(m_iWhichDisp)>(vecToks[1]);
+
+		else if(vecToks[0] == "D") m_dD = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "offs") m_dOffs = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "E_HWHM") m_dE_HWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "q_HWHM") m_dq_HWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "S0") m_dS0 = tl::str_to_var_parse<t_real>(vecToks[1]);
+
+		else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var_parse<t_real>(vecToks[1]);
+		else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var_parse<t_real>(vecToks[1]);
+
+		else if(vecToks[0] == "T") m_dT = tl::str_to_var_parse<t_real>(vecToks[1]);
+	}
+
+	create();
+}
+
+t_real SqwMagnon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
+{
+	std::vector<t_real> vechklE = {dh, dk, dl, dE};
+#ifdef USE_RTREE
+	if(!m_rt->IsPointInGrid(vechklE)) return 0.;
+	std::vector<t_real> vec = m_rt->GetNearestNode(vechklE);
+#else
+	if(!m_kd->IsPointInGrid(vechklE)) return 0.;
+	std::vector<t_real> vec = m_kd->GetNearestNode(vechklE);
+#endif
+
+	//std::cout << "query: " << dh << " " << dk << " " << dl << " " << dE << std::endl;
+	//std::cout << "nearest: " << vec[0] << " " << vec[1] << " " << vec[2] << " " << vec[3] << std::endl;
+
+	t_real dE0 = vec[3];
+	t_real dS0 = vec[4];
+	t_real dT = m_dT;
+	t_real dE_HWHM = vec[5];
+	t_real dQ_HWHM = vec[6];
+
+	t_real dqDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.)
+		+ std::pow(vec[1]-vechklE[1], 2.)
+		+ std::pow(vec[2]-vechklE[2], 2.));
+
+	t_real dInc = 0.;
+	if(!tl::float_equal<t_real>(m_dIncAmp, 0.))
+		dInc = tl::gauss_model<t_real>(dE, 0., m_dIncSig, m_dIncAmp, 0.);
+
+	t_real dS = dS0 * std::abs(tl::DHO_model<t_real>(dE, dT, dE0, dE_HWHM, 1., 0.))
+		* tl::gauss_model<t_real>(dqDist, 0., dQ_HWHM*tl::HWHM2SIGMA, 1., 0.)
+		+ dInc;
+
+	return dS;
+}
+
+std::vector<SqwBase::t_var> SqwMagnon::GetVars() const
+{
+	std::vector<SqwBase::t_var> vecVars;
+
+	vecVars.push_back(SqwBase::t_var{"num_points", "uint", tl::var_to_str(m_iNumPoints)});
+
+	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
+	vecVars.push_back(SqwBase::t_var{"disp", "uint", tl::var_to_str(m_iWhichDisp)});
+
+	vecVars.push_back(SqwBase::t_var{"D", "t_real", tl::var_to_str(m_dD)});
+	vecVars.push_back(SqwBase::t_var{"offs", "t_real", tl::var_to_str(m_dOffs)});
+	vecVars.push_back(SqwBase::t_var{"E_HWHM", "t_real", tl::var_to_str(m_dE_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"q_HWHM", "t_real", tl::var_to_str(m_dq_HWHM)});
+	vecVars.push_back(SqwBase::t_var{"S0", "t_real", tl::var_to_str(m_dS0)});
+
+	vecVars.push_back(SqwBase::t_var{"inc_amp", "t_real", tl::var_to_str(m_dIncAmp)});
+	vecVars.push_back(SqwBase::t_var{"inc_sig", "t_real", tl::var_to_str(m_dIncSig)});
+
+	vecVars.push_back(SqwBase::t_var{"T", "t_real", tl::var_to_str(m_dT)});
+
+	return vecVars;
+}
+
+void SqwMagnon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
+{
+	if(vecVars.size() == 0)
+		return;
+
+	for(const SqwBase::t_var& var : vecVars)
+	{
+		const std::string& strVar = std::get<0>(var);
+		const std::string& strVal = std::get<2>(var);
+
+		if(strVar == "num_points") m_iNumPoints = tl::str_to_var<decltype(m_iNumPoints)>(strVal);
+
+		else if(strVar == "G") m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
+		else if(strVar == "disp") m_iWhichDisp = tl::str_to_var<decltype(m_iWhichDisp)>(strVal);
+
+		else if(strVar == "D") m_dD = tl::str_to_var<decltype(m_dD)>(strVal);
+		else if(strVar == "offs") m_dOffs = tl::str_to_var<decltype(m_dOffs)>(strVal);
+		else if(strVar == "E_HWHM") m_dE_HWHM = tl::str_to_var<decltype(m_dE_HWHM)>(strVal);
+		else if(strVar == "q_HWHM") m_dq_HWHM = tl::str_to_var<decltype(m_dq_HWHM)>(strVal);
+		else if(strVar == "S0") m_dS0 = tl::str_to_var<decltype(m_dS0)>(strVal);
+
+		else if(strVar == "inc_amp") m_dIncAmp = tl::str_to_var<decltype(m_dIncAmp)>(strVal);
+		else if(strVar == "inc_sig") m_dIncSig = tl::str_to_var<decltype(m_dIncSig)>(strVal);
+
+		else if(strVar == "T") m_dT = tl::str_to_var<decltype(m_dT)>(strVal);
+	}
+
+	bool bRecreateTree = 0;
+
+	for(const SqwBase::t_var& var : vecVars)
+	{
+		const std::string& strVar = std::get<0>(var);
+		if(strVar != "T" && strVar.find("HWHM") == std::string::npos &&
+			strVar.find("inc") == std::string::npos &&
+			strVar.find("S0") == std::string::npos)
+			bRecreateTree = 1;
+	}
+
+	if(bRecreateTree)
+		create();
+}
+
+SqwBase* SqwMagnon::shallow_copy() const
+{
+	SqwMagnon *pCpy = new SqwMagnon();
+	*static_cast<SqwBase*>(pCpy) = *static_cast<const SqwBase*>(this);
+
+#ifdef USE_RTREE
+	pCpy->m_rt = m_rt;
+#else
+	pCpy->m_kd = m_kd;
+#endif
+	pCpy->m_iNumPoints = m_iNumPoints;
+
+	pCpy->m_vecBragg = m_vecBragg;
+	pCpy->m_iWhichDisp = m_iWhichDisp;
+
+	pCpy->m_dD = m_dD;
+	pCpy->m_dOffs = m_dOffs;
+	pCpy->m_dS0 = m_dS0;
+	pCpy->m_dE_HWHM = m_dE_HWHM;
+	pCpy->m_dq_HWHM = m_dq_HWHM;
+
+	pCpy->m_dIncAmp = m_dIncAmp;
+	pCpy->m_dIncSig = m_dIncSig;
+
+	pCpy->m_dT = m_dT;
+
 	return pCpy;
 }
