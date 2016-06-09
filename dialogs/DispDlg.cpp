@@ -192,7 +192,8 @@ void DispDlg::Calc()
 
 		// all atoms in super cell
 		std::tie(vecAtomsSC, vecJSC, vecIdxSC) =
-			generate_supercell(lattice, vecAtomsUC, vecJUC, iSC);
+			tl::generate_supercell<t_vec, std::vector, t_real>
+				(lattice, vecAtomsUC, vecJUC, iSC);
 		std::vector<std::string> vecNamesSC;
 		for(std::size_t iIdxSC : vecIdxSC)
 			vecNamesSC.push_back(m_vecAtoms[vecIdxUC[iIdxSC]].strAtomName);
@@ -280,7 +281,8 @@ void DispDlg::Calc()
 			t_real tPos = t_real(iPt)/t_real(NUM_POINTS-1) * 1.5;
 			t_vec vecq = tl::make_vec<t_vec>({1.,0.,0.}) * tPos;
 			t_vec vecq_AA = matB * vecq;
-			t_real dE = tl::ferromag(vecAtomsNN, vecJNN, vecq_AA, dS);
+			t_real dE = tl::ferromag<t_vec, t_real, std::vector>
+				(vecAtomsNN, vecJNN, vecq_AA, dS);
 
 			m_vecFerroQ.push_back(ublas::norm_2(vecq));
 			m_vecFerroE.push_back(dE);

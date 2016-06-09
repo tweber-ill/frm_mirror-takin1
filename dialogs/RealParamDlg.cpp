@@ -106,7 +106,8 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 		// all atoms in super cell
 		std::vector<std::complex<t_real>> vecDummy;
 		std::tie(vecAtomsSC, std::ignore, vecIdxSC) =
-			generate_supercell(latt, vecAtomsUC, vecDummy, iSC);
+			tl::generate_supercell<t_vec, std::vector, t_real>
+				(latt, vecAtomsUC, vecDummy, iSC);
 		std::vector<std::string> vecNamesSC;
 		for(std::size_t iIdxSC : vecIdxSC)
 			vecNamesSC.push_back((*pAtoms)[vecIdxUC[iIdxSC]].strAtomName);
