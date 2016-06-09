@@ -236,8 +236,8 @@ endif()
 # -----------------------------------------------------------------------------
 install(TARGETS takin DESTINATION bin)
 install(TARGETS convofit convoseries DESTINATION bin)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/res ${PROJECT_SOURCE_DIR}/test DESTINATION share/takin)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/res ${PROJECT_SOURCE_DIR}/examples ${PROJECT_SOURCE_DIR}/doc
+    DESTINATION share/takin)
 install(FILES ${PROJECT_SOURCE_DIR}/COPYING ${PROJECT_SOURCE_DIR}/AUTHORS ${PROJECT_SOURCE_DIR}/LICENSES
-	DESTINATION share/takin
-)
+	DESTINATION share/takin)
 # -----------------------------------------------------------------------------

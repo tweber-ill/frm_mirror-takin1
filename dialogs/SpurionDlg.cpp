@@ -20,7 +20,7 @@ static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
 
 
 SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
-		: QDialog(pParent), m_pSettings(pSett)
+	: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
 	if(m_pSettings)

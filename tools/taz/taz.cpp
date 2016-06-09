@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <vector>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include <QApplication>
 #include <QMenuBar>
@@ -19,6 +20,8 @@
 #include <QFileDialog>
 #include <QScrollBar>
 #include <QMessageBox>
+#include <QUrl>
+#include <QDesktopServices>
 
 #include "tlibs/math/lattice.h"
 #include "tlibs/string/spec_char.h"
@@ -28,6 +31,7 @@
 #include "tlibs/log/log.h"
 
 namespace algo = boost::algorithm;
+namespace fs = boost::filesystem;
 
 using t_real = t_real_glob;
 const std::string TazDlg::s_strTitle = "Takin";
@@ -1299,6 +1303,15 @@ void TazDlg::ShowHelp()
 	if(std::system((strHelpProgVer + " -collectionFile " + strHelp + "&").c_str()) == 0)
 		return;
 	if(std::system((strHelpProg + " -collectionFile " + strHelp + "&").c_str()) == 0)
+		return;
+
+	tl::log_warn("Help viewer not found, trying associated application.");
+
+
+	// try opening html files directly
+	std::string strHelpHtml = find_resource("doc/index_help.html");
+	std::string strFile = "file:///" + fs::absolute(strHelpHtml).string();
+	if(QDesktopServices::openUrl(QUrl(strFile.c_str())))
 		return;
 
 	QMessageBox::critical(this, "Error", "Help viewer could not be started.");
