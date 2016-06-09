@@ -26,11 +26,11 @@ struct ResoResults
 
 	ublas::matrix<t_real_reso> reso;	// quadratic part of quadric
 	ublas::vector<t_real_reso> reso_v;	// linear part of quadric
-	t_real_reso reso_s;			// constant part of quadric
+	t_real_reso reso_s;					// constant part of quadric
 
 	ublas::vector<t_real_reso> Q_avg;
-	t_real_reso dR0;			// resolution prefactor
-	t_real_reso dResVol;			// resolution volume in 1/A^3 * meV
+	t_real_reso dR0;		// resolution prefactor
+	t_real_reso dResVol;	// resolution volume in 1/A^3 * meV
 
 	t_real_reso dBraggFWHMs[4];
 };

@@ -338,7 +338,7 @@ void ConvoDlg::Start()
 			}
 		}
 
-		reso.SetAlgo(ResoAlgo(comboAlgo->currentIndex()));
+		reso.SetAlgo(ResoAlgo(comboAlgo->currentIndex()+1));
 		reso.SetKiFix(comboFixedK->currentIndex()==0);
 		reso.SetKFix(spinKfix->value());
 
