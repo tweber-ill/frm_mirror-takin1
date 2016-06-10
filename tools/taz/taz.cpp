@@ -417,6 +417,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	pRecipExport->setIcon(load_icon("res/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pRecipExport);
 
+	QAction *pProjExport = new QAction("Export Projection Graphics...", this);
+	pProjExport->setIcon(load_icon("res/image-x-generic.svg"));
+	m_pMenuViewRecip->addAction(pProjExport);
+
 #ifdef USE_GIL
 	QAction *pBZExport = new QAction("Export Brillouin Zone Image...", this);
 	pBZExport->setIcon(load_icon("res/image-x-generic.svg"));
@@ -633,6 +637,7 @@ TazDlg::TazDlg(QWidget* pParent)
 #endif
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
+	QObject::connect(pProjExport, SIGNAL(triggered()), this, SLOT(ExportProj()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
 	QObject::connect(pTofExport, SIGNAL(triggered()), this, SLOT(ExportTof()));
 	QObject::connect(pRealLatticeExport, SIGNAL(triggered()), this, SLOT(ExportRealLattice()));

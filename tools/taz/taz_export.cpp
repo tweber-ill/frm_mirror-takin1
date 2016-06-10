@@ -23,6 +23,7 @@ using t_real = t_real_glob;
 void TazDlg::ExportReal()
 {
 	TasLayout *pTas = m_sceneReal.GetTasLayout();
+	if(!pTas) return;
 
 	const t_real dZoom = pTas->GetZoom();
 	pTas->SetZoom(1.);
@@ -33,6 +34,7 @@ void TazDlg::ExportReal()
 void TazDlg::ExportTof()
 {
 	TofLayout *pTof = m_sceneTof.GetTofLayout();
+	if(!pTof) return;
 
 	const t_real dZoom = pTof->GetZoom();
 	pTof->SetZoom(1.);
@@ -43,6 +45,7 @@ void TazDlg::ExportTof()
 void TazDlg::ExportRealLattice()
 {
 	RealLattice *pLatt = m_sceneRealLattice.GetLattice();
+	if(!pLatt) return;
 
 	const t_real dZoom = pLatt->GetZoom();
 	pLatt->SetZoom(1.);
@@ -53,11 +56,23 @@ void TazDlg::ExportRealLattice()
 void TazDlg::ExportRecip()
 {
 	ScatteringTriangle *pTri = m_sceneRecip.GetTriangle();
+	if(!pTri) return;
 
 	const t_real dZoom = pTri->GetZoom();
 	pTri->SetZoom(1.);
 	ExportSceneSVG(m_sceneRecip);
 	pTri->SetZoom(dZoom);
+}
+
+void TazDlg::ExportProj()
+{
+	ProjLattice *pLatt = m_sceneProjRecip.GetLattice();
+	if(!pLatt) return;
+
+	const t_real dZoom = pLatt->GetZoom();
+	pLatt->SetZoom(1.);
+	ExportSceneSVG(m_sceneProjRecip);
+	pLatt->SetZoom(dZoom);
 }
 
 void TazDlg::ExportSceneSVG(QGraphicsScene& scene)

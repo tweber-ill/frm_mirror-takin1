@@ -231,6 +231,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ExportTof();
 		void ExportRealLattice();
 		void ExportRecip();
+		void ExportProj();
 		void ExportBZImage();
 		void ExportWSImage();
 		void ExportUCModel();
