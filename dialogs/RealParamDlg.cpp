@@ -130,7 +130,8 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 
 			// neighbours
 			std::vector<std::vector<std::size_t>> vecIdxNN =
-				tl::get_neighbours(vecAtomsSC, vecCentreAA, dEpsShell);
+				tl::get_neighbours<t_vec, std::vector, t_real>
+					(vecAtomsSC, vecCentreAA, dEpsShell);
 
 			if(vecIdxNN.size() > 1)
 			{

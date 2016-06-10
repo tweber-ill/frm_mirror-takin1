@@ -204,7 +204,8 @@ void DispDlg::Calc()
 
 		// neighbours
 		std::vector<std::vector<std::size_t>> vecIdxNN =
-			tl::get_neighbours(vecAtomsSC, vecCentre, dEpsShell);
+			tl::get_neighbours<t_vec, std::vector, t_real>
+				(vecAtomsSC, vecCentre, dEpsShell);
 		std::size_t iNumRows = 0;
 		for(const auto& vecIdxNNInner : vecIdxNN) iNumRows += vecIdxNNInner.size();
 

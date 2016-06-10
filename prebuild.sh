@@ -103,4 +103,17 @@ for hfile in ${hfiles[@]}; do
 done
 
 echo -e "--------------------------------------------------------------------------------"
+echo -e "\n"
+
+
+echo -e "--------------------------------------------------------------------------------"
+echo -e "building docs..."
+
+qcollectiongenerator ${TAKINROOT}/doc/takin.qhcp -o ${TAKINROOT}/doc/takin.qhc
+cp -v ${TAKINROOT}/doc/takin.qhc ${TAKINROOT}/res/
+cp -v ${TAKINROOT}/doc/takin.qch ${TAKINROOT}/res/
+
+echo -e "--------------------------------------------------------------------------------"
+
+
 exit 0

@@ -141,11 +141,11 @@ add_custom_target(prebuild-script
 
 
 # post-build
-add_custom_command(TARGET takin POST_BUILD
-	COMMAND qcollectiongenerator ${PROJECT_SOURCE_DIR}/doc/takin.qhcp -o ${PROJECT_SOURCE_DIR}/doc/takin.qhc
-		&& cp -v ${PROJECT_SOURCE_DIR}/doc/takin.qhc ${PROJECT_SOURCE_DIR}/res/
-		&& cp -v ${PROJECT_SOURCE_DIR}/doc/takin.qch ${PROJECT_SOURCE_DIR}/res/
-	MAIN_DEPENDENCY takin)
+#add_custom_command(TARGET takin POST_BUILD
+#	COMMAND qcollectiongenerator ${PROJECT_SOURCE_DIR}/doc/takin.qhcp -o ${PROJECT_SOURCE_DIR}/doc/takin.qhc
+#		&& cp -v ${PROJECT_SOURCE_DIR}/doc/takin.qhc ${PROJECT_SOURCE_DIR}/res/
+#		&& cp -v ${PROJECT_SOURCE_DIR}/doc/takin.qch ${PROJECT_SOURCE_DIR}/res/
+#	MAIN_DEPENDENCY takin)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
 	add_custom_command(TARGET takin POST_BUILD
