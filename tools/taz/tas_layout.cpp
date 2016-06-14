@@ -134,15 +134,14 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 			if(m_dMonoTwoTheta > tl::get_pi<t_real>()) m_dMonoTwoTheta -= 2.*tl::get_pi<t_real>();
 		}
 
-		//std::cout << m_dMonoTwoTheta/M_PI*180. << std::endl;
-
 
 		t_vec vecSampleAna =
 				ublas::prod(tl::rotation_matrix_2d(-dTwoTheta), vecMonoSample);
 		vecSampleAna /= ublas::norm_2(vecSampleAna);
 		vecSampleAna *= m_dLenSampleAna*m_dScaleFactor;
 
-		m_pAna->setPos(vec_to_qpoint(vecSample + vecSampleAna));
+		t_vec vecAnaNew = vecSample + vecSampleAna;
+		m_pAna->setPos(vec_to_qpoint(vecAnaNew));
 
 
 
@@ -153,7 +152,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 		vecAnaDet /= ublas::norm_2(vecAnaDet);
 		vecAnaDet *= m_dLenAnaDet*m_dScaleFactor;
 
-		m_pDet->setPos(vec_to_qpoint(vecAna+vecAnaDet));
+		m_pDet->setPos(vec_to_qpoint(vecAnaNew+vecAnaDet));
 
 
 		TriangleOptions opts;
@@ -250,8 +249,6 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 			if(m_dTwoTheta < -tl::get_pi<t_real>()) m_dTwoTheta += 2.*tl::get_pi<t_real>();
 			if(m_dTwoTheta > tl::get_pi<t_real>()) m_dTwoTheta -= 2.*tl::get_pi<t_real>();
 		}
-
-		//std::cout << m_dTwoTheta/M_PI*180. << std::endl;
 
 		TriangleOptions opts;
 		opts.bChangedTwoTheta = 1;
@@ -605,6 +602,7 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 	if(!m_pTas || !m_pTas->IsReady())
 		return;
 
+	//tl::log_debug("triangle changed");
 	m_bDontEmitChange = 1;
 	m_pTas->AllowChanges(0);
 
