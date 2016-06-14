@@ -6,7 +6,7 @@
  */
 
 #include "tlibs/helper/flags.h"
-#include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/neutrons.h"
 #include "tlibs/math/atoms.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"

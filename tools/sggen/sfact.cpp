@@ -11,7 +11,7 @@
 #include <sstream>
 #include "tlibs/math/atoms.h"
 #include "tlibs/math/lattice.h"
-#include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/neutrons.h"
 #include "tlibs/math/linalg_ops.h"
 #include "tlibs/string/string.h"
 #include "libs/spacegroups/spacegroup_clp.h"
@@ -137,7 +137,7 @@ void gen_atoms_sfact()
 		for(t_vec vecThisAtom : vecPos)
 		{
 			vecThisAtom.resize(3,1);
-			vecAllAtoms.push_back(matA * vecThisAtom);
+			vecAllAtoms.push_back(tl::mult<t_mat, t_vec>(matA, vecThisAtom));
 			vecScatlens.push_back(b);
 			vecAtomIndices.push_back(iAtom);
 		}
@@ -160,7 +160,7 @@ void gen_atoms_sfact()
 		std::cout << "Enter hkl: ";
 		std::cin >> h >> k >> l;
 
-		t_vec vecG = matB * tl::make_vec({h,k,l});
+		t_vec vecG = tl::mult<t_mat, t_vec>(matB, tl::make_vec({h,k,l}));
 		t_real dG = ublas::norm_2(vecG);
 		std::cout << "G = " << dG << " / A" << std::endl;
 

@@ -11,7 +11,7 @@
 #include "tlibs/math/atoms.h"
 #include "tlibs/math/nn.h"
 #include "tlibs/math/mag.h"
-#include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/neutrons.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
@@ -152,7 +152,7 @@ void DispDlg::Calc()
 		const t_mat matA = lattice.GetMetric();
 		const t_mat matB = recip.GetMetric();
 
-		t_vec vecCentre = matA*m_vecAtoms[iIdxCentre].vecPos;
+		t_vec vecCentre = tl::mult<t_mat,t_vec>(matA, m_vecAtoms[iIdxCentre].vecPos);
 		if(tl::is_nan_or_inf(vecCentre))
 		{
 			tl::log_err("Invalid centre.");
@@ -281,7 +281,7 @@ void DispDlg::Calc()
 		{
 			t_real tPos = t_real(iPt)/t_real(NUM_POINTS-1) * 1.5;
 			t_vec vecq = tl::make_vec<t_vec>({1.,0.,0.}) * tPos;
-			t_vec vecq_AA = matB * vecq;
+			t_vec vecq_AA = tl::mult<t_mat, t_vec>(matB, vecq);
 			t_real dE = tl::ferromag<t_vec, t_real, std::vector>
 				(vecAtomsNN, vecJNN, vecq_AA, dS);
 

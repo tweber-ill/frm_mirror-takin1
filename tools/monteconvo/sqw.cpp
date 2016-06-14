@@ -10,7 +10,7 @@
 #include "tlibs/log/log.h"
 #include "tlibs/math/math.h"
 #include "tlibs/math/linalg.h"
-#include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/neutrons.h"
 #include <fstream>
 #include <list>
 

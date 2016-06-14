@@ -187,7 +187,6 @@ add_executable(convofit
 	tlibs/log/log.cpp
 	tlibs/math/rand.cpp
 	#tlibs/file/loadinstr.cpp
-	#tlibs/fit/minuit.cpp
 	#libs/globals.cpp
 )
 

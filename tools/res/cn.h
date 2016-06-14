@@ -15,7 +15,7 @@
 #define __TAKIN_CN_H__
 
 #include "defs.h"
-#include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/neutrons.h"
 
 namespace units = boost::units;
 namespace codata = boost::units::si::constants::codata;

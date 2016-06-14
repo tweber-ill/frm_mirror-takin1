@@ -80,7 +80,7 @@ class TofLayout : public QGraphicsItem
 		t_real_glob GetLenSampleDet() const { return m_dLenSampleDet; }
 
 	protected:
-		QRectF boundingRect() const;
+		QRectF boundingRect() const override;
 
 	public:
 		TofLayout(TofLayoutScene& scene);

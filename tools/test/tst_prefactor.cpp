@@ -1,6 +1,6 @@
 // test prefactor of shirane formula A 4.65
 
-#include "../../tlibs/math/neutrons.hpp"
+#include "../../tlibs/math/neutrons.h"
 using namespace tl;
 using namespace tl::co;
 

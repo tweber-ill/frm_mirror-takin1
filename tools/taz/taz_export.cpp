@@ -257,7 +257,7 @@ void TazDlg::ExportUCModel()
 		vecCoord.resize(4,1); vecCoord[3] = 1.;
 
 		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
-		pTrafo->SetTrans(matGlobal * vecCoord);
+		pTrafo->SetTrans(tl::mult<t_mat, t_vec>(matGlobal, vecCoord));
 		tl::X3dSphere *pSphere = new tl::X3dSphere(0.1);
 		pSphere->SetColor(vecColors[iAtomType % vecColors.size()]);
 		pTrafo->AddChild(pSphere);

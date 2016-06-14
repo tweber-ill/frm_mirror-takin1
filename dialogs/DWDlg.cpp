@@ -8,7 +8,7 @@
 #include "DWDlg.h"
 
 #include "tlibs/string/string.h"
-#include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/neutrons.h"
 #include "tlibs/math/atoms.h"
 #include "tlibs/helper/array.h"
 

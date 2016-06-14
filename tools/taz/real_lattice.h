@@ -11,7 +11,7 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/lattice.h"
 #include "tlibs/math/bz.h"
-#include "tlibs/math/neutrons.hpp"
+#include "tlibs/math/neutrons.h"
 #include "tlibs/math/kd.h"
 
 #include "libs/globals.h"

@@ -121,7 +121,7 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 			pWidParent->setExpanded(1);
 
 			const t_vec& vecCentreFrac = atom.vecPos;
-			t_vec vecCentreAA = matA * vecCentreFrac;
+			t_vec vecCentreAA = tl::mult<t_mat, t_vec>(matA, vecCentreFrac);
 			if(tl::is_nan_or_inf(vecCentreFrac) || tl::is_nan_or_inf(vecCentreAA))
 			{
 				tl::log_err("Invalid centre.");
