@@ -212,9 +212,13 @@ bool TazDlg::Load(const char* pcFile)
 	if(bOk)
 		m_pBZ->setChecked(bBZEnabled!=0);
 
-	int bEwaldEnabled = xml.Query<int>((strXmlRoot + "recip/ewald_sphere").c_str(), 0, &bOk);
+	int iEwald = xml.Query<int>((strXmlRoot + "recip/ewald_sphere").c_str(), 0, &bOk);
 	if(bOk)
-		m_pEwaldSphere->setChecked(bEwaldEnabled!=0);
+	{
+		if(iEwald == EWALD_NONE) m_pEwaldSphereNone->setChecked(1);
+		else if(iEwald == EWALD_KI) m_pEwaldSphereKi->setChecked(1);
+		else if(iEwald == EWALD_KF) m_pEwaldSphereKf->setChecked(1);
+	}
 
 	int bWSEnabled = xml.Query<int>((strXmlRoot + "real/enable_ws").c_str(), 0, &bOk);
 	if(bOk)
@@ -393,8 +397,10 @@ bool TazDlg::Save()
 	bool bBZEnabled = m_pBZ->isChecked();
 	mapConf[strXmlRoot + "recip/enable_bz"] = (bBZEnabled ? "1" : "0");
 
-	bool bEwaldEnabled = m_pEwaldSphere->isChecked();
-	mapConf[strXmlRoot + "recip/ewald_sphere"] = (bEwaldEnabled ? "1" : "0");
+	int iEw = EWALD_NONE;
+	if(m_pEwaldSphereKi->isChecked()) iEw = EWALD_KI;
+	else if(m_pEwaldSphereKf->isChecked()) iEw = EWALD_KF;
+	mapConf[strXmlRoot + "recip/ewald_sphere"] = tl::var_to_str(iEw);
 
 	bool bWSEnabled = m_pWS->isChecked();
 	mapConf[strXmlRoot + "real/enable_ws"] = (bWSEnabled ? "1" : "0");
@@ -541,8 +547,9 @@ bool TazDlg::Import(const char* pcFile)
 	std::size_t iScanNum = 0;
 	try
 	{
-		std::unique_ptr<tl::FileInstr> ptrDat(tl::FileInstr::LoadInstr(pcFile));
-		tl::FileInstr* pdat = ptrDat.get();
+		std::unique_ptr<tl::FileInstrBase<t_real_glob>> ptrDat(
+			tl::FileInstrBase<t_real_glob>::LoadInstr(pcFile));
+		tl::FileInstrBase<t_real_glob>* pdat = ptrDat.get();
 		if(!pdat)
 			return false;
 

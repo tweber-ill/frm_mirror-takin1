@@ -1,9 +1,11 @@
-// gcc -o tst_quat tst_quat.cpp -lstdc++ -lm -std=c++11
+// gcc -I../.. -o tst_quat tst_quat.cpp -lstdc++ -lm -std=c++11
 
 #include <iostream>
 
-#include "../helper/linalg.h"
-#include "../helper/quat.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/quat.h"
+
+using namespace tl;
 
 int main()
 {

@@ -1,7 +1,9 @@
-// gcc -DUSE_LAPACK -o tst_qr tst_qr.cpp ../helper/linalg2.cpp ../helper/log.cpp -std=c++11 -lstdc++ -lm -I/usr/include/lapacke -llapacke -llapack
+// gcc -I../.. -DUSE_LAPACK -o tst_qr tst_qr.cpp ../../tlibs/math/linalg2.cpp ../../tlibs/log/log.cpp -std=c++11 -lstdc++ -lm -I/usr/include/lapacke -llapacke -llapack
 
-#include "../helper/linalg.h"
-#include "../helper/linalg2.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/linalg2.h"
+
+using namespace tl;
 
 typedef ublas::vector<double> vec;
 typedef ublas::matrix<double> mat;

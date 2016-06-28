@@ -1,11 +1,12 @@
-// clang -o tst_cov tst_cov.cpp -lstdc++ -lm -std=c++11
+// clang -I../.. -I. -o tst_cov tst_cov.cpp -lstdc++ -lm -std=c++11
 
 #include <iostream>
 #include <vector>
 #include <initializer_list>
 #include <type_traits>
-#include "../helper/linalg.h"
+#include "tlibs/math/linalg.h"
 
+using namespace tl;
 
 int main()
 {

@@ -63,6 +63,7 @@ protected:
 	GLuint m_iLstSphere[8];
 	QString m_strLabels[3];
 
+	unsigned int m_iPrec = 6;
 	double m_dXMin=-10., m_dXMax=10.;
 	double m_dYMin=-10., m_dYMax=10.;
 	double m_dZMin=-10., m_dZMax=10.;
@@ -152,6 +153,7 @@ public:
 	}
 
 	void SetEnabled(bool b);
+	void SetPrec(unsigned int iPrec) { m_iPrec = iPrec; }
 };
 
 #endif

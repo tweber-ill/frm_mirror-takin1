@@ -5,8 +5,6 @@
  * @license GPLv2
  */
 
-// TODO: send locally changed params back to taz
-
 #include "ResoDlg.h"
 #include <iostream>
 #include <fstream>
@@ -43,6 +41,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
 	setupUi(this);
+	spinMCSample->setEnabled(0);	// TODO
+
 	if(m_pSettings)
 	{
 		QFont font;
@@ -82,6 +82,9 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinTofPulseSig, spinTofMonoSig, spinTofDetSig,
 		spinTof2thI, spinTofphI, spinTofphF,
 		spinTof2thISig, spinTof2thFSig, spinTofphISig, spinTofphFSig,
+
+		spinSigKi, spinSigKi_perp, spinSigKi_z,
+		spinSigKf, spinSigKf_perp, spinSigKf_z,
 	};
 
 	m_vecSpinNames = {"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
@@ -108,6 +111,9 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/viol_time_pulse_sig", "reso/viol_time_mono_sig", "reso/viol_time_det_sig",
 		"reso/viol_angle_tt_i", "reso/viol_angle_ph_i", "reso/viol_angle_ph_f",
 		"reso/viol_angle_tt_i_sig", "reso/viol_angle_tt_f_sig", "reso/viol_angle_ph_i_sig", "reso/viol_angle_ph_f_sig",
+
+		"reso/simple_sig_ki", "reso/simple_sig_ki_perp", "reso/simple_sig_ki_z",
+		"reso/simple_sig_kf", "reso/simple_sig_kf_perp", "reso/simple_sig_kf_z",
 	};
 
 	m_vecPosEditBoxes = {editE, editQ, editKi, editKf};
@@ -173,6 +179,8 @@ void ResoDlg::setupAlgos()
 	comboAlgo->addItem("TAS: Eckold-Sobolev", static_cast<int>(ResoAlgo::ECK));
 	comboAlgo->insertSeparator(3);
 	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIOL));
+	comboAlgo->insertSeparator(5);
+	comboAlgo->addItem("Simple", static_cast<int>(ResoAlgo::SIMPLE));
 }
 
 void ResoDlg::SaveRes()
@@ -264,14 +272,14 @@ void ResoDlg::RefreshQEPos()
 		const t_real_reso dMono = spinMonod->value();
 		const t_real_reso dAna = spinAnad->value();
 
-		m_tofparams.ki = m_tasparams.ki = ki;
-		m_tofparams.kf = m_tasparams.kf = kf;
-		m_tofparams.E = m_tasparams.E = E;
-		m_tofparams.Q = m_tasparams.Q = Q;
+		m_simpleparams.ki = m_tofparams.ki = m_tasparams.ki = ki;
+		m_simpleparams.kf = m_tofparams.kf = m_tasparams.kf = kf;
+		m_simpleparams.E = m_tofparams.E = m_tasparams.E = E;
+		m_simpleparams.Q = m_tofparams.Q = m_tasparams.Q = Q;
 
-		m_tofparams.twotheta = m_tasparams.twotheta = twotheta;
-		m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q = kiQ;
-		m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q = kfQ;
+		m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta = twotheta;
+		m_simpleparams.angle_ki_Q = m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q = kiQ;
+		m_simpleparams.angle_kf_Q = m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q = kfQ;
 
 		m_tasparams.thetam = 0.5 * tl::get_mono_twotheta(ki, dMono*angs, 1);
 		m_tasparams.thetaa = 0.5 * tl::get_mono_twotheta(kf, dAna*angs, 1);
@@ -296,8 +304,10 @@ void ResoDlg::Calc()
 		m_bEll4dCurrent = 0;
 		if(m_bDontCalc) return;
 
-		EckParams& cn = m_tasparams;
-		ViolParams& tof = m_tofparams;
+		EckParams &cn = m_tasparams;
+		ViolParams &tof = m_tofparams;
+		SimpleResoParams &simple = m_simpleparams;
+
 		ResoResults &res = m_res;
 
 		// CN
@@ -449,10 +459,18 @@ void ResoDlg::Calc()
 
 		tof.det_shape = radioTofDetSph->isChecked() ? TofDetShape::SPH : TofDetShape::CYL;
 
+
+		// Simple
+		simple.sig_ki = t_real_reso(spinSigKi->value()) / angs;
+		simple.sig_kf = t_real_reso(spinSigKf->value()) / angs;
+		simple.sig_ki_perp = t_real_reso(spinSigKi_perp->value()) / angs;
+		simple.sig_kf_perp = t_real_reso(spinSigKf_perp->value()) / angs;
+		simple.sig_ki_z = t_real_reso(spinSigKi_z->value()) / angs;
+		simple.sig_kf_z = t_real_reso(spinSigKf_z->value()) / angs;
+
 		//tl::log_debug(m_tofparams.angle_ki_Q);
 		//tl::log_debug(m_tofparams.angle_kf_Q);
 		//tl::log_debug(m_tofparams.twotheta);
-
 
 		// Calculation
 		switch(ResoDlg::GetSelectedAlgo())
@@ -461,6 +479,7 @@ void ResoDlg::Calc()
 			case ResoAlgo::POP: res = calc_pop(cn); break;
 			case ResoAlgo::ECK: res = calc_eck(cn); break;
 			case ResoAlgo::VIOL: res = calc_viol(tof); break;
+			case ResoAlgo::SIMPLE: res = calc_simplereso(simple); break;
 			default: tl::log_err("Unknown resolution algorithm selected."); return;
 		}
 
@@ -473,7 +492,9 @@ void ResoDlg::Calc()
 			// --------------------------------------------------------------------------------
 			// Vanadium width
 			struct Ellipse2d<t_real_reso> ellVa =
-				calc_res_ellipse<t_real_reso>(res.reso, res.Q_avg, 0, 3, 1, 2, -1);
+				calc_res_ellipse<t_real_reso>(res.reso, res.reso_v, res.reso_s,
+				res.Q_avg, 0, 3, 1, 2, -1);
+
 			//std::cout << ellVa.phi/M_PI*180. << std::endl;
 			t_real_reso dVanadiumFWHM_Q = ellVa.x_hwhm*2.;
 			t_real_reso dVanadiumFWHM_E = ellVa.y_hwhm*2.;
@@ -524,6 +545,18 @@ void ResoDlg::Calc()
 					ostrRes << "\n";
 			}
 			ostrRes << "</table></blockquote></p>\n";
+
+			ostrRes << "<p><b>Resolution Vector:</b> ";
+			for(std::size_t iVec=0; iVec<res.reso_v.size(); ++iVec)
+			{
+				ostrRes << res.reso_v[iVec];
+				if(iVec != res.reso_v.size()-1)
+					ostrRes << ", ";
+			}
+			ostrRes << "</p>\n";
+
+			ostrRes << "<p><b>Resolution Scalar</b>: " << res.reso_s << "</p>\n";
+
 			ostrRes << "</body></html>";
 
 			editResults->setHtml(QString::fromUtf8(ostrRes.str().c_str()));
@@ -595,6 +628,12 @@ void ResoDlg::Calc()
 				//m_resoOrient = ublas::prod(matToOrientinv, m_resoOrient);
 				m_Q_avgOrient = ublas::prod(matToOrient, m_res.Q_avg);
 				//std::cout << m_Q_avgOrient << std::endl;
+
+				if(m_res.reso_v.size() == 4)
+				{
+					m_reso_vHKL = ublas::prod(matUBinvQVec0, m_res.reso_v);
+					m_reso_vOrient = ublas::prod(matToOrient, m_res.reso_v);
+				}
 			}
 
 			EmitResults();
@@ -699,11 +738,24 @@ ResoAlgo ResoDlg::GetSelectedAlgo() const
 void ResoDlg::EmitResults()
 {
 	ResoAlgo algoSel = ResoDlg::GetSelectedAlgo();
+	EllipseDlgParams params;
 
-	emit ResoResultsSig(m_res.reso, m_res.Q_avg,
-		m_resoHKL, m_Q_avgHKL,
-		m_resoOrient, m_Q_avgOrient,
-		algoSel);
+	params.reso = &m_res.reso;
+	params.reso_v = &m_res.reso_v;
+	params.reso_s = m_res.reso_s;
+	params.Q_avg = &m_res.Q_avg;
+
+	params.resoHKL = &m_resoHKL;
+	params.reso_vHKL = &m_reso_vHKL;
+	params.Q_avgHKL = &m_Q_avgHKL;
+
+	params.resoOrient = &m_resoOrient;
+	params.reso_vOrient = &m_reso_vOrient;
+	params.Q_avgOrient = &m_Q_avgOrient;
+
+	params.algo = algoSel;
+
+	emit ResoResultsSig(params);
 }
 
 void ResoDlg::WriteLastConfig()
@@ -904,13 +956,13 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 
 	try
 	{
-		m_tofparams.twotheta = m_tasparams.twotheta =
+		m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta =
 			units::abs(t_real_reso(parms.d2Theta) * rads);
 		//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
 
-		m_tofparams.ki = m_tasparams.ki = t_real_reso(parms.dki) / angs;
-		m_tofparams.kf = m_tasparams.kf = t_real_reso(parms.dkf) / angs;
-		m_tofparams.E = m_tasparams.E = t_real_reso(parms.dE) * meV;
+		m_simpleparams.ki = m_tofparams.ki = m_tasparams.ki = t_real_reso(parms.dki) / angs;
+		m_simpleparams.kf = m_tofparams.kf = m_tasparams.kf = t_real_reso(parms.dkf) / angs;
+		m_simpleparams.E = m_tofparams.E = m_tasparams.E = t_real_reso(parms.dE) * meV;
 
 		//m_dAngleQVec0 = parms.dAngleQVec0;
 		//std::cout << "qvec0 in rlu: " << m_dAngleQVec0 << std::endl;
@@ -928,13 +980,13 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 			dQ = ublas::norm_2(vecQ);
 		}
 
-		m_tofparams.Q = m_tasparams.Q = dQ / angs;
+		m_simpleparams.Q = m_tofparams.Q = m_tasparams.Q = dQ / angs;
 		//std::cout << "qvec0 in 1/A: " << m_dAngleQVec0 << std::endl;
 
 
-		m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q =
+		m_simpleparams.angle_ki_Q = m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q =
 			/*M_PI*rads -*/ tl::get_angle_ki_Q(m_tasparams.ki, m_tasparams.kf, m_tasparams.Q, 1);
-		m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q =
+		m_simpleparams.angle_kf_Q = m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q =
 			/*M_PI*rads -*/ tl::get_angle_kf_Q(m_tasparams.ki, m_tasparams.kf, m_tasparams.Q, 1);
 		//m_tasparams.angle_ki_Q = units::abs(m_tasparams.angle_ki_Q);
 		//m_tasparams.angle_kf_Q = units::abs(m_tasparams.angle_kf_Q);
@@ -974,7 +1026,7 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 
 	m_tasparams.twotheta = t_real_reso(parms.dSampleTT) * rads;
 	m_tasparams.twotheta = units::abs(m_tasparams.twotheta);
-	m_tofparams.twotheta = m_tasparams.twotheta;
+	m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta;
 
 	//std::cout << parms.dMonoT/M_PI*180. << ", " << parms.dAnaT/M_PI*180. << std::endl;
 	//std::cout << parms.dSampleTT/M_PI*180. << std::endl;
@@ -1037,7 +1089,8 @@ void ResoDlg::checkAutoCalcElli4dChanged()
 
 void ResoDlg::CalcElli4d()
 {
-	m_ell4d = calc_res_ellipsoid4d<t_real_reso>(m_res.reso, m_res.Q_avg);
+	m_ell4d = calc_res_ellipsoid4d<t_real_reso>(
+		m_res.reso, m_res.reso_v, m_res.reso_s, m_res.Q_avg);
 
 	std::ostringstream ostrElli;
 	ostrElli << "<html><body>\n";
@@ -1177,6 +1230,7 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(1,0);
 			tabWidget->setTabEnabled(2,0);
 			tabWidget->setTabEnabled(3,0);
+			tabWidget->setTabEnabled(4,0);
 			strAlgo = "<b>M. J. Cooper and <br>R. Nathans</b><br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1107/S0365110X67002816>"
 				"Acta Cryst. 23, <br>pp. 357-367</a><br>\n";
@@ -1189,6 +1243,7 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(1,1);
 			tabWidget->setTabEnabled(2,0);
 			tabWidget->setTabEnabled(3,0);
+			tabWidget->setTabEnabled(4,0);
 			strAlgo = "<b>M. Popovici</b><br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1107/S0567739475001088>"
 				"Acta Cryst. A 31, <br>pp. 507-513</a><br>\n";
@@ -1201,6 +1256,7 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(1,1);
 			tabWidget->setTabEnabled(2,1);
 			tabWidget->setTabEnabled(3,0);
+			tabWidget->setTabEnabled(4,0);
 			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b><br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2014.03.019>"
 				"NIM A 752, <br>pp. 54-64</a><br>\n";
@@ -1213,10 +1269,21 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(1,0);
 			tabWidget->setTabEnabled(2,0);
 			tabWidget->setTabEnabled(3,1);
+			tabWidget->setTabEnabled(4,0);
 			strAlgo = "<b>N. Violini et al.</b><br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2013.10.042>"
 				"NIM A 736, <br>pp. 31-39</a><br>\n";
 			strAlgo += "2014";
+			break;
+		}
+		case ResoAlgo::SIMPLE:
+		{
+			tabWidget->setTabEnabled(0,0);
+			tabWidget->setTabEnabled(1,0);
+			tabWidget->setTabEnabled(2,0);
+			tabWidget->setTabEnabled(3,0);
+			tabWidget->setTabEnabled(4,1);
+			strAlgo = "<b>Simple</b><br>\n";
 			break;
 		}
 		default:

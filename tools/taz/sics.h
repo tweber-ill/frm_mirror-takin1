@@ -23,7 +23,7 @@ class SicsCache : public NetCache
 	protected:
 		QSettings* m_pSettings = 0;
 
-		tl::TcpClient m_tcp;
+		tl::TcpTxtClient<> m_tcp;
 		t_mapCacheVal m_mapCache;
 
 		std::string m_strUser, m_strPass;

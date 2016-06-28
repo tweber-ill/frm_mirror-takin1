@@ -39,11 +39,11 @@ const std::string TazDlg::s_strTitle = "Takin";
 
 TazDlg::TazDlg(QWidget* pParent)
 	: QMainWindow(pParent), m_settings("tobis_stuff", "takin"),
-		m_sceneRecip(this),
 		m_pSettingsDlg(new SettingsDlg(this, &m_settings)),
 		m_pStatusMsg(new QLabel(this)),
 		m_pCoordQStatusMsg(new QLabel(this)),
 		m_pCoordCursorStatusMsg(new QLabel(this)),
+		m_sceneRecip(this),
 		m_dlgRecipParam(this, &m_settings),
 		m_dlgRealParam(this, &m_settings),
 		m_pGotoDlg(new GotoDlg(this, &m_settings))
@@ -53,7 +53,6 @@ TazDlg::TazDlg(QWidget* pParent)
 	const bool bSmallqVisible = 0;
 	const bool bBZVisible = 1;
 	const bool bWSVisible = 1;
-	const bool bEwald = 1;
 
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
@@ -376,31 +375,41 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pBZ->setChecked(bBZVisible);
 	m_pMenuViewRecip->addAction(m_pBZ);
 
-	m_pEwaldSphere = new QAction("Show Ewald Sphere", this);
-	//m_pEwaldSphere->setIcon(load_icon("res/brillouin.svg"));
-	m_pEwaldSphere->setCheckable(1);
-	m_pEwaldSphere->setChecked(bEwald);
-	m_pMenuViewRecip->addAction(m_pEwaldSphere);
+
+	QMenu *pMenuEwald = new QMenu("Ewald Sphere", this);
+	QActionGroup *pGroupEwald = new QActionGroup(this);
+	m_pEwaldSphereNone = new QAction("Disabled", this);
+	m_pEwaldSphereKi = new QAction("Around ki", this);
+	m_pEwaldSphereKf = new QAction("Around kf", this);
+	for(QAction* pAct : {m_pEwaldSphereNone, m_pEwaldSphereKi, m_pEwaldSphereKf})
+	{
+		pAct->setCheckable(1);
+		pGroupEwald->addAction(pAct);
+	}
+
+	m_pEwaldSphereKf->setChecked(1);
+	pMenuEwald->addActions(pGroupEwald->actions());
+	m_pMenuViewRecip->addMenu(pMenuEwald);
+
 
 	m_pMenuViewRecip->addSeparator();
 
 	QMenu *pMenuProj = new QMenu("Projection", this);
 	pMenuProj->setTearOffEnabled(1);
+	QActionGroup *pGroupProj = new QActionGroup(this);
 
 	m_pProjGnom = new QAction("Gnomonic", this);
 	m_pProjStereo = new QAction("Stereographic", this);
 	m_pProjPara = new QAction("Parallel", this);
 	m_pProjPersp = new QAction("Perspectivic", this);
-	m_pProjGnom->setCheckable(1);
-	m_pProjStereo->setCheckable(1);
-	m_pProjPara->setCheckable(1);
-	m_pProjPersp->setCheckable(1);
+
+	for(QAction *pAct : {m_pProjGnom, m_pProjStereo, m_pProjPara, m_pProjPersp})
+	{
+		pAct->setCheckable(1);
+		pGroupProj->addAction(pAct);
+	}
+
 	m_pProjStereo->setChecked(1);
-	QActionGroup *pGroupProj = new QActionGroup(this);
-	pGroupProj->addAction(m_pProjStereo);
-	pGroupProj->addAction(m_pProjGnom);
-	pGroupProj->addAction(m_pProjPara);
-	pGroupProj->addAction(m_pProjPersp);
 	pMenuProj->addActions(pGroupProj->actions());
 
 	m_pMenuViewRecip->addMenu(pMenuProj);
@@ -619,7 +628,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
 	QObject::connect(m_pBZ, SIGNAL(toggled(bool)), this, SLOT(EnableBZ(bool)));
 	QObject::connect(m_pWS, SIGNAL(toggled(bool)), this, SLOT(EnableWS(bool)));
-	QObject::connect(m_pEwaldSphere, SIGNAL(toggled(bool)), this, SLOT(ShowEwaldSphere(bool)));
+
+	for(QAction* pAct : {m_pEwaldSphereNone, m_pEwaldSphereKi, m_pEwaldSphereKf})
+		QObject::connect(pAct, SIGNAL(triggered()), this, SLOT(ShowEwaldSphere()));
+
 	QObject::connect(m_pShowRealQDir, SIGNAL(toggled(bool)), this, SLOT(EnableRealQDir(bool)));
 
 	QObject::connect(m_pSnapSmallq, SIGNAL(toggled(bool)), &m_sceneRecip, SLOT(setSnapq(bool)));
@@ -777,7 +789,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	m_sceneRecip.GetTriangle()->SetqVisible(bSmallqVisible);
 	m_sceneRecip.GetTriangle()->SetBZVisible(bBZVisible);
-	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(bEwald);
+	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(EWALD_KF);
 	m_sceneRealLattice.GetLattice()->SetWSVisible(bWSVisible);
 	m_sceneRecip.emitUpdate();
 	//m_sceneRecip.emitAllParams();
@@ -1174,9 +1186,16 @@ void TazDlg::EnableWS(bool bEnable)
 	m_sceneRealLattice.GetLattice()->SetWSVisible(bEnable);
 }
 
-void TazDlg::ShowEwaldSphere(bool bEnable)
+void TazDlg::ShowEwaldSphere()
 {
-	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(bEnable);
+	EwaldSphere iEw = EWALD_NONE;
+	if(m_pEwaldSphereNone->isChecked())
+		iEw = EWALD_NONE;
+	else if(m_pEwaldSphereKi->isChecked())
+		iEw = EWALD_KI;
+	else if(m_pEwaldSphereKf->isChecked())
+		iEw = EWALD_KF;
+	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(iEw);
 }
 
 void TazDlg::EnableRealQDir(bool bEnable)

@@ -30,6 +30,13 @@ static const tl::t_angle_si<t_real> rads = tl::get_one_radian<t_real>();
 #define MAX_PEAK_SIZE 5.5
 
 
+static inline bool flip_text(t_real _dAngle)
+{
+	t_real dAngle = std::fmod(_dAngle, 360.);
+	return std::abs(dAngle) > 90. && std::abs(dAngle) < 270.;
+}
+
+
 ScatteringTriangleNode::ScatteringTriangleNode(ScatteringTriangle* pSupItem)
 	: m_pParentItem(pSupItem)
 {
@@ -194,9 +201,10 @@ void ScatteringTriangle::SetBZVisible(bool bVisible)
 	this->update();
 }
 
-void ScatteringTriangle::SetEwaldSphereVisible(bool bVisible)
+void ScatteringTriangle::SetEwaldSphereVisible(EwaldSphere iEw)
 {
-	m_bShowEwaldSphere = bVisible;
+	m_bShowEwaldSphere = (iEw != EWALD_NONE);
+	m_bEwaldAroundKi = (iEw == EWALD_KI);
 	this->update();
 }
 
@@ -339,43 +347,64 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	}
 
 	painter->save();
-
-	painter->rotate(-lineQ.angle());
+	t_real dAngleQ = -lineQ.angle();
+	painter->rotate(dAngleQ);
 	painter->setPen(Qt::red);
-	painter->drawText(QPointF(lineQ.length()/5.,12.), QString::fromWCharArray(ostrQ.str().c_str()));
-	painter->rotate(lineQ.angle());
+	painter->translate(QPointF(lineQ.length()/5., 16.));
+	if(flip_text(dAngleQ))
+	{
+		painter->translate(QPointF(lineQ.length()/2., -10.));
+		painter->rotate(180.);
+	}
+	painter->drawText(QPointF(0.,0.), QString::fromWCharArray(ostrQ.str().c_str()));
+	painter->restore();
 
-	painter->rotate(-lineKi.angle());
+	painter->save();
+	t_real dAngleKi = -lineKi.angle();
+	painter->rotate(dAngleKi);
 	painter->setPen(Qt::black);
-	painter->drawText(QPointF(lineKi.length()/5.,-4.), QString::fromWCharArray(ostrKi.str().c_str()));
-	painter->rotate(lineKi.angle());
+	painter->translate(QPointF(lineKi.length()/5., -4.));
+	if(flip_text(dAngleKi))
+	{
+		painter->translate(QPointF(lineKi.length()/2., -12.));
+		painter->rotate(180.);
+	}
+	painter->drawText(QPointF(0.,0.), QString::fromWCharArray(ostrKi.str().c_str()));
+	painter->restore();
 
+	painter->save();
+	t_real dAngleKf = -lineKf.angle();
 	painter->translate(ptKiKf);
-	painter->rotate(-lineKf.angle());
-	painter->drawText(QPointF(lineKf.length()/5.,-4.), QString::fromWCharArray(ostrKf.str().c_str()));
-	painter->drawText(QPointF(lineKf.length()/5.,12.), QString::fromWCharArray(ostrE.str().c_str()));
-	painter->rotate(lineKf.angle());
-	painter->translate(-ptKiKf);
+	painter->rotate(dAngleKf);
+	painter->translate(QPointF(lineKf.length()/5., -4.));
+	if(flip_text(dAngleKf))
+	{
+		painter->translate(QPointF(lineKf.length()/2., 8.));
+		painter->rotate(180.);
+	}
+	painter->drawText(QPointF(0.,0.), QString::fromWCharArray(ostrKf.str().c_str()));
+	painter->drawText(QPointF(0.,16.), QString::fromWCharArray(ostrE.str().c_str()));
+	painter->restore();
 
 	if(m_bqVisible)
 	{
 		QPen penOrg = painter->pen();
 		painter->setPen(Qt::darkGreen);
 
+		painter->save();
 		painter->translate(ptKfQ);
 		painter->rotate(-lineq.angle());
 		painter->drawText(QPointF(lineq.length()/5.,-4.), QString::fromWCharArray(ostrq.str().c_str()));
-		painter->rotate(lineq.angle());
-		painter->translate(-ptKfQ);
+		painter->restore();
 
+		painter->save();
 		painter->rotate(-lineG.angle());
 		painter->drawText(QPointF(lineG.length()/5.,-4.), QString::fromWCharArray(ostrG.str().c_str()));
 		painter->rotate(lineG.angle());
+		painter->restore();
 
 		painter->setPen(penOrg);
 	}
-
-	painter->restore();
 
 
 	QLineF lineKi2(ptKiKf, ptKiQ);
@@ -410,6 +439,9 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		vecColor.push_back(Qt::darkGreen);
 	}
 
+
+	const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
+
 	for(std::size_t i=0; i<vecDrawAngles.size(); ++i)
 	{
 		// arrow heads
@@ -437,20 +469,28 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			t_real dArcAngle = vecLines1[i]->angleTo(*vecLines2[i]) - 180.;
 
 			painter->setPen(Qt::blue);
-			painter->drawArc(QRectF(vecPoints[i]->x()-dArcSize/2., vecPoints[i]->y()-dArcSize/2., dArcSize, dArcSize),
-							dBeginArcAngle*16., dArcAngle*16.);
+			painter->drawArc(QRectF(vecPoints[i]->x()-dArcSize/2., vecPoints[i]->y()-dArcSize/2., 
+				dArcSize, dArcSize), dBeginArcAngle*16., dArcAngle*16.);
 
-			const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
 			std::wostringstream ostrAngle;
 			ostrAngle.precision(g_iPrecGfx);
 			ostrAngle << std::fabs(dArcAngle) << strDEG;
 
-			QPointF ptDirOut = *vecPoints[i] - ptMid;
-			ptDirOut /= std::sqrt(ptDirOut.x()*ptDirOut.x() + ptDirOut.y()*ptDirOut.y());
-			ptDirOut *= 15.;
+			
+			t_real dTotalAngle = -dBeginArcAngle-dArcAngle*0.5 + 180.;
+			t_real dTransScale = 50. * m_dZoom;
+			painter->save();
+				painter->translate(*vecPoints[i]);
+				painter->rotate(dTotalAngle);
+				painter->translate(-dTransScale, +4.);
+				if(flip_text(dTotalAngle))
+				{
+					painter->translate(dTransScale*0.5, -8.);
+					painter->rotate(180.);
+				}
+				painter->drawText(QPointF(0.,0.), QString::fromWCharArray(ostrAngle.str().c_str()));
+			painter->restore();
 
-			QPointF ptText = *vecPoints[i] + ptDirOut;
-			painter->drawText(ptText, QString::fromWCharArray(ostrAngle.str().c_str()));
 		}
 	}
 
@@ -458,9 +498,9 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	// Ewald sphere
 	if(m_bShowEwaldSphere)
 	{
-		t_real dKiLen = lineKi.length();
+		t_real dKLen = m_bEwaldAroundKi ? lineKi.length() : lineKf.length();
 		painter->setPen(Qt::darkCyan);
-		painter->drawEllipse(ptKiKf, dKiLen, dKiLen);
+		painter->drawEllipse(ptKiKf, dKLen, dKLen);
 	}
 }
 
@@ -1541,6 +1581,11 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 			{
 				std::vector<t_real> stdvecHKL{vecHKLinvA[0], vecHKLinvA[1], vecHKLinvA[2]};
 				pvecNearest = &kd.GetNearestNode(stdvecHKL);
+				if(pvecNearest->size() < 6)
+				{
+					pvecNearest = nullptr;
+					tl::log_warn("Invalid BZ node.");
+				}
 			}
 
 			emit coordsChanged(vecHKL[0], vecHKL[1], vecHKL[2],

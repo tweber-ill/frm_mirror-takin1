@@ -5,8 +5,8 @@
  * @date July 2012, Sep. 2014
  * @license GPLv2
  *
- * (based on Mcstas' mcresplot.pl perl program (www.mcstas.org)
- *  and the rescal5 matlab program)
+ * (based on Mcstas' 'mcresplot.pl' perl program: www.mcstas.org
+ *  and the rescal5 matlab program: http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/)
  */
 
 #ifndef __MONTERES_H__

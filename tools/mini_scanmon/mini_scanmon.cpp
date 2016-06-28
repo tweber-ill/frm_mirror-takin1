@@ -149,7 +149,7 @@ int main(int argc, char** argv)
 	}
 
 
-	TcpClient client;
+	TcpTxtClient<> client;
 	if(bUseNicos)
 		client.add_receiver(received_nicos);
 	else

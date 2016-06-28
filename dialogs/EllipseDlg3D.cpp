@@ -1,4 +1,4 @@
-/*
+/**
  * 3D Ellipsoid Dialog
  * @author Tobias Weber
  * @date may-2013, 29-apr-2014
@@ -24,10 +24,12 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	}
 
 	PlotGl* pPlotLeft = new PlotGl(this, m_pSettings);
+	pPlotLeft->SetPrec(g_iPrecGfx);
 	pPlotLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_pPlots.push_back(pPlotLeft);
 
 	PlotGl* pPlotRight = new PlotGl(this, m_pSettings);
+	pPlotRight->SetPrec(g_iPrecGfx);
 	pPlotRight->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_pPlots.push_back(pPlotRight);
 
@@ -123,18 +125,25 @@ void EllipseDlg3D::Calc()
 	const EllipseCoordSys coord = static_cast<EllipseCoordSys>(m_pComboCoord->currentIndex());
 
 	const ublas::matrix<t_real_reso> *pReso = nullptr;
+	const ublas::vector<t_real_reso> *pReso_v = nullptr;
 	const ublas::vector<t_real_reso> *pQavg = nullptr;
 
 	switch(coord)
 	{
 		case EllipseCoordSys::Q_AVG:		// Q|| Qperp system in 1/A
-			pReso = &m_reso; pQavg = &m_Q_avg;
+			pReso = &m_reso;
+			pQavg = &m_Q_avg;
+			pReso_v = &m_reso_v;
 			break;
 		case EllipseCoordSys::RLU:			// rlu system
-			pReso = &m_resoHKL; pQavg = &m_Q_avgHKL;
+			pReso = &m_resoHKL;
+			pQavg = &m_Q_avgHKL;
+			pReso_v = &m_reso_vHKL;
 			break;
 		case EllipseCoordSys::RLU_ORIENT:	// rlu system
-			pReso = &m_resoOrient; pQavg = &m_Q_avgOrient;
+			pReso = &m_resoOrient;
+			pQavg = &m_Q_avgOrient;
+			pReso_v = &m_reso_vOrient;
 			break;
 		default:
 			tl::log_err("Unknown coordinate system selected."); return;
@@ -142,6 +151,8 @@ void EllipseDlg3D::Calc()
 
 
 	const ublas::matrix<t_real_reso>& reso = *pReso;
+	const ublas::vector<t_real_reso>& reso_v = *pReso_v;
+	const t_real_reso& reso_s = m_reso_s;
 	const ublas::vector<t_real_reso>& _Q_avg = *pQavg;
 
 
@@ -160,8 +171,10 @@ void EllipseDlg3D::Calc()
 
 	for(unsigned int i=0; i<m_pPlots.size(); ++i)
 	{
-		m_elliProj[i] = ::calc_res_ellipsoid(reso, Q_avg, iX[i], iY[i], iZ[i], iIntOrRem[i], -1);
-		m_elliSlice[i] = ::calc_res_ellipsoid(reso, Q_avg, iX[i], iY[i], iZ[i], -1, iIntOrRem[i]);
+		m_elliProj[i] = ::calc_res_ellipsoid(
+			reso, reso_v, reso_s, Q_avg, iX[i], iY[i], iZ[i], iIntOrRem[i], -1);
+		m_elliSlice[i] = ::calc_res_ellipsoid(
+			reso, reso_v, reso_s, Q_avg, iX[i], iY[i], iZ[i], -1, iIntOrRem[i]);
 
 		ublas::vector<t_real_reso> vecWProj(3), vecWSlice(3);
 		ublas::vector<t_real_reso> vecOffsProj(3), vecOffsSlice(3);
@@ -203,18 +216,25 @@ void EllipseDlg3D::Calc()
 	}
 }
 
-void EllipseDlg3D::SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
-	const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
-	const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
-	ResoAlgo algo)
+void EllipseDlg3D::SetParams(const EllipseDlgParams& params)
 {
-	m_reso = reso;
-	m_resoHKL = resoHKL;
-	m_resoOrient = resoOrient;
-	m_Q_avg = Q_avg;
-	m_Q_avgHKL = Q_avgHKL;
-	m_Q_avgOrient = Q_avgOrient;
-	m_algo = algo;
+    static const ublas::matrix<t_real_reso> mat0 = ublas::zero_matrix<t_real_reso>(4,4);
+    static const ublas::vector<t_real_reso> vec0 = ublas::zero_vector<t_real_reso>(4);
+
+	if(params.reso) m_reso = *params.reso; else m_reso = mat0;
+	if(params.reso_v) m_reso_v = *params.reso_v; else m_reso_v = vec0;
+	m_reso_s = params.reso_s;
+	if(params.Q_avg) m_Q_avg = *params.Q_avg; else m_Q_avg = vec0;
+
+	if(params.resoHKL) m_resoHKL = *params.resoHKL; else m_resoHKL = mat0;
+	if(params.reso_vHKL) m_reso_vHKL = *params.reso_vHKL; else m_reso_vHKL = vec0;
+	if(params.Q_avgHKL) m_Q_avgHKL = *params.Q_avgHKL; else m_Q_avgHKL = vec0;
+
+	if(params.resoOrient) m_resoOrient = *params.resoOrient; else m_resoOrient = mat0;
+	if(params.reso_vOrient) m_reso_vOrient = *params.reso_vOrient; else m_reso_vOrient = vec0;
+	if(params.Q_avgOrient) m_Q_avgOrient = *params.Q_avgOrient; else m_Q_avgOrient = vec0;
+
+	m_algo = params.algo;
 
 	Calc();
 }

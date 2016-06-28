@@ -74,7 +74,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		QAction *m_pSmallq = nullptr, *m_pSnapSmallq = nullptr;
 		QAction *m_pGoto = nullptr;
 		QAction *m_pBZ = nullptr, *m_pWS = nullptr;
-		QAction *m_pEwaldSphere = nullptr;
+		QAction *m_pEwaldSphereNone = nullptr,
+			*m_pEwaldSphereKi = nullptr, *m_pEwaldSphereKf = nullptr;
 		QAction *m_pShowRealQDir = nullptr;
 		QAction *m_pProjGnom = nullptr, *m_pProjStereo = nullptr,
 			*m_pProjPara = nullptr, *m_pProjPersp = nullptr;
@@ -207,7 +208,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void EnableBZ(bool bEnable);
 		void EnableWS(bool bEnable);
 		void EnableRealQDir(bool bEnable);
-		void ShowEwaldSphere(bool bEnable);
+		void ShowEwaldSphere();
 		void RecipProjChanged();
 
 		void RecipContextMenu(const QPoint&);

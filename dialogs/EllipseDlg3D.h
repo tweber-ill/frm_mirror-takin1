@@ -14,6 +14,7 @@
 
 #include <vector>
 
+#include "EllipseDlg.h"
 #include "libs/plotgl.h"
 #include "tlibs/math/linalg.h"
 #include "tools/res/ellipse.h"
@@ -31,6 +32,10 @@ class EllipseDlg3D : public QDialog
 		QSettings *m_pSettings = nullptr;
 
 		ublas::matrix<t_real_reso> m_reso, m_resoHKL, m_resoOrient;
+		ublas::vector<t_real_reso> m_reso_v = ublas::zero_vector<t_real_reso>(4),
+			m_reso_vHKL = ublas::zero_vector<t_real_reso>(4),
+			m_reso_vOrient = ublas::zero_vector<t_real_reso>(4);
+		t_real_reso m_reso_s = 0;
 		ublas::vector<t_real_reso> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
 		ResoAlgo m_algo = ResoAlgo::UNKNOWN;
 
@@ -48,10 +53,7 @@ class EllipseDlg3D : public QDialog
 		void showEvent(QShowEvent *event);
 
 	public slots:
-		void SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
-			const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
-			const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
-			ResoAlgo algo);
+		void SetParams(const EllipseDlgParams& params);
 		void Calc();
 };
 

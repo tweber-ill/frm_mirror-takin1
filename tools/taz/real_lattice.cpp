@@ -485,6 +485,11 @@ void LatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 			{
 				std::vector<t_real> stdvecHKL{vecHKLA[0], vecHKLA[1], vecHKLA[2]};
 				pvecNearest = &kd.GetNearestNode(stdvecHKL);
+				if(pvecNearest->size() < 6)
+				{
+					pvecNearest = nullptr;
+					tl::log_warn("Invalid WS node.");
+				}
 			}
 
 			emit coordsChanged(vecHKL[0], vecHKL[1], vecHKL[2],

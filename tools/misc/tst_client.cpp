@@ -1,5 +1,6 @@
 /*
- * clang -o tst_client tools/misc/tst_client.cpp tlibs/net/tcp.cpp tlibs/log/log.cpp -lstdc++ -std=c++11 -lboost_system -lpthread -lm
+ * clang -o tst_client -I../.. tst_client.cpp ../../tlibs/net/tcp.cpp ../../tlibs/log/log.cpp -lstdc++ -std=c++11 -lboost_system -lpthread -lm
+ * @author tw
  */
 
 #include <fstream>
@@ -47,7 +48,7 @@ int main(int argc, char** argv)
 	}
 
 
-	TcpClient client;
+	TcpTxtClient<> client;
 	//TstOut tstout;
 	//client.add_receiver(boost::bind(&TstOut::print, &tstout, _1));
 	client.add_receiver(received);

@@ -13,7 +13,7 @@ USE_IOSTR = 1
 USE_BOOST_REGEX = 0
 USE_GIL = 1
 USE_PY = 1
-USE_PLUGINS = 0
+USE_PLUGINS = 1
 USE_CPP11_ABI = 1
 
 BOOST_SUFFIX = 
@@ -126,7 +126,7 @@ STD_LIBS += -lpthread
 
 
 ifeq ($(DO_DEBUG), 0)
-	FLAGS = ${INC} -O2 -std=c++11 -DNDEBUG -Wall -fPIC
+	FLAGS = ${INC} -O2 -std=c++11 -DNDEBUG -Wall -Wpedantic -Wextra -fPIC
 	ifeq ($(NATIVE_OPTS), 1)
 		FLAGS += -march=native
 	else
@@ -138,7 +138,7 @@ ifeq ($(DO_DEBUG), 0)
 	FLAGS += ${DEFINES}
 	STRIP = strip -v 
 else
-	FLAGS = ${INC} -std=c++11 -rdynamic -ggdb -DDEBUG -Wall -Weffc++ -fPIC ${DEFINES}
+	FLAGS = ${INC} -std=c++11 -rdynamic -ggdb -DDEBUG -Wall -Wall -Wpedantic -Wextra -Weffc++ -fPIC ${DEFINES}
 	STRIP = echo Retaining debug symbols of 
 endif
 
@@ -215,8 +215,9 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/FilePreviewDlg.o obj/AtomsDlg.o \
 	obj/SpurionDlg.o obj/NeutronDlg.o \
 	obj/crystalsys.o obj/formfact.o \
-	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
-	obj/loadinstr.o obj/recent.o obj/globals.o obj/globals_qt.o obj/qthelper.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/simple.o \
+	obj/ResoDlg.o obj/loadinstr.o obj/recent.o obj/globals.o \
+	obj/globals_qt.o obj/qthelper.o \
 	obj/sqw.o obj/sqwbase.o obj/sqwfact.o ${PY_OBJS} obj/tasreso.o \
 	obj/ConvoDlg.o obj/SqwParamDlg.o \
 	obj/scanviewer.o obj/x3d.o obj/eval.o \
@@ -237,7 +238,7 @@ OBJ_CONVOSERIES = obj/scanseries.o obj/log.o obj/debug.o
 
 OBJ_RESO = obj/log.o obj/debug.o obj/rand.o \
 	obj/spec_char.o obj/reso_res_main.o \
-	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/ResoDlg.o \
+	obj/cn.o obj/pop.o obj/eck.o obj/viol.o obj/simple.o obj/ResoDlg.o \
 	obj/linalg2.o obj/globals.o obj/globals_qt.o
 
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
@@ -457,6 +458,8 @@ obj/pop.o: tools/res/pop.cpp tools/res/pop.h
 obj/eck.o: tools/res/eck.cpp tools/res/eck.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/viol.o: tools/res/viol.cpp tools/res/viol.h
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
+obj/simple.o: tools/res/simple.cpp tools/res/simple.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 #obj/ellipse.o: tools/res/ellipse.cpp tools/res/ellipse.h
 #	${CC} ${FLAGS} -DNO_QT -c -o $@ $<

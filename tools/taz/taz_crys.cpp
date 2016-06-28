@@ -529,12 +529,8 @@ void TazDlg::ShowResoEllipses()
 	if(!m_pEllipseDlg)
 	{
 		m_pEllipseDlg = new EllipseDlg(this, &m_settings);
-		QObject::connect(m_pReso, SIGNAL(ResoResultsSig(const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&,
-			const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&,
-			const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&, ResoAlgo)),
-			m_pEllipseDlg, SLOT(SetParams(const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&,
-			const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&,
-			const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&, ResoAlgo)));
+		QObject::connect(m_pReso, SIGNAL(ResoResultsSig(const EllipseDlgParams&)),
+			m_pEllipseDlg, SLOT(SetParams(const EllipseDlgParams&)));
 
 		m_pReso->EmitResults();
 	}
@@ -560,12 +556,9 @@ void TazDlg::ShowResoEllipses3D()
 	if(!m_pEllipseDlg3D)
 	{
 		m_pEllipseDlg3D = new EllipseDlg3D(this, &m_settings);
-		QObject::connect(m_pReso, SIGNAL(ResoResultsSig(const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&,
-			const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&,
-			const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&, ResoAlgo)),
-			m_pEllipseDlg3D, SLOT(SetParams(const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&,
-			const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&,
-			const ublas::matrix<t_real_reso>&, const ublas::vector<t_real_reso>&, ResoAlgo)));
+		QObject::connect(m_pReso,
+			SIGNAL(ResoResultsSig(const EllipseDlgParams&)),
+			m_pEllipseDlg3D, SLOT(SetParams(const EllipseDlgParams&)));
 
 		m_pReso->EmitResults();
 	}

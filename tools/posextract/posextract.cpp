@@ -8,9 +8,12 @@
 #include "tlibs/file/loadinstr.h"
 #include "tlibs/log/log.h"
 #include "tlibs/math/neutrons.h"
+#include "libs/globals.h"
 #include <memory>
 #include <fstream>
 
+
+using t_real = t_real_glob;
 
 static inline void usage(const char* pcProg)
 {
@@ -20,8 +23,9 @@ static inline void usage(const char* pcProg)
 
 static inline void extract_pos(const char* pcIn, const char* pcOut)
 {
-	std::shared_ptr<tl::FileInstr> ptrInstr(tl::FileInstr::LoadInstr(pcIn));
-	tl::FileInstr *pInstr = ptrInstr.get();
+	std::shared_ptr<tl::FileInstrBase<t_real>> ptrInstr(
+		tl::FileInstrBase<t_real>::LoadInstr(pcIn));
+	tl::FileInstrBase<t_real> *pInstr = ptrInstr.get();
 
 	if(!pInstr)
 	{
@@ -51,13 +55,13 @@ static inline void extract_pos(const char* pcIn, const char* pcOut)
 	tl::log_info("Extracting ", pInstr->GetScanCount(), " scan positions.");
 	for(std::size_t iScan=0; iScan<pInstr->GetScanCount(); ++iScan)
 	{
-		std::array<double,5> arrPos = pInstr->GetScanHKLKiKf(iScan);
-		double dh = arrPos[0];
-		double dk = arrPos[1];
-		double dl = arrPos[2];
-		double dki = arrPos[3];
-		double dkf = arrPos[4];
-		double dE = (tl::k2E(dki/tl::angstrom) - tl::k2E(dkf/tl::angstrom))/tl::meV;
+		std::array<t_real,5> arrPos = pInstr->GetScanHKLKiKf(iScan);
+		t_real dh = arrPos[0];
+		t_real dk = arrPos[1];
+		t_real dl = arrPos[2];
+		t_real dki = arrPos[3];
+		t_real dkf = arrPos[4];
+		t_real dE = (tl::k2E(dki/tl::angstrom) - tl::k2E(dkf/tl::angstrom))/tl::meV;
 
 		ofstr << std::left << std::setw(20) << dh << " "
 			<< std::left << std::setw(20) << dk << " " 

@@ -1,4 +1,4 @@
-/*
+/**
  * Ellipse Dialog
  * @author Tobias Weber
  * @date 2013 - 2016
@@ -24,6 +24,8 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 		QFont font;
 		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
 			setFont(font);
+
+		m_bCenterOn0 = m_pSettings->value("reso/center_around_origin", 1).toInt() != 0;
 	}
 
 	m_vecplotwrap.reserve(4);
@@ -65,8 +67,11 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 #if QT_VER >= 5
 	QObject::connect(comboCoord, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		this, &EllipseDlg::Calc);
+	QObject::connect(checkCenter, static_cast<void(QCheckBox::*)(bool)>(&QCheckBox::toggled),
+		this, &EllipseDlg::SetCenterOn0);
 #else
 	QObject::connect(comboCoord, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
+	QObject::connect(checkCenter, SIGNAL(toggled(bool)), this, SLOT(SetCenterOn0(bool)));
 #endif
 
 	if(m_pSettings && m_pSettings->contains("reso/ellipse_geo"))
@@ -107,18 +112,25 @@ void EllipseDlg::Calc()
 	const EllipseCoordSys coord = static_cast<EllipseCoordSys>(comboCoord->currentIndex());
 
 	const ublas::matrix<t_real_reso> *pReso = nullptr;
+	const ublas::vector<t_real_reso> *pReso_v = nullptr;
 	const ublas::vector<t_real_reso> *pQavg = nullptr;
 
 	switch(coord)
 	{
-		case EllipseCoordSys::Q_AVG:		// Q|| Qperp system in 1/A
-			pReso = &m_reso; pQavg = &m_Q_avg;
+		case EllipseCoordSys::Q_AVG:	// Q|| Qperp system in 1/A
+			pReso = &m_reso;
+			pQavg = &m_Q_avg;
+			pReso_v = &m_reso_v;
 			break;
 		case EllipseCoordSys::RLU:		// rlu system
-			pReso = &m_resoHKL; pQavg = &m_Q_avgHKL;
+			pReso = &m_resoHKL;
+			pQavg = &m_Q_avgHKL;
+			pReso_v = &m_reso_vHKL;
 			break;
 		case EllipseCoordSys::RLU_ORIENT:	// rlu system
-			pReso = &m_resoOrient; pQavg = &m_Q_avgOrient;
+			pReso = &m_resoOrient;
+			pQavg = &m_Q_avgOrient;
+			pReso_v = &m_reso_vOrient;
 			break;
 		default:
 			tl::log_err("Unknown coordinate system selected."); return;
@@ -126,6 +138,8 @@ void EllipseDlg::Calc()
 
 
 	const ublas::matrix<t_real_reso>& reso = *pReso;
+	const ublas::vector<t_real_reso>& reso_v = *pReso_v;
+	const t_real_reso& reso_s = m_reso_s;
 	const ublas::vector<t_real_reso>& _Q_avg = *pQavg;
 
 	try
@@ -148,13 +162,8 @@ void EllipseDlg::Calc()
 
 		static const std::string strDeg = tl::get_spec_char_utf8("deg");
 
-
-		bool bCenterOn0 = 1;
-		if(m_pSettings)
-			bCenterOn0 = m_pSettings->value("reso/center_around_origin", 1).toInt() != 0;
-
 		ublas::vector<t_real_reso> Q_avg = _Q_avg;
-		if(bCenterOn0)
+		if(m_bCenterOn0)
 			Q_avg = ublas::zero_vector<t_real_reso>(Q_avg.size());
 
 
@@ -201,11 +210,13 @@ void EllipseDlg::Calc()
 			std::future<Ellipse2d<t_real_reso>> ell_proj =
 				std::async(std::launch::deferred|std::launch::async,
 				[=, &reso, &Q_avg]()
-				{ return ::calc_res_ellipse<t_real_reso>(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+				{ return ::calc_res_ellipse<t_real_reso>(
+					reso, reso_v, reso_s, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
 			std::future<Ellipse2d<t_real_reso>> ell_slice =
 				std::async(std::launch::deferred|std::launch::async,
 				[=, &reso, &Q_avg]()
-				{ return ::calc_res_ellipse<t_real_reso>(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+				{ return ::calc_res_ellipse<t_real_reso>(
+					reso, reso_v, reso_s, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
 
 			tasks_ell_proj.push_back(std::move(ell_proj));
 			tasks_ell_slice.push_back(std::move(ell_slice));
@@ -273,8 +284,14 @@ void EllipseDlg::Calc()
 				case ResoAlgo::POP: SetTitle("Popovici Algorithm (TAS)"); break;
 				case ResoAlgo::ECK: SetTitle("Eckold-Sobolev Algorithm (TAS)"); break;
 				case ResoAlgo::VIOL: SetTitle("Violini Algorithm (TOF)"); break;
+				case ResoAlgo::SIMPLE: SetTitle("Simple Algorithm"); break;
 				default: SetTitle("Unknown Resolution Algorithm"); break;
 			}
+
+			/*if(iEll == 0)
+				tl::log_err("reso v = ", reso_v, 
+					", proj offs: ", m_elliProj[iEll].x_offs, " ", m_elliProj[iEll].y_offs,
+					", slice offs: ", m_elliSlice[iEll].x_offs, " ", m_elliSlice[iEll].y_offs);*/
 		}
 	}
 	catch(const std::exception& ex)
@@ -284,18 +301,33 @@ void EllipseDlg::Calc()
 	}
 }
 
-void EllipseDlg::SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
-	const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
-	const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
-	ResoAlgo algo)
+
+void EllipseDlg::SetCenterOn0(bool bCenter)
 {
-	m_reso = reso;
-	m_resoHKL = resoHKL;
-	m_resoOrient = resoOrient;
-	m_Q_avg = Q_avg;
-	m_Q_avgHKL = Q_avgHKL;
-	m_Q_avgOrient = Q_avgOrient;
-	m_algo = algo;
+	m_bCenterOn0 = bCenter;
+	Calc();
+}
+
+
+void EllipseDlg::SetParams(const EllipseDlgParams& params)
+{
+	static const ublas::matrix<t_real_reso> mat0 = ublas::zero_matrix<t_real_reso>(4,4);
+	static const ublas::vector<t_real_reso> vec0 = ublas::zero_vector<t_real_reso>(4);
+
+	if(params.reso) m_reso = *params.reso; else m_reso = mat0;
+	if(params.reso_v) m_reso_v = *params.reso_v; else m_reso_v = vec0;
+	m_reso_s = params.reso_s;
+	if(params.Q_avg) m_Q_avg = *params.Q_avg; else m_Q_avg = vec0;
+
+	if(params.resoHKL) m_resoHKL = *params.resoHKL; else m_resoHKL = mat0;
+	if(params.reso_vHKL) m_reso_vHKL = *params.reso_vHKL; else m_reso_vHKL = vec0;
+	if(params.Q_avgHKL) m_Q_avgHKL = *params.Q_avgHKL; else m_Q_avgHKL = vec0;
+
+	if(params.resoOrient) m_resoOrient = *params.resoOrient; else m_resoOrient = mat0;
+	if(params.reso_vOrient) m_reso_vOrient = *params.reso_vOrient; else m_reso_vOrient = vec0;
+	if(params.Q_avgOrient) m_Q_avgOrient = *params.Q_avgOrient; else m_Q_avgOrient = vec0;
+
+	m_algo = params.algo;
 
 	Calc();
 }

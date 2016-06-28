@@ -130,6 +130,7 @@ bool run_job(const std::string& strJob)
 
 
 	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
+	unsigned iNumSample = prop.Query<unsigned>("montecarlo/sample_positions", 1);
 
 	std::string strResAlgo = prop.Query<std::string>("resolution/algorithm", "pop");
 	bool bUseR0 = prop.Query<bool>("resolution/use_r0", 0);
@@ -153,10 +154,10 @@ bool run_job(const std::string& strJob)
 	bool bPlotIntermediate = prop.Query<bool>("output/plot_intermediate", 0);
 	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot_points", 128);
 
-	std::unique_ptr<tl::GnuPlot_gen<t_real>> plt;
+	std::unique_ptr<tl::GnuPlot<t_real>> plt;
 	if(bPlot || bPlotIntermediate)
 	{
-		plt.reset(new tl::GnuPlot_gen<t_real>());
+		plt.reset(new tl::GnuPlot<t_real>());
 		plt->Init();
 	}
 
@@ -234,7 +235,7 @@ bool run_job(const std::string& strJob)
 	tl::log_info("Number of scan groups: ", vecSc.size(), ".");
 
 	// scan plot object
-	tl::PlotObj_gen<t_real> pltMeas;
+	tl::PlotObj<t_real> pltMeas;
 	if(bPlot || bPlotIntermediate)
 	{
 		pltMeas.vecX = vecSc[0].vecX;
@@ -285,6 +286,7 @@ bool run_job(const std::string& strJob)
 		if(bUseR0 && !reso.GetResoParams().bCalcR0)
 			tl::log_warn("Resolution R0 requested, but not calculated, using raw ellipsoid volume.");
 
+		reso.SetRandomSamplePos(iNumSample);
 		vecResos.emplace_back(std::move(reso));
 	}
 
@@ -326,7 +328,7 @@ bool run_job(const std::string& strJob)
 			vecModTmpX.push_back(E);	// TODO: use scan direction
 			vecModTmpY.push_back(S);
 
-			tl::PlotObj_gen<t_real> pltMod;
+			tl::PlotObj<t_real> pltMod;
 			pltMod.vecX = vecModTmpX;
 			pltMod.vecY = vecModTmpY;
 			pltMod.linestyle = tl::STYLE_LINES_SOLID;
@@ -424,8 +426,8 @@ bool run_job(const std::string& strJob)
 		mod.AddModelFitParams(strParam, dVal, dErr);
 	}
 
-	//tl::Chi2Function_gen<t_real_sc> chi2fkt(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
-	tl::Chi2Function_mult_gen<t_real_sc, std::vector> chi2fkt;
+	//tl::Chi2Function<t_real_sc> chi2fkt(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
+	tl::Chi2Function_mult<t_real_sc, std::vector> chi2fkt;
 	// the vecSc[0] data sets are the default data set (will not be used if scan groups are defined)
 	chi2fkt.AddFunc(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
 	chi2fkt.SetDebug(1);
@@ -522,7 +524,7 @@ bool run_job(const std::string& strJob)
 		tl::DatFile<t_real, char> datMod;
 		datMod.Load(strModOutFile);
 
-		tl::PlotObj_gen<t_real> pltMod;
+		tl::PlotObj<t_real> pltMod;
 		pltMod.vecX = datMod.GetColumn(0);
 		pltMod.vecY = datMod.GetColumn(1);
 		pltMod.linestyle = tl::STYLE_LINES_SOLID;

@@ -1,7 +1,10 @@
-// gcc -DUSE_LAPACK -o tst_geo tst_geo.cpp ../helper/linalg.cpp -std=c++11 -lstdc++ -lm -I/usr/include/lapacke -llapacke -llapack
+// gcc -DUSE_LAPACK -o tst_geo tst_geo.cpp -std=c++11 -lstdc++ -lm -I../.. -I. -I/usr/include/lapacke ../../tlibs/log/log.cpp ../../tlibs/math/linalg2.cpp -llapacke -llapack
 
-#include "../helper/geo.h"
-#include "../helper/math.h"
+#include "tlibs/math/geo.h"
+#include "tlibs/math/math.h"
+#include "tlibs/math/linalg2.h"
+
+using namespace tl;
 
 typedef ublas::vector<double> vec;
 

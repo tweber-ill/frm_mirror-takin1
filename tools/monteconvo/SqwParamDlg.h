@@ -1,4 +1,4 @@
-/*
+/**
  * S(q,w) parameters dialog
  * @author tweber
  * @date aug-2015

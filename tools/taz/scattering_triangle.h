@@ -50,6 +50,13 @@ enum ScatteringTriangleNodeType
 	NODE_OTHER
 };
 
+enum EwaldSphere : int
+{
+	EWALD_NONE,
+	EWALD_KI,
+	EWALD_KF
+};
+
 class ScatteringTriangle;
 class ScatteringTriangleNode : public QGraphicsItem
 {
@@ -124,6 +131,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		bool m_bqVisible = 0;
 		bool m_bShowEwaldSphere = 1;
+		bool m_bEwaldAroundKi = 0;
 
 	protected:
 		virtual QRectF boundingRect() const override;
@@ -172,7 +180,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		void SetqVisible(bool bVisible);
 		void SetBZVisible(bool bVisible);
-		void SetEwaldSphereVisible(bool bVisible);
+		void SetEwaldSphereVisible(EwaldSphere iEw);
 
 		const tl::Powder<int,t_real_glob>& GetPowder() const { return m_powder; }
 		const tl::Kd<t_real_glob>& GetKdLattice() const { return m_kdLattice; }

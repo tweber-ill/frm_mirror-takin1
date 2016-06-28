@@ -1,4 +1,9 @@
-#include "../helper/lattice.h"
+// gcc -I../.. -o tst_hkl tst_hkl.cpp ../../tlibs/log/log.cpp -lstdc++ -std=c++11 -lm 
+
+#include <iostream>
+#include "tlibs/math/lattice.h"
+
+using namespace tl;
 
 typedef ublas::vector<double> t_vec;
 
@@ -38,8 +43,7 @@ int main()
 
 	try
 	{
-		get_tas_angles<double>(lat, vec1,vec2, dKi,dKf, dh,dk,dl, 1, &dTheta, 
-&d2Theta);
+		get_tas_angles<double>(lat, vec1,vec2, dKi,dKf, dh,dk,dl, 1, &dTheta, &d2Theta);
 	}
 	catch(const std::exception& ex)
 	{

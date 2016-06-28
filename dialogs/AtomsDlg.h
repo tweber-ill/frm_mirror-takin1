@@ -26,8 +26,8 @@ namespace ublas = boost::numeric::ublas;
 class AtomsDlg : public QDialog, Ui::AtomsDlg
 { Q_OBJECT
 protected:
-	bool m_bEnableJ = 0;
 	QSettings *m_pSettings = nullptr;
+	bool m_bEnableJ = 0;
 
 protected:
 	virtual void closeEvent(QCloseEvent*) override;

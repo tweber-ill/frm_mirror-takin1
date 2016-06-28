@@ -1,4 +1,5 @@
 // gcc -o hopfgen hopfgen.cpp -std=c++11 -lstdc++ -lm
+// @author: tw
 
 #include "../../tlibs/math/linalg.h"
 #include <iostream>

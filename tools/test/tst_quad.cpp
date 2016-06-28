@@ -1,8 +1,10 @@
-// gcc -I/usr/include/lapacke -o tst_quad tst_quad.cpp ../helper/linalg2.cpp ../helper/log.cpp -lstdc++ -lm -llapacke -llapack -std=c++11
+// gcc -I../.. -I/usr/include/lapacke -o tst_quad tst_quad.cpp ../../tlibs/math/linalg2.cpp ../../tlibs/log/log.cpp -lstdc++ -lm -llapacke -llapack -std=c++11
 
-#include "../helper/linalg.h"
-#include "../helper/geo.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/geo.h"
 #include <iostream>
+
+using namespace tl;
 
 int main()
 {

@@ -1,4 +1,4 @@
-// gcc -DNO_QT -I. -o tst_refl tools/test/tst_refl.cpp libs/spacegroups/spacegroup_clp.cpp libs/spacegroups/crystalsys.cpp tlibs/log/log.cpp -lstdc++ -std=c++11 -lclipper-core -lm
+// gcc -DNO_QT -I. -I../.. -o tst_refl tst_refl.cpp ../../libs/spacegroups/spacegroup_clp.cpp ../../libs/spacegroups/crystalsys.cpp ../../tlibs/log/log.cpp -lstdc++ -std=c++11 -lclipper-core -lm
 
 #include <iostream>
 #include "libs/spacegroups/spacegroup_clp.h"

@@ -1,4 +1,4 @@
-/*
+/**
  * S(q,w) parameters dialog
  * @author tweber
  * @date aug-2015
@@ -6,7 +6,14 @@
  */
 
 #include "SqwParamDlg.h"
+#include <QMessageBox>
 
+enum
+{
+	SQW_NAME = 0,
+	SQW_TYPE = 1,
+	SQW_VAL = 2
+};
 
 SqwParamDlg::SqwParamDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSett(pSett)
@@ -38,9 +45,9 @@ void SqwParamDlg::SqwLoaded(const std::vector<SqwBase::t_var>& vecVars)
 	tableParams->setSortingEnabled(0);
 
 	tableParams->setRowCount(vecVars.size());
-	tableParams->setColumnWidth(0, 100);
-	tableParams->setColumnWidth(1, 75);
-	tableParams->setColumnWidth(2, 175);
+	tableParams->setColumnWidth(SQW_NAME, 100);
+	tableParams->setColumnWidth(SQW_TYPE, 75);
+	tableParams->setColumnWidth(SQW_VAL, 175);
 
 	int iRow=0;
 	for(const SqwBase::t_var& var : vecVars)
@@ -50,31 +57,32 @@ void SqwParamDlg::SqwLoaded(const std::vector<SqwBase::t_var>& vecVars)
 		const std::string& strVal = std::get<2>(var);
 
 
-		QTableWidgetItem *pItemName = tableParams->item(iRow, 0);
+		QTableWidgetItem *pItemName = tableParams->item(iRow, SQW_NAME);
 		if(!pItemName)
 		{
 			pItemName = new QTableWidgetItem();
-			tableParams->setItem(iRow, 0, pItemName);
+			tableParams->setItem(iRow, SQW_NAME, pItemName);
 		}
-		pItemName->setFlags(pItemName->flags() & ~Qt::ItemIsEditable);
+		pItemName->setFlags((pItemName->flags() & ~Qt::ItemIsEditable) | Qt::ItemIsUserCheckable);
+		pItemName->setCheckState(Qt::Unchecked);
 		pItemName->setText(strName.c_str());
 
 
-		QTableWidgetItem *pItemType = tableParams->item(iRow, 1);
+		QTableWidgetItem *pItemType = tableParams->item(iRow, SQW_TYPE);
 		if(!pItemType)
 		{
 			pItemType = new QTableWidgetItem();
-			tableParams->setItem(iRow, 1, pItemType);
+			tableParams->setItem(iRow, SQW_TYPE, pItemType);
 		}
 		pItemType->setFlags(pItemType->flags() & ~Qt::ItemIsEditable);
 		pItemType->setText(strType.c_str());
 
 
-		QTableWidgetItem *pItemVal = tableParams->item(iRow, 2);
+		QTableWidgetItem *pItemVal = tableParams->item(iRow, SQW_VAL);
 		if(!pItemVal)
 		{
 			pItemVal = new QTableWidgetItem();
-			tableParams->setItem(iRow, 2, pItemVal);
+			tableParams->setItem(iRow, SQW_VAL, pItemVal);
 		}
 		pItemVal->setFlags(pItemVal->flags() | Qt::ItemIsEditable);
 		pItemVal->setText(strVal.c_str());
@@ -88,17 +96,26 @@ void SqwParamDlg::SqwLoaded(const std::vector<SqwBase::t_var>& vecVars)
 void SqwParamDlg::SaveSqwParams()
 {
 	std::vector<SqwBase::t_var> vecVars;
+	bool bAnythingSelected=0;
 
 	for(int iRow=0; iRow<tableParams->rowCount(); ++iRow)
 	{
-		SqwBase::t_var var;
-		std::get<0>(var) = tableParams->item(iRow, 0)->text().toStdString();
-		std::get<2>(var) = tableParams->item(iRow, 2)->text().toStdString();
+		if(tableParams->item(iRow, SQW_NAME)->checkState() != Qt::Checked)
+			continue;
 
+		SqwBase::t_var var;
+		std::get<0>(var) = tableParams->item(iRow, SQW_NAME)->text().toStdString();
+		std::get<2>(var) = tableParams->item(iRow, SQW_VAL)->text().toStdString();
+
+		//std::cerr << std::get<0>(var) << " -> " << std::get<2>(var) << std::endl;
 		vecVars.push_back(std::move(var));
+		bAnythingSelected = 1;
 	}
 
-	emit SqwParamsChanged(vecVars);
+	if(bAnythingSelected)
+		emit SqwParamsChanged(vecVars);
+	else
+		QMessageBox::warning(this, "Warning", "No variable is selected for update.");
 }
 
 

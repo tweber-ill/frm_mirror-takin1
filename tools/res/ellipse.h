@@ -4,9 +4,11 @@
  * @date 14-may-2013
  * @license GPLv2
  *
- * @desc This is a reimplementation in C++ of the file rc_projs.m of the
- *	rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
- *	http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
+ * @desc This is a reimplementation in C++ of the files rc_projs.m and rc_int.m of the
+ *	- rescal5 package by Zinkin, McMorrow, Tennant, Farhi, and Wildes:
+ *	  http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/
+ *  - and the 'mcresplot.pl' program from McStas (www.mcstas.org)
+ *  - see also: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
  */
 
 #ifndef __RES_ELLIPSE__
@@ -50,8 +52,6 @@ template<class t_real = t_real_reso>
 struct Ellipsoid3d
 {
 	tl::QuadEllipsoid<t_real> quad;
-
-	//t_real alpha, beta, gamma;
 	ublas::matrix<t_real> rot;
 
 	t_real x_hwhm, y_hwhm, z_hwhm;
@@ -65,7 +65,6 @@ template<class t_real = t_real_reso>
 struct Ellipsoid4d
 {
 	tl::QuadEllipsoid<t_real> quad;
-
 	ublas::matrix<t_real> rot;
 
 	t_real x_hwhm, y_hwhm, z_hwhm, w_hwhm;
@@ -91,6 +90,7 @@ enum class EllipseCoordSys : int
 
 
 /*
+ * Integration of the quadratic part of the quadric
  * this is a 1:1 C++ reimplementation of 'rc_int' from 'mcresplot' and 'rescal5'
  * (see also [eck14], equ. 57)
  * integrate over row/column iIdx
@@ -100,31 +100,31 @@ ublas::matrix<T> ellipsoid_gauss_int(const ublas::matrix<T>& mat, std::size_t iI
 {
 	ublas::vector<T> b(mat.size1());
 	for(std::size_t i=0; i<mat.size1(); ++i)
-		b[i] = 2.*mat(i,iIdx);
+		b[i] = mat(i,iIdx);
 	b = tl::remove_elem(b, iIdx);
-	ublas::matrix<T> bb = ublas::outer_prod(b,b)/4.;
+	ublas::matrix<T> bb = ublas::outer_prod(b,b);
 
 	ublas::matrix<T> m = tl::remove_elems(mat, iIdx);
-	m -= bb/mat(iIdx, iIdx);
+	m -= bb / mat(iIdx, iIdx);
+
 	return m;
 }
 
 /*
- * (see also [eck14], equ. 57)
+ * Integration of the linear part of the quadric
+ * (see [eck14], equ. 57)
  */
 template<class T = t_real_reso>
 ublas::vector<T> ellipsoid_gauss_int(const ublas::vector<T>& vec,
 	const ublas::matrix<T>& mat, std::size_t iIdx)
 {
-	ublas::vector<T> vecInt(vec.size()-1);
+	ublas::vector<T> b(mat.size1());
+	for(std::size_t i=0; i<mat.size1(); ++i)
+		b[i] = mat(i,iIdx);
+	b = tl::remove_elem(b, iIdx);
 
-	for(std::size_t i=0, j=0; i<vec.size(); ++i)
-	{
-		if(i==iIdx) continue;
-
-		vecInt[j] = vec[i] - vec[iIdx]*mat(i,iIdx)/mat(iIdx, iIdx);
-		++j;
-	}
+	ublas::vector<T> vecInt = tl::remove_elem(vec, iIdx);
+	vecInt -= b*vec[iIdx] / mat(iIdx, iIdx);
 
 	return vecInt;
 }
@@ -175,12 +175,12 @@ ublas::vector<t_real> Ellipse2d<t_real>::operator()(t_real t) const
 {
 	ublas::vector<t_real> vec(2);
 
-    vec[0] = x_hwhm*std::cos(2.*tl::get_pi<t_real>()*t)*std::cos(phi)
+	vec[0] = x_hwhm*std::cos(2.*tl::get_pi<t_real>()*t)*std::cos(phi)
 		- y_hwhm*std::sin(2.*tl::get_pi<t_real>()*t)*std::sin(phi) + x_offs;
-    vec[1] = x_hwhm*std::cos(2.*tl::get_pi<t_real>()*t)*std::sin(phi)
+	vec[1] = x_hwhm*std::cos(2.*tl::get_pi<t_real>()*t)*std::sin(phi)
 		+ y_hwhm*std::sin(2.*tl::get_pi<t_real>()*t)*std::cos(phi) + y_offs;
 
-    return vec;
+	return vec;
 }
 
 template<class t_real>
@@ -214,11 +214,17 @@ void Ellipse2d<t_real>::GetCurvePoints(std::vector<t_real>& x, std::vector<t_rea
 // --------------------------------------------------------------------------------
 
 template<class T = t_real_reso>
-static void elli_gauss_int(tl::QuadEllipsoid<T>& quad, unsigned int iIdx)
+static void elli_gauss_int(tl::QuadEllipsoid<T>& quad, std::size_t iIdx)
 {
-	ublas::matrix<T> m_Qint = ellipsoid_gauss_int(quad.GetQ(), iIdx);
+	//tl::log_debug("before int: ", quad.GetR());
+
+	ublas::vector<T> vecRint = ellipsoid_gauss_int(quad.GetR(), quad.GetQ(), iIdx);
+	ublas::matrix<T> matQint = ellipsoid_gauss_int(quad.GetQ(), iIdx);
 	quad.RemoveElems(iIdx);
-	quad.SetQ(m_Qint);
+	quad.SetQ(matQint);
+	quad.SetR(vecRint);
+
+	//tl::log_debug("after int: ", quad.GetR());
 }
 
 
@@ -226,8 +232,7 @@ static const std::string g_strLabels[] = {"Q_{para} (1/A)", "Q_{ortho} (1/A)", "
 static const std::string g_strLabelsHKL[] = {"h (rlu)", "k (rlu)", "l (rlu)", "E (meV)"};
 static const std::string g_strLabelsHKLOrient[] = {"Reflex 1 (rlu)", "Reflex 2 (rlu)", "Up (rlu)", "E (meV)"};
 
-//template<class t_real = t_real_reso>
-static const std::string& ellipse_labels(int iCoord, EllipseCoordSys sys)
+static inline const std::string& ellipse_labels(int iCoord, EllipseCoordSys sys)
 {
 	switch(sys)
 	{
@@ -244,20 +249,24 @@ static const std::string& ellipse_labels(int iCoord, EllipseCoordSys sys)
 
 
 /*
- * this is a 1:1 C++ reimplementation of 'proj_elip' from 'mcresplot'
+ * this is a 1:1 C++ reimplementation of 'proj_elip' from 'mcresplot' and 'rescal5'
  * iX, iY: dimensions to plot
  * iInt: dimension to integrate
  * iRem1, iRem2: dimensions to remove
  */
-
 template<class t_real = t_real_reso>
-Ellipse2d<t_real> calc_res_ellipse(const ublas::matrix<t_real>& reso,
+Ellipse2d<t_real> calc_res_ellipse(
+	const ublas::matrix<t_real>& reso,		// quadratic part of quadric
+	const ublas::vector<t_real>& reso_vec,	// linear part
+	t_real reso_const,						// const part
 	const ublas::vector<t_real>& Q_avg,
 	int iX, int iY, int iInt, int iRem1, int iRem2)
 {
 	Ellipse2d<t_real> ell;
 	ell.quad.SetDim(4);
 	ell.quad.SetQ(reso);
+	ell.quad.SetR(reso_vec);
+	//ell.quad.SetS(reso_const);
 
 	ell.x_offs = ell.y_offs = 0.;
 
@@ -303,6 +312,7 @@ Ellipse2d<t_real> calc_res_ellipse(const ublas::matrix<t_real>& reso,
 
 	tl::QuadEllipsoid<t_real> quad(2);
 	ell.quad.GetPrincipalAxes(matRot, evals, &quad);
+	//tl::log_debug("old: ", ell.quad.GetR(), ", new: ", quad.GetR());
 
 	/*std::cout << "matrix: " << ell.quad.GetQ() << std::endl;
 	for(t_real dEval : evals)
@@ -311,6 +321,11 @@ Ellipse2d<t_real> calc_res_ellipse(const ublas::matrix<t_real>& reso,
 	std::cout << std::endl;*/
 
 	ell.phi = tl::rotation_angle(matRot)[0];
+
+	// test: set rotation directly
+	//ublas::matrix<t_real> matEvecs = tl::rotation_matrix_2d(ell.phi);
+	//quad.SetR(ublas::prod(matEvecs, ell.quad.GetR()));
+
 
 	// if rotation angle >= 90° -> choose other axis as first axis
 	/*if(std::fabs(ell.phi) >= M_PI/2.)
@@ -334,11 +349,24 @@ Ellipse2d<t_real> calc_res_ellipse(const ublas::matrix<t_real>& reso,
 	}*/
 
 
-	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
-	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
+	ell.x_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(0);
+	ell.y_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(1);
 
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
+
+	// linear part of quadric
+	const ublas::vector<t_real> vecTrans = ublas::prod(matRot, quad.GetPrincipalOffset());
+
+	if(vecTrans.size() == 2)
+	{
+		ell.x_offs += vecTrans[0];
+		ell.y_offs += vecTrans[1];
+	}
+	else
+	{
+		tl::log_err("Invalid ellipse shift.");
+	}
 
 	ell.area = quad.GetVolume();
 	ell.slope = std::tan(ell.phi);
@@ -363,7 +391,10 @@ Ellipse2d<t_real> calc_res_ellipse(const ublas::matrix<t_real>& reso,
 // --------------------------------------------------------------------------------
 
 template<class t_real = t_real_reso>
-Ellipsoid3d<t_real> calc_res_ellipsoid(const ublas::matrix<t_real>& reso,
+Ellipsoid3d<t_real> calc_res_ellipsoid(
+	const ublas::matrix<t_real>& reso,
+	const ublas::vector<t_real>& reso_vec,
+	t_real reso_const,
 	const ublas::vector<t_real>& Q_avg,
 	int iX, int iY, int iZ, int iInt, int iRem)
 {
@@ -371,6 +402,8 @@ Ellipsoid3d<t_real> calc_res_ellipsoid(const ublas::matrix<t_real>& reso,
 
 	ell.quad.SetDim(4);
 	ell.quad.SetQ(reso);
+	ell.quad.SetR(reso_vec);
+	//ell.quad.SetS(reso_const);
 
 	ell.x_offs = ell.y_offs = ell.z_offs = 0.;
 
@@ -408,13 +441,27 @@ Ellipsoid3d<t_real> calc_res_ellipsoid(const ublas::matrix<t_real>& reso,
 	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
 
 	//tl::log_info("Principal axes: ", quad.GetQ());
-	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
-	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
-	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
+	ell.x_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(0);
+	ell.y_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(1);
+	ell.z_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(2);
 
 	ell.x_offs = Q_offs[iX];
 	ell.y_offs = Q_offs[iY];
 	ell.z_offs = Q_offs[iZ];
+
+	// linear part of quadric
+	const ublas::vector<t_real> vecTrans = ublas::prod(ell.rot, quad.GetPrincipalOffset());
+
+	if(vecTrans.size() == 3)
+	{
+		ell.x_offs += vecTrans[0];
+		ell.y_offs += vecTrans[1];
+		ell.z_offs += vecTrans[2];
+	}
+	else
+	{
+		tl::log_err("Invalid ellipsoid shift.");
+	}
 
 	ell.vol = quad.GetVolume();
 	return ell;
@@ -423,26 +470,46 @@ Ellipsoid3d<t_real> calc_res_ellipsoid(const ublas::matrix<t_real>& reso,
 // --------------------------------------------------------------------------------
 
 template<class t_real = t_real_reso>
-Ellipsoid4d<t_real> calc_res_ellipsoid4d(const ublas::matrix<t_real>& reso, 
+Ellipsoid4d<t_real> calc_res_ellipsoid4d(
+	const ublas::matrix<t_real>& reso,
+	const ublas::vector<t_real>& reso_vec,
+	t_real reso_const,
 	const ublas::vector<t_real>& Q_avg)
 {
 	Ellipsoid4d<t_real> ell;
 	ell.quad.SetDim(4);
 	ell.quad.SetQ(reso);
+	ell.quad.SetR(reso_vec);
+	//ell.quad.SetS(reso_const);
 
 	std::vector<t_real> evals;
 	tl::QuadEllipsoid<t_real> quad(4);
 	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
 
-	ell.x_hwhm = tl::SIGMA2HWHM * quad.GetRadius(0);
-	ell.y_hwhm = tl::SIGMA2HWHM * quad.GetRadius(1);
-	ell.z_hwhm = tl::SIGMA2HWHM * quad.GetRadius(2);
-	ell.w_hwhm = tl::SIGMA2HWHM * quad.GetRadius(3);
+	ell.x_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(0);
+	ell.y_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(1);
+	ell.z_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(2);
+	ell.w_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(3);
 
 	ell.x_offs = Q_avg[0];
 	ell.y_offs = Q_avg[1];
 	ell.z_offs = Q_avg[2];
 	ell.w_offs = Q_avg[3];
+
+	// linear part of quadric
+	const ublas::vector<t_real> vecTrans = ublas::prod(ell.rot, quad.GetPrincipalOffset());
+
+	if(vecTrans.size() == 4)
+	{
+		ell.x_offs += vecTrans[0];
+		ell.y_offs += vecTrans[1];
+		ell.z_offs += vecTrans[2];
+		ell.w_offs += vecTrans[3];
+	}
+	else
+	{
+		tl::log_err("Invalid ellipsoid shift.");
+	}
 
 	// labels only valid for non-rotated system
 	ell.x_lab = g_strLabels[0];

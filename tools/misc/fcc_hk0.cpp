@@ -1,5 +1,8 @@
-// gcc -o fcc_hk0 fcc_hk0.cpp -std=c++11 -lstdc++ -lm
-// draws 1st BZ of fcc in hk0 plane
+/*
+ * gcc -o fcc_hk0 fcc_hk0.cpp -std=c++11 -lstdc++ -lm
+ * draws 1st BZ of fcc in hk0 plane
+ * @author: tweber
+ */
 
 #include <iostream>
 

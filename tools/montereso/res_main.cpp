@@ -93,7 +93,7 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 		dQ.resize(4, 0);
 		reso.Q_avg.resize(4, 0);
 		for(int iQ=0; iQ<4; ++iQ)
-			dQ[iQ] = tl::SIGMA2HWHM/sqrt(res(iQ,iQ));
+			dQ[iQ] = tl::get_SIGMA2HWHM<t_real_reso>()/sqrt(res(iQ,iQ));
 
 		std::ostringstream ostrVals;
 		ostrVals << "Gaussian HWHM values: ";
@@ -225,9 +225,11 @@ static EllipseDlg* show_ellipses(const Resolution& res)
 
 	matrix<t_real_reso> matDummy;
 	vector<t_real_reso> vecDummy;
-	pdlg->SetParams(res.res, res.Q_avg,
-		matDummy, vecDummy, matDummy, vecDummy,
-		ResoAlgo::UNKNOWN);
+	vector<t_real_reso> vecZero = zero_vector<t_real_reso>(4);
+
+	EllipseDlgParams params;
+	params.reso = &res.res;
+	pdlg->SetParams(params);
 
 	return pdlg;
 }

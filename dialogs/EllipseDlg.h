@@ -24,6 +24,25 @@
 #include "libs/qthelper.h"
 
 
+struct EllipseDlgParams
+{
+	const ublas::matrix<t_real_reso>* reso = nullptr;
+	const ublas::vector<t_real_reso>* reso_v = nullptr;
+	t_real_reso reso_s = 0;
+	const ublas::vector<t_real_reso>* Q_avg = nullptr;
+
+	const ublas::matrix<t_real_reso>* resoHKL = nullptr;
+	const ublas::vector<t_real_reso>* reso_vHKL = nullptr;
+	const ublas::vector<t_real_reso>* Q_avgHKL = nullptr;
+
+	const ublas::matrix<t_real_reso>* resoOrient = nullptr;
+	const ublas::vector<t_real_reso>* reso_vOrient = nullptr;
+	const ublas::vector<t_real_reso>* Q_avgOrient = nullptr;
+
+	ResoAlgo algo = ResoAlgo::UNKNOWN;
+};
+
+
 class EllipseDlg : public QDialog, Ui::EllipseDlg
 { Q_OBJECT
 	private:
@@ -31,6 +50,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 
 	protected:
 		bool m_bReady = 0;
+		bool m_bCenterOn0 = 1;
 		std::vector<std::unique_ptr<QwtPlotWrapper>> m_vecplotwrap;
 
 		std::vector<struct Ellipse2d<t_real_reso>> m_elliProj;
@@ -43,6 +63,10 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 
 	protected:
 		ublas::matrix<t_real_reso> m_reso, m_resoHKL, m_resoOrient;
+		ublas::vector<t_real_reso> m_reso_v = ublas::zero_vector<t_real_reso>(4),
+			m_reso_vHKL = ublas::zero_vector<t_real_reso>(4),
+			m_reso_vOrient = ublas::zero_vector<t_real_reso>(4);
+		t_real_reso m_reso_s = 0;
 		ublas::vector<t_real_reso> m_Q_avg, m_Q_avgHKL, m_Q_avgOrient;
 		ResoAlgo m_algo = ResoAlgo::UNKNOWN;
 
@@ -58,11 +82,9 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		void cursorMoved(const QPointF& pt);
 
 	public slots:
-		void SetParams(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
-			const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
-			const ublas::matrix<t_real_reso>& resoOrient, const ublas::vector<t_real_reso>& Q_avgOrient,
-			ResoAlgo algo);
+		void SetParams(const EllipseDlgParams& params);
 		void Calc();
+		void SetCenterOn0(bool bCenter);
 
 	public:
 		void SetTitle(const char* pcTitle);

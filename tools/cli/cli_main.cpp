@@ -201,7 +201,7 @@ void calc(const std::vector<std::string>& vecArgs)
 		<< res.dBraggFWHMs[3] << "\n";
 
 
-	std::vector<std::future<Ellipse<t_real>>> tasks_ell_proj, tasks_ell_slice;
+	std::vector<std::future<Ellipse2d<t_real>>> tasks_ell_proj, tasks_ell_slice;
 
 	for(unsigned int iEll=0; iEll<4; ++iEll)
 	{
@@ -210,23 +210,29 @@ void calc(const std::vector<std::string>& vecArgs)
 
 		const t_vec& Q_avg = res.Q_avg;
 		const t_mat& reso = res.reso;
+		const t_vec& reso_v = res.reso_v;
+		const t_real& reso_s = res.reso_s;
 
-		std::future<Ellipse<t_real>> ell_proj =
+		std::future<Ellipse2d<t_real>> ell_proj =
 			std::async(std::launch::deferred|std::launch::async,
 			[=, &reso, &Q_avg]()
-			{ return ::calc_res_ellipse<t_real>(reso, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
-		std::future<Ellipse<t_real>> ell_slice =
+			{ return ::calc_res_ellipse<t_real>(
+				reso, reso_v, reso_s,
+				Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+		std::future<Ellipse2d<t_real>> ell_slice =
 			std::async(std::launch::deferred|std::launch::async,
 			[=, &reso, &Q_avg]()
-			{ return ::calc_res_ellipse<t_real>(reso, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+			{ return ::calc_res_ellipse<t_real>(
+				reso, reso_v, reso_s,
+				Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
 
 		tasks_ell_proj.push_back(std::move(ell_proj));
 		tasks_ell_slice.push_back(std::move(ell_slice));
 	}
 	for(unsigned int iEll=0; iEll<4; ++iEll)
 	{
-		Ellipse<t_real> elliProj = tasks_ell_proj[iEll].get();
-		Ellipse<t_real> elliSlice = tasks_ell_slice[iEll].get();
+		Ellipse2d<t_real> elliProj = tasks_ell_proj[iEll].get();
+		Ellipse2d<t_real> elliSlice = tasks_ell_slice[iEll].get();
 		const std::string& strLabX = ::ellipse_labels(iParams[0][iEll][0], EllipseCoordSys::Q_AVG);
 		const std::string& strLabY = ::ellipse_labels(iParams[0][iEll][1], EllipseCoordSys::Q_AVG);
 

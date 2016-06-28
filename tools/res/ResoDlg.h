@@ -21,6 +21,7 @@
 #include "pop.h"
 #include "eck.h"
 #include "viol.h"
+#include "simple.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/prop.h"
 #ifndef NO_3D
@@ -29,6 +30,7 @@
 #include "ellipse.h"
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"
+#include "dialogs/EllipseDlg.h"
 
 
 // parameters that are not already in RealParams or RecipParams
@@ -84,8 +86,11 @@ protected:
 
 	EckParams m_tasparams;
 	ViolParams m_tofparams;
+	SimpleResoParams m_simpleparams;
+
 	ResoResults m_res;
 	ublas::matrix<t_real_reso> m_resoHKL, m_resoOrient;
+	ublas::vector<t_real_reso> m_reso_vHKL, m_reso_vOrient;
 	ublas::vector<t_real_reso> m_Q_avgHKL, m_Q_avgOrient;
 
 	bool m_bDontCalc;
@@ -143,10 +148,7 @@ public:
 	}
 
 signals:
-	void ResoResultsSig(const ublas::matrix<t_real_reso>& reso, const ublas::vector<t_real_reso>& Q_avg,
-		const ublas::matrix<t_real_reso>& resoHKL, const ublas::vector<t_real_reso>& Q_avgHKL,
-		const ublas::matrix<t_real_reso>& resoHKL_orient, const ublas::vector<t_real_reso>& Q_avgHKL_orient,
-		ResoAlgo algo);
+	void ResoResultsSig(const EllipseDlgParams& params);
 };
 
 #endif

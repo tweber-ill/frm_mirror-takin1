@@ -2,7 +2,7 @@
  * test instrument server
  * @author tweber
  * @date apr-2016
- * clang -o tst_server -I. tools/misc/tst_server.cpp tlibs/net/tcp.cpp tlibs/log/log.cpp -lstdc++ -std=c++11 -lboost_system -lboost_iostreams -lpthread -lm
+ * clang -o tst_server -I. -I../.. ../../tools/misc/tst_server.cpp ../../tlibs/net/tcp.cpp ../../tlibs/log/log.cpp -lstdc++ -std=c++11 -lboost_system -lboost_iostreams -lpthread -lm
  */
 
 #include "tlibs/net/tcp.h"
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 	}
 
 
-	TcpServer server;
+	TcpTxtServer<> server;
 	server.add_disconnect(disconnected);
 	server.add_server_start(connected);
 	server.add_receiver([&server](const std::string& strMsg)

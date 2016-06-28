@@ -1,50 +1,67 @@
-// gcc -I/usr/include/python2.7 -o tst_py test/tst_py.cpp monteconvo/sqw_py.cpp -std=c++11 -lstdc++ -lboost_python -lpython2.7
+//gcc -std=c++11 -I /usr/include/python2.7 -o tst_py tst_py.cpp -lstdc++ -lboost_python -lpython2.7
 
 #include <iostream>
-#include <iomanip>
 
-#include "../monteconvo/sqw_py.h"
-using t_var = SqwBase::t_var;
+#include <boost/python.hpp>
+namespace py = boost::python;
 
 
-void print_vars(const SqwPy& sqw)
+void list_keys(py::dict dict)
 {
-	std::vector<t_var> vecVars = sqw.GetVars();
-
-	std::cout << std::endl;
-	std::cout << std::setw(15) << std::left << "Variable"
-		<< std::setw(15) << std::left << "Type"
-		<< std::setw(15) << std::left << "Value" << std::endl;
-	for(unsigned i=0; i<3*15; ++i)
-		std::cout << "-";
-	std::cout << std::endl;
-
-	for(const t_var& var : vecVars)
+	std::cout << py::len(dict.items()) << " keys in dict:" << std::endl;
+	for(int i=0; i<py::len(dict.items()); ++i)
 	{
-		std::cout << std::setw(15) << std::left << std::get<0>(var)
-			<< std::setw(15) << std::left << std::get<1>(var)
-			<< std::setw(15) << std::left << std::get<2>(var)
+		std::cout << std::string(py::extract<std::string>(dict.items()[i][0]))
 			<< std::endl;
 	}
-	std::cout << std::endl;
 }
 
-int main()
+void call_py_fkt()
 {
-	SqwPy sqw("test/tstsqw.py");
+	try
+	{
+		py::object sys = py::import("sys");
+		py::dict sysdict = py::extract<py::dict>(sys.attr("__dict__"));
+		py::list path = py::extract<py::list>(sysdict["path"]);
+		path.append(".");
 
-	print_vars(sqw);
-	double dS = sqw(1., 0., 0., 0.);
-	std::cout << "S = " << dS << std::endl;
+		py::object mod = py::import("sqw");
+		py::dict moddict = py::extract<py::dict>(mod.attr("__dict__"));
+		py::object Sqw = moddict["TakinSqw"];
 
-	std::vector<t_var> vecVars = sqw.GetVars();
-	std::get<2>(vecVars[0]) = "987.6";
-	std::get<2>(vecVars[1]) = "np.array([[1., 2.]])";
-	sqw.SetVars(vecVars);
+		for(double dE=0.; dE<1.; dE+=0.1)
+		{
+			double dS = py::extract<double>(Sqw(1., 1., 1., dE));
+			std::cout << dS << std::endl;
+		}
 
-	print_vars(sqw);
-	dS = sqw(1., 0., 0., 0.);
-	std::cout << "S = " << dS << std::endl;
 
+
+		py::object mn = py::import("__main__");
+		py::dict mndict = py::extract<py::dict>(mn.attr("__dict__"));
+
+		std::cout << "\nmain dict:\n";
+		list_keys(mndict);
+
+		//std::cout << "\nsys dict:\n";
+		//list_keys(sysdict);
+
+		std::cout << "\nmod dict:\n";
+		list_keys(moddict);
+	}
+	catch(const py::error_already_set& ex)
+	{
+		PyErr_Print();
+		PyErr_Clear();
+	}
+}
+
+
+int main(int argc, char** argv)
+{
+	Py_Initialize();
+	call_py_fkt();
+
+	//Py_Finalize();
 	return 0;
 }

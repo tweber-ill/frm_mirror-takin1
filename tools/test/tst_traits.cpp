@@ -1,9 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include "../helper/linalg.h"
-#include "../helper/traits.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/helper/traits.h"
 
+using namespace tl;
 
 int main()
 {

@@ -1,9 +1,10 @@
-// moc-qt5 tst_quat2.cpp > tst_quat2.moc && gcc -fPIC -I/usr/include/qt5 -o tst_quat2 tst_quat2.cpp -lstdc++ -lm -lQt5Core -lQt5Gui -lQt5OpenGL -lQt5Widgets -lGL -std=c++14
+// moc-qt5 tst_quat2.cpp > tst_quat2.moc && gcc -fPIC -I. -I../.. -I/usr/include/qt5 -I/usr/include/freetype2 -o tst_quat2 tst_quat2.cpp -lstdc++ -lm -lQt5Core -lQt5Gui -lQt5OpenGL -lQt5Widgets -lGL -std=c++14
 
 #include <iostream>
 
-#include "../helper/linalg.h"
-#include "../helper/quat.h"
+#include "tlibs/math/linalg.h"
+#include "tlibs/math/quat.h"
+#include "tlibs/gfx/gl.h"
 
 #include <QtOpenGL/QGLWidget>
 #include <QtGui/QOpenGLFunctions_2_1>
@@ -12,6 +13,7 @@
 #include <QtGui/QGridLayout>
 #include <QtCore/QTimer>
 
+using namespace tl;
 
 typedef ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,4*4>> t_mat4;
 typedef ublas::matrix<double, ublas::row_major, ublas::bounded_array<double,3*3>> t_mat3;

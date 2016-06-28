@@ -1,12 +1,14 @@
-// gcc -DNO_IOSTR -o addscans ../../tlibs/file/loadinstr.cpp ../../tlibs/log/log.cpp addscans.cpp -std=c++11 -lstdc++ -lm
+// gcc -I../.. -I. -DNO_IOSTR -o addscans ../../tlibs/file/loadinstr.cpp ../../tlibs/log/log.cpp addscans.cpp -std=c++11 -lstdc++ -lm -lboost_system -lboost_filesystem
 // e.g. ./addscans /home/tweber/Auswertungen/MnSi-Mira-15/data3/11009_00016851.dat /home/tweber/Auswertungen/MnSi-Mira-15/data3/11009_00016867.dat merged.dat
 
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include "../../tlibs/file/loadinstr.h"
-#include "../../tlibs/log/log.h"
+#include "tlibs/file/loadinstr.h"
+#include "tlibs/log/log.h"
+#include "libs/globals.h"
 
+using t_real = t_real_glob;
 
 int main(int argc, char **argv)
 {
@@ -16,7 +18,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	tl::FileFrm dat0;
+	tl::FileFrm<> dat0;
 	tl::log_info("Loading file ", argv[1]);
 	if(!dat0.Load(argv[1]))
 	{
@@ -28,15 +30,15 @@ int main(int argc, char **argv)
 	std::string strMon = "mon2"; //dat0.GetMonVar();
 	tl::log_info("Count var: ", strCnt, ", monitor var: ", strMon);
 
-	tl::FileInstr::t_vecVals& vecCnt0 = dat0.GetCol(strCnt);
-	tl::FileInstr::t_vecVals& vecMon0 = dat0.GetCol(strMon);
+	tl::FileInstrBase<>::t_vecVals& vecCnt0 = dat0.GetCol(strCnt);
+	tl::FileInstrBase<>::t_vecVals& vecMon0 = dat0.GetCol(strMon);
 
 
 	for(int iArg=2; iArg<argc-1; ++iArg)
 	{
 		const char* pcFile = argv[iArg];
 
-		tl::FileFrm dat;
+		tl::FileFrm<> dat;
 		tl::log_info("Loading file ", pcFile);
 	        if(!dat.Load(pcFile))
 		{
@@ -44,8 +46,8 @@ int main(int argc, char **argv)
 			return -1;
 		}
 
-		const tl::FileInstr::t_vecVals& vecCnt = dat.GetCol(strCnt);
-		const tl::FileInstr::t_vecVals& vecMon = dat.GetCol(strMon);
+		const tl::FileInstrBase<>::t_vecVals& vecCnt = dat.GetCol(strCnt);
+		const tl::FileInstrBase<>::t_vecVals& vecMon = dat.GetCol(strMon);
 
 		if(vecCnt.size() != vecCnt0.size() || vecMon.size() != vecMon0.size())
 		{
@@ -71,12 +73,12 @@ int main(int argc, char **argv)
 	}
 
 	ofstr.precision(16);
-	const tl::FileInstr::t_vecColNames& vecColNames = dat0.GetColNames();
+	const tl::FileInstrBase<>::t_vecColNames& vecColNames = dat0.GetColNames();
 	for(unsigned int i=0; i<vecCnt0.size(); ++i)
 	{
 		for(const std::string& strColName : vecColNames)
 		{
-			tl::FileInstr::t_vecVals& vecCol = dat0.GetCol(strColName);
+			tl::FileInstrBase<>::t_vecVals& vecCol = dat0.GetCol(strColName);
 			ofstr << std::setw(20) << vecCol[i];
 		}
 		ofstr << "\n";

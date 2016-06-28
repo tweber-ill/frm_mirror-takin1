@@ -1,7 +1,8 @@
+// gcc -DNO_QT -I. -I../.. -o tst_tof ../../tools/test/tst_tof.cpp ../../tools/res/viol.cpp ../../tlibs/log/log.cpp -lstdc++ -std=c++11 -lstdc++ -lm
+
 #include "tools/res/viol.h"
 #include <iostream>
 
-// gcc -DNO_QT -I. -o tof tools/test/tof.cpp tools/res/viol.cpp tlibs/log/log.cpp -lstdc++ -std=c++11 -lstdc++ -lm
 int main()
 {
 	ViolParams parms;

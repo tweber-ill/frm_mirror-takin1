@@ -5,8 +5,8 @@
  * @date July 2012, Sep. 2014
  * @license GPLv2
  *
- * (based on Mcstas' mcresplot.pl perl program (www.mcstas.org)
- *  and the rescal5 matlab program)
+ * (based on Mcstas' 'mcresplot.pl' perl program: www.mcstas.org
+ *  and the rescal5 matlab program: http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/)
  */
 
 #include "res.h"
@@ -69,7 +69,7 @@ Resolution calc_res(const std::vector<vector<t_real_reso>>& Q_vec,
 	{
 		reso.dQ.resize(4, 0);
 		for(int iQ=0; iQ<4; ++iQ)
-			reso.dQ[iQ] = tl::SIGMA2HWHM/sqrt(res(iQ,iQ));
+			reso.dQ[iQ] = tl::get_SIGMA2HWHM<t_real_reso>()/sqrt(res(iQ,iQ));
 
 		tl::log_info("Resolution matrix: ", res);
 
@@ -173,8 +173,8 @@ Resolution calc_res(unsigned int uiLen,
 		kf[0]=_kf_x[uiRow]; kf[1]=_kf_y[uiRow]; kf[2]=_kf_z[uiRow];
 
 		Q = ki - kf;
-		t_real_reso Ei = tl::KSQ2E * inner_prod(ki, ki);
-		t_real_reso Ef = tl::KSQ2E * inner_prod(kf, kf);
+		t_real_reso Ei = tl::get_KSQ2E<t_real_reso>() * inner_prod(ki, ki);
+		t_real_reso Ef = tl::get_KSQ2E<t_real_reso>() * inner_prod(kf, kf);
 		dE = Ei - Ef;
 
 		// insert the energy into the Q vector

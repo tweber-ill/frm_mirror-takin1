@@ -69,14 +69,14 @@ protected:
 
 public:
 	MyQwtPlotPicker(QwtPlotWrapper *pPlotWrap, bool bNoTrackerSignal=0) :
-		m_pPlotWrap(pPlotWrap),
 		QwtPlotPicker(pPlotWrap->GetPlot()->xBottom, pPlotWrap->GetPlot()->yLeft,
 #if QWT_VER<6
 		QwtPlotPicker::PointSelection,
 #endif
 		QwtPlotPicker::NoRubberBand,
 		bNoTrackerSignal ? QwtPicker::AlwaysOn : QwtPicker::AlwaysOff,
-		pPlotWrap->GetPlot()->canvas())
+		pPlotWrap->GetPlot()->canvas()),
+		m_pPlotWrap(pPlotWrap)
 	{
 #if QWT_VER>=6
 		QwtPlotPicker::setStateMachine(new QwtPickerTrackerMachine());
