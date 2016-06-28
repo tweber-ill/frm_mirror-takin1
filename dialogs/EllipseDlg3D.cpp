@@ -11,7 +11,7 @@
 
 
 EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
-	: QDialog(pParent), m_pSettings(pSett)
+	: QDialog(pParent, Qt::WindowStaysOnTopHint), m_pSettings(pSett)
 {
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Resolution Ellipsoids");
