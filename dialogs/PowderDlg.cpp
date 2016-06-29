@@ -666,7 +666,7 @@ void PowderDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	editBeta->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "sample/beta").c_str(), 90., &bOk), g_iPrec).c_str());
 	editGamma->setText(tl::var_to_str(xml.Query<t_real>((strXmlRoot + "sample/gamma").c_str(), 90., &bOk), g_iPrec).c_str());
 
-	spinOrder->setValue(xml.Query<int>((strXmlRoot + "powder/maxhkl").c_str(), 10, &bOk));
+	spinOrder->setValue(xml.Query<int>((strXmlRoot + "powder/maxhkl").c_str(), 5, &bOk));
 	spinLam->setValue(xml.Query<t_real>((strXmlRoot + "powder/lambda").c_str(), 5., &bOk));
 
 	std::string strSpaceGroup = xml.Query<std::string>((strXmlRoot + "sample/spacegroup").c_str(), "", &bOk);
