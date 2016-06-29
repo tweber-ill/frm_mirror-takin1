@@ -7,7 +7,7 @@ using namespace tl::co;
 int main()
 {
 	auto factor = hbar*hbar / m_n;
-	std::cout << "Factor: " << factor / meV / angstrom / angstrom
+	std::cout << "Factor: " << double(factor / meV / angstrom / angstrom)
 				<< " meV A^2"
 				<< std::endl;
 
