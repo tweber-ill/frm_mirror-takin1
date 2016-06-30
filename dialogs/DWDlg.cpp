@@ -5,14 +5,12 @@
  * @license GPLv2
  */
 
-#include "DWDlg.h"
-
+#include "tlibs/helper/array.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/neutrons.h"
 #include "tlibs/math/atoms.h"
-#include "tlibs/helper/array.h"
 
-#include <boost/units/io.hpp>
+#include "DWDlg.h"
 
 using t_real = t_real_glob;
 static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
