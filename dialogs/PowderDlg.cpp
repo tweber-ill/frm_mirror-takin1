@@ -21,6 +21,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+
 using t_real = t_real_glob;
 static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
 
@@ -498,7 +499,7 @@ void PowderDlg::RepopulateSpaceGroups()
 		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
 		if(strFilter!="" &&
 				!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
-									t_striterrange(strFilter.begin(), strFilter.end())))
+					t_striterrange(strFilter.begin(), strFilter.end())))
 			continue;
 
 		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
@@ -715,13 +716,22 @@ void PowderDlg::SaveTable()
 		fileopt = QFileDialog::DontUseNativeDialog;
 
 	QString strDirLast = m_pSettings ? m_pSettings->value("powder/last_dir_table", ".").toString() : ".";
-	QString strFile = QFileDialog::getSaveFileName(this,
+	QString _strFile = QFileDialog::getSaveFileName(this,
 		"Save Table", strDirLast, "Data files (*.dat *.DAT)", nullptr, fileopt);
+
+	std::string strFile = _strFile.toStdString();
 
 	if(strFile != "")
 	{
-		if(!save_table(strFile.toStdString().c_str(), tablePowderLines))
+		if(save_table(strFile.c_str(), tablePowderLines))
+		{
+			std::string strDir = tl::get_dir(strFile);
+			m_pSettings->setValue("powder/last_dir_table", QString(strDir.c_str()));
+		}
+		else
+		{
 			QMessageBox::critical(this, "Error", "Could not save table data.");
+		}
 	}
 }
 

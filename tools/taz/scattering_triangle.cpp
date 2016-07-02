@@ -392,14 +392,28 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		painter->setPen(Qt::darkGreen);
 
 		painter->save();
+		t_real dAngleq = -lineq.angle();
 		painter->translate(ptKfQ);
-		painter->rotate(-lineq.angle());
-		painter->drawText(QPointF(lineq.length()/5.,-4.), QString::fromWCharArray(ostrq.str().c_str()));
+		painter->rotate(dAngleq);
+		painter->translate(QPointF(lineq.length()/5.,-4.));
+		if(flip_text(dAngleq))
+		{
+			painter->translate(QPointF(lineq.length()/2., 8.));
+			painter->rotate(180.);
+		}
+		painter->drawText(QPointF(0.,0.), QString::fromWCharArray(ostrq.str().c_str()));
 		painter->restore();
 
 		painter->save();
-		painter->rotate(-lineG.angle());
-		painter->drawText(QPointF(lineG.length()/5.,-4.), QString::fromWCharArray(ostrG.str().c_str()));
+		t_real dAngleG = -lineG.angle();
+		painter->rotate(dAngleG);
+		painter->translate(QPointF(lineG.length()/5.,-4.));
+		if(flip_text(dAngleG))
+		{
+			painter->translate(QPointF(lineG.length()/2., 8.));
+			painter->rotate(180.);
+		}
+		painter->drawText(QPointF(0.,0.), QString::fromWCharArray(ostrG.str().c_str()));
 		painter->rotate(lineG.angle());
 		painter->restore();
 
@@ -476,7 +490,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			ostrAngle.precision(g_iPrecGfx);
 			ostrAngle << std::fabs(dArcAngle) << strDEG;
 
-			
+
 			t_real dTotalAngle = -dBeginArcAngle-dArcAngle*0.5 + 180.;
 			t_real dTransScale = 50. * m_dZoom;
 			painter->save();
