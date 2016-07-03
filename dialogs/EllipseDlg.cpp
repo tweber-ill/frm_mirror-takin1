@@ -238,8 +238,8 @@ void EllipseDlg::Calc()
 			std::vector<t_real_reso>& vecYSlice = m_vecYCurvePoints[iEll*2+1];
 
 			t_real_reso dBBProj[4], dBBSlice[4];
-			m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, 512, dBBProj);
-			m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, 512, dBBSlice);
+			m_elliProj[iEll].GetCurvePoints(vecXProj, vecYProj, GFX_NUM_POINTS, dBBProj);
+			m_elliSlice[iEll].GetCurvePoints(vecXSlice, vecYSlice, GFX_NUM_POINTS, dBBSlice);
 
 			set_qwt_data<t_real_reso>()(*m_vecplotwrap[iEll], vecXProj, vecYProj, 0, false);
 			set_qwt_data<t_real_reso>()(*m_vecplotwrap[iEll], vecXSlice, vecYSlice, 1, false);

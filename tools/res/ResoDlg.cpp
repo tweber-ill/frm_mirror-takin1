@@ -842,7 +842,8 @@ void ResoDlg::ReadLastConfig()
 	groupGuide->setChecked(m_pSettings->value("reso/use_guide").value<bool>());
 
 	m_bDontCalc = bOldDontCalc;
-	Calc();
+	RefreshQEPos();
+	//Calc();
 }
 
 void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
@@ -925,7 +926,8 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	if(obGroupVal) groupGuide->setChecked(*obGroupVal);
 
 	m_bDontCalc = bOldDontCalc;
-	Calc();
+	RefreshQEPos();
+	//Calc();
 }
 
 

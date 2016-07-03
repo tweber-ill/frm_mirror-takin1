@@ -669,6 +669,7 @@ t_real ScatteringTriangle::GetMonoTwoTheta(t_real dMonoD, bool bPosSense) const
 	t_vec vecKi = qpoint_to_vec(mapFromItem(m_pNodeKiQ, 0, 0))
 		- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	t_real dKi = ublas::norm_2(vecKi) / m_dScaleFactor;
+
 	return tl::get_mono_twotheta(dKi/angs, dMonoD*angs, bPosSense) / rads;
 }
 
@@ -677,6 +678,7 @@ t_real ScatteringTriangle::GetAnaTwoTheta(t_real dAnaD, bool bPosSense) const
 	t_vec vecKf = qpoint_to_vec(mapFromItem(m_pNodeKfQ, 0, 0))
 		- qpoint_to_vec(mapFromItem(m_pNodeKiKf, 0, 0));
 	t_real dKf = ublas::norm_2(vecKf) / m_dScaleFactor;
+
 	return tl::get_mono_twotheta(dKf/angs, dAnaD*angs, bPosSense) / rads;
 }
 
@@ -1282,10 +1284,34 @@ void ScatteringTriangleScene::emitUpdate()
 	opts.bChangedAnaTwoTheta = 1;
 	opts.bChangedTwoTheta = 1;
 	opts.bChangedTheta = 1;
-	opts.dTwoTheta = m_pTri->GetTwoTheta(m_bSamplePosSense);
-	opts.dTheta = m_pTri->GetTheta(m_bSamplePosSense);
-	opts.dAnaTwoTheta = m_pTri->GetAnaTwoTheta(m_dAnaD, m_bAnaPosSense);
-	opts.dMonoTwoTheta = m_pTri->GetMonoTwoTheta(m_dMonoD, m_bMonoPosSense);
+
+	try
+	{
+		opts.dTwoTheta = m_pTri->GetTwoTheta(m_bSamplePosSense);
+		opts.dTheta = m_pTri->GetTheta(m_bSamplePosSense);
+	}
+	catch(const std::exception&)
+	{
+		opts.dTwoTheta = std::nan("");
+	}
+
+	try
+	{
+		opts.dMonoTwoTheta = m_pTri->GetMonoTwoTheta(m_dMonoD, m_bMonoPosSense);
+	}
+	catch(const std::exception&)
+	{
+		opts.dMonoTwoTheta = std::nan("");
+	}
+
+	try
+	{
+		opts.dAnaTwoTheta = m_pTri->GetAnaTwoTheta(m_dAnaD, m_bAnaPosSense);
+	}
+	catch(const std::exception&)
+	{
+		opts.dAnaTwoTheta = std::nan("");
+	}
 
 	//tl::log_debug("triangle: triangleChanged");
 	emit triangleChanged(opts);

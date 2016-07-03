@@ -31,14 +31,17 @@ namespace algo = boost::algorithm;
 using t_mat = ublas::matrix<t_real>;
 using t_vec = ublas::vector<t_real>;
 
-#define TABLE_ANGLE	0
-#define TABLE_Q		1
-#define TABLE_PEAK	2
-#define TABLE_MULT	3
-#define TABLE_FN	4
-#define TABLE_IN	5
-#define TABLE_FX	6
-#define TABLE_IX	7
+enum : unsigned int
+{
+	TABLE_ANGLE	= 0,
+	TABLE_Q		= 1,
+	TABLE_PEAK	= 2,
+	TABLE_MULT	= 3,
+	TABLE_FN	= 4,
+	TABLE_IN	= 5,
+	TABLE_FX	= 6,
+	TABLE_IX	= 7
+};
 
 PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett),
@@ -123,8 +126,6 @@ PowderDlg::~PowderDlg()
 
 void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 {
-	const unsigned int NUM_POINTS = 512;
-
 	using t_iter = typename std::vector<const PowderLine*>::const_iterator;
 	std::pair<t_iter, t_iter> pairMinMax =
 		boost::minmax_element(vecLines.begin(), vecLines.end(),
@@ -149,14 +150,14 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 	m_vecInt.clear();
 	m_vecIntx.clear();
 
-	m_vecTT.reserve(NUM_POINTS);
-	m_vecTTx.reserve(NUM_POINTS);
-	m_vecInt.reserve(NUM_POINTS);
-	m_vecIntx.reserve(NUM_POINTS);
+	m_vecTT.reserve(GFX_NUM_POINTS);
+	m_vecTTx.reserve(GFX_NUM_POINTS);
+	m_vecInt.reserve(GFX_NUM_POINTS);
+	m_vecIntx.reserve(GFX_NUM_POINTS);
 
-	for(unsigned int iPt=0; iPt<NUM_POINTS; ++iPt)
+	for(unsigned int iPt=0; iPt<GFX_NUM_POINTS; ++iPt)
 	{
-		t_real dTT = (dMinTT + (dMaxTT - dMinTT)/t_real(NUM_POINTS)*t_real(iPt));
+		t_real dTT = (dMinTT + (dMaxTT - dMinTT)/t_real(GFX_NUM_POINTS)*t_real(iPt));
 
 		t_real dInt = 0., dIntX = 0.;
 		for(const PowderLine *pLine : vecLines)
@@ -272,8 +273,16 @@ void PowderDlg::CalcPeaks()
 					t_real dQ = ublas::norm_2(vecBragg);
 					if(tl::is_nan_or_inf<t_real>(dQ)) continue;
 
-					t_real dAngle = tl::bragg_recip_twotheta(dQ/angs, dLam*angs, t_real(1.)) / tl::get_one_radian<t_real>();
-					if(tl::is_nan_or_inf<t_real>(dAngle)) continue;
+					t_real dAngle = 0;
+					try
+					{
+						dAngle = tl::bragg_recip_twotheta(dQ/angs, dLam*angs, t_real(1.)) / tl::get_one_radian<t_real>();
+						if(tl::is_nan_or_inf<t_real>(dAngle)) continue;
+					}
+					catch(const std::exception&)
+					{
+						continue;
+					}
 
 					//std::cout << "Q = " << dQ << ", angle = " << (dAngle/M_PI*180.) << std::endl;
 

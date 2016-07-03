@@ -42,7 +42,7 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 			setFont(font);
 	}
 
-	
+
 	tabInel->setColumnCount(3);
 	tabInel->setRowCount(0);
 	tabInel->setColumnWidth(ITEM_E, 150);
@@ -203,8 +203,6 @@ void SpurionDlg::CalcInel()
 
 void SpurionDlg::CalcBragg()
 {
-	const unsigned int NUM_POINTS = 512;
-
 	const bool bFixedEi = radioFixedEi->isChecked();
 	t_real dE = t_real(spinE->value());
 	bool bImag;
@@ -213,7 +211,7 @@ void SpurionDlg::CalcBragg()
 	const t_real dMinq = spinMinQ->value();
 	const t_real dMaxq = spinMaxQ->value();
 
-	m_vecQ = tl::linspace(dMinq, dMaxq, NUM_POINTS);
+	m_vecQ = tl::linspace(dMinq, dMaxq, GFX_NUM_POINTS);
 	m_vecE.clear();
 	m_vecE.reserve(m_vecQ.size());
 
