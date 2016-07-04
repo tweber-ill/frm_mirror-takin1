@@ -559,7 +559,7 @@ void GotoDlg::AddPosToList(t_real dh, t_real dk, t_real dl, t_real dki, t_real d
 	const std::wstring strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
 
 	std::wostringstream ostrHKL;
-	ostrHKL.precision(4);
+	ostrHKL.precision(g_iPrecGfx);
 	ostrHKL << "(" << pPos->dh << ", " << pPos->dk << ", " << pPos->dl << ") rlu\n";
 	ostrHKL << "ki = " << pPos->dki << " " << strAA;
 	ostrHKL << ", kf = " << pPos->dkf << " " << strAA << "\n";

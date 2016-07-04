@@ -248,7 +248,7 @@ void EllipseDlg::Calc()
 
 
 			std::ostringstream ostrSlope;
-			ostrSlope.precision(4);
+			ostrSlope.precision(g_iPrecGfx);
 			ostrSlope << "Projected ellipse (green):\n";
 			ostrSlope << "\tSlope: " << m_elliProj[iEll].slope << "\n";
 			ostrSlope << "\tAngle: " << tl::r2d(m_elliProj[iEll].phi) << strDeg << "\n";
