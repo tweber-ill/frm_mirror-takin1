@@ -1,5 +1,5 @@
-CC = gcc
-#CC = clang
+#CC = gcc
+CC = clang
 
 DO_DEBUG = 0
 NATIVE_OPTS = 1
@@ -137,7 +137,7 @@ ifeq ($(DO_DEBUG), 0)
 	else
 		FLAGS += -mtune=native
 	endif
-	#FLAGS += -ffast-math
+	FLAGS += -ffast-math
 	#FLAGS += -flto -fexpensive-optimizations
 	FLAGS += -DQT_NO_DEBUG
 	FLAGS += ${DEFINES}
