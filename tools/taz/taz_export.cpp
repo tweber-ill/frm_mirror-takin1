@@ -244,13 +244,12 @@ void TazDlg::ExportUCModel()
 	tl::X3d x3d;
 	std::ostringstream ostrComment;
 
-	std::vector<std::string> vecAllNames;
 	std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
 	std::vector<std::size_t> vecAllAtomTypes, vecIdxSC;
 
 	// unit cell
 	const t_real dUCSize = 1.;
-	std::tie(vecAllNames, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
+	std::tie(std::ignore, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
 		tl::generate_all_atoms<t_mat, t_vec, std::vector>
 			(vecTrafos, vecAtoms,
 			static_cast<const std::vector<std::string>*>(0), matA,
@@ -271,7 +270,8 @@ void TazDlg::ExportUCModel()
 		//t_vec vecCoord = vecAllAtoms[iAtom];
 
 		std::size_t iAtomType = vecAllAtomTypes[vecIdxSC[iAtom]];
-		t_vec vecCoord = vecAtomsSC[iAtom];
+		const t_vec& vecCentral = vecAtomsSC[iAtom];
+		t_vec vecCoord = vecCentral;
 		vecCoord.resize(4,1); vecCoord[3] = 1.;
 
 		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
@@ -280,6 +280,27 @@ void TazDlg::ExportUCModel()
 		tl::X3dSphere *pSphere = new tl::X3dSphere(dRadius);
 		pSphere->SetColor(vecColors[iAtomType % vecColors.size()]);
 		pTrafo->AddChild(pSphere);
+
+		// surroundings
+		/*if(iAtomType == 0)
+		{
+			std::vector<std::vector<std::size_t>> vecNN =
+				tl::get_neighbours<t_vec, std::vector, t_real>
+					(vecAtomsSC, vecCentral);
+
+			if(vecNN.size() > 1 && vecNN[1].size() > 2)
+			{
+				tl::X3dPolygon *pPoly = new tl::X3dPolygon();
+
+				for(std::size_t iNN : vecNN[1])
+				{
+					const t_vec& vecNeighbour = vecAtomsSC[iNN];
+					pPoly->AddVertex(vecNeighbour);
+				}
+
+				x3d.GetScene().AddChild(pPoly);
+			}
+		}*/
 
 		x3d.GetScene().AddChild(pTrafo);
 	}
@@ -295,7 +316,6 @@ void TazDlg::ExportUCModel()
 		ostrComment << "Super cell contains " << vecIdxSC.size() << " atoms.\n";
 
 
-	// only for cubic unit cells!
 	if(lattice.IsCubic())
 	{
 		tl::X3dCube *pCube = new tl::X3dCube(a,b,c);
