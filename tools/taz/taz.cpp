@@ -561,8 +561,12 @@ TazDlg::TazDlg(QWidget* pParent)
 	pDisconn->setIcon(load_icon("res/network-offline.svg"));
 	pMenuNet->addAction(pDisconn);
 
-	QAction *pNetCache = new QAction("Network Cache...", this);
 	pMenuNet->addSeparator();
+
+	QAction *pNetScanMon = new QAction("Scan Monitor...", this);
+	pMenuNet->addAction(pNetScanMon);
+
+	QAction *pNetCache = new QAction("Network Cache...", this);
 	pMenuNet->addAction(pNetCache);
 
 	QAction *pNetRefresh = new QAction("Refresh", this);
@@ -678,6 +682,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pDisconn, SIGNAL(triggered()), this, SLOT(Disconnect()));
 	QObject::connect(pNetRefresh, SIGNAL(triggered()), this, SLOT(NetRefresh()));
 	QObject::connect(pNetCache, SIGNAL(triggered()), this, SLOT(ShowNetCache()));
+	QObject::connect(pNetScanMon, SIGNAL(triggered()), this, SLOT(ShowNetScanMonitor()));
 #endif
 
 	QObject::connect(pSgList, SIGNAL(triggered()), this, SLOT(ShowSgListDlg()));
@@ -837,6 +842,7 @@ void TazDlg::DeleteDialogs()
 
 #if !defined NO_NET
 	if(m_pSrvDlg) { delete m_pSrvDlg; m_pSrvDlg = 0; }
+	if(m_pScanMonDlg) { delete m_pScanMonDlg; m_pScanMonDlg = 0; }
 	if(m_pNetCacheDlg) { delete m_pNetCacheDlg; m_pNetCacheDlg = 0; }
 	if(m_pNetCache) { delete m_pNetCache; m_pNetCache = 0; }
 #endif

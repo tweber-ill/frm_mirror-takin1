@@ -266,7 +266,7 @@ endif
 
 ifeq ($(USE_NET), 1)
 	OBJ_TAZ += obj/tcp.o obj/nicos.o obj/sics.o obj/taz_net.o \
-	obj/SrvDlg.o obj/NetCacheDlg.o
+	obj/SrvDlg.o obj/NetCacheDlg.o obj/ScanMonDlg.o
 else
 	OBJ_TAZ += obj/taz_nonet.o
 endif
@@ -409,6 +409,8 @@ obj/NeutronDlg.o: dialogs/NeutronDlg.cpp dialogs/NeutronDlg.h
 obj/SrvDlg.o: dialogs/SrvDlg.cpp dialogs/SrvDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/NetCacheDlg.o: dialogs/NetCacheDlg.cpp dialogs/NetCacheDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/ScanMonDlg.o: dialogs/ScanMonDlg.cpp dialogs/ScanMonDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/nicos.o: tools/taz/nicos.cpp tools/taz/nicos.h
 	${CC} ${FLAGS} -c -o $@ $<

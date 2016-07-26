@@ -55,10 +55,15 @@ void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPor
 
 	if(!m_pNetCacheDlg)
 		m_pNetCacheDlg = new NetCacheDlg(this, &m_settings);
+	if(!m_pScanMonDlg)
+		m_pScanMonDlg = new ScanMonDlg(this, &m_settings);
 
 	m_pNetCacheDlg->ClearAll();
 	QObject::connect(m_pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
 		m_pNetCacheDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
+	QObject::connect(m_pNetCache, SIGNAL(updated_cache_value(const std::string&, const CacheVal&)),
+		m_pScanMonDlg, SLOT(UpdateValue(const std::string&, const CacheVal&)));
+
 
 	// no manual node movement
 	if(m_sceneReal.GetTasLayout()) m_sceneReal.GetTasLayout()->AllowMouseMove(0);
@@ -103,6 +108,15 @@ void TazDlg::ShowNetCache()
 
 	m_pNetCacheDlg->show();
 	m_pNetCacheDlg->activateWindow();
+}
+
+void TazDlg::ShowNetScanMonitor()
+{
+	if(!m_pScanMonDlg)
+		m_pScanMonDlg = new ScanMonDlg(this, &m_settings);
+
+	m_pScanMonDlg->show();
+	m_pScanMonDlg->activateWindow();
 }
 
 void TazDlg::NetRefresh()

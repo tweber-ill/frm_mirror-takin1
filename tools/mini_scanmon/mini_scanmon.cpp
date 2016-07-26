@@ -64,7 +64,7 @@ void refresh()
 	std::string strMon = "Monitor:  ";
 	if(!bCountToMon)
 		strMon = "Time:     ";
-	ostr << "Counts:   " << std::fixed << dCtr << "\n";
+	ostr << "Counts:   " << std::fixed << dCtr << " +- " << std::sqrt(dCtr) << "\n";
 	ostr << "Expected: " << std::fixed << int(std::round(dExpCtr)) << " (" << dExpCtr << ")\n";
 	ostr << strMon << std::fixed << dMon << " of " << dSel 
 		<< (bCountToMon ? " counts" : " seconds") << "\n";

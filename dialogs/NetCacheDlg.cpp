@@ -1,4 +1,4 @@
-/*
+/**
  * Cache dialog
  * @author Tobias Weber
  * @date 21-oct-2014
@@ -19,8 +19,9 @@ enum
 {
 	ITEM_KEY = 0,
 	ITEM_VALUE = 1,
-	ITEM_TIMESTAMP = 2,
-	ITEM_AGE = 3
+	ITEM_TYPE = 2,
+	ITEM_TIMESTAMP = 3,
+	ITEM_AGE = 4,
 };
 
 NetCacheDlg::NetCacheDlg(QWidget* pParent, QSettings* pSett)
@@ -34,18 +35,22 @@ NetCacheDlg::NetCacheDlg(QWidget* pParent, QSettings* pSett)
 			setFont(font);
 	}
 
-	tableCache->setColumnCount(4);
+	tableCache->setColumnCount(5);
 	tableCache->setRowCount(0);
 	tableCache->setColumnWidth(ITEM_KEY, 200);
 	tableCache->setColumnWidth(ITEM_VALUE, 200);
+	tableCache->setColumnWidth(ITEM_TYPE, 50);
 	tableCache->setColumnWidth(ITEM_TIMESTAMP, 140);
 	tableCache->setColumnWidth(ITEM_AGE, 140);
 	tableCache->verticalHeader()->setDefaultSectionSize(tableCache->verticalHeader()->minimumSectionSize()+2);
 
 	tableCache->setHorizontalHeaderItem(ITEM_KEY, new QTableWidgetItem("Name"));
 	tableCache->setHorizontalHeaderItem(ITEM_VALUE, new QTableWidgetItem("Value"));
+	tableCache->setHorizontalHeaderItem(ITEM_TYPE, new QTableWidgetItem("Type"));
 	tableCache->setHorizontalHeaderItem(ITEM_TIMESTAMP, new QTableWidgetItem("Time Stamp"));
 	tableCache->setHorizontalHeaderItem(ITEM_AGE, new QTableWidgetItem("Age"));
+
+	tableCache->sortItems(ITEM_TYPE);
 
 #if QT_VER >= 5
 	QObject::connect(&m_timer, &QTimer::timeout, this, &NetCacheDlg::UpdateTimer);
@@ -87,7 +92,6 @@ void NetCacheDlg::accept()
 
 void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 {
-	const bool bSortTable = tableCache->isSortingEnabled();
 	tableCache->setSortingEnabled(0);
 
 	int iRow = 0;
@@ -112,6 +116,8 @@ void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 			SetValue(val.dTimestamp);
 		dynamic_cast<QTableWidgetItemWrapper<t_real>*>(tableCache->item(iRow, ITEM_AGE))->
 			SetValueKeepText(val.dTimestamp);
+		dynamic_cast<QTableWidgetItemWrapper<int>*>(tableCache->item(iRow, ITEM_TYPE))->
+			SetValue(int(val.ty));
 	}
 	else		// insert new items
 	{
@@ -119,12 +125,14 @@ void NetCacheDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 		tableCache->setRowCount(iRow+1);
 		tableCache->setItem(iRow, ITEM_KEY, new QTableWidgetItem(qstrKey));
 		tableCache->setItem(iRow, ITEM_VALUE, new QTableWidgetItem(qstrVal));
+		tableCache->setItem(iRow, ITEM_TYPE, new QTableWidgetItemWrapper<int>(int(val.ty)));
 		tableCache->setItem(iRow, ITEM_TIMESTAMP, new QTableWidgetItemWrapper<t_real>(val.dTimestamp));
 		tableCache->setItem(iRow, ITEM_AGE, new QTableWidgetItemWrapper<t_real>(val.dTimestamp, ""));
 	}
 
 	UpdateAge(iRow);
-	tableCache->setSortingEnabled(bSortTable);
+	tableCache->setSortingEnabled(1);
+	//emit UpdatedValue(strKey, val);
 }
 
 void NetCacheDlg::UpdateAll(const t_mapCacheVal& map)
@@ -140,7 +148,6 @@ void NetCacheDlg::UpdateAll(const t_mapCacheVal& map)
 
 void NetCacheDlg::UpdateAge(int iRow)
 {
-	const bool bSortTable = tableCache->isSortingEnabled();
 	tableCache->setSortingEnabled(0);
 
 	// update all
@@ -192,7 +199,7 @@ void NetCacheDlg::UpdateAge(int iRow)
 	/*if(iAgeS || bHadPrev)*/ { strAge += tl::var_to_str(iAgeS) + "s "; bHadPrev = 1; }
 	pItem->setText(strAge.c_str());
 
-	tableCache->setSortingEnabled(bSortTable);
+	tableCache->setSortingEnabled(1);
 }
 
 void NetCacheDlg::ClearAll()
