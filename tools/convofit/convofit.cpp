@@ -182,6 +182,7 @@ bool run_job(const std::string& strJob)
 	std::string strFitValues = prop.Query<std::string>("fit_parameters/values");
 	std::string strFitErrors = prop.Query<std::string>("fit_parameters/errors");
 	std::string strFitFixed = prop.Query<std::string>("fit_parameters/fixed");
+	bool bUseValuesFromModel = prop.Query<bool>("fit_parameters/reuse_values_from_model_file", 0);
 
 	std::vector<std::string> vecFitParams;
 	tl::get_tokens<std::string, std::string>(strFitParams, " \t\n,;", vecFitParams);
@@ -192,8 +193,8 @@ bool run_job(const std::string& strJob)
 	std::vector<bool> vecFitFixed;
 	tl::get_tokens<bool, std::string>(strFitFixed, " \t\n,;", vecFitFixed);
 
-	if(vecFitParams.size() != vecFitValues.size() || 
-		vecFitParams.size() != vecFitErrors.size() || 
+	if(vecFitParams.size() != vecFitValues.size() ||
+		vecFitParams.size() != vecFitErrors.size() ||
 		vecFitParams.size() != vecFitFixed.size())
 	{
 		tl::log_err("Fit parameter size mismatch.");
@@ -201,6 +202,40 @@ bool run_job(const std::string& strJob)
 	}
 
 
+	if(bUseValuesFromModel)
+	{
+		tl::DatFile<t_real, char> datMod;
+		if(datMod.Load(strModOutFile))
+		{
+			const auto& mapHdr = datMod.GetHeader();
+			//for(const auto& pair : mapHdr)
+			//	std::cout << pair.first << ", " << pair.second << std::endl;
+
+			for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
+			{
+				auto iterParam = mapHdr.find(vecFitParams[iParam]);
+				if(iterParam != mapHdr.end())
+				{
+					std::string strNewVal = iterParam->second;
+					strNewVal = tl::split_first<std::string>(strNewVal, "+-", 1, 1).first;
+
+					vecFitValues[iParam] = tl::str_to_var<t_real>(strNewVal);
+					tl::log_info("Overriding parameter \"", iterParam->first,
+						"\" with model value: ", strNewVal, ".");
+				}
+				else
+				{
+					tl::log_warn("Requested override parameter \"",
+						vecFitParams[iParam], "\" is not available in model file.");
+				}
+			}
+		}
+		else
+		{
+			tl::log_err("Parameter override using model file requested, but model file \"",
+				strModOutFile, "\" is invalid.");
+		}
+	}
 
 
 	// --------------------------------------------------------------------
@@ -293,7 +328,6 @@ bool run_job(const std::string& strJob)
 	// base parameter set for single-fits
 	set_tasreso_params_from_scan(vecResos[0], vecSc[0]);
 	// --------------------------------------------------------------------
-
 
 
 
@@ -410,7 +444,6 @@ bool run_job(const std::string& strJob)
 
 
 
-
 	// --------------------------------------------------------------------
 	// Fitting
 	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
@@ -522,19 +555,25 @@ bool run_job(const std::string& strJob)
 		std::system(ostr.str().c_str());*/
 
 		tl::DatFile<t_real, char> datMod;
-		datMod.Load(strModOutFile);
+		if(datMod.Load(strModOutFile))
+		{
+			tl::PlotObj<t_real> pltMod;
+			pltMod.vecX = datMod.GetColumn(0);
+			pltMod.vecY = datMod.GetColumn(1);
+			pltMod.linestyle = tl::STYLE_LINES_SOLID;
+			pltMod.odSize = 1.5;
 
-		tl::PlotObj<t_real> pltMod;
-		pltMod.vecX = datMod.GetColumn(0);
-		pltMod.vecY = datMod.GetColumn(1);
-		pltMod.linestyle = tl::STYLE_LINES_SOLID;
-		pltMod.odSize = 1.5;
-
-		plt->StartPlot();
-		plt->SetYLabel("Intensity");
-		plt->AddLine(pltMod);
-		plt->AddLine(pltMeas);
-		plt->FinishPlot();
+			plt->StartPlot();
+			plt->SetYLabel("Intensity");
+			plt->AddLine(pltMod);
+			plt->AddLine(pltMeas);
+			plt->FinishPlot();
+		}
+		else
+		{
+			tl::log_err("Cannot open model file \"",
+				strModOutFile, "\" for plotting.");
+		}
 	}
 	// --------------------------------------------------------------------
 
