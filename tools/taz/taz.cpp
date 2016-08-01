@@ -965,7 +965,12 @@ void TazDlg::closeEvent(QCloseEvent* pEvt)
 void TazDlg::ShowNeutronDlg()
 {
 	if(!m_pNeutronDlg)
+	{
 		m_pNeutronDlg = new NeutronDlg(this, &m_settings);
+		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+			m_pNeutronDlg, SLOT(paramsChanged(const RecipParams&)));
+		m_sceneRecip.emitAllParams();
+	}
 
 	m_pNeutronDlg->show();
 	m_pNeutronDlg->activateWindow();
@@ -987,7 +992,12 @@ void TazDlg::ShowGotoDlg()
 void TazDlg::ShowPowderDlg()
 {
 	if(!m_pPowderDlg)
+	{
 		m_pPowderDlg = new PowderDlg(this, &m_settings);
+		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+			m_pPowderDlg, SLOT(paramsChanged(const RecipParams&)));
+		m_sceneRecip.emitAllParams();
+	}
 
 	m_pPowderDlg->show();
 	m_pPowderDlg->activateWindow();

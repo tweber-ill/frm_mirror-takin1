@@ -53,26 +53,6 @@
        <string>Neutron Properties</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Velocity v (m/s):</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QLineEdit" name="editV">
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="sizePolicy">
@@ -86,7 +66,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="0" column="1" colspan="2">
         <widget class="QLineEdit" name="editLam">
          <property name="text">
           <string>5</string>
@@ -109,20 +89,7 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0" colspan="2">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="1">
+       <item row="1" column="1" colspan="2">
         <widget class="QLineEdit" name="editK">
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -142,14 +109,7 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QLineEdit" name="editT">
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
+       <item row="2" column="1" colspan="2">
         <widget class="QLineEdit" name="editE">
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -169,8 +129,22 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="3" column="1" colspan="2">
         <widget class="QLineEdit" name="editOm">
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Frequency f (THz):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" colspan="2">
+        <widget class="QLineEdit" name="editF">
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
@@ -189,17 +163,57 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Frequency f (THz):</string>
+       <item row="5" column="1" colspan="2">
+        <widget class="QLineEdit" name="editT">
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="QLineEdit" name="editF">
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Velocity v (m/s):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1" colspan="2">
+        <widget class="QLineEdit" name="editV">
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="3">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="8" column="1">
+        <widget class="QPushButton" name="btnSyncKi">
+         <property name="text">
+          <string>Get Initial k</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="2">
+        <widget class="QPushButton" name="btnSyncKf">
+         <property name="text">
+          <string>Get Final k</string>
          </property>
         </widget>
        </item>
@@ -449,25 +463,29 @@
   <tabstop>editF</tabstop>
   <tabstop>editT</tabstop>
   <tabstop>editV</tabstop>
-  <tabstop>radioBraggDirLam</tabstop>
-  <tabstop>radioBraggDirD</tabstop>
-  <tabstop>radioBraggDirTT</tabstop>
+  <tabstop>btnSyncKi</tabstop>
+  <tabstop>btnSyncKf</tabstop>
+  <tabstop>editEval</tabstop>
+  <tabstop>editEvalRes</tabstop>
+  <tabstop>buttonBox</tabstop>
   <tabstop>editBraggDirN</tabstop>
+  <tabstop>radioBraggDirLam</tabstop>
   <tabstop>editBraggDirLam</tabstop>
+  <tabstop>radioBraggDirD</tabstop>
   <tabstop>editBraggDirD</tabstop>
+  <tabstop>radioBraggDirTT</tabstop>
   <tabstop>editBraggDirT</tabstop>
   <tabstop>editBraggDirTT</tabstop>
-  <tabstop>radioBraggReciLam</tabstop>
-  <tabstop>radioBraggReciQ</tabstop>
-  <tabstop>radioBraggReciTT</tabstop>
   <tabstop>editBraggReciN</tabstop>
+  <tabstop>radioBraggReciLam</tabstop>
   <tabstop>editBraggReciLam</tabstop>
+  <tabstop>radioBraggReciQ</tabstop>
   <tabstop>editBraggReciQ</tabstop>
+  <tabstop>radioBraggReciTT</tabstop>
   <tabstop>editBraggReciT</tabstop>
   <tabstop>editBraggReciTT</tabstop>
   <tabstop>tableConst</tabstop>
   <tabstop>tableConv</tabstop>
-  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>
