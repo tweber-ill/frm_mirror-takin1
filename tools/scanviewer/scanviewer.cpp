@@ -1,4 +1,4 @@
-/*
+/**
  * Scan viewer
  * @author tweber
  * @date mar-2015
@@ -210,8 +210,17 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_pInstr->GetColNames();
 	for(const tl::FileInstrBase<t_real>::t_vecColNames::value_type& strCol : vecColNames)
 	{
-		comboX->addItem(strCol.c_str());
-		comboY->addItem(strCol.c_str());
+		const tl::FileInstrBase<t_real>::t_vecVals& vecCol = m_pInstr->GetCol(strCol);
+
+		std::string _strCol = strCol;
+		_strCol += " (mean: ";
+		_strCol += tl::var_to_str(tl::mean_value(vecCol), g_iPrecGfx);
+		_strCol += " +- ";
+		_strCol += tl::var_to_str(tl::std_dev(vecCol), g_iPrecGfx);
+		_strCol += ")";
+
+		comboX->addItem(_strCol.c_str(), QString(strCol.c_str()));
+		comboY->addItem(_strCol.c_str(), QString(strCol.c_str()));
 
 		if(vecScanVars.size() && vecScanVars[0]==strCol)
 			iIdxX = iCurIdx;
@@ -235,8 +244,8 @@ void ScanViewerDlg::PlotScan()
 	if(m_pInstr==nullptr || !m_bDoUpdate)
 		return;
 
-	m_strX = comboX->currentText().toStdString();
-	m_strY = comboY->currentText().toStdString();
+	m_strX = comboX->itemData(comboX->currentIndex(), Qt::UserRole).toString().toStdString();
+	m_strY = comboY->itemData(comboY->currentIndex(), Qt::UserRole).toString().toStdString();
 	std::string strTitle = m_pInstr->GetTitle();
 	m_strCmd = m_pInstr->GetScanCommand();
 
@@ -249,19 +258,19 @@ void ScanViewerDlg::PlotScan()
 	std::array<t_real, 3> arrPlaneX = m_pInstr->GetScatterPlane0();
 	std::array<t_real, 3> arrPlaneY = m_pInstr->GetScatterPlane1();
 
-	editA->setText(tl::var_to_str(arrLatt[0]).c_str());
-	editB->setText(tl::var_to_str(arrLatt[1]).c_str());
-	editC->setText(tl::var_to_str(arrLatt[2]).c_str());
-	editAlpha->setText(tl::var_to_str(tl::r2d(arrAng[0])).c_str());
-	editBeta->setText(tl::var_to_str(tl::r2d(arrAng[1])).c_str());
-	editGamma->setText(tl::var_to_str(tl::r2d(arrAng[2])).c_str());
+	editA->setText(tl::var_to_str(arrLatt[0], g_iPrec).c_str());
+	editB->setText(tl::var_to_str(arrLatt[1], g_iPrec).c_str());
+	editC->setText(tl::var_to_str(arrLatt[2], g_iPrec).c_str());
+	editAlpha->setText(tl::var_to_str(tl::r2d(arrAng[0]), g_iPrec).c_str());
+	editBeta->setText(tl::var_to_str(tl::r2d(arrAng[1]), g_iPrec).c_str());
+	editGamma->setText(tl::var_to_str(tl::r2d(arrAng[2]), g_iPrec).c_str());
 
-	editPlaneX0->setText(tl::var_to_str(arrPlaneX[0]).c_str());
-	editPlaneX1->setText(tl::var_to_str(arrPlaneX[1]).c_str());
-	editPlaneX2->setText(tl::var_to_str(arrPlaneX[2]).c_str());
-	editPlaneY0->setText(tl::var_to_str(arrPlaneY[0]).c_str());
-	editPlaneY1->setText(tl::var_to_str(arrPlaneY[1]).c_str());
-	editPlaneY2->setText(tl::var_to_str(arrPlaneY[2]).c_str());
+	editPlaneX0->setText(tl::var_to_str(arrPlaneX[0], g_iPrec).c_str());
+	editPlaneX1->setText(tl::var_to_str(arrPlaneX[1], g_iPrec).c_str());
+	editPlaneX2->setText(tl::var_to_str(arrPlaneX[2], g_iPrec).c_str());
+	editPlaneY0->setText(tl::var_to_str(arrPlaneY[0], g_iPrec).c_str());
+	editPlaneY1->setText(tl::var_to_str(arrPlaneY[1], g_iPrec).c_str());
+	editPlaneY2->setText(tl::var_to_str(arrPlaneY[2], g_iPrec).c_str());
 
 	labelKfix->setText(m_pInstr->IsKiFixed()
 		? QString::fromWCharArray(L"ki (1/\x212b):")
@@ -346,10 +355,10 @@ end)RAWSTR";
 			<< "\n";
 	}
 
-	tl::find_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first));
-	tl::find_and_replace<std::string>(strPySrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second));
-	tl::find_and_replace<std::string>(strPySrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY));
-	tl::find_and_replace<std::string>(strPySrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY));
+	tl::find_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first, g_iPrec));
+	tl::find_and_replace<std::string>(strPySrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second, g_iPrec));
+	tl::find_and_replace<std::string>(strPySrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY, g_iPrec));
+	tl::find_and_replace<std::string>(strPySrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY, g_iPrec));
 	tl::find_and_replace<std::string>(strPySrc, "%%TITLE%%", strTitle);
 	tl::find_and_replace<std::string>(strPySrc, "%%LABELX%%", strLabelX);
 	tl::find_and_replace<std::string>(strPySrc, "%%LABELY%%", strLabelY);
@@ -426,10 +435,10 @@ plt.show())RAWSTR";
 		ostrYErr << vecYErr[i] << ", ";
 	}
 
-	tl::find_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first));
-	tl::find_and_replace<std::string>(strPySrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second));
-	tl::find_and_replace<std::string>(strPySrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY));
-	tl::find_and_replace<std::string>(strPySrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY));
+	tl::find_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first, g_iPrec));
+	tl::find_and_replace<std::string>(strPySrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second, g_iPrec));
+	tl::find_and_replace<std::string>(strPySrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY, g_iPrec));
+	tl::find_and_replace<std::string>(strPySrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY, g_iPrec));
 	tl::find_and_replace<std::string>(strPySrc, "%%TITLE%%", strTitle);
 	tl::find_and_replace<std::string>(strPySrc, "%%LABELX%%", strLabelX);
 	tl::find_and_replace<std::string>(strPySrc, "%%LABELY%%", strLabelY);
@@ -546,10 +555,10 @@ R"RAWSTR(void scan_plot()
 		ostrYErr << vecYErr[i] << ", ";
 	}
 
-	tl::find_and_replace<std::string>(strRootSrc, "%%MINX%%", tl::var_to_str(*minmaxX.first));
-	tl::find_and_replace<std::string>(strRootSrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second));
-	tl::find_and_replace<std::string>(strRootSrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY));
-	tl::find_and_replace<std::string>(strRootSrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY));
+	tl::find_and_replace<std::string>(strRootSrc, "%%MINX%%", tl::var_to_str(*minmaxX.first, g_iPrec));
+	tl::find_and_replace<std::string>(strRootSrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second, g_iPrec));
+	tl::find_and_replace<std::string>(strRootSrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY, g_iPrec));
+	tl::find_and_replace<std::string>(strRootSrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY, g_iPrec));
 	tl::find_and_replace<std::string>(strRootSrc, "%%TITLE%%", strTitle);
 	tl::find_and_replace<std::string>(strRootSrc, "%%LABELX%%", strLabelX);
 	tl::find_and_replace<std::string>(strRootSrc, "%%LABELY%%", strLabelY);
