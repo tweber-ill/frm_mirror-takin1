@@ -11,7 +11,7 @@
 #include "tlibs/log/debug.h"
 #include "tlibs/helper/thread.h"
 #include "tlibs/gfx/gnuplot.h"
-//#include "tlibs/math/neutrons.h"
+#include "tlibs/time/stopwatch.h"
 #include "libs/version.h"
 
 #include <iostream>
@@ -159,6 +159,8 @@ bool run_job(const std::string& strJob)
 	{
 		plt.reset(new tl::GnuPlot<t_real>());
 		plt->Init();
+		std::string strTerm = prop.Query<std::string>("output/plot_term", "wxt noraise");
+		plt->SetTerminal(0, strTerm.c_str());
 	}
 
 	// thread-local debug log
@@ -595,6 +597,10 @@ bool run_job(const std::string& strJob)
 
 int main(int argc, char** argv)
 {
+#ifdef NO_TERM_CMDS
+	tl::Log::SetUseTermCmds(0);
+#endif
+
 	// plain C locale
 	std::setlocale(LC_ALL, "C");
 	std::locale::global(std::locale::classic());
@@ -656,6 +662,8 @@ int main(int argc, char** argv)
 		});
 	}
 
+	tl::Stopwatch<t_real> watch;
+	watch.start();
 	tp.StartTasks();
 
 	auto& lstFut = tp.GetFutures();
@@ -667,6 +675,13 @@ int main(int argc, char** argv)
 			tl::log_err("Job ", iTask, " (", argv[iTask], ") failed or fit invalid!");
 		++iTask;
 	}
+
+	watch.stop();
+	tl::log_info("================================================================================");
+	tl::log_info("Start time:     ", watch.GetStartTimeStr());
+	tl::log_info("Stop time:      ", watch.GetStopTimeStr());
+	tl::log_info("Execution time: ", watch.GetDur(), " s");
+	tl::log_info("================================================================================");
 
 	return 0;
 }

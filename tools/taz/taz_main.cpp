@@ -71,6 +71,9 @@ int main(int argc, char** argv)
 {
 	try
 	{
+#ifdef NO_TERM_CMDS
+		tl::Log::SetUseTermCmds(0);
+#endif
 		//std::string strLog = QDir::homePath().toStdString();
 		std::string strLog = QDir::tempPath().toStdString();
 		strLog += "/takin.log";
