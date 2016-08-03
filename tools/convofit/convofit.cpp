@@ -680,7 +680,7 @@ int main(int argc, char** argv)
 	tl::log_info("================================================================================");
 	tl::log_info("Start time:     ", watch.GetStartTimeStr());
 	tl::log_info("Stop time:      ", watch.GetStopTimeStr());
-	tl::log_info("Execution time: ", watch.GetDur(), " s");
+	tl::log_info("Execution time: ", tl::get_duration_str_secs<t_real>(watch.GetDur()));
 	tl::log_info("================================================================================");
 
 	return 0;

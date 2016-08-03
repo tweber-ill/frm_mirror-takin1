@@ -33,5 +33,4 @@ extern void add_resource_path(const std::string& strPath);
 extern std::string find_resource(const std::string& strFile);
 extern std::string find_resource_dir(const std::string& strDir);
 
-
 #endif

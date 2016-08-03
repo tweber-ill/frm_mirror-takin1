@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "tlibs/log/log.h"
 #include "tlibs/file/file.h"
+#include "tlibs/string/string.h"
 
 
 // -----------------------------------------------------------------------------
