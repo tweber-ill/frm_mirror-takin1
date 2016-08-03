@@ -1,0 +1,21 @@
+NOTES
+=====
+
+resolution algorithms
+---------------------
+
+ * CN is only based on direct collimation
+     => leaving the collimators open will fail
+ * ECK only considers the sample mosaic and geometry through secondary convolution
+     => differences between POP and ECK
+ * leaving direct collimation completely open can lead to different results between ALL algorithms
+
+
+
+mingw
+-----
+
+* use tools: mingw64-cmake, mingw64-make
+* needed libraries: /usr/x86_64-w64-mingw32/sys-root/mingw/bin/
+* qt plugins: /usr/x86_64-w64-mingw32/sys-root/mingw/lib/qt4/plugins
+

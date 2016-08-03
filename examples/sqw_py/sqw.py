@@ -44,6 +44,17 @@ def bose(E, T):
 	else:
 		return 1./(m.exp(abs(E)/(kB*T)) - 1.);
 
+# Bose factor which is cut off below Ecut
+def bose_cutoff(E, T, Ecut=0.02):
+	Ecut = abs(Ecut)
+	b = bose(E, T)
+
+	if abs(E) < Ecut:
+		bcut = bose(np.sign(E)*Ecut, T)
+		b = bcut
+
+	return b
+
 # -----------------------------------------------------------------------------
 
 
@@ -64,6 +75,8 @@ g_inc_sig = 0.02	# incoherent width
 g_inc_amp = 1.		# incoherent intensity
 
 g_T = 300.			# temperature
+
+g_b_cut = 0.02		# cutoff energy for Bose factor
 
 g_disp = 0			# which dispersion?
 
@@ -93,7 +106,7 @@ def TakinSqw(h, k, l, E):
 		S_m = gauss(E, -E_peak, g_sig, g_S0)
 		incoh = gauss(E, 0., g_inc_sig, g_inc_amp)
 
-		return (S_p + S_m)*bose(E, g_T) + incoh
+		return (S_p + S_m)*bose_cutoff(E, g_T, g_b_cut) + incoh
 	except ZeroDivisionError:
 		return 0.
 
