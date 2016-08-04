@@ -18,6 +18,7 @@
 #include <boost/filesystem.hpp>
 
 #include "tlibs/string/string.h"
+#include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
 
 using t_real = t_real_glob;
@@ -205,6 +206,8 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 	//std::string strMonVar = m_pInstr->GetMonVar();
 	//tl::log_info("Count var: ", strCntVar, ", mon var: ", strMonVar);
 
+	const std::wstring strPM = tl::get_spec_char_utf16("pm");
+
 	m_bDoUpdate = 0;
 	int iIdxX=-1, iIdxY=-1, iCurIdx=0;
 	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_pInstr->GetColNames();
@@ -212,15 +215,22 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 	{
 		const tl::FileInstrBase<t_real>::t_vecVals& vecCol = m_pInstr->GetCol(strCol);
 
-		std::string _strCol = strCol;
-		_strCol += " (mean: ";
-		_strCol += tl::var_to_str(tl::mean_value(vecCol), g_iPrecGfx);
-		_strCol += " +- ";
-		_strCol += tl::var_to_str(tl::std_dev(vecCol), g_iPrecGfx);
-		_strCol += ")";
+		t_real dMean = tl::mean_value(vecCol);
+		t_real dStd = tl::std_dev(vecCol);
+		bool bStdZero = tl::float_equal(dStd, t_real(0), g_dEpsGfx);
 
-		comboX->addItem(_strCol.c_str(), QString(strCol.c_str()));
-		comboY->addItem(_strCol.c_str(), QString(strCol.c_str()));
+		std::wstring _strCol = tl::str_to_wstr(strCol);
+		_strCol += bStdZero ? L" (value: " : L" (mean: ";
+		_strCol += tl::var_to_str<t_real, std::wstring>(dMean, g_iPrecGfx);
+		if(!bStdZero)
+		{
+			_strCol += L" " + strPM + L" ";
+			_strCol += tl::var_to_str<t_real, std::wstring>(dStd, g_iPrecGfx);
+		}
+		_strCol += L")";
+
+		comboX->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
+		comboY->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
 
 		if(vecScanVars.size() && vecScanVars[0]==strCol)
 			iIdxX = iCurIdx;
