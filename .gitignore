@@ -40,6 +40,7 @@ res/*
 !res/ellipses.svg
 !res/goto.svg
 !res/q.svg
+!res/takin.svg
 *.htm
 *.html
 !doc/index_help.html

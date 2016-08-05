@@ -464,21 +464,26 @@
              </sizepolicy>
             </property>
             <property name="currentIndex">
-             <number>1</number>
+             <number>2</number>
             </property>
             <item>
              <property name="text">
-              <string>Cooper-Nathans</string>
+              <string>TAS: Cooper-Nathans</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Popovici</string>
+              <string>TAS: Popovici</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Eckold-Sobolev</string>
+              <string>TAS: Eckold-Sobolev</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>TOF: Violini</string>
              </property>
             </item>
            </widget>

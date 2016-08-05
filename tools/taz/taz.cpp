@@ -57,6 +57,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	this->setupUi(this);
 	this->setWindowTitle(s_strTitle.c_str());
 	this->setFont(g_fontGen);
+	this->setWindowIcon(load_icon("res/takin.svg"));
+
 	btnAtoms->setEnabled(g_bHasScatlens);
 
 	if(m_settings.contains("main/geo"))

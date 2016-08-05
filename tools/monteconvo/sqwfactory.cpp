@@ -92,7 +92,7 @@ std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 	typename t_mapSqw::const_iterator iter = g_mapSqw.find(strName);
 	if(iter == g_mapSqw.end())
 	{
-		tl::log_warn("No S(q,w) model of name \"", strName, "\" found.");
+		tl::log_err("No S(q,w) model of name \"", strName, "\" found.");
 		return nullptr;
 	}
 
@@ -176,7 +176,7 @@ void load_sqw_plugins()
 
 void load_sqw_plugins()
 {
-	tl::log_err("No S(q,w) plugin interface available.");
+	tl::log_warn("No S(q,w) plugin interface available.");
 }
 
 #endif
