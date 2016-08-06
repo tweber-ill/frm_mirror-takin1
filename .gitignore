@@ -53,6 +53,9 @@ res/*
 !doc/reso-sqw.html
 !doc/reso-sqw-native.html
 !doc/reso-sqw-py.html
+doc/devel/**
+!doc/devel/.dir
+!doc/.dir
 takin.log
 *.qch
 *.qhc

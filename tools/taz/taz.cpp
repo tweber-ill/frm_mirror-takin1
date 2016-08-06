@@ -595,6 +595,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	pHelp->setIcon(load_icon("res/help-browser.svg"));
 	pMenuHelp->addAction(pHelp);
 
+	QAction *pDevelDoc = new QAction("Show Developer Help...", this);
+	pDevelDoc->setIcon(load_icon("res/help-browser.svg"));
+	pMenuHelp->addAction(pDevelDoc);
+
 	pMenuHelp->addSeparator();
 
 	QAction *pAboutQt = new QAction("About Qt...", this);
@@ -693,6 +697,7 @@ TazDlg::TazDlg(QWidget* pParent)
 		QObject::connect(pFormfactor, SIGNAL(triggered()), this, SLOT(ShowFormfactorDlg()));
 
 	QObject::connect(pHelp, SIGNAL(triggered()), this, SLOT(ShowHelp()));
+	QObject::connect(pDevelDoc, SIGNAL(triggered()), this, SLOT(ShowDevelDoc()));
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAbout()));
 	QObject::connect(pAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
@@ -1332,31 +1337,44 @@ void TazDlg::ShowAbout()
 
 void TazDlg::ShowHelp()
 {
-	std::string strHelpProg = "assistant";
-	std::string strHelpProgVer = strHelpProg + "-qt" + tl::var_to_str(QT_VER);
-
 	std::string strHelp = find_resource("res/takin.qhc");
-	if(strHelp == "")
+	if(strHelp != "")
 	{
-		QMessageBox::critical(this, "Error", "Help file could not be found.");
-		return;
+		std::string strHelpProg = "assistant";
+		std::string strHelpProgVer = strHelpProg + "-qt" + tl::var_to_str(QT_VER);
+
+		if(std::system((strHelpProgVer + " -collectionFile " + strHelp + "&").c_str()) == 0)
+			return;
+		if(std::system((strHelpProg + " -collectionFile " + strHelp + "&").c_str()) == 0)
+			return;
+
+		tl::log_warn("Help viewer not found, trying associated application.");
 	}
-
-	if(std::system((strHelpProgVer + " -collectionFile " + strHelp + "&").c_str()) == 0)
-		return;
-	if(std::system((strHelpProg + " -collectionFile " + strHelp + "&").c_str()) == 0)
-		return;
-
-	tl::log_warn("Help viewer not found, trying associated application.");
 
 
 	// try opening html files directly
 	std::string strHelpHtml = find_resource("doc/index_help.html");
-	std::string strFile = "file:///" + fs::absolute(strHelpHtml).string();
-	if(QDesktopServices::openUrl(QUrl(strFile.c_str())))
-		return;
+	if(strHelpHtml != "")
+	{
+		std::string strFile = "file:///" + fs::absolute(strHelpHtml).string();
+		if(QDesktopServices::openUrl(QUrl(strFile.c_str())))
+			return;
+	}
 
-	QMessageBox::critical(this, "Error", "Help viewer could not be started.");
+	QMessageBox::critical(this, "Error", "Help could not be displayed.");
+}
+
+void TazDlg::ShowDevelDoc()
+{
+	std::string strHelpHtml = find_resource("doc/devel/html/index.html");
+	if(strHelpHtml != "")
+	{
+		std::string strFile = "file:///" + fs::absolute(strHelpHtml).string();
+		if(QDesktopServices::openUrl(QUrl(strFile.c_str())))
+			return;
+	}
+
+	QMessageBox::critical(this, "Error", "Documentation could not be displayed.");
 }
 
 #include "taz.moc"
