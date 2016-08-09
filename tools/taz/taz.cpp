@@ -596,6 +596,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuHelp->addAction(pHelp);
 
 	QAction *pDevelDoc = new QAction("Show Developer Help...", this);
+	if(find_resource("doc/devel/html/index.html", 0) == "")
+		pDevelDoc->setEnabled(0);
 	pDevelDoc->setIcon(load_icon("res/help-browser.svg"));
 	pMenuHelp->addAction(pDevelDoc);
 
