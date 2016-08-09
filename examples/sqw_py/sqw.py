@@ -91,6 +91,8 @@ def TakinInit():
 # called for every Monte-Carlo point
 def TakinSqw(h, k, l, E):
 	try:
+#		print("h={0}, k={1}, l={2}, E={3}".format(h,k,l,E))
+
 		Q = np.array([h,k,l])
 		q = la.norm(Q - g_G)
 
@@ -106,7 +108,9 @@ def TakinSqw(h, k, l, E):
 		S_m = gauss(E, -E_peak, g_sig, g_S0)
 		incoh = gauss(E, 0., g_inc_sig, g_inc_amp)
 
-		return (S_p + S_m)*bose_cutoff(E, g_T, g_b_cut) + incoh
+		S = (S_p + S_m)*bose_cutoff(E, g_T, g_b_cut) + incoh
+#		print("S={0}".format(S))
+		return S
 	except ZeroDivisionError:
 		return 0.
 
