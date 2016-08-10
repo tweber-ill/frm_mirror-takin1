@@ -57,7 +57,6 @@ bool run_job(const std::string& strJob)
 	t_real dFieldOverride = prop.QueryAndParse<t_real>("input/field_override");
 	std::string strCntCol = prop.Query<std::string>("input/counts_col");
 	std::string strMonCol = prop.Query<std::string>("input/monitor_col");
-
 	std::string strResFile = prop.Query<std::string>("input/instrument_file");
 	if(strResFile == "")	// "instrument_file_0" is synonymous to "instrument_file"
 		strResFile = prop.Query<std::string>("input/instrument_file_0");
@@ -602,7 +601,7 @@ int main(int argc, char** argv)
 #endif
 
 	// plain C locale
-	std::setlocale(LC_ALL, "C");
+	/*std::*/setlocale(LC_ALL, "C");
 	std::locale::global(std::locale::classic());
 
 	// install exit signal handlers
