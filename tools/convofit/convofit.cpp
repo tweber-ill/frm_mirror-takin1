@@ -183,7 +183,14 @@ bool run_job(const std::string& strJob)
 	std::string strFitValues = prop.Query<std::string>("fit_parameters/values");
 	std::string strFitErrors = prop.Query<std::string>("fit_parameters/errors");
 	std::string strFitFixed = prop.Query<std::string>("fit_parameters/fixed");
+
+	// parameter using either strModInFile if it is defined or strModOutFile if
+	// reuse_values_from_model_file is set to 1
 	bool bUseValuesFromModel = prop.Query<bool>("fit_parameters/reuse_values_from_model_file", 0);
+	std::string strModInFile = prop.Query<std::string>("input/model_file");
+	if(strModInFile != "")
+		bUseValuesFromModel = 1;
+
 
 	std::vector<std::string> vecFitParams;
 	tl::get_tokens<std::string, std::string>(strFitParams, " \t\n,;", vecFitParams);
@@ -205,8 +212,19 @@ bool run_job(const std::string& strJob)
 
 	if(bUseValuesFromModel)
 	{
+		const std::string *pModOverrideFile = &strModOutFile;
+		if(strModInFile != "")
+		{
+			pModOverrideFile = &strModInFile;
+			tl::log_info("Overriding parameters with model input file \"", strModInFile, "\".");
+		}
+		else
+		{
+			tl::log_info("Overriding parameters with model output file \"", strModOutFile, "\".");
+		}
+
 		tl::DatFile<t_real, char> datMod;
-		if(datMod.Load(strModOutFile))
+		if(datMod.Load(*pModOverrideFile))
 		{
 			const auto& mapHdr = datMod.GetHeader();
 			//for(const auto& pair : mapHdr)
@@ -234,7 +252,7 @@ bool run_job(const std::string& strJob)
 		else
 		{
 			tl::log_err("Parameter override using model file requested, but model file \"",
-				strModOutFile, "\" is invalid.");
+				*pModOverrideFile, "\" is invalid.");
 		}
 	}
 
@@ -550,7 +568,7 @@ bool run_job(const std::string& strJob)
 	if(bPlot)
 	{
 		/*std::ostringstream ostr;
-		ostr << "gnuplot -p -e \"plot \\\"" 
+		ostr << "gnuplot -p -e \"plot \\\""
 			<< strModOutFile.c_str() << "\\\" using 1:2 w lines lw 1.5 lt 1, \\\""
 			<< strScOutFile.c_str() << "\\\" using 1:2:3 w yerrorbars ps 1 pt 7\"\n";
 		std::system(ostr.str().c_str());*/
@@ -613,6 +631,7 @@ int main(int argc, char** argv)
 		if(err) tl::log_err("Error: ", err.message(), ", error category: ", err.category().name(), ".");
 		ioSrv.stop();
 #ifdef SIGKILL
+		std::system("killall -s KILL gnuplot");
 		std::raise(SIGKILL);
 #endif
 		exit(-1);
