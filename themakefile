@@ -308,7 +308,7 @@ xmonteconvo: ${OBJ_MONTECONVO} obj/xmconv_main.o obj/ConvoDlg.o obj/qthelper.o \
 
 convofit: ${OBJ_CONVOFIT}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/convofit $+ \
-		-lMinuit2 ${STD_LIBS} ${BASIC_LIBS} ${PY_LIBS} ${LAPACK_LIBS} ${DL_LIBS}
+		-lMinuit2 ${STD_LIBS} ${BASIC_LIBS} -lboost_program_options ${PY_LIBS} ${LAPACK_LIBS} ${DL_LIBS}
 	${STRIP} convofit
 convoseries: ${OBJ_CONVOSERIES}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/convoseries $+ ${BASIC_LIBS} ${STD_LIBS}
