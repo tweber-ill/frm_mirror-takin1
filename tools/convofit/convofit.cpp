@@ -37,7 +37,7 @@ namespace asio = boost::asio;
 namespace sys = boost::system;
 namespace opts = boost::program_options;
 
-bool g_bSkipFit;
+bool g_bSkipFit = 0;
 
 
 bool run_job(const std::string& strJob)
@@ -147,7 +147,9 @@ bool run_job(const std::string& strJob)
 	int iStrat = prop.Query<int>("fitter/strategy", 0);
 	t_real dSigma = prop.Query<t_real>("fitter/sigma", 1.);
 
-	bool bDoFit = prop.Query<bool>("fitter/do_fit", 1) || g_bSkipFit;
+	bool bDoFit = prop.Query<bool>("fitter/do_fit", 1);
+	if(g_bSkipFit) bDoFit = 0;
+
 	unsigned int iMaxFuncCalls = prop.Query<unsigned>("fitter/max_funccalls", 0);
 	t_real dTolerance = prop.Query<t_real>("fitter/tolerance", 0.5);
 
@@ -686,7 +688,8 @@ int main(int argc, char** argv)
 		opts::store(parsedopts, opts_map);
 		opts::notify(opts_map);
 
-		g_bSkipFit = (opts_map.count("skip-fit") != 0);
+		if(opts_map.count("skip-fit"))
+			g_bSkipFit = opts_map["skip-fit"].as<bool>();
 		if(opts_map.count("job-file"))
 			vecJobs = opts_map["job-file"].as<decltype(vecJobs)>();
 

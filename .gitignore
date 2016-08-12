@@ -8,6 +8,8 @@
 ui/*.h
 bin/*
 !bin/.dir
+obj/*
+!obj/.dir
 perf.data
 perf.data.old
 gmon.out
