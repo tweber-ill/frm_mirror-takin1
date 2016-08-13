@@ -37,7 +37,10 @@ namespace asio = boost::asio;
 namespace sys = boost::system;
 namespace opts = boost::program_options;
 
+// global overrides
 bool g_bSkipFit = 0;
+bool g_bUseValuesFromModel = 0;
+unsigned int g_iNumNeutrons = 0;
 
 
 bool run_job(const std::string& strJob)
@@ -136,6 +139,9 @@ bool run_job(const std::string& strJob)
 	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
 	unsigned iNumSample = prop.Query<unsigned>("montecarlo/sample_positions", 1);
 
+	if(g_iNumNeutrons > 0)
+		iNumNeutrons = g_iNumNeutrons;
+
 	std::string strResAlgo = prop.Query<std::string>("resolution/algorithm", "pop");
 	bool bUseR0 = prop.Query<bool>("resolution/use_r0", 0);
 	bool bResFocMonoV = prop.Query<bool>("resolution/focus_mono_v", 0);
@@ -195,7 +201,7 @@ bool run_job(const std::string& strJob)
 	// reuse_values_from_model_file is set to 1
 	bool bUseValuesFromModel = prop.Query<bool>("fit_parameters/reuse_values_from_model_file", 0);
 	std::string strModInFile = prop.Query<std::string>("input/model_file");
-	if(strModInFile != "")
+	if(g_bUseValuesFromModel || strModInFile != "")
 		bUseValuesFromModel = 1;
 
 
@@ -423,6 +429,7 @@ bool run_job(const std::string& strJob)
 	if(vecSc.size() > 1)
 		mod.SetScans(&vecSc);
 
+	tl::log_info("Number of neutrons: ", iNumNeutrons, ".");
 	mod.SetNumNeutrons(iNumNeutrons);
 	mod.SetUseR0(bUseR0);
 
@@ -623,6 +630,13 @@ bool run_job(const std::string& strJob)
 
 
 
+template<class T>
+static inline void get_prog_option(opts::variables_map& map, const char* pcKey, T& var)
+{
+	if(map.count(pcKey))
+		var = map[pcKey].as<T>();
+}
+
 
 int main(int argc, char** argv)
 {
@@ -674,11 +688,23 @@ int main(int argc, char** argv)
 		std::vector<std::string> vecJobs;
 
 		// normal args
-		opts::options_description args("convofit options");
+		opts::options_description args("convofit options (overriding job file settings)");
 		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("job-file", opts::value<decltype(vecJobs)>(), "convolution fitting job file")));
+			new opts::option_description("job-file",
+			opts::value<decltype(vecJobs)>(&vecJobs),
+			"convolution fitting job file")));
 		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("skip-fit", opts::bool_switch(), "skip the fitting step")));
+			new opts::option_description("neutrons",
+			opts::value<decltype(g_iNumNeutrons)>(&g_iNumNeutrons),
+			"neutron count")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("skip-fit",
+			opts::bool_switch(&g_bSkipFit),
+			"skip the fitting step")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("keep-model",
+			opts::bool_switch(&g_bUseValuesFromModel),
+			"keep the initial values from the model file")));
 
 		// positional args
 		opts::positional_options_description args_pos;
@@ -693,10 +719,7 @@ int main(int argc, char** argv)
 		opts::store(parsedopts, opts_map);
 		opts::notify(opts_map);
 
-		if(opts_map.count("skip-fit"))
-			g_bSkipFit = opts_map["skip-fit"].as<bool>();
-		if(opts_map.count("job-file"))
-			vecJobs = opts_map["job-file"].as<decltype(vecJobs)>();
+		//get_prog_option<decltype(vecJobs)>(opts_map, "job-file", vecJobs);
 
 
 		if(vecJobs.size() >= 2)
