@@ -242,12 +242,17 @@ bool run_job(const std::string& strJob)
 				auto iterParam = mapHdr.find(vecFitParams[iParam]);
 				if(iterParam != mapHdr.end())
 				{
-					std::string strNewVal = iterParam->second;
-					strNewVal = tl::split_first<std::string>(strNewVal, "+-", 1, 1).first;
+					std::pair<std::string, std::string> pairVal =
+						tl::split_first<std::string>(iterParam->second, "+-", 1, 1);
+
+					const std::string& strNewVal = pairVal.first;
+					const std::string& strNewErr = pairVal.second;
 
 					vecFitValues[iParam] = tl::str_to_var<t_real>(strNewVal);
+					vecFitErrors[iParam] = tl::str_to_var<t_real>(strNewErr);
+
 					tl::log_info("Overriding parameter \"", iterParam->first,
-						"\" with model value: ", strNewVal, ".");
+						"\" with model value: ", strNewVal, " +- ", strNewErr, ".");
 				}
 				else
 				{
