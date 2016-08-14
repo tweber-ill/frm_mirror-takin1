@@ -41,6 +41,8 @@ namespace opts = boost::program_options;
 bool g_bSkipFit = 0;
 bool g_bUseValuesFromModel = 0;
 unsigned int g_iNumNeutrons = 0;
+std::string g_strSetParams;
+std::string g_strOutFileSuffix;
 
 
 bool run_job(const std::string& strJob)
@@ -75,6 +77,13 @@ bool run_job(const std::string& strJob)
 	std::string strFieldVar = prop.Query<std::string>("input/sqw_field_var", "");
 	std::string strSetParams = prop.Query<std::string>("input/sqw_set_params", "");
 	bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
+
+	if(g_strSetParams != "")
+	{
+		if(strSetParams != "")
+			strSetParams += "; ";
+		strSetParams += g_strSetParams;
+	}
 
 	Filter filter;
 	filter.bLower = prop.Exists("input/filter_lower");
@@ -165,6 +174,13 @@ bool run_job(const std::string& strJob)
 	bool bPlot = prop.Query<bool>("output/plot", 0);
 	bool bPlotIntermediate = prop.Query<bool>("output/plot_intermediate", 0);
 	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot_points", 128);
+
+	if(g_strOutFileSuffix != "")
+	{
+		strScOutFile += g_strOutFileSuffix;
+		strModOutFile += g_strOutFileSuffix;
+		strLogOutFile += g_strOutFileSuffix;
+	}
 
 	std::unique_ptr<tl::GnuPlot<t_real>> plt;
 	if(bPlot || bPlotIntermediate)
@@ -705,6 +721,15 @@ int main(int argc, char** argv)
 			new opts::option_description("keep-model",
 			opts::bool_switch(&g_bUseValuesFromModel),
 			"keep the initial values from the model file")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("model-params",
+			opts::value<decltype(g_strSetParams)>(&g_strSetParams),
+			"set S(q,w) model parameters")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("outfile-suffix",
+			opts::value<decltype(g_strOutFileSuffix)>(&g_strOutFileSuffix),
+			"suffix to append to output files")));
+
 
 		// positional args
 		opts::positional_options_description args_pos;
