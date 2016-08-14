@@ -175,12 +175,6 @@ bool run_job(const std::string& strJob)
 	bool bPlotIntermediate = prop.Query<bool>("output/plot_intermediate", 0);
 	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot_points", 128);
 
-	if(g_strOutFileSuffix != "")
-	{
-		strScOutFile += g_strOutFileSuffix;
-		strModOutFile += g_strOutFileSuffix;
-		strLogOutFile += g_strOutFileSuffix;
-	}
 
 	std::unique_ptr<tl::GnuPlot<t_real>> plt;
 	if(bPlot || bPlotIntermediate)
@@ -190,6 +184,9 @@ bool run_job(const std::string& strJob)
 		std::string strTerm = prop.Query<std::string>("output/plot_term", "wxt noraise");
 		plt->SetTerminal(0, strTerm.c_str());
 	}
+
+	if(g_strOutFileSuffix != "")
+		strLogOutFile += g_strOutFileSuffix;
 
 	// thread-local debug log
 	std::unique_ptr<std::ostream> ofstrLog;
@@ -288,6 +285,12 @@ bool run_job(const std::string& strJob)
 			tl::log_err("Parameter override using model file requested, but model file \"",
 				*pModOverrideFile, "\" is invalid.");
 		}
+	}
+
+	if(g_strOutFileSuffix != "")
+	{
+		strScOutFile += g_strOutFileSuffix;
+		strModOutFile += g_strOutFileSuffix;
 	}
 
 
