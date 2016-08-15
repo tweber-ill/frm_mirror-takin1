@@ -644,6 +644,8 @@ bool run_job(const std::string& strJob)
 			plog->RemoveOstr(ofstrLog.get());
 	}
 
+
+	if(!bDoFit) return 1;
 	return bValidFit;
 }
 
