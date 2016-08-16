@@ -49,6 +49,9 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
 		penProj.setWidth(2);
 		penSlice.setWidth(2);
 
+		m_vecplotwrap[i]->GetCurve(0)->setStyle(QwtPlotCurve::CurveStyle::Lines);
+		m_vecplotwrap[i]->GetCurve(1)->setStyle(QwtPlotCurve::CurveStyle::Lines);
+
 		m_vecplotwrap[i]->GetCurve(0)->setPen(penProj);
 		m_vecplotwrap[i]->GetCurve(1)->setPen(penSlice);
 
