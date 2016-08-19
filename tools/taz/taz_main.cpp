@@ -184,10 +184,10 @@ int main(int argc, char** argv)
 		if(!g_bHasMagFormfacts)
 		{
 			const char* pcErr = "Magnetic form factor coefficient table could not be found." TAKIN_CHECK;
-			tl::log_err(pcErr);
+			tl::log_warn(pcErr);
 
-			QMessageBox::critical(0, "Takin - Error", pcErr);
-			return -1;
+			QMessageBox::warning(0, "Takin - Warning", pcErr);
+			//return -1;
 		}
 
 		if(!g_bHasSpaceGroups)

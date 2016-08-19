@@ -82,10 +82,10 @@ function dl_scatlens
 	if [ ! -f tmp/scatlens.html ]; then
 		echo -e "Downloading scattering length list...\n"
 
-#		if ! wget ${SCATLENS} -O tmp/${SCATLENS##*/}; then
-#			echo -e "Error: Cannot download scattering length list.";
-#			exit -1;
-#		fi
+		if ! wget ${SCATLENS} -O tmp/${SCATLENS##*/}; then
+			echo -e "Error: Cannot download scattering length list.";
+			exit -1;
+		fi
 
 		if [ ! -f tmp/${SCATLENS##*/} ]; then
 			echo -e "Files cannot be automatically downloaded. "
