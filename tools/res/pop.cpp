@@ -180,6 +180,8 @@ ResoResults calc_pop(const PopParams& pop)
 		dSiSample[0], dSiSample[1], dSiSample[2],
 		dSiAna[0], dSiAna[1], dSiAna[2],
 		dSiDet[0], dSiDet[1]});
+
+	// convert dimensions from sigma to fwhm
 	SI *= tl::get_SIGMA2FWHM<t_real>()*tl::get_SIGMA2FWHM<t_real>();
 
 	t_mat S;
@@ -211,6 +213,9 @@ ResoResults calc_pop(const PopParams& pop)
 	if(pop.bMonoIsCurvedV) inv_mono_curvv = t_real(1)/mono_curvv;
 	if(pop.bAnaIsCurvedH) inv_ana_curvh = t_real(1)/ana_curvh;
 	if(pop.bAnaIsCurvedV) inv_ana_curvv = t_real(1)/ana_curvv;
+
+	t_real dmono_refl = pop.dmono_refl * tl::ana_effic_factor(pop.ki, units::abs(thetam));
+	t_real dana_effic = pop.dana_effic * tl::ana_effic_factor(pop.kf, units::abs(thetaa));
 
 	//if(pop.bMonoIsCurvedH) tl::log_debug("mono curv h: ", mono_curvh);
 	//if(pop.bMonoIsCurvedV) tl::log_debug("mono curv v: ", mono_curvv);
@@ -358,7 +363,7 @@ ResoResults calc_pop(const PopParams& pop)
 			return res;
 		}
 		DSiDti += G;
-		t_real dP0 = pop.dmono_refl*pop.dana_effic *
+		t_real dP0 = dmono_refl*dana_effic *
 			t_real((2.*pi)*(2.*pi)*(2.*pi)*(2.*pi)) /
 			std::sqrt(tl::determinant(DSiDti));
 

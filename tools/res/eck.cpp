@@ -260,6 +260,11 @@ ResoResults calc_eck(const EckParams& eck)
 	res.Q_avg[3] = eck.E/meV;
 
 
+	// -------------------------------------------------------------------------
+
+	t_real dmono_refl = eck.dmono_refl * tl::ana_effic_factor(eck.ki, units::abs(thetam));
+	t_real dana_effic = eck.dana_effic * tl::ana_effic_factor(eck.kf, units::abs(thetaa));
+
 	//--------------------------------------------------------------------------
 	// mono part
 
@@ -275,7 +280,7 @@ ResoResults calc_eck(const EckParams& eck)
 			eck.mono_mosaic, eck.mono_mosaic_v,
 			inv_mono_curvh, inv_mono_curvv,
 			eck.pos_x , eck.pos_y, eck.pos_z,
-			eck.dmono_refl);
+			dmono_refl);
 
 	//--------------------------------------------------------------------------
 
@@ -297,7 +302,7 @@ ResoResults calc_eck(const EckParams& eck)
 			eck.ana_mosaic, eck.ana_mosaic_v,
 			inv_ana_curvh, inv_ana_curvv,
 			eck.pos_x, pos_y2, eck.pos_z,
-			eck.dana_effic);
+			dana_effic);
 
 	//--------------------------------------------------------------------------
 	// get mono & ana results

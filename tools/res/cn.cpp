@@ -109,7 +109,6 @@ ResoResults calc_cn(const CNParams& cn)
 	ki_Q *= cn.dsample_sense;
 	kf_Q *= cn.dsample_sense;
 
-
 	t_mat Ti = tl::rotation_matrix_2d(ki_Q/rads);
 	t_mat Tf = -tl::rotation_matrix_2d(kf_Q/rads);
 
@@ -131,6 +130,10 @@ ResoResults calc_cn(const CNParams& cn)
 	}
 
 	// -------------------------------------------------------------------------
+
+
+	t_real dmono_refl = cn.dmono_refl * tl::ana_effic_factor(cn.ki, units::abs(thetam));
+	t_real dana_effic = cn.dana_effic * tl::ana_effic_factor(cn.kf, units::abs(thetaa));
 
 
 	// -------------------------------------------------------------------------
@@ -223,7 +226,7 @@ ResoResults calc_cn(const CNParams& cn)
 
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = chess_R0(cn.ki,cn.kf, thetam, thetaa, cn.twotheta, cn.mono_mosaic,
-		cn.ana_mosaic, cn.coll_v_pre_mono, cn.coll_v_post_ana, cn.dmono_refl, cn.dana_effic);
+		cn.ana_mosaic, cn.coll_v_pre_mono, cn.coll_v_post_ana, dmono_refl, dana_effic);
 
 	// Bragg widths
 	for(unsigned int i=0; i<4; ++i)
