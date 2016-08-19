@@ -214,8 +214,12 @@ ResoResults calc_pop(const PopParams& pop)
 	if(pop.bAnaIsCurvedH) inv_ana_curvh = t_real(1)/ana_curvh;
 	if(pop.bAnaIsCurvedV) inv_ana_curvv = t_real(1)/ana_curvv;
 
-	t_real dmono_refl = pop.dmono_refl * tl::ana_effic_factor(pop.ki, units::abs(thetam));
-	t_real dana_effic = pop.dana_effic * tl::ana_effic_factor(pop.kf, units::abs(thetaa));
+
+	const auto tupScFact = get_scatter_factors(pop.flags, pop.thetam, pop.ki, pop.thetaa, pop.kf);
+
+	t_real dmono_refl = pop.dmono_refl * std::get<0>(tupScFact);
+	t_real dana_effic = pop.dana_effic * std::get<1>(tupScFact);
+
 
 	//if(pop.bMonoIsCurvedH) tl::log_debug("mono curv h: ", mono_curvh);
 	//if(pop.bMonoIsCurvedV) tl::log_debug("mono curv v: ", mono_curvv);
@@ -347,7 +351,7 @@ ResoResults calc_pop(const PopParams& pop)
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = 0.;
 	const t_real pi = tl::get_pi<t_real>();
-	if(pop.bCalcR0)
+	if(pop.flags & CALC_R0)
 	{
 		//SI /= tl::SIGMA2FWHM*tl::SIGMA2FWHM;
 		//S *= tl::SIGMA2FWHM*tl::SIGMA2FWHM;

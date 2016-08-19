@@ -41,6 +41,25 @@ static const auto hbar = tl::get_hbar<t_real>();
 
 
 // -----------------------------------------------------------------------------
+// scattering factors
+
+std::tuple<t_real, t_real> get_scatter_factors(std::size_t flags,
+	const angle& thetam, const wavenumber& ki,
+	const angle& thetaa, const wavenumber& kf)
+{
+	t_real dmono = t_real(1);
+	t_real dana = t_real(1);
+
+	if(flags & CALC_KI3)
+		dmono *= tl::ana_effic_factor(ki, units::abs(thetam));
+	if(flags & CALC_KF3)
+		dana *= tl::ana_effic_factor(kf, units::abs(thetaa));
+
+	return std::make_tuple(dmono, dana);
+}
+
+
+// -----------------------------------------------------------------------------
 // R0 factor from formula (2) in [ch73]
 
 t_real R0_P(angle theta, angle coll, angle mosaic)
@@ -131,10 +150,10 @@ ResoResults calc_cn(const CNParams& cn)
 
 	// -------------------------------------------------------------------------
 
+	const auto tupScFact = get_scatter_factors(cn.flags, cn.thetam, cn.ki, cn.thetaa, cn.kf);
 
-	t_real dmono_refl = cn.dmono_refl * tl::ana_effic_factor(cn.ki, units::abs(thetam));
-	t_real dana_effic = cn.dana_effic * tl::ana_effic_factor(cn.kf, units::abs(thetaa));
-
+	t_real dmono_refl = cn.dmono_refl * std::get<0>(tupScFact);
+	t_real dana_effic = cn.dana_effic * std::get<1>(tupScFact);
 
 	// -------------------------------------------------------------------------
 	// resolution matrix

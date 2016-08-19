@@ -262,8 +262,14 @@ ResoResults calc_eck(const EckParams& eck)
 
 	// -------------------------------------------------------------------------
 
-	t_real dmono_refl = eck.dmono_refl * tl::ana_effic_factor(eck.ki, units::abs(thetam));
-	t_real dana_effic = eck.dana_effic * tl::ana_effic_factor(eck.kf, units::abs(thetaa));
+	// - if the instruments works in kf=const mode and the scans are counted for
+	//   or normalised to monitor counts no ki^3 or kf^3 factor is needed.
+	// - if the instrument works in ki=const mode the kf^3 factor is needed.
+	const auto tupScFact = get_scatter_factors(eck.flags, eck.thetam, eck.ki, eck.thetaa, eck.kf);
+
+	t_real dmono_refl = eck.dmono_refl * std::get<0>(tupScFact);
+	t_real dana_effic = eck.dana_effic * std::get<1>(tupScFact);
+
 
 	//--------------------------------------------------------------------------
 	// mono part

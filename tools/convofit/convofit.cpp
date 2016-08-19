@@ -374,7 +374,7 @@ bool run_job(const std::string& strJob)
 			reso.SetOptimalFocus(ResoFocus(iFoc));
 		}
 
-		if(bUseR0 && !reso.GetResoParams().bCalcR0)
+		if(bUseR0 && !(reso.GetResoParams().flags & CALC_R0))
 			tl::log_warn("Resolution R0 requested, but not calculated, using raw ellipsoid volume.");
 
 		reso.SetRandomSamplePos(iNumSample);

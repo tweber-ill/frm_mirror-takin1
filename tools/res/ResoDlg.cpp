@@ -119,8 +119,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecPosEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
-	m_vecCheckBoxes = {};
-	m_vecCheckNames = {};
+	m_vecCheckBoxes = {checkUseR0, checkUseKi3, checkUseKf3};
+	m_vecCheckNames = {"reso/use_R0", "reso/use_ki3", "reso/use_kf3"};
 
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
@@ -153,6 +153,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		QObject::connect(pEditBox, SIGNAL(textEdited(const QString&)), this, SLOT(RefreshQEPos()));
 	for(QRadioButton* pRadio : m_vecRadioPlus)
 		QObject::connect(pRadio, SIGNAL(toggled(bool)), this, SLOT(Calc()));
+	for(QCheckBox* pCheck : m_vecCheckBoxes)
+		QObject::connect(pCheck, SIGNAL(toggled(bool)), this, SLOT(Calc()));
 	for(QComboBox* pCombo : m_vecComboBoxes)
 		QObject::connect(pCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
 	QObject::connect(comboAlgo, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
@@ -336,6 +338,19 @@ void ResoDlg::Calc()
 
 		cn.dmono_refl = spinMonoRefl->value();
 		cn.dana_effic = spinAnaEffic->value();
+
+		if(checkUseR0->isChecked())
+			cn.flags |= CALC_R0;
+		else
+			cn.flags &= ~CALC_R0;
+		if(checkUseKi3->isChecked())
+			cn.flags |= CALC_KI3;
+		else
+			cn.flags &= ~CALC_KI3;
+		if(checkUseKf3->isChecked())
+			cn.flags |= CALC_KF3;
+		else
+			cn.flags &= ~CALC_KF3;
 
 
 		// Position
@@ -534,10 +549,10 @@ void ResoDlg::Calc()
 
 			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
 			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
-			for(unsigned int i=0; i<res.reso.size1(); ++i)
+			for(std::size_t i=0; i<res.reso.size1(); ++i)
 			{
 				ostrRes << "<tr>\n";
-				for(unsigned int j=0; j<res.reso.size2(); ++j)
+				for(std::size_t j=0; j<res.reso.size2(); ++j)
 					ostrRes << "<td>" << std::setw(g_iPrec*2) << res.reso(i,j) << "</td>";
 				ostrRes << "</tr>\n";
 
@@ -763,15 +778,15 @@ void ResoDlg::WriteLastConfig()
 	if(!m_pSettings)
 		return;
 
-	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 		m_pSettings->setValue(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());
-	for(unsigned int iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 		m_pSettings->setValue(m_vecPosEditNames[iEditBox].c_str(), m_vecPosEditBoxes[iEditBox]->text().toDouble());
-	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
+	for(std::size_t iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 		m_pSettings->setValue(m_vecRadioNames[iRadio].c_str(), m_vecRadioPlus[iRadio]->isChecked());
-	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
+	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 		m_pSettings->setValue(m_vecCheckNames[iCheck].c_str(), m_vecCheckBoxes[iCheck]->isChecked());
-	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 		m_pSettings->setValue(m_vecComboNames[iCombo].c_str(), m_vecComboBoxes[iCombo]->currentIndex());
 
 	const int iAlgo = static_cast<int>(ResoDlg::GetSelectedAlgo());
@@ -788,14 +803,14 @@ void ResoDlg::ReadLastConfig()
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		if(!m_pSettings->contains(m_vecSpinNames[iSpinBox].c_str()))
 			continue;
 		m_vecSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecSpinNames[iSpinBox].c_str()).value<t_real_reso>());
 	}
 
-	for(unsigned int iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 	{
 		if(!m_pSettings->contains(m_vecPosEditNames[iEditBox].c_str()))
 			continue;
@@ -803,14 +818,14 @@ void ResoDlg::ReadLastConfig()
 		m_vecPosEditBoxes[iEditBox]->setText(tl::var_to_str(dEditVal, g_iPrec).c_str());
 	}
 
-	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
+	for(std::size_t iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
 	{
 		if(!m_pSettings->contains(m_vecCheckNames[iCheckBox].c_str()))
 			continue;
 		m_vecCheckBoxes[iCheckBox]->setChecked(m_pSettings->value(m_vecCheckNames[iCheckBox].c_str()).value<bool>());
 	}
 
-	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
+	for(std::size_t iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 	{
 		if(!m_pSettings->contains(m_vecRadioNames[iRadio].c_str()))
 			continue;
@@ -828,7 +843,7 @@ void ResoDlg::ReadLastConfig()
 		}
 	}
 
-	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 	{
 		if(!m_pSettings->contains(m_vecComboNames[iCombo].c_str()))
 			continue;
@@ -848,7 +863,7 @@ void ResoDlg::ReadLastConfig()
 
 void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
-	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
@@ -857,19 +872,19 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 		mapConf[strXmlRoot + m_vecSpinNames[iSpinBox]] = ostrVal.str();
 	}
 
-	for(unsigned int iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 	{
 		std::string strVal = m_vecPosEditBoxes[iEditBox]->text().toStdString();
 		mapConf[strXmlRoot + m_vecPosEditNames[iEditBox]] = strVal;
 	}
 
-	for(unsigned int iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
+	for(std::size_t iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
 		mapConf[strXmlRoot + m_vecCheckNames[iCheckBox]] = (m_vecCheckBoxes[iCheckBox]->isChecked() ? "1" : "0");
 
-	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
+	for(std::size_t iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 		mapConf[strXmlRoot + m_vecRadioNames[iRadio]] = (m_vecRadioPlus[iRadio]->isChecked() ? "1" : "0");
 
-	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 		mapConf[strXmlRoot + m_vecComboNames[iCombo]] = tl::var_to_str<int>(m_vecComboBoxes[iCombo]->currentIndex());
 
 	const int iAlgo = static_cast<int>(ResoDlg::GetSelectedAlgo());
@@ -883,25 +898,25 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	bool bOldDontCalc = m_bDontCalc;
 	m_bDontCalc = 1;
 
-	for(unsigned int iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		boost::optional<t_real_reso> odSpinVal = xml.QueryOpt<t_real_reso>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str());
 		if(odSpinVal) m_vecSpinBoxes[iSpinBox]->setValue(*odSpinVal);
 	}
 
-	for(unsigned int iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 	{
 		boost::optional<t_real_reso> odEditVal = xml.QueryOpt<t_real_reso>((strXmlRoot+m_vecPosEditNames[iEditBox]).c_str());
 		if(odEditVal) m_vecPosEditBoxes[iEditBox]->setText(tl::var_to_str(*odEditVal, g_iPrec).c_str());
 	}
 
-	for(unsigned int iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
+	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
 		boost::optional<int> obChecked = xml.QueryOpt<int>((strXmlRoot+m_vecCheckNames[iCheck]).c_str());
 		if(obChecked) m_vecCheckBoxes[iCheck]->setChecked(*obChecked);
 	}
 
-	for(unsigned int iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
+	for(std::size_t iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 	{
 		boost::optional<int> obChecked = xml.QueryOpt<int>((strXmlRoot+m_vecRadioNames[iRadio]).c_str());
 		if(obChecked)
@@ -913,7 +928,7 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		}
 	}
 
-	for(unsigned int iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 	{
 		boost::optional<int> oiComboIdx = xml.QueryOpt<int>((strXmlRoot+m_vecComboNames[iCombo]).c_str());
 		if(oiComboIdx) m_vecComboBoxes[iCombo]->setCurrentIndex(*oiComboIdx);
