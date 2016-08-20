@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>754</width>
-    <height>406</height>
+    <width>736</width>
+    <height>391</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,13 +72,19 @@
    <item row="0" column="0" colspan="4">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>6</number>
      </property>
      <widget class="QWidget" name="tabCN">
       <attribute name="title">
        <string>TAS</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
+       <property name="margin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="sizePolicy">
@@ -654,6 +660,12 @@
        <string>TAS Geometry</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
+       <property name="margin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <item row="0" column="3">
         <widget class="QGroupBox" name="groupBox_17">
          <property name="title">
@@ -1550,6 +1562,12 @@
        <string>Advanced TAS</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_9">
+       <property name="margin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <item row="0" column="2">
         <widget class="QGroupBox" name="groupBox_18">
          <property name="sizePolicy">
@@ -1778,6 +1796,12 @@
        <string>TOF</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_14">
+       <property name="margin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_20">
          <property name="title">
@@ -2386,11 +2410,17 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabSimple">
       <attribute name="title">
        <string>Simple</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_16">
+       <property name="margin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_26">
          <property name="title">
@@ -2580,11 +2610,82 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tabMisc">
+      <attribute name="title">
+       <string>Misc</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_18">
+       <property name="margin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox_29">
+         <property name="title">
+          <string>Meta Infos</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_17">
+          <property name="margin">
+           <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Timestamp:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="editTimestamp">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Comments:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QTextEdit" name="textComment"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>378</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tabCalc">
       <attribute name="title">
        <string>Calculation</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
+       <property name="margin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_4">
          <property name="sizePolicy">
@@ -2762,6 +2863,12 @@
        <string>Monte-Carlo</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_6">
+       <property name="margin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <item row="1" column="0" rowspan="2">
         <widget class="QGroupBox" name="groupBox_11">
          <property name="sizePolicy">
@@ -3076,6 +3183,16 @@
   <tabstop>spinTof2thFSig</tabstop>
   <tabstop>spinTofphISig</tabstop>
   <tabstop>spinTofphFSig</tabstop>
+  <tabstop>radioTofDetSph</tabstop>
+  <tabstop>radioTofDetCyl</tabstop>
+  <tabstop>spinSigKi</tabstop>
+  <tabstop>spinSigKi_perp</tabstop>
+  <tabstop>spinSigKi_z</tabstop>
+  <tabstop>spinSigKf</tabstop>
+  <tabstop>spinSigKf_perp</tabstop>
+  <tabstop>spinSigKf_z</tabstop>
+  <tabstop>editTimestamp</tabstop>
+  <tabstop>textComment</tabstop>
   <tabstop>editKi</tabstop>
   <tabstop>editKf</tabstop>
   <tabstop>editQ</tabstop>

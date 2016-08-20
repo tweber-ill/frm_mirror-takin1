@@ -17,6 +17,7 @@
 #include "tlibs/helper/misc.h"
 #include "tlibs/math/math.h"
 #include "tlibs/math/lattice.h"
+#include "tlibs/time/chrono.h"
 
 #include "libs/globals.h"
 #include "mc.h"
@@ -213,7 +214,7 @@ void ResoDlg::SaveRes()
 
 	tl::Prop<std::string> xml;
 	xml.Add(mapConf);
-	bool bOk = xml.Save(strFile.c_str(), tl::PropType::XML);
+	bool bOk = xml.Save(strFile, tl::PropType::XML);
 	if(!bOk)
 		QMessageBox::critical(this, "Error", "Could not save resolution file.");
 
@@ -245,7 +246,7 @@ void ResoDlg::LoadRes()
 	std::string strDir = tl::get_dir(strFile);
 
 	tl::Prop<std::string> xml;
-	if(!xml.Load(strFile.c_str(), tl::PropType::XML))
+	if(!xml.Load(strFile, tl::PropType::XML))
 	{
 		QMessageBox::critical(this, "Error", "Could not load resolution file.");
 		return;
@@ -891,6 +892,9 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 		mapConf[strXmlRoot + "reso/algo"] = tl::var_to_str<int>(iAlgo);
 
 	mapConf[strXmlRoot + "reso/use_guide"] = groupGuide->isChecked() ? "1" : "0";
+
+	mapConf[strXmlRoot + "reso/comment"] = textComment->toPlainText().toStdString();
+	mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real_reso>(tl::epoch<t_real_reso>());
 }
 
 void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
@@ -900,25 +904,25 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
-		boost::optional<t_real_reso> odSpinVal = xml.QueryOpt<t_real_reso>((strXmlRoot+m_vecSpinNames[iSpinBox]).c_str());
+		boost::optional<t_real_reso> odSpinVal = xml.QueryOpt<t_real_reso>(strXmlRoot+m_vecSpinNames[iSpinBox]);
 		if(odSpinVal) m_vecSpinBoxes[iSpinBox]->setValue(*odSpinVal);
 	}
 
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 	{
-		boost::optional<t_real_reso> odEditVal = xml.QueryOpt<t_real_reso>((strXmlRoot+m_vecPosEditNames[iEditBox]).c_str());
+		boost::optional<t_real_reso> odEditVal = xml.QueryOpt<t_real_reso>(strXmlRoot+m_vecPosEditNames[iEditBox]);
 		if(odEditVal) m_vecPosEditBoxes[iEditBox]->setText(tl::var_to_str(*odEditVal, g_iPrec).c_str());
 	}
 
 	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
-		boost::optional<int> obChecked = xml.QueryOpt<int>((strXmlRoot+m_vecCheckNames[iCheck]).c_str());
+		boost::optional<int> obChecked = xml.QueryOpt<int>(strXmlRoot+m_vecCheckNames[iCheck]);
 		if(obChecked) m_vecCheckBoxes[iCheck]->setChecked(*obChecked);
 	}
 
 	for(std::size_t iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
 	{
-		boost::optional<int> obChecked = xml.QueryOpt<int>((strXmlRoot+m_vecRadioNames[iRadio]).c_str());
+		boost::optional<int> obChecked = xml.QueryOpt<int>(strXmlRoot+m_vecRadioNames[iRadio]);
 		if(obChecked)
 		{
 			if(*obChecked)
@@ -930,15 +934,19 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 	{
-		boost::optional<int> oiComboIdx = xml.QueryOpt<int>((strXmlRoot+m_vecComboNames[iCombo]).c_str());
+		boost::optional<int> oiComboIdx = xml.QueryOpt<int>(strXmlRoot+m_vecComboNames[iCombo]);
 		if(oiComboIdx) m_vecComboBoxes[iCombo]->setCurrentIndex(*oiComboIdx);
 	}
 
 	boost::optional<int> oiAlgo = xml.QueryOpt<int>(strXmlRoot + "reso/algo");
 	if(oiAlgo) SetSelectedAlgo(static_cast<ResoAlgo>(*oiAlgo));
 
-	boost::optional<int> obGroupVal = xml.QueryOpt<int>((strXmlRoot+"reso/use_guide").c_str());
+	boost::optional<int> obGroupVal = xml.QueryOpt<int>(strXmlRoot+"reso/use_guide");
 	if(obGroupVal) groupGuide->setChecked(*obGroupVal);
+
+	textComment->setText(xml.Query<std::string>(strXmlRoot+"reso/comment").c_str());
+	t_real_reso dTimestamp = xml.Query<t_real_reso>(strXmlRoot+"meta/timestamp");
+	editTimestamp->setText(tl::epoch_to_str(dTimestamp).c_str());
 
 	m_bDontCalc = bOldDontCalc;
 	RefreshQEPos();
