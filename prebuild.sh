@@ -81,6 +81,7 @@ declare -a hfiles=(
 	"${TAKINROOT}/dialogs/NeutronDlg.h"
 	"${TAKINROOT}/dialogs/SrvDlg.h"
 	"${TAKINROOT}/dialogs/GotoDlg.h"
+	"${TAKINROOT}/dialogs/FavDlg.h"
 	"${TAKINROOT}/dialogs/AtomsDlg.h"
 	"${TAKINROOT}/dialogs/NetCacheDlg.h"
 	"${TAKINROOT}/dialogs/ScanMonDlg.h"
