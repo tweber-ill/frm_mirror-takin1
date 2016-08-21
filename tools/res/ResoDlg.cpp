@@ -42,7 +42,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
 {
 	setupUi(this);
-	spinMCSample->setEnabled(0);	// TODO
+	spinMCSample->setEnabled(0);		// TODO
+	spinMCSampleLive->setEnabled(0);	// TODO
 
 	if(m_pSettings)
 	{
@@ -117,6 +118,9 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/simple_sig_kf", "reso/simple_sig_kf_perp", "reso/simple_sig_kf_z",
 	};
 
+	m_vecIntSpinBoxes = { spinMCNeutronsLive, spinMCSampleLive };
+	m_vecIntSpinNames = { "reso/mc_live_neutrons", "reso/mc_live_sample_neutrons" };
+
 	m_vecPosEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
@@ -150,6 +154,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 	for(QDoubleSpinBox* pSpinBox : m_vecSpinBoxes)
 		QObject::connect(pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(Calc()));
+	for(QSpinBox* pSpinBox : m_vecIntSpinBoxes)
+		QObject::connect(pSpinBox, SIGNAL(valueChanged(int)), this, SLOT(Calc()));
 	for(QLineEdit* pEditBox : m_vecPosEditBoxes)
 		QObject::connect(pEditBox, SIGNAL(textEdited(const QString&)), this, SLOT(RefreshQEPos()));
 	for(QRadioButton* pRadio : m_vecRadioPlus)
@@ -159,7 +165,6 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	for(QComboBox* pCombo : m_vecComboBoxes)
 		QObject::connect(pCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
 	QObject::connect(comboAlgo, SIGNAL(currentIndexChanged(int)), this, SLOT(Calc()));
-
 
 	connect(checkElli4dAutoCalc, SIGNAL(stateChanged(int)), this, SLOT(checkAutoCalcElli4dChanged()));
 	connect(btnCalcElli4d, SIGNAL(clicked()), this, SLOT(CalcElli4d()));
@@ -652,6 +657,57 @@ void ResoDlg::Calc()
 				}
 			}
 
+
+			// generate live MC neutrons
+			const std::size_t iNumMC = spinMCNeutronsLive->value();
+			if(iNumMC)
+			{
+				McNeutronOpts<t_mat> opts;
+				opts.bCenter = 0;
+				opts.matU = m_matU;
+				opts.matB = m_matB;
+				opts.matUB = m_matUB;
+				opts.matUinv = m_matUinv;
+				opts.matBinv = m_matBinv;
+				opts.matUBinv = m_matUBinv;
+
+				t_mat* pMats[] = {&opts.matU, &opts.matB, &opts.matUB,
+					&opts.matUinv, &opts.matBinv, &opts.matUBinv};
+
+				for(t_mat *pMat : pMats)
+				{
+					pMat->resize(4,4,1);
+
+					for(int i0=0; i0<3; ++i0)
+						(*pMat)(i0,3) = (*pMat)(3,i0) = 0.;
+					(*pMat)(3,3) = 1.;
+				}
+
+				opts.dAngleQVec0 = m_dAngleQVec0;
+
+				if(m_bHasUB)
+				{
+					// rlu system
+					opts.coords = McNeutronCoords::RLU;
+					if(m_vecMC_HKL.size() != iNumMC)
+						m_vecMC_HKL.resize(iNumMC);
+					mc_neutrons(m_ell4d, iNumMC, opts, m_vecMC_HKL.begin());
+				}
+				else
+					m_vecMC_HKL.clear();
+
+				// Qpara, Qperp system
+				opts.coords = McNeutronCoords::DIRECT;
+				if(m_vecMC_direct.size() != iNumMC)
+					m_vecMC_direct.resize(iNumMC);
+				mc_neutrons(m_ell4d, iNumMC, opts, m_vecMC_direct.begin());
+			}
+			else
+			{
+				m_vecMC_direct.clear();
+				m_vecMC_HKL.clear();
+			}
+
 			EmitResults();
 		}
 		else
@@ -666,6 +722,7 @@ void ResoDlg::Calc()
 		tl::log_err("Cannot calculate resolution: ", ex.what(), ".");
 	}
 }
+
 
 void ResoDlg::RefreshSimCmd()
 {
@@ -768,6 +825,9 @@ void ResoDlg::EmitResults()
 	params.resoOrient = &m_resoOrient;
 	params.reso_vOrient = &m_reso_vOrient;
 	params.Q_avgOrient = &m_Q_avgOrient;
+	
+	params.vecMC_direct = &m_vecMC_direct;
+	params.vecMC_HKL = &m_vecMC_HKL;
 
 	params.algo = algoSel;
 
@@ -781,6 +841,8 @@ void ResoDlg::WriteLastConfig()
 
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 		m_pSettings->setValue(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());
+	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
+		m_pSettings->setValue(m_vecIntSpinNames[iSpinBox].c_str(), m_vecIntSpinBoxes[iSpinBox]->value());
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 		m_pSettings->setValue(m_vecPosEditNames[iEditBox].c_str(), m_vecPosEditBoxes[iEditBox]->text().toDouble());
 	for(std::size_t iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
@@ -809,6 +871,13 @@ void ResoDlg::ReadLastConfig()
 		if(!m_pSettings->contains(m_vecSpinNames[iSpinBox].c_str()))
 			continue;
 		m_vecSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecSpinNames[iSpinBox].c_str()).value<t_real_reso>());
+	}
+
+	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
+	{
+		if(!m_pSettings->contains(m_vecIntSpinNames[iSpinBox].c_str()))
+			continue;
+		m_vecIntSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecIntSpinNames[iSpinBox].c_str()).value<int>());
 	}
 
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
@@ -873,6 +942,15 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 		mapConf[strXmlRoot + m_vecSpinNames[iSpinBox]] = ostrVal.str();
 	}
 
+	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
+	{
+		std::ostringstream ostrVal;
+		ostrVal << std::scientific;
+		ostrVal << m_vecIntSpinBoxes[iSpinBox]->value();
+
+		mapConf[strXmlRoot + m_vecIntSpinNames[iSpinBox]] = ostrVal.str();
+	}
+
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 	{
 		std::string strVal = m_vecPosEditBoxes[iEditBox]->text().toStdString();
@@ -906,6 +984,12 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	{
 		boost::optional<t_real_reso> odSpinVal = xml.QueryOpt<t_real_reso>(strXmlRoot+m_vecSpinNames[iSpinBox]);
 		if(odSpinVal) m_vecSpinBoxes[iSpinBox]->setValue(*odSpinVal);
+	}
+
+	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
+	{
+		boost::optional<int> odSpinVal = xml.QueryOpt<int>(strXmlRoot+m_vecIntSpinNames[iSpinBox]);
+		if(odSpinVal) m_vecIntSpinBoxes[iSpinBox]->setValue(*odSpinVal);
 	}
 
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
