@@ -38,7 +38,7 @@ struct EllipseDlgParams
 	const ublas::matrix<t_real_reso>* resoOrient = nullptr;
 	const ublas::vector<t_real_reso>* reso_vOrient = nullptr;
 	const ublas::vector<t_real_reso>* Q_avgOrient = nullptr;
-	
+
 	const std::vector<ublas::vector<t_real_reso>>* vecMC_direct = nullptr;
 	const std::vector<ublas::vector<t_real_reso>>* vecMC_HKL = nullptr;
 
