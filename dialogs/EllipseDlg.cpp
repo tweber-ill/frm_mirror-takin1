@@ -14,7 +14,7 @@
 
 
 EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
-	: QDialog(pParent, Qt::WindowStaysOnTopHint), m_pSettings(pSett)
+	: QDialog(pParent, Qt::Tool), m_pSettings(pSett)
 {
 	setupUi(this);
 	setWindowTitle(m_pcTitle);
