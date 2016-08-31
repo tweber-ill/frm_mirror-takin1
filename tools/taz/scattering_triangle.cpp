@@ -264,7 +264,6 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	// Powder lines
 	{
 		QPen penOrg = painter->pen();
-		painter->setPen(Qt::red);
 
 		const typename tl::Powder<int,t_real>::t_peaks_unique& powderpeaks = m_powder.GetUniquePeaks();
 		for(const typename tl::Powder<int,t_real>::t_peak& powderpeak : powderpeaks)
@@ -272,19 +271,34 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			const int ih = std::get<0>(powderpeak);
 			const int ik = std::get<1>(powderpeak);
 			const int il = std::get<2>(powderpeak);
+			t_real dF = std::get<4>(powderpeak);
+			bool bHasF = 1;
 
 			if(ih==0 && ik==0 && il==0) continue;
+			if(dF < t_real(0))
+			{
+				bHasF = 0;
+				dF = t_real(1);
+			}
 
 			std::ostringstream ostrPowderLine;
+			ostrPowderLine.precision(g_iPrecGfx);
 			ostrPowderLine << "(" << ih << " "<< ik << " " << il << ")";
+			if(bHasF)
+				ostrPowderLine << ", F=" << dF;
 
 			t_vec vec = m_powder.GetRecipLatticePos(t_real(ih), t_real(ik), t_real(il));
 			t_real drad = std::sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
 			drad *= m_dScaleFactor*m_dZoom;
 
+			QPen penLine(Qt::red);
+			penLine.setWidthF(dF);
+			painter->setPen(penLine);
+
 			painter->drawEllipse(ptKiQ, drad, drad);
 			painter->drawText(ptKiQ + QPointF(0., drad), ostrPowderLine.str().c_str());
 		}
+
 		painter->setPen(penOrg);
 	}
 
@@ -853,57 +867,54 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 				//const t_real dG = ublas::norm_2(vecPeak);
 
 
-				if(bIsPowder)
-					m_powder.AddPeak(ih, ik, il);
+				t_real dF = -1.;
+				// add peak in 1/A and rlu units
+				lstPeaksForKd.push_back(std::vector<t_real>
+					{ vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/ });
 
-				// (000), i.e. direct beam, also needed for powder
-				if(!bIsPowder || (ih==0 && ik==0 && il==0))
+				t_real dDist = 0.;
+				t_vec vecDropped = recipcommon.plane.GetDroppedPerp(vecPeak, &dDist);
+
+				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
 				{
-					// add peak in 1/A and rlu units
-					lstPeaksForKd.push_back(std::vector<t_real>
-						{ vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/ });
+					t_vec vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
+					t_real dX = vecCoord[0];
+					t_real dY = -vecCoord[1];
 
-					t_real dDist = 0.;
-					t_vec vecDropped = recipcommon.plane.GetDroppedPerp(vecPeak, &dDist);
+					std::string strStructfact;
 
-					if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
+					// --------------------------------------------------------------------
+					// structure factors
+					if(recipcommon.CanCalcStructFact())
 					{
-						t_vec vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
-						t_real dX = vecCoord[0];
-						t_real dY = -vecCoord[1];
+						t_real dFsq;
+						std::tie(std::ignore, dF, dFsq) =
+							recipcommon.GetStructFact(vecPeak);
 
-						t_real dF = -1.;
-						std::string strStructfact;
+						//dFsq *= tl::lorentz_factor(dAngle);
+						tl::set_eps_0(dFsq, g_dEpsGfx);
 
-						// --------------------------------------------------------------------
-						// structure factors
-						if(recipcommon.CanCalcStructFact())
-						{
-							t_real dFsq;
-							std::tie(std::ignore, dF, dFsq) =
-								recipcommon.GetStructFact(vecPeak);
+						tl::set_eps_0(dF, g_dEpsGfx);
+						dMinF = std::min(dF, dMinF);
+						dMaxF = std::max(dF, dMaxF);
 
-							//dFsq *= tl::lorentz_factor(dAngle);
-							tl::set_eps_0(dFsq, g_dEpsGfx);
-
-							tl::set_eps_0(dF, g_dEpsGfx);
-							dMinF = std::min(dF, dMinF);
-							dMaxF = std::max(dF, dMaxF);
-
-							std::ostringstream ostrStructfact;
-							ostrStructfact.precision(g_iPrecGfx);
-							if(g_bShowFsq)
-								ostrStructfact << "S = " << dFsq;
-							else
-								ostrStructfact << "F = " << dF;
-							strStructfact = ostrStructfact.str();
-						}
-						// --------------------------------------------------------------------
+						std::ostringstream ostrStructfact;
+						ostrStructfact.precision(g_iPrecGfx);
+						if(g_bShowFsq)
+							ostrStructfact << "S = " << dFsq;
+						else
+							ostrStructfact << "F = " << dF;
+						strStructfact = ostrStructfact.str();
+					}
+					// --------------------------------------------------------------------
 
 
+					// (000), i.e. direct beam, also needed for powder
+					if(!bIsPowder || (ih==0 && ik==0 && il==0))
+					{
 						RecipPeak *pPeak = new RecipPeak();
 						if(ih==0 && ik==0 && il==0)
-							pPeak->SetColor(Qt::green);
+							pPeak->SetColor(Qt::darkGreen);
 						pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
 						if(dF >= 0.) pPeak->SetRadius(dF);
 						pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
@@ -935,7 +946,6 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 						m_vecPeaks.push_back(pPeak);
 						m_scene.addItem(pPeak);
 
-
 						// 1st BZ
 						if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
 						{
@@ -954,6 +964,9 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 						}
 					}
 				}
+
+				if(bIsPowder)
+					m_powder.AddPeak(ih, ik, il, dF);
 			}
 
 	if(!bIsPowder)
@@ -968,6 +981,7 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 
 	if(dMaxF >= 0.)
 	{
+		// single crystal peaks
 		for(RecipPeak *pPeak : m_vecPeaks)
 		{
 			if(!tl::float_equal(dMinF, dMaxF, g_dEpsGfx))
@@ -978,6 +992,28 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 			else
 			{
 				pPeak->SetRadius(DEF_PEAK_SIZE);
+			}
+		}
+
+
+		// powder lines
+		using t_lines = typename decltype(m_powder)::t_peaks;
+		using t_line = typename decltype(m_powder)::t_peak;
+
+		t_lines& lines = m_powder.GetUniquePeaks();
+		
+		for(typename t_lines::iterator iter=lines.begin(); iter!=lines.end(); ++iter)
+		{
+			t_line& line = const_cast<t_line&>(*iter);
+
+			if(!tl::float_equal(dMinF, dMaxF, g_dEpsGfx))
+			{
+				t_real dFScale = (std::get<4>(line)-dMinF) / (dMaxF-dMinF);
+				std::get<4>(line) = tl::lerp(MIN_PEAK_SIZE, MAX_PEAK_SIZE, dFScale);
+			}
+			else
+			{
+				std::get<4>(line) = t_real(1);
 			}
 		}
 	}
