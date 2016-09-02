@@ -7,11 +7,40 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.2"
-   width="80"
-   height="80"
-   viewBox="0 0 63.999954 63.999963"
-   id="svg2">
+   width="67.877281"
+   height="70.637314"
+   viewBox="0 0 54.301786 56.509818"
+   id="svg2"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="brillouin.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1242"
+     inkscape:window-height="831"
+     id="namedview20"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="2.95"
+     inkscape:cx="31.067567"
+     inkscape:cy="36.896908"
+     inkscape:window-x="0"
+     inkscape:window-y="28"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
   <title
      id="title4">Qt Svg Document</title>
   <desc
@@ -29,82 +58,34 @@
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs8" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="-54.1087,47.8258 -54.1087,28.6955 "
-     id="polyline444"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="-27.0543,66.9561 -54.1087,47.8258 "
-     id="polyline530"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="-54.1087,28.6955 -27.0543,9.56515 "
-     id="polyline538"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="-54.1087,28.6955 -54.1087,47.8258 "
-     id="polyline618"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="-54.1087,47.8258 -27.0543,66.9561 "
-     id="polyline620"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="-27.0543,66.9561 0,47.8258 "
-     id="polyline622"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="0,47.8258 0,28.6955 "
-     id="polyline624"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="0,28.6955 -27.0543,9.56515 "
-     id="polyline626"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="-27.0543,9.56515 -54.1087,28.6955 "
-     id="polyline628"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="8.63418e-15,47.8258 -27.0543,66.9561 "
-     id="polyline712"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="-27.0543,9.56515 0,28.6955 "
-     id="polyline716"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
-  <polyline
-     vector-effect="non-scaling-stroke"
-     points="0,28.6955 0,47.8258 "
-     id="polyline798"
-     style="font-size:8px;font-style:normal;font-weight:400;fill:none;stroke:#000000;stroke-width:1.99999881;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans"
-     transform="translate(58.981244,-5.0250395)" />
+     id="defs8">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4135">
+      <stop
+         style="stop-color:#0096fa;stop-opacity:1"
+         offset="0"
+         id="stop4137" />
+      <stop
+         style="stop-color:#003264;stop-opacity:1"
+         offset="1"
+         id="stop4139" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4135"
+       id="radialGradient4145"
+       cx="27.1539"
+       cy="28.248159"
+       fx="27.1539"
+       fy="28.248159"
+       r="27.954236"
+       gradientTransform="matrix(1.9833542,-0.01896745,0.01956559,2.0458986,-27.254591,-29.029671)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
   <path
-     d="M 23.847273,63.941479 8.1061865,52.819699 8.1152573,41.514817 8.1243281,30.209934 23.430832,19.417813 C 31.849408,13.482147 39.120179,8.4949405 39.588099,8.3351328 40.05602,8.1753252 47.455687,13.046321 56.031804,19.159567 l 15.592942,11.114994 0.171011,11.272569 0.17101,11.272569 -15.598879,10.915059 c -8.579383,6.003283 -15.864525,11.008084 -16.189203,11.12178 -0.32468,0.113697 -7.673815,-4.79808 -16.331412,-10.915059 l 0,0 z"
-     transform="matrix(0.79999954,0,0,0.79999954,-4.5e-6,0)"
+     d="m 14.193523,46.145484 -12.5928621,-8.897419 0.00726,-9.0439 0.00726,-9.043901 12.2451961,-8.633692 C 20.595234,5.7780418 26.411848,1.7882789 26.786183,1.6604329 27.16052,1.5325869 33.08025,5.4293812 39.94114,10.319975 l 12.474346,8.89199 0.136809,9.01805 0.136808,9.01805 L 40.21,45.980108 c -6.863503,4.802623 -12.691613,8.806462 -12.951355,8.897418 -0.259744,0.09096 -6.139049,-3.838461 -13.065122,-8.732042 l 0,0 z"
      id="path4186"
-     style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-width:1.94911766;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+     style="fill:url(#radialGradient4145);fill-opacity:1;stroke:#000000;stroke-width:4.79999702;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     inkscape:connector-curvature="0" />
 </svg>

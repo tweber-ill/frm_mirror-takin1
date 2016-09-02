@@ -7,12 +7,49 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.1"
    width="22.110874"
    height="11.571064"
-   id="svg2">
+   id="svg2"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="goto.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1214"
+     inkscape:window-height="740"
+     id="namedview21"
+     showgrid="false"
+     inkscape:zoom="17.683607"
+     inkscape:cx="11.055437"
+     inkscape:cy="5.785532"
+     inkscape:window-x="0"
+     inkscape:window-y="28"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
   <defs
      id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4224">
+      <stop
+         style="stop-color:#ff0000;stop-opacity:1;"
+         offset="0"
+         id="stop4226" />
+      <stop
+         style="stop-color:#7f0000;stop-opacity:1"
+         offset="1"
+         id="stop4228" />
+    </linearGradient>
     <marker
        refX="0"
        refY="0"
@@ -85,6 +122,17 @@
          id="path3780"
          style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
     </marker>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4224"
+       id="radialGradient4230"
+       cx="17.343109"
+       cy="4.7720299"
+       fx="17.343109"
+       fy="4.7720299"
+       r="4.77167"
+       gradientTransform="matrix(1.2609758,0.01329727,-0.01366881,1.2962094,-4.4609047,-1.644134)"
+       gradientUnits="userSpaceOnUse" />
   </defs>
   <metadata
      id="metadata7">
@@ -94,27 +142,23 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <g
-     transform="translate(-234.02209,-354.14109)"
-     id="layer1">
-    <path
-       d="m 255.97266,343.17828 a 4.0216699,4.0216699 0 1 1 -8.04334,0 4.0216699,4.0216699 0 1 1 8.04334,0 z"
-       transform="translate(-0.58578642,15.734836)"
-       id="path4393"
-       style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-    <path
-       d="M -12.462761,4.3875516 -17.112663,9.1934938 -18.94978,2.7635896 z"
-       transform="translate(262.32536,355.0559)"
-       id="path6390"
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-    <path
-       d="M 18.119611,6.4204837 6.4523493,9.8676288"
-       transform="translate(227.86584,354.14145)"
-       id="path6392"
-       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-  </g>
+  <path
+     inkscape:connector-curvature="0"
+     style="fill:url(#radialGradient4230);fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="path4393"
+     d="m 21.36478,4.77203 a 4.02167,4.02167 0 0 1 -8.04334,0 4.02167,4.02167 0 1 1 8.04334,0 z" />
+  <path
+     inkscape:connector-curvature="0"
+     style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:"
+     id="path6390"
+     d="M 15.840509,5.3023616 11.190607,10.108304 9.35349,3.6783996 Z" />
+  <path
+     inkscape:connector-curvature="0"
+     style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:"
+     id="path6392"
+     d="M 11.963361,6.4208437 0.2960993,9.8679888" />
 </svg>
