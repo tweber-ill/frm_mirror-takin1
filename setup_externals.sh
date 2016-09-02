@@ -74,7 +74,7 @@ function dl_tangoicons
 	${GTAR} --wildcards -xzvf tango-icon-theme.tar.gz */scalable/apps/help-browser.svg --strip-components=3
 
 	cd ..
-	mv -v tmp/*.svg res/
+	mv -v tmp/*.svg res/icons/
 }
 
 function dl_scatlens

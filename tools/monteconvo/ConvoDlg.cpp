@@ -43,9 +43,9 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 			setFont(font);
 	}
 
-	btnStart->setIcon(load_icon("res/media-playback-start.svg"));
-	btnStop->setIcon(load_icon("res/media-playback-stop.svg"));
-	btnSaveResult->setIcon(load_icon("res/document-save-as.svg"));
+	btnStart->setIcon(load_icon("res/icons/media-playback-start.svg"));
+	btnStop->setIcon(load_icon("res/icons/media-playback-stop.svg"));
+	btnSaveResult->setIcon(load_icon("res/icons/document-save-as.svg"));
 
 
 	m_plotwrap.reset(new QwtPlotWrapper(plot, 3, true));

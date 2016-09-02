@@ -23,8 +23,8 @@ FavDlg::FavDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSettin
 			setFont(font);
 	}
 
-	btnAdd->setIcon(load_icon("res/list-add.svg"));
-	btnDel->setIcon(load_icon("res/list-remove.svg"));
+	btnAdd->setIcon(load_icon("res/icons/list-add.svg"));
+	btnDel->setIcon(load_icon("res/icons/list-remove.svg"));
 
 	QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 
