@@ -543,15 +543,15 @@ void ResoDlg::Calc()
 			ostrRes << "\t<ul><li>Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "</li>\n";
 			ostrRes << "\t<li>R0: " << res.dR0 << "</li></ul></p>\n\n";
 
-			ostrRes << "<p><b>Bragg FWHMs:</b>\n";
+			ostrRes << "<p><b>Coherent (Bragg) FWHMs:</b>\n";
 			ostrRes << "\t<ul><li>Q_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>Q_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>Q_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
 
-			ostrRes << "<p><b>Vanadium FWHM:</b> "
-				<< dVanadiumFWHM_Q << " " << strAA_1 << ", "
-				<< dVanadiumFWHM_E << " meV</p>\n\n";
+			ostrRes << "<p><b>Incoherent (Vanadium) FWHMs:</b>\n";
+			ostrRes << "\t<ul><li>Q: " << dVanadiumFWHM_Q << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>E: " << dVanadiumFWHM_E << " meV</li></ul></p>\n\n";
 
 			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
 			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
