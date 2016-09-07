@@ -498,7 +498,7 @@ scan_plot()
 
 
 	plotmap = map();
-	plotmap = ["xlimits" : minx + " " + maxx];
+	plotmap += ["xlimits" : minx + " " + maxx];
 	#plotmap += ["ylimits" : "0 0.5"];
 
 	plot_gausses(1, thefit, [datx, daty, datyerr], title, xlab, ylab, outfile, plotmap);

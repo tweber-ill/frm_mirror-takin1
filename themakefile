@@ -148,7 +148,9 @@ else
 endif
 
 
-FLAGS += -D_GLIBCXX_USE_CXX11_ABI=${USE_CPP11_ABI}
+ifeq ($(USE_CPP11_ABI), 1)
+	FLAGS += -D_GLIBCXX_USE_CXX11_ABI
+endif
 
 
 
@@ -199,8 +201,9 @@ else
 endif
 
 
-LIBS_TAZ = ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${GL_LIBS} ${PY_LIBS} ${GIL_LIBS} ${DL_LIBS}
-LIBS_RESO = ${QWT_LIB} ${STD_LIBS} ${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS}
+LIBS_TAZ = ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB} ${GL_LIBS} \
+	${PY_LIBS} ${GIL_LIBS} ${DL_LIBS} ${LAPACK_LIBS} \
+	${STD_LIBS}
 
 
 # -----------------------------------------------------------------------------
@@ -286,7 +289,7 @@ all: takin  montereso  monteconvo xmonteconvo posextract \
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
-	${CC} ${FLAGS} ${LIB_DIRS} -o bin/takin $+ ${LIBS_TAZ} ${LIBS_RESO}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/takin $+ ${LIBS_TAZ}
 	${STRIP} bin/takin
 
 montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
