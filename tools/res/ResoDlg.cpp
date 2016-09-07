@@ -616,12 +616,7 @@ void ResoDlg::Calc()
 				// Qavg system in 1/A -> rotate back to orient system in 1/A ->
 				// transform to hkl rlu system
 				t_mat matQVec0 = tl::rotation_matrix_2d(-m_dAngleQVec0);
-				matQVec0.resize(4,4, true);
-				matQVec0(2,2) = matQVec0(3,3) = 1.;
-				matQVec0(2,0) = matQVec0(2,1) = matQVec0(2,3) = 0.;
-				matQVec0(3,0) = matQVec0(3,1) = matQVec0(3,2) = 0.;
-				matQVec0(0,2) = matQVec0(0,3) = 0.;
-				matQVec0(1,2) = matQVec0(1,3) = 0.;
+				tl::resize_unity(matQVec0, 4);
 				const t_mat matQVec0inv = ublas::trans(matQVec0);
 
 				const t_mat matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);

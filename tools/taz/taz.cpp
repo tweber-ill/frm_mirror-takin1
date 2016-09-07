@@ -35,6 +35,7 @@ namespace fs = boost::filesystem;
 
 using t_real = t_real_glob;
 const std::string TazDlg::s_strTitle = "Takin";
+const t_real_glob TazDlg::s_dPlaneDistTolerance = std::cbrt(tl::get_epsilon<t_real_glob>());
 
 
 TazDlg::TazDlg(QWidget* pParent)
