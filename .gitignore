@@ -35,6 +35,9 @@ Makefile
 tlibs-master.tar.bz2
 tlibs/*
 tlibs
+takin-data-master.tar.bz2
+takin-data/*
+takin-data
 tango-icon-theme*.tar.gz
 tmp/*
 res/data/*
