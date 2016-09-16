@@ -1,15 +1,17 @@
 /**
  * Scan viewer
  * @author tweber
- * @date mar-2015
+ * @date 2015-2016
  * @license GPLv2
  */
 
 #include "scanviewer.h"
+
 #include <QFileDialog>
 #include <QTableWidget>
 #include <QTableWidgetItem>
-//#include <QProcess>
+#include <QMessageBox>
+
 #include <iostream>
 #include <set>
 #include <string>
@@ -17,6 +19,8 @@
 #include <iterator>
 #include <boost/filesystem.hpp>
 
+#include "tlibs/math/math.h"
+#include "tlibs/fit/minuit.h"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
@@ -86,6 +90,12 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(editPath, &QLineEdit::textEdited, pThis, &ScanViewerDlg::ChangedPath);
 	QObject::connect(listFiles, &QListWidget::currentItemChanged, pThis, &ScanViewerDlg::FileSelected);
 	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, &ScanViewerDlg::SelectDir);
+#ifndef NO_FIT
+	QObject::connect(btnParam, &QToolButton::clicked, pThis, &ScanViewerDlg::ShowFitParams);
+	QObject::connect(btnGauss, &QToolButton::clicked, pThis, &ScanViewerDlg::FitGauss);
+	QObject::connect(btnLorentz, &QToolButton::clicked, pThis, &ScanViewerDlg::FitLorentz);
+	QObject::connect(btnVoigt, &QToolButton::clicked, pThis, &ScanViewerDlg::FitVoigt);
+#endif
 	QObject::connect(comboX, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::XAxisSelected);
 	QObject::connect(comboY, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxisSelected);
 	QObject::connect(tableProps, &QTableWidget::currentItemChanged, pThis, &ScanViewerDlg::PropSelected);
@@ -97,8 +107,13 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	//	this, SLOT(FileSelected()));
 	QObject::connect(listFiles, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
 		this, SLOT(FileSelected(QListWidgetItem*, QListWidgetItem*)));
-	QObject::connect(btnBrowse, SIGNAL(clicked(bool)),
-		this, SLOT(SelectDir()));
+	QObject::connect(btnBrowse, SIGNAL(clicked(bool)), this, SLOT(SelectDir()));
+#ifndef NO_FIT
+	QObject::connect(btnParam, SIGNAL(clicked(bool)), this, SLOT(ShowFitParams()));
+	QObject::connect(btnGauss, SIGNAL(clicked(bool)), this, SLOT(FitGauss()));
+	QObject::connect(btnLorentz, SIGNAL(clicked(bool)), this, SLOT(FitLorentz()));
+	QObject::connect(btnVoigt, SIGNAL(clicked(bool)), this, SLOT(FitVoigt()));
+#endif
 	QObject::connect(comboX, SIGNAL(currentIndexChanged(const QString&)),
 		this, SLOT(XAxisSelected(const QString&)));
 	QObject::connect(comboY, SIGNAL(currentIndexChanged(const QString&)),
@@ -116,6 +131,16 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	m_bDoUpdate = 1;
 	ChangedPath();
 
+//#ifdef NO_FIT
+	btnParam->setEnabled(false);
+	btnGauss->setEnabled(false);
+	btnLorentz->setEnabled(false);
+	btnVoigt->setEnabled(false);
+//#endif
+
+#ifndef HAS_COMPLEX_ERF
+	btnVoigt->setEnabled(false);
+#endif
 
 	if(m_settings.contains("geo"))
 		restoreGeometry(m_settings.value("geo").toByteArray());
@@ -143,6 +168,8 @@ void ScanViewerDlg::ClearPlot()
 
 	m_vecX.clear();
 	m_vecY.clear();
+	m_vecFitX.clear();
+	m_vecFitY.clear();
 
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 0, 0);
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 1, 0);
@@ -302,7 +329,10 @@ void ScanViewerDlg::PlotScan()
 	if(m_vecX.size()==0 || m_vecY.size()==0)
 		return;
 
-	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 0, 0);
+	if(m_vecFitX.size())
+		set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, 0, 0);
+	else
+		set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 0, 0);
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 1, 1);
 
 	GenerateExternal(comboExport->currentIndex());
@@ -702,5 +732,81 @@ void ScanViewerDlg::UpdateFileList()
 	catch(const std::exception& ex)
 	{}
 }
+
+
+#ifndef NO_FIT
+
+void ScanViewerDlg::ShowFitParams()
+{
+}
+
+void ScanViewerDlg::FitGauss()
+{
+	m_vecFitX.clear();
+	m_vecFitY.clear();
+
+	std::vector<t_real> m_vecYErr;
+	m_vecYErr.reserve(m_vecY.size());
+	for(t_real d : m_vecY)
+	{
+		if(tl::float_equal(d, 0., g_dEps))
+			d = 1.;
+		m_vecYErr.push_back(std::sqrt(d));
+	}
+
+	auto func = tl::gauss_model<t_real>;
+	constexpr std::size_t iFuncArgs = 5;
+
+	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+
+	std::vector<std::string> vecParamNames = { "x0", "sig", "amp", "offs" };
+	std::vector<t_real> vecVals = { *minmaxX.first + (*minmaxX.second-*minmaxX.first)*0.5, 
+		std::abs((*minmaxX.second-*minmaxX.first) * 0.5), 
+		std::abs((*minmaxY.second-*minmaxY.first)*(*minmaxX.second-*minmaxX.first) * 0.5), 
+		*minmaxY.first };
+	std::vector<t_real> vecErrs;
+	for(t_real dVal : vecVals)
+		vecErrs.push_back(dVal*0.25);
+
+	bool bOk = tl::fit<iFuncArgs>(func,
+		m_vecX, m_vecY, m_vecYErr,
+		vecParamNames, vecVals, vecErrs);
+
+	if(!bOk)
+	{
+		QMessageBox::critical(this, "Error", "Could not fit Gaussian.");
+		return;
+	}
+
+	m_vecFitX.reserve(GFX_NUM_POINTS);
+	m_vecFitY.reserve(GFX_NUM_POINTS);
+
+	std::vector<t_real> vecValsWithX = { 0. };
+	for(t_real dVal : vecVals) vecValsWithX.push_back(dVal);
+
+	for(std::size_t i=0; i<GFX_NUM_POINTS; ++i)
+	{
+		t_real dX = t_real(i)*(*minmaxX.second - *minmaxX.first)/t_real(GFX_NUM_POINTS-1) + *minmaxX.first;
+		vecValsWithX[0] = dX;
+		t_real dY = tl::call<iFuncArgs, decltype(func), t_real, std::vector>(func, vecValsWithX);
+
+		m_vecFitX.push_back(dX);
+		m_vecFitY.push_back(dY);
+	}
+
+	PlotScan();
+}
+
+void ScanViewerDlg::FitLorentz()
+{
+}
+
+void ScanViewerDlg::FitVoigt()
+{
+}
+
+#endif
+
 
 #include "scanviewer.moc"

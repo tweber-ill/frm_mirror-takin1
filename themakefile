@@ -289,7 +289,7 @@ all: takin  montereso  monteconvo xmonteconvo posextract \
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
-	${CC} ${FLAGS} ${LIB_DIRS} -o bin/takin $+ ${LIBS_TAZ}
+	${CC} ${FLAGS} ${LIB_DIRS} -o bin/takin $+ -lMinuit2 ${LIBS_TAZ}
 	${STRIP} bin/takin
 
 montereso: ${OBJ_COMMON} ${OBJ_MONTERESO}
@@ -328,7 +328,7 @@ reso: ${OBJ_RESO}
 
 scanviewer: ${OBJ_SCANVIEWER}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/scanviewer $+ \
-		${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB}
+		-lMinuit2 ${STD_LIBS} ${BASIC_LIBS} ${QT_LIB} ${QWT_LIB}
 	${STRIP} scanviewer
 
 sglist: ${OBJ_SGLIST}

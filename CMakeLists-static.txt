@@ -132,6 +132,7 @@ add_executable(takin
 )
 
 target_link_libraries(takin 
+	${Minuit2_LIBRARIES}
 	${Boost_LIBRARIES}
 	Threads::Threads
 	Qt4::QtCore Qt4::QtGui Qt4::QtSvg #Qt4::QtOpenGL
