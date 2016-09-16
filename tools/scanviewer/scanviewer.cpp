@@ -37,7 +37,8 @@ namespace fs = boost::filesystem;
 ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint),
 		m_settings("tobis_stuff", "scanviewer"),
-		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG" })
+		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG" }),
+		m_pFitParamDlg(new FitParamDlg(this, &m_settings))
 {
 	this->setupUi(this);
 	QFont font;
@@ -131,12 +132,12 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	m_bDoUpdate = 1;
 	ChangedPath();
 
-//#ifdef NO_FIT
+#ifdef NO_FIT
 	btnParam->setEnabled(false);
 	btnGauss->setEnabled(false);
 	btnLorentz->setEnabled(false);
 	btnVoigt->setEnabled(false);
-//#endif
+#endif
 
 #ifndef HAS_COMPLEX_ERF
 	btnVoigt->setEnabled(false);
@@ -150,6 +151,7 @@ ScanViewerDlg::~ScanViewerDlg()
 {
 	ClearPlot();
 	tableProps->setRowCount(0);
+	if(m_pFitParamDlg) { delete m_pFitParamDlg; m_pFitParamDlg = nullptr; }
 }
 
 void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
@@ -738,9 +740,16 @@ void ScanViewerDlg::UpdateFileList()
 
 void ScanViewerDlg::ShowFitParams()
 {
+	m_pFitParamDlg->show();
+	m_pFitParamDlg->activateWindow();
 }
 
-void ScanViewerDlg::FitGauss()
+template<std::size_t iFuncArgs, class t_func>
+bool ScanViewerDlg::Fit(t_func&& func,
+	const std::vector<std::string>& vecParamNames,
+	std::vector<t_real>& vecVals,
+	std::vector<t_real>& vecErrs,
+	const std::vector<bool>& vecFixed)
 {
 	m_vecFitX.clear();
 	m_vecFitY.clear();
@@ -754,30 +763,17 @@ void ScanViewerDlg::FitGauss()
 		m_vecYErr.push_back(std::sqrt(d));
 	}
 
-	auto func = tl::gauss_model<t_real>;
-	constexpr std::size_t iFuncArgs = 5;
-
-	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
-	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-
-	std::vector<std::string> vecParamNames = { "x0", "sig", "amp", "offs" };
-	std::vector<t_real> vecVals = { *minmaxX.first + (*minmaxX.second-*minmaxX.first)*0.5, 
-		std::abs((*minmaxX.second-*minmaxX.first) * 0.5), 
-		std::abs((*minmaxY.second-*minmaxY.first)*(*minmaxX.second-*minmaxX.first) * 0.5), 
-		*minmaxY.first };
-	std::vector<t_real> vecErrs;
-	for(t_real dVal : vecVals)
-		vecErrs.push_back(dVal*0.25);
-
 	bool bOk = tl::fit<iFuncArgs>(func,
 		m_vecX, m_vecY, m_vecYErr,
-		vecParamNames, vecVals, vecErrs);
+		vecParamNames, vecVals, vecErrs, &vecFixed);
 
 	if(!bOk)
 	{
-		QMessageBox::critical(this, "Error", "Could not fit Gaussian.");
-		return;
+		QMessageBox::critical(this, "Error", "Could not fit function.");
+		return false;
 	}
+
+	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 
 	m_vecFitX.reserve(GFX_NUM_POINTS);
 	m_vecFitY.reserve(GFX_NUM_POINTS);
@@ -796,10 +792,103 @@ void ScanViewerDlg::FitGauss()
 	}
 
 	PlotScan();
+	return true;
+}
+
+void ScanViewerDlg::FitGauss()
+{
+	auto func = tl::gauss_model_amp<t_real>;
+	constexpr std::size_t iFuncArgs = 5;
+
+	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
+	t_real_glob dSig = m_pFitParamDlg->GetSig(),	dSigErr = m_pFitParamDlg->GetSigErr();
+	t_real_glob dX0 = m_pFitParamDlg->GetX0(),		dX0Err = m_pFitParamDlg->GetX0Err();
+	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),	dOffsErr = m_pFitParamDlg->GetOffsErr();
+
+	bool bAmpFixed = m_pFitParamDlg->GetAmpFixed();
+	bool bSigFixed = m_pFitParamDlg->GetSigFixed();
+	bool bX0Fixed = m_pFitParamDlg->GetX0Fixed();
+	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+
+	// automatic parameter determination
+	if(!m_pFitParamDlg->WantParams())
+	{
+		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+
+		dX0 = m_vecX[minmaxY.second - m_vecY.begin()];
+		dSig = std::abs((*minmaxX.second-*minmaxX.first) * 0.5);
+		dAmp = std::abs(*minmaxY.second-*minmaxY.first);
+		dOffs = *minmaxY.first;
+
+		dX0Err = dX0 * 0.1;
+		dSigErr = dSig * 0.1;
+		dAmpErr = dAmp * 0.1;
+		dOffsErr = dOffs * 0.1;
+		
+		bAmpFixed = bSigFixed = bX0Fixed = bOffsFixed = 0;
+	}
+
+	std::vector<std::string> vecParamNames = { "x0", "sig", "amp", "offs" };
+	std::vector<t_real> vecVals = { dX0, dSig, dAmp, dOffs };
+	std::vector<t_real> vecErrs = { dX0Err, dSigErr, dAmpErr, dOffsErr };
+	std::vector<bool> vecFixed = { bX0Fixed, bSigFixed, bAmpFixed, bOffsFixed };
+
+	if(!Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed))
+		return;
+
+	m_pFitParamDlg->SetX0(vecVals[0]);		m_pFitParamDlg->SetX0Err(vecErrs[0]);
+	m_pFitParamDlg->SetSig(vecVals[1]);		m_pFitParamDlg->SetSigErr(vecErrs[1]);
+	m_pFitParamDlg->SetAmp(vecVals[2]);		m_pFitParamDlg->SetAmpErr(vecErrs[2]);
+	m_pFitParamDlg->SetOffs(vecVals[3]);	m_pFitParamDlg->SetOffsErr(vecErrs[3]);
 }
 
 void ScanViewerDlg::FitLorentz()
 {
+	auto func = tl::lorentz_model_amp<t_real>;
+	constexpr std::size_t iFuncArgs = 5;
+
+	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
+	t_real_glob dHWHM = m_pFitParamDlg->GetHWHM(),	dHWHMErr = m_pFitParamDlg->GetHWHMErr();
+	t_real_glob dX0 = m_pFitParamDlg->GetX0(),		dX0Err = m_pFitParamDlg->GetX0Err();
+	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),	dOffsErr = m_pFitParamDlg->GetOffsErr();
+
+	bool bAmpFixed = m_pFitParamDlg->GetAmpFixed();
+	bool bHWHMFixed = m_pFitParamDlg->GetHWHMFixed();
+	bool bX0Fixed = m_pFitParamDlg->GetX0Fixed();
+	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+
+	// automatic parameter determination
+	if(!m_pFitParamDlg->WantParams())
+	{
+		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+
+		dX0 = m_vecX[minmaxY.second - m_vecY.begin()];
+		dHWHM = std::abs((*minmaxX.second-*minmaxX.first) * 0.5);
+		dAmp = std::abs(*minmaxY.second-*minmaxY.first);
+		dOffs = *minmaxY.first;
+
+		dX0Err = dX0 * 0.1;
+		dHWHMErr = dHWHM * 0.1;
+		dAmpErr = dAmp * 0.1;
+		dOffsErr = dOffs * 0.1;
+
+		bAmpFixed = bHWHMFixed = bX0Fixed = bOffsFixed = 0;
+	}
+
+	std::vector<std::string> vecParamNames = { "x0", "hwhm", "amp", "offs" };
+	std::vector<t_real> vecVals = { dX0, dHWHM, dAmp, dOffs };
+	std::vector<t_real> vecErrs = { dX0Err, dHWHMErr, dAmpErr, dOffsErr };
+	std::vector<bool> vecFixed = { bX0Fixed, bHWHMFixed, bAmpFixed, bOffsFixed };
+
+	if(!Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed))
+		return;
+
+	m_pFitParamDlg->SetX0(vecVals[0]);		m_pFitParamDlg->SetX0Err(vecErrs[0]);
+	m_pFitParamDlg->SetHWHM(vecVals[1]);	m_pFitParamDlg->SetHWHMErr(vecErrs[1]);
+	m_pFitParamDlg->SetAmp(vecVals[2]);		m_pFitParamDlg->SetAmpErr(vecErrs[2]);
+	m_pFitParamDlg->SetOffs(vecVals[3]);	m_pFitParamDlg->SetOffsErr(vecErrs[3]);
 }
 
 void ScanViewerDlg::FitVoigt()

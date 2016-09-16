@@ -105,7 +105,7 @@ add_executable(takin
 	tools/monteconvo/sqw_py.cpp
 
 	tools/convofit/scan.cpp
-	tools/scanviewer/scanviewer.cpp
+	tools/scanviewer/scanviewer.cpp tools/scanviewer/FitParamDlg.cpp
 
 	dialogs/SettingsDlg.cpp dialogs/FilePreviewDlg.cpp
 	dialogs/GotoDlg.cpp dialogs/DWDlg.cpp dialogs/DynPlaneDlg.cpp

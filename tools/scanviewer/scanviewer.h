@@ -18,6 +18,7 @@
 #include "libs/qthelper.h"
 #include "libs/globals.h"
 #include "ui/ui_scanviewer.h"
+#include "FitParamDlg.h"
 
 
 class ScanViewerDlg : public QDialog, Ui::ScanViewerDlg
@@ -35,6 +36,8 @@ protected:
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 	std::string m_strX, m_strY, m_strCmd;
 
+	FitParamDlg *m_pFitParamDlg = nullptr;
+
 protected:
 	void ClearPlot();
 	void PlotScan();
@@ -46,6 +49,15 @@ protected:
 	void GenerateForHermelin();
 
 	virtual void closeEvent(QCloseEvent* pEvt) override;
+
+#ifndef NO_FIT
+	template<std::size_t iNumArgs, class t_func>
+	bool Fit(t_func&& func,
+		const std::vector<std::string>& vecParamNames,
+		std::vector<t_real_glob>& vecVals,
+		std::vector<t_real_glob>& vecErrs,
+		const std::vector<bool>& vecFixed);
+#endif
 
 protected slots:
 	void GenerateExternal(int iLang=0);
