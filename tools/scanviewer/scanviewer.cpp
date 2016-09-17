@@ -906,7 +906,7 @@ void ScanViewerDlg::FitVoigt() {}
 
 void ScanViewerDlg::FitVoigt()
 {
-	auto func = tl::voigt_model<t_real>;
+	auto func = tl::voigt_model_amp<t_real>;
 	constexpr std::size_t iFuncArgs = 6;
 
 	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
