@@ -148,6 +148,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 -------------------------------------------------------------------------------- 
+ROOT (Minuit2, etc.)
+URL: https://root.cern.ch
+URL: http://seal.web.cern.ch/seal/snapshot/work-packages/mathlibs/minuit/release/download.html
+
+Copyright (c) 1995-2015 The ROOT Team
+
+License: GNU LGPL version 2.1 (see below)
+--------------------------------------------------------------------------------
+
+
+
+-------------------------------------------------------------------------------- 
 Clipper
 URL: http://www.ysbl.york.ac.uk/~cowtan/clipper/
 
