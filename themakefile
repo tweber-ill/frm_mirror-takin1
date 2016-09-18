@@ -24,7 +24,7 @@ STD_CPP = -std=c++11
 STD_LIBS = -lstdc++
 #STD_LIBS = -lc++ -lc++abi
 STD_LIBS += -lm
-STD_LIBS += -lpthread
+STD_LIBS += -lpthread -lrt
 
 BOOST_SUFFIX = 
 #BOOST_SUFFIX = -mt
@@ -507,7 +507,8 @@ obj/sqw.o: tools/monteconvo/sqw.cpp tools/monteconvo/sqw.h tlibs/math/kd.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/sqwbase.o: tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwbase.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
-obj/sqwfact.o: tools/monteconvo/sqwfactory.cpp tools/monteconvo/sqwfactory.h
+obj/sqwfact.o: tools/monteconvo/sqwfactory.cpp tools/monteconvo/sqwfactory.h \
+	tools/monteconvo/sqw_proc.h tools/monteconvo/sqw_proc_impl.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/sqw_py.o: tools/monteconvo/sqw_py.cpp tools/monteconvo/sqw_py.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<

@@ -17,12 +17,17 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 	std::string strFile = pcFile;
 	std::string strDir = tl::get_dir(strFile);
 	std::string strMod = tl::get_file_noext(tl::get_file(strFile));
-
-	bool bSetScriptCWD = 0;
+	const bool bSetScriptCWD = 1;
 
 	try	// mandatory stuff
 	{
-		::Py_Initialize();
+		static bool bInited = 0;
+		if(!bInited)
+		{
+			::Py_InitializeEx(0);
+			tl::log_debug("Initialised Python interpreter version ", Py_GetVersion(), ".");
+			bInited = 1;
+		}
 
 		// set script paths
 		m_sys = py::import("sys");
@@ -76,7 +81,16 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 
 SqwPy::~SqwPy()
 {
-	//::Py_Finalize();
+	/*try
+	{
+		::Py_Finalize();
+		tl::log_debug("Uninitialised Python interpreter.");
+	}
+	catch(const py::error_already_set& ex)
+	{
+		PyErr_Print();
+		PyErr_Clear();
+	}*/
 }
 
 
@@ -179,6 +193,7 @@ void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 			//auto tyVar = dict.items()[i][1].attr("__class__");
 			//dict[strName] = tyVar(strNewVal);
 			dict[strName] = py::eval(py::str(strNewVal), dict);
+			//tl::log_debug(strName, " = ", strNewVal);
 		}
 
 		// TODO: check for changed parameters and if reinit is needed
