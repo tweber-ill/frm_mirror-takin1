@@ -16,7 +16,10 @@
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/string.hpp>
-//#include <boost/interprocess/containers/vector.hpp>
+
+#define MSG_QUEUE_SIZE 128
+#define PARAM_MEM 1024*1024*1024
+
 
 namespace proc = boost::interprocess;
 using t_real = t_real_reso;
@@ -33,67 +36,76 @@ using t_sh_str_gen = proc::basic_string<t_ch, std::char_traits<t_ch>, t_sh_str_a
 using t_sh_str_alloc = t_sh_str_alloc_gen<char>;
 using t_sh_str = t_sh_str_gen<char>;
 
-/*
-using t_sh_vec_alloc = proc::allocator<std::tuple<t_sh_str, t_sh_str, t_sh_str>,
-	proc::managed_shared_memory::segment_manager>;
-using t_sh_vec = proc::vector<std::tuple<t_sh_str, t_sh_str, t_sh_str>, t_sh_vec_alloc>;
-
-template<class t_str_from, class t_str_to>
-static std::tuple<t_str_to, t_str_to, t_str_to>
-var_to_procvar(const std::tuple<t_str_from, t_str_from, t_str_from>& var)
-{
-	return std::tuple<t_str_to, t_str_to, t_str_to>
-		(std::get<0>(var).c_str(), std::get<1>(var).c_str(), std::get<2>(var).c_str());
-}
-*/
 
 static void pars_to_str(t_sh_str& str, const std::vector<SqwBase::t_var>& vec)
 {
-	str.clear();
-
-	for(const SqwBase::t_var& var : vec)
+	try
 	{
-		str.append(std::get<0>(var).c_str()); str.append("#,#");
-		str.append(std::get<1>(var).c_str()); str.append("#,#");
-		str.append(std::get<2>(var).c_str());
-		str.append("#;#");
+		str.clear();
+
+		std::size_t iLenTotal = 0;
+		for(const SqwBase::t_var& var : vec)
+		{
+			iLenTotal += std::get<0>(var).length() +
+				std::get<1>(var).length() +
+				std::get<2>(var).length() + 3*3;
+			if(iLenTotal >= std::size_t(PARAM_MEM*0.9))
+			{
+				tl::log_err("Process buffer limit imminent. Truncating parameter list.");
+				break;
+			}
+
+			str.append(std::get<0>(var).c_str()); str.append("#,#");
+			str.append(std::get<1>(var).c_str()); str.append("#,#");
+			str.append(std::get<2>(var).c_str());
+			str.append("#;#");
+		}
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_err(ex.what());
 	}
 }
 
 static std::vector<SqwBase::t_var> str_to_pars(const t_sh_str& _str)
 {
-	std::string str;
-	for(const t_sh_str::value_type& ch : _str) str.push_back(ch);
-
-	std::vector<std::string> vecLines;
-	tl::get_tokens_seq<std::string, std::string, std::vector>
-		(str, "#;#", vecLines, 1);
-
-
 	std::vector<SqwBase::t_var> vec;
-	vec.reserve(vecLines.size());
-
-	for(const std::string& strLine : vecLines)
+	try
 	{
-		if(strLine.length() == 0) continue;
+		std::string str;
+		for(const t_sh_str::value_type& ch : _str) str.push_back(ch);
 
-		std::vector<std::string> vecVals;
+		std::vector<std::string> vecLines;
 		tl::get_tokens_seq<std::string, std::string, std::vector>
-			(strLine, "#,#", vecVals, 1);
+			(str, "#;#", vecLines, 1);
 
-		if(vecVals.size() != 3)
+
+		vec.reserve(vecLines.size());
+
+		for(const std::string& strLine : vecLines)
 		{
-			tl::log_err("Wrong size of parameters: \"", strLine, "\".");
-			continue;
+			if(strLine.length() == 0) continue;
+
+			std::vector<std::string> vecVals;
+			tl::get_tokens_seq<std::string, std::string, std::vector>
+				(strLine, "#,#", vecVals, 1);
+
+			if(vecVals.size() != 3)
+			{
+				tl::log_err("Wrong size of parameters: \"", strLine, "\".");
+				continue;
+			}
+
+			SqwBase::t_var var;
+			std::get<0>(var) = vecVals[0];
+			std::get<1>(var) = vecVals[1];
+			std::get<2>(var) = vecVals[2];
+			vec.push_back(var);
 		}
-
-		SqwBase::t_var var;
-		std::get<0>(var) = vecVals[0];
-		std::get<1>(var) = vecVals[1];
-		std::get<2>(var) = vecVals[2];
-		vec.push_back(var);
-
-		//tl::log_debug(std::get<0>(var), ", ", std::get<1>(var), ", ", std::get<2>(var));
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_err(ex.what());
 	}
 	return vec;
 }
@@ -103,9 +115,6 @@ static std::vector<SqwBase::t_var> str_to_pars(const t_sh_str& _str)
 // ----------------------------------------------------------------------------
 // messages
 
-#define MSG_QUEUE_SIZE 128
-#define PARAM_MEM 1024*1024*1024
-
 enum class ProcMsgTypes
 {
 	QUIT,
@@ -114,6 +123,7 @@ enum class ProcMsgTypes
 	SQW,
 	GET_VARS,
 	SET_VARS,
+	IS_OK,
 };
 
 struct ProcMsg
@@ -122,6 +132,7 @@ struct ProcMsg
 
 	t_real dParam1, dParam2, dParam3, dParam4;
 	t_real dRet;
+	bool bRet;
 
 	t_sh_str *pPars = nullptr;
 };
@@ -180,7 +191,7 @@ static void child_proc(proc::message_queue& msgToParent, proc::message_queue& ms
 			case ProcMsgTypes::SQW:
 			{
 				ProcMsg msgRet;
-				msgRet.ty = ProcMsgTypes::SQW;
+				msgRet.ty = msg.ty;
 				msgRet.dRet = pSqw->operator()(msg.dParam1, msg.dParam2, msg.dParam3, msg.dParam4);
 				msg_send(msgToParent, msgRet);
 				break;
@@ -188,7 +199,7 @@ static void child_proc(proc::message_queue& msgToParent, proc::message_queue& ms
 			case ProcMsgTypes::GET_VARS:
 			{
 				ProcMsg msgRet;
-				msgRet.ty = ProcMsgTypes::GET_VARS;
+				msgRet.ty = msg.ty;
 				msgRet.pPars = msg.pPars;	// use provided pointer to shared mem
 				pars_to_str(*msgRet.pPars, pSqw->GetVars());
 				msg_send(msgToParent, msgRet);
@@ -199,10 +210,22 @@ static void child_proc(proc::message_queue& msgToParent, proc::message_queue& ms
 				pSqw->SetVars(str_to_pars(*msg.pPars));
 				break;
 			}
+			case ProcMsgTypes::IS_OK:
+			{
+				ProcMsg msgRet;
+				msgRet.ty = msg.ty;
+				msgRet.bRet = pSqw->IsOk();
+				msg_send(msgToParent, msgRet);
+				break;
+			}
 			case ProcMsgTypes::QUIT:
 			{
 				//tl::log_debug("Exiting child process");
 				exit(0);
+				break;
+			}
+			default:
+			{
 				break;
 			}
 		}
@@ -307,6 +330,20 @@ t_real SqwProc<t_sqw>::operator()(t_real dh, t_real dk, t_real dl, t_real dE) co
 }
 
 template<class t_sqw>
+bool SqwProc<t_sqw>::IsOk() const
+{
+	if(!m_bOk) return false;
+	std::lock_guard<std::mutex> lock(*m_pmtx);
+
+	ProcMsg msg;
+	msg.ty = ProcMsgTypes::IS_OK;
+	msg_send(*m_pmsgOut, msg);
+
+	ProcMsg msgRet = msg_recv(*m_pmsgIn);
+	return msgRet.bRet;
+}
+
+template<class t_sqw>
 std::vector<SqwBase::t_var> SqwProc<t_sqw>::GetVars() const
 {
 	std::lock_guard<std::mutex> lock(*m_pmtx);
@@ -351,4 +388,3 @@ SqwBase* SqwProc<t_sqw>::shallow_copy() const
 // ----------------------------------------------------------------------------
 
 #endif
-
