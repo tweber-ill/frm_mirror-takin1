@@ -1340,6 +1340,7 @@ void TazDlg::ShowAbout()
 
 void TazDlg::ShowHelp()
 {
+#ifndef NO_HELP_ASSISTANT
 	std::string strHelp = find_resource("res/doc/takin.qhc");
 	if(strHelp != "")
 	{
@@ -1353,6 +1354,7 @@ void TazDlg::ShowHelp()
 
 		tl::log_warn("Help viewer not found, trying associated application.");
 	}
+#endif
 
 
 	// try opening html files directly

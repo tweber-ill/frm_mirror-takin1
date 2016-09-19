@@ -71,12 +71,10 @@ protected slots:
 	void XAxisSelected(const QString&);
 	void YAxisSelected(const QString&);
 
-#ifndef NO_FIT
 	void ShowFitParams();
 	void FitGauss();
 	void FitLorentz();
 	void FitVoigt();
-#endif
 
 	//void openExternally();
 

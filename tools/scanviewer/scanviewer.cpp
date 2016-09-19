@@ -20,10 +20,14 @@
 #include <boost/filesystem.hpp>
 
 #include "tlibs/math/math.h"
-#include "tlibs/fit/minuit.h"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/log/log.h"
+
+#ifndef NO_FIT
+	#include "tlibs/fit/minuit.h"
+#endif
+
 
 using t_real = t_real_glob;
 namespace fs = boost::filesystem;
@@ -960,6 +964,14 @@ void ScanViewerDlg::FitVoigt()
 	m_pFitParamDlg->SetOffs(vecVals[4]);	m_pFitParamDlg->SetOffsErr(vecErrs[4]);
 }
 #endif
+
+#else	// NO_FIT
+
+void ScanViewerDlg::ShowFitParams() {}
+void ScanViewerDlg::FitGauss() {}
+void ScanViewerDlg::FitLorentz() {}
+void ScanViewerDlg::FitVoigt() {}
+
 #endif
 
 
