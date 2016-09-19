@@ -11,6 +11,7 @@
 
 using t_real = t_real_reso;
 
+#define MAX_PARAM_VAL_SIZE 128
 
 SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 {
@@ -140,6 +141,11 @@ std::vector<SqwBase::t_var> SqwPy::GetVars() const
 			// value
 			std::string strValue = py::extract<std::string>(dict.items()[i][1]
 				.attr("__repr__")());
+			if(strValue.length() > MAX_PARAM_VAL_SIZE)
+			{
+				//tl::log_warn("Value of variable \"", strName, "\" is too large, skipping.");
+				continue;
+			}
 
 			SqwBase::t_var var;
 			std::get<0>(var) = std::move(strName);

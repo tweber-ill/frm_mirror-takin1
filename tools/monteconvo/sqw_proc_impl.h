@@ -18,7 +18,7 @@
 #include <boost/interprocess/containers/string.hpp>
 
 #define MSG_QUEUE_SIZE 128
-#define PARAM_MEM 1024*1024*1024
+#define PARAM_MEM 1024*1024
 
 
 namespace proc = boost::interprocess;
