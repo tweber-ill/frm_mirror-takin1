@@ -1359,6 +1359,8 @@ void TazDlg::ShowHelp()
 
 	// try opening html files directly
 	std::string strHelpHtml = find_resource("doc/index_help.html");
+	if(strHelpHtml == "")	// try alternate directory
+		strHelpHtml = find_resource("res/doc/index_help.html");
 	if(strHelpHtml != "")
 	{
 		std::string strFile = "file:///" + fs::absolute(strHelpHtml).string();
