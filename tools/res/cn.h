@@ -32,6 +32,9 @@ enum ResoFlags : std::size_t
 };
 
 
+/**
+ * TAS parameters in fwhm
+ */
 struct CNParams
 {
 	// monochromator
