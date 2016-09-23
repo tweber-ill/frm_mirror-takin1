@@ -20,6 +20,7 @@
 #include "tlibs/log/log.h"
 
 #include <string>
+#include <future>
 #include <iostream>
 
 
@@ -112,16 +113,13 @@ ResoResults calc_cn(const CNParams& cn)
 	angle mono_mosaic_v = cn.mono_mosaic;
 	angle ana_mosaic_v = cn.ana_mosaic;
 
-/*
-	const length lam = tl::k2lam(cn.ki);
+/*	const length lam = tl::k2lam(cn.ki);
 
 	if(cn.bGuide)
 	{
 		coll_h_pre_mono = lam*(cn.guide_div_h/angs);
 		coll_v_pre_mono = lam*(cn.guide_div_v/angs);
-	}
-*/
-
+	}*/
 
 	// -------------------------------------------------------------------------
 	// transformation matrix
@@ -165,10 +163,13 @@ ResoResults calc_cn(const CNParams& cn)
 	// resolution matrix, [mit84], equ. A.5
 	t_mat M = ublas::zero_matrix<t_real>(6,6);
 
-	// horizontal part
-	auto calc_mono_ana_res_h =
-		[](angle theta, wavenumber k, angle mosaic, angle coll1, angle coll2) -> t_mat
+	auto calc_mono_ana_res =
+		[](angle theta, wavenumber k,
+		angle mosaic, angle mosaic_v,
+		angle coll1, angle coll2,
+		angle coll1_v, angle coll2_v) -> std::pair<t_mat, t_real>
 	{
+		// horizontal part
 		t_vec vecMos(2);
 		vecMos[0] = units::tan(theta);
 		vecMos[1] = 1.;
@@ -184,36 +185,45 @@ ResoResults calc_cn(const CNParams& cn)
 		vecColl2[1] = 1.;
 		vecColl2 /= (k*angs * coll2/rads);
 
-		return ublas::outer_prod(vecMos, vecMos) +
+		t_mat matHori = ublas::outer_prod(vecMos, vecMos) +
 			ublas::outer_prod(vecColl1, vecColl1) +
 			ublas::outer_prod(vecColl2, vecColl2);
+
+		// vertical part, [mit84], equ. A.9 & A.13
+		t_real dVert = t_real(1)/(k*k * angs*angs) * rads*rads *
+		(
+			t_real(1) / (coll2_v * coll2_v) +
+			t_real(1) / ((t_real(2)*units::sin(theta) * mosaic_v) *
+				(t_real(2)*units::sin(theta) * mosaic_v) +
+				coll1_v * coll1_v)
+		);
+
+		return std::pair<t_mat, t_real>(matHori, dVert);
 	};
 
-	t_mat matMonoH = calc_mono_ana_res_h(thetam, cn.ki, cn.mono_mosaic,
-		cn.coll_h_pre_mono, cn.coll_h_pre_sample);
-	t_mat matAnaH = calc_mono_ana_res_h(-thetaa, cn.kf, cn.ana_mosaic,
-		cn.coll_h_post_ana, cn.coll_h_post_sample);
+	std::launch lpol = /*std::launch::deferred |*/ std::launch::async;
+	std::future<std::pair<t_mat, t_real>> futMono
+		= std::async(lpol, calc_mono_ana_res,
+			thetam, cn.ki,
+			cn.mono_mosaic, mono_mosaic_v,
+			cn.coll_h_pre_mono, cn.coll_h_pre_sample,
+			cn.coll_v_pre_mono, cn.coll_v_pre_sample);
+	std::future<std::pair<t_mat, t_real>> futAna
+		= std::async(lpol, calc_mono_ana_res,
+			-thetaa, cn.kf,
+			cn.ana_mosaic, ana_mosaic_v,
+			cn.coll_h_post_ana, cn.coll_h_post_sample,
+			cn.coll_v_post_ana, cn.coll_v_post_sample);
+
+	t_mat matMonoH, matAnaH;
+	t_real dMonoV, dAnaV;
+	std::tie(matMonoH, dMonoV) = futMono.get();
+	std::tie(matAnaH, dAnaV) = futAna.get();
 
 	tl::submatrix_copy(M, matMonoH, 0, 0);
 	tl::submatrix_copy(M, matAnaH, 3, 3);
-
-	// vertical part, [mit84], equ. A.9 & A.13
-	auto calc_mono_ana_res_v =
-		[](angle theta, wavenumber k, angle mosaic_v, angle coll1, angle coll2) -> t_real
-	{
-		return t_real(1)/(k*k * angs*angs) * rads*rads *
-		(
-			t_real(1) / (coll2 * coll2) +
-			t_real(1) / ((t_real(2)*units::sin(theta) * mosaic_v) *
-				(t_real(2)*units::sin(theta) * mosaic_v) +
-				coll1 * coll1)
-		);
-	};
-
-	M(2,2) = calc_mono_ana_res_v(thetam, cn.ki, mono_mosaic_v,
-		cn.coll_v_pre_mono, cn.coll_v_pre_sample);
-	M(5,5) = calc_mono_ana_res_v(thetaa, cn.kf, ana_mosaic_v,
-		cn.coll_v_post_ana, cn.coll_v_post_sample);
+	M(2,2) = dMonoV;
+	M(5,5) = dAnaV;
 	// -------------------------------------------------------------------------
 
 

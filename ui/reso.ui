@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>778</width>
-    <height>395</height>
+    <width>831</width>
+    <height>451</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -556,7 +556,7 @@
              <string> arcmin</string>
             </property>
             <property name="maximum">
-             <double>99990000.000000000000000</double>
+             <double>9999.000000000000000</double>
             </property>
             <property name="value">
              <double>9999.000000000000000</double>
@@ -576,7 +576,7 @@
              <string> arcmin</string>
             </property>
             <property name="maximum">
-             <double>99990000.000000000000000</double>
+             <double>9999.000000000000000</double>
             </property>
             <property name="value">
              <double>9999.000000000000000</double>
