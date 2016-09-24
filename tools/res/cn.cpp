@@ -37,9 +37,10 @@ static const auto angs = tl::get_one_angstrom<t_real>();
 static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
 static const auto sec = tl::get_one_second<t_real>();
-static const t_real pi = tl::get_pi<t_real>();
 static const auto mn = tl::get_m_n<t_real>();
 static const auto hbar = tl::get_hbar<t_real>();
+static const t_real pi = tl::get_pi<t_real>();
+static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
 
 
 // -----------------------------------------------------------------------------
@@ -113,8 +114,7 @@ ResoResults calc_cn(const CNParams& cn)
 	angle mono_mosaic_v = cn.mono_mosaic;
 	angle ana_mosaic_v = cn.ana_mosaic;
 
-/*	const length lam = tl::k2lam(cn.ki);
-
+	/*const length lam = tl::k2lam(cn.ki);
 	if(cn.bGuide)
 	{
 		coll_h_pre_mono = lam*(cn.guide_div_h/angs);
@@ -237,7 +237,7 @@ ResoResults calc_cn(const CNParams& cn)
 		/ (1./((cn.sample_mosaic/rads * cn.Q*angs)
 		* (cn.sample_mosaic/rads * cn.Q*angs)) + N(1,1));
 	res.reso(2,2) = N(2,2);
-	res.reso *= tl::get_SIGMA2FWHM<t_real>()*tl::get_SIGMA2FWHM<t_real>();
+	res.reso *= sig2fwhm*sig2fwhm;
 
 	res.reso_v = ublas::zero_vector<t_real>(4);
 	res.reso_s = 0.;
@@ -259,7 +259,7 @@ ResoResults calc_cn(const CNParams& cn)
 
 	// Bragg widths
 	for(unsigned int i=0; i<4; ++i)
-		res.dBraggFWHMs[i] = tl::get_SIGMA2FWHM<t_real>()/sqrt(res.reso(i,i));
+		res.dBraggFWHMs[i] = sig2fwhm/sqrt(res.reso(i,i));
 
 	if(tl::is_nan_or_inf(res.dR0) || tl::is_nan_or_inf(res.reso))
 	{
