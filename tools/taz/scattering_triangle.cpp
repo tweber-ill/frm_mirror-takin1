@@ -706,7 +706,10 @@ void ScatteringTriangle::SetAnaTwoTheta(t_real dTT, t_real dAnaD)
 	vecKf /= ublas::norm_2(vecKf);
 	t_vec vecKf_new = vecKf * dKf;
 
+	m_bReady = 0;
 	m_pNodeKfQ->setPos(vec_to_qpoint(vecNodeKiKf + vecKf_new));
+	m_bReady = 1;
+
 	nodeMoved(m_pNodeKfQ.get());
 }
 
@@ -731,8 +734,11 @@ void ScatteringTriangle::SetMonoTwoTheta(t_real dTT, t_real dMonoD)
 	t_vec vecKi_new = vecKi * dKi;
 
 	t_vec vecNodeKiKf_new = vecNodeKiQ - vecKi_new;
+
+	m_bReady = 0;
 	m_pNodeKiKf->setPos(vec_to_qpoint(vecNodeKiKf_new));
 	m_pNodeKfQ->setPos(vec_to_qpoint(vecNodeKiKf_new + vecKf));
+	m_bReady = 1;
 
 	nodeMoved(m_pNodeKiKf.get());
 	nodeMoved(m_pNodeKfQ.get());
@@ -751,7 +757,10 @@ void ScatteringTriangle::SetTwoTheta(t_real dTT)
 	vecKf_new /= ublas::norm_2(vecKf_new);
 	vecKf_new *= ublas::norm_2(vecKf);
 
+	m_bReady = 0;
 	m_pNodeKfQ->setPos(vec_to_qpoint(vecNodeKiKf + vecKf_new));
+	m_bReady = 1;
+
 	nodeMoved(m_pNodeKfQ.get());
 }
 
@@ -769,8 +778,10 @@ void ScatteringTriangle::RotateKiVec0To(bool bSense, t_real dAngle)
 	vecNodeKiKf = ublas::prod(matRot, vecNodeKiKf);
 	vecNodeKfQ = ublas::prod(matRot, vecNodeKfQ);
 
+	m_bReady = 0;
 	m_pNodeKiKf->setPos(vec_to_qpoint(vecNodeKiKf));
 	m_pNodeKfQ->setPos(vec_to_qpoint(vecNodeKfQ));
+	m_bReady = 1;
 
 	nodeMoved(m_pNodeKiKf.get());
 	nodeMoved(m_pNodeKfQ.get());
