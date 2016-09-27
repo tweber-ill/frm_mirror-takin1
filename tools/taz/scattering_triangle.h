@@ -107,7 +107,7 @@ class ScatteringTriangle : public QGraphicsItem
 		using t_powderline = typename tl::Powder<int,t_real_glob>::t_peak;
 
 	protected:
-		bool m_bReady = 0;
+		bool m_bReady=0, m_bUpdate=0;
 
 		ScatteringTriangleScene &m_scene;
 

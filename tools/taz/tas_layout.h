@@ -50,7 +50,7 @@ class TasLayoutScene;
 class TasLayout : public QGraphicsItem
 {
 	protected:
-		bool m_bReady = 0;
+		bool m_bReady = 0, m_bUpdate = 0;
 		TasLayoutScene& m_scene;
 
 		std::unique_ptr<TasLayoutNode> m_pSrc,

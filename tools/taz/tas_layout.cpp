@@ -81,12 +81,12 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene),
 	scene.addItem(m_pDet.get());
 
 	setAcceptedMouseButtons(0);
-	m_bReady = 1;
+	m_bUpdate = m_bReady = 1;
 }
 
 TasLayout::~TasLayout()
 {
-	m_bReady = 0;
+	m_bUpdate = m_bReady = 0;
 }
 
 void TasLayout::AllowMouseMove(bool bAllow)
@@ -102,6 +102,7 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 {
 	if(!m_bReady) return;
 
+	// prevents recursive calling of update
 	static bool bAllowUpdate = 1;
 	if(!bAllowUpdate) return;
 
@@ -252,8 +253,12 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	}
 
 	bAllowUpdate = 1;
-	this->update();
-	m_scene.emitAllParams();
+
+	if(m_bUpdate)
+	{
+		this->update();
+		m_scene.emitAllParams();
+	}
 }
 
 QRectF TasLayout::boundingRect() const
@@ -522,9 +527,14 @@ void TasLayout::SetSampleTwoTheta(t_real dAngle)
 	vecKf /= ublas::norm_2(vecKf);
 	vecKf *= dLenKf;
 
-	m_pAna->setPos(vec_to_qpoint(vecSample + vecKf));
 
+	m_bReady = m_bUpdate = 0;
+	m_pAna->setPos(vec_to_qpoint(vecSample + vecKf));
+	m_bReady = 1;
+
+	// don't call update twice
 	nodeMoved(m_pSample.get());
+	m_bUpdate = 1;
 	nodeMoved(m_pAna.get());
 }
 
