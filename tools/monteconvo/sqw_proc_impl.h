@@ -288,6 +288,9 @@ SqwProc<t_sqw>::SqwProc(const char* pcCfg)
 template<class t_sqw>
 SqwProc<t_sqw>::~SqwProc()
 {
+	// is this instance the last?
+	if(m_pMem.use_count() > 1) return;
+
 	try
 	{
 		if(m_pmsgOut)
@@ -381,6 +384,8 @@ SqwBase* SqwProc<t_sqw>::shallow_copy() const
 	pSqw->m_pmsgIn = this->m_pmsgIn;
 	pSqw->m_pmsgOut = this->m_pmsgOut;
 	pSqw->m_strProcName = this->m_strProcName;
+	pSqw->m_pidChild = this->m_pidChild;
+	pSqw->m_pSharedPars = this->m_pSharedPars;
 
 	return pSqw;
 }

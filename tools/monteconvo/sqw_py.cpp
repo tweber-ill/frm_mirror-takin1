@@ -26,7 +26,9 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 		if(!bInited)
 		{
 			::Py_InitializeEx(0);
-			tl::log_debug("Initialised Python interpreter version ", Py_GetVersion(), ".");
+			std::string strPy = Py_GetVersion();
+			tl::find_all_and_replace(strPy, std::string("\n"), std::string(", "));
+			tl::log_debug("Initialised Python interpreter version ", strPy, ".");
 			bInited = 1;
 		}
 

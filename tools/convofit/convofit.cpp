@@ -12,6 +12,7 @@
 #include "tlibs/helper/thread.h"
 #include "tlibs/gfx/gnuplot.h"
 #include "tlibs/time/stopwatch.h"
+#include "tlibs/math/rand.h"
 #include "libs/version.h"
 
 #include <iostream>
@@ -704,6 +705,7 @@ int main(int argc, char** argv)
 		tl::log_debug("Resolution calculation uses ", sizeof(t_real_reso)*8, " bit ", tl::get_typename<t_real_reso>(), "s.");
 		tl::log_debug("Fitting uses ", sizeof(tl::t_real_min)*8, " bit ", tl::get_typename<tl::t_real_min>(), "s.");
 
+		tl::init_rand();
 
 		// --------------------------------------------------------------------
 		// get job files and program options
