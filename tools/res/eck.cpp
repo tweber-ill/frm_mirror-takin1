@@ -271,6 +271,7 @@ ResoResults calc_eck(const EckParams& eck)
 
 	t_real dmono_refl = eck.dmono_refl * std::get<0>(tupScFact);
 	t_real dana_effic = eck.dana_effic * std::get<1>(tupScFact);
+	t_real dxsec = std::get<2>(tupScFact);
 
 
 	//--------------------------------------------------------------------------
@@ -437,6 +438,7 @@ ResoResults calc_eck(const EckParams& eck)
 	// prefactor and volume
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = Z*std::exp(-W) /** res.dResVol*/;
+	res.dR0 *= dxsec;
 
 	// Bragg widths
 	for(unsigned int i=0; i<4; ++i)

@@ -219,6 +219,7 @@ ResoResults calc_pop(const PopParams& pop)
 
 	t_real dmono_refl = pop.dmono_refl * std::get<0>(tupScFact);
 	t_real dana_effic = pop.dana_effic * std::get<1>(tupScFact);
+	t_real dxsec = std::get<2>(tupScFact);
 
 
 	//if(pop.bMonoIsCurvedH) tl::log_debug("mono curv h: ", mono_curvh);
@@ -367,6 +368,7 @@ ResoResults calc_pop(const PopParams& pop)
 		t_real dP0 = dmono_refl*dana_effic *
 			t_real((2.*pi)*(2.*pi)*(2.*pi)*(2.*pi)) /
 			std::sqrt(tl::determinant(DSiDti));
+		dP0 *= dxsec;
 
 		// [T] = 1/cm, [F] = 1/rad^2, [pop75], equ. 15
 		t_mat K = S + tl::transform(F, T, 1);

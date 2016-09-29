@@ -46,19 +46,22 @@ static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
 // -----------------------------------------------------------------------------
 // scattering factors
 
-std::tuple<t_real, t_real> get_scatter_factors(std::size_t flags,
+std::tuple<t_real, t_real, t_real> get_scatter_factors(std::size_t flags,
 	const angle& thetam, const wavenumber& ki,
 	const angle& thetaa, const wavenumber& kf)
 {
 	t_real dmono = t_real(1);
 	t_real dana = t_real(1);
+	t_real dSqwToXSec = t_real(1);
 
 	if(flags & CALC_KI3)
 		dmono *= tl::ana_effic_factor(ki, units::abs(thetam));
 	if(flags & CALC_KF3)
 		dana *= tl::ana_effic_factor(kf, units::abs(thetaa));
+	if(flags & CALC_KFKI)
+		dSqwToXSec *= kf/ki;	// see Shirane, equ. (2.7)
 
-	return std::make_tuple(dmono, dana);
+	return std::make_tuple(dmono, dana, dSqwToXSec);
 }
 
 
@@ -157,6 +160,7 @@ ResoResults calc_cn(const CNParams& cn)
 
 	t_real dmono_refl = cn.dmono_refl * std::get<0>(tupScFact);
 	t_real dana_effic = cn.dana_effic * std::get<1>(tupScFact);
+	t_real dxsec = std::get<2>(tupScFact);
 
 
 	// -------------------------------------------------------------------------
@@ -256,6 +260,7 @@ ResoResults calc_cn(const CNParams& cn)
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = chess_R0(cn.ki,cn.kf, thetam, thetaa, cn.twotheta, cn.mono_mosaic,
 		cn.ana_mosaic, cn.coll_v_pre_mono, cn.coll_v_post_ana, dmono_refl, dana_effic);
+	res.dR0 *= dxsec;
 
 	// Bragg widths
 	for(unsigned int i=0; i<4; ++i)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>831</width>
-    <height>451</height>
+    <width>778</width>
+    <height>395</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -473,6 +473,16 @@
            <widget class="QCheckBox" name="checkUseKf3">
             <property name="text">
              <string>Calculate kf³ Factor</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="checkUseKfKi">
+            <property name="text">
+             <string>Calculate kf/ki Factor</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -3201,6 +3211,7 @@
   <tabstop>checkUseR0</tabstop>
   <tabstop>checkUseKi3</tabstop>
   <tabstop>checkUseKf3</tabstop>
+  <tabstop>checkUseKiKf</tabstop>
   <tabstop>spinMonoW</tabstop>
   <tabstop>spinMonoH</tabstop>
   <tabstop>spinMonoThick</tabstop>
