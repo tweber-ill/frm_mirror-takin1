@@ -60,7 +60,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 		m_plotwrap_m.reset(new QwtPlotWrapper(plotMF));
 		m_plotwrap_m->GetCurve(0)->setTitle("Magnetic Form Factor");
 		m_plotwrap_m->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Wavenumber Q (1/A)");
-		m_plotwrap_m->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Magnetic Form Factor");
+		m_plotwrap_m->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Magnetic Form Factor f_M");
 		if(m_plotwrap_m->HasTrackerSignal())
 			connect(m_plotwrap_m->GetPicker(), SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
@@ -69,9 +69,9 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 			this, SLOT(MagAtomSelected(QListWidgetItem*, QListWidgetItem*)));
 		QObject::connect(editMFilter, SIGNAL(textEdited(const QString&)),
 			this, SLOT(SearchMagAtom(const QString&)));
-		QObject::connect(spinL, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
-		QObject::connect(spinS, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
-		QObject::connect(spinJ, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
+
+		for(QDoubleSpinBox* pSpin : {sping, spinL, spinS, spinJ})
+			QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
 
 		QObject::connect(editOrbital, SIGNAL(textEdited(const QString&)),
 			this, SLOT(CalcTermSymbol(const QString&)));
@@ -278,7 +278,7 @@ void FormfactorDlg::MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	t_real dL = spinL->value();
 	t_real dS = spinS->value();
 	t_real dJ = spinJ->value();
-	t_real dG = t_real(2);
+	t_real dG = sping->value();
 
 	std::shared_ptr<const MagFormfactList<t_real>> lstff = MagFormfactList<t_real>::GetInstance();
 	if(iAtom >= lstff->GetNumAtoms()) return;
