@@ -520,14 +520,8 @@ void ResoDlg::Calc()
 				calc_res_ellipse<t_real_reso>(res.reso, res.reso_v, res.reso_s,
 				res.Q_avg, 0, 3, 1, 2, -1);
 
-			//std::cout << ellVa.phi/M_PI*180. << std::endl;
-			t_real_reso dVanadiumFWHM_Q = ellVa.x_hwhm*2.;
-			t_real_reso dVanadiumFWHM_E = ellVa.y_hwhm*2.;
-			if(std::fabs(ellVa.phi) >= tl::get_pi<t_real_reso>()/4.)
-			{
-				dVanadiumFWHM_Q = ellVa.y_hwhm*2.;
-				dVanadiumFWHM_E = ellVa.x_hwhm*2.;
-			}
+			t_real_reso dVanadiumFWHM_Q = ellVa.x_hwhm_bound*2.;
+			t_real_reso dVanadiumFWHM_E = ellVa.y_hwhm_bound*2.;
 			// --------------------------------------------------------------------------------
 
 			const std::string& strAA_1 = tl::get_spec_char_utf8("AA")
