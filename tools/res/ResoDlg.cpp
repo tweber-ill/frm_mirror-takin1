@@ -619,7 +619,6 @@ void ResoDlg::Calc()
 
 				const t_mat matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
 				const t_mat matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
-				// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
 				m_resoHKL = tl::transform(m_res.reso, matQVec0invUB, 1);
 				//m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
 				//m_resoHKL = ublas::prod(matQVec0invUB, m_resoHKL);
@@ -636,7 +635,6 @@ void ResoDlg::Calc()
 				const t_mat matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
 				const t_mat matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
 
-				// TODO: check: does this work for non-cubic crystals, i.e. non-orthogonal B matrices?
 				m_resoOrient = tl::transform(m_res.reso, matToOrientinv, 1);
 				//m_resoOrient = ublas::prod(m_res.reso, matToOrient);
 				//m_resoOrient = ublas::prod(matToOrientinv, m_resoOrient);
