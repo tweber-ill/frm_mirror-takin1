@@ -23,12 +23,13 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 			setFont(font);
 	}
 
-	PlotGl* pPlotLeft = new PlotGl(this, m_pSettings);
+	t_real_reso dScale = 10.;
+	PlotGl* pPlotLeft = new PlotGl(this, m_pSettings, dScale);
 	pPlotLeft->SetPrec(g_iPrecGfx);
 	pPlotLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_pPlots.push_back(pPlotLeft);
 
-	PlotGl* pPlotRight = new PlotGl(this, m_pSettings);
+	PlotGl* pPlotRight = new PlotGl(this, m_pSettings, dScale);
 	pPlotRight->SetPrec(g_iPrecGfx);
 	pPlotRight->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_pPlots.push_back(pPlotRight);

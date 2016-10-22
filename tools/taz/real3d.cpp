@@ -14,7 +14,7 @@ using t_vec = ublas::vector<t_real>;
 
 
 Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
-	: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings))
+	: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Real Space");
@@ -25,6 +25,7 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	gridLayout->addWidget(m_pPlot, 0, 0, 1, 1);
 
+	m_pPlot->SetLabels("a", "b", "c");
 	resize(640, 480);
 }
 
@@ -70,6 +71,20 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 	std::vector<t_real> vecMin = {dLimMax, dLimMax, dLimMax},
 		vecMax = {-dLimMax, -dLimMax, -dLimMax};
 
+	t_real d = t_real(0.5);
+	t_vec vecPeaks[] = {
+		latticecommon.lattice.GetPos(-d,0,0), latticecommon.lattice.GetPos(d,0,0),
+		latticecommon.lattice.GetPos(0,-d,0), latticecommon.lattice.GetPos(0,d,0),
+		latticecommon.lattice.GetPos(0,0,-d), latticecommon.lattice.GetPos(0,0,d),
+	};
+
+	for(const t_vec& vecPeak : vecPeaks)
+		for(unsigned int i=0; i<3; ++i)
+		{
+			vecMin[i] = std::min(vecPeak[i], vecMin[i]);
+			vecMax[i] = std::max(vecPeak[i], vecMax[i]);
+		}
+
 	for(std::size_t iAtom=0; iAtom<latticecommon.vecAllAtoms.size(); ++iAtom)
 	{
 		const std::string& strElem = latticecommon.vecAllNames[iAtom];
@@ -80,11 +95,11 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 		m_pPlot->PlotSphere(vecThisAtom, 0.1, iPeakIdx);
 		m_pPlot->SetObjectColor(iPeakIdx, vecColor[iCurAtomType % vecColor.size()]);
 
-		for(unsigned int i=0; i<3; ++i)
+		/*for(unsigned int i=0; i<3; ++i)
 		{
 			vecMin[i] = std::min(vecThisAtom[i], vecMin[i]);
 			vecMax[i] = std::max(vecThisAtom[i], vecMax[i]);
-		}
+		}*/
 
 		std::ostringstream ostrTip;
 		ostrTip.precision(g_iPrecGfx);

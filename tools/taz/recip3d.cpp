@@ -13,7 +13,7 @@
 using t_real = t_real_glob;
 
 Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
-	: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings))
+	: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Reciprocal Space");
@@ -24,6 +24,7 @@ Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	gridLayout->addWidget(m_pPlot, 0, 0, 1, 1);
 
+	m_pPlot->SetLabels("a", "b", "c");
 	resize(640, 480);
 }
 

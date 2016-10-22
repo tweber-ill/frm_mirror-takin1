@@ -116,7 +116,7 @@ protected:
 	// ------------------------------------------------------------------------
 
 public:
-	PlotGl(QWidget* pParent, QSettings *pSettings=0);
+	PlotGl(QWidget* pParent, QSettings *pSettings=nullptr, t_real_gl dMouseScale=25.);
 	virtual ~PlotGl();
 
 	void PlotSphere(const ublas::vector<t_real_gl>& vecPos, t_real_gl dRadius, int iObjIdx=-1);

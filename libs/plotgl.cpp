@@ -37,13 +37,13 @@ void sleep_nano(long ns)
 	nanosleep(&ts, 0);
 }
 
-PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings)
+PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real_gl dMouseScale)
 	: t_qglwidget(pParent), m_pSettings(pSettings), m_bEnabled(true),
 		m_mutex(QMutex::Recursive),
 		m_matProj(tl::unit_matrix<tl::t_mat4>(4)), m_matView(tl::unit_matrix<tl::t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
-	m_dMouseScale = 25.;
+	m_dMouseScale = dMouseScale;
 	updateViewMatrix();
 
 	setAutoBufferSwap(false);
@@ -134,7 +134,6 @@ void PlotGl::initializeGLThread()
 
 	if(g_strFontGL == "") g_strFontGL = DEF_FONT;
 	if(g_iFontGLSize <= 0) g_iFontGLSize = DEF_FONT_SIZE;
-	//tl::log_debug("GL font: ", g_strFontGL, ", size: ", g_iFontGLSize, ".");
 	m_pFont = new tl::GlFontMap(g_strFontGL.c_str(), g_iFontGLSize);
 
 #if QT_VER>=5
@@ -454,7 +453,6 @@ void PlotGl::mousePressEvent(QMouseEvent *event)
 	if(event->buttons() & Qt::RightButton)
 	{
 		m_bMouseRotateActive = 1;
-
 		m_dMouseBegin[0] = event->POS_F().x();
 		m_dMouseBegin[1] = event->POS_F().y();
 	}
@@ -504,7 +502,6 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 
 	if(bUpdateView)
 		updateViewMatrix();
-
 
 
 	m_dMouseX = 2.*pEvt->POS_F().x()/t_real_gl(m_iW) - 1.;
