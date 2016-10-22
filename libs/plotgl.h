@@ -29,6 +29,7 @@
 #include <boost/numeric/ublas/matrix.hpp>
 namespace ublas = boost::numeric::ublas;
 
+using tl::t_real_gl;
 using t_qglwidget = QGLWidget;
 //using t_qglwidget = QOpenGLWidget;
 
@@ -43,7 +44,7 @@ enum PlotTypeGl
 struct PlotObjGl
 {
 	PlotTypeGl plttype = PLOT_INVALID;
-	std::vector<double> vecParams;
+	std::vector<t_real_gl> vecParams;
 	std::vector<t_real_glob> vecColor;
 
 	bool bSelected = 0;
@@ -58,7 +59,7 @@ protected:
 	std::atomic<bool> m_bEnabled;
 	QMutex m_mutex;
 
-	static constexpr double m_dFOV = 45./180.*M_PI;
+	static constexpr t_real_gl m_dFOV = 45./180.*M_PI;
 	tl::t_mat4 m_matProj, m_matView;
 
 	tl::GlFontMap *m_pFont = nullptr;
@@ -68,10 +69,10 @@ protected:
 	QString m_strLabels[3];
 
 	std::size_t m_iPrec = 6;
-	double m_dXMin=-10., m_dXMax=10.;
-	double m_dYMin=-10., m_dYMax=10.;
-	double m_dZMin=-10., m_dZMax=10.;
-	double m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
+	t_real_gl m_dXMin=-10., m_dXMax=10.;
+	t_real_gl m_dYMin=-10., m_dYMax=10.;
+	t_real_gl m_dZMin=-10., m_dZMax=10.;
+	t_real_gl m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
 
 	//void initializeGL();
 	void resizeEvent(QResizeEvent*);
@@ -83,21 +84,21 @@ protected:
 	// ------------------------------------------------------------------------
 	// mouse stuff
 	bool m_bMouseRotateActive = 0;
-	double m_dMouseRot[2];
-	double m_dMouseBegin[2];
+	t_real_gl m_dMouseRot[2];
+	t_real_gl m_dMouseBegin[2];
 
 	bool m_bMouseScaleActive = 0;
-	double m_dMouseScale;
-	double m_dMouseScaleBegin;
+	t_real_gl m_dMouseScale;
+	t_real_gl m_dMouseScaleBegin;
 
-	double m_dMouseX = 0., m_dMouseY = 0.;
+	t_real_gl m_dMouseX = 0., m_dMouseY = 0.;
 
 	void mousePressEvent(QMouseEvent*);
 	void mouseReleaseEvent(QMouseEvent*);
 	void mouseMoveEvent(QMouseEvent*);
 
 	void updateViewMatrix();
-	void mouseSelectObj(double dX, double dY);
+	void mouseSelectObj(t_real_gl dX, t_real_gl dY);
 
 	// ------------------------------------------------------------------------
 	// render thread
@@ -108,7 +109,7 @@ protected:
 	void freeGLThread();
 	void resizeGLThread(int w, int h);
 	void paintGLThread();
-	void tickThread(double dTime);
+	void tickThread(t_real_gl dTime);
 	void run();
 
 	int m_iW=640, m_iH=480;
@@ -118,10 +119,10 @@ public:
 	PlotGl(QWidget* pParent, QSettings *pSettings=0);
 	virtual ~PlotGl();
 
-	void PlotSphere(const ublas::vector<double>& vecPos, double dRadius, int iObjIdx=-1);
-	void PlotEllipsoid(const ublas::vector<double>& widths,
-		const ublas::vector<double>& offsets,
-		const ublas::matrix<double>& rot,
+	void PlotSphere(const ublas::vector<t_real_gl>& vecPos, t_real_gl dRadius, int iObjIdx=-1);
+	void PlotEllipsoid(const ublas::vector<t_real_gl>& widths,
+		const ublas::vector<t_real_gl>& offsets,
+		const ublas::matrix<t_real_gl>& rot,
 		int iObjsIdx=-1);
 	void SetObjectCount(std::size_t iSize) { m_vecObjs.resize(iSize); }
 	void SetObjectColor(std::size_t iObjIdx, const std::vector<t_real_glob>& vecCol);
@@ -143,7 +144,7 @@ public:
 		m_dZMinMaxOffs =  pOffs ? (*pOffs)[2] : 0.;
 	}
 
-	template<class t_vec=ublas::vector<double> >
+	template<class t_vec=ublas::vector<t_real_gl>>
 	void SetMinMax(const t_vec& vec, const t_vec* pOffs=0)
 	{
 		m_dXMin = -vec[0]; m_dXMax = vec[0];

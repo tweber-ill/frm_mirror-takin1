@@ -173,8 +173,8 @@ template<class t_real>
 ublas::vector<t_real> Ellipse2d<t_real>::operator()(t_real t, bool bAddOffs/*=1*/) const
 {
 	ublas::vector<t_real> vec = tl::make_vec<ublas::vector<t_real>>
-		({ x_hwhm * std::cos(2.*tl::get_pi<t_real>()*t),
-			y_hwhm * std::sin(2.*tl::get_pi<t_real>()*t) });
+		({ x_hwhm * std::cos(t_real(2)*tl::get_pi<t_real>()*t),
+			y_hwhm * std::sin(t_real(2)*tl::get_pi<t_real>()*t) });
 
 	vec = ublas::prod(rot, vec);
 

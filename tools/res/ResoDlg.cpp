@@ -267,9 +267,9 @@ void ResoDlg::RefreshQEPos()
 {
 	try
 	{
-		tl::t_wavenumber_si<t_real_reso> Q = editQ->text().toDouble() / angs;
-		tl::t_wavenumber_si<t_real_reso> ki = editKi->text().toDouble() / angs;
-		tl::t_wavenumber_si<t_real_reso> kf = editKf->text().toDouble() / angs;
+		tl::t_wavenumber_si<t_real_reso> Q = t_real_reso(editQ->text().toDouble()) / angs;
+		tl::t_wavenumber_si<t_real_reso> ki = t_real_reso(editKi->text().toDouble()) / angs;
+		tl::t_wavenumber_si<t_real_reso> kf = t_real_reso(editKf->text().toDouble()) / angs;
 		//t_real_reso dE = editE->text().toDouble();
 		tl::t_energy_si<t_real_reso> E = tl::get_energy_transfer(ki, kf);
 
@@ -289,8 +289,8 @@ void ResoDlg::RefreshQEPos()
 		m_simpleparams.angle_ki_Q = m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q = kiQ;
 		m_simpleparams.angle_kf_Q = m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q = kfQ;
 
-		m_tasparams.thetam = 0.5 * tl::get_mono_twotheta(ki, dMono*angs, 1);
-		m_tasparams.thetaa = 0.5 * tl::get_mono_twotheta(kf, dAna*angs, 1);
+		m_tasparams.thetam = t_real_reso(0.5) * tl::get_mono_twotheta(ki, dMono*angs, 1);
+		m_tasparams.thetaa = t_real_reso(0.5) * tl::get_mono_twotheta(kf, dAna*angs, 1);
 
 #ifndef NDEBUG
 		tl::log_debug("Manually changed parameters: ",
@@ -682,7 +682,7 @@ void ResoDlg::Calc()
 					opts.coords = McNeutronCoords::RLU;
 					if(m_vecMC_HKL.size() != iNumMC)
 						m_vecMC_HKL.resize(iNumMC);
-					mc_neutrons(m_ell4d, iNumMC, opts, m_vecMC_HKL.begin());
+					mc_neutrons<t_vec>(m_ell4d, iNumMC, opts, m_vecMC_HKL.begin());
 				}
 				else
 					m_vecMC_HKL.clear();
@@ -691,7 +691,7 @@ void ResoDlg::Calc()
 				opts.coords = McNeutronCoords::DIRECT;
 				if(m_vecMC_direct.size() != iNumMC)
 					m_vecMC_direct.resize(iNumMC);
-				mc_neutrons(m_ell4d, iNumMC, opts, m_vecMC_direct.begin());
+				mc_neutrons<t_vec>(m_ell4d, iNumMC, opts, m_vecMC_direct.begin());
 			}
 			else
 			{
@@ -1268,7 +1268,7 @@ void ResoDlg::MCGenerate()
 
 	opts.dAngleQVec0 = m_dAngleQVec0;
 	vecNeutrons.resize(iNeutrons);
-	mc_neutrons(m_ell4d, iNeutrons, opts, vecNeutrons.begin());
+	mc_neutrons<t_vec>(m_ell4d, iNeutrons, opts, vecNeutrons.begin());
 
 
 	ofstr.precision(g_iPrec);
