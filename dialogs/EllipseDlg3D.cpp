@@ -76,18 +76,20 @@ EllipseDlg3D::~EllipseDlg3D()
 	m_pPlots.clear();
 }
 
-void EllipseDlg3D::hideEvent(QHideEvent *event)
+void EllipseDlg3D::hideEvent(QHideEvent *pEvt)
 {
 	for(std::size_t i=0; i<m_pPlots.size(); ++i)
 		m_pPlots[i]->SetEnabled(0);
 
 	if(m_pSettings)
 		m_pSettings->setValue("reso/ellipsoid3d_geo", saveGeometry());
+
+	QDialog::hideEvent(pEvt);
 }
 
-void EllipseDlg3D::showEvent(QShowEvent *event)
+void EllipseDlg3D::showEvent(QShowEvent *pEvt)
 {
-	QDialog::showEvent(event);
+	QDialog::showEvent(pEvt);
 
 	for(std::size_t i=0; i<m_pPlots.size(); ++i)
 		if(m_pPlots[i])

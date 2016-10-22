@@ -277,7 +277,7 @@ OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals.o
 
 
 ifeq ($(USE_3D), 1)
-	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/EllipseDlg3D.o
+	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/real3d.o obj/EllipseDlg3D.o
 endif
 
 ifeq ($(USE_NET), 1)
@@ -381,6 +381,8 @@ obj/taz_file.o: tools/taz/taz_file.cpp tools/taz/taz.h
 obj/taz_export.o: tools/taz/taz_export.cpp tools/taz/taz.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/recip3d.o: tools/taz/recip3d.cpp tools/taz/recip3d.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/real3d.o: tools/taz/real3d.cpp tools/taz/real3d.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/scattering_triangle.o: tools/taz/scattering_triangle.cpp tools/taz/scattering_triangle.h tlibs/math/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<

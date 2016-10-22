@@ -121,7 +121,7 @@ add_executable(takin
 	libs/spacegroups/spacegroup.cpp tools/sglist/SgListDlg.cpp
 	libs/globals.cpp libs/globals_qt.cpp libs/spacegroups/crystalsys.cpp
 	libs/formfactors/formfact.cpp libs/qthelper.cpp
-#	libs/plotgl.cpp tools/taz/recip3d.cpp dialogs/EllipseDlg3D.cpp
+#	libs/plotgl.cpp tools/taz/recip3d.cpp tools/taz/real3d.cpp dialogs/EllipseDlg3D.cpp
 
 
 	# statically link tlibs externals

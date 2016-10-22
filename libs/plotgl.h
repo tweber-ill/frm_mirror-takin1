@@ -67,7 +67,7 @@ protected:
 	GLuint m_iLstSphere[8];
 	QString m_strLabels[3];
 
-	unsigned int m_iPrec = 6;
+	std::size_t m_iPrec = 6;
 	double m_dXMin=-10., m_dXMax=10.;
 	double m_dYMin=-10., m_dYMax=10.;
 	double m_dZMin=-10., m_dZMax=10.;
@@ -78,7 +78,7 @@ protected:
 	void paintEvent(QPaintEvent*);
 
 	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a=1.);
-	void SetColor(unsigned int iIdx);
+	void SetColor(std::size_t iIdx);
 
 	// ------------------------------------------------------------------------
 	// mouse stuff
@@ -123,10 +123,10 @@ public:
 		const ublas::vector<double>& offsets,
 		const ublas::matrix<double>& rot,
 		int iObjsIdx=-1);
-	void SetObjectCount(unsigned int iSize) { m_vecObjs.resize(iSize); }
-	void SetObjectColor(int iObjIdx, const std::vector<t_real_glob>& vecCol);
-	void SetObjectLabel(int iObjIdx, const std::string& strLab);
-	void SetObjectUseLOD(int iObjIdx, bool bLOD);
+	void SetObjectCount(std::size_t iSize) { m_vecObjs.resize(iSize); }
+	void SetObjectColor(std::size_t iObjIdx, const std::vector<t_real_glob>& vecCol);
+	void SetObjectLabel(std::size_t iObjIdx, const std::string& strLab);
+	void SetObjectUseLOD(std::size_t iObjIdx, bool bLOD);
 	void clear();
 
 	void SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ);
@@ -156,7 +156,7 @@ public:
 	}
 
 	void SetEnabled(bool b);
-	void SetPrec(unsigned int iPrec) { m_iPrec = iPrec; }
+	void SetPrec(std::size_t iPrec) { m_iPrec = iPrec; }
 };
 
 #endif

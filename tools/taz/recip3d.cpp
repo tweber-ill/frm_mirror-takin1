@@ -17,8 +17,10 @@ Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
 {
 	setWindowFlags(Qt::Tool);
 	setWindowTitle("Reciprocal Space");
+	setSizeGripEnabled(1);
 
 	QGridLayout *gridLayout = new QGridLayout(this);
+	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	gridLayout->addWidget(m_pPlot, 0, 0, 1, 1);
 
@@ -50,7 +52,7 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 	m_pPlot->clear();
 	m_pPlot->SetObjectCount(iObjCnt);
 
-	unsigned int iPeakIdx = 0;
+	std::size_t iPeakIdx = 0;
 	const t_real dLimMax = std::numeric_limits<t_real>::max();
 
 	std::vector<t_real> vecMin = {dLimMax, dLimMax, dLimMax},
@@ -78,7 +80,7 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 				t_real dDist = 0.;
 				ublas::vector<t_real> vecDropped = plane.GetDroppedPerp(vecPeak, &dDist);
 
-				std::vector<t_real> vecColor{0., 0., 1., 0.7};
+				std::vector<t_real> vecColor({0., 0., 1., 0.7});
 				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
 				{
 					bool bIsDirectBeam = 0;
@@ -112,15 +114,19 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 }
 
 
-void Recip3DDlg::hideEvent(QHideEvent *event)
+void Recip3DDlg::hideEvent(QHideEvent *pEvt)
 {
 	if(m_pPlot) m_pPlot->SetEnabled(0);
 
 	//if(m_pSettings)
 	//	m_pSettings->setValue("recip3d/geo", saveGeometry());
+
+	QDialog::hideEvent(pEvt);
 }
-void Recip3DDlg::showEvent(QShowEvent *event)
+void Recip3DDlg::showEvent(QShowEvent *pEvt)
 {
+	QDialog::showEvent(pEvt);
+
 	//if(m_pSettings && m_pSettings->contains("recip3d/geo"))
 	//	restoreGeometry(m_pSettings->value("recip3d/geo").toByteArray());
 

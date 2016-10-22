@@ -1,4 +1,4 @@
-/*
+/**
  * gl plotter
  * @author tweber
  * @date 19-may-2013
@@ -60,9 +60,7 @@ PlotGl::~PlotGl()
 {
 	SetEnabled(0);
 	m_bRenderThreadActive = 0;
-
-	sleep_nano(long(1e9) / (RENDER_FPS/11));
-	//terminate();
+	wait();
 }
 
 void PlotGl::SetEnabled(bool b)
@@ -76,7 +74,7 @@ void PlotGl::SetColor(t_real r, t_real g, t_real b, t_real a)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, pfCol);
 }
 
-void PlotGl::SetColor(unsigned int iIdx)
+void PlotGl::SetColor(std::size_t iIdx)
 {
 	static const GLfloat cols[4][4] =
 	{
@@ -362,29 +360,29 @@ void PlotGl::clear()
 	m_vecObjs.clear();
 }
 
-void PlotGl::SetObjectColor(int iObjIdx, const std::vector<t_real>& vecCol)
+void PlotGl::SetObjectColor(std::size_t iObjIdx, const std::vector<t_real>& vecCol)
 {
 	std::lock_guard<QMutex> _lck(m_mutex);
 
-	if(m_vecObjs.size() <= (std::size_t)iObjIdx || iObjIdx<0)
+	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].vecColor = vecCol;
 }
 
-void PlotGl::SetObjectLabel(int iObjIdx, const std::string& strLab)
+void PlotGl::SetObjectLabel(std::size_t iObjIdx, const std::string& strLab)
 {
 	std::lock_guard<QMutex> _lck(m_mutex);
 
-	if(m_vecObjs.size() <= (std::size_t)iObjIdx || iObjIdx<0)
+	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].strLabel = strLab;
 }
 
-void PlotGl::SetObjectUseLOD(int iObjIdx, bool bLOD)
+void PlotGl::SetObjectUseLOD(std::size_t iObjIdx, bool bLOD)
 {
 	std::lock_guard<QMutex> _lck(m_mutex);
 
-	if(m_vecObjs.size() <= (std::size_t)iObjIdx || iObjIdx<0)
+	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].bUseLOD = bLOD;
 }
