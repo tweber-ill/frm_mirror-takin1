@@ -65,8 +65,8 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	if(m_pSettings && m_pSettings->contains("reso/ellipsoid3d_geo"))
 		restoreGeometry(m_pSettings->value("reso/ellipsoid3d_geo").toByteArray());
 
-	for(unsigned int i=0; i<m_pPlots.size(); ++i)
-		m_pPlots[i]->SetEnabled(1);
+	for(PlotGl* pPlot : m_pPlots)
+		pPlot->SetEnabled(1);
 }
 
 EllipseDlg3D::~EllipseDlg3D()
@@ -78,7 +78,7 @@ EllipseDlg3D::~EllipseDlg3D()
 
 void EllipseDlg3D::hideEvent(QHideEvent *event)
 {
-	for(unsigned int i=0; i<m_pPlots.size(); ++i)
+	for(std::size_t i=0; i<m_pPlots.size(); ++i)
 		m_pPlots[i]->SetEnabled(0);
 
 	if(m_pSettings)
@@ -89,7 +89,7 @@ void EllipseDlg3D::showEvent(QShowEvent *event)
 {
 	QDialog::showEvent(event);
 
-	for(unsigned int i=0; i<m_pPlots.size(); ++i)
+	for(std::size_t i=0; i<m_pPlots.size(); ++i)
 		if(m_pPlots[i])
 			m_pPlots[i]->SetEnabled(1);
 }
@@ -169,7 +169,7 @@ void EllipseDlg3D::Calc()
 	if(bCenterOn0)
 		Q_avg = ublas::zero_vector<t_real_reso>(Q_avg.size());
 
-	for(unsigned int i=0; i<m_pPlots.size(); ++i)
+	for(std::size_t i=0; i<m_pPlots.size(); ++i)
 	{
 		m_elliProj[i] = ::calc_res_ellipsoid(
 			reso, reso_v, reso_s, Q_avg, iX[i], iY[i], iZ[i], iIntOrRem[i], -1);

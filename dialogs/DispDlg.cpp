@@ -23,6 +23,7 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QMimeData>
 
 using t_real = t_real_glob;
 static const auto one_meV = tl::get_one_meV<t_real>();

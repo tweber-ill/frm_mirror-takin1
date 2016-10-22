@@ -12,10 +12,12 @@
        	#include <QtWidgets>
 #endif
 #include <QGLWidget>
+//#include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QThread>
 #include <QMutex>
 #include <QSettings>
+
 #include <vector>
 #include <atomic>
 
@@ -27,6 +29,8 @@
 #include <boost/numeric/ublas/matrix.hpp>
 namespace ublas = boost::numeric::ublas;
 
+using t_qglwidget = QGLWidget;
+//using t_qglwidget = QOpenGLWidget;
 
 enum PlotTypeGl
 {
@@ -47,7 +51,7 @@ struct PlotObjGl
 	std::string strLabel;
 };
 
-class PlotGl : public QGLWidget, QThread
+class PlotGl : public t_qglwidget, QThread
 {
 protected:
 	QSettings *m_pSettings = 0;
@@ -97,7 +101,6 @@ protected:
 
 	// ------------------------------------------------------------------------
 	// render thread
-	bool m_bGLInited = 0;
 	bool m_bDoResize = 1;
 	bool m_bRenderThreadActive = 1;
 

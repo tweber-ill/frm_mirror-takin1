@@ -90,7 +90,7 @@ DEFINES += -DQT_VER=$(QT_VER)
 ifeq ($(QT_VER), 5)
 	QT_INC = -I/opt/local/libexec/qt5/include -I/opt/local/libexec/qt5/include/QtCore -I/opt/local/libexec/qt5/include/QtGui -I/opt/local/libexec/qt5/include/QtOpenGL \
 		-I/usr/include/qt5 -I/usr/include/qt5/QtCore -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
-		-I/usr/include/QtOpenGL
+		-I/usr/include/qt5/QtOpenGL
 	QT_LIB = -L/opt/local/libexec/qt5/lib -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
 		-lQt5Widgets -lQt5Gui -lQt5Core -lQt5Svg -lQt5Concurrent
 	ifeq ($(USE_3D), 1)
@@ -124,9 +124,12 @@ endif
 
 
 
-INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/usr/local/include \
-	-I/opt/include -I/usr/include/freetype2 -I/usr/include/lapacke \
-	-I/usr/include/python2.7 -I/usr/include/root -I/usr/include
+INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/opt/local/include/GL \
+	-I/usr/local/include -I/usr/local/include/GL \
+	-I/opt/include  -I/opt/include/GL -I/usr/include/freetype2 \
+	-I/usr/include/lapacke \
+	-I/usr/include/python2.7 -I/usr/include/root \
+	-I/usr/include -I/usr/include/GL
 LIB_DIRS = -L/opt/local/lib -L/opt/lib -L/usr/local/lib -L/usr/local/lib64 \
 	-L/usr/lib64 -L/usr/lib64/root -L/usr/lib/x86_64-linux-gnu
 

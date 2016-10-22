@@ -13,6 +13,7 @@
 #endif
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
+#include "libs/qthelper.h"
 
 #include <QFileDialog>
 #include <QFontDialog>
@@ -31,7 +32,6 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 
 	g_fontGen.setStyleHint(QFont::SansSerif);
 	g_fontGfx.setStyleHint(QFont::SansSerif, QFont::PreferAntialias);
-	g_fontGL.setStyleHint(QFont::Monospace, QFont::OpenGLCompatible);
 	setFont(g_fontGen);
 
 #if QT_VER >= 5
@@ -71,7 +71,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupEdit("net/preset", "nicos/timer/preselection", editPreset),
 		t_tupEdit("net/counter", "nicos/ctr1/value", editCounter),
 
-		t_tupEdit("gl/font", g_fontGL.toString().toStdString().c_str(), editGLFont),
+		t_tupEdit("gl/font", "", editGLFont),
 		t_tupEdit("main/font_gfx", g_fontGfx.toString().toStdString().c_str(), editGfxFont),
 		t_tupEdit("main/font_gen", g_fontGen.toString().toStdString().c_str(), editGenFont)
 	};
@@ -89,6 +89,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupSpin("main/prec_gfx", g_iPrecGfx, spinPrecGfx),
 		t_tupSpin("main/points_gfx", GFX_NUM_POINTS, spinPtsGfx),
 		t_tupSpin("main/max_peaks", 10, spinBragg),
+		t_tupSpin("gl/font_size", 12, spinGLFont),
 		t_tupSpin("net/poll", 750, spinNetPoll),
 	};
 
@@ -273,13 +274,13 @@ void SettingsDlg::SetGlobals() const
 			g_fontGfx = font;
 	}
 
-	QString strGLFont = editGLFont->text();
-	if(strGLFont.length() != 0)
+	if(editGLFont->text().length() != 0)
 	{
-		QFont font;
-		if(font.fromString(strGLFont))
-			g_fontGL = font;
+		g_strFontGL = editGLFont->text().toStdString();
 	}
+
+	if(spinGLFont->value() > 0)
+		g_iFontGLSize = spinGLFont->value();
 
 	QString strGenFont = editGenFont->text();
 	if(strGenFont.length() != 0)
@@ -295,13 +296,32 @@ void SettingsDlg::SetGlobals() const
 
 void SettingsDlg::SelectGLFont()
 {
-	bool bOk;
-	QFont fontNew = QFontDialog::getFont(&bOk, g_fontGL, this);
-	if(bOk)
-	{
-		g_fontGL = fontNew;
-		editGLFont->setText(fontNew.toString());
-	}
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
+	// find a default font directory
+	std::string strFontDir;
+	std::vector<std::string> vecFontDir = get_qt_std_path(QtStdPath::FONTS);
+	if(vecFontDir.size() == 0)
+		tl::log_warn("Could not determine font directory.");
+	else
+		strFontDir = vecFontDir[0];
+
+	// get font dir either from font file or from default
+	std::string strPath;
+	if(g_strFontGL != "")
+		strPath = tl::get_dir(g_strFontGL);
+	else
+		strPath = strFontDir;
+
+	QString strFile = QFileDialog::getOpenFileName(this,
+		"Open Font File...", strPath.c_str(),
+		"Font files (*.ttf *.TTF)", nullptr, fileopt);
+	if(strFile == "")
+		return;
+
+	editGLFont->setText(strFile);
 }
 
 void SettingsDlg::SelectGfxFont()

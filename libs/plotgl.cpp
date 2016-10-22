@@ -11,10 +11,13 @@
 #include "tlibs/string/string.h"
 #include "tlibs/helper/flags.h"
 
-#include <GL/glu.h>
+#include <glu.h>
 #include <time.h>
 #include <iostream>
 #include <sstream>
+
+#define RENDER_FPS 40
+
 
 // TODO: make fully generic
 using t_real = t_real_glob;
@@ -27,8 +30,16 @@ using t_real = t_real_glob;
 #endif
 
 
+void sleep_nano(long ns)
+{
+	timespec ts;
+	ts.tv_nsec = ns;
+	ts.tv_sec = 0;
+	nanosleep(&ts, 0);
+}
+
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings)
-	: QGLWidget(pParent), m_pSettings(pSettings), m_bEnabled(true),
+	: t_qglwidget(pParent), m_pSettings(pSettings), m_bEnabled(true),
 		m_mutex(QMutex::Recursive),
 		m_matProj(tl::unit_matrix<tl::t_mat4>(4)), m_matView(tl::unit_matrix<tl::t_mat4>(4))
 {
@@ -39,14 +50,19 @@ PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings)
 	setAutoBufferSwap(false);
 	//setUpdatesEnabled(0);
 	doneCurrent();
+#if QT_VER>=5
+	context()->moveToThread((QThread*)this);
+#endif
 	start();		// render thread
 }
 
 PlotGl::~PlotGl()
 {
+	SetEnabled(0);
 	m_bRenderThreadActive = 0;
-	wait(250);
-	terminate();
+
+	sleep_nano(long(1e9) / (RENDER_FPS/11));
+	//terminate();
 }
 
 void PlotGl::SetEnabled(bool b)
@@ -100,7 +116,7 @@ void PlotGl::initializeGLThread()
 	glLightfv(GL_LIGHT0, GL_AMBIENT_AND_DIFFUSE, vecLightCol);
 
 	unsigned int iLOD = 32;
-	for(unsigned iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
+	for(std::size_t iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
 	{
 		m_iLstSphere[iSphere] = glGenLists(1);
 
@@ -118,18 +134,11 @@ void PlotGl::initializeGLThread()
 	}
 
 	glActiveTexture(GL_TEXTURE0);
-#if QT_VER >= 5
-	// TODO: get selected font path
-	m_pFont = new tl::GlFontMap(DEF_FONT, g_fontGL.pointSize());
-#else
-	int iPixelSize = g_fontGL.pixelSize();
-	if(iPixelSize < 0)
-	{
-		iPixelSize = g_fontGL.pointSize();
-		tl::log_warn("Using font size:", iPixelSize);
-	}
-	m_pFont = new tl::GlFontMap(g_fontGL.freetypeFace(), iPixelSize);
-#endif
+
+	if(g_strFontGL == "") g_strFontGL = DEF_FONT;
+	if(g_iFontGLSize <= 0) g_iFontGLSize = DEF_FONT_SIZE;
+	//tl::log_debug("GL font: ", g_strFontGL, ", size: ", g_iFontGLSize, ".");
+	m_pFont = new tl::GlFontMap(g_strFontGL.c_str(), g_iFontGLSize);
 
 #if QT_VER>=5
 	QWidget::
@@ -144,7 +153,7 @@ void PlotGl::freeGLThread()
 #endif
 	setMouseTracking(0);
 
-	for(unsigned iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
+	for(std::size_t iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
 		glDeleteLists(m_iLstSphere[iSphere], 1);
 
 	if(m_pFont) { delete m_pFont; m_pFont = nullptr; }
@@ -165,9 +174,7 @@ void PlotGl::resizeGLThread(int w, int h)
 	glLoadIdentity();
 }
 
-void PlotGl::tickThread(double dTime)
-{
-}
+void PlotGl::tickThread(double dTime) {}
 
 void PlotGl::paintGLThread()
 {
@@ -209,7 +216,7 @@ void PlotGl::paintGLThread()
 	glDisable(GL_TEXTURE_2D);
 
 	std::unique_lock<QMutex> _lck(m_mutex);
-	unsigned int iPltIdx=0;
+	std::size_t iPltIdx = 0;
 	for(const PlotObjGl& obj : m_vecObjs)
 	{
 		int iLOD = 0;
@@ -302,6 +309,10 @@ void PlotGl::paintGLThread()
 
 void PlotGl::run()
 {
+	static std::atomic<std::size_t> iThread(0);
+	std::size_t iThisThread = ++iThread;
+	tl::log_debug("GL thread ", iThisThread, " started.");
+
 	makeCurrent();
 	initializeGLThread();
 
@@ -321,16 +332,15 @@ void PlotGl::run()
 			paintGLThread();
 		}
 
-		timespec ts;
-		long fps = isVisible() ? 30 : 3;
-		ts.tv_nsec = 1000000000 / fps;
-		ts.tv_sec = 0;
-		dTime += double(ts.tv_nsec) * 1e-9;
-		nanosleep(&ts, 0);
+		long fps = isVisible() ? RENDER_FPS : (RENDER_FPS/10);
+		long lns = long(1e9) / fps;
+		sleep_nano(lns);
+		dTime += double(lns) * 1e-9;
 	}
 
+	doneCurrent();
 	freeGLThread();
-	//log_info("gl thread ended.");
+	tl::log_debug("GL thread ", iThisThread, " ended.");
 }
 
 void PlotGl::paintEvent(QPaintEvent *evt)
@@ -356,7 +366,7 @@ void PlotGl::SetObjectColor(int iObjIdx, const std::vector<t_real>& vecCol)
 {
 	std::lock_guard<QMutex> _lck(m_mutex);
 
-	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
+	if(m_vecObjs.size() <= (std::size_t)iObjIdx || iObjIdx<0)
 		return;
 	m_vecObjs[iObjIdx].vecColor = vecCol;
 }
@@ -365,7 +375,7 @@ void PlotGl::SetObjectLabel(int iObjIdx, const std::string& strLab)
 {
 	std::lock_guard<QMutex> _lck(m_mutex);
 
-	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
+	if(m_vecObjs.size() <= (std::size_t)iObjIdx || iObjIdx<0)
 		return;
 	m_vecObjs[iObjIdx].strLabel = strLab;
 }
@@ -374,7 +384,7 @@ void PlotGl::SetObjectUseLOD(int iObjIdx, bool bLOD)
 {
 	std::lock_guard<QMutex> _lck(m_mutex);
 
-	if(m_vecObjs.size() <= (unsigned int)iObjIdx || iObjIdx<0)
+	if(m_vecObjs.size() <= (std::size_t)iObjIdx || iObjIdx<0)
 		return;
 	m_vecObjs[iObjIdx].bUseLOD = bLOD;
 }
@@ -435,9 +445,9 @@ void PlotGl::PlotEllipsoid(const ublas::vector<double>& widths,
 		obj.vecParams[4] = offsets[1];
 		obj.vecParams[5] = offsets[2];
 
-		unsigned int iNum = 6;
-		for(unsigned int i=0; i<3; ++i)
-			for(unsigned int j=0; j<3; ++j)
+		std::size_t iNum = 6;
+		for(std::size_t i=0; i<3; ++i)
+			for(std::size_t j=0; j<3; ++j)
 				obj.vecParams[iNum++] = rot(j,i);
 	}
 }

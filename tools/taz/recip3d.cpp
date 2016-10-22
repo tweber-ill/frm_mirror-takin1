@@ -1,4 +1,4 @@
-/*
+/**
  * Scattering Triangle Tool
  * @author tweber
  * @date mar-2014
