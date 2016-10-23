@@ -13,19 +13,49 @@
 using t_real = t_real_glob;
 
 Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
-	: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings, 0.25))
+	: QDialog(pParent, Qt::Tool), m_pSettings(pSettings),
+	m_pStatus(new QStatusBar(this)),
+	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
-	setWindowFlags(Qt::Tool);
-	setWindowTitle("Reciprocal Space");
-	setSizeGripEnabled(1);
+	m_pPlot->SetEnabled(0);
 
-	QGridLayout *gridLayout = new QGridLayout(this);
+	setWindowTitle("Reciprocal Space");
+	m_pStatus->setSizeGripEnabled(1);
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+
+		if(m_pSettings->contains("recip3d/geo"))
+			restoreGeometry(m_pSettings->value("recip3d/geo").toByteArray());
+		else
+			resize(640, 480);
+	}
+
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+	QGridLayout *gridLayout = new QGridLayout(this);
+	gridLayout->setContentsMargins(4, 4, 4, 4);
 	gridLayout->addWidget(m_pPlot, 0, 0, 1, 1);
+	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
+
+	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
+	{
+		std::string strStatus;
+		if(pObj)
+			strStatus = pObj->strLabel;
+		tl::find_all_and_replace<std::string>(strStatus, "\n", ", ");
+
+		if(strStatus.length())
+			m_pStatus->showMessage(strStatus.c_str());
+		else
+			m_pStatus->clearMessage();
+	});
 
 	m_pPlot->SetLabels("a", "b", "c");
-	resize(640, 480);
+	m_pPlot->SetEnabled(1);
 }
 
 Recip3DDlg::~Recip3DDlg()
@@ -44,10 +74,8 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 	const SpaceGroup<t_real>* pSpaceGroup = recipcommon.pSpaceGroup;
 	const tl::Plane<t_real>& plane = recipcommon.plane;
 
-
 	const unsigned int iObjCnt = (unsigned int)((m_dMaxPeaks*2 + 1)*
 		(m_dMaxPeaks*2 + 1) * (m_dMaxPeaks*2 + 1));
-	//log_info("Number of objects: ", iObjCnt);
 
 	m_pPlot->SetEnabled(0);
 	m_pPlot->clear();
@@ -105,7 +133,6 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 				ostrLab << "(" << ih << " " << ik << " " << il << ")";
 				m_pPlot->SetObjectLabel(iPeakIdx, ostrLab.str());
 
-				//log_info("Index: ", iPeakIdx);
 				++iPeakIdx;
 			}
 
@@ -114,23 +141,21 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 	m_pPlot->SetEnabled(1);
 }
 
+void Recip3DDlg::closeEvent(QCloseEvent *pEvt)
+{
+	if(m_pSettings)
+		m_pSettings->setValue("recip3d/geo", saveGeometry());
+	QDialog::closeEvent(pEvt);
+}
 
 void Recip3DDlg::hideEvent(QHideEvent *pEvt)
 {
 	if(m_pPlot) m_pPlot->SetEnabled(0);
-
-	//if(m_pSettings)
-	//	m_pSettings->setValue("recip3d/geo", saveGeometry());
-
 	QDialog::hideEvent(pEvt);
 }
 void Recip3DDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
-
-	//if(m_pSettings && m_pSettings->contains("recip3d/geo"))
-	//	restoreGeometry(m_pSettings->value("recip3d/geo").toByteArray());
-
 	if(m_pPlot) m_pPlot->SetEnabled(1);
 }
 

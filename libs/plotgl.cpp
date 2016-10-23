@@ -15,6 +15,7 @@
 #include <time.h>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #define RENDER_FPS 40
 
@@ -157,7 +158,8 @@ void PlotGl::freeGLThread()
 
 void PlotGl::resizeGLThread(int w, int h)
 {
-	if(w<=0) w=1; if(h<=0) h=1;
+	if(w<=0) w=1;
+	if(h<=0) h=1;
 	glViewport(0, 0, w, h);
 
 	glMatrixMode(GL_PROJECTION);
@@ -507,9 +509,23 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	m_dMouseX = 2.*pEvt->POS_F().x()/t_real_gl(m_iW) - 1.;
 	m_dMouseY = -(2.*pEvt->POS_F().y()/t_real_gl(m_iH) - 1.);
 
-	bool bEnabled = m_bEnabled.load();
-	if(bEnabled)
+	bool bHasSelected = 0;
+	if(m_bEnabled.load())
+	{
 		mouseSelectObj(m_dMouseX, m_dMouseY);
+
+		for(PlotObjGl& obj : m_vecObjs)
+		{
+			if(obj.bSelected)
+			{
+				m_sigHover(&obj);
+				bHasSelected = 1;
+				break;
+			}
+		}
+	}
+	if(!bHasSelected)
+		m_sigHover(nullptr);
 }
 
 void PlotGl::updateViewMatrix()
@@ -539,6 +555,11 @@ void PlotGl::updateViewMatrix()
 		m_matView = ublas::prod(m_matView, matRot0);
 		m_matView = ublas::prod(m_matView, matScale);
 	}
+}
+
+void PlotGl::AddHoverSlot(const typename t_sigHover::slot_type& conn)
+{
+	m_sigHover.connect(conn);
 }
 
 void PlotGl::mouseSelectObj(t_real_gl dX, t_real_gl dY)

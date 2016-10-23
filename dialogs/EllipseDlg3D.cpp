@@ -7,13 +7,11 @@
 
 #include "EllipseDlg3D.h"
 #include <QGridLayout>
-//#include <QtGui/QSplitter>
 
 
 EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
-	: QDialog(pParent, Qt::WindowStaysOnTopHint), m_pSettings(pSett)
+	: QDialog(pParent, Qt::Tool), m_pSettings(pSett)
 {
-	setWindowFlags(Qt::Tool);
 	setWindowTitle("Resolution Ellipsoids");
 	setSizeGripEnabled(1);
 	if(m_pSettings)
@@ -25,11 +23,13 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 
 	t_real_reso dScale = 10.;
 	PlotGl* pPlotLeft = new PlotGl(this, m_pSettings, dScale);
+	pPlotLeft->SetEnabled(0);
 	pPlotLeft->SetPrec(g_iPrecGfx);
 	pPlotLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_pPlots.push_back(pPlotLeft);
 
 	PlotGl* pPlotRight = new PlotGl(this, m_pSettings, dScale);
+	pPlotRight->SetEnabled(0);
 	pPlotRight->SetPrec(g_iPrecGfx);
 	pPlotRight->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_pPlots.push_back(pPlotRight);
@@ -45,16 +45,8 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	pgridLayout->addWidget(pPlotRight, 0, 1, 1, 1);
 	pgridLayout->addWidget(m_pComboCoord, 1, 0, 1, 2);
 
-	/*QSplitter *pSplitter = new QSplitter(this);
-	pSplitter->setOrientation(Qt::Horizontal);
-	pSplitter->addWidget(pPlotLeft);
-	pSplitter->addWidget(pPlotRight);
-	pgridLayout->addWidget(pSplitter, 0, 0, 1, 1);*/
-
 	m_elliProj.resize(2);
 	m_elliSlice.resize(2);
-
-	resize(640,480);
 
 #if QT_VER >= 5
 	QObject::connect(m_pComboCoord, static_cast<void(QComboBox::*)(int)>
@@ -65,6 +57,8 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 
 	if(m_pSettings && m_pSettings->contains("reso/ellipsoid3d_geo"))
 		restoreGeometry(m_pSettings->value("reso/ellipsoid3d_geo").toByteArray());
+	else
+		resize(640,480);
 
 	for(PlotGl* pPlot : m_pPlots)
 		pPlot->SetEnabled(1);
@@ -77,21 +71,23 @@ EllipseDlg3D::~EllipseDlg3D()
 	m_pPlots.clear();
 }
 
+void EllipseDlg3D::closeEvent(QCloseEvent* pEvt)
+{
+	if(m_pSettings)
+		m_pSettings->setValue("reso/ellipsoid3d_geo", saveGeometry());
+	QDialog::closeEvent(pEvt);
+}
+
 void EllipseDlg3D::hideEvent(QHideEvent *pEvt)
 {
 	for(std::size_t i=0; i<m_pPlots.size(); ++i)
 		m_pPlots[i]->SetEnabled(0);
-
-	if(m_pSettings)
-		m_pSettings->setValue("reso/ellipsoid3d_geo", saveGeometry());
-
 	QDialog::hideEvent(pEvt);
 }
 
 void EllipseDlg3D::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
-
 	for(std::size_t i=0; i<m_pPlots.size(); ++i)
 		if(m_pPlots[i])
 			m_pPlots[i]->SetEnabled(1);

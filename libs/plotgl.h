@@ -1,4 +1,4 @@
-/*
+/**
  * gl plotter
  * @author tweber
  * @date 19-may-2013
@@ -28,6 +28,10 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 namespace ublas = boost::numeric::ublas;
+
+#include <boost/signals2.hpp>
+namespace sig = boost::signals2;
+
 
 using tl::t_real_gl;
 using t_qglwidget = QGLWidget;
@@ -81,6 +85,7 @@ protected:
 	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a=1.);
 	void SetColor(std::size_t iIdx);
 
+
 	// ------------------------------------------------------------------------
 	// mouse stuff
 	bool m_bMouseRotateActive = 0;
@@ -99,6 +104,13 @@ protected:
 
 	void updateViewMatrix();
 	void mouseSelectObj(t_real_gl dX, t_real_gl dY);
+
+public:
+	using t_sigHover = sig::signal<void(const PlotObjGl*)>;
+	void AddHoverSlot(const typename t_sigHover::slot_type& conn);
+protected:
+	t_sigHover m_sigHover;
+
 
 	// ------------------------------------------------------------------------
 	// render thread

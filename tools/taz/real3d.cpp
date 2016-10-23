@@ -14,19 +14,50 @@ using t_vec = ublas::vector<t_real>;
 
 
 Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
-	: QDialog(pParent), m_pPlot(new PlotGl(this, pSettings, 0.25))
+	: QDialog(pParent, Qt::Tool), m_pSettings(pSettings),
+	m_pStatus(new QStatusBar(this)),
+	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
-	setWindowFlags(Qt::Tool);
-	setWindowTitle("Real Space");
-	setSizeGripEnabled(1);
+	m_pPlot->SetEnabled(0);
 
-	QGridLayout *gridLayout = new QGridLayout(this);
+	setWindowTitle("Real Space / Unit Cell");
+	m_pStatus->setSizeGripEnabled(1);
+
+	if(m_pSettings)
+	{
+		QFont font;
+		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
+			setFont(font);
+
+		if(m_pSettings->contains("real3d/geo"))
+			restoreGeometry(m_pSettings->value("real3d/geo").toByteArray());
+		else
+			resize(640, 480);
+	}
+
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+	QGridLayout *gridLayout = new QGridLayout(this);
+	gridLayout->setContentsMargins(4, 4, 4, 4);
 	gridLayout->addWidget(m_pPlot, 0, 0, 1, 1);
+	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
+
+	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
+	{
+		std::string strStatus;
+		if(pObj)
+			strStatus = pObj->strLabel;
+		tl::find_all_and_replace<std::string>(strStatus, "\n", ", ");
+
+		if(strStatus.length())
+			m_pStatus->showMessage(strStatus.c_str());
+		else
+			m_pStatus->clearMessage();
+	});
 
 	m_pPlot->SetLabels("a", "b", "c");
-	resize(640, 480);
+	m_pPlot->SetEnabled(1);
 }
 
 Real3DDlg::~Real3DDlg()
@@ -122,23 +153,21 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 	m_pPlot->SetEnabled(1);
 }
 
+void Real3DDlg::closeEvent(QCloseEvent* pEvt)
+{
+	if(m_pSettings)
+		m_pSettings->setValue("real3d/geo", saveGeometry());
+	QDialog::closeEvent(pEvt);
+}
 
 void Real3DDlg::hideEvent(QHideEvent *pEvt)
 {
 	if(m_pPlot) m_pPlot->SetEnabled(0);
-
-	//if(m_pSettings)
-	//	m_pSettings->setValue("real3d/geo", saveGeometry());
-
 	QDialog::hideEvent(pEvt);
 }
 void Real3DDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
-
-	//if(m_pSettings && m_pSettings->contains("real3d/geo"))
-	//	restoreGeometry(m_pSettings->value("real3d/geo").toByteArray());
-
 	if(m_pPlot) m_pPlot->SetEnabled(1);
 }
 
