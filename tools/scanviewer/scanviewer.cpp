@@ -26,11 +26,11 @@
 
 #ifndef NO_FIT
 	#include "tlibs/fit/minuit.h"
+	using tl::t_real_min;
 #endif
 
 
 using t_real = t_real_glob;
-using tl::t_real_min;
 namespace fs = boost::filesystem;
 
 
