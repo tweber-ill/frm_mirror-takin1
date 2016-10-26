@@ -59,11 +59,10 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 
 
 	// -------------------------------------------------------------------------
-
+	// Libraries
 
 	std::ostringstream ostrLibs;
 	ostrLibs << "<html><body>";
-
 	ostrLibs << "<dl>";
 
 	ostrLibs << "<dt>Uses Qt version " << QT_VERSION_STR << "</dt>";
@@ -111,12 +110,87 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	labelLibraries->setOpenExternalLinks(1);
 
 
-	// -------------------------------------------------------------------------
 
+	// -------------------------------------------------------------------------
+	// Features
+
+	std::ostringstream ostrFeat;
+	ostrFeat << "<html><body>";
+	ostrFeat << "<h3>Compiled-in features for this version:</h3>";
+	ostrFeat << "<ul>";
+
+
+	ostrFeat << "<li>";
+#if defined NO_NET || !defined USE_NET
+	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
+#else
+	ostrFeat << "<b>Enabled</b>";
+#endif
+	ostrFeat << " support for networking.";
+	ostrFeat << "</li>";
+
+
+	ostrFeat << "<li>";
+#if defined NO_PLUGINS || !defined USE_PLUGINS
+	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
+#else
+	ostrFeat << "<b>Enabled</b>";
+#endif
+	ostrFeat << " support for plugins.";
+	ostrFeat << "</li>";
+
+
+	ostrFeat << "<li>";
+#if defined NO_PY || !defined USE_PY
+	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
+#else
+	ostrFeat << "<b>Enabled</b>";
+#endif
+	ostrFeat << " support for Python scripting.";
+	ostrFeat << "</li>";
+
+
+	ostrFeat << "<li>";
+#if defined NO_3D || !defined USE_3D
+	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
+#else
+	ostrFeat << "<b>Enabled</b>";
+#endif
+	ostrFeat << " support for 3D drawing.";
+	ostrFeat << "</li>";
+
+
+	ostrFeat << "<li>";
+#if defined NO_GIL || !defined USE_GIL
+	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
+#else
+	ostrFeat << "<b>Enabled</b>";
+#endif
+	ostrFeat << " support for GIL drawing.";
+	ostrFeat << "</li>";
+
+
+	ostrFeat << "<li>";
+#if defined NO_FIT
+	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
+#else
+	ostrFeat << "<b>Enabled</b>";
+#endif
+	ostrFeat << " support for fitting.";
+	ostrFeat << "</li>";
+
+
+	ostrFeat << "</ul>";
+	ostrLibs << "</body></html>";
+	labelFeatures->setText(ostrFeat.str().c_str());
+
+
+
+	// -------------------------------------------------------------------------
+	// Tables
 
 	std::ostringstream ostrConst;
 	ostrConst << "<html><body>";
-
 	ostrConst << "<dl>";
 
 	ostrConst << "<dt>Physical constants from Boost Units</dt>";
