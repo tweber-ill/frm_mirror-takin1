@@ -119,7 +119,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrFeat << "<h3>Compiled-in features for this version:</h3>";
 	ostrFeat << "<ul>";
 
-
 	ostrFeat << "<li>";
 #if defined NO_NET || !defined USE_NET
 	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
@@ -128,7 +127,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 #endif
 	ostrFeat << " support for networking.";
 	ostrFeat << "</li>";
-
 
 	ostrFeat << "<li>";
 #if defined NO_PLUGINS || !defined USE_PLUGINS
@@ -139,7 +137,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrFeat << " support for plugins.";
 	ostrFeat << "</li>";
 
-
 	ostrFeat << "<li>";
 #if defined NO_PY || !defined USE_PY
 	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
@@ -148,7 +145,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 #endif
 	ostrFeat << " support for Python scripting.";
 	ostrFeat << "</li>";
-
 
 	ostrFeat << "<li>";
 #if defined NO_3D || !defined USE_3D
@@ -159,7 +155,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrFeat << " support for 3D drawing.";
 	ostrFeat << "</li>";
 
-
 	ostrFeat << "<li>";
 #if defined NO_GIL || !defined USE_GIL
 	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
@@ -168,7 +163,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 #endif
 	ostrFeat << " support for GIL drawing.";
 	ostrFeat << "</li>";
-
 
 	ostrFeat << "<li>";
 #if defined NO_FIT
@@ -179,6 +173,32 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrFeat << " support for fitting.";
 	ostrFeat << "</li>";
 
+	ostrFeat << "<li>";
+#if defined NO_IOSTR || !defined USE_IOSTR
+	ostrFeat << "<font color=\"#ff0000\"><b>Disabled</b></font>";
+#else
+	ostrFeat << "<b>Enabled</b>";
+#endif
+	ostrFeat << " support for compression.";
+	ostrFeat << "</li>";
+
+#if defined USE_BOOST_REX
+	ostrFeat << "<li>";
+	ostrFeat << "Switched to Boost regex instead of standard.";
+	ostrFeat << "</li>";
+#endif
+
+#if defined _GLIBCXX_USE_CXX11_ABI
+	ostrFeat << "<li>";
+	ostrFeat << "Compiled for C++11 binary interface.";
+	ostrFeat << "</li>";
+#endif
+
+#if defined IS_EXPERIMENTAL_BUILD
+	ostrFeat << "<li>";
+	ostrFeat << "<font color=\"#ff0000\"><b>Experimental build.</b></font>";
+	ostrFeat << "</li>";
+#endif
 
 	ostrFeat << "</ul>";
 	ostrLibs << "</body></html>";

@@ -1,5 +1,5 @@
-CC = gcc
-#CC = clang
+#CC = gcc
+CC = clang
 
 DO_DEBUG = 0
 NATIVE_OPTS = 1
@@ -24,12 +24,12 @@ STD_CPP = -std=c++11
 STD_LIBS = -lstdc++
 #STD_LIBS = -lc++ -lc++abi
 STD_LIBS += -lm
-STD_LIBS += -lpthread -lrt
+STD_LIBS += -lpthread -lrt -lgomp
 
 BOOST_SUFFIX = 
 #BOOST_SUFFIX = -mt
-QWT5_SUFFIX = 
-#QWT5_SUFFIX = -qt4
+#QWT5_SUFFIX = 
+QWT5_SUFFIX = -qt4
 
 # -----------------------------------------------------------------------------
 
@@ -128,8 +128,9 @@ INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/opt/local/include/GL \
 	-I/usr/local/include -I/usr/local/include/GL \
 	-I/opt/include  -I/opt/include/GL -I/usr/include/freetype2 \
 	-I/usr/include/lapacke \
-	-I/usr/include/python2.7 -I/usr/include/root \
+	-I/usr/include/python2.7 -idirafter /usr/include/root \
 	-I/usr/include -I/usr/include/GL
+
 LIB_DIRS = -L/opt/local/lib -L/opt/lib -L/usr/local/lib -L/usr/local/lib64 \
 	-L/usr/lib64 -L/usr/lib64/root -L/usr/lib/x86_64-linux-gnu
 
@@ -172,7 +173,7 @@ endif
 BASIC_LIBS = -lboost_system${BOOST_SUFFIX} -lboost_filesystem${BOOST_SUFFIX}
 
 ifeq ($(USE_3D), 1)
-	GL_LIBS = -lX11 -lGL -lGLU -lfreetype -lfontconfig
+	GL_LIBS = -lX11 -lGL -lGLU -lfreetype
 else
 	GL_LIBS = 
 endif
