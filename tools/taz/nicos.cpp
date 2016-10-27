@@ -16,6 +16,8 @@ using t_real = t_real_glob;
 
 NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 {
+	// map device names from settings
+	// first: settings name, second: pointer to string receiving device name
 	std::vector<std::pair<std::string, std::string*>> vecStrings =
 	{
 		{"sample_name", &m_strSampleName},
@@ -42,6 +44,7 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 		{"counter", &m_strCtr},
 	};
 
+	// fill in device names from settings
 	for(const std::pair<std::string, std::string*>& pair : vecStrings)
 	{
 		std::string strKey = std::string("net/") + pair.first;
@@ -55,9 +58,9 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 	m_bFlipOrient2 = m_pSettings->value("net/flip_orient2", true).toBool();
 	m_bSthCorr = m_pSettings->value("net/sth_stt_corr", false).toBool();
 
-
+	// all final device names
 	m_vecKeys = std::vector<std::string>
-	{
+	({
 		m_strSampleName,
 		m_strSampleLattice, m_strSampleAngles,
 		m_strSampleOrient1, m_strSampleOrient2,
@@ -72,7 +75,7 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 		// additional info fields (not needed for calculation)
 		//"logbook/remark",
 		//"nicos/mira/value",
-	};
+	});
 
 	m_tcp.add_connect(boost::bind(&NicosCache::slot_connected, this, _1, _2));
 	m_tcp.add_disconnect(boost::bind(&NicosCache::slot_disconnected, this, _1, _2));

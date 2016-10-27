@@ -48,6 +48,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 
 	m_vecEdits =
 	{
+		// nicos devices
 		t_tupEdit("net/sample_name", "nicos/sample/samplename", editSampleName),
 		t_tupEdit("net/lattice", "nicos/sample/lattice", editSampleLattice),
 		t_tupEdit("net/angles", "nicos/sample/angles", editSampleAngles),
@@ -71,6 +72,41 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupEdit("net/preset", "nicos/timer/preselection", editPreset),
 		t_tupEdit("net/counter", "nicos/ctr1/value", editCounter),
 
+
+		// sics devices
+		t_tupEdit("net/lattice_a_6", "AS", edit6_AS),
+		t_tupEdit("net/lattice_b_6", "BS", edit6_BS),
+		t_tupEdit("net/lattice_c_6", "CS", edit6_CS),
+
+		t_tupEdit("net/angle_a_6", "AA", edit6_AA),
+		t_tupEdit("net/angle_b_6", "BB", edit6_BB),
+		t_tupEdit("net/angle_c_6", "CC", edit6_CC),
+
+		t_tupEdit("net/orient1_x_6", "AX", edit6_AX),
+		t_tupEdit("net/orient1_y_6", "AY", edit6_AY),
+		t_tupEdit("net/orient1_z_6", "AZ", edit6_AZ),
+
+		t_tupEdit("net/orient2_x_6", "BX", edit6_BX),
+		t_tupEdit("net/orient2_y_6", "BY", edit6_BY),
+		t_tupEdit("net/orient2_z_6", "BZ", edit6_BZ),
+
+		t_tupEdit("net/stheta_6", "A3", edit6_A3),
+		t_tupEdit("net/s2theta_6", "A4", edit6_A4),
+
+		t_tupEdit("net/mtheta_6", "A1", edit6_A1),
+		t_tupEdit("net/m2theta_6", "A2", edit6_A2),
+		t_tupEdit("net/mono_d_6", "DM", edit6_DM),
+
+		t_tupEdit("net/atheta_6", "A5", edit6_A5),
+		t_tupEdit("net/a2theta_6", "A6", edit6_A6),
+		t_tupEdit("net/ana_d_6", "DA", edit6_DA),
+
+		t_tupEdit("net/timer_6", "counter.Monitor 1", edit6_CurTime),
+		t_tupEdit("net/preset_6", "counter.Preset", edit6_Preset),
+		t_tupEdit("net/counter_6", "counter.Counts", edit6_Counter),
+
+
+		// misc
 		t_tupEdit("gl/font", "", editGLFont),
 		t_tupEdit("main/font_gfx", g_fontGfx.toString().toStdString().c_str(), editGfxFont),
 		t_tupEdit("main/font_gen", g_fontGen.toString().toStdString().c_str(), editGenFont)
@@ -90,7 +126,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupSpin("main/prec_gfx", g_iPrecGfx, spinPrecGfx),
 		t_tupSpin("main/points_gfx", GFX_NUM_POINTS, spinPtsGfx),
 		t_tupSpin("main/max_peaks", 10, spinBragg),
-		t_tupSpin("gl/font_size", 12, spinGLFont),
+		t_tupSpin("gl/font_size", 24, spinGLFont),
 		t_tupSpin("net/poll", 750, spinNetPoll),
 	};
 

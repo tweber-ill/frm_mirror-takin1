@@ -48,7 +48,7 @@ class NicosCache : public NetCache
 		void RegisterKeys();
 
 	protected:
-		// Nicos device names
+		// device names
 		std::string m_strSampleName;
 		std::string m_strSampleLattice, m_strSampleAngles;
 		std::string m_strSampleOrient1, m_strSampleOrient2;
