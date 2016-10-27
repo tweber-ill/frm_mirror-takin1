@@ -753,7 +753,7 @@
           <item row="9" column="0" colspan="2">
            <widget class="QCheckBox" name="checkSthSttCorr">
             <property name="text">
-             <string>Couple Theta-2Theta Axes</string>
+             <string>Couple Theta-2Theta Angles</string>
             </property>
            </widget>
           </item>
