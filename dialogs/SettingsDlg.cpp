@@ -81,6 +81,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupCheck("main/dlg_previews", 1, checkPreview),
 		t_tupCheck("main/native_dialogs", 0, checkNativeDlg),
 		t_tupCheck("net/flip_orient2", 1, checkFlipOrient2),
+		t_tupCheck("net/sth_stt_corr", 0, checkSthSttCorr),
 	};
 
 	m_vecSpins =

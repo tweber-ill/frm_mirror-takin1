@@ -53,7 +53,7 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 	}
 
 	m_bFlipOrient2 = m_pSettings->value("net/flip_orient2", true).toBool();
-	//tl::log_info("Flipping Nicos' orientation vector 2: ", m_bFlipOrient2);
+	m_bSthCorr = m_pSettings->value("net/sth_stt_corr", false).toBool();
 
 
 	m_vecKeys = std::vector<std::string>
@@ -70,7 +70,8 @@ NicosCache::NicosCache(QSettings* pSettings) : m_pSettings(pSettings)
 		m_strTimer, m_strPreset, m_strCtr,
 
 		// additional info fields (not needed for calculation)
-		"logbook/remark",
+		//"logbook/remark",
+		//"nicos/mira/value",
 	};
 
 	m_tcp.add_connect(boost::bind(&NicosCache::slot_connected, this, _1, _2));
@@ -301,6 +302,13 @@ void NicosCache::slot_receive(const std::string& str)
 		// sth and psi0 are arbitrary, but together they form the
 		// angle from ki to the bragg peak at orient1
 		triag.dAngleKiVec0 = -dSth-dPsi;
+
+		if(m_bSthCorr && m_mapCache.find(m_strSample2Theta) != m_mapCache.end())
+		{
+			t_real dStt = tl::d2r(tl::str_to_var<t_real>(m_mapCache[m_strSample2Theta].strVal));
+			triag.dAngleKiVec0 -= dStt;
+		}
+
 		triag.bChangedAngleKiVec0 = 1;
 		//std::cout << "rotation: " << triag.dAngleKiVec0 << std::endl;
 	}
