@@ -8,6 +8,7 @@
 #include <fstream>
 
 #include "model.h"
+#include "tlibs/math/math.h"
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/array.h"
@@ -15,6 +16,7 @@
 #include "convofit.h"
 
 using t_real = t_real_mod;
+#define NUM_PREC 16
 
 
 SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const TASReso& reso)
@@ -26,16 +28,26 @@ SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const std::vector<TASR
 {}
 
 
-tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
+TASReso* SqwFuncModel::GetTASReso()
 {
 	//TASReso reso = m_reso;
-	TASReso reso;
+	TASReso *pReso = nullptr;
 	// multi-fits
 	if(m_pScans && m_vecResos.size() > 1)
-		reso = m_vecResos[m_iCurParamSet];
+		pReso = &m_vecResos[m_iCurParamSet];
 	else
-		reso = m_vecResos[0];
-	const ublas::vector<t_real> vecScanPos = m_vecScanOrigin + t_real(x)*m_vecScanDir;
+		pReso = &m_vecResos[0];
+	return pReso;
+}
+
+const TASReso* SqwFuncModel::GetTASReso() const
+{
+	return const_cast<SqwFuncModel*>(this)->GetTASReso();
+}
+
+bool SqwFuncModel::SetTASPos(t_real dX, TASReso& reso) const
+{
+	const ublas::vector<t_real> vecScanPos = m_vecScanOrigin + dX*m_vecScanDir;
 
 	if(!reso.SetHKLE(vecScanPos[0],vecScanPos[1],vecScanPos[2],vecScanPos[3]))
 	{
@@ -43,12 +55,19 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
 		ostrErr << "Invalid crystal position: ("
 			<< vecScanPos[0] << " " << vecScanPos[1] << " " << vecScanPos[2] 
 			<< ") rlu, " << vecScanPos[3] << " meV.";
-		//throw tl::Err(ostrErr.str().c_str());
 		tl::log_err(ostrErr.str());
-		return 0.;
+		return false;
 	}
+	return true;
+}
 
+tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x) const
+{
+	TASReso/*&*/ reso = *GetTASReso();
+	if(!SetTASPos(t_real_mod(x), reso))
+		return 0.;
 
+	const ublas::vector<t_real> vecScanPos = m_vecScanOrigin + t_real(x)*m_vecScanDir;
 	std::vector<ublas::vector<t_real_reso>> vecNeutrons;
 	Ellipsoid4d<t_real_reso> elli = reso.GenerateMC(m_iNumNeutrons, vecNeutrons);
 
@@ -282,8 +301,7 @@ bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::siz
 			return false;
 		}
 
-		ofstr.precision(16);
-
+		ofstr.precision(NUM_PREC);
 		const std::vector<std::string> vecNames = GetParamNames();
 
 		tl::container_cast<t_real, tl::t_real_min, std::vector> cst;
@@ -291,17 +309,34 @@ bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::siz
 		const std::vector<t_real> vecErrs = cst(GetParamErrors());
 
 		for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
-			ofstr << "# " << vecNames[iParam] << " = " 
-				<< vecVals[iParam] << " +- " 
+			ofstr << "# " << vecNames[iParam] << " = "
+				<< vecVals[iParam] << " +- "
 				<< vecErrs[iParam] << "\n";
 
+		ofstr << "## Data columns: (1) scan axis, (2) intensity";
+		ofstr << ", (3) Bragg Qx (1/A), (4) Bragg Qy (1/A), (5) Bragg Qz (1/A), (6) Bragg E (meV)\n";
+
+		const t_real f2s = tl::get_FWHM2SIGMA<t_real>();
 		for(std::size_t i=0; i<iNum; ++i)
 		{
 			t_real dX = tl::lerp(dXMin, dXMax, t_real(i)/t_real(iNum-1));
 			t_real dY = (*this)(dX);
 
-			ofstr << std::left << std::setw(32) << dX << " "
-				<< std::left << std::setw(32) << dY << "\n";
+			ofstr << std::left << std::setw(NUM_PREC*2) << dX << " "
+				<< std::left << std::setw(NUM_PREC*2) << dY << " ";
+
+
+			// save bragg widths for error calculation
+			// TODO: also save bragg width in rlu
+			TASReso reso = *GetTASReso();
+			SetTASPos(dX, reso);
+			const ResoResults& resores = reso.GetResoResults();
+
+			ofstr << std::left << std::setw(NUM_PREC*2) << f2s*resores.dBraggFWHMs[0] << " ";
+			ofstr << std::left << std::setw(NUM_PREC*2) << f2s*resores.dBraggFWHMs[1] << " ";
+			ofstr << std::left << std::setw(NUM_PREC*2) << f2s*resores.dBraggFWHMs[2] << " ";
+			ofstr << std::left << std::setw(NUM_PREC*2) << f2s*resores.dBraggFWHMs[3] << " ";
+			ofstr << "\n";
 		}
 
 	}
