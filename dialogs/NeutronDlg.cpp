@@ -585,6 +585,21 @@ void NeutronDlg::setupConstants()
 
 		vecConvs.emplace_back(std::move(conv));
 	}
+
+	{
+		Conversion conv;
+		conv.strName = "sigma  ->  HWHM";
+		conv.strVal = tl::var_to_str(tl::get_SIGMA2HWHM<t_real>(), g_iPrec);
+
+		vecConvs.emplace_back(std::move(conv));
+	}
+	{
+		Conversion conv;
+		conv.strName = "HWHM  ->  sigma";
+		conv.strVal = tl::var_to_str(tl::get_HWHM2SIGMA<t_real>(), g_iPrec);
+
+		vecConvs.emplace_back(std::move(conv));
+	}
 	// -------------------------------------------------------------------------
 
 
