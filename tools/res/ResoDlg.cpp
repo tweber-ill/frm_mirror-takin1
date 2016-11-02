@@ -531,56 +531,6 @@ void ResoDlg::Calc()
 				+ tl::get_spec_char_utf8("sup-")
 				+ tl::get_spec_char_utf8("sup3");
 
-			std::ostringstream ostrRes;
-
-			//ostrRes << std::scientific;
-			ostrRes.precision(g_iPrec);
-			ostrRes << "<html><body>\n";
-
-			ostrRes << "<p><b>Correction Factors:</b>\n";
-			ostrRes << "\t<ul><li>Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "</li>\n";
-			ostrRes << "\t<li>R0: " << res.dR0 << "</li></ul></p>\n\n";
-
-			ostrRes << "<p><b>Coherent (Bragg) FWHMs:</b>\n";
-			ostrRes << "\t<ul><li>Q_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "</li>\n";
-			ostrRes << "\t<li>Q_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "</li>\n";
-			ostrRes << "\t<li>Q_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "</li>\n";
-			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
-
-			ostrRes << "<p><b>Incoherent (Vanadium) FWHMs:</b>\n";
-			ostrRes << "\t<ul><li>Q: " << dVanadiumFWHM_Q << " " << strAA_1 << "</li>\n";
-			ostrRes << "\t<li>E: " << dVanadiumFWHM_E << " meV</li></ul></p>\n\n";
-
-			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
-			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
-			for(std::size_t i=0; i<res.reso.size1(); ++i)
-			{
-				ostrRes << "<tr>\n";
-				for(std::size_t j=0; j<res.reso.size2(); ++j)
-					ostrRes << "<td>" << std::setw(g_iPrec*2) << res.reso(i,j) << "</td>";
-				ostrRes << "</tr>\n";
-
-				if(i!=res.reso.size1()-1)
-					ostrRes << "\n";
-			}
-			ostrRes << "</table></blockquote></p>\n";
-
-			ostrRes << "<p><b>Resolution Vector:</b> ";
-			for(std::size_t iVec=0; iVec<res.reso_v.size(); ++iVec)
-			{
-				ostrRes << res.reso_v[iVec];
-				if(iVec != res.reso_v.size()-1)
-					ostrRes << ", ";
-			}
-			ostrRes << "</p>\n";
-
-			ostrRes << "<p><b>Resolution Scalar</b>: " << res.reso_s << "</p>\n";
-
-			ostrRes << "</body></html>";
-
-			editResults->setHtml(QString::fromUtf8(ostrRes.str().c_str()));
-			labelStatus->setText("Calculation successful.");
-
 #ifndef NDEBUG
 			// check against ELASTIC approximation for perp. slope from Shirane p. 268
 			// valid for small mosaicities
@@ -647,6 +597,69 @@ void ResoDlg::Calc()
 					m_reso_vOrient = ublas::prod(matToOrient, m_res.reso_v);
 				}
 			}
+
+
+			// print results
+			std::ostringstream ostrRes;
+
+			//ostrRes << std::scientific;
+			ostrRes.precision(g_iPrec);
+			ostrRes << "<html><body>\n";
+
+			ostrRes << "<p><b>Correction Factors:</b>\n";
+			ostrRes << "\t<ul><li>Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "</li>\n";
+			ostrRes << "\t<li>R0: " << res.dR0 << "</li></ul></p>\n\n";
+
+			ostrRes << "<p><b>Coherent (Bragg) FWHMs:</b>\n";
+			ostrRes << "\t<ul><li>Q_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>Q_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>Q_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "</li>\n";
+			if(m_bHasUB)
+			{
+				static const char* pcHkl[] = { "h", "k", "l" };
+				static const t_real_reso sig2fwhm = tl::get_SIGMA2FWHM<t_real_reso>();
+				for(unsigned iHkl=0; iHkl<3; ++iHkl)
+				{
+					t_real_reso dfwhm = sig2fwhm/sqrt(m_resoHKL(iHkl,iHkl));
+					ostrRes << "\t<li>" << pcHkl[iHkl] << ": " << dfwhm << " rlu</li>\n";
+				}
+			}
+			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
+
+			ostrRes << "<p><b>Incoherent (Vanadium) FWHMs:</b>\n";
+			ostrRes << "\t<ul><li>Q: " << dVanadiumFWHM_Q << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>E: " << dVanadiumFWHM_E << " meV</li></ul></p>\n\n";
+
+			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
+			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
+			for(std::size_t i=0; i<res.reso.size1(); ++i)
+			{
+				ostrRes << "<tr>\n";
+				for(std::size_t j=0; j<res.reso.size2(); ++j)
+					ostrRes << "<td>" << std::setw(g_iPrec*2) << res.reso(i,j) << "</td>";
+				ostrRes << "</tr>\n";
+
+				if(i!=res.reso.size1()-1)
+					ostrRes << "\n";
+			}
+			ostrRes << "</table></blockquote></p>\n";
+
+			ostrRes << "<p><b>Resolution Vector:</b> ";
+			for(std::size_t iVec=0; iVec<res.reso_v.size(); ++iVec)
+			{
+				ostrRes << res.reso_v[iVec];
+				if(iVec != res.reso_v.size()-1)
+					ostrRes << ", ";
+			}
+			ostrRes << "</p>\n";
+
+			ostrRes << "<p><b>Resolution Scalar</b>: " << res.reso_s << "</p>\n";
+
+			ostrRes << "</body></html>";
+
+			editResults->setHtml(QString::fromUtf8(ostrRes.str().c_str()));
+			labelStatus->setText("Calculation successful.");
+
 
 
 			// generate live MC neutrons
