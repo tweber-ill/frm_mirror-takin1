@@ -1136,8 +1136,8 @@ void ScatteringTriangle::ClearPeaks()
 std::vector<ScatteringTriangleNode*> ScatteringTriangle::GetNodes()
 {
 	return std::vector<ScatteringTriangleNode*>
-			{ m_pNodeKiQ.get(), m_pNodeKiKf.get(),
-			m_pNodeKfQ.get(), m_pNodeGq.get() };
+		{ m_pNodeKiQ.get(), m_pNodeKiKf.get(),
+		m_pNodeKfQ.get(), m_pNodeGq.get() };
 }
 
 std::vector<std::string> ScatteringTriangle::GetNodeNames() const
@@ -1261,6 +1261,7 @@ void ScatteringTriangle::SnapToNearestPeak(ScatteringTriangleNode* pNode,
 {
 	if(!pNode) return;
 	if(!pNodeOrg) pNodeOrg = pNode;
+	if(!HasPeaks()) return;
 
 	std::tuple<bool, t_real, QPointF> tupNearest =
 		get_nearest_node(pNodeOrg->pos(), pNode, m_scene.items(),
@@ -1425,41 +1426,43 @@ void ScatteringTriangleScene::emitAllParams()
 	std::cout << "q = " << vecqrlu << std::endl;
 	std::cout << "G = " << vecGrlu << std::endl;*/
 
-	for(unsigned int i=0; i<3; ++i)
+	for(unsigned i=0; i<3; ++i)
 	{
-		parms.Q[i] = vecQ[i];
-		parms.Q_rlu[i] = vecQrlu[i];
+		parms.Q[i] = vecQ.size() ? vecQ[i] : 0.;
+		parms.Q_rlu[i] = vecQrlu.size() ? vecQrlu[i] : 0.;
 
-		parms.q[i] = vecq[i];
-		parms.q_rlu[i] = vecqrlu[i];
+		parms.q[i] = vecq.size() ? vecq[i] : 0.;
+		parms.q_rlu[i] = vecqrlu.size() ? vecqrlu[i] : 0.;
 
-		parms.G[i] = vecG[i];
-		parms.G_rlu[i] = vecGrlu[i];
+		parms.G[i] = vecG.size() ? vecG[i] : 0.;
+		parms.G_rlu[i] = vecGrlu.size() ? vecGrlu[i] : 0.;
 
-		parms.orient_0[i] = vec0[i];
-		parms.orient_1[i] = vec1[i];
-		parms.orient_up[i] = vecUp[i];
+		parms.orient_0[i] = vec0.size() ? vec0[i] : 0.;
+		parms.orient_1[i] = vec1.size() ? vec1[i] : 0.;
+		parms.orient_up[i] = vecUp.size() ? vecUp[i] : 0.;
 	}
 
 
 	// nearest node (exact G)
-	parms.G_rlu_accurate[0] = parms.G_rlu_accurate[1] = parms.G_rlu_accurate[2] = 0.;
-	const tl::Kd<t_real>& kd = m_pTri->GetKdLattice();
-	t_vec vecHKLinvA = m_pTri->GetRecipLattice().GetPos(-vecQrlu[0], -vecQrlu[1], -vecQrlu[2]);
-
-	if(kd.GetRootNode())
+	if(vecQrlu.size())
 	{
-		std::vector<t_real> stdvecHKL{vecHKLinvA[0], vecHKLinvA[1], vecHKLinvA[2]};
-		const std::vector<t_real>* pvecNearest = &kd.GetNearestNode(stdvecHKL);
+		parms.G_rlu_accurate[0] = parms.G_rlu_accurate[1] = parms.G_rlu_accurate[2] = 0.;
+		const tl::Kd<t_real>& kd = m_pTri->GetKdLattice();
+		t_vec vecHKLinvA = m_pTri->GetRecipLattice().GetPos(-vecQrlu[0], -vecQrlu[1], -vecQrlu[2]);
 
-		if(pvecNearest)
+		if(kd.GetRootNode())
 		{
-			parms.G_rlu_accurate[0] = (*pvecNearest)[3];
-			parms.G_rlu_accurate[1] = (*pvecNearest)[4];
-			parms.G_rlu_accurate[2] = (*pvecNearest)[5];
+			std::vector<t_real> stdvecHKL{vecHKLinvA[0], vecHKLinvA[1], vecHKLinvA[2]};
+			const std::vector<t_real>* pvecNearest = &kd.GetNearestNode(stdvecHKL);
+
+			if(pvecNearest)
+			{
+				parms.G_rlu_accurate[0] = (*pvecNearest)[3];
+				parms.G_rlu_accurate[1] = (*pvecNearest)[4];
+				parms.G_rlu_accurate[2] = (*pvecNearest)[5];
+			}
 		}
 	}
-
 
 	CheckForSpurions();
 
@@ -1672,7 +1675,6 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 	{
 		const t_real dX = pEvt->scenePos().x()/m_pTri->GetScaleFactor();
 		const t_real dY = -pEvt->scenePos().y()/m_pTri->GetScaleFactor();
-
 		t_vec vecHKL = m_pTri->GetHKLFromPlanePos(dX, dY);
 		tl::set_eps_0(vecHKL, g_dEps);
 
