@@ -13,6 +13,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/helper/array.h"
 #include "../res/defs.h"
+#include "../res/helper.h"
 #include "convofit.h"
 
 using t_real = t_real_mod;
@@ -314,9 +315,8 @@ bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::siz
 				<< vecErrs[iParam] << "\n";
 
 		ofstr << "## Data columns: (1) scan axis, (2) intensity";
-		ofstr << ", (3) Bragg Qx (1/A), (4) Bragg Qy (1/A), (5) Bragg Qz (1/A), (6) Bragg E (meV)\n";
+		ofstr << ", (3) Bragg Qx (rlu), (4) Bragg Qy (rlu), (5) Bragg Qz (rlu), (6) Bragg E (meV)\n";
 
-		const t_real f2s = tl::get_FWHM2SIGMA<t_real>();
 		for(std::size_t i=0; i<iNum; ++i)
 		{
 			t_real dX = tl::lerp(dXMin, dXMax, t_real(i)/t_real(iNum-1));
@@ -330,12 +330,18 @@ bool SqwFuncModel::Save(const char *pcFile, t_real dXMin, t_real dXMax, std::siz
 			// TODO: also save bragg width in rlu
 			TASReso reso = *GetTASReso();
 			SetTASPos(dX, reso);
+			const auto& crysopts = reso.GetMCOpts();
 			const ResoResults& resores = reso.GetResoResults();
 
-			ofstr << std::left << std::setw(NUM_PREC*2) << f2s*resores.dBraggFWHMs[0] << " ";
-			ofstr << std::left << std::setw(NUM_PREC*2) << f2s*resores.dBraggFWHMs[1] << " ";
-			ofstr << std::left << std::setw(NUM_PREC*2) << f2s*resores.dBraggFWHMs[2] << " ";
-			ofstr << std::left << std::setw(NUM_PREC*2) << f2s*resores.dBraggFWHMs[3] << " ";
+			ublas::matrix<t_real> resoHKL;
+			std::tie(resoHKL, std::ignore, std::ignore) =
+			conv_lab_to_rlu<ublas::matrix<t_real>, ublas::vector<t_real>>
+				(crysopts.dAngleQVec0, crysopts.matUB, crysopts.matUBinv,
+				 resores.reso, resores.reso_v, resores.Q_avg);
+
+			const std::vector<t_real> vecFwhms = calc_bragg_fwhms(resoHKL);
+			for(t_real dFwhm : vecFwhms)
+				ofstr << std::left << std::setw(NUM_PREC*2) << dFwhm << " ";
 			ofstr << "\n";
 		}
 

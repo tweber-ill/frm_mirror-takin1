@@ -9,6 +9,7 @@
 #define __TAKIN_RES_AUX_H__
 
 #include "defs.h"
+#include "tlibs/math/math.h"
 #include "tlibs/math/linalg.h"
 #include <tuple>
 
@@ -20,7 +21,7 @@ template<class t_mat, class t_vec, class t_real = typename t_mat::value_type>
 std::tuple<t_mat, t_vec, t_vec> 
 conv_lab_to_rlu(t_real dAngleQVec0,
 	const t_mat& matUB, const t_mat& matUBinv,
-	const t_mat& reso, const t_vec& Q_avg, const t_vec& reso_v)
+	const t_mat& reso, const t_vec& reso_v, const t_vec& Q_avg)
 {
 	// hkl crystal system:
 	// Qavg system in 1/A -> rotate back to orient system in 1/A ->
@@ -50,7 +51,7 @@ std::tuple<t_mat, t_vec, t_vec>
 conv_lab_to_rlu_orient(t_real dAngleQVec0,
 	const t_mat& matUB, const t_mat& matUBinv,
 	const t_mat& matUrlu, const t_mat& matUinvrlu,
-	const t_mat& reso, const t_vec& Q_avg, const t_vec& reso_v)
+	const t_mat& reso, const t_vec& reso_v, const t_vec& Q_avg)
 {
 	// hkl crystal system:
 	// Qavg system in 1/A -> rotate back to orient system in 1/A ->
@@ -76,6 +77,19 @@ conv_lab_to_rlu_orient(t_real dAngleQVec0,
 		reso_vOrient = ublas::prod(matToOrient, reso_v);
 
 	return std::make_tuple(resoOrient, reso_vOrient, Q_avgOrient);
+}
+
+
+template<class t_mat, class t_real = typename t_mat::value_type>
+std::vector<t_real> calc_bragg_fwhms(const t_mat& reso)
+{
+	static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
+
+	std::vector<t_real> vecFwhms;
+	for(std::size_t i=0; i<reso.size1(); ++i)
+		vecFwhms.push_back(sig2fwhm/sqrt(reso(i,i)));
+
+	return vecFwhms;
 }
 
 #endif

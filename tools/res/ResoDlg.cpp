@@ -558,19 +558,18 @@ void ResoDlg::Calc()
 			if(groupSim->isChecked())
 				RefreshSimCmd();
 
-
 			// calculate rlu quadric if a sample is defined
 			if(m_bHasUB)
 			{
-				std::tie(m_resoHKL, m_reso_vHKL, m_Q_avgHKL) = 
+				std::tie(m_resoHKL, m_reso_vHKL, m_Q_avgHKL) =
 					conv_lab_to_rlu<t_mat, t_vec, t_real_reso>
-						(m_dAngleQVec0, m_matUB, m_matUBinv, 
-						m_res.reso, m_res.Q_avg, m_res.reso_v);
-				std::tie(m_resoOrient, m_reso_vOrient, m_Q_avgOrient) = 
+						(m_dAngleQVec0, m_matUB, m_matUBinv,
+						res.reso, res.reso_v, res.Q_avg);
+				std::tie(m_resoOrient, m_reso_vOrient, m_Q_avgOrient) =
 					conv_lab_to_rlu_orient<t_mat, t_vec, t_real_reso>
 						(m_dAngleQVec0, m_matUB, m_matUBinv,
 						m_matUrlu, m_matUinvrlu,
-						m_res.reso, m_res.Q_avg, m_res.reso_v);
+						res.reso, res.reso_v, res.Q_avg);
 			}
 
 			// print results
@@ -591,11 +590,12 @@ void ResoDlg::Calc()
 			if(m_bHasUB)
 			{
 				static const char* pcHkl[] = { "h", "k", "l" };
-				static const t_real_reso sig2fwhm = tl::get_SIGMA2FWHM<t_real_reso>();
+				const std::vector<t_real_reso> vecFwhms = calc_bragg_fwhms(m_resoHKL);
+
 				for(unsigned iHkl=0; iHkl<3; ++iHkl)
 				{
-					t_real_reso dfwhm = sig2fwhm/sqrt(m_resoHKL(iHkl,iHkl));
-					ostrRes << "\t<li>" << pcHkl[iHkl] << ": " << dfwhm << " rlu</li>\n";
+					ostrRes << "\t<li>" << pcHkl[iHkl] << ": "
+						<< vecFwhms[iHkl] << " rlu</li>\n";
 				}
 			}
 			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
@@ -604,13 +604,19 @@ void ResoDlg::Calc()
 			ostrRes << "\t<ul><li>Q: " << dVanadiumFWHM_Q << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>E: " << dVanadiumFWHM_E << " meV</li></ul></p>\n\n";
 
-			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E):</b>\n\n";
+
+			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E) in 1/A, meV:</b>\n\n";
 			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
 			for(std::size_t i=0; i<res.reso.size1(); ++i)
 			{
 				ostrRes << "<tr>\n";
 				for(std::size_t j=0; j<res.reso.size2(); ++j)
-					ostrRes << "<td>" << std::setw(g_iPrec*2) << res.reso(i,j) << "</td>";
+				{
+					t_real_reso dVal = res.reso(i,j);
+					tl::set_eps_0(dVal, g_dEps);
+
+					ostrRes << "<td>" << std::setw(g_iPrec*2) << dVal << "</td>";
+				}
 				ostrRes << "</tr>\n";
 
 				if(i!=res.reso.size1()-1)
@@ -618,7 +624,7 @@ void ResoDlg::Calc()
 			}
 			ostrRes << "</table></blockquote></p>\n";
 
-			ostrRes << "<p><b>Resolution Vector:</b> ";
+			ostrRes << "<p><b>Resolution Vector in 1/A, meV:</b> ";
 			for(std::size_t iVec=0; iVec<res.reso_v.size(); ++iVec)
 			{
 				ostrRes << res.reso_v[iVec];
@@ -628,6 +634,39 @@ void ResoDlg::Calc()
 			ostrRes << "</p>\n";
 
 			ostrRes << "<p><b>Resolution Scalar</b>: " << res.reso_s << "</p>\n";
+
+
+			if(m_bHasUB)
+			{
+				ostrRes << "<p><b>Resolution Matrix (h, k, l, E) in rlu, meV:</b>\n\n";
+				ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";
+				for(std::size_t i=0; i<m_resoHKL.size1(); ++i)
+				{
+					ostrRes << "<tr>\n";
+					for(std::size_t j=0; j<m_resoHKL.size2(); ++j)
+					{
+						t_real_reso dVal = m_resoHKL(i,j);
+						tl::set_eps_0(dVal, g_dEps);
+						ostrRes << "<td>" << std::setw(g_iPrec*2) << dVal << "</td>";
+					}
+					ostrRes << "</tr>\n";
+
+					if(i!=m_resoHKL.size1()-1)
+						ostrRes << "\n";
+				}
+				ostrRes << "</table></blockquote></p>\n";
+
+				ostrRes << "<p><b>Resolution Vector in rlu, meV:</b> ";
+				for(std::size_t iVec=0; iVec<m_reso_vHKL.size(); ++iVec)
+				{
+					ostrRes << m_reso_vHKL[iVec];
+					if(iVec != m_reso_vHKL.size()-1)
+						ostrRes << ", ";
+				}
+				ostrRes << "</p>\n";
+				//ostrRes << "<p><b>Resolution Scalar</b>: " << res.reso_s << "</p>\n";
+			}
+
 
 			ostrRes << "</body></html>";
 
@@ -803,7 +842,7 @@ void ResoDlg::EmitResults()
 	params.resoOrient = &m_resoOrient;
 	params.reso_vOrient = &m_reso_vOrient;
 	params.Q_avgOrient = &m_Q_avgOrient;
-	
+
 	params.vecMC_direct = &m_vecMC_direct;
 	params.vecMC_HKL = &m_vecMC_HKL;
 
