@@ -20,6 +20,7 @@
 #include "tlibs/time/chrono.h"
 
 #include "libs/globals.h"
+#include "helper.h"
 #include "mc.h"
 
 #include <QPainter>
@@ -557,47 +558,20 @@ void ResoDlg::Calc()
 			if(groupSim->isChecked())
 				RefreshSimCmd();
 
+
 			// calculate rlu quadric if a sample is defined
 			if(m_bHasUB)
 			{
-				// hkl crystal system:
-				// Qavg system in 1/A -> rotate back to orient system in 1/A ->
-				// transform to hkl rlu system
-				t_mat matQVec0 = tl::rotation_matrix_2d(-m_dAngleQVec0);
-				tl::resize_unity(matQVec0, 4);
-				const t_mat matQVec0inv = ublas::trans(matQVec0);
-
-				const t_mat matUBinvQVec0 = ublas::prod(m_matUBinv, matQVec0);
-				const t_mat matQVec0invUB = ublas::prod(matQVec0inv, m_matUB);
-				m_resoHKL = tl::transform(m_res.reso, matQVec0invUB, 1);
-				//m_resoHKL = ublas::prod(m_res.reso, matUBinvQVec0);
-				//m_resoHKL = ublas::prod(matQVec0invUB, m_resoHKL);
-				m_Q_avgHKL = ublas::prod(matUBinvQVec0, m_res.Q_avg);
-
-				//std::cout << tl::r2d(m_dAngleQVec0) << std::endl;
-				//std::cout << m_Q_avgHKL << std::endl;
-				//std::cout << m_resoHKL << std::endl;
-
-
-				// system of scattering plane: (orient1, orient2, up)
-				// Qavg system in 1/A -> rotate back to orient system in 1/A ->
-				// transform to hkl rlu system -> rotate forward to orient system in rlu
-				const t_mat matToOrient = ublas::prod(m_matUrlu, matUBinvQVec0);
-				const t_mat matToOrientinv = ublas::prod(matQVec0invUB, m_matUinvrlu);
-
-				m_resoOrient = tl::transform(m_res.reso, matToOrientinv, 1);
-				//m_resoOrient = ublas::prod(m_res.reso, matToOrient);
-				//m_resoOrient = ublas::prod(matToOrientinv, m_resoOrient);
-				m_Q_avgOrient = ublas::prod(matToOrient, m_res.Q_avg);
-				//std::cout << m_Q_avgOrient << std::endl;
-
-				if(m_res.reso_v.size() == 4)
-				{
-					m_reso_vHKL = ublas::prod(matUBinvQVec0, m_res.reso_v);
-					m_reso_vOrient = ublas::prod(matToOrient, m_res.reso_v);
-				}
+				std::tie(m_resoHKL, m_reso_vHKL, m_Q_avgHKL) = 
+					conv_lab_to_rlu<t_mat, t_vec, t_real_reso>
+						(m_dAngleQVec0, m_matUB, m_matUBinv, 
+						m_res.reso, m_res.Q_avg, m_res.reso_v);
+				std::tie(m_resoOrient, m_reso_vOrient, m_Q_avgOrient) = 
+					conv_lab_to_rlu_orient<t_mat, t_vec, t_real_reso>
+						(m_dAngleQVec0, m_matUB, m_matUBinv,
+						m_matUrlu, m_matUinvrlu,
+						m_res.reso, m_res.Q_avg, m_res.reso_v);
 			}
-
 
 			// print results
 			std::ostringstream ostrRes;
