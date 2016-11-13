@@ -370,7 +370,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::gamma_n;		// TODO: replace with a tl::... getter
+		ostrVal << t_real(tl::get_gamma_n<t_real>() * tesla * sec) << " rad/(Ts)";
 
 		Constant constant;
 		constant.strSymbol = "gamma_n";
@@ -395,7 +395,6 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		//ostrVal << co::mu_N;
 		ostrVal << t_real(tl::get_mu_N<t_real>() / meV * tesla) << " meV/T";
 
 		Constant constant;
@@ -436,7 +435,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << co::gamma_e;		// TODO: replace with a tl::... getter
+		ostrVal << t_real(tl::get_gamma_e<t_real>() * tesla * sec) << " rad/(Ts)";
 
 		Constant constant;
 		constant.strSymbol = "gamma_e";
