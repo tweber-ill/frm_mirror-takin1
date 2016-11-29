@@ -829,7 +829,7 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 			std::get<1>(tup) * recipcommon.dir1RLU;
 		veciCent = tl::convert_vec<t_real, int>(vecdCent);
 		if(recipcommon.pSpaceGroup &&
-			!recipcommon.pSpaceGroup->HasReflection(veciCent[0], veciCent[1], veciCent[2]))
+			!recipcommon.pSpaceGroup->HasGenReflection(veciCent[0], veciCent[1], veciCent[2]))
 			continue;
 		break;
 	}
@@ -875,12 +875,17 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 				const t_real k = t_real(ik);
 				const t_real l = t_real(il);
 
+				bool bHasRefl = 1;
+				bool bHasGenRefl = 1;
+
 				if(recipcommon.pSpaceGroup)
 				{
-					if(!recipcommon.pSpaceGroup->HasReflection(ih, ik, il))
-						continue;
+					bHasRefl = recipcommon.pSpaceGroup->HasReflection(ih, ik, il);
+					bHasGenRefl = recipcommon.pSpaceGroup->HasGenReflection(ih, ik, il);
 				}
 
+				if(!bHasGenRefl)
+					continue;
 
 				t_vec vecPeak = m_recip.GetPos(h,k,l);
 				//t_vec vecPeak = matB * tl::make_vec({h,k,l});
@@ -900,7 +905,7 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 				std::string strStructfact;
 				t_real dF = -1., dFsq = -1.;
 
-				if(recipcommon.CanCalcStructFact() && (bInPlane || bIsPowder))
+				if(bHasRefl && recipcommon.CanCalcStructFact() && (bInPlane || bIsPowder))
 				{
 					std::tie(std::ignore, dF, dFsq) =
 						recipcommon.GetStructFact(vecPeak);
@@ -924,47 +929,49 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 					// (000), i.e. direct beam, also needed for powder
 					if(!bIsPowder || (ih==0 && ik==0 && il==0))
 					{
-						RecipPeak *pPeak = new RecipPeak();
-						if(ih==0 && ik==0 && il==0)
-							pPeak->SetColor(Qt::darkGreen);
-						pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
-						if(dF >= 0.) pPeak->SetRadius(dF);
-						pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
-
-						std::ostringstream ostrLabel, ostrTip;
-						ostrLabel.precision(g_iPrecGfx);
-						ostrTip.precision(g_iPrecGfx);
-
-						ostrLabel << "(" << ih << " " << ik << " " << il << ")";
-						ostrTip << "(" << ih << " " << ik << " " << il << ") rlu";
-						if(dFsq > -1.)
+						if(bHasRefl)
 						{
-							std::ostringstream ostrStructfact;
-							ostrStructfact.precision(g_iPrecGfx);
-							if(g_bShowFsq)
-								ostrStructfact << "S = " << dFsq;
-							else
-								ostrStructfact << "F = " << dF;
-							strStructfact = ostrStructfact.str();
+							RecipPeak *pPeak = new RecipPeak();
+							if(ih==0 && ik==0 && il==0)
+								pPeak->SetColor(Qt::darkGreen);
+							pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
+							if(dF >= 0.) pPeak->SetRadius(dF);
+							pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
 
-							ostrLabel << "\n" << strStructfact;
-							ostrTip << "\n" << strStructfact << " fm";
-						}
+							std::ostringstream ostrLabel, ostrTip;
+							ostrLabel.precision(g_iPrecGfx);
+							ostrTip.precision(g_iPrecGfx);
 
-						//if(ih!=0 || ik!=0 || il!=0)
+							ostrLabel << "(" << ih << " " << ik << " " << il << ")";
+							ostrTip << "(" << ih << " " << ik << " " << il << ") rlu";
+							if(dFsq > -1.)
+							{
+								std::ostringstream ostrStructfact;
+								ostrStructfact.precision(g_iPrecGfx);
+								if(g_bShowFsq)
+									ostrStructfact << "S = " << dFsq;
+								else
+									ostrStructfact << "F = " << dF;
+								strStructfact = ostrStructfact.str();
+
+								ostrLabel << "\n" << strStructfact;
+								ostrTip << "\n" << strStructfact << " fm";
+							}
+
 							pPeak->SetLabel(ostrLabel.str().c_str());
 
-						tl::set_eps_0(vecPeak);
-						ostrTip << "\n("
-							<< vecPeak[0] << ", "
-							<< vecPeak[1] << ", "
-							<< vecPeak[2] << ") " << strAA;
+							tl::set_eps_0(vecPeak);
+							ostrTip << "\n("
+								<< vecPeak[0] << ", "
+								<< vecPeak[1] << ", "
+								<< vecPeak[2] << ") " << strAA;
 
-						//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
-						pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
+							//ostrTip << "\ndistance to plane: " << dDist << " " << strAA;
+							pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 
-						m_vecPeaks.push_back(pPeak);
-						m_scene.addItem(pPeak);
+							m_vecPeaks.push_back(pPeak);
+							m_scene.addItem(pPeak);
+						}
 
 						// 1st BZ
 						if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])

@@ -1,4 +1,4 @@
-/*
+/**
  * Connection to Sics
  * @author tweber
  * @date 26-aug-2015
@@ -63,6 +63,7 @@ SicsCache::SicsCache(QSettings* pSettings) : m_pSettings(pSettings)
 
 		*pair.second = m_pSettings->value(strKey.c_str(), pair.second->c_str()).
 			toString().toStdString();
+		*pair.second = tl::str_to_lower(*pair.second);
 	}
 
 	// all final device names
@@ -76,11 +77,18 @@ SicsCache::SicsCache(QSettings* pSettings) : m_pSettings(pSettings)
 		m_strSampleTheta, m_strSample2Theta,
 		m_strMonoD, m_strMonoTheta, m_strMono2Theta,
 		m_strAnaD, m_strAnaTheta, m_strAna2Theta,
-
+	});
+	// all final device names which cannot be queried together
+	std::vector<std::string> vecKeysLine = std::vector<std::string>
+	({
 		m_strTimer, m_strPreset, m_strCtr,
 	});
-	
+
+	m_strAllKeys = "pr ";
 	for(const std::string& strKey : vecKeys)
+		m_strAllKeys += strKey + " ";
+	m_strAllKeys += "\n";
+	for(const std::string& strKey : vecKeysLine)
 		m_strAllKeys += strKey + "\n";
 
 	m_tcp.add_connect(boost::bind(&SicsCache::slot_connected, this, _1, _2));
@@ -165,6 +173,24 @@ void SicsCache::slot_disconnected(const std::string& strHost, const std::string&
 	emit disconnected();
 }
 
+static std::string get_replykey(const std::string& strKey)
+{
+	std::size_t iPos = strKey.rfind("get");
+	if(iPos == std::string::npos)
+		return strKey;
+
+	try
+	{
+		std::string strName = strKey.substr(iPos+3);
+		tl::trim(strName);
+		return strName;
+	}
+	catch(const std::exception&)
+	{
+		return strKey;
+	}
+}
+
 void SicsCache::slot_receive(const std::string& str)
 {
 #ifndef NDEBUG
@@ -189,24 +215,22 @@ void SicsCache::slot_receive(const std::string& str)
 		return;
 	}
 
-
-	const std::string& strKey = pairKeyVal.first;
+	const std::string strKey = tl::str_to_lower(pairKeyVal.first);
 	const std::string& strVal = pairKeyVal.second;
 
 	if(strVal.length() == 0)
 		return;
 
 	CacheVal cacheval;
-	cacheval.strVal = strVal;
-	boost::to_upper(cacheval.strVal);
+	cacheval.strVal = tl::str_to_upper(strVal);
 	cacheval.dTimestamp = tl::epoch<t_real>();
 
 	// mark special entries
-	if(strKey == m_strTimer)
+	if(tl::str_contains(strKey, get_replykey(m_strTimer), 0))
 		cacheval.ty = CacheValType::TIMER;
-	else if(strKey == m_strPreset)
+	else if(tl::str_contains(strKey, get_replykey(m_strPreset), 0))
 		cacheval.ty = CacheValType::PRESET;
-	else if(strKey == m_strCtr)
+	else if(tl::str_contains(strKey, get_replykey(m_strCtr), 0))
 		cacheval.ty = CacheValType::COUNTER;
 
 	m_mapCache[strKey] = cacheval;

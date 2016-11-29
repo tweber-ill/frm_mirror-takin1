@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iterator>
 #include "tlibs/math/linalg.h"
+#include "tlibs/math/atoms.h"
 #include "tlibs/string/string.h"
 
 namespace ublas = tl::ublas;
@@ -265,7 +266,36 @@ t_str get_pointgroup(const t_str& str)
 
 
 /**
- * check allowed Bragg reflections
+ * check allowed Bragg reflections based on centring
+ * see e.g.: http://pd.chem.ucl.ac.uk/pdnn/symm4/centred.htm
+ */
+template<class t_int=int>
+bool is_centering_reflection_allowed(const std::string& strSG, t_int h, t_int k, t_int l)
+{
+	if(strSG.length() == 0) return true;
+
+	const char cCentr = strSG[0];
+	switch(cCentr)
+	{
+		case 'P': return true;
+		case 'I': return tl::is_even(h+k+l);
+		case 'F':
+		{
+			return (tl::is_even(h) && tl::is_even(k) && tl::is_even(l))
+				|| (tl::is_odd(h) && tl::is_odd(k) && tl::is_odd(l));
+		}
+		case 'A': return tl::is_even(k+l);
+		case 'B': return tl::is_even(h+l);
+		case 'C': return tl::is_even(h+k);
+		case 'R': return ((-h+k+l)%3 == 0);
+	}
+
+	return true;
+}
+
+
+/**
+ * checks for allowed Bragg reflections
  * algorithm based on Clipper's HKL_class
  * constructor in clipper/core/coords.cpp by K. Cowtan
  */
@@ -275,29 +305,28 @@ template<template<class...> class t_cont = std::vector,
 bool is_reflection_allowed(int h, int k, int l, const t_cont<t_mat>& vecTrafos)
 {
 	using t_real = typename t_mat::value_type;
-	const t_real dEps = t_real(1e-6);
+	const constexpr t_real dEps = t_real(1e-6);
 	t_vec vecHKL = tl::make_vec({t_real(h), t_real(k), t_real(l)});
 
 	for(const t_mat& mat : vecTrafos)
 	{
 		t_mat matRot = ublas::trans(mat);	// recip -> transpose
 		matRot.resize(3,3,1);
-		t_vec vecHKL2 = ublas::prod(matRot, vecHKL);
+		t_vec vecHKLrot = ublas::prod(matRot, vecHKL);
 
-		if(tl::vec_equal(vecHKL, vecHKL2, dEps))
+		if(tl::vec_equal(vecHKL, vecHKLrot, dEps))
 		{
 			t_vec vecTrans = tl::make_vec({mat(0,3), mat(1,3), mat(2,3)});
-			t_real dInner = ublas::inner_prod(vecTrans, vecHKL2);
-			t_real dMod = std::abs(std::fmod(dInner, t_real(1)));	// map into [0,1]
+			t_real dInner = ublas::inner_prod(vecTrans, vecHKLrot);
+			dInner = std::abs(std::fmod(dInner, t_real(1)));	// map into [0,1]
 
-			// not allowed if vecTrans and vecHKL2 not perpendicular
-			if(!tl::float_equal<t_real>(dMod, t_real(0), dEps) &&
-				!tl::float_equal<t_real>(dMod, t_real(1), dEps))
+			// not allowed if vecTrans and vecHKLrot not perpendicular
+			if(!tl::float_equal<t_real>(dInner, t_real(0), dEps) &&
+				!tl::float_equal<t_real>(dInner, t_real(1), dEps))
 				return false;
 		}
 	}
 	return true;
 }
-
 
 #endif
