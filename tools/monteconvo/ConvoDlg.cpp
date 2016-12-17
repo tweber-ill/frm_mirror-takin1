@@ -8,6 +8,7 @@
 #include "ConvoDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
+#include "tlibs/math/rand.h"
 #include "tlibs/helper/thread.h"
 #include "tlibs/time/stopwatch.h"
 
@@ -303,7 +304,6 @@ void ConvoDlg::Start()
 		t_stopwatch watch;
 		watch.start();
 
-		const bool bUseR0 = true;
 		const unsigned int iNumNeutrons = spinNeutrons->value();
 		const unsigned int iNumSampleSteps = spinSampleSteps->value();
 
@@ -435,7 +435,8 @@ void ConvoDlg::Start()
 
 		unsigned int iNumThreads = bForceDeferred ? 0 : std::thread::hardware_concurrency();
 
-		tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads);
+		void (*pThStartFunc)() = []{ tl::init_rand(); };
+		tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
 		auto& lstFuts = tp.GetFutures();
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
@@ -493,9 +494,9 @@ void ConvoDlg::Start()
 				for(int i=0; i<4; ++i)
 					dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
 
-				if(bUseR0)
+				if(localreso.GetResoParams().flags & CALC_RESVOL)
 					dS *= localreso.GetResoResults().dResVol;
-				if(bUseR0 && (localreso.GetResoParams().flags & CALC_R0))
+				if(localreso.GetResoParams().flags & CALC_R0)
 					dS *= localreso.GetResoResults().dR0;
 
 				return std::pair<bool, t_real>(true, dS);
@@ -700,7 +701,7 @@ void ConvoDlg::browseSqwFiles()
 	if(m_pSett)
 		strDirLast = m_pSett->value("convo/last_dir_sqw", ".").toString();
 	QString strFile = QFileDialog::getOpenFileName(this,
-		"Open S(q,w) File...", strDirLast, "All S(q,w) files (*.dat *.DAT *.py *.PY)",
+		"Open S(q,w) File...", strDirLast, "All S(q,w) files (*.dat *.DAT *.py *.PY *.jl *.JL)",
 		nullptr, fileopt);
 	if(strFile == "")
 		return;
