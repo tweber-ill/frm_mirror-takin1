@@ -9,7 +9,7 @@
 #define __MCONV_SQW_MOD_H__
 
 #include "tools/monteconvo/sqwbase.h"
-
+#include <tuple>
 
 class SqwMod : public SqwBase
 {
@@ -24,6 +24,9 @@ class SqwMod : public SqwBase
 		SqwMod();
 		SqwMod(const std::string& strCfgFile);
 		virtual ~SqwMod();
+
+		std::tuple<t_real_reso, t_real_reso>
+		dispersion(t_real_reso dh, t_real_reso dk, t_real_reso dl) const;
 
 		virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
 
