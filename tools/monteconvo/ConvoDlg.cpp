@@ -213,7 +213,8 @@ void ConvoDlg::SaveResult()
 void ConvoDlg::SqwModelChanged(int)
 {
 	editSqw->clear();
-	emit SqwLoaded(std::vector<SqwBase::t_var>{});
+	createSqwModel("");
+	//emit SqwLoaded(std::vector<SqwBase::t_var>{});
 }
 
 void ConvoDlg::createSqwModel(const QString& qstrFile)
@@ -230,8 +231,8 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 
 	if(strSqwFile == "")
 	{
-		QMessageBox::critical(this, "Error", "No S(q,w) config file given.");
-		return;
+		tl::log_warn("No S(q,w) config file given.");
+		//return;
 	}
 
 #ifdef NO_PY
@@ -250,7 +251,9 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	}
 
 	if(m_pSqw && m_pSqw->IsOk())
+	{
 		emit SqwLoaded(m_pSqw->GetVars());
+	}
 	else
 	{
 		QMessageBox::critical(this, "Error", "Could not create S(q,w).");

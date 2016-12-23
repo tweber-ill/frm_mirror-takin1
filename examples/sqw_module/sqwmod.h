@@ -8,7 +8,7 @@
 #ifndef __MCONV_SQW_MOD_H__
 #define __MCONV_SQW_MOD_H__
 
-#include "../../tools/monteconvo/sqwbase.h"
+#include "tools/monteconvo/sqwbase.h"
 
 
 class SqwMod : public SqwBase
@@ -17,9 +17,12 @@ class SqwMod : public SqwBase
 		using SqwBase::t_var;
 
 	protected:
+		t_real_reso m_dT = t_real_reso(100);
+		t_real_reso m_dSigma = t_real_reso(0.05);
 
 	public:
 		SqwMod();
+		SqwMod(const std::string& strCfgFile);
 		virtual ~SqwMod();
 
 		virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
