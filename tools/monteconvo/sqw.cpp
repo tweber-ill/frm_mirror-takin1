@@ -209,32 +209,6 @@ SqwBase* SqwKdTree::shallow_copy() const
 
 //------------------------------------------------------------------------------
 
-template<class t_vec>
-static std::string vec_to_str(const t_vec& vec)
-{
-	std::ostringstream ostr;
-	for(const typename t_vec::value_type& t : vec)
-		ostr << t << " ";
-	return ostr.str();
-}
-
-template<class t_vec>
-static t_vec str_to_vec(const std::string& str)
-{
-	typedef typename t_vec::value_type T;
-
-	std::vector<T> vec0;
-	tl::get_tokens<T, std::string, std::vector<T>>(str, " \t", vec0);
-
-	t_vec vec(vec0.size());
-	for(unsigned int i=0; i<vec0.size(); ++i)
-		vec[i] = vec0[i];
-	return vec;
-}
-
-
-//------------------------------------------------------------------------------
-
 
 t_real SqwPhonon::disp(t_real dq, t_real da, t_real df)
 {
