@@ -154,7 +154,6 @@ void load_sqw_plugins()
 				const std::string& strTakVer = std::get<0>(tupInfo);
 				const std::string& strModIdent = std::get<1>(tupInfo);
 				const std::string& strModLongName = std::get<2>(tupInfo);
-				tl::log_debug("Module ident: ", strModIdent);
 
 				if(strTakVer != TAKIN_VER)
 				{
@@ -176,7 +175,8 @@ void load_sqw_plugins()
 
 
 				g_vecMods.push_back(pmod);
-				tl::log_info("Loaded plugin: ", strPlugin);
+				tl::log_info("Loaded plugin: ", strPlugin,
+					" -> ", strModIdent, " (\"", strModLongName, "\").");
 			}
 			catch(const std::exception& ex)
 			{

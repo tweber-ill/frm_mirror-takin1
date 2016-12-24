@@ -14,14 +14,14 @@
 #include <atomic>
 #include <memory>
 
+#include "ui/ui_monteconvo.h"
 #include "libs/qthelper.h"
 #include "sqwfactory.h"
 #include "tools/res/defs.h"
 #include "tools/convofit/scan.h"
-
-#include "SqwParamDlg.h"
-#include "ui/ui_monteconvo.h"
 #include "dialogs/FavDlg.h"
+#include "SqwParamDlg.h"
+#include "TASReso.h"
 
 
 class ConvoDlg : public QDialog, Ui::ConvoDlg
@@ -44,6 +44,11 @@ protected:
 protected:
 	void LoadSettings();
 	virtual void showEvent(QShowEvent *pEvt) override;
+
+	ResoFocus GetFocus() const;
+
+	void Start1D();
+	void Start2D();
 
 protected slots:
 	void showSqwParamDlg();
