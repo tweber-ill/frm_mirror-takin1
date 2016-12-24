@@ -67,7 +67,7 @@ end
 
 
 # called for every Monte-Carlo point
-function TakinSqw(h::Float64, k::Float64, l::Float64, E::Float64)
+function TakinSqw(h::Float64, k::Float64, l::Float64, E::Float64)::Float64
 	#println("Calling TakinSqw(", h, ", ", k, ", ", l, ", ", E, ") -> ", S)
 	Q = vec([h,k,l])
 	q = vecnorm(Q - g_G)
@@ -78,6 +78,8 @@ function TakinSqw(h::Float64, k::Float64, l::Float64, E::Float64)
 	S_m = gauss(E, -E_peak, g_sig, g_S0)
 	incoh = gauss(E, 0., g_inc_sig, g_inc_amp)
 
-	S = (S_p + S_m)*bose_cutoff(E, g_T, g_bose_cut) + incoh
+	b = 1.
+	#b = bose_cutoff(E, g_T, g_bose_cut)
+	S = (S_p + S_m)*b + incoh
 	return Float64(S)
 end
