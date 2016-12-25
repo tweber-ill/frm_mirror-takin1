@@ -564,7 +564,8 @@ void ConvoDlg::Start1D()
 			else
 				set_qwt_data<t_real_reso>()(*m_plotwrap, vecNull, vecNull, 2, false);
 
-			//set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecScaledS, true);
+			if(iStep == lstFuts.size()-1)
+				set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecScaledS, true, m_plotwrap.get());
 			QMetaObject::invokeMethod(m_plotwrap->GetPlot(), "replot", connty);
 
 			QMetaObject::invokeMethod(textResult, "setPlainText", connty,
@@ -696,9 +697,14 @@ void ConvoDlg::Start2D()
 		QMetaObject::invokeMethod(textResult, "clear", connty);
 
 		// raster width & height
+		t_real_qwt dPlotXMin = 0., dPlotXMax = iNumSteps;	// TODO
+		t_real_qwt dPlotYMin = 0., dPlotYMax = iNumSteps;	// TODO
 		m_plotwrap2d->GetRaster()->Init(iNumSteps, iNumSteps);
-		m_plotwrap2d->GetRaster()->SetXRange(0, iNumSteps);	// TODO
-		m_plotwrap2d->GetRaster()->SetYRange(0, iNumSteps);	// TODO
+		m_plotwrap2d->GetRaster()->SetXRange(dPlotXMin, dPlotXMax);
+		m_plotwrap2d->GetRaster()->SetYRange(dPlotYMin, dPlotYMax);
+		set_zoomer_base(m_plotwrap2d->GetZoomer(),
+			dPlotXMin, dPlotXMax, dPlotYMax, dPlotYMin,
+			true, m_plotwrap2d.get());
 
 		std::vector<t_real> vecH; vecH.reserve(iNumSteps*iNumSteps);
 		std::vector<t_real> vecK; vecK.reserve(iNumSteps*iNumSteps);

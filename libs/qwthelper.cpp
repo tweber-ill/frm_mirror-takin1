@@ -323,8 +323,13 @@ void QwtPlotWrapper::SavePlot() const
 void QwtPlotWrapper::setAxisTitle(int iAxis, const QString& str)
 {
 	if(!m_pPlot) return;
-
 	m_pPlot->setAxisTitle(iAxis, str);
+}
+
+void QwtPlotWrapper::setZoomBase(const QRectF& rect)
+{
+	if(!m_pZoomer) return;
+	m_pZoomer->setZoomBase(rect);
 }
 
 void QwtPlotWrapper::scaleColorBar()
@@ -373,6 +378,10 @@ void MyQwtRasterData::SetZRange()	// automatically determined range
 
 t_real_qwt MyQwtRasterData::value(t_real_qwt dx, t_real_qwt dy) const
 {
+	if(dx<m_dXRange[0] || dy<m_dYRange[0] ||
+		dx>=m_dXRange[1] || dy>=m_dYRange[1])
+		return t_real_qwt(0);
+
 	std::size_t iX = tl::tic_trafo_inv(m_iW, m_dXRange[0], m_dXRange[1], 0, dx);
 	std::size_t iY = tl::tic_trafo_inv(m_iH, m_dYRange[0], m_dYRange[1], 0, dy);
 
@@ -384,7 +393,7 @@ t_real_qwt MyQwtRasterData::value(t_real_qwt dx, t_real_qwt dy) const
 
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	t_real_qwt dL, t_real_qwt dR, t_real_qwt dT, t_real_qwt dB,
-	bool bMetaCall)
+	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
 {
 	if(!pZoomer) return;
 
@@ -395,14 +404,17 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	if(bMetaCall)
 	{
 		QMetaObject::invokeMethod(pZoomer, "zoom",
-			Qt::ConnectionType::DirectConnection,
+			Qt::ConnectionType::BlockingQueuedConnection,
 			Q_ARG(QRectF, rect));
 
-		// this is a slot only in MyQwtPlotZoomer
-		//MyQwtPlotZoomer *pMyZoomer = (MyQwtPlotZoomer*)pZoomer;
-		//QMetaObject::invokeMethod(pMyZoomer, "setZoomBase",
-		//	Qt::ConnectionType::DirectConnection,
-		//	Q_ARG(const QRectF&, rect));
+		if(pPlotWrap)
+		{
+			// use auxilliary slot in QwtPlotWrapper
+			// since setZoomBase is not a slot in QwtPlotZoomer
+			QMetaObject::invokeMethod(pPlotWrap, "setZoomBase",
+				Qt::ConnectionType::BlockingQueuedConnection,
+				Q_ARG(const QRectF&, rect));
+		}
 	}
 	else
 	{
@@ -413,7 +425,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
-	bool bMetaCall)
+	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
 {
 	if(!pZoomer || !vecX.size() || !vecY.size())
 		return;
@@ -437,7 +449,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 
 	set_zoomer_base(pZoomer,
 		dminmax[0],dminmax[1],dminmax[2],dminmax[3],
-		bMetaCall);
+		bMetaCall, pPlotWrap);
 }
 
 

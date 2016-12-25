@@ -118,6 +118,7 @@ public:
 public slots:
 	void setAxisTitle(int iAxis, const QString& str);
 	void scaleColorBar();
+	void setZoomBase(const QRectF&);
 };
 
 
@@ -166,11 +167,11 @@ struct set_qwt_data<t_real, 0>
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	t_real_qwt dL, t_real_qwt dR, t_real_qwt dT, t_real_qwt dB,
-	bool bMetaCall = false);
+	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
-	bool bMetaCall = false);
+	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr);
 
 
 #endif
