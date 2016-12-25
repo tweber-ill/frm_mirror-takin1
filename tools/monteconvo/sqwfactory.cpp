@@ -122,12 +122,20 @@ std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 #include <boost/dll/shared_library.hpp>
 #include <boost/dll/import.hpp>
 
+namespace so = boost::dll;
+
+// tracking modules for refcounting
+static std::vector<std::shared_ptr<so::shared_library>> g_vecMods;
+
+void unload_sqw_plugins()
+{
+	for(auto& pMod : g_vecMods)
+		pMod->unload();
+	g_vecMods.clear();
+}
+
 void load_sqw_plugins()
 {
-	namespace so = boost::dll;
-	// tracking modules for refcounting
-	static std::vector<std::shared_ptr<so::shared_library>> g_vecMods;
-
 	static bool bPluginsLoaded = 0;
 	if(bPluginsLoaded) return;
 
@@ -189,6 +197,10 @@ void load_sqw_plugins()
 }
 
 #else
+
+void unload_sqw_plugins()
+{
+}
 
 void load_sqw_plugins()
 {

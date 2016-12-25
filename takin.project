@@ -241,6 +241,8 @@
     <File Name="libs/spacegroups/latticehelper.h"/>
     <File Name="libs/spacegroups/spacegroup_impl.h"/>
     <File Name="libs/formfactors/formfact_impl.h"/>
+    <File Name="libs/qwthelper.cpp"/>
+    <File Name="libs/qwthelper.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

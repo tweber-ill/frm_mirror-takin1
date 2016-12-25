@@ -52,6 +52,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::xBottom, "");
 	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "S (a.u.)");
 
+	m_plotwrap2d.reset(new QwtPlotWrapper(plot2d, 1, 0, 0, 1));
 
 	// --------------------------------------------------------------------
 	QPen penCurve;
@@ -172,6 +173,11 @@ ConvoDlg::~ConvoDlg()
 		delete m_pFavDlg;
 		m_pFavDlg = nullptr;
 	}
+
+	if(m_pSqw)
+		m_pSqw.reset();
+
+	unload_sqw_plugins();
 }
 
 
@@ -368,10 +374,9 @@ void ConvoDlg::Start1D()
 			return;
 		}
 
-		//QMetaObject::invokeMethod(plot, "setAxisTitle",
-		//	Q_ARG(int, QwtPlot::xBottom),
-		//	Q_ARG(const QString&, QString(strScanVar.c_str())));
-		//plot->setAxisTitle(QwtPlot::xBottom, strScanVar.c_str());
+		QMetaObject::invokeMethod(m_plotwrap.get(), "setAxisTitle",
+			Q_ARG(int, QwtPlot::xBottom),
+			Q_ARG(const QString&, QString(strScanVar.c_str())));
 
 
 		TASReso reso;
@@ -548,7 +553,7 @@ void ConvoDlg::Start1D()
 
 			m_vecQ.push_back((*pVecScanX)[iStep]);
 			m_vecS.push_back(dS);
-			m_vecScaledS.push_back(dS*dScale + dOffs);
+	 		m_vecScaledS.push_back(dS*dScale + dOffs);
 
 			static const std::vector<t_real> vecNull;
 
@@ -572,7 +577,7 @@ void ConvoDlg::Start1D()
 			++iStep;
 		}
 
-		ostrOut << "# ---------------- EOF ----------------\n";
+		ostrOut << "# ------------------------- EOF -------------------------\n";
 
 		QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 			Q_ARG(const QString&, QString(ostrOut.str().c_str())));
@@ -604,7 +609,7 @@ void ConvoDlg::Start2D()
 	btnStart->setEnabled(false);
 	tabSettings->setEnabled(false);
 	btnStop->setEnabled(true);
-	tabWidget->setCurrentWidget(tabResults);
+	tabWidget->setCurrentWidget(tabPlot2d);
 
 	bool bForceDeferred = false;
 	Qt::ConnectionType connty = bForceDeferred
@@ -682,13 +687,18 @@ void ConvoDlg::Start2D()
 		ostrOut << "# MC Sample Steps: " << iNumSampleSteps << "\n";
 		ostrOut << "#\n";
 
-		QMetaObject::invokeMethod(editStartTime, "setText",
+		QMetaObject::invokeMethod(editStartTime2d, "setText",
 			Q_ARG(const QString&, QString(watch.GetStartTimeStr().c_str())));
 
 		QMetaObject::invokeMethod(progress, "setMaximum", Q_ARG(int, iNumSteps*iNumSteps));
 		QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, 0));
 
 		QMetaObject::invokeMethod(textResult, "clear", connty);
+
+		// raster width & height
+		m_plotwrap2d->GetRaster()->Init(iNumSteps, iNumSteps);
+		m_plotwrap2d->GetRaster()->SetXRange(0, iNumSteps);	// TODO
+		m_plotwrap2d->GetRaster()->SetYRange(0, iNumSteps);	// TODO
 
 		std::vector<t_real> vecH; vecH.reserve(iNumSteps*iNumSteps);
 		std::vector<t_real> vecK; vecK.reserve(iNumSteps*iNumSteps);
@@ -802,6 +812,9 @@ void ConvoDlg::Start2D()
 				break;
 			t_real dS = pairS.second;
 
+			m_plotwrap2d->GetRaster()->SetPixel(iStep%iNumSteps, iStep/iNumSteps, t_real_qwt(dS));
+			m_plotwrap2d->GetRaster()->SetZRange();
+
 			ostrOut.precision(g_iPrec);
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "
@@ -809,24 +822,26 @@ void ConvoDlg::Start2D()
 				<< std::left << std::setw(g_iPrec*2) << vecE[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << dS << "\n";
 
+			QMetaObject::invokeMethod(m_plotwrap2d.get(), "scaleColorBar", connty);
+			QMetaObject::invokeMethod(m_plotwrap2d->GetPlot(), "replot", connty);
 
 			QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 				Q_ARG(const QString&, QString(ostrOut.str().c_str())));
 
 			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
-			QMetaObject::invokeMethod(editStopTime, "setText",
+			QMetaObject::invokeMethod(editStopTime2d, "setText",
 				Q_ARG(const QString&, QString(watch.GetEstStopTimeStr(t_real(iStep+1)/t_real(iNumSteps)).c_str())));
 
 			++iStep;
 		}
 
-		ostrOut << "# ---------------- EOF ----------------\n";
+		ostrOut << "# ------------------------- EOF -------------------------\n";
 
 		QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 			Q_ARG(const QString&, QString(ostrOut.str().c_str())));
 
 		watch.stop();
-		QMetaObject::invokeMethod(editStopTime, "setText",
+		QMetaObject::invokeMethod(editStopTime2d, "setText",
 			Q_ARG(const QString&, QString(watch.GetStopTimeStr().c_str())));
 
 		fktEnableButtons();

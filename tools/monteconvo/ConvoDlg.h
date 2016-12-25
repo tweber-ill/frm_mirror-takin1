@@ -16,6 +16,7 @@
 
 #include "ui/ui_monteconvo.h"
 #include "libs/qthelper.h"
+#include "libs/qwthelper.h"
 #include "sqwfactory.h"
 #include "tools/res/defs.h"
 #include "tools/convofit/scan.h"
@@ -36,7 +37,7 @@ protected:
 
 	std::shared_ptr<SqwBase> m_pSqw;
 	std::vector<t_real_reso> m_vecQ, m_vecS, m_vecScaledS;
-	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
+	std::unique_ptr<QwtPlotWrapper> m_plotwrap, m_plotwrap2d;
 
 	bool m_bUseScan = 0;
 	Scan m_scan;
