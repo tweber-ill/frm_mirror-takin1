@@ -113,6 +113,7 @@
       <File Name="tools/res/viol.h"/>
       <File Name="tools/res/simple.cpp"/>
       <File Name="tools/res/simple.h"/>
+      <File Name="tools/res/ResoDlg_file.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="taz">
       <File Name="tools/taz/taz.h"/>
@@ -160,6 +161,7 @@
       <File Name="tools/monteconvo/sqwfactory.h"/>
       <File Name="tools/monteconvo/sqw_proc.h"/>
       <File Name="tools/monteconvo/sqw_proc_impl.h"/>
+      <File Name="tools/monteconvo/ConvoDlg_file.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="scanviewer">
       <File Name="tools/scanviewer/scanviewer.cpp"/>

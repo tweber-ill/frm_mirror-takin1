@@ -24,6 +24,7 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QMenuBar>
 #include <QMenu>
 
 
@@ -38,6 +39,37 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 		m_pSett(pSett)
 {
 	setupUi(this);
+
+	// -------------------------------------------------------------------------
+	// widgets
+	m_vecSpinBoxes = { spinStartH, spinStartK, spinStartL, spinStartE,
+		spinStopH, spinStopK, spinStopL, spinStopE,
+		spinStopH2, spinStopK2, spinStopL2, spinStopE2,
+		spinKfix,
+	};
+
+	m_vecSpinNames = {
+		"monteconvo/h_from", "monteconvo/k_from", "monteconvo/l_from", "monteconvo/E_from",
+		"monteconvo/h_to", "monteconvo/k_to", "monteconvo/l_to", "monteconvo/E_to",
+		"monteconvo/h_to_2", "monteconvo/k_to_2", "monteconvo/l_to_2", "monteconvo/E_to_2",
+		"monteconvo/kfix",
+	};
+
+	m_vecIntSpinBoxes = { spinNeutrons, spinSampleSteps, spinStepCnt };
+	m_vecIntSpinNames = { "monteconvo/neutron_count", "monteconvo/sample_step_count", "monteconvo/step_count" };
+
+	m_vecEditBoxes = { editCrys, editRes, editSqw, editScan, editScale, editOffs };
+	m_vecEditNames = { "monteconvo/crys", "monteconvo/instr", "monteconvo/sqw_conf",
+		"monteconvo/scanfile", "monteconvo/S_scale", "monteconvo/S_offs" };
+
+	m_vecComboBoxes = { comboAlgo, comboFixedK, comboFocMono, comboFocAna };
+	m_vecComboNames = { "monteconvo/algo", "monteconvo/fixedk", "monteconvo/mono_foc",
+		"monteconvo/ana_foc" };
+
+	m_vecCheckBoxes = { check2dMap };
+	m_vecCheckNames = { "monteconvo/scan_2d" };
+	// -------------------------------------------------------------------------
+
 	if(m_pSett)
 	{
 		QFont font;
@@ -55,6 +87,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "S (a.u.)");
 
 	m_plotwrap2d.reset(new QwtPlotWrapper(plot2d, 1, 0, 0, 1));
+	m_plotwrap2d->GetPlot()->setAxisTitle(QwtPlot::yRight, "S (a.u.)");
 
 	// --------------------------------------------------------------------
 	QPen penCurve;
@@ -108,6 +141,36 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	// --------------------------------------------------------------------
 
 
+	// --------------------------------------------------------------------
+	// menu bar
+	QMenuBar* pMenuBar = new QMenuBar(this);
+	this->layout()->setMenuBar(pMenuBar);
+
+	QMenu *pMenuFile = new QMenu("File", this);
+
+	QAction *pLoad = new QAction("Load Configuration...", this);
+	pLoad->setIcon(load_icon("res/icons/document-open.svg"));
+	pMenuFile->addAction(pLoad);
+
+	QAction *pSaveAs = new QAction("Save Configuration...", this);
+	pSaveAs->setIcon(load_icon("res/icons/document-save-as.svg"));
+	pMenuFile->addAction(pSaveAs);
+
+	pMenuFile->addSeparator();
+
+	QAction *pExit = new QAction("Exit", this);
+	pExit->setIcon(load_icon("res/icons/system-log-out.svg"));
+	pMenuFile->addAction(pExit);
+
+
+	pMenuBar->addMenu(pMenuFile);
+
+
+	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(accept()));
+	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
+	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(Save()));
+	// --------------------------------------------------------------------
+
 
 	m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);
 	QObject::connect(this, SIGNAL(SqwLoaded(const std::vector<SqwBase::t_var>&)),
@@ -119,7 +182,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(m_pFavDlg, SIGNAL(ChangePos(const struct FavHklPos&)),
 		this, SLOT(ChangePos(const struct FavHklPos&)));
 
-	QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
+	//QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(ButtonBoxClicked(QAbstractButton*)));
 
 	QObject::connect(btnBrowseCrys, SIGNAL(clicked()), this, SLOT(browseCrysFiles()));
 	QObject::connect(btnBrowseRes, SIGNAL(clicked()), this, SLOT(browseResoFiles()));
@@ -164,56 +227,11 @@ ConvoDlg::~ConvoDlg()
 		m_pth = nullptr;
 	}
 
-	if(m_pSqwParamDlg)
-	{
-		delete m_pSqwParamDlg;
-		m_pSqwParamDlg = nullptr;
-	}
-
-	if(m_pFavDlg)
-	{
-		delete m_pFavDlg;
-		m_pFavDlg = nullptr;
-	}
-
-	if(m_pSqw)
-		m_pSqw.reset();
+	if(m_pSqwParamDlg) { delete m_pSqwParamDlg; m_pSqwParamDlg = nullptr; }
+	if(m_pFavDlg) { delete m_pFavDlg; m_pFavDlg = nullptr; }
+	if(m_pSqw) m_pSqw.reset();
 
 	unload_sqw_plugins();
-}
-
-
-void ConvoDlg::SaveResult()
-{
-	QFileDialog::Option fileopt = QFileDialog::Option(0);
-	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
-		fileopt = QFileDialog::DontUseNativeDialog;
-
-	QString strDirLast = ".";
-	if(m_pSett)
-		strDirLast = m_pSett->value("convo/last_dir_result", ".").toString();
-
-	QString strFile = QFileDialog::getSaveFileName(this,
-		"Save Scan", strDirLast, "Data Files (*.dat *.DAT)", nullptr, fileopt);
-
-	if(strFile == "")
-		return;
-
-	std::string strFile1 = strFile.toStdString();
-	std::string strDir = tl::get_dir(strFile1);
-
-	std::ofstream ofstr(strFile1);
-	if(!ofstr)
-	{
-		QMessageBox::critical(this, "Error", "Could not open file.");
-		return;
-	}
-
-	std::string strResult = textResult->toPlainText().toStdString();
-	ofstr.write(strResult.c_str(), strResult.size());
-
-	if(m_pSett)
-		m_pSett->setValue("convo/last_dir_result", QString(strDir.c_str()));
 }
 
 
@@ -950,6 +968,70 @@ void ConvoDlg::Stop()
 // -----------------------------------------------------------------------------
 
 
+void ConvoDlg::ShowFavourites()
+{
+	m_pFavDlg->show();
+	m_pFavDlg->activateWindow();
+}
+
+void ConvoDlg::UpdateCurFavPos()
+{
+	FavHklPos pos;
+	pos.dhstart = spinStartH->value();
+	pos.dkstart = spinStartK->value();
+	pos.dlstart = spinStartL->value();
+	pos.dEstart = spinStartE->value();
+	pos.dhstop = spinStopH->value();
+	pos.dkstop = spinStopK->value();
+	pos.dlstop = spinStopL->value();
+	pos.dEstop = spinStopE->value();
+
+	m_pFavDlg->UpdateCurPos(pos);
+}
+
+void ConvoDlg::ChangePos(const struct FavHklPos& pos)
+{
+	spinStartH->setValue(pos.dhstart);
+	spinStartK->setValue(pos.dkstart);
+	spinStartL->setValue(pos.dlstart);
+	spinStartE->setValue(pos.dEstart);
+	spinStopH->setValue(pos.dhstop);
+	spinStopK->setValue(pos.dkstop);
+	spinStopL->setValue(pos.dlstop);
+	spinStopE->setValue(pos.dEstop);
+}
+
+
+// -----------------------------------------------------------------------------
+
+
+static void SwapSpin(QDoubleSpinBox* pS1, QDoubleSpinBox* pS2)
+{
+	double dVal = pS1->value();
+	pS1->setValue(pS2->value());
+	pS2->setValue(dVal);
+}
+
+void ConvoDlg::ChangeHK()
+{
+	SwapSpin(spinStartH, spinStartK);
+	SwapSpin(spinStopH, spinStopK);
+}
+void ConvoDlg::ChangeHL()
+{
+	SwapSpin(spinStartH, spinStartL);
+	SwapSpin(spinStopH, spinStopL);
+}
+void ConvoDlg::ChangeKL()
+{
+	SwapSpin(spinStartK, spinStartL);
+	SwapSpin(spinStopK, spinStopL);
+}
+
+
+// -----------------------------------------------------------------------------
+
+
 void ConvoDlg::scanFileChanged(const QString& qstrFile)
 {
 	m_bUseScan = 0;
@@ -1011,160 +1093,6 @@ void ConvoDlg::scaleChanged()
 
 // -----------------------------------------------------------------------------
 
-void ConvoDlg::browseCrysFiles()
-{
-	QFileDialog::Option fileopt = QFileDialog::Option(0);
-	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
-		fileopt = QFileDialog::DontUseNativeDialog;
-
-	QString strDirLast = ".";
-	if(m_pSett)
-		strDirLast = m_pSett->value("convo/last_dir_crys", ".").toString();
-	QString strFile = QFileDialog::getOpenFileName(this,
-		"Open Crystal File...", strDirLast, "Takin files (*.taz *.TAZ)",
-		nullptr, fileopt);
-	if(strFile == "")
-		return;
-
-	editCrys->setText(strFile);
-
-	std::string strDir = tl::get_dir(strFile.toStdString());
-	if(m_pSett)
-		m_pSett->setValue("convo/last_dir_crys", QString(strDir.c_str()));
-}
-
-void ConvoDlg::browseResoFiles()
-{
-	QFileDialog::Option fileopt = QFileDialog::Option(0);
-	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
-		fileopt = QFileDialog::DontUseNativeDialog;
-
-	QString strDirLast = ".";
-	if(m_pSett)
-		strDirLast = m_pSett->value("convo/last_dir_reso", ".").toString();
-	QString strFile = QFileDialog::getOpenFileName(this,
-		"Open Resolution File...", strDirLast, "Takin files (*.taz *.TAZ)",
-		nullptr, fileopt);
-	if(strFile == "")
-		return;
-
-	editRes->setText(strFile);
-
-	std::string strDir = tl::get_dir(strFile.toStdString());
-	if(m_pSett)
-		m_pSett->setValue("convo/last_dir_reso", QString(strDir.c_str()));
-}
-
-void ConvoDlg::browseSqwFiles()
-{
-	QFileDialog::Option fileopt = QFileDialog::Option(0);
-	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
-		fileopt = QFileDialog::DontUseNativeDialog;
-
-	QString strDirLast = ".";
-	if(m_pSett)
-		strDirLast = m_pSett->value("convo/last_dir_sqw", ".").toString();
-	QString strFile = QFileDialog::getOpenFileName(this,
-		"Open S(q,w) File...", strDirLast, "All S(q,w) files (*.dat *.DAT *.py *.PY *.jl *.JL)",
-		nullptr, fileopt);
-	if(strFile == "")
-		return;
-
-	editSqw->setText(strFile);
-
-	std::string strDir = tl::get_dir(strFile.toStdString());
-	if(m_pSett)
-		m_pSett->setValue("convo/last_dir_sqw", QString(strDir.c_str()));
-}
-
-void ConvoDlg::browseScanFiles()
-{
-	QFileDialog::Option fileopt = QFileDialog::Option(0);
-	if(m_pSett && !m_pSett->value("main/native_dialogs", 1).toBool())
-		fileopt = QFileDialog::DontUseNativeDialog;
-
-	QString strDirLast = ".";
-	if(m_pSett)
-		strDirLast = m_pSett->value("convo/last_dir_scan", ".").toString();
-	QString strFile = QFileDialog::getOpenFileName(this,
-		"Open S(q,w) File...", strDirLast, "All scan files (*.dat *.DAT *.scn *.SCN)",
-		nullptr, fileopt);
-	if(strFile == "")
-		return;
-
-	editScan->setText(strFile);
-
-	std::string strDir = tl::get_dir(strFile.toStdString());
-	if(m_pSett)
-		m_pSett->setValue("convo/last_dir_scan", QString(strDir.c_str()));
-}
-
-
-// -----------------------------------------------------------------------------
-
-
-void ConvoDlg::ShowFavourites()
-{
-	m_pFavDlg->show();
-	m_pFavDlg->activateWindow();
-}
-
-void ConvoDlg::UpdateCurFavPos()
-{
-	FavHklPos pos;
-	pos.dhstart = spinStartH->value();
-	pos.dkstart = spinStartK->value();
-	pos.dlstart = spinStartL->value();
-	pos.dEstart = spinStartE->value();
-	pos.dhstop = spinStopH->value();
-	pos.dkstop = spinStopK->value();
-	pos.dlstop = spinStopL->value();
-	pos.dEstop = spinStopE->value();
-
-	m_pFavDlg->UpdateCurPos(pos);
-}
-
-void ConvoDlg::ChangePos(const struct FavHklPos& pos)
-{
-	spinStartH->setValue(pos.dhstart);
-	spinStartK->setValue(pos.dkstart);
-	spinStartL->setValue(pos.dlstart);
-	spinStartE->setValue(pos.dEstart);
-	spinStopH->setValue(pos.dhstop);
-	spinStopK->setValue(pos.dkstop);
-	spinStopL->setValue(pos.dlstop);
-	spinStopE->setValue(pos.dEstop);
-}
-
-// -----------------------------------------------------------------------------
-
-
-static void SwapSpin(QDoubleSpinBox* pS1, QDoubleSpinBox* pS2)
-{
-	double dVal = pS1->value();
-	pS1->setValue(pS2->value());
-	pS2->setValue(dVal);
-}
-
-void ConvoDlg::ChangeHK()
-{
-	SwapSpin(spinStartH, spinStartK);
-	SwapSpin(spinStopH, spinStopK);
-}
-void ConvoDlg::ChangeHL()
-{
-	SwapSpin(spinStartH, spinStartL);
-	SwapSpin(spinStopH, spinStopL);
-}
-void ConvoDlg::ChangeKL()
-{
-	SwapSpin(spinStartK, spinStartL);
-	SwapSpin(spinStopK, spinStopL);
-}
-
-
-// -----------------------------------------------------------------------------
-
 
 void ConvoDlg::showSqwParamDlg()
 {
@@ -1172,128 +1100,5 @@ void ConvoDlg::showSqwParamDlg()
 	m_pSqwParamDlg->activateWindow();
 }
 
-void ConvoDlg::LoadSettings()
-{
-	if(m_pSett)
-	{
-		if(m_pSett->contains("monteconvo/geo"))
-			restoreGeometry(m_pSett->value("monteconvo/geo").toByteArray());
-
-		if(m_pSett->contains("monteconvo/algo"))
-			comboAlgo->setCurrentIndex(m_pSett->value("monteconvo/algo").toInt());
-		if(m_pSett->contains("monteconvo/fixedk"))
-			comboFixedK->setCurrentIndex(m_pSett->value("monteconvo/fixedk").toInt());
-		if(m_pSett->contains("monteconvo/mono_foc"))
-			comboFocMono->setCurrentIndex(m_pSett->value("monteconvo/mono_foc").toInt());
-		if(m_pSett->contains("monteconvo/ana_foc"))
-			comboFocAna->setCurrentIndex(m_pSett->value("monteconvo/ana_foc").toInt());
-		if(m_pSett->contains("monteconvo/sqw"))
-			comboSqw->setCurrentIndex(comboSqw->findData(m_pSett->value("monteconvo/sqw").toString()));
-
-		if(m_pSett->contains("monteconvo/crys"))
-			editCrys->setText(m_pSett->value("monteconvo/crys").toString());
-		if(m_pSett->contains("monteconvo/instr"))
-			editRes->setText(m_pSett->value("monteconvo/instr").toString());
-		if(m_pSett->contains("monteconvo/sqw_conf"))
-			editSqw->setText(m_pSett->value("monteconvo/sqw_conf").toString());
-		if(m_pSett->contains("monteconvo/scanfile"))
-			editScan->setText(m_pSett->value("monteconvo/scanfile").toString());
-
-		if(m_pSett->contains("monteconvo/h_from"))
-			spinStartH->setValue(m_pSett->value("monteconvo/h_from").toDouble());
-		if(m_pSett->contains("monteconvo/k_from"))
-			spinStartK->setValue(m_pSett->value("monteconvo/k_from").toDouble());
-		if(m_pSett->contains("monteconvo/l_from"))
-			spinStartL->setValue(m_pSett->value("monteconvo/l_from").toDouble());
-		if(m_pSett->contains("monteconvo/E_from"))
-			spinStartE->setValue(m_pSett->value("monteconvo/E_from").toDouble());
-		if(m_pSett->contains("monteconvo/h_to"))
-			spinStopH->setValue(m_pSett->value("monteconvo/h_to").toDouble());
-		if(m_pSett->contains("monteconvo/k_to"))
-			spinStopK->setValue(m_pSett->value("monteconvo/k_to").toDouble());
-		if(m_pSett->contains("monteconvo/l_to"))
-			spinStopL->setValue(m_pSett->value("monteconvo/l_to").toDouble());
-		if(m_pSett->contains("monteconvo/E_to"))
-			spinStopE->setValue(m_pSett->value("monteconvo/E_to").toDouble());
-		if(m_pSett->contains("monteconvo/h_to_2"))
-			spinStopH2->setValue(m_pSett->value("monteconvo/h_to_2").toDouble());
-		if(m_pSett->contains("monteconvo/k_to_2"))
-			spinStopK2->setValue(m_pSett->value("monteconvo/k_to_2").toDouble());
-		if(m_pSett->contains("monteconvo/l_to_2"))
-			spinStopL2->setValue(m_pSett->value("monteconvo/l_to_2").toDouble());
-		if(m_pSett->contains("monteconvo/E_to_2"))
-			spinStopE2->setValue(m_pSett->value("monteconvo/E_to_2").toDouble());
-
-		if(m_pSett->contains("monteconvo/S_scale"))
-			editScale->setText(m_pSett->value("monteconvo/S_scale").toString());
-		if(m_pSett->contains("monteconvo/S_offs"))
-			editOffs->setText(m_pSett->value("monteconvo/S_offs").toString());
-
-		if(m_pSett->contains("monteconvo/kfix"))
-			spinKfix->setValue(m_pSett->value("monteconvo/kfix").toDouble());
-		if(m_pSett->contains("monteconvo/neutron_count"))
-			spinNeutrons->setValue(m_pSett->value("monteconvo/neutron_count").toInt());
-		if(m_pSett->contains("monteconvo/sample_step_count"))
-			spinSampleSteps->setValue(m_pSett->value("monteconvo/sample_step_count").toInt());
-		if(m_pSett->contains("monteconvo/step_count"))
-			spinStepCnt->setValue(m_pSett->value("monteconvo/step_count").toInt());
-
-		if(m_pSett->contains("monteconvo/scan_2d"))
-			check2dMap->setChecked(m_pSett->value("monteconvo/scan_2d").toBool());
-	}
-}
-
-void ConvoDlg::showEvent(QShowEvent *pEvt)
-{
-	//LoadSettings();
-	QDialog::showEvent(pEvt);
-}
-
-void ConvoDlg::ButtonBoxClicked(QAbstractButton *pBtn)
-{
-	if(pBtn == buttonBox->button(QDialogButtonBox::Close))
-	{
-		if(m_pSett)
-		{
-			m_pSett->setValue("monteconvo/geo", saveGeometry());
-
-			m_pSett->setValue("monteconvo/algo", comboAlgo->currentIndex());
-			m_pSett->setValue("monteconvo/fixedk", comboFixedK->currentIndex());
-			m_pSett->setValue("monteconvo/mono_foc", comboFocMono->currentIndex());
-			m_pSett->setValue("monteconvo/ana_foc", comboFocAna->currentIndex());
-			m_pSett->setValue("monteconvo/sqw", comboSqw->itemData(comboSqw->currentIndex()).toString());
-
-			m_pSett->setValue("monteconvo/crys", editCrys->text());
-			m_pSett->setValue("monteconvo/instr", editRes->text());
-			m_pSett->setValue("monteconvo/sqw_conf", editSqw->text());
-			m_pSett->setValue("monteconvo/scanfile", editScan->text());
-
-			m_pSett->setValue("monteconvo/h_from", spinStartH->value());
-			m_pSett->setValue("monteconvo/k_from", spinStartK->value());
-			m_pSett->setValue("monteconvo/l_from", spinStartL->value());
-			m_pSett->setValue("monteconvo/E_from", spinStartE->value());
-			m_pSett->setValue("monteconvo/h_to", spinStopH->value());
-			m_pSett->setValue("monteconvo/k_to", spinStopK->value());
-			m_pSett->setValue("monteconvo/l_to", spinStopL->value());
-			m_pSett->setValue("monteconvo/E_to", spinStopE->value());
-			m_pSett->setValue("monteconvo/h_to_2", spinStopH2->value());
-			m_pSett->setValue("monteconvo/k_to_2", spinStopK2->value());
-			m_pSett->setValue("monteconvo/l_to_2", spinStopL2->value());
-			m_pSett->setValue("monteconvo/E_to_2", spinStopE2->value());
-
-			m_pSett->setValue("monteconvo/S_scale", editScale->text());
-			m_pSett->setValue("monteconvo/S_offs", editOffs->text());
-
-			m_pSett->setValue("monteconvo/kfix", spinKfix->value());
-			m_pSett->setValue("monteconvo/neutron_count", spinNeutrons->value());
-			m_pSett->setValue("monteconvo/sample_step_count", spinSampleSteps->value());
-			m_pSett->setValue("monteconvo/step_count", spinStepCnt->value());
-
-			m_pSett->setValue("monteconvo/scan_2d", check2dMap->isChecked());
-		}
-
-		QDialog::accept();
-	}
-}
 
 #include "ConvoDlg.moc"

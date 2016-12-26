@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Convolution</string>
+   <string>Resolution Convolution</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -36,22 +36,6 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="3">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <widget class="QPushButton" name="btnStart">
      <property name="sizePolicy">
@@ -72,7 +56,7 @@
      </property>
      <widget class="QWidget" name="tabSettings">
       <attribute name="title">
-       <string>Settings</string>
+       <string>Configuration</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_6">
        <property name="horizontalSpacing">
@@ -101,6 +85,12 @@
           </property>
           <item row="2" column="0">
            <widget class="QLabel" name="label_12">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>M. Focus:</string>
             </property>
@@ -108,6 +98,12 @@
           </item>
           <item row="2" column="3">
            <widget class="QLabel" name="label_13">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>A. Focus:</string>
             </property>
@@ -117,7 +113,7 @@
            <widget class="QComboBox" name="comboFocMono">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>2</horstretch>
+              <horstretch>4</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
@@ -147,7 +143,7 @@
            <widget class="QComboBox" name="comboAlgo">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>2</horstretch>
+              <horstretch>4</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
@@ -180,7 +176,7 @@
            <widget class="QComboBox" name="comboFixedK">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>2</horstretch>
+              <horstretch>4</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
@@ -214,6 +210,12 @@
           </item>
           <item row="1" column="3">
            <widget class="QLabel" name="label_11">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>k_fix (1/Å):</string>
             </property>
@@ -278,6 +280,12 @@
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_10">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Mode:</string>
             </property>
@@ -1260,7 +1268,6 @@
   <tabstop>btnFav</tabstop>
   <tabstop>btnStart</tabstop>
   <tabstop>btnStop</tabstop>
-  <tabstop>buttonBox</tabstop>
   <tabstop>textResult</tabstop>
   <tabstop>btnSaveResult</tabstop>
   <tabstop>editScale</tabstop>
@@ -1270,38 +1277,6 @@
  </tabstops>
  <resources/>
  <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>ConvoDlg</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>ConvoDlg</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>checkScan</sender>
    <signal>toggled(bool)</signal>

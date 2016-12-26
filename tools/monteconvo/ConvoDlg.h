@@ -15,11 +15,16 @@
 #include <memory>
 
 #include "ui/ui_monteconvo.h"
+
 #include "libs/qthelper.h"
 #include "libs/qwthelper.h"
+#include "tlibs/file/prop.h"
+
 #include "sqwfactory.h"
+
 #include "tools/res/defs.h"
 #include "tools/convofit/scan.h"
+
 #include "dialogs/FavDlg.h"
 #include "SqwParamDlg.h"
 #include "TASReso.h"
@@ -43,6 +48,16 @@ protected:
 	Scan m_scan;
 
 protected:
+	std::vector<QDoubleSpinBox*> m_vecSpinBoxes;
+	std::vector<QSpinBox*> m_vecIntSpinBoxes;
+	std::vector<QLineEdit*> m_vecEditBoxes;
+	std::vector<QComboBox*> m_vecComboBoxes;
+	std::vector<QCheckBox*> m_vecCheckBoxes;
+
+	std::vector<std::string> m_vecSpinNames, m_vecIntSpinNames, m_vecEditNames,
+		m_vecComboNames, m_vecCheckNames;
+
+protected:
 	void LoadSettings();
 	virtual void showEvent(QShowEvent *pEvt) override;
 
@@ -50,6 +65,9 @@ protected:
 
 	void Start1D();
 	void Start2D();
+
+	void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
+	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 
 protected slots:
 	void showSqwParamDlg();
@@ -79,7 +97,10 @@ protected slots:
 	void UpdateCurFavPos();
 	void ChangePos(const struct FavHklPos& pos);
 
-	void ButtonBoxClicked(QAbstractButton *pBtn);
+	virtual void accept() override;
+
+	void Load();
+	void Save();
 
 public:
 	ConvoDlg(QWidget* pParent=0, QSettings* pSett=0);
