@@ -567,7 +567,7 @@ void ConvoDlg::Start1D()
 
 			if(iStep == lstFuts.size()-1)
 				set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecScaledS, true, m_plotwrap.get());
-			QMetaObject::invokeMethod(m_plotwrap->GetPlot(), "replot", connty);
+			QMetaObject::invokeMethod(m_plotwrap.get(), "doUpdate", connty);
 
 			QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 				Q_ARG(const QString&, QString(ostrOut.str().c_str())));
@@ -895,7 +895,7 @@ void ConvoDlg::Start2D()
 				<< std::left << std::setw(g_iPrec*2) << dS << "\n";
 
 			QMetaObject::invokeMethod(m_plotwrap2d.get(), "scaleColorBar", connty);
-			QMetaObject::invokeMethod(m_plotwrap2d->GetPlot(), "replot", connty);
+			QMetaObject::invokeMethod(m_plotwrap2d.get(), "doUpdate", connty);
 
 			QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 				Q_ARG(const QString&, QString(ostrOut.str().c_str())));

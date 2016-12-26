@@ -127,17 +127,29 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 			pCol->setColorInterval(QColor(0x00, 0x00, 0xff), QColor(0xff, 0x00, 0x00));
 			return pCol;
 		};
-		m_pSpec->setColorMap(create_colmap());
 
 		t_real_qwt dCBMin=0., dCBMax=1.;
 		m_pPlot->enableAxis(QwtPlot::yRight);
 		QwtScaleWidget *pRightAxis = m_pPlot->axisWidget(QwtPlot::yRight);
 		pRightAxis->setColorBarEnabled(1);
-		pRightAxis->setColorMap(QwtInterval(dCBMin, dCBMax), create_colmap());
 		m_pPlot->setAxisScale(QwtPlot::yRight, dCBMin, dCBMax);
 
+#if QWT_VER>=6
+		m_pSpec->setColorMap(create_colmap());
+		pRightAxis->setColorMap(QwtInterval(dCBMin, dCBMax), create_colmap());
+#else
+		QwtLinearColorMap *pColMap = create_colmap();
+		m_pSpec->setColorMap(*create_colmap());
+		pRightAxis->setColorMap(QwtInterval(dCBMin, dCBMax), *create_colmap());
+		//delete pColMap;
+#endif
+
 		m_pRaster = new MyQwtRasterData();
+#if QWT_VER>=6
 		m_pSpec->setData(m_pRaster);
+#else
+		m_pSpec->setData(*m_pRaster);
+#endif
 
 		m_pSpec->attach(m_pPlot);
 	}
@@ -339,8 +351,27 @@ void QwtPlotWrapper::scaleColorBar()
 	t_real_qwt dMax = m_pRaster->GetZMax();
 
 	QwtScaleWidget *pRightAxis = m_pPlot->axisWidget(QwtPlot::yRight);
+#if QWT_VER>=6
 	pRightAxis->setColorMap(QwtInterval(dMin, dMax), (QwtColorMap*)pRightAxis->colorMap());
+#else
+	pRightAxis->setColorMap(QwtInterval(dMin, dMax), *pRightAxis->colorMap().copy());
+#endif
 	m_pPlot->setAxisScale(QwtPlot::yRight, dMin, dMax);
+}
+
+void QwtPlotWrapper::doUpdate()
+{
+	if(!m_pPlot) return;
+
+#if QWT_VER<6
+	if(m_pSpec && m_pRaster)
+	{
+		m_pSpec->setData(*m_pRaster);
+		m_pPlot->setAxisScale(QwtPlot::xBottom, m_pRaster->GetXMin(), m_pRaster->GetXMax());
+		m_pPlot->setAxisScale(QwtPlot::yLeft, m_pRaster->GetYMin(), m_pRaster->GetYMax());
+	}
+#endif
+	m_pPlot->replot();
 }
 
 // ----------------------------------------------------------------------------
@@ -349,21 +380,25 @@ void QwtPlotWrapper::scaleColorBar()
 void MyQwtRasterData::SetXRange(t_real_qwt dMin, t_real_qwt dMax)
 {
 	m_dXRange[0] = dMin; m_dXRange[1] = dMax;
+#if QWT_VER>=6
 	setInterval(Qt::XAxis, QwtInterval(dMin, dMax));
-	//set_zoomer_base(m_pZoomer, m_dXRange[0],m_dXRange[1],m_dYRange[0],m_dYRange[1], 1);
+#endif
 }
 
 void MyQwtRasterData::SetYRange(t_real_qwt dMin, t_real_qwt dMax)
 {
 	m_dYRange[0] = dMin; m_dYRange[1] = dMax;
+#if QWT_VER>=6
 	setInterval(Qt::YAxis, QwtInterval(dMin, dMax));
-	//set_zoomer_base(m_pZoomer, m_dXRange[0],m_dXRange[1],m_dYRange[0],m_dYRange[1], 1);
+#endif
 }
 
 void MyQwtRasterData::SetZRange(t_real_qwt dMin, t_real_qwt dMax)
 {
 	m_dZRange[0] = dMin; m_dZRange[1] = dMax;
+#if QWT_VER>=6
 	setInterval(Qt::ZAxis, QwtInterval(dMin, dMax));
+#endif
 }
 
 void MyQwtRasterData::SetZRange()	// automatically determined range
@@ -372,7 +407,9 @@ void MyQwtRasterData::SetZRange()	// automatically determined range
 
 	auto minmax = std::minmax_element(m_pData.get(), m_pData.get()+m_iW*m_iH);
 	m_dZRange[0] = *minmax.first; m_dZRange[1] = *minmax.second;
+#if QWT_VER>=6
 	setInterval(Qt::ZAxis, QwtInterval(m_dZRange[0], m_dZRange[1]));
+#endif
 }
 
 
@@ -386,6 +423,58 @@ t_real_qwt MyQwtRasterData::value(t_real_qwt dx, t_real_qwt dy) const
 	std::size_t iY = tl::tic_trafo_inv(m_iH, m_dYRange[0], m_dYRange[1], 0, dy);
 
 	return GetPixel(iX, iY);
+}
+
+MyQwtRasterData::~MyQwtRasterData()
+{}
+
+MyQwtRasterData::MyQwtRasterData(const MyQwtRasterData& dat)
+{
+	this->operator=(dat);
+}
+
+/**
+ * shallow copy
+ */
+const MyQwtRasterData& MyQwtRasterData::operator=(const MyQwtRasterData& dat)
+{
+	m_pData = dat.m_pData;
+	m_iW = dat.m_iW;
+	m_iH = dat.m_iH;
+
+	m_dXRange[0] = dat.m_dXRange[0]; m_dXRange[1] = dat.m_dXRange[1];
+	m_dYRange[0] = dat.m_dYRange[0]; m_dYRange[1] = dat.m_dYRange[1];
+	m_dZRange[0] = dat.m_dZRange[0]; m_dZRange[1] = dat.m_dZRange[1];
+
+	return *this;
+}
+
+/**
+ * shallow copy
+ */
+QwtRasterData* MyQwtRasterData::copy() const
+{
+	return new MyQwtRasterData(*this);
+}
+
+/**
+ * deep copy
+ */
+QwtRasterData* MyQwtRasterData::clone() const
+{
+	MyQwtRasterData* pDat = new MyQwtRasterData(m_iW, m_iH);
+	std::copy(m_pData.get(), m_pData.get()+m_iW*m_iH, pDat->m_pData.get());
+
+	pDat->m_dXRange[0] = m_dXRange[0]; pDat->m_dXRange[1] = m_dXRange[1];
+	pDat->m_dYRange[0] = m_dYRange[0]; pDat->m_dYRange[1] = m_dYRange[1];
+	pDat->m_dZRange[0] = m_dZRange[0]; pDat->m_dZRange[1] = m_dZRange[1];
+
+	return pDat;
+}
+
+QwtInterval MyQwtRasterData::range() const
+{
+	return QwtInterval(GetZMin(), GetZMax());
 }
 
 // ----------------------------------------------------------------------------

@@ -27,11 +27,15 @@
 
 using t_real_qwt = double;		// qwt's intrinsic value type
 
+#if QWT_VER<=5
+	#define QwtInterval QwtDoubleInterval
+#endif
+
 
 class MyQwtRasterData : public QwtRasterData
 {
 protected:
-	std::unique_ptr<t_real_qwt[]> m_pData;
+	std::shared_ptr<t_real_qwt> m_pData;
 	std::size_t m_iW=0, m_iH=0;
 	t_real_qwt m_dXRange[2], m_dYRange[2], m_dZRange[2];
 
@@ -43,7 +47,7 @@ public:
 		m_iW = iW;
 		m_iH = iH;
 
-		m_pData.reset(new t_real_qwt[iW*iH]);
+		m_pData.reset(new t_real_qwt[iW*iH], [](t_real_qwt *pArr) { delete[] pArr; } );
 		std::fill(m_pData.get(), m_pData.get()+m_iW*m_iH, t_real_qwt(0));
 	}
 
@@ -52,11 +56,20 @@ public:
 		Init(iW, iH);
 	}
 
+	MyQwtRasterData(const MyQwtRasterData& dat);
+	const MyQwtRasterData& operator=(const MyQwtRasterData& dat);
+	
+	virtual ~MyQwtRasterData();
+
 	void SetXRange(t_real_qwt dMin, t_real_qwt dMax);
 	void SetYRange(t_real_qwt dMin, t_real_qwt dMax);
 	void SetZRange(t_real_qwt dMin, t_real_qwt dMax);
 	void SetZRange();	// automatically determined range
 
+	t_real_qwt GetXMin() const { return m_dXRange[0]; }
+	t_real_qwt GetXMax() const { return m_dXRange[1]; }
+	t_real_qwt GetYMin() const { return m_dYRange[0]; }
+	t_real_qwt GetYMax() const { return m_dYRange[1]; }
 	t_real_qwt GetZMin() const { return m_dZRange[0]; }
 	t_real_qwt GetZMax() const { return m_dZRange[1]; }
 
@@ -66,16 +79,20 @@ public:
 	void SetPixel(std::size_t iX, std::size_t iY, t_real_qwt dVal)
 	{
 		if(iX<m_iW && iY<m_iH)
-			m_pData[iY*m_iW + iX] = dVal;
+			m_pData.get()[iY*m_iW + iX] = dVal;
 	}
 
 	t_real_qwt GetPixel(std::size_t iX, std::size_t iY) const
 	{
 		if(!m_pData) return t_real_qwt(0);
-		return m_pData[iY*m_iW + iX];
+		return m_pData.get()[iY*m_iW + iX];
 	}
 
 	virtual t_real_qwt value(t_real_qwt dx, t_real_qwt dy) const override;
+
+	virtual QwtRasterData* clone() const;
+	virtual QwtRasterData* copy() const /*override only for qwt5*/;
+	virtual QwtInterval range() const /*override only for qwt5*/;
 };
 
 
@@ -119,6 +136,7 @@ public slots:
 	void setAxisTitle(int iAxis, const QString& str);
 	void scaleColorBar();
 	void setZoomBase(const QRectF&);
+	void doUpdate();
 };
 
 
