@@ -58,7 +58,7 @@ public:
 
 	MyQwtRasterData(const MyQwtRasterData& dat);
 	const MyQwtRasterData& operator=(const MyQwtRasterData& dat);
-	
+
 	virtual ~MyQwtRasterData();
 
 	void SetXRange(t_real_qwt dMin, t_real_qwt dMax);
@@ -130,13 +130,14 @@ public:
 	void SetData(const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 		unsigned int iCurve=0, bool bReplot=1, bool bCopy=0);
 
-	void SavePlot() const;
 
 public slots:
 	void setAxisTitle(int iAxis, const QString& str);
 	void scaleColorBar();
 	void setZoomBase(const QRectF&);
 	void doUpdate();
+
+	void SavePlot() const;
 };
 
 

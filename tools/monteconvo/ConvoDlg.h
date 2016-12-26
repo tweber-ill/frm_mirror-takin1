@@ -66,6 +66,7 @@ protected:
 	void Start1D();
 	void Start2D();
 
+public:
 	void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
 	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 
@@ -101,6 +102,8 @@ protected slots:
 
 	void Load();
 	void Save();
+
+	void ShowAboutDlg();
 
 public:
 	ConvoDlg(QWidget* pParent=0, QSettings* pSett=0);

@@ -8,9 +8,12 @@
 #include "qwthelper.h"
 #include "globals.h"
 #include "globals_qt.h"
+#include "version.h"
+
 #include "tlibs/math/math.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/misc.h"
+#include "tlibs/time/chrono.h"
 
 #include <algorithm>
 #include <fstream>
@@ -272,7 +275,7 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 
 void QwtPlotWrapper::SavePlot() const
 {
-	if(!m_bHasDataPtrs)
+	if(!m_bHasDataPtrs && !m_pRaster)
 	{
 		// if data was deep-copied, it is now lost somewhere in the plot objects...
 		QMessageBox::critical(m_pPlot, "Error", "Cannot get plot data.");
@@ -299,36 +302,67 @@ void QwtPlotWrapper::SavePlot() const
 		return;
 	}
 
+	t_real_qwt dEpoch = tl::epoch<t_real_qwt>();
+
 	ofstrDat.precision(g_iPrec);
+	ofstrDat << "#\n";
+	ofstrDat << "# comment: Created with Takin version " << TAKIN_VER << ".\n";
+	ofstrDat << "# timestamp: " << tl::var_to_str<t_real_qwt>(dEpoch)
+		<< " (" << tl::epoch_to_str<t_real_qwt>(dEpoch) << ")\n";
 	ofstrDat << "# title: " << m_pPlot->title().text().toStdString() << "\n";
 	ofstrDat << "# x_label: " << m_pPlot->axisTitle(QwtPlot::xBottom).text().toStdString() << "\n";
 	ofstrDat << "# y_label: " << m_pPlot->axisTitle(QwtPlot::yLeft).text().toStdString() << "\n";
 	ofstrDat << "# x_label_2: " << m_pPlot->axisTitle(QwtPlot::xTop).text().toStdString() << "\n";
 	ofstrDat << "# y_label_2: " << m_pPlot->axisTitle(QwtPlot::yRight).text().toStdString() << "\n";
-	ofstrDat << "\n";
 
-	std::size_t iDataSet=0;
-	for(const auto& pairVecs : m_vecDataPtrs)
+	if(m_pRaster)	// 2d plot
 	{
-		if(m_vecDataPtrs.size() > 1)
-			ofstrDat << "## -------------------------------- begin of dataset " << (iDataSet+1)
-				<< " --------------------------------\n";
+		ofstrDat << "# x_size: " << m_pRaster->GetWidth() << "\n";
+		ofstrDat << "# y_size: " << m_pRaster->GetHeight() << "\n";
+		ofstrDat << "# x_range: " << m_pRaster->GetXMin() << " " << m_pRaster->GetXMax() << "\n";
+		ofstrDat << "# y_range: " << m_pRaster->GetYMin() << " " << m_pRaster->GetYMax() << "\n";
+		ofstrDat << "# z_range: " << m_pRaster->GetZMin() << " " << m_pRaster->GetZMax() << "\n";
+		ofstrDat << "#\n";
 
-		const std::vector<t_real_qwt>* pVecX = pairVecs.first;
-		const std::vector<t_real_qwt>* pVecY = pairVecs.second;
-
-		const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
-
-		for(std::size_t iCur=0; iCur<iSize; ++iCur)
+		for(std::size_t iY=0; iY<m_pRaster->GetHeight(); ++iY)
 		{
-			ofstrDat << std::left << std::setw(g_iPrec*2) << pVecX->operator[](iCur) << " ";
-			ofstrDat << std::left << std::setw(g_iPrec*2) << pVecY->operator[](iCur) << "\n";
+			for(std::size_t iX=0; iX<m_pRaster->GetWidth(); ++iX)
+			{
+				ofstrDat << std::left << std::setw(g_iPrec*2)
+					<< m_pRaster->GetPixel(iX, iY) << " ";
+			}
+			ofstrDat << "\n";
 		}
+	}
+	else			// 1d plot(s)
+	{
+		ofstrDat << "#\n";
 
-		if(m_vecDataPtrs.size() > 1)
-			ofstrDat << "## -------------------------------- end of dataset " << (iDataSet+1)
-				<< " ----------------------------------\n\n";
-		++iDataSet;
+		std::size_t iDataSet=0;
+		for(const auto& pairVecs : m_vecDataPtrs)
+		{
+			if(m_vecDataPtrs.size() > 1)
+				ofstrDat << "## -------------------------------- begin of dataset " << (iDataSet+1)
+					<< " --------------------------------\n";
+
+			const std::vector<t_real_qwt>* pVecX = pairVecs.first;
+			const std::vector<t_real_qwt>* pVecY = pairVecs.second;
+
+			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
+
+			for(std::size_t iCur=0; iCur<iSize; ++iCur)
+			{
+				ofstrDat << std::left << std::setw(g_iPrec*2)
+					<< pVecX->operator[](iCur) << " ";
+				ofstrDat << std::left << std::setw(g_iPrec*2)
+					<< pVecY->operator[](iCur) << "\n";
+			}
+
+			if(m_vecDataPtrs.size() > 1)
+				ofstrDat << "## -------------------------------- end of dataset " << (iDataSet+1)
+					<< " ----------------------------------\n\n";
+			++iDataSet;
+		}
 	}
 }
 

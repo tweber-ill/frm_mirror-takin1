@@ -89,6 +89,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_plotwrap2d.reset(new QwtPlotWrapper(plot2d, 1, 0, 0, 1));
 	m_plotwrap2d->GetPlot()->setAxisTitle(QwtPlot::yRight, "S (a.u.)");
 
+
 	// --------------------------------------------------------------------
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
@@ -146,6 +147,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QMenuBar* pMenuBar = new QMenuBar(this);
 	this->layout()->setMenuBar(pMenuBar);
 
+
+	// file menu
 	QMenu *pMenuFile = new QMenu("File", this);
 
 	QAction *pLoad = new QAction("Load Configuration...", this);
@@ -163,12 +166,35 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	pMenuFile->addAction(pExit);
 
 
+	// plots menu
+	QMenu *pMenuPlots = new QMenu("Plots", this);
+
+	QAction *pExportPlot = new QAction("Export Plot Data...", this);
+	pMenuPlots->addAction(pExportPlot);
+
+	QAction *pExportPlot2d = new QAction("Export 2D Plot Data...", this);
+	pMenuPlots->addAction(pExportPlot2d);
+
+
+	// help menu
+	QMenu *pMenuHelp = new QMenu("Help", this);
+
+	QAction *pAbout = new QAction("About...", this);
+	pAbout->setIcon(load_icon("res/icons/dialog-information.svg"));
+	pMenuHelp->addAction(pAbout);
+
+
 	pMenuBar->addMenu(pMenuFile);
+	pMenuBar->addMenu(pMenuPlots);
+	pMenuBar->addMenu(pMenuHelp);
 
 
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(accept()));
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(Save()));
+	QObject::connect(pExportPlot, SIGNAL(triggered()), m_plotwrap.get(), SLOT(SavePlot()));
+	QObject::connect(pExportPlot2d, SIGNAL(triggered()), m_plotwrap2d.get(), SLOT(SavePlot()));
+	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAboutDlg()));
 	// --------------------------------------------------------------------
 
 
@@ -1098,6 +1124,19 @@ void ConvoDlg::showSqwParamDlg()
 {
 	m_pSqwParamDlg->show();
 	m_pSqwParamDlg->activateWindow();
+}
+
+
+#include "libs/version.h"
+
+void ConvoDlg::ShowAboutDlg()
+{
+	std::ostringstream ostrAbout;
+	ostrAbout << "Takin/Monteconvo version " << TAKIN_VER << ".\n";
+	ostrAbout << "Written by Tobias Weber <tobias.weber@tum.de>,\n";
+	ostrAbout << "2015 - 2016.\n";
+
+	QMessageBox::about(this, "About Monteconvo", ostrAbout.str().c_str());
 }
 
 
