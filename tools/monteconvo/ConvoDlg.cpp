@@ -30,6 +30,8 @@
 using t_real = t_real_reso;
 using t_stopwatch = tl::Stopwatch<t_real>;
 
+static constexpr const t_real g_dEpsRlu = 1e-4;
+
 
 ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint),
@@ -346,23 +348,22 @@ void ConvoDlg::Start1D()
 
 		std::string strScanVar = "";
 		std::vector<t_real> *pVecScanX = nullptr;
-		const t_real dEpsRlu = 0.0001;
-		if(!tl::float_equal(spinStartH->value(), spinStopH->value(), dEpsRlu))
+		if(!tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu))
 		{
 			pVecScanX = &vecH;
 			strScanVar = "h (rlu)";
 		}
-		else if(!tl::float_equal(spinStartK->value(), spinStopK->value(), dEpsRlu))
+		else if(!tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu))
 		{
 			pVecScanX = &vecK;
 			strScanVar = "k (rlu)";
 		}
-		else if(!tl::float_equal(spinStartL->value(), spinStopL->value(), dEpsRlu))
+		else if(!tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu))
 		{
 			pVecScanX = &vecL;
 			strScanVar = "l (rlu)";
 		}
-		else if(!tl::float_equal(spinStartE->value(), spinStopE->value(), dEpsRlu))
+		else if(!tl::float_equal(spinStartE->value(), spinStopE->value(), g_dEpsRlu))
 		{
 			pVecScanX = &vecE;
 			strScanVar = "E (meV)";
@@ -653,6 +654,73 @@ void ConvoDlg::Start2D()
 			(spinStopE2->value() - spinStartE->value()) / t_real(iNumSteps+1)
 		};
 
+
+		// -------------------------------------------------------------------------
+		// find axis labels and ranges
+		std::string strScanVar1 = "";
+		t_real dStart1, dStop1;
+		if(!tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu))
+		{
+			strScanVar1 = "h (rlu)";
+			dStart1 = spinStartH->value();
+			dStop1 = spinStopH->value();
+		}
+		else if(!tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu))
+		{
+			strScanVar1 = "k (rlu)";
+			dStart1 = spinStartK->value();
+			dStop1 = spinStopK->value();
+		}
+		else if(!tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu))
+		{
+			strScanVar1 = "l (rlu)";
+			dStart1 = spinStartL->value();
+			dStop1 = spinStopL->value();
+		}
+		else if(!tl::float_equal(spinStartE->value(), spinStopE->value(), g_dEpsRlu))
+		{
+			strScanVar1 = "E (meV)";
+			dStart1 = spinStartE->value();
+			dStop1 = spinStopE->value();
+		}
+
+		std::string strScanVar2 = "";
+		t_real dStart2, dStop2;
+		if(!tl::float_equal(spinStartH->value(), spinStopH2->value(), g_dEpsRlu))
+		{
+			strScanVar2 = "h (rlu)";
+			dStart2 = spinStartH->value();
+			dStop2 = spinStopH2->value();
+		}
+		else if(!tl::float_equal(spinStartK->value(), spinStopK2->value(), g_dEpsRlu))
+		{
+			strScanVar2 = "k (rlu)";
+			dStart2 = spinStartK->value();
+			dStop2 = spinStopK2->value();
+		}
+		else if(!tl::float_equal(spinStartL->value(), spinStopL2->value(), g_dEpsRlu))
+		{
+			strScanVar2 = "l (rlu)";
+			dStart2 = spinStartL->value();
+			dStop2 = spinStopL2->value();
+		}
+		else if(!tl::float_equal(spinStartE->value(), spinStopE2->value(), g_dEpsRlu))
+		{
+			strScanVar2 = "E (meV)";
+			dStart2 = spinStartE->value();
+			dStop2 = spinStopE2->value();
+		}
+
+		QMetaObject::invokeMethod(m_plotwrap2d.get(), "setAxisTitle",
+		Q_ARG(int, QwtPlot::xBottom),
+		Q_ARG(const QString&, QString(strScanVar1.c_str())));
+
+		QMetaObject::invokeMethod(m_plotwrap2d.get(), "setAxisTitle",
+		Q_ARG(int, QwtPlot::yLeft),
+		Q_ARG(const QString&, QString(strScanVar2.c_str())));
+		// -------------------------------------------------------------------------
+
+
 		TASReso reso;
 		if(!reso.LoadRes(editRes->text().toStdString().c_str()))
 		{
@@ -697,13 +765,11 @@ void ConvoDlg::Start2D()
 		QMetaObject::invokeMethod(textResult, "clear", connty);
 
 		// raster width & height
-		t_real_qwt dPlotXMin = 0., dPlotXMax = iNumSteps;	// TODO
-		t_real_qwt dPlotYMin = 0., dPlotYMax = iNumSteps;	// TODO
 		m_plotwrap2d->GetRaster()->Init(iNumSteps, iNumSteps);
-		m_plotwrap2d->GetRaster()->SetXRange(dPlotXMin, dPlotXMax);
-		m_plotwrap2d->GetRaster()->SetYRange(dPlotYMin, dPlotYMax);
+		m_plotwrap2d->GetRaster()->SetXRange(dStart1, dStop1);
+		m_plotwrap2d->GetRaster()->SetYRange(dStart2, dStop2);
 		set_zoomer_base(m_plotwrap2d->GetZoomer(),
-			dPlotXMin, dPlotXMax, dPlotYMax, dPlotYMin,
+			dStart1, dStop1, dStop2, dStart2,
 			true, m_plotwrap2d.get());
 
 		std::vector<t_real> vecH; vecH.reserve(iNumSteps*iNumSteps);
@@ -836,7 +902,7 @@ void ConvoDlg::Start2D()
 
 			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
 			QMetaObject::invokeMethod(editStopTime2d, "setText",
-				Q_ARG(const QString&, QString(watch.GetEstStopTimeStr(t_real(iStep+1)/t_real(iNumSteps)).c_str())));
+				Q_ARG(const QString&, QString(watch.GetEstStopTimeStr(t_real(iStep+1)/t_real(iNumSteps*iNumSteps)).c_str())));
 
 			++iStep;
 		}
