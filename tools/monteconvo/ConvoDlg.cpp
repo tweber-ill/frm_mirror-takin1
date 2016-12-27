@@ -79,7 +79,6 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 	btnStart->setIcon(load_icon("res/icons/media-playback-start.svg"));
 	btnStop->setIcon(load_icon("res/icons/media-playback-stop.svg"));
-	btnSaveResult->setIcon(load_icon("res/icons/document-save-as.svg"));
 
 
 	m_plotwrap.reset(new QwtPlotWrapper(plot, 3, true));
@@ -166,8 +165,20 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	pMenuFile->addAction(pExit);
 
 
-	// plots menu
-	QMenu *pMenuPlots = new QMenu("Plots", this);
+	// results menu
+	QMenu *pMenuPlots = new QMenu("Results", this);
+
+	m_pLiveResults = new QAction("Live Results", this);
+	m_pLiveResults->setCheckable(1);
+	m_pLiveResults->setChecked(0);
+	pMenuPlots->addAction(m_pLiveResults);
+
+	m_pLivePlots = new QAction("Live Plots", this);
+	m_pLivePlots->setCheckable(1);
+	m_pLivePlots->setChecked(1);
+	pMenuPlots->addAction(m_pLivePlots);
+
+	pMenuPlots->addSeparator();
 
 	QAction *pExportPlot = new QAction("Export Plot Data...", this);
 	pMenuPlots->addAction(pExportPlot);
@@ -175,6 +186,9 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QAction *pExportPlot2d = new QAction("Export 2D Plot Data...", this);
 	pMenuPlots->addAction(pExportPlot2d);
 
+	QAction *pSaveResults = new QAction("Save Results...", this);
+	pSaveResults->setIcon(load_icon("res/icons/document-save-as.svg"));
+	pMenuPlots->addAction(pSaveResults);
 
 	// help menu
 	QMenu *pMenuHelp = new QMenu("Help", this);
@@ -194,6 +208,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pExportPlot, SIGNAL(triggered()), m_plotwrap.get(), SLOT(SavePlot()));
 	QObject::connect(pExportPlot2d, SIGNAL(triggered()), m_plotwrap2d.get(), SLOT(SavePlot()));
+	QObject::connect(pSaveResults, SIGNAL(triggered()), this, SLOT(SaveResult()));
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAboutDlg()));
 	// --------------------------------------------------------------------
 
@@ -216,9 +231,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(btnBrowseScan, SIGNAL(clicked()), this, SLOT(browseScanFiles()));
 
 	QObject::connect(btnFav, SIGNAL(clicked()), this, SLOT(ShowFavourites()));
-
 	QObject::connect(btnSqwParams, SIGNAL(clicked()), this, SLOT(showSqwParamDlg()));
-	QObject::connect(btnSaveResult, SIGNAL(clicked()), this, SLOT(SaveResult()));
 
 	QObject::connect(comboSqw, SIGNAL(currentIndexChanged(int)), this, SLOT(SqwModelChanged(int)));
 	QObject::connect(editSqw, SIGNAL(textChanged(const QString&)), this, SLOT(createSqwModel(const QString&)));
@@ -349,11 +362,14 @@ ResoFocus ConvoDlg::GetFocus() const
  */
 void ConvoDlg::Start1D()
 {
+	m_atStop.store(false);
+
 	bool bUseScan = m_bUseScan && checkScan->isChecked();
 	t_real dScale = tl::str_to_var<t_real>(editScale->text().toStdString());
 	t_real dOffs = tl::str_to_var<t_real>(editOffs->text().toStdString());
 
-	m_atStop.store(false);
+	bool bLiveResults = m_pLiveResults->isChecked();
+	bool bLivePlots = m_pLivePlots->isChecked();
 
 	btnStart->setEnabled(false);
 	tabSettings->setEnabled(false);
@@ -365,7 +381,8 @@ void ConvoDlg::Start1D()
 		? Qt::ConnectionType::DirectConnection
 		: Qt::ConnectionType::BlockingQueuedConnection;
 
-	std::function<void()> fkt = [this, connty, bForceDeferred, bUseScan, dScale, dOffs]
+	std::function<void()> fkt = [this, connty, bForceDeferred, bUseScan, 
+	dScale, dOffs, bLiveResults, bLivePlots]
 	{
 		std::function<void()> fktEnableButtons = [this]
 		{
@@ -595,31 +612,36 @@ void ConvoDlg::Start1D()
 				<< std::left << std::setw(g_iPrec*2) << vecE[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << dS << "\n";
 
-
 			m_vecQ.push_back((*pVecScanX)[iStep]);
 			m_vecS.push_back(dS);
 	 		m_vecScaledS.push_back(dS*dScale + dOffs);
 
 			static const std::vector<t_real> vecNull;
+			bool bIsLastStep = (iStep == lstFuts.size()-1);
 
-			set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecScaledS, 0, false);
-			set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecScaledS, 1, false);
-			if(bUseScan)
-				set_qwt_data<t_real_reso>()(*m_plotwrap, m_scan.vecX, m_scan.vecCts, 2, false);
-			else
-				set_qwt_data<t_real_reso>()(*m_plotwrap, vecNull, vecNull, 2, false);
+			if(bLivePlots || bIsLastStep)
+			{
+				set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecScaledS, 0, false);
+				set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecScaledS, 1, false);
+				if(bUseScan)
+					set_qwt_data<t_real_reso>()(*m_plotwrap, m_scan.vecX, m_scan.vecCts, 2, false);
+				else
+					set_qwt_data<t_real_reso>()(*m_plotwrap, vecNull, vecNull, 2, false);
 
-			if(iStep == lstFuts.size()-1)
-				set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecScaledS, true, m_plotwrap.get());
-			QMetaObject::invokeMethod(m_plotwrap.get(), "doUpdate", connty);
+				if(bIsLastStep)
+					set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecScaledS, true, m_plotwrap.get());
+				QMetaObject::invokeMethod(m_plotwrap.get(), "doUpdate", connty);
+			}
 
-			QMetaObject::invokeMethod(textResult, "setPlainText", connty,
-				Q_ARG(const QString&, QString(ostrOut.str().c_str())));
+			if(bLiveResults || bIsLastStep)
+			{
+				QMetaObject::invokeMethod(textResult, "setPlainText", connty,
+					Q_ARG(const QString&, QString(ostrOut.str().c_str())));
+			}
 
 			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
 			QMetaObject::invokeMethod(editStopTime, "setText",
 				Q_ARG(const QString&, QString(watch.GetEstStopTimeStr(t_real(iStep+1)/t_real(iNumSteps)).c_str())));
-
 			++iStep;
 		}
 
@@ -652,6 +674,9 @@ void ConvoDlg::Start2D()
 {
 	m_atStop.store(false);
 
+	bool bLiveResults = m_pLiveResults->isChecked();
+	bool bLivePlots = m_pLivePlots->isChecked();
+
 	btnStart->setEnabled(false);
 	tabSettings->setEnabled(false);
 	btnStop->setEnabled(true);
@@ -662,7 +687,7 @@ void ConvoDlg::Start2D()
 		? Qt::ConnectionType::DirectConnection
 		: Qt::ConnectionType::BlockingQueuedConnection;
 
-	std::function<void()> fkt = [this, connty, bForceDeferred]
+	std::function<void()> fkt = [this, connty, bForceDeferred, bLiveResults, bLivePlots]
 	{
 		std::function<void()> fktEnableButtons = [this]
 		{
@@ -928,9 +953,6 @@ void ConvoDlg::Start2D()
 				break;
 			t_real dS = pairS.second;
 
-			m_plotwrap2d->GetRaster()->SetPixel(iStep%iNumSteps, iStep/iNumSteps, t_real_qwt(dS));
-			m_plotwrap2d->GetRaster()->SetZRange();
-
 			ostrOut.precision(g_iPrec);
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "
@@ -938,11 +960,23 @@ void ConvoDlg::Start2D()
 				<< std::left << std::setw(g_iPrec*2) << vecE[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << dS << "\n";
 
-			QMetaObject::invokeMethod(m_plotwrap2d.get(), "scaleColorBar", connty);
-			QMetaObject::invokeMethod(m_plotwrap2d.get(), "doUpdate", connty);
+			m_plotwrap2d->GetRaster()->SetPixel(iStep%iNumSteps, iStep/iNumSteps, t_real_qwt(dS));
 
-			QMetaObject::invokeMethod(textResult, "setPlainText", connty,
-				Q_ARG(const QString&, QString(ostrOut.str().c_str())));
+			bool bIsLastStep = (iStep == lstFuts.size()-1);
+
+			if(bLivePlots || bIsLastStep)
+			{
+				m_plotwrap2d->GetRaster()->SetZRange();
+
+				QMetaObject::invokeMethod(m_plotwrap2d.get(), "scaleColorBar", connty);
+				QMetaObject::invokeMethod(m_plotwrap2d.get(), "doUpdate", connty);
+			}
+
+			if(bLiveResults || bIsLastStep)
+			{
+				QMetaObject::invokeMethod(textResult, "setPlainText", connty,
+					Q_ARG(const QString&, QString(ostrOut.str().c_str())));
+			}
 
 			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
 			QMetaObject::invokeMethod(editStopTime2d, "setText",

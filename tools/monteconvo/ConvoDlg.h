@@ -57,6 +57,8 @@ protected:
 	std::vector<std::string> m_vecSpinNames, m_vecIntSpinNames, m_vecEditNames,
 		m_vecComboNames, m_vecCheckNames;
 
+	QAction *m_pLiveResults = nullptr, *m_pLivePlots = nullptr;
+
 protected:
 	void LoadSettings();
 	virtual void showEvent(QShowEvent *pEvt) override;
