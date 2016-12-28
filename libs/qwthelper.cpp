@@ -72,9 +72,10 @@ protected:
 	virtual void widgetKeyPressEvent(QKeyEvent *pEvt) override
 	{
 		const int iKey = pEvt->key();
-		//std::cout << "Plot key: " <<  iKey << std::endl;
 		if(iKey == Qt::Key_S)
 			m_pPlotWrap->SavePlot();
+		else if(iKey == Qt::Key_G)
+			m_pPlotWrap->ExportGpl();
 		else
 			QwtPlotPicker::widgetKeyPressEvent(pEvt);
 	}
@@ -286,18 +287,12 @@ void QwtPlotWrapper::SavePlot() const
 	}
 
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
-
-	QFileDialog::Option fileopt = QFileDialog::Option(0);
-	//if(!m_settings.value("main/native_dialogs", 1).toBool())
-	//	fileopt = QFileDialog::DontUseNativeDialog;
-
 	std::string strFile = QFileDialog::getSaveFileName(m_pPlot,
 		"Save Plot Data", nullptr, "Data files (*.dat *.DAT)",
-		nullptr, fileopt).toStdString();
+		nullptr).toStdString();
 
 	tl::trim(strFile);
-	if(strFile == "")
-		return;
+	if(strFile == "") return;
 
 	std::ofstream ofstrDat(strFile);
 	if(!ofstrDat)
@@ -367,6 +362,131 @@ void QwtPlotWrapper::SavePlot() const
 				ofstrDat << "## -------------------------------- end of dataset " << (iDataSet+1)
 					<< " ----------------------------------\n\n";
 			++iDataSet;
+		}
+	}
+}
+
+void QwtPlotWrapper::ExportGpl() const
+{
+	if(!m_bHasDataPtrs && !m_pRaster)
+	{
+		// if data was deep-copied, it is now lost somewhere in the plot objects...
+		QMessageBox::critical(m_pPlot, "Error", "Cannot get plot data.");
+		return;
+	}
+
+	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
+	std::string strFile = QFileDialog::getSaveFileName(m_pPlot,
+		"Export as Gnuplot Script", nullptr, "Gnuplot scripts (*.gpl *.GPL)",
+		nullptr).toStdString();
+
+	tl::trim(strFile);
+	if(strFile == "") return;
+
+	std::ofstream ofstrDat(strFile);
+	if(!ofstrDat)
+	{
+		std::string strErr = "Cannot open file \"" + strFile + "\" for saving.";
+		QMessageBox::critical(m_pPlot, "Error", strErr.c_str());
+		return;
+	}
+
+	t_real_qwt dEpoch = tl::epoch<t_real_qwt>();
+
+	ofstrDat.precision(g_iPrec);
+	ofstrDat << "#\n";
+	ofstrDat << "# comment: Created with Takin version " << TAKIN_VER << ".\n";
+	ofstrDat << "# timestamp: " << tl::var_to_str<t_real_qwt>(dEpoch)
+		<< " (" << tl::epoch_to_str<t_real_qwt>(dEpoch) << ")\n";
+	ofstrDat << "#\n";
+	ofstrDat << "\n";
+
+	ofstrDat << "set title \"" << m_pPlot->title().text().toStdString() << "\"\n";
+	ofstrDat << "set xlabel \"" << m_pPlot->axisTitle(QwtPlot::xBottom).text().toStdString() << "\"\n";
+	ofstrDat << "set ylabel \"" << m_pPlot->axisTitle(QwtPlot::yLeft).text().toStdString() << "\"\n";
+	ofstrDat << "set x2label \"" << m_pPlot->axisTitle(QwtPlot::xTop).text().toStdString() << "\"\n";
+	ofstrDat << "set y2label \"" << m_pPlot->axisTitle(QwtPlot::yRight).text().toStdString() << "\"\n";
+	ofstrDat << "\n";
+
+	if(m_pRaster)	// 2d plot
+	{
+		std::size_t iWidth = m_pRaster->GetWidth();
+		std::size_t iHeight = m_pRaster->GetHeight();
+
+		t_real_qwt dXMin = m_pRaster->GetXMin();
+		t_real_qwt dXMax = m_pRaster->GetXMax();
+		t_real_qwt dYMin = m_pRaster->GetYMin();
+		t_real_qwt dYMax = m_pRaster->GetYMax();
+
+		t_real_qwt dXScale = (dXMax-dXMin)/t_real_qwt(iWidth);
+		t_real_qwt dYScale = (dYMax-dYMin)/t_real_qwt(iHeight);
+
+		ofstrDat << "xmin = " << dXMin << "\n";
+		ofstrDat << "xscale = " << dXScale << "\n";
+		ofstrDat << "ymin = " << dYMin << "\n";
+		ofstrDat << "yscale = " << dYScale << "\n";
+		ofstrDat << "zscale = 1.\n";
+		ofstrDat << "\n";
+
+		ofstrDat << "plot \"-\" "
+			<< "using (xmin + $1*xscale):(ymin + $2*yscale):($3*zscale) "
+			<< "matrix with image\n";
+
+		for(std::size_t iY=0; iY<m_pRaster->GetHeight(); ++iY)
+		{
+			for(std::size_t iX=0; iX<m_pRaster->GetWidth(); ++iX)
+			{
+				ofstrDat << std::left << std::setw(g_iPrec*2)
+					<< m_pRaster->GetPixel(iX, iY) << " ";
+			}
+			ofstrDat << "\n";
+		}
+
+		ofstrDat << "end\n";
+	}
+	else			// 1d plot(s)
+	{
+		ofstrDat << "scale = 1.\n";
+		ofstrDat << "plot \\\n";
+
+		const std::size_t iNumCurves = m_vecDataPtrs.size();
+		for(std::size_t iCurve=0; iCurve<iNumCurves; ++iCurve)
+		{
+			// points or lines?
+			if(m_vecCurves[iCurve]->style() /*& QwtPlotCurve::CurveStyle::Lines*/
+				== QwtPlotCurve::CurveStyle::Lines)
+			{
+				ofstrDat << "\t\"-\" using ($1):($2*scale) with lines title \"dataset "
+					<< (iCurve+1) << "\"";
+			}
+			else
+			{
+				ofstrDat << "\t\"-\" using ($1):($2*scale) with points pointtype 7 title \"dataset "
+					<< (iCurve+1) << "\"";
+				//ofstrDat << ", \\\n#\t\"-\" using ($1):($2*scale):(sqrt($2*scale)) with yerrorbars pointtype 7 title \"dataset "
+				//	<< (iCurve+1) << "\"";
+			}
+
+			if(iCurve < iNumCurves-1) ofstrDat << ", \\";
+			ofstrDat << "\n";
+		}
+
+		for(const auto& pairVecs : m_vecDataPtrs)
+		{
+			const std::vector<t_real_qwt>* pVecX = pairVecs.first;
+			const std::vector<t_real_qwt>* pVecY = pairVecs.second;
+
+			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
+
+			for(std::size_t iCur=0; iCur<iSize; ++iCur)
+			{
+				ofstrDat << std::left << std::setw(g_iPrec*2)
+					<< pVecX->operator[](iCur) << " ";
+				ofstrDat << std::left << std::setw(g_iPrec*2)
+					<< pVecY->operator[](iCur) << "\n";
+			}
+
+			ofstrDat << "end\n";
 		}
 	}
 }

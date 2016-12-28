@@ -143,6 +143,7 @@ public slots:
 	void doUpdate();
 
 	void SavePlot() const;
+	void ExportGpl() const;
 };
 
 

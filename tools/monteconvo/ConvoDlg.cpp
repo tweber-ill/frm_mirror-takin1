@@ -183,8 +183,18 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QAction *pExportPlot = new QAction("Export Plot Data...", this);
 	pMenuPlots->addAction(pExportPlot);
 
+	QAction *pExportPlotGpl = new QAction("Export Plot to Gnuplot...", this);
+	pMenuPlots->addAction(pExportPlotGpl);
+
+	pMenuPlots->addSeparator();
+
 	QAction *pExportPlot2d = new QAction("Export 2D Plot Data...", this);
 	pMenuPlots->addAction(pExportPlot2d);
+
+	QAction *pExportPlot2dGpl = new QAction("Export 2D Plot to Gnuplot...", this);
+	pMenuPlots->addAction(pExportPlot2dGpl);
+
+	pMenuPlots->addSeparator();
 
 	QAction *pSaveResults = new QAction("Save Results...", this);
 	pSaveResults->setIcon(load_icon("res/icons/document-save-as.svg"));
@@ -208,6 +218,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(Save()));
 	QObject::connect(pExportPlot, SIGNAL(triggered()), m_plotwrap.get(), SLOT(SavePlot()));
 	QObject::connect(pExportPlot2d, SIGNAL(triggered()), m_plotwrap2d.get(), SLOT(SavePlot()));
+	QObject::connect(pExportPlotGpl, SIGNAL(triggered()), m_plotwrap.get(), SLOT(ExportGpl()));
+	QObject::connect(pExportPlot2dGpl, SIGNAL(triggered()), m_plotwrap2d.get(), SLOT(ExportGpl()));
 	QObject::connect(pSaveResults, SIGNAL(triggered()), this, SLOT(SaveResult()));
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAboutDlg()));
 	// --------------------------------------------------------------------
