@@ -31,7 +31,7 @@
 using t_real = t_real_reso;
 using t_stopwatch = tl::Stopwatch<t_real>;
 
-static constexpr const t_real g_dEpsRlu = 1e-4;
+static constexpr const t_real g_dEpsRlu = 1e-3;
 
 
 ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
@@ -243,6 +243,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(btnStart, SIGNAL(clicked()), this, SLOT(Start()));
 	QObject::connect(btnStop, SIGNAL(clicked()), this, SLOT(Stop()));
 
+	QObject::connect(checkScan, SIGNAL(toggled(bool)), this, SLOT(scanCheckToggled(bool)));
 
 	QObject::connect(pHK, SIGNAL(triggered()), this, SLOT(ChangeHK()));
 	QObject::connect(pHL, SIGNAL(triggered()), this, SLOT(ChangeHL()));
@@ -381,7 +382,7 @@ void ConvoDlg::Start1D()
 		? Qt::ConnectionType::DirectConnection
 		: Qt::ConnectionType::BlockingQueuedConnection;
 
-	std::function<void()> fkt = [this, connty, bForceDeferred, bUseScan, 
+	std::function<void()> fkt = [this, connty, bForceDeferred, bUseScan,
 	dScale, dOffs, bLiveResults, bLivePlots]
 	{
 		std::function<void()> fktEnableButtons = [this]
@@ -601,9 +602,13 @@ void ConvoDlg::Start1D()
 			}
 
 			std::pair<bool, t_real> pairS = fut.get();
-			if(!pairS.first)
-				break;
+			if(!pairS.first) break;
 			t_real dS = pairS.second;
+			if(tl::is_nan_or_inf(dS))
+			{
+				dS = t_real(0);
+				tl::log_warn("S(q,w) is invalid.");
+			}
 
 			ostrOut.precision(g_iPrec);
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
@@ -949,9 +954,13 @@ void ConvoDlg::Start2D()
 			}
 
 			std::pair<bool, t_real> pairS = fut.get();
-			if(!pairS.first)
-				break;
+			if(!pairS.first) break;
 			t_real dS = pairS.second;
+			if(tl::is_nan_or_inf(dS))
+			{
+				dS = t_real(0);
+				tl::log_warn("S(q,w) is invalid.");
+			}
 
 			ostrOut.precision(g_iPrec);
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
@@ -1091,6 +1100,11 @@ void ConvoDlg::ChangeKL()
 
 // -----------------------------------------------------------------------------
 
+void ConvoDlg::scanCheckToggled(bool bChecked)
+{
+	if(bChecked)
+		scanFileChanged(editScan->text());
+}
 
 void ConvoDlg::scanFileChanged(const QString& qstrFile)
 {

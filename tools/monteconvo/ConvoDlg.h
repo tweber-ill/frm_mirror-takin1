@@ -85,6 +85,7 @@ protected slots:
 	void SqwParamsChanged(const std::vector<SqwBase::t_var>&);
 
 	void scanFileChanged(const QString& qstrFile);
+	void scanCheckToggled(bool);
 	void scaleChanged();
 
 	void SaveResult();

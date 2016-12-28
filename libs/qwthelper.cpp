@@ -28,6 +28,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QCoreApplication>
 
 
 class MyQwtPlotZoomer : public QwtPlotZoomer
@@ -238,12 +239,14 @@ QwtPlotWrapper::~QwtPlotWrapper()
 void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 	unsigned int iCurve, bool bReplot, bool bCopy)
 {
+	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
+
 	if(!bCopy)	// copy pointers
 	{
 #if QWT_VER>=6
-		m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min<t_real_qwt>(vecX.size(), vecY.size()));
+		m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 #else
-		m_vecCurves[iCurve]->setRawData(vecX.data(), vecY.data(), std::min<t_real_qwt>(vecX.size(), vecY.size()));
+		m_vecCurves[iCurve]->setRawData(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 #endif
 
 		m_bHasDataPtrs = 1;
@@ -256,9 +259,9 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 	else		// copy data
 	{
 #if QWT_VER>=6
-		m_vecCurves[iCurve]->setSamples(vecX.data(), vecY.data(), std::min<t_real_qwt>(vecX.size(), vecY.size()));
+		m_vecCurves[iCurve]->setSamples(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 #else
-		m_vecCurves[iCurve]->setData(vecX.data(), vecY.data(), std::min<t_real_qwt>(vecX.size(), vecY.size()));
+		m_vecCurves[iCurve]->setData(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 #endif
 
 		m_bHasDataPtrs = 0;
@@ -281,6 +284,8 @@ void QwtPlotWrapper::SavePlot() const
 		QMessageBox::critical(m_pPlot, "Error", "Cannot get plot data.");
 		return;
 	}
+
+	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
 	//if(!m_settings.value("main/native_dialogs", 1).toBool())
@@ -369,18 +374,24 @@ void QwtPlotWrapper::SavePlot() const
 void QwtPlotWrapper::setAxisTitle(int iAxis, const QString& str)
 {
 	if(!m_pPlot) return;
+	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
+
 	m_pPlot->setAxisTitle(iAxis, str);
 }
 
 void QwtPlotWrapper::setZoomBase(const QRectF& rect)
 {
 	if(!m_pZoomer) return;
+	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
+
 	m_pZoomer->setZoomBase(rect);
 }
 
 void QwtPlotWrapper::scaleColorBar()
 {
 	if(!m_pPlot || !m_pRaster) return;
+	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
+
 	t_real_qwt dMin = m_pRaster->GetZMin();
 	t_real_qwt dMax = m_pRaster->GetZMax();
 
@@ -396,6 +407,7 @@ void QwtPlotWrapper::scaleColorBar()
 void QwtPlotWrapper::doUpdate()
 {
 	if(!m_pPlot) return;
+	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
 #if QWT_VER<6
 	if(m_pSpec && m_pRaster)
@@ -405,7 +417,11 @@ void QwtPlotWrapper::doUpdate()
 		m_pPlot->setAxisScale(QwtPlot::yLeft, m_pRaster->GetYMin(), m_pRaster->GetYMax());
 	}
 #endif
+
 	m_pPlot->replot();
+
+	// flush pending "QMetaObject::invokeMethod" calls from the event loop
+	QCoreApplication::processEvents(QEventLoop::AllEvents);
 }
 
 // ----------------------------------------------------------------------------

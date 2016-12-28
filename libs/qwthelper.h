@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <type_traits>
+#include <mutex>
 
 #include <qwt_plot.h>
 #include <qwt_plot_spectrogram.h>
@@ -102,6 +103,8 @@ public:
 class QwtPlotWrapper : public QObject
 { Q_OBJECT
 protected:
+	mutable std::mutex m_mutex;
+
 	QwtPlot *m_pPlot = nullptr;
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
@@ -129,6 +132,8 @@ public:
 
 	void SetData(const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 		unsigned int iCurve=0, bool bReplot=1, bool bCopy=0);
+
+	std::mutex& GetMutex() { return m_mutex; }
 
 
 public slots:
@@ -158,7 +163,8 @@ struct set_qwt_data<t_real, 1>
 	void operator()(QwtPlotWrapper& plot, const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
 		unsigned int iCurve=0, bool bReplot=1)
 	{
-		plot.SetData(vecX, vecY, iCurve, bReplot, 0);
+		// copy pointers
+		plot.SetData(vecX, vecY, iCurve, bReplot, false);
 	}
 };
 
@@ -176,7 +182,8 @@ struct set_qwt_data<t_real, 0>
 		for(t_real d : vecX) vecNewX.push_back(d);
 		for(t_real d : vecY) vecNewY.push_back(d);
 
-		plot.SetData(vecNewX, vecNewY, iCurve, bReplot, 1);
+		// copy data
+		plot.SetData(vecNewX, vecNewY, iCurve, bReplot, true);
 	}
 };
 
