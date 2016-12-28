@@ -417,15 +417,32 @@ void QwtPlotWrapper::ExportGpl() const
 		t_real_qwt dXMax = m_pRaster->GetXMax();
 		t_real_qwt dYMin = m_pRaster->GetYMin();
 		t_real_qwt dYMax = m_pRaster->GetYMax();
+		t_real_qwt dZMin = m_pRaster->GetZMin();
+		t_real_qwt dZMax = m_pRaster->GetZMax();
 
-		t_real_qwt dXScale = (dXMax-dXMin)/t_real_qwt(iWidth);
-		t_real_qwt dYScale = (dYMax-dYMin)/t_real_qwt(iHeight);
+		t_real_qwt dXScale = (dXMax-dXMin)/t_real_qwt(iWidth-1);
+		t_real_qwt dYScale = (dYMax-dYMin)/t_real_qwt(iHeight-1);
 
 		ofstrDat << "xmin = " << dXMin << "\n";
+		ofstrDat << "xmax = " << dXMax << "\n";
 		ofstrDat << "xscale = " << dXScale << "\n";
 		ofstrDat << "ymin = " << dYMin << "\n";
+		ofstrDat << "ymax = " << dYMax << "\n";
 		ofstrDat << "yscale = " << dYScale << "\n";
+		ofstrDat << "zmin = " << dZMin << "\n";
+		ofstrDat << "zmax = " << dZMax << "\n";
 		ofstrDat << "zscale = 1.\n";
+		ofstrDat << "\n";
+
+		ofstrDat << "set xrange [xmin : xmax]\n";
+		ofstrDat << "set yrange [ymin : ymax]\n";
+		ofstrDat << "set cbrange [zmin : zmax]\n";
+		ofstrDat << "\n";
+
+		ofstrDat << "set palette defined (0 \"#0000ff\", 1 \"#ff0000\")\n";
+		ofstrDat << "set tics out scale 0.75\n";
+		ofstrDat << "unset key\n";
+		ofstrDat << "set size ratio 1\n";
 		ofstrDat << "\n";
 
 		ofstrDat << "plot \"-\" "
