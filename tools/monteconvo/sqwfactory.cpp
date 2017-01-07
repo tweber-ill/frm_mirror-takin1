@@ -208,3 +208,53 @@ void load_sqw_plugins()
 }
 
 #endif
+
+
+
+// ----------------------------------------------------------------------------
+// saving and loading of parameters
+
+bool save_sqw_params(const SqwBase* pSqw,
+    std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
+{
+	if(!pSqw) return 0;
+
+	std::vector<SqwBase::t_var> vecVars = pSqw->GetVars();
+	for(const SqwBase::t_var& var : vecVars)
+	{
+		const std::string& strVar = std::get<0>(var);
+		const std::string& strVal = std::get<2>(var);
+
+		mapConf[strXmlRoot + "sqw_params/" + strVar] = strVal;
+	}
+
+	return 1;
+}
+
+bool load_sqw_params(SqwBase* pSqw,
+	tl::Prop<std::string>& xml, const std::string& strXmlRoot)
+{
+	if(!pSqw) return 0;
+
+	std::vector<std::string> vecChildren =
+		xml.GetChildNodes(strXmlRoot + "sqw_params/");
+
+	std::vector<SqwBase::t_var> vecVars;
+	vecVars.reserve(vecChildren.size());
+	for(const std::string& strChild : vecChildren)
+	{
+		boost::optional<std::string> opVal =
+			xml.QueryOpt<std::string>(strXmlRoot + "sqw_params/" + strChild);
+		if(opVal)
+		{
+			SqwBase::t_var var;
+			std::get<0>(var) = strChild;
+			std::get<2>(var) = *opVal;
+			vecVars.push_back(std::move(var));
+		}
+	}
+
+	pSqw->SetVars(vecVars);
+	return 1;
+}
+// ----------------------------------------------------------------------------

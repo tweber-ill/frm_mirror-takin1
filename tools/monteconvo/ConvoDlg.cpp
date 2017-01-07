@@ -66,8 +66,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_vecComboNames = { "monteconvo/algo", "monteconvo/fixedk", "monteconvo/mono_foc",
 		"monteconvo/ana_foc" };
 
-	m_vecCheckBoxes = { check2dMap };
-	m_vecCheckNames = { "monteconvo/scan_2d" };
+	m_vecCheckBoxes = { checkScan, check2dMap };
+	m_vecCheckNames = { "monteconvo/has_scanfile", "monteconvo/scan_2d" };
 	// -------------------------------------------------------------------------
 
 	if(m_pSett)
@@ -245,9 +245,12 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(btnFav, SIGNAL(clicked()), this, SLOT(ShowFavourites()));
 	QObject::connect(btnSqwParams, SIGNAL(clicked()), this, SLOT(showSqwParamDlg()));
 
-	QObject::connect(comboSqw, SIGNAL(currentIndexChanged(int)), this, SLOT(SqwModelChanged(int)));
-	QObject::connect(editSqw, SIGNAL(textChanged(const QString&)), this, SLOT(createSqwModel(const QString&)));
-	QObject::connect(editScan, SIGNAL(textChanged(const QString&)), this, SLOT(scanFileChanged(const QString&)));
+	QObject::connect(comboSqw, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(SqwModelChanged(int)));
+	QObject::connect(editSqw, SIGNAL(textChanged(const QString&)),
+		this, SLOT(createSqwModel(const QString&)));
+	QObject::connect(editScan, SIGNAL(textChanged(const QString&)),
+		this, SLOT(scanFileChanged(const QString&)));
 
 	QObject::connect(editScale, SIGNAL(textChanged(const QString&)), this, SLOT(scaleChanged()));
 	QObject::connect(editOffs, SIGNAL(textChanged(const QString&)), this, SLOT(scaleChanged()));
@@ -296,6 +299,8 @@ void ConvoDlg::SqwModelChanged(int)
 
 void ConvoDlg::createSqwModel(const QString& qstrFile)
 {
+	if(!m_bAllowSqwReinit) return;
+
 	if(m_pSqw)
 	{
 		m_pSqw.reset();
@@ -341,8 +346,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 
 void ConvoDlg::SqwParamsChanged(const std::vector<SqwBase::t_var>& vecVars)
 {
-	if(!m_pSqw)
-		return;
+	if(!m_pSqw) return;
 	m_pSqw->SetVars(vecVars);
 
 #ifndef NDEBUG

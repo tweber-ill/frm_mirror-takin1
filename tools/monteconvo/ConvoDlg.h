@@ -40,6 +40,7 @@ protected:
 	SqwParamDlg *m_pSqwParamDlg = nullptr;
 	FavDlg *m_pFavDlg = nullptr;
 
+	bool m_bAllowSqwReinit = 1;
 	std::shared_ptr<SqwBase> m_pSqw;
 	std::vector<t_real_reso> m_vecQ, m_vecS, m_vecScaledS;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap, m_plotwrap2d;

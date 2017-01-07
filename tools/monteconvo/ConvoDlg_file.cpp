@@ -96,6 +96,8 @@ void ConvoDlg::Save()
 
 void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
+	m_bAllowSqwReinit = 0;
+
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		boost::optional<t_real> odSpinVal = xml.QueryOpt<t_real>(strXmlRoot+m_vecSpinNames[iSpinBox]);
@@ -124,6 +126,22 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 	if(m_pFavDlg)
 		m_pFavDlg->Load(xml, strXmlRoot + "monteconvo/");
+
+	boost::optional<std::string> opSqw = xml.QueryOpt<std::string>(strXmlRoot + "monteconvo/sqw");
+	if(opSqw)
+	{
+		QString qstrSqw = (*opSqw).c_str();
+		comboSqw->setCurrentIndex(comboSqw->findData(qstrSqw));
+
+		m_bAllowSqwReinit = 1;
+		createSqwModel(qstrSqw);
+
+		if(m_pSqw)
+		{
+			load_sqw_params(m_pSqw.get(), xml, strXmlRoot + "monteconvo/");
+			emit SqwLoaded(m_pSqw->GetVars());
+		}
+	}
 }
 
 void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
@@ -157,6 +175,12 @@ void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::stri
 
 	if(m_pFavDlg)
 		m_pFavDlg->Save(mapConf, strXmlRoot + "monteconvo/");
+	if(m_pSqw)
+	{
+		save_sqw_params(m_pSqw.get(), mapConf, strXmlRoot + "monteconvo/");
+		mapConf[strXmlRoot + "monteconvo/sqw"] = 
+			comboSqw->itemData(comboSqw->currentIndex()).toString().toStdString();
+	}
 
 	//mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real>(tl::epoch<t_real>());
 }

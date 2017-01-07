@@ -293,7 +293,7 @@ OBJ_GENTAB = obj/spacegroup_clp.o obj/gentab.o obj/crystalsys_noqt.o obj/log.o \
 	obj/debug.o
 
 OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals.o \
-	obj/formfact.o obj/log.o obj/debug.o
+	obj/formfact.o obj/log.o obj/debug.o obj/rand.o
 
 
 ifeq ($(USE_3D), 1)

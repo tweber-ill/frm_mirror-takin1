@@ -207,4 +207,5 @@ public:
 	virtual SqwBase* shallow_copy() const override;
 };
 
+
 #endif
