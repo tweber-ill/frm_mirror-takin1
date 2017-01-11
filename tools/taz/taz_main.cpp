@@ -104,7 +104,6 @@ int main(int argc, char** argv)
 		BOOST_SCOPE_EXIT_END
 
 
-		//std::string strLog = QDir::homePath().toStdString();
 		std::string strLog = QDir::tempPath().toStdString();
 		strLog += "/takin.log";
 		std::ofstream ofstrLog(strLog, std::ios_base::out|std::ios_base::app);
@@ -135,9 +134,13 @@ int main(int argc, char** argv)
 
 		app->setApplicationName("Takin");
 		app->setApplicationVersion(TAKIN_VER);
-		std::string strApp = app->applicationDirPath().toStdString();
-		tl::log_info("Application path: ", strApp);
 
+		std::string strHome = QDir::homePath().toStdString() + "/.takin";
+		std::string strApp = app->applicationDirPath().toStdString();
+		tl::log_info("Program path: ", strApp);
+		tl::log_info("Home path: ", strHome);
+
+		add_resource_path(strHome, 0);
 		add_resource_path(strApp);
 		add_resource_path(strApp + "/..");
 		add_resource_path(strApp + "/resources");

@@ -1,4 +1,4 @@
-/*
+/**
  * xmonteconvo
  * @author tweber
  * @date aug-2015
@@ -17,6 +17,7 @@ int main(int argc, char** argv)
 	QApplication app(argc, argv);
 
 	std::setlocale(LC_ALL, "C");
+	std::locale::global(std::locale::classic());
 	QLocale::setDefault(QLocale::English);
 
 	QSettings m_settings("tobis_stuff", "takin");
@@ -24,6 +25,5 @@ int main(int argc, char** argv)
 	dlg.setWindowFlags(Qt::Window);
 	dlg.show();
 
-	int iRet = app.exec();
-	return iRet;
+	return app.exec();
 }

@@ -39,13 +39,15 @@ static std::vector<std::string> s_vecInstallPaths =
 };
 
 
-void add_resource_path(const std::string& strPath)
+void add_resource_path(const std::string& strPath, bool bToBack)
 {
-	s_vecInstallPaths.push_back(strPath);
+	if(bToBack)
+		s_vecInstallPaths.push_back(strPath);
+	else	// insert at beginning, after "."
+		s_vecInstallPaths.insert(s_vecInstallPaths.begin()+1, strPath);
 }
 
-std::string find_resource(const std::string& strFile,
-	bool bLogErr)
+std::string find_resource(const std::string& strFile, bool bLogErr)
 {
 	for(const std::string& strPrefix : s_vecInstallPaths)
 	{
@@ -64,8 +66,7 @@ std::string find_resource(const std::string& strFile,
 	return "";
 }
 
-std::string find_resource_dir(const std::string& strDir,
-	bool bLogErr)
+std::string find_resource_dir(const std::string& strDir, bool bLogErr)
 {
 	for(const std::string& strPrefix : s_vecInstallPaths)
 	{

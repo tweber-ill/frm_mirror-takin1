@@ -551,8 +551,8 @@ bool run_job(const std::string& strJob)
 
 
 	minuit::MnStrategy strat(iStrat);
-	strat.SetStorageLevel(1);
-	/*strat.SetGradientStepTolerance(1.);
+	/*strat.SetStorageLevel(1);
+	strat.SetGradientStepTolerance(1.);
 	strat.SetGradientTolerance(1.);
 	strat.SetHessianStepTolerance(1.);
 	strat.SetHessianG2Tolerance(1.);*/

@@ -21,7 +21,7 @@
 #define PARAM_MEM 1024*1024
 
 
-namespace proc = boost::interprocess;
+namespace ipr = boost::interprocess;
 using t_real = t_real_reso;
 
 
@@ -29,9 +29,9 @@ using t_real = t_real_reso;
 // types and conversions
 
 template<class t_ch=char>
-using t_sh_str_alloc_gen = proc::allocator<t_ch, proc::managed_shared_memory::segment_manager>;
+using t_sh_str_alloc_gen = ipr::allocator<t_ch, ipr::managed_shared_memory::segment_manager>;
 template<class t_ch=char>
-using t_sh_str_gen = proc::basic_string<t_ch, std::char_traits<t_ch>, t_sh_str_alloc_gen<t_ch>>;
+using t_sh_str_gen = ipr::basic_string<t_ch, std::char_traits<t_ch>, t_sh_str_alloc_gen<t_ch>>;
 
 using t_sh_str_alloc = t_sh_str_alloc_gen<char>;
 using t_sh_str = t_sh_str_gen<char>;
@@ -139,7 +139,7 @@ struct ProcMsg
 	t_sh_str *pPars = nullptr;
 };
 
-static void msg_send(proc::message_queue& msgqueue, const ProcMsg& msg)
+static void msg_send(ipr::message_queue& msgqueue, const ProcMsg& msg)
 {
 	try
 	{
@@ -151,7 +151,7 @@ static void msg_send(proc::message_queue& msgqueue, const ProcMsg& msg)
 	}
 }
 
-static ProcMsg msg_recv(proc::message_queue& msgqueue)
+static ProcMsg msg_recv(ipr::message_queue& msgqueue)
 {
 	ProcMsg msg;
 	try
@@ -179,7 +179,7 @@ static ProcMsg msg_recv(proc::message_queue& msgqueue)
 // ----------------------------------------------------------------------------
 
 template<class t_sqw>
-static void child_proc(proc::message_queue& msgToParent, proc::message_queue& msgFromParent,
+static void child_proc(ipr::message_queue& msgToParent, ipr::message_queue& msgFromParent,
 	const char* pcCfg)
 {
 	std::unique_ptr<t_sqw> pSqw(new t_sqw(pcCfg));
@@ -262,15 +262,15 @@ SqwProc<t_sqw>::SqwProc(const char* pcCfg)
 	{
 		tl::log_debug("Creating process memory \"", "takin_sqw_proc_*_", m_strProcName, "\".");
 
-		m_pMem = std::make_shared<proc::managed_shared_memory>(proc::create_only,
+		m_pMem = std::make_shared<ipr::managed_shared_memory>(ipr::create_only,
 			("takin_sqw_proc_mem_" + m_strProcName).c_str(), PARAM_MEM);
 		m_pSharedPars = static_cast<void*>(m_pMem->construct<t_sh_str>
 			(("takin_sqw_proc_params_" + m_strProcName).c_str())
 			(t_sh_str_alloc(m_pMem->get_segment_manager())));
 
-		m_pmsgIn = std::make_shared<proc::message_queue>(proc::create_only,
+		m_pmsgIn = std::make_shared<ipr::message_queue>(ipr::create_only,
 			("takin_sqw_proc_in_" + m_strProcName).c_str(), MSG_QUEUE_SIZE, sizeof(ProcMsg));
-		m_pmsgOut = std::make_shared<proc::message_queue>(proc::create_only,
+		m_pmsgOut = std::make_shared<ipr::message_queue>(ipr::create_only,
 			("takin_sqw_proc_out_" + m_strProcName).c_str(), MSG_QUEUE_SIZE, sizeof(ProcMsg));
 
 		m_pidChild = fork();
@@ -320,10 +320,10 @@ SqwProc<t_sqw>::~SqwProc()
 		{
 			tl::log_debug("Removing process memory \"", "takin_sqw_proc_*_", m_strProcName, "\".");
 
-			proc::shared_memory_object::remove(("takin_sqw_proc_mem_" + m_strProcName).c_str());
+			ipr::shared_memory_object::remove(("takin_sqw_proc_mem_" + m_strProcName).c_str());
 
-			proc::message_queue::remove(("takin_sqw_proc_in_" + m_strProcName).c_str());
-			proc::message_queue::remove(("takin_sqw_proc_out_" + m_strProcName).c_str());
+			ipr::message_queue::remove(("takin_sqw_proc_in_" + m_strProcName).c_str());
+			ipr::message_queue::remove(("takin_sqw_proc_out_" + m_strProcName).c_str());
 		}
 	}
 	catch(const std::exception&)
