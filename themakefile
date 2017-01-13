@@ -13,7 +13,7 @@ USE_IOSTR = 1
 USE_BOOST_REGEX = 0
 USE_GIL = 1
 USE_PY = 1
-USE_JL = 1
+USE_JL = 0
 USE_PLUGINS = 1
 USE_FADDEEVA = 0
 USE_CPP11_ABI = 1
@@ -159,6 +159,11 @@ ifeq ($(DO_DEBUG), 0)
 else
 	FLAGS = ${INC} ${STD_CPP} -rdynamic -ggdb -DDEBUG -Wall -Wall -Wpedantic -Wextra -Weffc++ -fPIC ${DEFINES}
 	STRIP = echo Retaining debug symbols of 
+endif
+
+ifeq ($(CC), clang)
+	# workaround for boost-gil/clang incompatibility
+	FLAGS += -Wno-c++11-narrowing
 endif
 
 
