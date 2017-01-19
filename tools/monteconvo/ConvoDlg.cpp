@@ -650,12 +650,15 @@ void ConvoDlg::Start1D()
 					set_qwt_data<t_real_reso>()(*m_plotwrap, vecNull, vecNull, 2, false);
 
 				if(bIsLastStep)
-					set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecScaledS, true, m_plotwrap.get());
+					set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecScaledS, !bForceDeferred, m_plotwrap.get());
 				QMetaObject::invokeMethod(m_plotwrap.get(), "doUpdate", connty);
 			}
 
 			if(bLiveResults || bIsLastStep)
 			{
+				if(bIsLastStep)
+					ostrOut << "# ------------------------- EOF -------------------------\n";
+
 				QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 					Q_ARG(const QString&, QString(ostrOut.str().c_str())));
 			}
@@ -666,11 +669,7 @@ void ConvoDlg::Start1D()
 			++iStep;
 		}
 
-		ostrOut << "# ------------------------- EOF -------------------------\n";
-
-		QMetaObject::invokeMethod(textResult, "setPlainText", connty,
-			Q_ARG(const QString&, QString(ostrOut.str().c_str())));
-
+		// output elapsed time
 		watch.stop();
 		QMetaObject::invokeMethod(editStopTime, "setText",
 			Q_ARG(const QString&, QString(watch.GetStopTimeStr().c_str())));
@@ -802,12 +801,12 @@ void ConvoDlg::Start2D()
 		}
 
 		QMetaObject::invokeMethod(m_plotwrap2d.get(), "setAxisTitle",
-		Q_ARG(int, QwtPlot::xBottom),
-		Q_ARG(const QString&, QString(strScanVar1.c_str())));
+			Q_ARG(int, QwtPlot::xBottom),
+			Q_ARG(const QString&, QString(strScanVar1.c_str())));
 
 		QMetaObject::invokeMethod(m_plotwrap2d.get(), "setAxisTitle",
-		Q_ARG(int, QwtPlot::yLeft),
-		Q_ARG(const QString&, QString(strScanVar2.c_str())));
+			Q_ARG(int, QwtPlot::yLeft),
+			Q_ARG(const QString&, QString(strScanVar2.c_str())));
 		// -------------------------------------------------------------------------
 
 
@@ -860,7 +859,7 @@ void ConvoDlg::Start2D()
 		m_plotwrap2d->GetRaster()->SetYRange(dStart2, dStop2);
 		set_zoomer_base(m_plotwrap2d->GetZoomer(),
 			dStart1, dStop1, dStop2, dStart2,
-			true, m_plotwrap2d.get());
+			!bForceDeferred, m_plotwrap2d.get());
 
 		std::vector<t_real> vecH; vecH.reserve(iNumSteps*iNumSteps);
 		std::vector<t_real> vecK; vecK.reserve(iNumSteps*iNumSteps);
@@ -999,6 +998,8 @@ void ConvoDlg::Start2D()
 
 			if(bLiveResults || bIsLastStep)
 			{
+				if(bIsLastStep)
+					ostrOut << "# ------------------------- EOF -------------------------\n";
 				QMetaObject::invokeMethod(textResult, "setPlainText", connty,
 					Q_ARG(const QString&, QString(ostrOut.str().c_str())));
 			}
@@ -1010,11 +1011,7 @@ void ConvoDlg::Start2D()
 			++iStep;
 		}
 
-		ostrOut << "# ------------------------- EOF -------------------------\n";
-
-		QMetaObject::invokeMethod(textResult, "setPlainText", connty,
-			Q_ARG(const QString&, QString(ostrOut.str().c_str())));
-
+		// output elapsed time
 		watch.stop();
 		QMetaObject::invokeMethod(editStopTime2d, "setText",
 			Q_ARG(const QString&, QString(watch.GetStopTimeStr().c_str())));

@@ -602,8 +602,12 @@ void MyQwtRasterData::SetZRange()	// automatically determined range
 
 t_real_qwt MyQwtRasterData::value(t_real_qwt dx, t_real_qwt dy) const
 {
-	if(dx<m_dXRange[0] || dy<m_dYRange[0] ||
-		dx>=m_dXRange[1] || dy>=m_dYRange[1])
+	t_real_qwt dXMin = std::min(m_dXRange[0], m_dXRange[1]);
+	t_real_qwt dXMax = std::max(m_dXRange[0], m_dXRange[1]);
+	t_real_qwt dYMin = std::min(m_dYRange[0], m_dYRange[1]);
+	t_real_qwt dYMax = std::max(m_dYRange[0], m_dYRange[1]);
+
+	if(dx<dXMin || dy<dYMin || dx>=dXMax || dy>=dYMax)
 		return t_real_qwt(0);
 
 	std::size_t iX = tl::tic_trafo_inv(m_iW, m_dXRange[0], m_dXRange[1], 0, dx);
