@@ -186,7 +186,7 @@ bool run_job(const std::string& strJob)
 	{
 		plt.reset(new tl::GnuPlot<t_real>());
 		plt->Init();
-		std::string strTerm = prop.Query<std::string>("output/plot_term", "wxt noraise");
+		std::string strTerm = prop.Query<std::string>("output/plot_term", "x11 noraise");
 		plt->SetTerminal(0, strTerm.c_str());
 	}
 

@@ -446,7 +446,7 @@ void QwtPlotWrapper::ExportGpl() const
 		ofstrDat << "\n";
 
 		ofstrDat << "plot \"-\" "
-			<< "using (xmin + $1*xscale):(ymin + $2*yscale):($3*zscale) "
+			<< "using (xmin + $1*xscale) : (ymin + $2*yscale) : ($3*zscale) "
 			<< "matrix with image\n";
 
 		for(std::size_t iY=0; iY<m_pRaster->GetHeight(); ++iY)
