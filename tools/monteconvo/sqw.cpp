@@ -247,9 +247,9 @@ void SqwPhonon::create()
 		ublas::vector<t_real> vecQTA1 = dq*m_vecTA1;
 		ublas::vector<t_real> vecQTA2 = dq*m_vecTA2;
 
-		vecQLA += m_vecBragg;
+		/*vecQLA += m_vecBragg;
 		vecQTA1 += m_vecBragg;
-		vecQTA2 += m_vecBragg;
+		vecQTA2 += m_vecBragg;*/
 
 		t_real dELA = disp(dq, m_dLA_amp, m_dLA_freq);
 		t_real dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
@@ -277,9 +277,9 @@ void SqwPhonon::create()
 		// only generate exact phonon branches, no arcs
 		if(m_iNumArc==0 || m_iNumArc==1)
 		{
-			lst.push_back(std::vector<t_real>({vecQLA[0], vecQLA[1], vecQLA[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
-			lst.push_back(std::vector<t_real>({vecQTA1[0], vecQTA1[1], vecQTA1[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
-			lst.push_back(std::vector<t_real>({vecQTA2[0], vecQTA2[1], vecQTA2[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
+			lst.push_back(std::vector<t_real>({vecQLA[0]+m_vecBragg[0], vecQLA[1]+m_vecBragg[1], vecQLA[2]+m_vecBragg[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
+			lst.push_back(std::vector<t_real>({vecQTA1[0]+m_vecBragg[0], vecQTA1[1]+m_vecBragg[1], vecQTA1[2]+m_vecBragg[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
+			lst.push_back(std::vector<t_real>({vecQTA2[0]+m_vecBragg[0], vecQTA2[1]+m_vecBragg[1], vecQTA2[2]+m_vecBragg[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
 		}
 		else
 		{
@@ -287,20 +287,20 @@ void SqwPhonon::create()
 			for(t_real dph=-dArcMax; dph<=dArcMax; dph+=1./t_real(m_iNumArc))
 			{
 				// ta2
-				ublas::vector<t_real> vecArcTA2TA1 = tl::arc(vecQTA2, vecQTA1, dph);
-				ublas::vector<t_real> vecArcTA2LA = tl::arc(vecQTA2, vecQLA, dph);
+				ublas::vector<t_real> vecArcTA2TA1 = tl::arc(vecQTA2, vecQTA1, dph) + m_vecBragg;
+				ublas::vector<t_real> vecArcTA2LA = tl::arc(vecQTA2, vecQLA, dph) + m_vecBragg;
 				lst.push_back(std::vector<t_real>({vecArcTA2TA1[0], vecArcTA2TA1[1], vecArcTA2TA1[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
 				lst.push_back(std::vector<t_real>({vecArcTA2LA[0], vecArcTA2LA[1], vecArcTA2LA[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
 
 				// ta1
-				ublas::vector<t_real> vecArcTA1TA2 = tl::arc(vecQTA1, vecQTA2, dph);
-				ublas::vector<t_real> vecArcTA1LA = tl::arc(vecQTA1, vecQLA, dph);
+				ublas::vector<t_real> vecArcTA1TA2 = tl::arc(vecQTA1, vecQTA2, dph) + m_vecBragg;
+				ublas::vector<t_real> vecArcTA1LA = tl::arc(vecQTA1, vecQLA, dph) + m_vecBragg;
 				lst.push_back(std::vector<t_real>({vecArcTA1TA2[0], vecArcTA1TA2[1], vecArcTA1TA2[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
 				lst.push_back(std::vector<t_real>({vecArcTA1LA[0], vecArcTA1LA[1], vecArcTA1LA[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
 
 				// la
-				ublas::vector<t_real> vecArcLATA1 = tl::arc(vecQLA, vecQTA1, dph);
-				ublas::vector<t_real> vecArcLATA2 = tl::arc(vecQLA, vecQTA2, dph);
+				ublas::vector<t_real> vecArcLATA1 = tl::arc(vecQLA, vecQTA1, dph) + m_vecBragg;
+				ublas::vector<t_real> vecArcLATA2 = tl::arc(vecQLA, vecQTA2, dph) + m_vecBragg;
 				lst.push_back(std::vector<t_real>({vecArcLATA1[0], vecArcLATA1[1], vecArcLATA1[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
 				lst.push_back(std::vector<t_real>({vecArcLATA2[0], vecArcLATA2[1], vecArcLATA2[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
 			}
