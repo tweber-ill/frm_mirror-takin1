@@ -156,6 +156,40 @@ public:
 };
 
 
+/**
+ * even simpler phonon model
+ */
+class SqwPhononSingleBranch : public SqwBase
+{
+private:
+	SqwPhononSingleBranch() {};
+
+protected:
+	static t_real_reso disp(t_real_reso dq, t_real_reso da, t_real_reso df);
+
+protected:
+	ublas::vector<t_real_reso> m_vecBragg;
+
+	t_real_reso m_damp=20., m_dfreq=M_PI/2., m_dHWHM=0.1, m_dS0=1.;
+	t_real_reso m_dIncAmp=0., m_dIncSig=0.1;
+	t_real_reso m_dT = 100.;
+
+public:
+	SqwPhononSingleBranch(const char* pcFile);
+
+	virtual ~SqwPhononSingleBranch() = default;
+
+	virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
+
+	const ublas::vector<t_real_reso>& GetBragg() const { return m_vecBragg; }
+
+	virtual std::vector<SqwBase::t_var> GetVars() const override;
+	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
+
+	virtual SqwBase* shallow_copy() const override;
+};
+
+
 // -----------------------------------------------------------------------------
 
 
@@ -182,7 +216,7 @@ protected:
 #endif
 
 	unsigned short m_iWhichDisp = 0;		// 0: ferro, 1: antiferro
-	unsigned int m_iNumPoints = 100;
+	unsigned int m_iNumPoints = 25;
 
 	ublas::vector<t_real_reso> m_vecBragg;
 

@@ -228,8 +228,14 @@ void SqwPhonon::create()
 
 	if(m_vecBragg.size()==0 || m_vecLA.size()==0 || m_vecTA1.size()==0 || m_vecTA2.size()==0)
 	{
-		m_bOk = 0;
-		return;
+		// examples
+		m_vecBragg = tl::make_vec({1., 0., 0.});
+		m_vecLA = tl::make_vec({1., 0., 0.});
+		m_vecTA1 = tl::make_vec({0., 1., 0.});
+		m_vecTA2 = tl::make_vec({0., 0., 1.});
+
+		//m_bOk = 0;
+		//return;
 	}
 
 	m_vecLA /= ublas::norm_2(m_vecLA);
@@ -247,14 +253,9 @@ void SqwPhonon::create()
 		ublas::vector<t_real> vecQTA1 = dq*m_vecTA1;
 		ublas::vector<t_real> vecQTA2 = dq*m_vecTA2;
 
-		/*vecQLA += m_vecBragg;
-		vecQTA1 += m_vecBragg;
-		vecQTA2 += m_vecBragg;*/
-
 		t_real dELA = disp(dq, m_dLA_amp, m_dLA_freq);
 		t_real dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
 		t_real dETA2 = disp(dq, m_dTA2_amp, m_dTA2_freq);
-
 
 		t_real dLA_E_HWHM = m_dLA_E_HWHM;
 		t_real dLA_q_HWHM = m_dLA_q_HWHM;
@@ -285,24 +286,19 @@ void SqwPhonon::create()
 		{
 			const t_real dArcMax = std::abs(tl::d2r(m_dArcMax));
 			for(t_real dph=-dArcMax; dph<=dArcMax; dph+=1./t_real(m_iNumArc))
+			for(t_real dth=-dArcMax; dth<=dArcMax; dth+=1./t_real(m_iNumArc))
 			{
 				// ta2
-				ublas::vector<t_real> vecArcTA2TA1 = tl::arc(vecQTA2, vecQTA1, dph) + m_vecBragg;
-				ublas::vector<t_real> vecArcTA2LA = tl::arc(vecQTA2, vecQLA, dph) + m_vecBragg;
-				lst.push_back(std::vector<t_real>({vecArcTA2TA1[0], vecArcTA2TA1[1], vecArcTA2TA1[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
-				lst.push_back(std::vector<t_real>({vecArcTA2LA[0], vecArcTA2LA[1], vecArcTA2LA[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
+				ublas::vector<t_real> vecArcTA2 = tl::sph_shell(vecQTA2, dph, dth) + m_vecBragg;;
+				lst.push_back(std::vector<t_real>({vecArcTA2[0], vecArcTA2[1], vecArcTA2[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
 
 				// ta1
-				ublas::vector<t_real> vecArcTA1TA2 = tl::arc(vecQTA1, vecQTA2, dph) + m_vecBragg;
-				ublas::vector<t_real> vecArcTA1LA = tl::arc(vecQTA1, vecQLA, dph) + m_vecBragg;
-				lst.push_back(std::vector<t_real>({vecArcTA1TA2[0], vecArcTA1TA2[1], vecArcTA1TA2[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
-				lst.push_back(std::vector<t_real>({vecArcTA1LA[0], vecArcTA1LA[1], vecArcTA1LA[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
+				ublas::vector<t_real> vecArcTA1 = tl::sph_shell(vecQTA1, dph, dth) + m_vecBragg;;
+				lst.push_back(std::vector<t_real>({vecArcTA1[0], vecArcTA1[1], vecArcTA1[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
 
 				// la
-				ublas::vector<t_real> vecArcLATA1 = tl::arc(vecQLA, vecQTA1, dph) + m_vecBragg;
-				ublas::vector<t_real> vecArcLATA2 = tl::arc(vecQLA, vecQTA2, dph) + m_vecBragg;
-				lst.push_back(std::vector<t_real>({vecArcLATA1[0], vecArcLATA1[1], vecArcLATA1[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
-				lst.push_back(std::vector<t_real>({vecArcLATA2[0], vecArcLATA2[1], vecArcLATA2[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
+				ublas::vector<t_real> vecArcLA = tl::sph_shell(vecQLA, dph, dth) + m_vecBragg;;
+				lst.push_back(std::vector<t_real>({vecArcLA[0], vecArcLA[1], vecArcLA[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
 			}
 		}
 	}
@@ -566,10 +562,6 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 
 	if(bRecreateTree)
 		create();
-
-	//std::cout << "hwhm = " << m_dTA2_E_HWHM << std::endl;
-	//std::cout << "T = " << m_dT << std::endl;
-	//std::cout << "amp = " << m_dTA2_amp << std::endl;
 }
 
 SqwBase* SqwPhonon::shallow_copy() const
@@ -620,6 +612,128 @@ SqwBase* SqwPhonon::shallow_copy() const
 //------------------------------------------------------------------------------
 
 
+t_real SqwPhononSingleBranch::disp(t_real dq, t_real da, t_real df)
+{
+	return std::abs(da*std::sin(dq*df));
+}
+
+SqwPhononSingleBranch::SqwPhononSingleBranch(const char* pcFile)
+{
+	std::ifstream ifstr(pcFile);
+	if(!ifstr)
+		tl::log_warn("Cannot open phonon config file \"", pcFile, "\".");
+
+	// if a file is given, load the parameters
+	if(!!ifstr)
+	{
+		std::string strLine;
+		while(std::getline(ifstr, strLine))
+		{
+			std::vector<std::string> vecToks;
+			tl::get_tokens<std::string>(strLine, std::string("=,"), vecToks);
+			std::for_each(vecToks.begin(), vecToks.end(), [](std::string& str) {tl::trim(str); });
+
+			if(vecToks.size() == 0) continue;
+
+			if(vecToks[0] == "G") m_vecBragg = tl::make_vec({tl::str_to_var_parse<t_real>(vecToks[1]), tl::str_to_var_parse<t_real>(vecToks[2]), tl::str_to_var_parse<t_real>(vecToks[3])});
+
+			else if(vecToks[0] == "TA2_amp") m_damp = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == "TA2_freq") m_dfreq = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == "TA2_E_HWHM") m_dHWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == "TA2_S0") m_dS0 = tl::str_to_var_parse<t_real>(vecToks[1]);
+
+			else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var_parse<t_real>(vecToks[1]);
+
+			else if(vecToks[0] == "T") m_dT = tl::str_to_var_parse<t_real>(vecToks[1]);
+		}
+	}
+
+	m_bOk = 1;
+}
+
+t_real SqwPhononSingleBranch::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
+{
+	dh -= m_vecBragg[0];
+	dk -= m_vecBragg[1];
+	dl -= m_vecBragg[2];
+
+	t_real dq = std::sqrt(dh*dh + dk*dk + dl*dl);
+	t_real dE0 = disp(dq, m_damp, m_dfreq);
+
+	t_real dInc = 0.;
+	if(!tl::float_equal<t_real>(m_dIncAmp, 0.))
+		dInc = tl::gauss_model<t_real>(dE, 0., m_dIncSig, m_dIncAmp, 0.);
+
+	return  std::abs(tl::DHO_model<t_real>(dE, m_dT, dE0, m_dHWHM, m_dS0, 0.)) + dInc;
+}
+
+std::vector<SqwBase::t_var> SqwPhononSingleBranch::GetVars() const
+{
+	std::vector<SqwBase::t_var> vecVars;
+
+	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
+
+	vecVars.push_back(SqwBase::t_var{"TA2_amp", "real", tl::var_to_str(m_damp)});
+	vecVars.push_back(SqwBase::t_var{"TA2_freq", "real", tl::var_to_str(m_dfreq)});
+	vecVars.push_back(SqwBase::t_var{"TA2_E_HWHM", "real", tl::var_to_str(m_dHWHM)});
+	vecVars.push_back(SqwBase::t_var{"TA2_S0", "real", tl::var_to_str(m_dS0)});
+
+	vecVars.push_back(SqwBase::t_var{"inc_amp", "real", tl::var_to_str(m_dIncAmp)});
+	vecVars.push_back(SqwBase::t_var{"inc_sig", "real", tl::var_to_str(m_dIncSig)});
+
+	vecVars.push_back(SqwBase::t_var{"T", "real", tl::var_to_str(m_dT)});
+
+	return vecVars;
+}
+
+void SqwPhononSingleBranch::SetVars(const std::vector<SqwBase::t_var>& vecVars)
+{
+	if(vecVars.size() == 0)
+		return;
+
+	for(const SqwBase::t_var& var : vecVars)
+	{
+		const std::string& strVar = std::get<0>(var);
+		const std::string& strVal = std::get<2>(var);
+
+		if(strVar == "G") m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
+
+		else if(strVar == "TA2_amp") m_damp = tl::str_to_var<decltype(m_damp)>(strVal);
+		else if(strVar == "TA2_freq") m_dfreq = tl::str_to_var<decltype(m_dfreq)>(strVal);
+		else if(strVar == "TA2_E_HWHM") m_dHWHM = tl::str_to_var<decltype(m_dHWHM)>(strVal);
+		else if(strVar == "TA2_S0") m_dS0 = tl::str_to_var<decltype(m_dS0)>(strVal);
+
+		else if(strVar == "inc_amp") m_dIncAmp = tl::str_to_var<decltype(m_dIncAmp)>(strVal);
+		else if(strVar == "inc_sig") m_dIncSig = tl::str_to_var<decltype(m_dIncSig)>(strVal);
+
+		else if(strVar == "T") m_dT = tl::str_to_var<decltype(m_dT)>(strVal);
+	}
+}
+
+SqwBase* SqwPhononSingleBranch::shallow_copy() const
+{
+	SqwPhononSingleBranch *pCpy = new SqwPhononSingleBranch();
+	*static_cast<SqwBase*>(pCpy) = *static_cast<const SqwBase*>(this);
+
+	pCpy->m_vecBragg = m_vecBragg;
+
+	pCpy->m_damp = m_damp;
+	pCpy->m_dfreq = m_dfreq;
+	pCpy->m_dHWHM = m_dHWHM;
+	pCpy->m_dS0 = m_dS0;
+
+	pCpy->m_dIncAmp = m_dIncAmp;
+	pCpy->m_dIncSig = m_dIncSig;
+
+	pCpy->m_dT = m_dT;
+	return pCpy;
+}
+
+
+//------------------------------------------------------------------------------
+
+
 t_real SqwMagnon::ferro_disp(t_real dq, t_real dD, t_real doffs)
 {
 	return dq*dq * dD + doffs;
@@ -642,8 +756,11 @@ void SqwMagnon::create()
 
 	if(m_vecBragg.size() == 0)
 	{
-		m_bOk = 0;
-		return;
+		// example
+		m_vecBragg = tl::make_vec({1., 0., 0.});
+
+		//m_bOk = 0;
+		//return;
 	}
 
 	std::list<std::vector<t_real>> lst;

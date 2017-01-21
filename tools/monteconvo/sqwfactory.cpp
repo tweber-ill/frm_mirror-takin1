@@ -51,6 +51,10 @@ static t_mapSqw g_mapSqw =
 		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 		{ return std::make_shared<SqwPhonon>(strCfgFile.c_str()); },
 		"Simple Phonon Model" } },
+	{ "phonon_single", t_mapSqw::mapped_type {
+		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+		{ return std::make_shared<SqwPhononSingleBranch>(strCfgFile.c_str()); },
+		"Simple Single-Branch Phonon Model" } },
 	{ "magnon", t_mapSqw::mapped_type {
 		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 		{ return std::make_shared<SqwMagnon>(strCfgFile.c_str()); },
