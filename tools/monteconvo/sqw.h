@@ -205,23 +205,12 @@ protected:
 	static t_real_reso ferro_disp(t_real_reso dq, t_real_reso dD, t_real_reso doffs);
 	static t_real_reso antiferro_disp(t_real_reso dq, t_real_reso dD, t_real_reso doffs);
 
-	void create();
-	void destroy();
-
 protected:
-#ifdef USE_RTREE
-	std::shared_ptr<tl::Rt<t_real_reso, 3, RT_ELEMS>> m_rt;
-#else
-	std::shared_ptr<tl::Kd<t_real_reso>> m_kd;
-#endif
-
 	unsigned short m_iWhichDisp = 0;		// 0: ferro, 1: antiferro
-	unsigned int m_iNumPoints = 25;
-
 	ublas::vector<t_real_reso> m_vecBragg;
 
 	t_real_reso m_dD = 1., m_dOffs = 0.;
-	t_real_reso m_dE_HWHM = 0.1, m_dq_HWHM = 0.1;
+	t_real_reso m_dE_HWHM = 0.1;
 	t_real_reso m_dS0 = 1.;
 
 	t_real_reso m_dIncAmp = 0., m_dIncSig = 0.1;
