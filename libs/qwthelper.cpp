@@ -420,22 +420,22 @@ void QwtPlotWrapper::ExportGpl() const
 		t_real_qwt dZMin = m_pRaster->GetZMin();
 		t_real_qwt dZMax = m_pRaster->GetZMax();
 
-		t_real_qwt dXScale = (dXMax-dXMin)/t_real_qwt(iWidth-1);
-		t_real_qwt dYScale = (dYMax-dYMin)/t_real_qwt(iHeight-1);
+		t_real_qwt dXScale = (dXMax-dXMin)/t_real_qwt(iWidth);
+		t_real_qwt dYScale = (dYMax-dYMin)/t_real_qwt(iHeight);
 
-		ofstrDat << "xmin = " << dXMin << "\n";
-		ofstrDat << "xmax = " << dXMax << "\n";
 		ofstrDat << "xscale = " << dXScale << "\n";
-		ofstrDat << "ymin = " << dYMin << "\n";
-		ofstrDat << "ymax = " << dYMax << "\n";
 		ofstrDat << "yscale = " << dYScale << "\n";
+		ofstrDat << "xmin = " << dXMin+dXScale*0.5 << "\n";
+		ofstrDat << "xmax = " << dXMax+dXScale*0.5 << "\n";
+		ofstrDat << "ymin = " << dYMin+dYScale*0.5 << "\n";
+		ofstrDat << "ymax = " << dYMax+dYScale*0.5 << "\n";
 		ofstrDat << "zmin = " << dZMin << "\n";
 		ofstrDat << "zmax = " << dZMax << "\n";
 		ofstrDat << "zscale = 1.\n";
 		ofstrDat << "\n";
 
-		ofstrDat << "set xrange [xmin : xmax]\n";
-		ofstrDat << "set yrange [ymin : ymax]\n";
+		ofstrDat << "set xrange [xmin-xscale*0.5 : xmax-xscale*0.5]\n";
+		ofstrDat << "set yrange [ymin-yscale*0.5 : ymax-yscale*0.5]\n";
 		ofstrDat << "set cbrange [zmin : zmax]\n";
 		ofstrDat << "\n";
 
@@ -566,17 +566,23 @@ void QwtPlotWrapper::doUpdate()
 
 void MyQwtRasterData::SetXRange(t_real_qwt dMin, t_real_qwt dMax)
 {
+	t_real_qwt dOffs = 0.5*(dMax-dMin)/t_real_qwt(m_iW);
+	dMin -= dOffs; dMax -= dOffs;
+
 	m_dXRange[0] = dMin; m_dXRange[1] = dMax;
 #if QWT_VER>=6
-	setInterval(Qt::XAxis, QwtInterval(dMin, dMax));
+	setInterval(Qt::XAxis, QwtInterval(dMin, dMax, QwtInterval::ExcludeMaximum));
 #endif
 }
 
 void MyQwtRasterData::SetYRange(t_real_qwt dMin, t_real_qwt dMax)
 {
+	t_real_qwt dOffs = 0.5*(dMax-dMin)/t_real_qwt(m_iH);
+	dMin -= dOffs; dMax -= dOffs;
+
 	m_dYRange[0] = dMin; m_dYRange[1] = dMax;
 #if QWT_VER>=6
-	setInterval(Qt::YAxis, QwtInterval(dMin, dMax));
+	setInterval(Qt::YAxis, QwtInterval(dMin, dMax, QwtInterval::ExcludeMaximum));
 #endif
 }
 

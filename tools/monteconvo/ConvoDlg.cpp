@@ -730,17 +730,17 @@ void ConvoDlg::Start2D()
 		};
 		const t_real dDeltaHKL1[] =
 		{
-			(spinStopH->value() - spinStartH->value()) / t_real(iNumSteps+1),
-			(spinStopK->value() - spinStartK->value()) / t_real(iNumSteps+1),
-			(spinStopL->value() - spinStartL->value()) / t_real(iNumSteps+1),
-			(spinStopE->value() - spinStartE->value()) / t_real(iNumSteps+1)
+			(spinStopH->value() - spinStartH->value()) / t_real(iNumSteps),
+			(spinStopK->value() - spinStartK->value()) / t_real(iNumSteps),
+			(spinStopL->value() - spinStartL->value()) / t_real(iNumSteps),
+			(spinStopE->value() - spinStartE->value()) / t_real(iNumSteps)
 		};
 		const t_real dDeltaHKL2[] =
 		{
-			(spinStopH2->value() - spinStartH->value()) / t_real(iNumSteps+1),
-			(spinStopK2->value() - spinStartK->value()) / t_real(iNumSteps+1),
-			(spinStopL2->value() - spinStartL->value()) / t_real(iNumSteps+1),
-			(spinStopE2->value() - spinStartE->value()) / t_real(iNumSteps+1)
+			(spinStopH2->value() - spinStartH->value()) / t_real(iNumSteps),
+			(spinStopK2->value() - spinStartK->value()) / t_real(iNumSteps),
+			(spinStopL2->value() - spinStartL->value()) / t_real(iNumSteps),
+			(spinStopE2->value() - spinStartE->value()) / t_real(iNumSteps)
 		};
 
 
@@ -858,7 +858,8 @@ void ConvoDlg::Start2D()
 		m_plotwrap2d->GetRaster()->SetXRange(dStart1, dStop1);
 		m_plotwrap2d->GetRaster()->SetYRange(dStart2, dStop2);
 		set_zoomer_base(m_plotwrap2d->GetZoomer(),
-			dStart1, dStop1, dStop2, dStart2,
+			m_plotwrap2d->GetRaster()->GetXMin(), m_plotwrap2d->GetRaster()->GetXMax(),
+			m_plotwrap2d->GetRaster()->GetYMax(), m_plotwrap2d->GetRaster()->GetYMin(),
 			!bForceDeferred, m_plotwrap2d.get());
 
 		std::vector<t_real> vecH; vecH.reserve(iNumSteps*iNumSteps);
