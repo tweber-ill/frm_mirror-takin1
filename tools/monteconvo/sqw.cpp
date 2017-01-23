@@ -612,6 +612,10 @@ SqwBase* SqwPhonon::shallow_copy() const
 //------------------------------------------------------------------------------
 
 
+// for model compatibility testing
+#define BRANCH_PREFIX ""
+//#define BRANCH_PREFIX "TA2"
+
 t_real SqwPhononSingleBranch::disp(t_real dq, t_real da, t_real df)
 {
 	return std::abs(da*std::sin(dq*df));
@@ -637,10 +641,10 @@ SqwPhononSingleBranch::SqwPhononSingleBranch(const char* pcFile)
 
 			if(vecToks[0] == "G") m_vecBragg = tl::make_vec({tl::str_to_var_parse<t_real>(vecToks[1]), tl::str_to_var_parse<t_real>(vecToks[2]), tl::str_to_var_parse<t_real>(vecToks[3])});
 
-			else if(vecToks[0] == "TA2_amp") m_damp = tl::str_to_var_parse<t_real>(vecToks[1]);
-			else if(vecToks[0] == "TA2_freq") m_dfreq = tl::str_to_var_parse<t_real>(vecToks[1]);
-			else if(vecToks[0] == "TA2_E_HWHM") m_dHWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
-			else if(vecToks[0] == "TA2_S0") m_dS0 = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == BRANCH_PREFIX"amp") m_damp = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == BRANCH_PREFIX"freq") m_dfreq = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == BRANCH_PREFIX"E_HWHM") m_dHWHM = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == BRANCH_PREFIX"S0") m_dS0 = tl::str_to_var_parse<t_real>(vecToks[1]);
 
 			else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var_parse<t_real>(vecToks[1]);
 			else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var_parse<t_real>(vecToks[1]);
@@ -674,10 +678,10 @@ std::vector<SqwBase::t_var> SqwPhononSingleBranch::GetVars() const
 
 	vecVars.push_back(SqwBase::t_var{"G", "vector", vec_to_str(m_vecBragg)});
 
-	vecVars.push_back(SqwBase::t_var{"TA2_amp", "real", tl::var_to_str(m_damp)});
-	vecVars.push_back(SqwBase::t_var{"TA2_freq", "real", tl::var_to_str(m_dfreq)});
-	vecVars.push_back(SqwBase::t_var{"TA2_E_HWHM", "real", tl::var_to_str(m_dHWHM)});
-	vecVars.push_back(SqwBase::t_var{"TA2_S0", "real", tl::var_to_str(m_dS0)});
+	vecVars.push_back(SqwBase::t_var{BRANCH_PREFIX"amp", "real", tl::var_to_str(m_damp)});
+	vecVars.push_back(SqwBase::t_var{BRANCH_PREFIX"freq", "real", tl::var_to_str(m_dfreq)});
+	vecVars.push_back(SqwBase::t_var{BRANCH_PREFIX"E_HWHM", "real", tl::var_to_str(m_dHWHM)});
+	vecVars.push_back(SqwBase::t_var{BRANCH_PREFIX"S0", "real", tl::var_to_str(m_dS0)});
 
 	vecVars.push_back(SqwBase::t_var{"inc_amp", "real", tl::var_to_str(m_dIncAmp)});
 	vecVars.push_back(SqwBase::t_var{"inc_sig", "real", tl::var_to_str(m_dIncSig)});
@@ -699,10 +703,10 @@ void SqwPhononSingleBranch::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 
 		if(strVar == "G") m_vecBragg = str_to_vec<decltype(m_vecBragg)>(strVal);
 
-		else if(strVar == "TA2_amp") m_damp = tl::str_to_var<decltype(m_damp)>(strVal);
-		else if(strVar == "TA2_freq") m_dfreq = tl::str_to_var<decltype(m_dfreq)>(strVal);
-		else if(strVar == "TA2_E_HWHM") m_dHWHM = tl::str_to_var<decltype(m_dHWHM)>(strVal);
-		else if(strVar == "TA2_S0") m_dS0 = tl::str_to_var<decltype(m_dS0)>(strVal);
+		else if(strVar == BRANCH_PREFIX"amp") m_damp = tl::str_to_var<decltype(m_damp)>(strVal);
+		else if(strVar == BRANCH_PREFIX"freq") m_dfreq = tl::str_to_var<decltype(m_dfreq)>(strVal);
+		else if(strVar == BRANCH_PREFIX"E_HWHM") m_dHWHM = tl::str_to_var<decltype(m_dHWHM)>(strVal);
+		else if(strVar == BRANCH_PREFIX"S0") m_dS0 = tl::str_to_var<decltype(m_dS0)>(strVal);
 
 		else if(strVar == "inc_amp") m_dIncAmp = tl::str_to_var<decltype(m_dIncAmp)>(strVal);
 		else if(strVar == "inc_sig") m_dIncSig = tl::str_to_var<decltype(m_dIncSig)>(strVal);
