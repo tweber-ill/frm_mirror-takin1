@@ -614,7 +614,7 @@ SqwBase* SqwPhonon::shallow_copy() const
 
 // for model compatibility testing
 #define BRANCH_PREFIX ""
-//#define BRANCH_PREFIX "TA2"
+//#define BRANCH_PREFIX "TA2_"
 
 t_real SqwPhononSingleBranch::disp(t_real dq, t_real da, t_real df)
 {

@@ -645,7 +645,7 @@ void ConvoDlg::Start1D()
 				set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecScaledS, 0, false);
 				set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecScaledS, 1, false);
 				if(bUseScan)
-					set_qwt_data<t_real_reso>()(*m_plotwrap, m_scan.vecX, m_scan.vecCts, 2, false);
+					set_qwt_data<t_real_reso>()(*m_plotwrap, m_scan.vecX, m_scan.vecCts, 2, false, &m_scan.vecCtsErr);
 				else
 					set_qwt_data<t_real_reso>()(*m_plotwrap, vecNull, vecNull, 2, false);
 

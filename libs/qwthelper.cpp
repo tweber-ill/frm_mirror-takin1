@@ -238,7 +238,7 @@ QwtPlotWrapper::~QwtPlotWrapper()
 
 
 void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
-	unsigned int iCurve, bool bReplot, bool bCopy)
+	unsigned int iCurve, bool bReplot, bool bCopy, const std::vector<t_real_qwt>* pvecYErr)
 {
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
@@ -254,10 +254,11 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 		if(iCurve >= m_vecDataPtrs.size())
 			m_vecDataPtrs.resize(iCurve+1);
 
-		m_vecDataPtrs[iCurve].first = &vecX;
-		m_vecDataPtrs[iCurve].second = &vecY;
+		std::get<0>(m_vecDataPtrs[iCurve]) = &vecX;
+		std::get<1>(m_vecDataPtrs[iCurve]) = &vecY;
+		std::get<2>(m_vecDataPtrs[iCurve]) = pvecYErr;
 	}
-	else		// copy data
+	else		// copy data, TODO: errorbars
 	{
 #if QWT_VER>=6
 		m_vecCurves[iCurve]->setSamples(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
@@ -308,7 +309,7 @@ void QwtPlotWrapper::SavePlot() const
 	ofstrDat << "#\n";
 	ofstrDat << "# comment: Created with Takin version " << TAKIN_VER << ".\n";
 	ofstrDat << "# timestamp: " << tl::var_to_str<t_real_qwt>(dEpoch)
-		<< " (" << tl::epoch_to_str<t_real_qwt>(dEpoch) << ")\n";
+		<< " (" << tl::epoch_to_str<t_real_qwt>(dEpoch) << ").\n";
 	ofstrDat << "# title: " << m_pPlot->title().text().toStdString() << "\n";
 	ofstrDat << "# x_label: " << m_pPlot->axisTitle(QwtPlot::xBottom).text().toStdString() << "\n";
 	ofstrDat << "# y_label: " << m_pPlot->axisTitle(QwtPlot::yLeft).text().toStdString() << "\n";
@@ -345,8 +346,9 @@ void QwtPlotWrapper::SavePlot() const
 				ofstrDat << "## -------------------------------- begin of dataset " << (iDataSet+1)
 					<< " --------------------------------\n";
 
-			const std::vector<t_real_qwt>* pVecX = pairVecs.first;
-			const std::vector<t_real_qwt>* pVecY = pairVecs.second;
+			const std::vector<t_real_qwt>* pVecX = std::get<0>(pairVecs);
+			const std::vector<t_real_qwt>* pVecY = std::get<1>(pairVecs);
+			const std::vector<t_real_qwt>* pVecYErr = std::get<2>(pairVecs);
 
 			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
 
@@ -355,7 +357,13 @@ void QwtPlotWrapper::SavePlot() const
 				ofstrDat << std::left << std::setw(g_iPrec*2)
 					<< pVecX->operator[](iCur) << " ";
 				ofstrDat << std::left << std::setw(g_iPrec*2)
-					<< pVecY->operator[](iCur) << "\n";
+					<< pVecY->operator[](iCur) << " ";
+				if(pVecYErr)
+				{
+					ofstrDat << std::left << std::setw(g_iPrec*2)
+						<< pVecYErr->operator[](iCur) << " ";
+				}
+				ofstrDat << "\n";
 			}
 
 			if(m_vecDataPtrs.size() > 1)
@@ -397,7 +405,7 @@ void QwtPlotWrapper::ExportGpl() const
 	ofstrDat << "#\n";
 	ofstrDat << "# comment: Created with Takin version " << TAKIN_VER << ".\n";
 	ofstrDat << "# timestamp: " << tl::var_to_str<t_real_qwt>(dEpoch)
-		<< " (" << tl::epoch_to_str<t_real_qwt>(dEpoch) << ")\n";
+		<< " (" << tl::epoch_to_str<t_real_qwt>(dEpoch) << ").\n";
 	ofstrDat << "#\n";
 	ofstrDat << "\n";
 
@@ -478,10 +486,18 @@ void QwtPlotWrapper::ExportGpl() const
 			}
 			else
 			{
-				ofstrDat << "\t\"-\" using ($1):($2*scale) with points pointtype 7 title \"dataset "
-					<< (iCurve+1) << "\"";
-				//ofstrDat << ", \\\n#\t\"-\" using ($1):($2*scale):(sqrt($2*scale)) with yerrorbars pointtype 7 title \"dataset "
-				//	<< (iCurve+1) << "\"";
+				if(std::get<2>(m_vecDataPtrs[iCurve]))	// with errorbars?
+				{
+					ofstrDat << "\t\"-\" using ($1):($2*scale):($3*scale) "
+						<< "with yerrorbars pointtype 7 title \"dataset "
+						<< (iCurve+1) << "\"";
+				}
+				else	// without errorbars
+				{
+					ofstrDat << "\t\"-\" using ($1):($2*scale) "
+						<< "with points pointtype 7 title \"dataset "
+						<< (iCurve+1) << "\"";
+				}
 			}
 
 			if(iCurve < iNumCurves-1) ofstrDat << ", \\";
@@ -490,8 +506,9 @@ void QwtPlotWrapper::ExportGpl() const
 
 		for(const auto& pairVecs : m_vecDataPtrs)
 		{
-			const std::vector<t_real_qwt>* pVecX = pairVecs.first;
-			const std::vector<t_real_qwt>* pVecY = pairVecs.second;
+			const std::vector<t_real_qwt>* pVecX = std::get<0>(pairVecs);
+			const std::vector<t_real_qwt>* pVecY = std::get<1>(pairVecs);
+			const std::vector<t_real_qwt>* pVecYErr = std::get<2>(pairVecs);
 
 			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
 
@@ -500,7 +517,13 @@ void QwtPlotWrapper::ExportGpl() const
 				ofstrDat << std::left << std::setw(g_iPrec*2)
 					<< pVecX->operator[](iCur) << " ";
 				ofstrDat << std::left << std::setw(g_iPrec*2)
-					<< pVecY->operator[](iCur) << "\n";
+					<< pVecY->operator[](iCur) << " ";
+				if(pVecYErr)
+				{
+					ofstrDat << std::left << std::setw(g_iPrec*2)
+						<< pVecYErr->operator[](iCur) << " ";
+				}
+				ofstrDat << "\n";
 			}
 
 			ofstrDat << "end\n";
