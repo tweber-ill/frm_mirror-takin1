@@ -144,15 +144,8 @@
                <number>2</number>
               </property>
               <property name="spacing">
-               <number>4</number>
+               <number>2</number>
               </property>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="btnLorentz">
-                <property name="text">
-                 <string>Fit Lorentzian</string>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="3">
                <widget class="QPushButton" name="btnVoigt">
                 <property name="text">
@@ -176,10 +169,31 @@
                 </property>
                </widget>
               </item>
+              <item row="0" column="2">
+               <widget class="QPushButton" name="btnLorentz">
+                <property name="text">
+                 <string>Fit Lorentzian</string>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="0">
                <widget class="QPushButton" name="btnParam">
                 <property name="text">
                  <string>Parameters...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QPushButton" name="btnLine">
+                <property name="text">
+                 <string>Fit Line</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QPushButton" name="btnSine">
+                <property name="text">
+                 <string>Fit Sine</string>
                 </property>
                </widget>
               </item>
@@ -657,6 +671,8 @@
   <tabstop>btnGauss</tabstop>
   <tabstop>btnLorentz</tabstop>
   <tabstop>btnVoigt</tabstop>
+  <tabstop>btnLine</tabstop>
+  <tabstop>btnSine</tabstop>
   <tabstop>comboX</tabstop>
   <tabstop>comboY</tabstop>
   <tabstop>editTitle</tabstop>

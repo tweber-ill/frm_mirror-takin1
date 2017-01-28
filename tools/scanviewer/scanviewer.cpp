@@ -102,6 +102,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(btnGauss, &QToolButton::clicked, pThis, &ScanViewerDlg::FitGauss);
 	QObject::connect(btnLorentz, &QToolButton::clicked, pThis, &ScanViewerDlg::FitLorentz);
 	QObject::connect(btnVoigt, &QToolButton::clicked, pThis, &ScanViewerDlg::FitVoigt);
+	QObject::connect(btnLine, &QToolButton::clicked, pThis, &ScanViewerDlg::FitLine);
+	QObject::connect(btnSine, &QToolButton::clicked, pThis, &ScanViewerDlg::FitSine);
 #endif
 	QObject::connect(comboX, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::XAxisSelected);
 	QObject::connect(comboY, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxisSelected);
@@ -122,6 +124,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(btnGauss, SIGNAL(clicked(bool)), this, SLOT(FitGauss()));
 	QObject::connect(btnLorentz, SIGNAL(clicked(bool)), this, SLOT(FitLorentz()));
 	QObject::connect(btnVoigt, SIGNAL(clicked(bool)), this, SLOT(FitVoigt()));
+	QObject::connect(btnLine, SIGNAL(clicked(bool)), this, SLOT(FitLine()));
+	QObject::connect(btnSine, SIGNAL(clicked(bool)), this, SLOT(FitSine()));
 #endif
 	QObject::connect(comboX, SIGNAL(currentIndexChanged(const QString&)),
 		this, SLOT(XAxisSelected(const QString&)));
@@ -145,6 +149,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	btnGauss->setEnabled(false);
 	btnLorentz->setEnabled(false);
 	btnVoigt->setEnabled(false);
+	btnLine->setEnabled(false);
+	btnSine->setEnabled(false);
 #endif
 
 #ifndef HAS_COMPLEX_ERF
@@ -885,6 +891,101 @@ bool ScanViewerDlg::Fit(t_func&& func,
 }
 
 
+void ScanViewerDlg::FitLine()
+{
+	auto func = [](t_real x, t_real m, t_real offs) -> t_real { return m*x + offs; };
+	constexpr std::size_t iFuncArgs = 3;
+
+	t_real_glob dSlope = m_pFitParamDlg->GetSlope(),	dSlopeErr = m_pFitParamDlg->GetSlopeErr();
+	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),		dOffsErr = m_pFitParamDlg->GetOffsErr();
+
+	bool bSlopeFixed = m_pFitParamDlg->GetSlopeFixed();
+	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+
+	// automatic parameter determination
+	if(!m_pFitParamDlg->WantParams())
+	{
+		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+
+		dSlope = (*minmaxY.second - *minmaxY.first) / (*minmaxX.second - *minmaxX.first);
+		dOffs = *minmaxY.first;
+
+		dSlopeErr = dSlope * 0.1;
+		dOffsErr = dOffs * 0.1;
+
+		bSlopeFixed = bOffsFixed = 0;
+	}
+
+	std::vector<std::string> vecParamNames = { "slope", "offs" };
+	std::vector<t_real> vecVals = { dSlope, dOffs };
+	std::vector<t_real> vecErrs = { dSlopeErr, dOffsErr };
+	std::vector<bool> vecFixed = { bSlopeFixed, bOffsFixed };
+
+	if(!Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed))
+		return;
+
+	for(t_real &d : vecErrs)
+		d = std::abs(d);
+
+	m_pFitParamDlg->SetSlope(vecVals[0]);	m_pFitParamDlg->SetSlopeErr(vecErrs[0]);
+	m_pFitParamDlg->SetOffs(vecVals[1]);	m_pFitParamDlg->SetOffsErr(vecErrs[1]);
+}
+
+
+void ScanViewerDlg::FitSine()
+{
+	auto func = [](t_real x, t_real amp, t_real freq, t_real phase, t_real offs) -> t_real
+		{ return amp*std::sin(freq*x + phase) + offs; };
+	constexpr std::size_t iFuncArgs = 5;
+
+	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
+	t_real_glob dFreq = m_pFitParamDlg->GetFreq(),	dFreqErr = m_pFitParamDlg->GetFreqErr();
+	t_real_glob dPhase = m_pFitParamDlg->GetPhase(),dPhaseErr = m_pFitParamDlg->GetPhaseErr();
+	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),	dOffsErr = m_pFitParamDlg->GetOffsErr();
+
+	bool bAmpFixed = m_pFitParamDlg->GetAmpFixed();
+	bool bFreqFixed = m_pFitParamDlg->GetFreqFixed();
+	bool bPhaseFixed = m_pFitParamDlg->GetPhaseFixed();
+	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+
+	// automatic parameter determination
+	if(!m_pFitParamDlg->WantParams())
+	{
+		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+
+		dFreq = t_real(2.*M_PI) / (*minmaxX.second - *minmaxX.first);
+		dOffs = *minmaxY.first + (*minmaxY.second - *minmaxY.first)*0.5;
+		dAmp = *minmaxY.second - dOffs;
+		dPhase = 0.;
+
+		dFreqErr = dFreq * 0.1;
+		dOffsErr = dOffs * 0.1;
+		dAmpErr = dAmp * 0.1;
+		dPhaseErr = M_PI;
+
+		bAmpFixed = bFreqFixed = bPhaseFixed = bOffsFixed = 0;
+	}
+
+	std::vector<std::string> vecParamNames = { "amp", "freq", "phase",  "offs" };
+	std::vector<t_real> vecVals = { dAmp, dFreq, dPhase, dOffs };
+	std::vector<t_real> vecErrs = { dAmpErr, dFreqErr, dPhaseErr, dOffsErr };
+	std::vector<bool> vecFixed = { bAmpFixed, bFreqFixed, bPhaseFixed, bOffsFixed };
+
+	if(!Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed))
+		return;
+
+	for(t_real &d : vecErrs)
+		d = std::abs(d);
+
+	m_pFitParamDlg->SetAmp(vecVals[0]);		m_pFitParamDlg->SetAmpErr(vecErrs[0]);
+	m_pFitParamDlg->SetFreq(vecVals[1]);	m_pFitParamDlg->SetFreqErr(vecErrs[1]);
+	m_pFitParamDlg->SetPhase(vecVals[2]);	m_pFitParamDlg->SetPhaseErr(vecErrs[2]);
+	m_pFitParamDlg->SetOffs(vecVals[3]);	m_pFitParamDlg->SetOffsErr(vecErrs[3]);
+}
+
+
 void ScanViewerDlg::FitGauss()
 {
 	auto func = tl::gauss_model_amp<t_real>;
@@ -1058,6 +1159,8 @@ void ScanViewerDlg::ShowFitParams() {}
 void ScanViewerDlg::FitGauss() {}
 void ScanViewerDlg::FitLorentz() {}
 void ScanViewerDlg::FitVoigt() {}
+void ScanViewerDlg::FitLine() {}
+void ScanViewerDlg::FitSine() {}
 
 #endif
 

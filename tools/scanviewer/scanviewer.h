@@ -81,6 +81,8 @@ protected slots:
 	void FitGauss();
 	void FitLorentz();
 	void FitVoigt();
+	void FitLine();
+	void FitSine();
 
 	//void openExternally();
 };
