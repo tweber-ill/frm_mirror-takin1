@@ -95,6 +95,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	ScanViewerDlg *pThis = this;
 	QObject::connect(editPath, &QLineEdit::textEdited, pThis, &ScanViewerDlg::ChangedPath);
 	QObject::connect(listFiles, &QListWidget::currentItemChanged, pThis, &ScanViewerDlg::FileSelected);
+	QObject::connect(editSearch, &QLineEdit::textEdited, pThis, &ScanViewerDlg::SearchProps);
 	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, &ScanViewerDlg::SelectDir);
 #ifndef NO_FIT
 	QObject::connect(btnParam, &QToolButton::clicked, pThis, &ScanViewerDlg::ShowFitParams);
@@ -113,6 +114,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	//	this, SLOT(FileSelected()));
 	QObject::connect(listFiles, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
 		this, SLOT(FileSelected(QListWidgetItem*, QListWidgetItem*)));
+	QObject::connect(editSearch, SIGNAL(textEdited(const QString&)),
+		this, SLOT(SearchProps(const QString&)));
 	QObject::connect(btnBrowse, SIGNAL(clicked(bool)), this, SLOT(SelectDir()));
 #ifndef NO_FIT
 	QObject::connect(btnParam, SIGNAL(clicked(bool)), this, SLOT(ShowFitParams()));
@@ -159,11 +162,13 @@ ScanViewerDlg::~ScanViewerDlg()
 	if(m_pFitParamDlg) { delete m_pFitParamDlg; m_pFitParamDlg = nullptr; }
 }
 
+
 void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
 {
 	m_settings.setValue("geo", saveGeometry());
 	QDialog::closeEvent(pEvt);
 }
+
 
 void ScanViewerDlg::ClearPlot()
 {
@@ -203,6 +208,9 @@ void ScanViewerDlg::ClearPlot()
 	m_plotwrap->GetPlot()->replot();
 }
 
+/**
+ * new scan directory selected
+ */
 void ScanViewerDlg::SelectDir()
 {
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
@@ -219,9 +227,13 @@ void ScanViewerDlg::SelectDir()
 	}
 }
 
+
 void ScanViewerDlg::XAxisSelected(const QString& strLab) { PlotScan(); }
 void ScanViewerDlg::YAxisSelected(const QString& strLab) { PlotScan(); }
 
+/**
+ * new file selected
+ */
 void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev)
 {
 	//QListWidgetItem *pItem = listFiles->currentItem();
@@ -282,6 +294,18 @@ void ScanViewerDlg::FileSelected(QListWidgetItem *pItem, QListWidgetItem *pItemP
 	ShowProps();
 	PlotScan();
 }
+
+
+/**
+ * highlights a scan property field
+ */
+void ScanViewerDlg::SearchProps(const QString& qstr)
+{
+	QList<QTableWidgetItem*> lstItems = tableProps->findItems(qstr, Qt::MatchContains);
+	if(lstItems.size())
+		tableProps->setCurrentItem(lstItems[0]);
+}
+
 
 void ScanViewerDlg::PlotScan()
 {
@@ -345,6 +369,10 @@ void ScanViewerDlg::PlotScan()
 	GenerateExternal(comboExport->currentIndex());
 }
 
+
+/**
+ * convert to external plotter format
+ */
 void ScanViewerDlg::GenerateExternal(int iLang)
 {
 	textRoot->clear();
@@ -363,6 +391,10 @@ void ScanViewerDlg::GenerateExternal(int iLang)
 		tl::log_err("Unknown external language.");
 }
 
+
+/**
+ * convert to gnuplot
+ */
 void ScanViewerDlg::GenerateForGnuplot()
 {
 	const std::string& strTitle = m_strCmd;
@@ -414,6 +446,10 @@ end)RAWSTR";
 	textRoot->setText(strPySrc.c_str());
 }
 
+
+/**
+ * convert to python
+ */
 void ScanViewerDlg::GenerateForPython()
 {
 	const std::string& strTitle = m_strCmd;
@@ -499,6 +535,10 @@ plt.show())RAWSTR";
 	textRoot->setText(strPySrc.c_str());
 }
 
+
+/**
+ * convert to hermelin
+ */
 void ScanViewerDlg::GenerateForHermelin()
 {
     std::string strStoatSrc =
@@ -555,6 +595,10 @@ main(args)
 	textRoot->setText(strStoatSrc.c_str());
 }
 
+
+/**
+ * convert to Roots
+ */
 void ScanViewerDlg::GenerateForRoot()
 {
 	const std::string& strTitle = m_strCmd;
@@ -622,6 +666,10 @@ R"RAWSTR(void scan_plot()
 	textRoot->setText(strRootSrc.c_str());
 }
 
+
+/**
+ * save selected property key for later
+ */
 void ScanViewerDlg::PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pItemPrev)
 {
 	if(!pItem)
@@ -640,6 +688,10 @@ void ScanViewerDlg::PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pIte
 	}
 }
 
+
+/**
+ * save selected property key for later
+ */
 void ScanViewerDlg::ShowProps()
 {
 	if(m_pInstr==nullptr || !m_bDoUpdate)
@@ -696,6 +748,10 @@ void ScanViewerDlg::ShowProps()
 		tableProps->selectRow(0);
 }
 
+
+/**
+ * new directory entered
+ */
 void ScanViewerDlg::ChangedPath()
 {
 	listFiles->clear();
@@ -716,6 +772,10 @@ void ScanViewerDlg::ChangedPath()
 	}
 }
 
+
+/**
+ * re-populate file list
+ */
 void ScanViewerDlg::UpdateFileList()
 {
 	listFiles->clear();
@@ -755,6 +815,9 @@ void ScanViewerDlg::ShowFitParams()
 	m_pFitParamDlg->activateWindow();
 }
 
+/**
+ * fit a function to data points
+ */
 template<std::size_t iFuncArgs, class t_func>
 bool ScanViewerDlg::Fit(t_func&& func,
 	const std::vector<std::string>& vecParamNames,
@@ -821,6 +884,7 @@ bool ScanViewerDlg::Fit(t_func&& func,
 	return true;
 }
 
+
 void ScanViewerDlg::FitGauss()
 {
 	auto func = tl::gauss_model_amp<t_real>;
@@ -871,6 +935,7 @@ void ScanViewerDlg::FitGauss()
 	m_pFitParamDlg->SetAmp(vecVals[2]);		m_pFitParamDlg->SetAmpErr(vecErrs[2]);
 	m_pFitParamDlg->SetOffs(vecVals[3]);	m_pFitParamDlg->SetOffsErr(vecErrs[3]);
 }
+
 
 void ScanViewerDlg::FitLorentz()
 {

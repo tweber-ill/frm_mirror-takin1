@@ -39,6 +39,10 @@ protected:
 
 	FitParamDlg *m_pFitParamDlg = nullptr;
 
+public:
+	ScanViewerDlg(QWidget* pParent = nullptr);
+	virtual ~ScanViewerDlg();
+
 protected:
 	void ClearPlot();
 	void PlotScan();
@@ -68,6 +72,7 @@ protected slots:
 	void PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pItemPrev);
 	void SelectDir();
 	void ChangedPath();
+	void SearchProps(const QString&);
 
 	void XAxisSelected(const QString&);
 	void YAxisSelected(const QString&);
@@ -78,10 +83,6 @@ protected slots:
 	void FitVoigt();
 
 	//void openExternally();
-
-public:
-	ScanViewerDlg(QWidget* pParent = nullptr);
-	virtual ~ScanViewerDlg();
 };
 
 
