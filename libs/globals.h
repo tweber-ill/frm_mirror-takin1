@@ -8,6 +8,7 @@
 #ifndef __TAKIN_GLOBALS_H__
 #define __TAKIN_GLOBALS_H__
 
+#include <vector>
 #include <string>
 
 
@@ -31,6 +32,6 @@ extern bool g_bShowFsq;
 
 extern void add_resource_path(const std::string& strPath, bool bToBack=1);
 extern std::string find_resource(const std::string& strFile, bool bLogErr=1);
-extern std::string find_resource_dir(const std::string& strDir, bool bLogErr=1);
+extern std::vector<std::string> find_resource_dirs(const std::string& strDir, bool bLogErr=1);
 
 #endif

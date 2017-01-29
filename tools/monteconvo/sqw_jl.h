@@ -10,6 +10,7 @@
 
 #include "sqw.h"
 #include <mutex>
+#include <string>
 #include <memory>
 
 
@@ -20,6 +21,9 @@ protected:
 
 	/*jl_function_t*/ void* m_pInit = nullptr;
 	/*jl_function_t*/ void* m_pSqw = nullptr;
+
+	// filter variables that don't start with the given prefix
+	std::string m_strVarPrefix = "g_";
 
 public:
 	SqwJl() = default;
@@ -32,6 +36,8 @@ public:
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 
 	virtual SqwBase* shallow_copy() const override;
+
+	void SetVarPrefix(const char* pcFilter) { m_strVarPrefix = pcFilter; }
 };
 
 #endif

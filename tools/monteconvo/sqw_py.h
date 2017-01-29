@@ -11,6 +11,7 @@
 #include "sqw.h"
 #include <mutex>
 #include <memory>
+#include <string>
 #include <boost/python.hpp>
 namespace py = boost::python;
 
@@ -23,6 +24,9 @@ protected:
 	py::object m_sys, m_os, m_mod;
 	py::object m_Sqw, m_Init;
 
+	// filter variables that don't start with the given prefix
+	std::string m_strVarPrefix = "g_";
+
 public:
 	SqwPy() = default;
 	SqwPy(const char* pcFile);
@@ -34,6 +38,8 @@ public:
 	virtual void SetVars(const std::vector<SqwBase::t_var>&) override;
 
 	virtual SqwBase* shallow_copy() const override;
+
+	void SetVarPrefix(const char* pcFilter) { m_strVarPrefix = pcFilter; }
 };
 
 #endif

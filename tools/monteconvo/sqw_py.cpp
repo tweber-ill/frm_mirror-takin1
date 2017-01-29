@@ -8,6 +8,8 @@
 #include "sqw_py.h"
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
+#include "tlibs/file/file.h"
+
 
 using t_real = t_real_reso;
 
@@ -15,6 +17,13 @@ using t_real = t_real_reso;
 
 SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 {
+	if(!tl::file_exists(pcFile))
+	{
+		tl::log_err("Could not find Python script file: \"", pcFile, "\".");
+		m_bOk = 0;
+		return;
+	}
+
 	std::string strFile = pcFile;
 	std::string strDir = tl::get_dir(strFile);
 	std::string strMod = tl::get_file_noext(tl::get_file(strFile));
@@ -139,6 +148,10 @@ std::vector<SqwBase::t_var> SqwPy::GetVars() const
 			std::string strName = py::extract<std::string>(dict.items()[i][0]);
 			if(strName.length() == 0) continue;
 			if(strName[0] == '_') continue;
+
+			// filter out non-prefixed variables
+			if(m_strVarPrefix.size() && strName.substr(0,m_strVarPrefix.size()) != m_strVarPrefix)
+				continue;
 
 			// type
 			std::string strType = py::extract<std::string>(dict.items()[i][1]

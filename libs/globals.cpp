@@ -66,18 +66,21 @@ std::string find_resource(const std::string& strFile, bool bLogErr)
 	return "";
 }
 
-std::string find_resource_dir(const std::string& strDir, bool bLogErr)
+std::vector<std::string> find_resource_dirs(const std::string& strDir, bool bLogErr)
 {
+	std::vector<std::string> vecDirs;
+
 	for(const std::string& strPrefix : s_vecInstallPaths)
 	{
 		std::string _strDir = strPrefix + "/" + strDir;
 		if(tl::dir_exists(_strDir.c_str()))
-			return _strDir;
+			vecDirs.push_back(_strDir);
 	}
 
-	if(bLogErr)
+	if(bLogErr && vecDirs.size()==0)
 		tl::log_err("Could not load resource directory \"", strDir, "\".");
-	return "";
+
+	return vecDirs;
 }
 
 // -----------------------------------------------------------------------------

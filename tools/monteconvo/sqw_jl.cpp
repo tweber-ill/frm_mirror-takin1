@@ -16,6 +16,13 @@ using t_real = t_real_reso;
 
 SqwJl::SqwJl(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 {
+	if(!tl::file_exists(pcFile))
+	{
+		tl::log_err("Could not find Julia script file: \"", pcFile, "\".");
+		m_bOk = 0;
+		return;
+	}
+
 	std::string strFile = pcFile;
 	std::string strDir = tl::get_dir(strFile);
 	const bool bSetScriptCWD = 1;
@@ -120,6 +127,10 @@ std::vector<SqwBase::t_var> SqwJl::GetVars() const
 		// name
 		std::string strName = jl_symbol_name(pSym);
 		if(strName.length() == 0) continue;
+
+		// filter out non-prefixed variables
+		if(m_strVarPrefix.size() && strName.substr(0,m_strVarPrefix.size()) != m_strVarPrefix)
+			continue;
 
 		// type
 		jl_value_t* pFld = jl_call2(pGetField, (jl_value_t*)jl_main_module, (jl_value_t*)pSym);

@@ -338,7 +338,8 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	}
 	else
 	{
-		QMessageBox::critical(this, "Error", "Could not create S(q,w).");
+		//QMessageBox::critical(this, "Error", "Could not create S(q,w).");
+		tl::log_err("Could not create S(q,w).");
 		return;
 	}
 }
