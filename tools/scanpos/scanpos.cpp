@@ -49,7 +49,7 @@ std::pair<t_vec, t_vec> get_coord(const t_vec& vec0, const t_vec& vec1, const tl
 
 
 void make_plot(const std::string& strFile,
-	const t_vec& vec0, const t_vec& vec1, 
+	const t_vec& vec0, const t_vec& vec1,
 	const std::vector<t_vec>& vecAllHKL, const std::vector<t_vec>& vecAllPos,
 	bool bFlip = 1)
 {
@@ -64,7 +64,7 @@ void make_plot(const std::string& strFile,
 			tl::log_err("Cannot write to file \"", strFile, "\".");
 			return;
 		}
-		
+
 		pOstr = &ofstr;
 	}
 
@@ -82,7 +82,9 @@ void make_plot(const std::string& strFile,
 	(*pOstr) << "#set output \"" << strFile << ".pdf\"\n\n";
 
 	(*pOstr) << "col_bragg = \"#ff0000\"\n";
-	(*pOstr) << "col_pos = \"#0000ff\"\n\n";
+	(*pOstr) << "col_pos = \"#0000ff\"\n";
+	(*pOstr) << "size_bragg = 2\n";
+	(*pOstr) << "size_pos = 1\n\n";
 
 	(*pOstr) << "unset key\n";
 	(*pOstr) << "set size 1,1\n";
@@ -104,8 +106,8 @@ void make_plot(const std::string& strFile,
 
 
 	// labels
-	t_real dLabelPadX = vecBragg[0]*0.0025;
-	t_real dLabelPadY = vecBragg[1]*0.0025;
+	t_real dLabelPadX = std::abs(vecBragg[0]*0.0025);
+	t_real dLabelPadY = std::abs(vecBragg[1]*0.0025);
 
 	(*pOstr) << "set label 1"
 		<< " at " << vecBragg[0]+dLabelPadX << "," << vecBragg[1]
@@ -146,8 +148,8 @@ void make_plot(const std::string& strFile,
 
 
 	(*pOstr) << "plot \\\n";
-	(*pOstr) << "\t\"-\" u 1:2 w p pt 7 ps 1 lc rgb col_bragg, \\\n";
-	(*pOstr) << "\t\"-\" u 1:2 w p pt 7 ps 1 lc rgb col_pos\n";
+	(*pOstr) << "\t\"-\" u 1:2 w p pt 7 ps size_bragg lc rgb col_bragg, \\\n";
+	(*pOstr) << "\t\"-\" u 1:2 w p pt 7 ps size_pos lc rgb col_pos\n";
 
 	(*pOstr) << std::left << std::setw(g_iPrec*2) << vecBragg[0] << " " 
 		<< std::left << std::setw(g_iPrec*2)<< vecBragg[1] 
@@ -222,7 +224,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	
+
 	if(strVec0.size())
 		vec0 = tl::str_to_var<decltype(vec0)>("[3](" + strVec0 + ")");
 	if(strVec1.size())
