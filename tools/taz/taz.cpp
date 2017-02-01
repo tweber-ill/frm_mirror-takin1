@@ -593,6 +593,9 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pScanViewer = new QAction("Scan Viewer...", this);
 	pMenuTools->addAction(pScanViewer);
 
+	QAction *pScanPos = new QAction("Scan Positions Plot...", this);
+	pMenuTools->addAction(pScanPos);
+
 
 
 	// --------------------------------------------------------------------------------
@@ -642,6 +645,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(SaveAs()));
 	QObject::connect(pImport, SIGNAL(triggered()), this, SLOT(Import()));
 	QObject::connect(pScanViewer, SIGNAL(triggered()), this, SLOT(ShowScanViewer()));
+	QObject::connect(pScanPos, SIGNAL(triggered()), this, SLOT(ShowScanPos()));
 	QObject::connect(pSettings, SIGNAL(triggered()), this, SLOT(ShowSettingsDlg()));
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
@@ -852,6 +856,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = 0; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = 0; }
 	if(m_pScanViewer) { delete m_pScanViewer; m_pScanViewer = nullptr; }
+	if(m_pScanPos) { delete m_pScanPos; m_pScanPos = nullptr; }
 	if(m_pAtomsDlg) { delete m_pAtomsDlg; m_pAtomsDlg = nullptr; }
 
 #if !defined NO_3D

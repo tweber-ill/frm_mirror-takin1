@@ -7,16 +7,9 @@
  * gcc -I../.. -I. -DNO_IOSTR -o scanpos ../../tlibs/file/loadinstr.cpp ../../tlibs/log/log.cpp ../../libs/globals.cpp scanpos.cpp -std=c++11 -lstdc++ -lm -lboost_system -lboost_filesystem -lboost_program_options
  */
 
-#define TLIBS_USE_GLOBAL_OPS
-#include "tlibs/math/linalg.h"
-#include "tlibs/math/linalg_ops.h"
-#include "tlibs/file/loadinstr.h"
-#include "tlibs/log/log.h"
-#include "tlibs/version.h"
-#include "libs/globals.h"
-
-#include <vector>
+#include "scanpos.h"
 #include <boost/program_options.hpp>
+
 
 namespace opts = boost::program_options;
 
@@ -25,34 +18,14 @@ using t_vec = tl::ublas::vector<t_real>;
 using t_mat = tl::ublas::matrix<t_real>;
 
 
-// transform rlu into local <vec0, vec1> coordinates
-std::pair<t_vec, t_vec> get_coord(const t_vec& vec0, const t_vec& vec1, const tl::FileInstrBase<t_real>& scan)
-{
-	t_vec vecHKL, vecPos;
-
-	std::size_t iNumPos = scan.GetScanCount();
-	if(iNumPos)
-	{
-		// only use first position
-		auto pos = scan.GetScanHKLKiKf(0);
-		vecHKL = tl::make_vec<t_vec>({ pos[0], pos[1], pos[2] });
-
-		vecPos.resize(2);
-		vecPos[0] = vecHKL*vec0/std::pow(tl::ublas::norm_2(vec0), t_real(2));
-		vecPos[1] = vecHKL*vec1/std::pow(tl::ublas::norm_2(vec1), t_real(2));
-
-		tl::log_info(vecHKL, " rlu  ->  ", vecPos, ".");
-	}
-
-	return std::make_pair(vecHKL, vecPos);
-}
-
-
-void make_plot(const std::string& strFile,
+bool make_plot(const std::string& strFile,
 	const t_vec& vec0, const t_vec& vec1,
 	const std::vector<t_vec>& vecAllHKL, const std::vector<t_vec>& vecAllPos,
 	bool bFlip = 1)
 {
+	if(!vecAllPos.size())
+		return false;
+
 	std::ostream *pOstr = &std::cout;
 	std::ofstream ofstr;
 
@@ -62,109 +35,17 @@ void make_plot(const std::string& strFile,
 		if(!ofstr)
 		{
 			tl::log_err("Cannot write to file \"", strFile, "\".");
-			return;
+			return false;
 		}
 
 		pOstr = &ofstr;
 	}
 
-	if(!vecAllPos.size())
-	{
-		tl::log_err("No scan positions found.");
-		return;
-	}
-
-	(*pOstr).precision(g_iPrec);
-	(*pOstr) << "#!/usr/bin/gnuplot -p\n";
-	(*pOstr) << "# Created with tlibs version " << TLIBS_VERSION << ".\n\n";
-
-	(*pOstr) << "#set term pdf enhanced color font \"NimbusSanL-Regu,16\"\n";
-	(*pOstr) << "#set output \"" << strFile << ".pdf\"\n\n";
-
-	(*pOstr) << "col_bragg = \"#ff0000\"\n";
-	(*pOstr) << "col_pos = \"#0000ff\"\n";
-	(*pOstr) << "size_bragg = 2\n";
-	(*pOstr) << "size_pos = 1\n\n";
-
-	(*pOstr) << "unset key\n";
-	(*pOstr) << "set size 1,1\n";
-	(*pOstr) << "set xlabel \"[" << vec0[0] << ", " << vec0[1] << ", " << vec0[2] << "] (rlu)\"\n";
-	(*pOstr) << "set ylabel \"[" << vec1[0] << ", " << vec1[1] << ", " << vec1[2] << "] (rlu)\"\n\n";
-
-	(*pOstr) << "set xtics rotate 0.05\n";
-	(*pOstr) << "set mxtics 2\n";
-	(*pOstr) << "set ytics 0.05\n";
-	(*pOstr) << "set mytics 2\n\n";
-
-
 	// guess Bragg peak
 	t_vec vecBraggHKL = tl::make_vec<t_vec>(
 		{std::round(vecAllHKL[0][0]), std::round(vecAllHKL[0][1]), std::round(vecAllHKL[0][2])});
-	t_vec vecBragg(2);
-	vecBragg[0] = vecBraggHKL*vec0 / std::pow(tl::ublas::norm_2(vec0), t_real(2));
-	vecBragg[1] = vecBraggHKL*vec1 / std::pow(tl::ublas::norm_2(vec1), t_real(2));
 
-
-	// labels
-	t_real dLabelPadX = std::abs(vecBragg[0]*0.0025);
-	t_real dLabelPadY = std::abs(vecBragg[1]*0.0025);
-
-	(*pOstr) << "set label 1"
-		<< " at " << vecBragg[0]+dLabelPadX << "," << vecBragg[1]
-		<< " \"(" << vecBraggHKL[0] << ", " << vecBraggHKL[1] << ", " << vecBraggHKL[2] << ")\""
-		<< " \n";
-
-	t_real xmin = vecBragg[0], xmax = vecBragg[0];
-	t_real ymin = vecBragg[1], ymax = vecBragg[1];
-
-	for(std::size_t iPos=0; iPos<vecAllPos.size(); ++iPos)
-	{
-		const t_vec& vecHKL = vecAllHKL[iPos];
-		const t_vec& vecPos = vecAllPos[iPos];
-
-		xmin = std::min(vecPos[0], xmin);
-		ymin = std::min(vecPos[1], ymin);
-		xmax = std::max(vecPos[0], xmax);
-		ymax = std::max(vecPos[1], ymax);
-
-		(*pOstr) << "set label " << (iPos+2)
-			<< " at " << vecPos[0]+dLabelPadX << "," << vecPos[1]
-			<< " \"(" << vecHKL[0] << ", " << vecHKL[1] << ", " << vecHKL[2] << ")\""
-			<< " \n";
-	}
-	(*pOstr) << "\n";
-
-
-	// ranges
-	t_real xpad = (xmax-xmin)*0.1 + dLabelPadX*10.;
-	t_real ypad = (ymax-ymin)*0.1 + dLabelPadY*10.;
-	(*pOstr) << "xpad = " << xpad << "\n";
-	(*pOstr) << "ypad = " << ypad << "\n";
-	(*pOstr) << "set xrange [" << xmin << "-xpad" << " : " << xmax << "+xpad" << "]\n";
-	if(bFlip)
-		(*pOstr) << "set yrange [" << ymax << "+ypad" << " : " << ymin << "-ypad" << "]\n\n";
-	else
-		(*pOstr) << "set yrange [" << ymin << "-ypad" << " : " << ymax << "+ypad" << "]\n\n";
-
-
-	(*pOstr) << "plot \\\n";
-	(*pOstr) << "\t\"-\" u 1:2 w p pt 7 ps size_bragg lc rgb col_bragg, \\\n";
-	(*pOstr) << "\t\"-\" u 1:2 w p pt 7 ps size_pos lc rgb col_pos\n";
-
-	(*pOstr) << std::left << std::setw(g_iPrec*2) << vecBragg[0] << " " 
-		<< std::left << std::setw(g_iPrec*2)<< vecBragg[1] 
-		<< "\t# Bragg peak\ne\n";
-
-	for(std::size_t iPos=0; iPos<vecAllPos.size(); ++iPos)
-	{
-		const t_vec& vecHKL = vecAllHKL[iPos];
-		const t_vec& vecPos = vecAllPos[iPos];
-
-		(*pOstr) << std::left << std::setw(g_iPrec*2) << vecPos[0] << " " 
-			<< std::left << std::setw(g_iPrec*2) << vecPos[1]
-			<< "\t# Q = (" << vecHKL[0] << ", " << vecHKL[1] << ", " << vecHKL[2] << ")\n";
-	}
-	(*pOstr) << "e\n";
+	return make_plot<t_vec, t_real>(*pOstr, vec0, vec1, vecBraggHKL, vecAllHKL, vecAllPos, bFlip);
 }
 
 
@@ -263,7 +144,8 @@ int main(int argc, char** argv)
 	vecAllPos.reserve(argc-2);
 
 	// first scan position
-	auto vecPos = get_coord(vec0, vec1, *ptrScan);
+	auto vecPos = get_coord<t_vec, t_real>(vec0, vec1, *ptrScan);
+	tl::log_info(vecPos.first, " rlu  ->  ", vecPos.second, ".");
 	if(vecPos.second.size() != 2)
 	{
 		tl::log_err("Invalid scan position for file \"", vecScans[0], "\".");
@@ -285,7 +167,8 @@ int main(int argc, char** argv)
 		}
 
 		// remaining scan positions
-		auto vecPosOther = get_coord(vec0, vec1, *ptrScanOther);
+		auto vecPosOther = get_coord<t_vec, t_real>(vec0, vec1, *ptrScanOther);
+		tl::log_info(vecPos.first, " rlu  ->  ", vecPos.second, ".");
 		if(vecPosOther.second.size() != 2)
 		{
 			tl::log_err("Invalid scan position for file \"", vecScans[iFile], "\".");
@@ -297,7 +180,11 @@ int main(int argc, char** argv)
 	}
 
 
-	make_plot(strOutFile, vec0, vec1, vecAllHKL, vecAllPos, bFlip);
+	if(!make_plot(strOutFile, vec0, vec1, vecAllHKL, vecAllPos, bFlip))
+	{
+		tl::log_err("No scan positions found.");
+		return -1;
+	}
 
 	return 0;
 }

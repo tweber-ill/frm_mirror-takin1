@@ -18,11 +18,42 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="margin">
-    <number>4</number>
+    <number>6</number>
    </property>
    <property name="spacing">
-    <number>4</number>
+    <number>2</number>
    </property>
+   <item row="1" column="1" colspan="2">
+    <widget class="QLineEdit" name="editPlane">
+     <property name="text">
+      <string>1,0,0; 0,1,0</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Scan Positions:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2" colspan="2">
+    <widget class="QPushButton" name="btnAddFromScan">
+     <property name="text">
+      <string>Add From Scans...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="2" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok|QDialogButtonBox::Save</set>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -30,10 +61,27 @@
      </property>
     </widget>
    </item>
+   <item row="5" column="0" colspan="4">
+    <widget class="QPlainTextEdit" name="editPos">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Gnuplot Script:</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="1" colspan="2">
     <widget class="QLineEdit" name="editBragg">
      <property name="text">
-      <string>1 0 0</string>
+      <string>1,0,0</string>
      </property>
     </widget>
    </item>
@@ -52,61 +100,23 @@ Scan...</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1" colspan="2">
-    <widget class="QLineEdit" name="editPlane">
-     <property name="text">
-      <string>1 0 0, 0 1 0</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Scan Positions:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2" colspan="2">
-    <widget class="QPushButton" name="btnAddFromScan">
-     <property name="text">
-      <string>Add From Scan...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="4">
-    <widget class="QPlainTextEdit" name="editPos">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>1</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Gnuplot Script:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="4">
+   <item row="7" column="0" colspan="4">
     <widget class="QPlainTextEdit" name="editScript">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
-       <verstretch>2</verstretch>
+       <verstretch>3</verstretch>
       </sizepolicy>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="6" column="2" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok|QDialogButtonBox::Save</set>
+   <item row="2" column="1" colspan="2">
+    <widget class="QCheckBox" name="checkFlip">
+     <property name="text">
+      <string>Flip y Axis</string>
      </property>
     </widget>
    </item>
@@ -115,6 +125,7 @@ Scan...</string>
  <tabstops>
   <tabstop>editBragg</tabstop>
   <tabstop>editPlane</tabstop>
+  <tabstop>checkFlip</tabstop>
   <tabstop>btnFromScan</tabstop>
   <tabstop>btnAddFromScan</tabstop>
   <tabstop>editPos</tabstop>

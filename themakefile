@@ -265,7 +265,7 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/sqw.o obj/sqwbase.o obj/sqwfact.o ${PY_OBJS} ${JL_OBJS} \
 	obj/tasreso.o obj/ConvoDlg.o obj/ConvoDlg_file.o obj/SqwParamDlg.o \
 	obj/scanviewer.o obj/FitParamDlg.o obj/x3d.o obj/eval.o \
-	obj/tlibs_ver.o obj/AboutDlg.o obj/convo_scan.o
+	obj/tlibs_ver.o obj/AboutDlg.o obj/convo_scan.o obj/ScanPosDlg.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
 	obj/qthelper.o obj/qwthelper.o obj/globals.o obj/globals_qt.o
@@ -572,6 +572,9 @@ obj/scanviewer.o: tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer.h
 obj/FitParamDlg.o: tools/scanviewer/FitParamDlg.cpp tools/scanviewer/FitParamDlg.h
 	${CC} ${FLAGS} ${FAD_DEFS} -c -o $@ $<
 
+obj/ScanPosDlg.o: tools/scanpos/ScanPosDlg.cpp tools/scanpos/ScanPosDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
+
 obj/gentab.o: tools/gentab/gentab.cpp
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 
@@ -587,7 +590,6 @@ obj/sfact.o: tools/sggen/sfact.cpp
 
 obj/AboutDlg.o: dialogs/AboutDlg.cpp dialogs/AboutDlg.h
 	${CC} ${FLAGS} ${FAD_DEFS} -c -o $@ $<
-
 
 # -----------------------------------------------------------------------------
 
