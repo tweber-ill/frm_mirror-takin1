@@ -11,13 +11,14 @@
 #include <QDialog>
 #include <QSettings>
 #include "ui/ui_scanpos.h"
+#include "tlibs/helper/proc.h"
+
 
 class ScanPosDlg : public QDialog, Ui::ScanPosDlg
 { Q_OBJECT
 	protected:
 		QSettings *m_pSettings = 0;
-
-		virtual void accept() override;
+		std::unique_ptr<tl::PipeProc<char>> m_pPlotProc;
 
 	public:
 		ScanPosDlg(QWidget* pParent=0, QSettings *pSett=0);
@@ -25,12 +26,16 @@ class ScanPosDlg : public QDialog, Ui::ScanPosDlg
 
 	protected:
 		std::vector<std::string> GetFiles(bool bMultiple);
+		virtual void accept() override;
 
 	protected slots:
 		void LoadPlaneFromFile();
 		void LoadPosFromFile();
+
+		void Plot();
 		void UpdatePlot();
 		void SavePlot();
+
 		void ButtonBoxClicked(QAbstractButton* pBtn);
 };
 

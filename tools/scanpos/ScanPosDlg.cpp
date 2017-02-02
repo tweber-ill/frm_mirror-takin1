@@ -22,6 +22,9 @@ ScanPosDlg::ScanPosDlg(QWidget* pParent, QSettings *pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
 	setupUi(this);
+
+	buttonBox->addButton(new QPushButton("Plot..."), QDialogButtonBox::ActionRole);
+
 	if(m_pSettings)
 	{
 		QFont font;
@@ -295,6 +298,20 @@ void ScanPosDlg::UpdatePlot()
 	}
 }
 
+void ScanPosDlg::Plot()
+{
+	if(!m_pPlotProc)
+		m_pPlotProc.reset(new tl::PipeProc<char>("gnuplot -p 2>/dev/null 1>/dev/null", 1));
+
+	if(!m_pPlotProc || !m_pPlotProc->IsReady())
+	{
+		QMessageBox::critical(this, "Error", "Gnuplot cannot be invoked.");
+		return;
+	}
+
+	(*m_pPlotProc) << editScript->toPlainText().toStdString();
+	m_pPlotProc->flush();
+}
 
 void ScanPosDlg::accept()
 {}
@@ -305,6 +322,10 @@ void ScanPosDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 	{
 		SavePlot();
 	}
+	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ActionRole)
+	{
+		Plot();
+	}
 	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
 		if(m_pSettings)
@@ -312,5 +333,6 @@ void ScanPosDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 		QDialog::accept();
 	}
 }
+
 
 #include "ScanPosDlg.moc"
