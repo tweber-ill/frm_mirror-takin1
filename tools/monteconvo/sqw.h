@@ -101,7 +101,7 @@ private:
 	SqwPhonon() {};
 
 protected:
-	static t_real_reso disp(t_real_reso dq, t_real_reso da, t_real_reso df);
+	static t_real_reso phonon_disp(t_real_reso dq, t_real_reso da, t_real_reso df);
 
 	void create();
 	void destroy();
@@ -165,7 +165,7 @@ private:
 	SqwPhononSingleBranch() {};
 
 protected:
-	static t_real_reso disp(t_real_reso dq, t_real_reso da, t_real_reso df);
+	static t_real_reso phonon_disp(t_real_reso dq, t_real_reso da, t_real_reso df);
 
 protected:
 	ublas::vector<t_real_reso> m_vecBragg;
@@ -179,6 +179,7 @@ public:
 
 	virtual ~SqwPhononSingleBranch() = default;
 
+	virtual std::pair<t_real_reso, t_real_reso> disp(t_real_reso dh, t_real_reso dk, t_real_reso dl) const override;
 	virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
 
 	const ublas::vector<t_real_reso>& GetBragg() const { return m_vecBragg; }
@@ -220,6 +221,7 @@ public:
 	SqwMagnon(const char* pcFile);
 	virtual ~SqwMagnon() = default;
 
+	virtual std::pair<t_real_reso, t_real_reso> disp(t_real_reso dh, t_real_reso dk, t_real_reso dl) const override;
 	virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
 
 	const ublas::vector<t_real_reso>& GetBragg() const { return m_vecBragg; }

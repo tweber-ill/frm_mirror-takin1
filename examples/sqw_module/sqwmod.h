@@ -10,7 +10,7 @@
 
 #include "tools/monteconvo/sqwbase.h"
 #include "tlibs/math/linalg.h"
-#include <tuple>
+#include <utility>
 
 class SqwMod : public SqwBase
 {
@@ -41,9 +41,7 @@ class SqwMod : public SqwBase
 		SqwMod(const std::string& strCfgFile);
 		virtual ~SqwMod();
 
-		std::tuple<t_real, t_real>
-		dispersion(t_real dh, t_real dk, t_real dl) const;
-
+		virtual std::pair<t_real, t_real> disp(t_real dh, t_real dk, t_real dl) const override;
 		virtual t_real operator()(t_real dh, t_real dk, t_real dl, t_real dE) const override;
 
 		virtual std::vector<t_var> GetVars() const override;

@@ -8,6 +8,7 @@
 #include "sqw_jl.h"
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
+#include "tlibs/file/file.h"
 #include <julia.h>
 
 using t_real = t_real_reso;
@@ -77,6 +78,27 @@ SqwJl::~SqwJl()
 }
 
 
+/**
+ * E(Q)
+ */
+std::pair<t_real, t_real> SqwJl::disp(t_real dh, t_real dk, t_real dl) const
+{
+	if(!m_bOk)
+	{
+		tl::log_err("Julia interpreter has not initialised, cannot query S(q,w).");
+		return std::make_pair(t_real(0), t_real(0));
+	}
+
+	t_real dE, dW;
+
+	// TODO: call jl func
+
+	return std::make_pair(dE, dW);
+}
+
+/**
+ * S(Q,E)
+ */
 t_real SqwJl::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
 	if(!m_bOk)

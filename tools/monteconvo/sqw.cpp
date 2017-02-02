@@ -210,7 +210,7 @@ SqwBase* SqwKdTree::shallow_copy() const
 //------------------------------------------------------------------------------
 
 
-t_real SqwPhonon::disp(t_real dq, t_real da, t_real df)
+t_real SqwPhonon::phonon_disp(t_real dq, t_real da, t_real df)
 {
 	return std::abs(da*std::sin(dq*df));
 }
@@ -253,9 +253,9 @@ void SqwPhonon::create()
 		ublas::vector<t_real> vecQTA1 = dq*m_vecTA1;
 		ublas::vector<t_real> vecQTA2 = dq*m_vecTA2;
 
-		t_real dELA = disp(dq, m_dLA_amp, m_dLA_freq);
-		t_real dETA1 = disp(dq, m_dTA1_amp, m_dTA1_freq);
-		t_real dETA2 = disp(dq, m_dTA2_amp, m_dTA2_freq);
+		t_real dELA = phonon_disp(dq, m_dLA_amp, m_dLA_freq);
+		t_real dETA1 = phonon_disp(dq, m_dTA1_amp, m_dTA1_freq);
+		t_real dETA2 = phonon_disp(dq, m_dTA2_amp, m_dTA2_freq);
 
 		t_real dLA_E_HWHM = m_dLA_E_HWHM;
 		t_real dLA_q_HWHM = m_dLA_q_HWHM;
@@ -616,7 +616,7 @@ SqwBase* SqwPhonon::shallow_copy() const
 #define BRANCH_PREFIX ""
 //#define BRANCH_PREFIX "TA2_"
 
-t_real SqwPhononSingleBranch::disp(t_real dq, t_real da, t_real df)
+t_real SqwPhononSingleBranch::phonon_disp(t_real dq, t_real da, t_real df)
 {
 	return std::abs(da*std::sin(dq*df));
 }
@@ -656,20 +656,35 @@ SqwPhononSingleBranch::SqwPhononSingleBranch(const char* pcFile)
 	m_bOk = 1;
 }
 
-t_real SqwPhononSingleBranch::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
+/**
+ * dispersion E(Q)
+ */
+std::pair<t_real, t_real> SqwPhononSingleBranch::disp(t_real dh, t_real dk, t_real dl) const
 {
 	dh -= m_vecBragg[0];
 	dk -= m_vecBragg[1];
 	dl -= m_vecBragg[2];
 
 	t_real dq = std::sqrt(dh*dh + dk*dk + dl*dl);
-	t_real dE0 = disp(dq, m_damp, m_dfreq);
+	t_real dE0 = phonon_disp(dq, m_damp, m_dfreq);
+	t_real dWeight = t_real(1);
+
+	return std::make_pair(dE0, dWeight);
+}
+
+/**
+ * dynamical structure factor S(Q,E)
+ */
+t_real SqwPhononSingleBranch::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
+{
+	t_real dE0, dW;
+	std::tie(dE0, dW) = disp(dh, dk, dl);
 
 	t_real dInc = 0.;
 	if(!tl::float_equal<t_real>(m_dIncAmp, 0.))
 		dInc = tl::gauss_model<t_real>(dE, 0., m_dIncSig, m_dIncAmp, 0.);
 
-	return std::abs(tl::DHO_model<t_real>(dE, m_dT, dE0, m_dHWHM, m_dS0, 0.)) + dInc;
+	return std::abs(tl::DHO_model<t_real>(dE, m_dT, dE0, m_dHWHM, m_dS0*dW, 0.)) + dInc;
 }
 
 std::vector<SqwBase::t_var> SqwPhononSingleBranch::GetVars() const
@@ -787,7 +802,10 @@ SqwMagnon::SqwMagnon(const char* pcFile)
 	m_bOk = 1;
 }
 
-t_real SqwMagnon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
+/**
+ * dispersion E(Q)
+ */
+std::pair<t_real, t_real> SqwMagnon::disp(t_real dh, t_real dk, t_real dl) const
 {
 	dh -= m_vecBragg[0];
 	dk -= m_vecBragg[1];
@@ -799,16 +817,30 @@ t_real SqwMagnon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 		case 0: pDisp = &ferro_disp; break;
 		case 1: pDisp = &antiferro_disp; break;
 	}
-	if(!pDisp) return t_real(0);
+
+	if(!pDisp)
+		return std::make_pair(t_real(0), t_real(0));
 
 	t_real dq = std::sqrt(dh*dh + dk*dk + dl*dl);
-	t_real dE0 = pDisp(dq, m_dD, m_dOffs);
+	t_real dE = pDisp(dq, m_dD, m_dOffs);
+	t_real dW = t_real(1);
+
+	return std::make_pair(dE, dW);
+}
+
+/**
+ * dynamical structure factor S(Q,E)
+ */
+t_real SqwMagnon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
+{
+	t_real dE0, dW;
+	std::tie(dE0, dW) = disp(dh, dk, dl);
 
 	t_real dInc = 0.;
 	if(!tl::float_equal<t_real>(m_dIncAmp, 0.))
 		dInc = tl::gauss_model<t_real>(dE, 0., m_dIncSig, m_dIncAmp, 0.);
 
-	return std::abs(tl::DHO_model<t_real>(dE, m_dT, dE0, m_dE_HWHM, m_dS0, 0.)) + dInc;
+	return std::abs(tl::DHO_model<t_real>(dE, m_dT, dE0, m_dE_HWHM, m_dS0*dW, 0.)) + dInc;
 }
 
 std::vector<SqwBase::t_var> SqwMagnon::GetVars() const

@@ -15,6 +15,7 @@ using t_real = t_real_reso;
 
 #define MAX_PARAM_VAL_SIZE 128
 
+
 SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 {
 	if(!tl::file_exists(pcFile))
@@ -79,6 +80,11 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 			{
 				tl::log_warn("Script has no TakinInit function.");
 			}
+
+			if(moddict.has_key("TakinDisp"))
+				m_disp = moddict["TakinDisp"];
+			else
+				tl::log_warn("Script has no TakinDisp function.");
 		}
 		catch(const py::error_already_set& ex) {}
 	}
@@ -106,6 +112,48 @@ SqwPy::~SqwPy()
 }
 
 
+/**
+ * E(Q)
+ */
+std::pair<t_real, t_real> SqwPy::disp(t_real dh, t_real dk, t_real dl) const
+{
+	if(!m_bOk)
+	{
+		tl::log_err("Interpreter has not initialised, cannot query S(q,w).");
+		return std::make_pair(t_real(0), t_real(0));
+	}
+
+	std::lock_guard<std::mutex> lock(*m_pmtx);
+
+
+	t_real dE = 0;
+	t_real dW = 0;
+
+	try
+	{
+		if(!!m_disp)
+		{
+			py::object lst = m_disp(dh, dk, dl);
+			py::stl_input_iterator<t_real> iter(lst);
+			py::stl_input_iterator<t_real> end;
+
+			if(iter != end) dE = *iter;
+			if(++iter != end) dW = *iter;
+		}
+	}
+	catch(const py::error_already_set& ex)
+	{
+		PyErr_Print();
+		PyErr_Clear();
+	}
+
+	return std::make_pair(dE, dW);
+}
+
+
+/**
+ * S(Q,E)
+ */
 t_real SqwPy::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
 	if(!m_bOk)
@@ -129,6 +177,9 @@ t_real SqwPy::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 }
 
 
+/**
+ * Gets model variables.
+ */
 std::vector<SqwBase::t_var> SqwPy::GetVars() const
 {
 	std::vector<SqwBase::t_var> vecVars;
@@ -187,6 +238,9 @@ std::vector<SqwBase::t_var> SqwPy::GetVars() const
 }
 
 
+/**
+ * Sets model variables.
+ */
 void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 {
 	if(!m_bOk)
@@ -275,6 +329,7 @@ SqwBase* SqwPy::shallow_copy() const
 	pSqw->m_mod = this->m_mod;
 	pSqw->m_Sqw = this->m_Sqw;
 	pSqw->m_Init = this->m_Init;
+	pSqw->m_disp = this->m_disp;
 
 	return pSqw;
 }

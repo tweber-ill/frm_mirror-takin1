@@ -40,15 +40,14 @@ SqwMod::~SqwMod()
 
 
 // ----------------------------------------------------------------------------
-// dispersion
+// dispersion, spectral weight and structure factor
 
-std::tuple<t_real, t_real>
-SqwMod::dispersion(t_real dh, t_real dk, t_real dl) const
+std::pair<t_real, t_real> SqwMod::disp(t_real dh, t_real dk, t_real dl) const
 {
 	t_real dE = 0;	// energy
 	t_real dw = 1;	// spectral weight
 
-	return std::make_tuple(dE, dw);
+	return std::make_pair(dE, dw);
 }
 
 t_real SqwMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
@@ -56,7 +55,7 @@ t_real SqwMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 	t_real dcut = t_real(0.02);
 
 	t_real dE_peak, dw_peak;
-	std::tie(dE_peak, dw_peak) = dispersion(dh, dk, dl);
+	std::tie(dE_peak, dw_peak) = disp(dh, dk, dl);
 
 	t_real dInc = tl::gauss_model(dE, t_real(0), m_dIncSigma, m_dIncAmp, t_real(0));
 	t_real dS_p = tl::gauss_model(dE, dE_peak, m_dSigma, dw_peak, t_real(0));
