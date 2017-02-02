@@ -109,7 +109,7 @@ def TakinDisp(h, k, l):
 	except ZeroDivisionError:
 		return [0., 0.]
 
-	return [E_peak, w_peak]
+	return [[E_peak, -E_peak], [w_peak, w_peak]]
 
 
 #
@@ -118,10 +118,10 @@ def TakinDisp(h, k, l):
 def TakinSqw(h, k, l, E):
 	try:
 #		print("h={0}, k={1}, l={2}, E={3}".format(h,k,l,E))
-		E_peak, w_peak = TakinDisp(h,k,l)
+		[Ep_peak, Em_peak], [wp_peak, wm_peak] = TakinDisp(h,k,l)
 
-		S_p = gauss(E, E_peak, g_sig, g_S0*w_peak)
-		S_m = gauss(E, -E_peak, g_sig, g_S0*w_peak)
+		S_p = gauss(E, Ep_peak, g_sig, g_S0*wp_peak)
+		S_m = gauss(E, Em_peak, g_sig, g_S0*wm_peak)
 		incoh = gauss(E, 0., g_inc_sig, g_inc_amp)
 
 		S = (S_p + S_m)*bose_cutoff(E, g_T, g_bose_cut) + incoh

@@ -292,6 +292,8 @@ ConvoDlg::~ConvoDlg()
 
 void ConvoDlg::SqwModelChanged(int)
 {
+	if(!m_bAllowSqwReinit) return;
+
 	editSqw->clear();
 	createSqwModel("");
 	//emit SqwLoaded(std::vector<SqwBase::t_var>{});

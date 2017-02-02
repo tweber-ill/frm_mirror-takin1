@@ -25,6 +25,7 @@ using t_real = t_real_reso;
 
 // -----------------------------------------------------------------------------
 // file operations
+
 void ConvoDlg::Load()
 {
 	const std::string strXmlRoot("taz/");
@@ -57,6 +58,7 @@ void ConvoDlg::Load()
 	if(m_pSett)
 		m_pSett->setValue("monteconvo/last_dir", QString(strDir.c_str()));
 }
+
 
 void ConvoDlg::Save()
 {
@@ -93,6 +95,7 @@ void ConvoDlg::Save()
 	if(m_pSett)
 		m_pSett->setValue("monteconvo/last_dir", QString(strDir.c_str()));
 }
+
 
 void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
@@ -145,6 +148,7 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	}
 	m_bAllowSqwReinit = 1;
 }
+
 
 void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
@@ -251,7 +255,7 @@ void ConvoDlg::LoadSettings()
 			continue;
 		m_vecComboBoxes[iCombo]->setCurrentIndex(m_pSett->value(m_vecComboNames[iCombo].c_str()).value<int>());
 	}
-	
+
 	if(m_pSett->contains("monteconvo/sqw"))
 		comboSqw->setCurrentIndex(comboSqw->findData(m_pSett->value("monteconvo/sqw").toString()));
 

@@ -81,19 +81,20 @@ SqwJl::~SqwJl()
 /**
  * E(Q)
  */
-std::pair<t_real, t_real> SqwJl::disp(t_real dh, t_real dk, t_real dl) const
+std::tuple<std::vector<t_real>, std::vector<t_real>>
+	SqwJl::disp(t_real dh, t_real dk, t_real dl) const
 {
 	if(!m_bOk)
 	{
 		tl::log_err("Julia interpreter has not initialised, cannot query S(q,w).");
-		return std::make_pair(t_real(0), t_real(0));
+		return std::make_tuple(std::vector<t_real>(), std::vector<t_real>());
 	}
 
-	t_real dE, dW;
+	std::vector<t_real> vecE, vecW;
 
 	// TODO: call jl func
 
-	return std::make_pair(dE, dW);
+	return std::make_tuple(vecE, vecW);
 }
 
 /**

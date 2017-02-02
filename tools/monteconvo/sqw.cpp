@@ -659,7 +659,8 @@ SqwPhononSingleBranch::SqwPhononSingleBranch(const char* pcFile)
 /**
  * dispersion E(Q)
  */
-std::pair<t_real, t_real> SqwPhononSingleBranch::disp(t_real dh, t_real dk, t_real dl) const
+std::tuple<std::vector<t_real>, std::vector<t_real>>
+SqwPhononSingleBranch::disp(t_real dh, t_real dk, t_real dl) const
 {
 	dh -= m_vecBragg[0];
 	dk -= m_vecBragg[1];
@@ -669,7 +670,8 @@ std::pair<t_real, t_real> SqwPhononSingleBranch::disp(t_real dh, t_real dk, t_re
 	t_real dE0 = phonon_disp(dq, m_damp, m_dfreq);
 	t_real dWeight = t_real(1);
 
-	return std::make_pair(dE0, dWeight);
+	return std::make_tuple(std::vector<t_real>({dE0, -dE0}),
+		std::vector<t_real>({dWeight, dWeight}));
 }
 
 /**
@@ -677,14 +679,14 @@ std::pair<t_real, t_real> SqwPhononSingleBranch::disp(t_real dh, t_real dk, t_re
  */
 t_real SqwPhononSingleBranch::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
-	t_real dE0, dW;
-	std::tie(dE0, dW) = disp(dh, dk, dl);
+	std::vector<t_real> vecE0, vecW;
+	std::tie(vecE0, vecW) = disp(dh, dk, dl);
 
 	t_real dInc = 0.;
 	if(!tl::float_equal<t_real>(m_dIncAmp, 0.))
 		dInc = tl::gauss_model<t_real>(dE, 0., m_dIncSig, m_dIncAmp, 0.);
 
-	return std::abs(tl::DHO_model<t_real>(dE, m_dT, dE0, m_dHWHM, m_dS0*dW, 0.)) + dInc;
+	return std::abs(tl::DHO_model<t_real>(dE, m_dT, vecE0[0], m_dHWHM, m_dS0*vecW[0], 0.)) + dInc;
 }
 
 std::vector<SqwBase::t_var> SqwPhononSingleBranch::GetVars() const
@@ -805,7 +807,8 @@ SqwMagnon::SqwMagnon(const char* pcFile)
 /**
  * dispersion E(Q)
  */
-std::pair<t_real, t_real> SqwMagnon::disp(t_real dh, t_real dk, t_real dl) const
+std::tuple<std::vector<t_real>, std::vector<t_real>>
+SqwMagnon::disp(t_real dh, t_real dk, t_real dl) const
 {
 	dh -= m_vecBragg[0];
 	dk -= m_vecBragg[1];
@@ -819,13 +822,14 @@ std::pair<t_real, t_real> SqwMagnon::disp(t_real dh, t_real dk, t_real dl) const
 	}
 
 	if(!pDisp)
-		return std::make_pair(t_real(0), t_real(0));
+		return std::make_tuple(std::vector<t_real>(), std::vector<t_real>());
 
 	t_real dq = std::sqrt(dh*dh + dk*dk + dl*dl);
 	t_real dE = pDisp(dq, m_dD, m_dOffs);
 	t_real dW = t_real(1);
 
-	return std::make_pair(dE, dW);
+	return std::make_tuple(std::vector<t_real>({dE, -dE}),
+		std::vector<t_real>({dW, dW}));
 }
 
 /**
@@ -833,14 +837,22 @@ std::pair<t_real, t_real> SqwMagnon::disp(t_real dh, t_real dk, t_real dl) const
  */
 t_real SqwMagnon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
-	t_real dE0, dW;
-	std::tie(dE0, dW) = disp(dh, dk, dl);
+	std::vector<t_real> vecE0, vecW;
+	std::tie(vecE0, vecW) = disp(dh, dk, dl);
 
 	t_real dInc = 0.;
 	if(!tl::float_equal<t_real>(m_dIncAmp, 0.))
 		dInc = tl::gauss_model<t_real>(dE, 0., m_dIncSig, m_dIncAmp, 0.);
 
-	return std::abs(tl::DHO_model<t_real>(dE, m_dT, dE0, m_dE_HWHM, m_dS0*dW, 0.)) + dInc;
+	t_real dS = 0;
+	if(vecE0.size())
+	{
+		for(std::size_t i=0; i<vecE0.size(); ++i)
+			dS += std::abs(tl::DHO_model<t_real>(dE, m_dT, vecE0[i], m_dE_HWHM, vecW[i], 0.));
+		dS *= m_dS0;
+	}
+
+	return dS + dInc;
 }
 
 std::vector<SqwBase::t_var> SqwMagnon::GetVars() const

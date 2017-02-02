@@ -115,30 +115,47 @@ SqwPy::~SqwPy()
 /**
  * E(Q)
  */
-std::pair<t_real, t_real> SqwPy::disp(t_real dh, t_real dk, t_real dl) const
+std::tuple<std::vector<t_real>, std::vector<t_real>>
+	SqwPy::disp(t_real dh, t_real dk, t_real dl) const
 {
 	if(!m_bOk)
 	{
 		tl::log_err("Interpreter has not initialised, cannot query S(q,w).");
-		return std::make_pair(t_real(0), t_real(0));
+		return std::make_tuple(std::vector<t_real>(), std::vector<t_real>());
 	}
+
 
 	std::lock_guard<std::mutex> lock(*m_pmtx);
 
-
-	t_real dE = 0;
-	t_real dW = 0;
+	std::vector<t_real> vecEs, vecWs;
 
 	try
 	{
 		if(!!m_disp)
 		{
 			py::object lst = m_disp(dh, dk, dl);
-			py::stl_input_iterator<t_real> iter(lst);
-			py::stl_input_iterator<t_real> end;
+			py::stl_input_iterator<py::object> iterLst(lst);
+			py::stl_input_iterator<py::object> endLst;
 
-			if(iter != end) dE = *iter;
-			if(++iter != end) dW = *iter;
+			if(iterLst != endLst)
+			{
+				py::object _vecE = *iterLst;
+				py::stl_input_iterator<t_real> iterE(_vecE);
+				py::stl_input_iterator<t_real> endE;
+
+				while(iterE != endE)
+					vecEs.push_back(*iterE++);
+			}
+
+			if(++iterLst != endLst)
+			{
+				py::object _vecW = *iterLst;
+				py::stl_input_iterator<t_real> iterW(_vecW);
+				py::stl_input_iterator<t_real> endW;
+
+				while(iterW != endW)
+					vecWs.push_back(*iterW++);
+			}
 		}
 	}
 	catch(const py::error_already_set& ex)
@@ -147,7 +164,7 @@ std::pair<t_real, t_real> SqwPy::disp(t_real dh, t_real dk, t_real dl) const
 		PyErr_Clear();
 	}
 
-	return std::make_pair(dE, dW);
+	return std::make_tuple(vecEs, vecWs);
 }
 
 
@@ -161,6 +178,7 @@ t_real SqwPy::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 		tl::log_err("Interpreter has not initialised, cannot query S(q,w).");
 		return t_real(0);
 	}
+
 
 	std::lock_guard<std::mutex> lock(*m_pmtx);
 	try
