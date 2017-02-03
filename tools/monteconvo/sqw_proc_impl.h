@@ -426,6 +426,7 @@ SqwProc<t_sqw>::disp(t_real dh, t_real dk, t_real dl) const
 	msg.dParam1 = dh;
 	msg.dParam2 = dk;
 	msg.dParam3 = dl;
+	msg.pPars = static_cast<decltype(msg.pPars)>(m_pSharedPars);
 	msg_send(*m_pmsgOut, msg);
 
 	ProcMsg msgDisp = msg_recv(*m_pmsgIn);
