@@ -37,6 +37,66 @@ using t_sh_str_alloc = t_sh_str_alloc_gen<char>;
 using t_sh_str = t_sh_str_gen<char>;
 
 
+/**
+ * converts the energy and weight vectors of the dispersion to a string
+ */
+static void disp_to_str(
+	t_sh_str& str, const std::tuple<std::vector<t_real>, std::vector<t_real>>& tup)
+{
+	try
+	{
+		str.clear();
+		std::string strVecE = tl::cont_to_str<std::vector<t_real>>(std::get<0>(tup), ",");
+		std::string strVecW = tl::cont_to_str<std::vector<t_real>>(std::get<1>(tup), ",");
+
+		std::size_t iLenTotal = strVecE.length() + strVecW.length() + 3 + 1;
+		if(iLenTotal >= std::size_t(PARAM_MEM))
+		{
+			tl::log_err("Process buffer limit reached. Cannot proceed.");
+			return;
+		}
+
+		str.append(strVecE.c_str()); str.append("#,#");
+		str.append(strVecW.c_str());
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_err(ex.what());
+	}
+}
+
+
+/**
+ * converts a string to the energy and weight vectors of the dispersion
+ */
+static std::tuple<std::vector<t_real>, std::vector<t_real>>
+str_to_disp(const t_sh_str& _str)
+{
+	std::vector<t_real> vecE, vecW;
+
+	try
+	{
+		std::string str;
+		for(const t_sh_str::value_type& ch : _str) str.push_back(ch);
+
+		std::string strVecE, strVecW;
+		std::tie(strVecE, strVecW) = tl::split_first<std::string>(str, "#,#", 1, 1);
+
+		tl::get_tokens<t_real, std::string, decltype(vecE)>(strVecE, ",", vecE);
+		tl::get_tokens<t_real, std::string, decltype(vecW)>(strVecW, ",", vecW);
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_err(ex.what());
+	}
+
+	return std::make_tuple(vecE, vecW);
+}
+
+
+/**
+ * converts the model parameters to a string
+ */
 static void pars_to_str(t_sh_str& str, const std::vector<SqwBase::t_var>& vec)
 {
 	try
@@ -48,7 +108,7 @@ static void pars_to_str(t_sh_str& str, const std::vector<SqwBase::t_var>& vec)
 		{
 			iLenTotal += std::get<0>(var).length() +
 				std::get<1>(var).length() +
-				std::get<2>(var).length() + 3*3;
+				std::get<2>(var).length() + 3*3 + 1;
 			if(iLenTotal >= std::size_t(PARAM_MEM*0.9))
 			{
 				tl::log_err("Process buffer limit imminent. Truncating parameter list.");
@@ -57,8 +117,7 @@ static void pars_to_str(t_sh_str& str, const std::vector<SqwBase::t_var>& vec)
 
 			str.append(std::get<0>(var).c_str()); str.append("#,#");
 			str.append(std::get<1>(var).c_str()); str.append("#,#");
-			str.append(std::get<2>(var).c_str());
-			str.append("#;#");
+			str.append(std::get<2>(var).c_str()); str.append("#;#");
 		}
 	}
 	catch(const std::exception& ex)
@@ -67,6 +126,10 @@ static void pars_to_str(t_sh_str& str, const std::vector<SqwBase::t_var>& vec)
 	}
 }
 
+
+/**
+ * converts a string to the model parameters
+ */
 static std::vector<SqwBase::t_var> str_to_pars(const t_sh_str& _str)
 {
 	std::vector<SqwBase::t_var> vec;
@@ -112,6 +175,7 @@ static std::vector<SqwBase::t_var> str_to_pars(const t_sh_str& _str)
 // ----------------------------------------------------------------------------
 
 
+
 // ----------------------------------------------------------------------------
 // messages
 
@@ -120,6 +184,7 @@ enum class ProcMsgTypes
 	QUIT,
 	NOP,
 
+	DISP,
 	SQW,
 	GET_VARS,
 	SET_VARS,
@@ -197,14 +262,22 @@ static void child_proc(ipr::message_queue& msgToParent, ipr::message_queue& msgF
 
 		switch(msg.ty)
 		{
-			case ProcMsgTypes::SQW:
+			case ProcMsgTypes::DISP:	// dispersion
+			{
+				msgRet.ty = msg.ty;
+				msgRet.pPars = msg.pPars;	// use provided pointer to shared mem
+				disp_to_str(*msgRet.pPars, pSqw->disp(msg.dParam1, msg.dParam2, msg.dParam3));
+				msg_send(msgToParent, msgRet);
+				break;
+			}
+			case ProcMsgTypes::SQW:		// structure factor
 			{
 				msgRet.ty = msg.ty;
 				msgRet.dRet = pSqw->operator()(msg.dParam1, msg.dParam2, msg.dParam3, msg.dParam4);
 				msg_send(msgToParent, msgRet);
 				break;
 			}
-			case ProcMsgTypes::GET_VARS:
+			case ProcMsgTypes::GET_VARS:	// get variables
 			{
 				msgRet.ty = msg.ty;
 				msgRet.pPars = msg.pPars;	// use provided pointer to shared mem
@@ -212,7 +285,7 @@ static void child_proc(ipr::message_queue& msgToParent, ipr::message_queue& msgF
 				msg_send(msgToParent, msgRet);
 				break;
 			}
-			case ProcMsgTypes::SET_VARS:
+			case ProcMsgTypes::SET_VARS:	// set variables
 			{
 				pSqw->SetVars(str_to_pars(*msg.pPars));
 				msgRet.ty = ProcMsgTypes::READY;
@@ -251,6 +324,10 @@ SqwProc<t_sqw>::SqwProc()
 	++m_iRefCnt;
 }
 
+
+/**
+ * create sub-process
+ */
 template<class t_sqw>
 SqwProc<t_sqw>::SqwProc(const char* pcCfg)
 	: m_pmtx(std::make_shared<std::mutex>()),
@@ -301,6 +378,10 @@ SqwProc<t_sqw>::SqwProc(const char* pcCfg)
 	}
 }
 
+
+/**
+ * clean up sub-process
+ */
 template<class t_sqw>
 SqwProc<t_sqw>::~SqwProc()
 {
@@ -331,6 +412,30 @@ SqwProc<t_sqw>::~SqwProc()
 }
 
 
+/**
+ * query dispersion
+ */
+template<class t_sqw>
+std::tuple<std::vector<t_real>, std::vector<t_real>>
+SqwProc<t_sqw>::disp(t_real dh, t_real dk, t_real dl) const
+{
+	std::lock_guard<std::mutex> lock(*m_pmtx);
+
+	ProcMsg msg;
+	msg.ty = ProcMsgTypes::DISP;
+	msg.dParam1 = dh;
+	msg.dParam2 = dk;
+	msg.dParam3 = dl;
+	msg_send(*m_pmsgOut, msg);
+
+	ProcMsg msgDisp = msg_recv(*m_pmsgIn);
+	return str_to_disp(*msgDisp.pPars);
+}
+
+
+/**
+ * query dynamical structure factor
+ */
 template<class t_sqw>
 t_real SqwProc<t_sqw>::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
@@ -362,6 +467,10 @@ bool SqwProc<t_sqw>::IsOk() const
 	return msgRet.bRet;
 }
 
+
+/**
+ * query variables
+ */
 template<class t_sqw>
 std::vector<SqwBase::t_var> SqwProc<t_sqw>::GetVars() const
 {
@@ -376,6 +485,10 @@ std::vector<SqwBase::t_var> SqwProc<t_sqw>::GetVars() const
 	return str_to_pars(*msg.pPars);
 }
 
+
+/**
+ * set variables
+ */
 template<class t_sqw>
 void SqwProc<t_sqw>::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 {
@@ -392,6 +505,7 @@ void SqwProc<t_sqw>::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 	if(!msgRet.bRet)
 		tl::log_err("Could not set variables.");
 }
+
 
 template<class t_sqw>
 SqwBase* SqwProc<t_sqw>::shallow_copy() const
