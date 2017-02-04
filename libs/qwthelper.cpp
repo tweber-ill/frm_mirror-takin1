@@ -342,15 +342,18 @@ void QwtPlotWrapper::SavePlot() const
 		std::size_t iDataSet=0;
 		for(const auto& pairVecs : m_vecDataPtrs)
 		{
-			if(m_vecDataPtrs.size() > 1)
-				ofstrDat << "## -------------------------------- begin of dataset " << (iDataSet+1)
-					<< " --------------------------------\n";
-
 			const std::vector<t_real_qwt>* pVecX = std::get<0>(pairVecs);
 			const std::vector<t_real_qwt>* pVecY = std::get<1>(pairVecs);
 			const std::vector<t_real_qwt>* pVecYErr = std::get<2>(pairVecs);
 
 			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
+			// if no data points are available, skip the curve
+			if(!iSize) continue;
+
+
+			if(m_vecDataPtrs.size() > 1)
+				ofstrDat << "## -------------------------------- begin of dataset " << (iDataSet+1)
+					<< " --------------------------------\n";
 
 			for(std::size_t iCur=0; iCur<iSize; ++iCur)
 			{
@@ -477,6 +480,12 @@ void QwtPlotWrapper::ExportGpl() const
 		const std::size_t iNumCurves = m_vecDataPtrs.size();
 		for(std::size_t iCurve=0; iCurve<iNumCurves; ++iCurve)
 		{
+			// if no data points are available, skip the curve
+			const std::vector<t_real_qwt>* pVecX = std::get<0>(m_vecDataPtrs[iCurve]);
+			const std::vector<t_real_qwt>* pVecY = std::get<1>(m_vecDataPtrs[iCurve]);
+			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
+			if(!iSize) continue;
+
 			// points or lines?
 			if(m_vecCurves[iCurve]->style() /*& QwtPlotCurve::CurveStyle::Lines*/
 				== QwtPlotCurve::CurveStyle::Lines)
@@ -510,7 +519,9 @@ void QwtPlotWrapper::ExportGpl() const
 			const std::vector<t_real_qwt>* pVecY = std::get<1>(pairVecs);
 			const std::vector<t_real_qwt>* pVecYErr = std::get<2>(pairVecs);
 
+			// if no data points are available, skip the curve
 			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
+			if(!iSize) continue;
 
 			for(std::size_t iCur=0; iCur<iSize; ++iCur)
 			{
@@ -732,6 +743,10 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	}
 }
 
+
+/**
+ * calculate zoom rectangle from x and y data points
+ */
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
@@ -759,6 +774,46 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	set_zoomer_base(pZoomer,
 		dminmax[0],dminmax[1],dminmax[2],dminmax[3],
 		bMetaCall, pPlotWrap);
+}
+
+
+/**
+ * calculate zoom rectangle from sets of x and y data points
+ */
+void set_zoomer_base(QwtPlotZoomer *pZoomer,
+	const std::vector<std::vector<t_real_qwt>>& vecvecX, 
+	const std::vector<std::vector<t_real_qwt>>& vecvecY,
+	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
+{
+	if(!pZoomer || !vecvecX.size() || !vecvecY.size())
+		return;
+
+	std::vector<t_real_qwt> vecX, vecY;
+	for(std::size_t iVec=0; iVec<vecvecX.size(); ++iVec)
+	{
+		vecX.insert(vecX.end(), vecvecX[iVec].begin(), vecvecX[iVec].end());
+		vecY.insert(vecY.end(), vecvecY[iVec].begin(), vecvecY[iVec].end());
+	}
+
+	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap);
+}
+
+/**
+ * calculate zoom rectangle from x and a set of y data points
+ */
+void set_zoomer_base(QwtPlotZoomer *pZoomer,
+	const std::vector<t_real_qwt>& vecX, 
+	const std::vector<std::vector<t_real_qwt>>& vecvecY,
+	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
+{
+	if(!pZoomer || !vecX.size() || !vecvecY.size())
+		return;
+
+	std::vector<t_real_qwt> vecY;
+	for(std::size_t iVec=0; iVec<vecvecY.size(); ++iVec)
+		vecY.insert(vecY.end(), vecvecY[iVec].begin(), vecvecY[iVec].end());
+
+	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap);
 }
 
 

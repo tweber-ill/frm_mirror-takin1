@@ -24,9 +24,10 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QMenuBar>
 #include <QMenu>
 
+#define MAX_CURVES			16
+#define DISP_CURVE_START 	3
 
 using t_real = t_real_reso;
 using t_stopwatch = tl::Stopwatch<t_real>;
@@ -80,36 +81,51 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	btnStart->setIcon(load_icon("res/icons/media-playback-start.svg"));
 	btnStop->setIcon(load_icon("res/icons/media-playback-stop.svg"));
 
-
-	m_plotwrap.reset(new QwtPlotWrapper(plot, 3, true));
+	/*
+	 * curve 0,1	->	convolution
+	 * curve 2		->	scan points
+	 * curve 3-15	->	dispersion branches
+	 */
+	m_plotwrap.reset(new QwtPlotWrapper(plot, MAX_CURVES, true));
 	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::xBottom, "");
-	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "S (a.u.)");
+	m_plotwrap->GetPlot()->setAxisTitle(QwtPlot::yLeft, "S(Q,E) (a.u.)");
 
 	m_plotwrap2d.reset(new QwtPlotWrapper(plot2d, 1, 0, 0, 1));
-	m_plotwrap2d->GetPlot()->setAxisTitle(QwtPlot::yRight, "S (a.u.)");
+	m_plotwrap2d->GetPlot()->setAxisTitle(QwtPlot::yRight, "S(Q,E) (a.u.)");
 
 
 	// --------------------------------------------------------------------
+	// convolution lines
 	QPen penCurve;
 	penCurve.setColor(QColor(0,0,0x99));
 	penCurve.setWidth(2);
 	m_plotwrap->GetCurve(0)->setPen(penCurve);
 	m_plotwrap->GetCurve(0)->setStyle(QwtPlotCurve::CurveStyle::Lines);
-	m_plotwrap->GetCurve(0)->setTitle("S(Q,w)");
+	m_plotwrap->GetCurve(0)->setTitle("S(Q,E)");
 
+	// convolution points
 	QPen penPoints;
 	penPoints.setColor(QColor(0xff,0,0));
 	penPoints.setWidth(4);
 	m_plotwrap->GetCurve(1)->setPen(penPoints);
 	m_plotwrap->GetCurve(1)->setStyle(QwtPlotCurve::CurveStyle::Dots);
-	m_plotwrap->GetCurve(1)->setTitle("S(Q,w)");
+	m_plotwrap->GetCurve(1)->setTitle("S(Q,E)");
 
+	// scan data points
 	QPen penScanPoints;
 	penScanPoints.setColor(QColor(0x00,0x90,0x00));
 	penScanPoints.setWidth(6);
 	m_plotwrap->GetCurve(2)->setPen(penScanPoints);
 	m_plotwrap->GetCurve(2)->setStyle(QwtPlotCurve::CurveStyle::Dots);
-	m_plotwrap->GetCurve(2)->setTitle("S(Q,w)");
+	m_plotwrap->GetCurve(2)->setTitle("S(Q,E)");
+
+	// dispersion branches
+	for(int iCurve=DISP_CURVE_START; iCurve<MAX_CURVES; ++iCurve)
+	{
+		m_plotwrap->GetCurve(iCurve)->setPen(penCurve);
+		m_plotwrap->GetCurve(iCurve)->setStyle(QwtPlotCurve::CurveStyle::Lines);
+		m_plotwrap->GetCurve(iCurve)->setTitle("E(Q)");
+	}
 	// --------------------------------------------------------------------
 
 
@@ -143,8 +159,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 	// --------------------------------------------------------------------
 	// menu bar
-	QMenuBar* pMenuBar = new QMenuBar(this);
-	this->layout()->setMenuBar(pMenuBar);
+	m_pMenuBar = new QMenuBar(this);
+	this->layout()->setMenuBar(m_pMenuBar);
 
 
 	// file menu
@@ -163,6 +179,17 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QAction *pExit = new QAction("Exit", this);
 	pExit->setIcon(load_icon("res/icons/system-log-out.svg"));
 	pMenuFile->addAction(pExit);
+
+
+	// actions menu
+	QMenu *pMenuConvoActions = new QMenu("Actions", this);
+
+	QAction *pActionStart = new QAction("Start Convolution", this);
+	pActionStart->setIcon(load_icon("res/icons/media-playback-start.svg"));
+	pMenuConvoActions->addAction(pActionStart);
+
+	QAction *pActionDisp = new QAction("Plot Dispersion", this);
+	pMenuConvoActions->addAction(pActionDisp);
 
 
 	// results menu
@@ -208,14 +235,17 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	pMenuHelp->addAction(pAbout);
 
 
-	pMenuBar->addMenu(pMenuFile);
-	pMenuBar->addMenu(pMenuPlots);
-	pMenuBar->addMenu(pMenuHelp);
+	m_pMenuBar->addMenu(pMenuFile);
+	m_pMenuBar->addMenu(pMenuConvoActions);
+	m_pMenuBar->addMenu(pMenuPlots);
+	m_pMenuBar->addMenu(pMenuHelp);
 
 
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(accept()));
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(Save()));
+	QObject::connect(pActionStart, SIGNAL(triggered()), this, SLOT(Start()));
+	QObject::connect(pActionDisp, SIGNAL(triggered()), this, SLOT(StartDisp()));
 	QObject::connect(pExportPlot, SIGNAL(triggered()), m_plotwrap.get(), SLOT(SavePlot()));
 	QObject::connect(pExportPlot2d, SIGNAL(triggered()), m_plotwrap2d.get(), SLOT(SavePlot()));
 	QObject::connect(pExportPlotGpl, SIGNAL(triggered()), m_plotwrap.get(), SLOT(ExportGpl()));
@@ -285,6 +315,7 @@ ConvoDlg::~ConvoDlg()
 	if(m_pSqwParamDlg) { delete m_pSqwParamDlg; m_pSqwParamDlg = nullptr; }
 	if(m_pFavDlg) { delete m_pFavDlg; m_pFavDlg = nullptr; }
 	if(m_pSqw) m_pSqw.reset();
+	if(m_pMenuBar) { delete m_pMenuBar; m_pMenuBar = nullptr; }
 
 	unload_sqw_plugins();
 }
@@ -377,12 +408,27 @@ ResoFocus ConvoDlg::GetFocus() const
 	return ResoFocus(ifocMode);
 }
 
+
 /**
- * create 1d scan
+ * clear plot curves
+ */
+void ConvoDlg::ClearPlot1D()
+{
+	static const std::vector<t_real> vecZero;
+	if(!m_plotwrap) return;
+
+	for(std::size_t iCurve=0; iCurve<MAX_CURVES; ++iCurve)
+		set_qwt_data<t_real_reso>()(*m_plotwrap, vecZero, vecZero, iCurve, false);
+}
+
+
+/**
+ * create 1d convolution
  */
 void ConvoDlg::Start1D()
 {
 	m_atStop.store(false);
+	ClearPlot1D();
 
 	bool bUseScan = m_bUseScan && checkScan->isChecked();
 	t_real dScale = tl::str_to_var<t_real>(editScale->text().toStdString());
@@ -393,6 +439,7 @@ void ConvoDlg::Start1D()
 
 	btnStart->setEnabled(false);
 	tabSettings->setEnabled(false);
+	m_pMenuBar->setEnabled(false);
 	btnStop->setEnabled(true);
 	tabWidget->setCurrentWidget(tabPlot);
 
@@ -408,6 +455,7 @@ void ConvoDlg::Start1D()
 		{
 			QMetaObject::invokeMethod(btnStop, "setEnabled", Q_ARG(bool, false));
 			QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(m_pMenuBar, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
 		};
 
@@ -456,6 +504,9 @@ void ConvoDlg::Start1D()
 			return;
 		}
 
+		QMetaObject::invokeMethod(m_plotwrap.get(), "setAxisTitle",
+			Q_ARG(int, QwtPlot::yLeft),
+			Q_ARG(const QString&, QString("S(Q,E) (a.u.)")));
 		QMetaObject::invokeMethod(m_plotwrap.get(), "setAxisTitle",
 			Q_ARG(int, QwtPlot::xBottom),
 			Q_ARG(const QString&, QString(strScanVar.c_str())));
@@ -691,7 +742,7 @@ void ConvoDlg::Start1D()
 }
 
 /**
- * create 2d map
+ * create 2d convolution
  */
 void ConvoDlg::Start2D()
 {
@@ -702,6 +753,7 @@ void ConvoDlg::Start2D()
 
 	btnStart->setEnabled(false);
 	tabSettings->setEnabled(false);
+	m_pMenuBar->setEnabled(false);
 	btnStop->setEnabled(true);
 	tabWidget->setCurrentWidget(tabPlot2d);
 
@@ -716,6 +768,7 @@ void ConvoDlg::Start2D()
 		{
 			QMetaObject::invokeMethod(btnStop, "setEnabled", Q_ARG(bool, false));
 			QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(m_pMenuBar, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
 		};
 
@@ -1035,7 +1088,226 @@ void ConvoDlg::Start2D()
 
 
 /**
- * start 1d or 2d scan
+ * start dispersion plot
+ */
+void ConvoDlg::StartDisp()
+{
+	m_atStop.store(false);
+	ClearPlot1D();
+
+	bool bLiveResults = m_pLiveResults->isChecked();
+	bool bLivePlots = m_pLivePlots->isChecked();
+
+	btnStart->setEnabled(false);
+	tabSettings->setEnabled(false);
+	m_pMenuBar->setEnabled(false);
+	btnStop->setEnabled(true);
+	tabWidget->setCurrentWidget(tabPlot);
+
+	bool bForceDeferred = false;
+	Qt::ConnectionType connty = bForceDeferred
+		? Qt::ConnectionType::DirectConnection
+		: Qt::ConnectionType::BlockingQueuedConnection;
+
+	std::function<void()> fkt = [this, connty, bForceDeferred, bLiveResults, bLivePlots]
+	{
+		std::function<void()> fktEnableButtons = [this]
+		{
+			QMetaObject::invokeMethod(btnStop, "setEnabled", Q_ARG(bool, false));
+			QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(m_pMenuBar, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
+		};
+
+		t_stopwatch watch;
+		watch.start();
+
+		const unsigned int iNumSampleSteps = spinSampleSteps->value();
+
+		const unsigned int iNumSteps = spinStepCnt->value();
+		std::vector<t_real> vecH = tl::linspace<t_real,t_real>(
+			spinStartH->value(), spinStopH->value(), iNumSteps);
+		std::vector<t_real> vecK = tl::linspace<t_real,t_real>(
+			spinStartK->value(), spinStopK->value(), iNumSteps);
+		std::vector<t_real> vecL = tl::linspace<t_real,t_real>(
+			spinStartL->value(), spinStopL->value(), iNumSteps);
+
+		std::string strScanVar = "";
+		std::vector<t_real> *pVecScanX = nullptr;
+		if(!tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu))
+		{
+			pVecScanX = &vecH;
+			strScanVar = "h (rlu)";
+		}
+		else if(!tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu))
+		{
+			pVecScanX = &vecK;
+			strScanVar = "k (rlu)";
+		}
+		else if(!tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu))
+		{
+			pVecScanX = &vecL;
+			strScanVar = "l (rlu)";
+		}
+		else
+		{
+			//QMessageBox::critical(this, "Error", "No scan variable found.");
+			fktEnableButtons();
+			return;
+		}
+
+		QMetaObject::invokeMethod(m_plotwrap.get(), "setAxisTitle",
+			Q_ARG(int, QwtPlot::yLeft),
+			Q_ARG(const QString&, QString("E(Q) (meV)")));
+		QMetaObject::invokeMethod(m_plotwrap.get(), "setAxisTitle",
+			Q_ARG(int, QwtPlot::xBottom),
+			Q_ARG(const QString&, QString(strScanVar.c_str())));
+
+
+		if(m_pSqw == nullptr || !m_pSqw->IsOk())
+		{
+			//QMessageBox::critical(this, "Error", "No valid S(q,w) model loaded.");
+			fktEnableButtons();
+			return;
+		}
+
+
+
+		std::ostringstream ostrOut;
+		ostrOut << "#\n";
+		ostrOut << "# Format: h k l E1 w1 E2 w2 ... En wn\n";
+		ostrOut << "#\n";
+
+		QMetaObject::invokeMethod(editStartTime, "setText",
+			Q_ARG(const QString&, QString(watch.GetStartTimeStr().c_str())));
+
+		QMetaObject::invokeMethod(progress, "setMaximum", Q_ARG(int, iNumSteps));
+		QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, 0));
+
+		QMetaObject::invokeMethod(textResult, "clear", connty);
+
+
+		m_vecQ.clear();	m_vecQ.reserve(iNumSteps);
+		m_vecE.clear();	m_vecW.clear();
+
+		unsigned int iNumThreads = bForceDeferred ? 0 : std::thread::hardware_concurrency();
+
+		void (*pThStartFunc)() = []{ tl::init_rand(); };
+		tl::ThreadPool<std::pair<std::vector<t_real>, std::vector<t_real>>()>
+			tp(iNumThreads, pThStartFunc);
+		auto& lstFuts = tp.GetFutures();
+
+		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
+		{
+			t_real dCurH = vecH[iStep];
+			t_real dCurK = vecK[iStep];
+			t_real dCurL = vecL[iStep];
+
+			tp.AddTask([dCurH, dCurK, dCurL, iNumSampleSteps, this]() ->
+			std::pair<std::vector<t_real>, std::vector<t_real>>
+			{
+				if(m_atStop.load())
+					return std::make_pair(std::vector<t_real>(), std::vector<t_real>());
+
+				std::vector<t_real> vecE, vecW;
+				std::tie(vecE, vecW) = m_pSqw->disp(dCurH, dCurK, dCurL);
+				return std::pair<std::vector<t_real>, std::vector<t_real>>(vecE, vecW);
+			});
+		}
+
+		tp.StartTasks();
+
+		auto iterTask = tp.GetTasks().begin();
+		unsigned int iStep = 0;
+		for(auto &fut : lstFuts)
+		{
+			if(m_atStop.load()) break;
+
+			// deferred (in main thread), eval this task manually
+			if(iNumThreads == 0)
+			{
+				(*iterTask)();
+				++iterTask;
+			}
+
+			std::pair<std::vector<t_real>, std::vector<t_real>> pairEW = fut.get();
+			if(!pairEW.first.size()) break;
+
+			ostrOut.precision(g_iPrec);
+			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
+				<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "
+				<< std::left << std::setw(g_iPrec*2) << vecL[iStep] << " ";
+			for(std::size_t iE=0; iE<pairEW.first.size(); ++iE)
+			{
+				ostrOut << std::left << std::setw(g_iPrec*2) << pairEW.first[iE] << " ";
+				ostrOut << std::left << std::setw(g_iPrec*2) << pairEW.second[iE] << " ";
+			}
+			ostrOut << "\n";
+
+			m_vecQ.push_back((*pVecScanX)[iStep]);
+
+			// store dispersion branches as separate curves
+			if(pairEW.first.size() > m_vecE.size())
+			{
+				m_vecE.resize(pairEW.first.size());
+				m_vecW.resize(pairEW.second.size());
+			}
+			for(std::size_t iBranch=0; iBranch<pairEW.first.size(); ++iBranch)
+			{
+				m_vecE[iBranch].push_back(pairEW.first[iBranch]);
+				m_vecW[iBranch].push_back(pairEW.second[iBranch]);
+			}
+
+			bool bIsLastStep = (iStep == lstFuts.size()-1);
+
+			if(bLivePlots || bIsLastStep)
+			{
+				for(std::size_t iBranch=0; iBranch<m_vecE.size() && iBranch+DISP_CURVE_START<MAX_CURVES; ++iBranch)
+				{
+					set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecE[iBranch], DISP_CURVE_START+iBranch, false);
+				}
+
+				if(bIsLastStep)
+					set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecE, !bForceDeferred, m_plotwrap.get());
+				QMetaObject::invokeMethod(m_plotwrap.get(), "doUpdate", connty);
+			}
+
+			if(bLiveResults || bIsLastStep)
+			{
+				if(bIsLastStep)
+					ostrOut << "# ------------------------- EOF -------------------------\n";
+
+				QMetaObject::invokeMethod(textResult, "setPlainText", connty,
+					Q_ARG(const QString&, QString(ostrOut.str().c_str())));
+			}
+
+			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
+			QMetaObject::invokeMethod(editStopTime, "setText",
+				Q_ARG(const QString&, QString(watch.GetEstStopTimeStr(t_real(iStep+1)/t_real(iNumSteps)).c_str())));
+			++iStep;
+		}
+
+		// output elapsed time
+		watch.stop();
+		QMetaObject::invokeMethod(editStopTime, "setText",
+			Q_ARG(const QString&, QString(watch.GetStopTimeStr().c_str())));
+
+		fktEnableButtons();
+	};
+
+
+	if(bForceDeferred)
+		fkt();
+	else
+	{
+		if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; }
+		m_pth = new std::thread(std::move(fkt));
+	}
+}
+
+
+/**
+ * start 1d or 2d convolutions
  */
 void ConvoDlg::Start()
 {
@@ -1044,6 +1316,7 @@ void ConvoDlg::Start()
 	else
 		Start1D();
 }
+
 
 void ConvoDlg::Stop()
 {
