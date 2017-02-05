@@ -1,0 +1,15 @@
+#!/usr/bin/gnuplot -p
+
+set xlabel "h (rlu)"
+set ylabel "E (meV)"
+
+col1 = "#ff0000"
+ps_scale = 2.
+datfile = "disp.dat"
+
+plot \
+	datfile u 1:4:($5*ps_scale) w points pt 7 ps var lc rgb col1 notitle, \
+	datfile u 1:6:($7*ps_scale) w points pt 7 ps var lc rgb col1 notitle, \
+	datfile u 1:8:($9*ps_scale) w points pt 7 ps var lc rgb col1 notitle, \
+	datfile u 1:10:($11*ps_scale) w points pt 7 ps var lc rgb col1 notitle, \
+	datfile u 1:12:($13*ps_scale) w points pt 7 ps var lc rgb col1 notitle

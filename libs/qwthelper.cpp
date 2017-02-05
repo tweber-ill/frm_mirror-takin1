@@ -509,6 +509,7 @@ void QwtPlotWrapper::ExportGpl() const
 				}
 			}
 
+			// TODO: doesn't work if following curves are defined and empty
 			if(iCurve < iNumCurves-1) ofstrDat << ", \\";
 			ofstrDat << "\n";
 		}
