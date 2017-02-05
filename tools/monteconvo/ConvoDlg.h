@@ -46,7 +46,7 @@ protected:
 	bool m_bAllowSqwReinit = 1;
 	std::shared_ptr<SqwBase> m_pSqw;
 	std::vector<t_real_reso> m_vecQ, m_vecS, m_vecScaledS;
-	std::vector<std::vector<t_real_reso>> m_vecE, m_vecW;
+	std::vector<std::vector<t_real_reso>> m_vecvecQ, m_vecvecE, m_vecvecW;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap, m_plotwrap2d;
 
 	bool m_bUseScan = 0;

@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <tuple>
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -733,7 +734,9 @@ void ConvoDlg::Start1D()
 
 
 	if(bForceDeferred)
+	{
 		fkt();
+	}
 	else
 	{
 		if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; }
@@ -1078,7 +1081,9 @@ void ConvoDlg::Start2D()
 
 
 	if(bForceDeferred)
+	{
 		fkt();
+	}
 	else
 	{
 		if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; }
@@ -1121,8 +1126,6 @@ void ConvoDlg::StartDisp()
 
 		t_stopwatch watch;
 		watch.start();
-
-		const unsigned int iNumSampleSteps = spinSampleSteps->value();
 
 		const unsigned int iNumSteps = spinStepCnt->value();
 		std::vector<t_real> vecH = tl::linspace<t_real,t_real>(
@@ -1187,14 +1190,14 @@ void ConvoDlg::StartDisp()
 		QMetaObject::invokeMethod(textResult, "clear", connty);
 
 
-		m_vecQ.clear();	m_vecQ.reserve(iNumSteps);
-		m_vecE.clear();	m_vecW.clear();
+		m_vecvecQ.clear();
+		m_vecvecE.clear();
+		m_vecvecW.clear();
 
 		unsigned int iNumThreads = bForceDeferred ? 0 : std::thread::hardware_concurrency();
 
-		void (*pThStartFunc)() = []{ tl::init_rand(); };
-		tl::ThreadPool<std::pair<std::vector<t_real>, std::vector<t_real>>()>
-			tp(iNumThreads, pThStartFunc);
+		tl::ThreadPool<std::tuple<bool, std::vector<t_real>, std::vector<t_real>>()>
+			tp(iNumThreads);
 		auto& lstFuts = tp.GetFutures();
 
 		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
@@ -1203,15 +1206,16 @@ void ConvoDlg::StartDisp()
 			t_real dCurK = vecK[iStep];
 			t_real dCurL = vecL[iStep];
 
-			tp.AddTask([dCurH, dCurK, dCurL, iNumSampleSteps, this]() ->
-			std::pair<std::vector<t_real>, std::vector<t_real>>
+			tp.AddTask([dCurH, dCurK, dCurL, this]() ->
+			std::tuple<bool, std::vector<t_real>, std::vector<t_real>>
 			{
 				if(m_atStop.load())
-					return std::make_pair(std::vector<t_real>(), std::vector<t_real>());
+					return std::make_tuple(false, std::vector<t_real>(), std::vector<t_real>());
 
 				std::vector<t_real> vecE, vecW;
 				std::tie(vecE, vecW) = m_pSqw->disp(dCurH, dCurK, dCurL);
-				return std::pair<std::vector<t_real>, std::vector<t_real>>(vecE, vecW);
+				return std::tuple<bool, std::vector<t_real>, std::vector<t_real>>
+					(true, vecE, vecW);
 			});
 		}
 
@@ -1230,45 +1234,47 @@ void ConvoDlg::StartDisp()
 				++iterTask;
 			}
 
-			std::pair<std::vector<t_real>, std::vector<t_real>> pairEW = fut.get();
-			if(!pairEW.first.size()) break;
+			auto tupEW = fut.get();
+			if(!std::get<0>(tupEW)) break;
 
 			ostrOut.precision(g_iPrec);
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecL[iStep] << " ";
-			for(std::size_t iE=0; iE<pairEW.first.size(); ++iE)
+			for(std::size_t iE=0; iE<std::get<1>(tupEW).size(); ++iE)
 			{
-				ostrOut << std::left << std::setw(g_iPrec*2) << pairEW.first[iE] << " ";
-				ostrOut << std::left << std::setw(g_iPrec*2) << pairEW.second[iE] << " ";
+				ostrOut << std::left << std::setw(g_iPrec*2) << std::get<1>(tupEW)[iE] << " ";
+				ostrOut << std::left << std::setw(g_iPrec*2) << std::get<2>(tupEW)[iE] << " ";
 			}
 			ostrOut << "\n";
 
-			m_vecQ.push_back((*pVecScanX)[iStep]);
 
 			// store dispersion branches as separate curves
-			if(pairEW.first.size() > m_vecE.size())
+			if(std::get<1>(tupEW).size() > m_vecvecE.size())
 			{
-				m_vecE.resize(pairEW.first.size());
-				m_vecW.resize(pairEW.second.size());
+				m_vecvecQ.resize(std::get<1>(tupEW).size());
+				m_vecvecE.resize(std::get<1>(tupEW).size());
+				m_vecvecW.resize(std::get<2>(tupEW).size());
 			}
-			for(std::size_t iBranch=0; iBranch<pairEW.first.size(); ++iBranch)
+			for(std::size_t iBranch=0; iBranch<std::get<1>(tupEW).size(); ++iBranch)
 			{
-				m_vecE[iBranch].push_back(pairEW.first[iBranch]);
-				m_vecW[iBranch].push_back(pairEW.second[iBranch]);
+				m_vecvecQ[iBranch].push_back((*pVecScanX)[iStep]);
+				m_vecvecE[iBranch].push_back(std::get<1>(tupEW)[iBranch]);
+				m_vecvecW[iBranch].push_back(std::get<2>(tupEW)[iBranch]);
 			}
+
 
 			bool bIsLastStep = (iStep == lstFuts.size()-1);
 
 			if(bLivePlots || bIsLastStep)
 			{
-				for(std::size_t iBranch=0; iBranch<m_vecE.size() && iBranch+DISP_CURVE_START<MAX_CURVES; ++iBranch)
+				for(std::size_t iBranch=0; iBranch<m_vecvecE.size() && iBranch+DISP_CURVE_START<MAX_CURVES; ++iBranch)
 				{
-					set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecQ, m_vecE[iBranch], DISP_CURVE_START+iBranch, false);
+					set_qwt_data<t_real_reso>()(*m_plotwrap, m_vecvecQ[iBranch], m_vecvecE[iBranch], DISP_CURVE_START+iBranch, false);
 				}
 
 				if(bIsLastStep)
-					set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecE, !bForceDeferred, m_plotwrap.get());
+					set_zoomer_base(m_plotwrap->GetZoomer(), m_vecvecQ, m_vecvecE, !bForceDeferred, m_plotwrap.get());
 				QMetaObject::invokeMethod(m_plotwrap.get(), "doUpdate", connty);
 			}
 
@@ -1297,7 +1303,9 @@ void ConvoDlg::StartDisp()
 
 
 	if(bForceDeferred)
+	{
 		fkt();
+	}
 	else
 	{
 		if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; }
