@@ -58,7 +58,7 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 			if(!!pycwd)
 				pycwd(strDir.c_str());
 			else
-				tl::log_warn("Cannot set script working directory.");
+				tl::log_warn("Cannot set python script working directory.");
 		}
 
 		// import takin functions
@@ -67,7 +67,7 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 		m_Sqw = moddict["TakinSqw"];
 		m_bOk = !!m_Sqw;
 		if(!m_bOk)
-			tl::log_err("Script has no TakinSqw function.");
+			tl::log_err("Python script has no TakinSqw function.");
 
 		try	// optional stuff
 		{
@@ -78,13 +78,13 @@ SqwPy::SqwPy(const char* pcFile) : m_pmtx(std::make_shared<std::mutex>())
 			}
 			else
 			{
-				tl::log_warn("Script has no TakinInit function.");
+				tl::log_warn("Python script has no TakinInit function.");
 			}
 
 			if(moddict.has_key("TakinDisp"))
 				m_disp = moddict["TakinDisp"];
 			else
-				tl::log_warn("Script has no TakinDisp function.");
+				tl::log_warn("Python script has no TakinDisp function.");
 		}
 		catch(const py::error_already_set& ex) {}
 	}

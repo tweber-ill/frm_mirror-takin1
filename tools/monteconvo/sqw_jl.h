@@ -19,11 +19,15 @@ class SqwJl : public SqwBase
 protected:
 	mutable std::shared_ptr<std::mutex> m_pmtx;
 
-	/*jl_function_t*/ void* m_pInit = nullptr;
-	/*jl_function_t*/ void* m_pSqw = nullptr;
+	/*jl_function_t*/ void *m_pInit = nullptr;
+	/*jl_function_t*/ void *m_pSqw = nullptr;
+	/*jl_function_t*/ void *m_pDisp = nullptr;
 
 	// filter variables that don't start with the given prefix
 	std::string m_strVarPrefix = "g_";
+
+protected:
+	void PrintExceptions() const;
 
 public:
 	SqwJl() = default;
