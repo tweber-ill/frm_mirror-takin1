@@ -17,6 +17,7 @@ USE_JL = 0
 USE_PLUGINS = 0
 USE_FADDEEVA = 0
 USE_CPP11_ABI = 1
+USE_FRAMEWORKS = 0
 
 
 STD_CPP = -std=c++11
@@ -95,47 +96,125 @@ DEFINES += -DQT_VER=$(QT_VER)
 # -----------------------------------------------------------------------------
 
 
-ifeq ($(QT_VER), 5)
-	QT_INC = -I/opt/local/libexec/qt5/include -I/opt/local/libexec/qt5/include/QtCore -I/opt/local/libexec/qt5/include/QtGui -I/opt/local/libexec/qt5/include/QtOpenGL \
-		-I/usr/include/qt5 -I/usr/include/qt5/QtCore -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
-		-I/usr/include/qt5/QtOpenGL
-	QT_LIB = -L/opt/local/libexec/qt5/lib -L/usr/lib64/qt5 -L/usr/lib/qt5/lib \
-		-lQt5Widgets -lQt5Gui -lQt5Core -lQt5Svg -lQt5Concurrent
-	ifeq ($(USE_3D), 1)
-		QT_LIB += -lQt5OpenGL
+ifeq ($(QT_VER), 5)	# qt 5
+	QT_INC = -I/usr/local/opt/qt5/Frameworks/QtOpenGL.framework/Versions/5/Headers \
+			-I/usr/local/opt/qt5/Frameworks/QtWidgets.framework/Versions/5/Headers \
+			-I/usr/local/opt/qt5/Frameworks/QtCore.framework/Versions/5/Headers \
+			-I/usr/local/opt/qt5/Frameworks/QtGui.framework/Versions/5/Headers \
+			-I/usr/local/opt/qt5/include \
+			-I/opt/local/libexec/qt5/include \
+			-I/opt/local/libexec/qt5/include/QtCore \
+			-I/opt/local/libexec/qt5/include/QtGui \
+			-I/opt/local/libexec/qt5/include/QtOpenGL \
+			-I/usr/include/qt5 \
+			-I/usr/include/qt5/QtCore \
+			-I/usr/include/qt5/QtWidgets \
+			-I/usr/include/qt5/QtGui \
+			-I/usr/include/qt5/QtOpenGL
+	QT_LIB = -L/opt/local/libexec/qt5/lib \
+			-L/usr/lib64/qt5 \
+			-L/usr/lib/qt5/lib
+	ifeq ($(USE_FRAMEWORKS), 0)
+			QT_LIB += -lQt5Widgets -lQt5Gui -lQt5Core -lQt5Svg -lQt5Concurrent
+	else
+			QT_LIB += -F/usr/local/opt/qt5/lib \
+				-framework QtWidgets -framework QtGui \
+				-framework QtCore -framework QtSvg \
+				-framework QtConcurrent
 	endif
-else
-	QT_INC = -I/opt/local/libexec/qt4/include -I/opt/local/libexec/qt4/include/QtCore -I/opt/local/libexec/qt4/include/QtGui -I/opt/local/libexec/qt4/include/QtOpenGL \
-		-I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtOpenGL \
-		-I/usr/include/QtCore -I/usr/include/QtGui -I/usr/include/QtOpenGL
-	QT_LIB = -L/opt/local/libexec/qt4/lib -L/usr/lib64/qt4 -L/usr/lib/qt4/lib \
-		-lQtCore -lQtGui -lQtSvg
-        ifeq ($(USE_3D), 1)
-                QT_LIB += -lQtOpenGL
-        endif
+
+	ifeq ($(USE_3D), 1)
+		ifeq ($(USE_FRAMEWORKS), 0)
+			QT_LIB += -lQt5OpenGL
+		else
+			QT_LIB += -framework OpenGL -framework QtOpenGL
+		endif
+	endif
+
+else	# qt4
+
+	QT_INC = -I/usr/local/opt/qt4/Frameworks/QtOpenGL.framework/Versions/4/Headers \
+			-I/usr/local/opt/qt4/Frameworks/QtWidgets.framework/Versions/4/Headers \
+			-I/usr/local/opt/qt4/Frameworks/QtCore.framework/Versions/4/Headers \
+			-I/usr/local/opt/qt4/Frameworks/QtGui.framework/Versions/4/Headers \
+			-I/usr/local/opt/qt4/include \
+			-I/opt/local/libexec/qt4/include \
+			-I/opt/local/libexec/qt4/include/QtCore \
+			-I/opt/local/libexec/qt4/include/QtGui \
+			-I/opt/local/libexec/qt4/include/QtOpenGL \
+			-I/usr/include/qt4 \
+			-I/usr/include/qt4/QtCore \
+			-I/usr/include/qt4/QtGui \
+			-I/usr/include/qt4/QtOpenGL \
+			-I/usr/include/QtCore \
+			-I/usr/include/QtGui \
+			-I/usr/include/QtOpenGL
+
+	QT_LIB = -L/opt/local/libexec/qt4/lib -L/usr/lib64/qt4 -L/usr/lib/qt4/lib
+
+	ifeq ($(USE_FRAMEWORKS), 0)
+			QT_LIB += -lQtCore -lQtGui -lQtSvg
+	else
+			QT_LIB += -F/usr/local/opt/qt4/lib \
+				-framework QtGui -framework QtCore -framework QtSvg
+	endif
+
+	ifeq ($(USE_3D), 1)
+		ifeq ($(USE_FRAMEWORKS), 0)
+			QT_LIB += -lQtOpenGL
+		else
+			QT_LIB += -framework OpenGL -framework QtOpenGL			
+		endif
+	endif
 endif
+
 
 ifeq ($(QWT_VER), 6)
 	ifeq ($(QT_VER), 5)
-		QWT_INC = -I/opt/local/libexec/qt5/include/qwt \
-			-I/usr/include/qt5/qwt -I/usr/include/qwt-qt5
-		QWT_LIB = -lqwt-qt5
+		QWT_INC = -I/usr/local/opt/qwt/lib/qwt.framework/Versions/6/Headers \
+			-I/opt/local/libexec/qt5/include/qwt \
+			-I/usr/include/qt5/qwt \
+			-I/usr/include/qwt-qt5
+		ifeq ($(USE_FRAMEWORKS), 0)
+			QWT_LIB = -lqwt-qt5
+		else
+			QWT_LIB = -F/usr/local/opt/qwt/lib -framework qwt
+		endif
 	else
-		QWT_INC = -I/opt/local/libexec/qt4/include/qwt \
-			-I/usr/include/qwt6 -I/usr/include/qwt -I/usr/include/qwt-qt4 -I/usr/local/qwt/include
-		QWT_LIB = -L/usr/local/qwt/lib -lqwt
+		QWT_INC = -I/usr/local/opt/qwt/lib/qwt.framework/Versions/6/Headers \
+			-I/opt/local/libexec/qt4/include/qwt \
+			-I/usr/include/qwt6 \
+			-I/usr/include/qwt \
+			-I/usr/include/qwt-qt4 \
+			-I/usr/local/qwt/include
+		ifeq ($(USE_FRAMEWORKS), 0)
+			QWT_LIB = -L/usr/local/qwt/lib -lqwt
+		else
+			QWT_LIB = -F/usr/local/opt/qwt/lib -framework qwt
+		endif
 	endif
 else
-	QWT_INC = -I/usr/include/qwt5 -I/usr/include/qwt-qt4 -I/usr/include/qwt5-qt4 -I/usr/local/qwt/include
-	QWT_LIB = -L/usr/local/qwt/lib -lqwt${QWT5_SUFFIX}
+	QWT_INC = -I/usr/local/opt/qwt/lib/qwt.framework/Versions/5/Headers \
+		-I/usr/include/qwt5 \
+		-I/usr/include/qwt-qt4 \
+		-I/usr/include/qwt5-qt4 \
+		-I/usr/local/qwt/include
+	ifeq ($(USE_FRAMEWORKS), 0)
+		QWT_LIB = -L/usr/local/qwt/lib -lqwt${QWT5_SUFFIX}
+	else
+		QWT_LIB = -F/usr/local/opt/qwt/lib -framework qwt
+	endif
 endif
 
 
 
 INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/opt/local/include/GL \
 	-I/usr/local/include -I/usr/local/include/GL \
-	-I/opt/include  -I/opt/include/GL -I/usr/include/freetype2 \
+	-I/opt/include  -I/opt/include/GL \
+	-I/usr/local/opt/freetype/include/freetype2 \
+	-I/usr/include/freetype2 \
 	-I/usr/include/lapacke \
+	-I/usr/local/opt/python/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
 	-I/usr/include/python2.7 -idirafter /usr/include/root \
 	-I/usr/include -I/usr/include/GL
 
