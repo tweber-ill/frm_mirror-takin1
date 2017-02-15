@@ -10,6 +10,7 @@
 #include "tlibs/log/log.h"
 #include "tlibs/file/file.h"
 
+#include <boost/python/sql_iterator.hpp>
 
 using t_real = t_real_reso;
 

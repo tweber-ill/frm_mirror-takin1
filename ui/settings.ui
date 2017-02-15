@@ -345,7 +345,7 @@
              <string>Structure Factor</string>
             </property>
             <property name="currentIndex">
-             <number>1</number>
+             <number>0</number>
             </property>
             <item>
              <property name="text">

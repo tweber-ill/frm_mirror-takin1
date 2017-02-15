@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="takin" InternalType="GUI">
+<CodeLite_Project Name="takin" InternalType="GUI" Version="10.0.0">
   <Plugins>
     <Plugin Name="qmake">
       <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
@@ -176,6 +176,12 @@
     <VirtualDirectory Name="convofit">
       <File Name="tools/convofit/scan.cpp"/>
       <File Name="tools/convofit/scan.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="scanpos">
+      <File Name="tools/scanpos/scanpos.cpp" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tools/scanpos/scanpos.h" ExcludeProjConfig="Debug;Release"/>
+      <File Name="tools/scanpos/ScanPosDlg.cpp"/>
+      <File Name="tools/scanpos/ScanPosDlg.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
