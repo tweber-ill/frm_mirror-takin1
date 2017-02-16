@@ -26,7 +26,9 @@ STD_CPP = -std=c++11
 STD_LIBS = -lstdc++
 #STD_LIBS = -lc++ -lc++abi
 STD_LIBS += -lm
-STD_LIBS += -lpthread -lrt -lgomp
+ifeq ($(USE_FRAMEWORKS), 0)
+	STD_LIBS += -lpthread -lrt -lgomp
+endif
 
 BOOST_SUFFIX = 
 #BOOST_SUFFIX = -mt
@@ -264,11 +266,18 @@ endif
 # actually: boost libs...
 BASIC_LIBS = -lboost_system${BOOST_SUFFIX} -lboost_filesystem${BOOST_SUFFIX}
 
+ifeq ($(USE_FRAMEWORKS), 0)
+	X11_LIBS = -lX11
+else
+	X11_LIBS = 
+endif
+
 ifeq ($(USE_3D), 1)
-	GL_LIBS = -lX11 -lGL -lGLU -lfreetype
+	GL_LIBS = ${X11_LIBS} -lGL -lGLU -lfreetype
 else
 	GL_LIBS = 
 endif
+
 
 ifeq ($(USE_IOSTR), 1)
 	BASIC_LIBS += -lboost_iostreams${BOOST_SUFFIX}
@@ -401,7 +410,7 @@ OBJ_TAZ += obj/SgListDlg.o obj/spacegroup.o
 .PHONY: all clean #doc
 
 all: takin  montereso  monteconvo xmonteconvo posextract \
-	scanviewer  gentab sglist sfact  convofit convoseries reso
+	scanviewer gentab sglist sfact convofit convoseries reso
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
@@ -441,7 +450,7 @@ posextract: obj/posextract.o obj/loadinstr.o obj/log.o obj/debug.o
 
 reso: ${OBJ_RESO}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/reso $+ \
-		${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS} -lX11 ${STD_LIBS}
+		${QT_LIB} ${BASIC_LIBS} ${LAPACK_LIBS} ${X11_LIBS} ${STD_LIBS}
 	${STRIP} reso
 
 scanviewer: ${OBJ_SCANVIEWER}
