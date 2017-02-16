@@ -334,12 +334,14 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuFile->addSeparator();
 
 	QAction *pSettings = new QAction("Settings...", this);
+	pSettings->setMenuRole(QAction::PreferencesRole);
 	pSettings->setIcon(load_icon("res/icons/preferences-system.svg"));
 	pMenuFile->addAction(pSettings);
 
 	pMenuFile->addSeparator();
 
 	QAction *pExit = new QAction("Exit", this);
+	pExit->setMenuRole(QAction::QuitRole);
 	pExit->setIcon(load_icon("res/icons/system-log-out.svg"));
 	pMenuFile->addAction(pExit);
 
@@ -615,11 +617,13 @@ TazDlg::TazDlg(QWidget* pParent)
 	pMenuHelp->addSeparator();
 
 	QAction *pAboutQt = new QAction("About Qt...", this);
+	pAboutQt->setMenuRole(QAction::AboutQtRole);
 	//pAboutQt->setIcon(QIcon::fromTheme("help-about"));
 	pMenuHelp->addAction(pAboutQt);
 
 	//pMenuHelp->addSeparator();
 	QAction *pAbout = new QAction("About Takin...", this);
+	pAbout->setMenuRole(QAction::AboutRole);
 	pAbout->setIcon(load_icon("res/icons/dialog-information.svg"));
 	pMenuHelp->addAction(pAbout);
 
@@ -627,6 +631,8 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	// --------------------------------------------------------------------------------
 	QMenuBar *pMenuBar = new QMenuBar(this);
+	pMenuBar->setNativeMenuBar(m_settings.value("main/native_dialogs", 1).toBool());
+
 	pMenuBar->addMenu(pMenuFile);
 	pMenuBar->addMenu(m_pMenuViewRecip);
 	pMenuBar->addMenu(m_pMenuViewReal);

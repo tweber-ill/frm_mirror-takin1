@@ -161,7 +161,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	// --------------------------------------------------------------------
 	// menu bar
 	m_pMenuBar = new QMenuBar(this);
-	this->layout()->setMenuBar(m_pMenuBar);
+	if(m_pSett)
+		m_pMenuBar->setNativeMenuBar(m_pSett->value("main/native_dialogs", 1).toBool());
 
 
 	// file menu
@@ -253,6 +254,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(pExportPlot2dGpl, SIGNAL(triggered()), m_plotwrap2d.get(), SLOT(ExportGpl()));
 	QObject::connect(pSaveResults, SIGNAL(triggered()), this, SLOT(SaveResult()));
 	QObject::connect(pAbout, SIGNAL(triggered()), this, SLOT(ShowAboutDlg()));
+
+	this->layout()->setMenuBar(m_pMenuBar);
 	// --------------------------------------------------------------------
 
 
