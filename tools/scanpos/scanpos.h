@@ -8,7 +8,6 @@
 #ifndef __SCANPOS_H__
 #define __SCANPOS_H__
 
-#define TLIBS_USE_GLOBAL_OPS
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/linalg_ops.h"
 #include "tlibs/file/loadinstr.h"
@@ -26,6 +25,7 @@
 template<class t_vec, class t_real>
 t_vec get_plane_coord(const t_vec& vec0, const t_vec& vec1, const t_vec& vecHKL)
 {
+	using namespace tl_ops;
 	t_vec vecPos;
 
 	vecPos.resize(2);
@@ -41,6 +41,7 @@ t_vec get_plane_coord(const t_vec& vec0, const t_vec& vec1, const t_vec& vecHKL)
 template<class t_vec, class t_real>
 std::pair<t_vec, t_vec> get_coord(const t_vec& vec0, const t_vec& vec1, const tl::FileInstrBase<t_real>& scan)
 {
+	using namespace tl_ops;
 	t_vec vecHKL, vecPos;
 
 	std::size_t iNumPos = scan.GetScanCount();
@@ -65,6 +66,7 @@ bool make_plot(std::ostream& ostr,
 	const std::vector<t_vec>& vecAllHKL, const std::vector<t_vec>& vecAllPos,
 	bool bFlip = 1)
 {
+	using namespace tl_ops;
 	std::ostream *pOstr = &ostr;
 
 	if(!vecAllPos.size())
