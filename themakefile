@@ -98,6 +98,7 @@ DEFINES += -DQT_VER=$(QT_VER)
 # -----------------------------------------------------------------------------
 
 
+# TODO: find and add -I[gl dir]/Frameworks/OpenGL.framework/Headers
 ifeq ($(QT_VER), 5)	# qt 5
 	QT_INC = -I/usr/local/opt/qt5/Frameworks/QtOpenGL.framework/Versions/5/Headers \
 			-I/usr/local/opt/qt5/Frameworks/QtWidgets.framework/Versions/5/Headers \
@@ -113,6 +114,8 @@ ifeq ($(QT_VER), 5)	# qt 5
 			-I/usr/include/qt5/QtWidgets \
 			-I/usr/include/qt5/QtGui \
 			-I/usr/include/qt5/QtOpenGL
+
+#TODO: find and add -F[gldir]/Frameworks/
 	QT_LIB = -L/opt/local/libexec/qt5/lib \
 			-L/usr/lib64/qt5 \
 			-L/usr/lib/qt5/lib
@@ -210,7 +213,9 @@ endif
 
 
 
-INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/opt/local/include/GL \
+INC = ${QT_INC} ${QWT_INC} -I . \
+	-I/usr/local/opt/minuit2/include/Minuit2 \
+	-I/opt/local/include -I/opt/local/include/GL \
 	-I/usr/local/include -I/usr/local/include/GL \
 	-I/opt/include  -I/opt/include/GL \
 	-I/usr/local/opt/freetype/include/freetype2 \
@@ -220,8 +225,12 @@ INC = ${QT_INC} ${QWT_INC} -I . -I/opt/local/include -I/opt/local/include/GL \
 	-I/usr/include/python2.7 -idirafter /usr/include/root \
 	-I/usr/include -I/usr/include/GL
 
-LIB_DIRS = -L/opt/local/lib -L/opt/lib -L/usr/local/lib -L/usr/local/lib64 \
-	-L/usr/lib64 -L/usr/lib64/root -L/usr/lib/x86_64-linux-gnu
+LIB_DIRS = -L/usr/local/opt/minuit2/lib/ \
+	-L/usr/local/opt/freetype/lib \
+	-L/opt/local/lib -L/opt/lib \
+	-L/usr/local/lib -L/usr/local/lib64 \
+	-L/usr/lib64 -L/usr/lib64/root \
+	-L/usr/lib/x86_64-linux-gnu
 
 
 
@@ -273,7 +282,11 @@ else
 endif
 
 ifeq ($(USE_3D), 1)
-	GL_LIBS = ${X11_LIBS} -lGL -lGLU -lfreetype
+	ifeq ($(USE_FRAMEWORKS), 0)
+		GL_LIBS = ${X11_LIBS} -lGL -lGLU -lfreetype
+	else
+		GL_LIBS = ${X11_LIBS} -lfreetype
+	endif
 else
 	GL_LIBS = 
 endif
@@ -296,7 +309,11 @@ else
 endif
 
 ifeq ($(USE_PY), 1)
-	PY_LIBS = -lboost_python${BOOST_SUFFIX} -lpython2.7
+#	ifeq ($(USE_FRAMEWORKS), 0)
+		PY_LIBS = -lboost_python${BOOST_SUFFIX} -lpython2.7
+#	else
+#		PY_LIBS = -lboost_python${BOOST_SUFFIX} -F /usr/local/opt/python/Frameworks -framework Python
+#	endif
 	PY_OBJS = obj/sqw_py.o 
 else
 	PY_LIBS =

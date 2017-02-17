@@ -62,7 +62,7 @@ std::string find_resource(const std::string& strFile, bool bLogErr)
 	}
 
 	if(bLogErr)
-		tl::log_err("Could not load resource file \"", strFile, "\".");
+		tl::log_err("Could not find resource file \"", strFile, "\".");
 	return "";
 }
 
@@ -78,7 +78,7 @@ std::vector<std::string> find_resource_dirs(const std::string& strDir, bool bLog
 	}
 
 	if(bLogErr && vecDirs.size()==0)
-		tl::log_err("Could not load resource directory \"", strDir, "\".");
+		tl::log_err("Could not find resource directory \"", strDir, "\".");
 
 	return vecDirs;
 }
