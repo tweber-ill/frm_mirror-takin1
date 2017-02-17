@@ -7,7 +7,7 @@ if [ $# -ge 1  -a  "$1" == "latest" ]; then
 	TDATA=takin-data-master
 else
 	TLIBS=tlibs-0.7.7
-#	TLIBS=tlibs-master	# override for non-tagged version
+	TLIBS=tlibs-master	# override for non-tagged version
 
 	TDATA=takin-data-master
 fi
