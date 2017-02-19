@@ -98,7 +98,7 @@ void SqwJl::PrintExceptions() const
 		jl_function_t *pPrint = jl_get_function(jl_base_module, "string");
 		if(pPrint)
 			pExStr = jl_call1(pPrint, pEx);
-		if(pExStr);
+		if(pExStr)
 			strEx = jl_string_ptr(pExStr);
 
 		if(strEx != "")

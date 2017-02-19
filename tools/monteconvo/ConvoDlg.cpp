@@ -708,7 +708,10 @@ void ConvoDlg::Start1D()
 					set_qwt_data<t_real_reso>()(*m_plotwrap, vecNull, vecNull, 2, false);
 
 				if(bIsLastStep)
-					set_zoomer_base(m_plotwrap->GetZoomer(), m_vecQ, m_vecScaledS, !bForceDeferred, m_plotwrap.get());
+					set_zoomer_base(m_plotwrap->GetZoomer(),
+					tl::container_cast<t_real_qwt, t_real, std::vector>()(m_vecQ),
+					tl::container_cast<t_real_qwt, t_real, std::vector>()(m_vecScaledS),
+					!bForceDeferred, m_plotwrap.get());
 				QMetaObject::invokeMethod(m_plotwrap.get(), "doUpdate", connty);
 			}
 
@@ -1277,7 +1280,10 @@ void ConvoDlg::StartDisp()
 				}
 
 				if(bIsLastStep)
-					set_zoomer_base(m_plotwrap->GetZoomer(), m_vecvecQ, m_vecvecE, !bForceDeferred, m_plotwrap.get());
+					set_zoomer_base(m_plotwrap->GetZoomer(),
+					tl::container2_cast<t_real_qwt, t_real, std::vector>()(m_vecvecQ),
+					tl::container2_cast<t_real_qwt, t_real, std::vector>()(m_vecvecE),
+					!bForceDeferred, m_plotwrap.get());
 				QMetaObject::invokeMethod(m_plotwrap.get(), "doUpdate", connty);
 			}
 
