@@ -97,6 +97,12 @@
       <File Name="tlibs/log/log.cpp"/>
       <File Name="tlibs/log/log.h"/>
     </VirtualDirectory>
+    <VirtualDirectory Name="fit">
+      <File Name="tlibs/fit/interpolation.h"/>
+      <File Name="tlibs/fit/minuit.h"/>
+      <File Name="tlibs/fit/funcmod.h"/>
+      <File Name="tlibs/fit/swarm.h"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="tools">
     <VirtualDirectory Name="res">

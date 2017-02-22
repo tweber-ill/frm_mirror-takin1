@@ -26,6 +26,7 @@
 
 #ifndef NO_FIT
 	#include "tlibs/fit/minuit.h"
+	//#include "tlibs/fit/swarm.h"
 	using tl::t_real_min;
 #endif
 
@@ -856,6 +857,9 @@ bool ScanViewerDlg::Fit(t_func&& func,
 			vecParamNames, _vecVals, _vecErrs, &vecFixed);
 		vecVals = tl::container_cast<t_real, t_real_min, std::vector>()(_vecVals);
 		vecErrs = tl::container_cast<t_real, t_real_min, std::vector>()(_vecErrs);
+
+		//bOk = tl::swarmfit<t_real, iFuncArgs>(func, m_vecX, m_vecY, m_vecYErr,
+		//	vecParamNames, vecVals, vecErrs/*, &vecFixed*/);
 	}
 	catch(const std::exception& ex)
 	{
