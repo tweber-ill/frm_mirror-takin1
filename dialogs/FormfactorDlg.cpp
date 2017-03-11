@@ -318,6 +318,17 @@ void FormfactorDlg::Calcg()
 
 	t_real dg = tl::eff_gJ(dS, dL, dJ);
 	sping->setValue(dg);
+
+
+	std::ostringstream ostrMu;
+	ostrMu.precision(g_iPrec);
+
+	t_real muJ = tl::eff_magnetons(dg, dJ);
+	t_real muS = tl::eff_magnetons(t_real(2), dS);	// spin only
+
+	ostrMu << "mu_eff (spin-only) = " << muS << " mu_B, ";
+	ostrMu << "mu_eff (total) = " << muJ << " mu_B.";
+	labelStatus->setText(ostrMu.str().c_str());
 }
 
 void FormfactorDlg::CalcTermSymbol(const QString& qstr)

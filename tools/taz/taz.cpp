@@ -77,6 +77,8 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	m_pCoordQStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	m_pCoordCursorStatusMsg->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+
+	// prevents window resizing by message length
 	for(QLabel* pLabel : {m_pStatusMsg/*, m_pCoordQStatusMsg, m_pCoordCursorStatusMsg*/})
 		pLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
