@@ -10,11 +10,7 @@
 #include "libs/globals.h"
 
 
-template class Formfact<t_real_glob>;
 template class FormfactList<t_real_glob>;
-
-template class MagFormfact<t_real_glob>;
 template class MagFormfactList<t_real_glob>;
-
-template class Scatlen<t_real_glob>;
 template class ScatlenList<t_real_glob>;
+
