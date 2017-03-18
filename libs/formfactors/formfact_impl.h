@@ -274,7 +274,10 @@ ScatlenList<T>::ScatlenList()
 		iterElem->m_vecIsotopes.push_back(&isotope);
 	}
 
-	/*
+	s_strSrc = xml.Query<std::string>("scatlens/source", "");
+	s_strSrcUrl = xml.Query<std::string>("scatlens/source_url", "");
+
+#ifndef NDEBUG
 	// testing scattering lengths
 	for(const auto& elem : s_vecElems)
 	{
@@ -295,13 +298,19 @@ ScatlenList<T>::ScatlenList()
 			}
 		}
 		
-		auto themean_coh = tl::mean_value<decltype(vecAbund), decltype(vecbcoh)>(vecAbund, vecbcoh);
-		tl::log_debug(elem.GetAtomIdent(), ": mean b: ", themean_coh, ", orig: ", elem.GetCoherent());
-	}*/
+		auto themean = tl::mean_value<decltype(vecAbund), decltype(vecbcoh)>
+			(vecAbund, vecbcoh);
+		auto thedev = tl::std_dev<decltype(vecAbund), decltype(vecbcoh)>
+			(vecAbund, vecbcoh);
 
-	s_strSrc = xml.Query<std::string>("scatlens/source", "");
-	s_strSrcUrl = xml.Query<std::string>("scatlens/source_url", "");
+		tl::log_debug(elem.GetAtomIdent(), ": mean b: ", themean,
+			": stddev b: ", thedev,
+			", orig coh: ", elem.GetCoherent(),
+			", orig inc: ", elem.GetIncoherent());
+	}
+#endif
 }
+
 
 template<typename T>
 ScatlenList<T>::~ScatlenList()
