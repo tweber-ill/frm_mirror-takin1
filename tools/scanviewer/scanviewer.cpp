@@ -865,6 +865,9 @@ bool ScanViewerDlg::Fit(t_func&& func,
 	m_vecFitX.clear();
 	m_vecFitY.clear();
 
+	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+		return false;
+
 	std::vector<t_real> m_vecYErr;
 	m_vecYErr.reserve(m_vecY.size());
 	for(t_real d : m_vecY)
@@ -939,6 +942,9 @@ bool ScanViewerDlg::Fit(t_func&& func,
 
 void ScanViewerDlg::FitLine()
 {
+	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+		return;
+
 	auto func = [](t_real x, t_real m, t_real offs) -> t_real { return m*x + offs; };
 	constexpr std::size_t iFuncArgs = 3;
 
@@ -981,6 +987,9 @@ void ScanViewerDlg::FitLine()
 
 void ScanViewerDlg::FitSine()
 {
+	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+		return;
+
 	auto func = [](t_real x, t_real amp, t_real freq, t_real phase, t_real offs) -> t_real
 		{ return amp*std::sin(freq*x + phase) + offs; };
 	constexpr std::size_t iFuncArgs = 5;
@@ -1034,6 +1043,9 @@ void ScanViewerDlg::FitSine()
 
 void ScanViewerDlg::FitGauss()
 {
+	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+		return;
+
 	auto func = tl::gauss_model_amp<t_real>;
 	constexpr std::size_t iFuncArgs = 5;
 
@@ -1086,6 +1098,9 @@ void ScanViewerDlg::FitGauss()
 
 void ScanViewerDlg::FitLorentz()
 {
+	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+		return;
+
 	auto func = tl::lorentz_model_amp<t_real>;
 	constexpr std::size_t iFuncArgs = 5;
 
@@ -1144,6 +1159,9 @@ void ScanViewerDlg::FitVoigt() {}
 
 void ScanViewerDlg::FitVoigt()
 {
+	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+		return;
+
 	auto func = tl::voigt_model_amp<t_real>;
 	constexpr std::size_t iFuncArgs = 6;
 
