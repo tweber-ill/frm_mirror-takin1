@@ -524,18 +524,40 @@ void TazDlg::RepopulateSpaceGroups()
 
 	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
 
+	using t_sgitem = std::tuple<unsigned int, std::string, void*>;
+	std::vector<t_sgitem> vecSGs;
+
+	// get all space groups and apply filter
 	for(const SpaceGroups<t_real>::t_mapSpaceGroups::value_type& pair : *pmapSpaceGroups)
 	{
+		// space group number and name
+		const std::string strSGNr = tl::var_to_str(pair.second.GetNr());
 		const std::string& strName = pair.second.GetName();
 
+		// apply user filter
 		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
 		if(strFilter!="" &&
 			!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
 			t_striterrange(strFilter.begin(), strFilter.end())))
 			continue;
 
+		vecSGs.push_back(std::make_tuple(pair.second.GetNr(),
+			"(" + strSGNr + ") " + strName,
+			(void*)&pair.second));
+	}
+
+	// sort by space group number
+	std::sort(vecSGs.begin(), vecSGs.end(),
+		[](const t_sgitem& sg1, const t_sgitem& sg2)
+		{
+			return std::get<0>(sg1) < std::get<0>(sg2);
+		});
+
+	for(std::size_t iSG=0; iSG<vecSGs.size(); ++iSG)
+	{
+		// insert space groups
 		comboSpaceGroups->insertItem(comboSpaceGroups->count(),
-			strName.c_str(), QVariant::fromValue((void*)&pair.second));
+			std::get<1>(vecSGs[iSG]).c_str(), QVariant::fromValue(std::get<2>(vecSGs[iSG])));
 	}
 
 
