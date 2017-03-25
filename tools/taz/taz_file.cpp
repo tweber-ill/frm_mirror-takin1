@@ -19,6 +19,25 @@
 using t_real = t_real_glob;
 
 
+/**
+ * gets space group index from combo box
+ */
+static int find_sg_from_combo(QComboBox* pCombo, const std::string& str)
+{
+	//return pCombo->findText(str.c_str(), Qt::MatchContains /*Qt::MatchFixedString*/);
+
+	for(int iIdx=0; iIdx<pCombo->count(); ++iIdx)
+	{
+		SpaceGroup<t_real> *pSG = reinterpret_cast<SpaceGroup<t_real>*>
+			(pCombo->itemData(iIdx).value<void*>());
+		if(pSG && pSG->GetName() == str)
+			return iIdx;
+	}
+
+	return -1;
+}
+
+
 //--------------------------------------------------------------------------------
 // loading/saving
 
@@ -239,7 +258,7 @@ bool TazDlg::Load(const char* pcFile)
 		editSpaceGroupsFilter->clear();
 		RepopulateSpaceGroups();
 
-		int iSGIdx = comboSpaceGroups->findText(strSpaceGroup.c_str(), Qt::MatchContains /*Qt::MatchFixedString*/);
+		int iSGIdx = find_sg_from_combo(comboSpaceGroups, strSpaceGroup);
 		if(iSGIdx >= 0)
 			comboSpaceGroups->setCurrentIndex(iSGIdx);
 		else
@@ -625,7 +644,7 @@ bool TazDlg::Import(const char* pcFile)
 		std::string strSpaceGroup = pdat->GetSpacegroup();
 		tl::trim(strSpaceGroup);
 
-		int iSGIdx = comboSpaceGroups->findText(strSpaceGroup.c_str(), Qt::MatchContains /*Qt::MatchFixedString*/);
+		int iSGIdx = find_sg_from_combo(comboSpaceGroups, strSpaceGroup);
 		if(iSGIdx >= 0)
 			comboSpaceGroups->setCurrentIndex(iSGIdx);
 		else
