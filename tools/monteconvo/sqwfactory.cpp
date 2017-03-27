@@ -223,13 +223,25 @@ bool save_sqw_params(const SqwBase* pSqw,
 {
 	if(!pSqw) return 0;
 
-	std::vector<SqwBase::t_var> vecVars = pSqw->GetVars();
+	const std::vector<SqwBase::t_var> vecVars = pSqw->GetVars();
+	const std::vector<SqwBase::t_var_fit>& vecFitVars = pSqw->GetFitVars();
+
 	for(const SqwBase::t_var& var : vecVars)
 	{
 		const std::string& strVar = std::get<0>(var);
 		const std::string& strVal = std::get<2>(var);
 
 		mapConf[strXmlRoot + "sqw_params/" + strVar] = strVal;
+	}
+
+	for(const SqwBase::t_var_fit& var : vecFitVars)
+	{
+		const std::string& strVar = std::get<0>(var);
+		const std::string& strErr = std::get<1>(var);
+		const bool bFit = std::get<2>(var);
+
+		mapConf[strXmlRoot + "sqw_errors/" + strVar] = strErr;
+		mapConf[strXmlRoot + "sqw_fitvar/" + strVar] = bFit ? "1" : "0";
 	}
 
 	return 1;
@@ -244,7 +256,10 @@ bool load_sqw_params(SqwBase* pSqw,
 		xml.GetChildNodes(strXmlRoot + "sqw_params/");
 
 	std::vector<SqwBase::t_var> vecVars;
+	std::vector<SqwBase::t_var_fit> vecVarsFit;
 	vecVars.reserve(vecChildren.size());
+	vecVarsFit.reserve(vecChildren.size());
+
 	for(const std::string& strChild : vecChildren)
 	{
 		boost::optional<std::string> opVal =
@@ -256,9 +271,21 @@ bool load_sqw_params(SqwBase* pSqw,
 			std::get<2>(var) = *opVal;
 			vecVars.push_back(std::move(var));
 		}
+
+		boost::optional<std::string> opErr =
+			xml.QueryOpt<std::string>(strXmlRoot + "sqw_errors/" + strChild);
+		boost::optional<bool> opFit =
+			xml.QueryOpt<bool>(strXmlRoot + "sqw_fitvar/" + strChild);
+		SqwBase::t_var_fit varFit;
+		std::get<0>(varFit) = strChild;
+		std::get<1>(varFit) = opErr ? *opErr : "0";
+		std::get<2>(varFit) = opFit ? *opFit : 0;
+		vecVarsFit.push_back(std::move(varFit));
 	}
 
 	pSqw->SetVars(vecVars);
+	pSqw->SetFitVars(vecVarsFit);
+
 	return 1;
 }
 // ----------------------------------------------------------------------------

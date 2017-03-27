@@ -57,8 +57,13 @@ public:
 	virtual void SetFitVars(const std::vector<t_var_fit>& vecFit) { m_vecFit = vecFit; }
 	virtual bool SetVarIfAvail(const std::string& strKey, const std::string& strNewVal);
 
+	SqwBase() = default;
+	virtual ~SqwBase() = default;
+
+	virtual const SqwBase& operator=(const SqwBase& sqw);
+	SqwBase(const SqwBase& sqw) { this->operator=(sqw); }
+
 	virtual SqwBase* shallow_copy() const = 0;
-	virtual ~SqwBase() {}
 };
 
 

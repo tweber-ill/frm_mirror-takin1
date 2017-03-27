@@ -113,6 +113,7 @@ protected slots:
 
 	void Load();
 	void Save();
+	void SaveConvofit();
 
 	void ShowAboutDlg();
 

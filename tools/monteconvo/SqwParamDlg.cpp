@@ -124,7 +124,7 @@ void SqwParamDlg::SqwLoaded(const std::vector<SqwBase::t_var>& vecVars,
 			tableParams->setItem(iRow, SQW_ERR, pItemErr);
 		}
 		pItemErr->setFlags(pItemErr->flags() | Qt::ItemIsEditable);
-		pItemErr->setText(pstrErr ? pstrErr->c_str() : "");
+		pItemErr->setText(pstrErr ? pstrErr->c_str() : "0");
 
 
 		// is fit param?
@@ -154,11 +154,13 @@ void SqwParamDlg::SaveSqwParams()
 		if(tableParams->item(iRow, SQW_NAME)->checkState() != Qt::Checked)
 			continue;
 
+		// basic vars
 		SqwBase::t_var var;
 		std::get<SQW_NAME>(var) = tableParams->item(iRow, SQW_NAME)->text().toStdString();
 		std::get<SQW_TYPE>(var) = tableParams->item(iRow, SQW_TYPE)->text().toStdString();
 		std::get<SQW_VAL>(var) = tableParams->item(iRow, SQW_VAL)->text().toStdString();
 
+		// fit vars
 		SqwBase::t_var_fit varFit;
 		std::get<0>(varFit) = std::get<SQW_NAME>(var);
 		std::get<1>(varFit) = tableParams->item(iRow, SQW_ERR)->text().toStdString();

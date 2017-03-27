@@ -178,6 +178,12 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 	pMenuFile->addSeparator();
 
+	QAction *pConvofit = new QAction("Export to Convofit...", this);
+	pConvofit->setIcon(load_icon("res/icons/drive-harddisk.svg"));
+	pMenuFile->addAction(pConvofit);
+
+	pMenuFile->addSeparator();
+
 	QAction *pExit = new QAction("Exit", this);
 	pExit->setIcon(load_icon("res/icons/system-log-out.svg"));
 	pMenuFile->addAction(pExit);
@@ -246,6 +252,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(accept()));
 	QObject::connect(pLoad, SIGNAL(triggered()), this, SLOT(Load()));
 	QObject::connect(pSaveAs, SIGNAL(triggered()), this, SLOT(Save()));
+	QObject::connect(pConvofit, SIGNAL(triggered()), this, SLOT(SaveConvofit()));
 	QObject::connect(pActionStart, SIGNAL(triggered()), this, SLOT(Start()));
 	QObject::connect(pActionDisp, SIGNAL(triggered()), this, SLOT(StartDisp()));
 	QObject::connect(pExportPlot, SIGNAL(triggered()), m_plotwrap.get(), SLOT(SavePlot()));
@@ -392,6 +399,7 @@ void ConvoDlg::SqwParamsChanged(const std::vector<SqwBase::t_var>& vecVars,
 {
 	if(!m_pSqw) return;
 	m_pSqw->SetVars(vecVars);
+	if(pvecVarsFit) m_pSqw->SetFitVars(*pvecVarsFit);
 
 #ifndef NDEBUG
 	// check: read parameters back in

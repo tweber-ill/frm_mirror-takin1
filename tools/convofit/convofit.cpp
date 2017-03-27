@@ -25,6 +25,7 @@
 #include <boost/program_options.hpp>
 
 #include "convofit.h"
+#include "convofit_import.h"
 #include "scan.h"
 #include "model.h"
 #include "../monteconvo/sqwfactory.h"
@@ -46,8 +47,28 @@ std::string g_strSetParams;
 std::string g_strOutFileSuffix;
 
 
-bool run_job(const std::string& strJob)
+
+bool run_job(const std::string& _strJob)
 {
+	std::string strJob;
+
+	// if a monteconvo file is given, convert it to a convofit job file
+	tl::Prop<std::string> propMC;
+	if(propMC.Load(_strJob.c_str(), tl::PropType::XML) &&
+		propMC.Exists("taz/monteconvo"))
+	{
+		tl::log_info("Importing monteconvo file \"", _strJob, "\".");
+		strJob = convert_monteconvo(propMC);
+		if(strJob == "")
+			return false;
+		tl::log_info("Converted convofit file is \"", strJob, "\".");
+	}
+	else	// use the job file directly
+	{
+		strJob = _strJob;
+	}
+
+
 	const unsigned iSeed = tl::get_rand_seed();
 	tl::init_rand_seed(iSeed);
 
