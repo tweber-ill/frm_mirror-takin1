@@ -260,10 +260,15 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 
 	m_pSqwParamDlg = new SqwParamDlg(this, m_pSett);
-	QObject::connect(this, SIGNAL(SqwLoaded(const std::vector<SqwBase::t_var>&)),
-		m_pSqwParamDlg, SLOT(SqwLoaded(const std::vector<SqwBase::t_var>&)));
-	QObject::connect(m_pSqwParamDlg, SIGNAL(SqwParamsChanged(const std::vector<SqwBase::t_var>&)),
-		this, SLOT(SqwParamsChanged(const std::vector<SqwBase::t_var>&)));
+	QObject::connect(this,
+		SIGNAL(SqwLoaded(const std::vector<SqwBase::t_var>&,
+		const std::vector<SqwBase::t_var_fit>*)),
+		m_pSqwParamDlg, SLOT(SqwLoaded(const std::vector<SqwBase::t_var>&,
+		const std::vector<SqwBase::t_var_fit>*)));
+	QObject::connect(m_pSqwParamDlg,
+		SIGNAL(SqwParamsChanged(const std::vector<SqwBase::t_var>&, const std::vector<SqwBase::t_var_fit>*)),
+		this, SLOT(SqwParamsChanged(const std::vector<SqwBase::t_var>&,
+			const std::vector<SqwBase::t_var_fit>*)));
 
 	m_pFavDlg = new FavDlg(this, m_pSett);
 	QObject::connect(m_pFavDlg, SIGNAL(ChangePos(const struct FavHklPos&)),
@@ -331,7 +336,7 @@ void ConvoDlg::SqwModelChanged(int)
 
 	editSqw->clear();
 	createSqwModel("");
-	//emit SqwLoaded(std::vector<SqwBase::t_var>{});
+	//emit SqwLoaded(std::vector<SqwBase::t_var>{}, nullptr);
 }
 
 void ConvoDlg::createSqwModel(const QString& qstrFile)
@@ -341,7 +346,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	if(m_pSqw)
 	{
 		m_pSqw.reset();
-		emit SqwLoaded(std::vector<SqwBase::t_var>{});
+		emit SqwLoaded(std::vector<SqwBase::t_var>{}, nullptr);
 	}
 
 	std::string strSqwIdent = comboSqw->itemData(comboSqw->currentIndex()).toString().toStdString();
@@ -371,7 +376,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 
 	if(m_pSqw && m_pSqw->IsOk())
 	{
-		emit SqwLoaded(m_pSqw->GetVars());
+		emit SqwLoaded(m_pSqw->GetVars(), &m_pSqw->GetFitVars());
 	}
 	else
 	{
@@ -382,14 +387,15 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 }
 
 
-void ConvoDlg::SqwParamsChanged(const std::vector<SqwBase::t_var>& vecVars)
+void ConvoDlg::SqwParamsChanged(const std::vector<SqwBase::t_var>& vecVars,
+	const std::vector<SqwBase::t_var_fit>* pvecVarsFit)
 {
 	if(!m_pSqw) return;
 	m_pSqw->SetVars(vecVars);
 
 #ifndef NDEBUG
 	// check: read parameters back in
-	emit SqwLoaded(m_pSqw->GetVars());
+	emit SqwLoaded(m_pSqw->GetVars(), &m_pSqw->GetFitVars());
 #endif
 }
 

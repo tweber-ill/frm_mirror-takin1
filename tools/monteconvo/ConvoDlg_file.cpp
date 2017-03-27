@@ -143,7 +143,7 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		if(m_pSqw)
 		{
 			load_sqw_params(m_pSqw.get(), xml, strXmlRoot + "monteconvo/");
-			emit SqwLoaded(m_pSqw->GetVars());
+			emit SqwLoaded(m_pSqw->GetVars(), &m_pSqw->GetFitVars());
 		}
 	}
 	m_bAllowSqwReinit = 1;

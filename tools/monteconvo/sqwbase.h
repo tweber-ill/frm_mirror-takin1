@@ -23,11 +23,17 @@
 class SqwBase
 {
 public:
-	// name, type, value
+	// basic fields: ident, type, value
 	using t_var = std::tuple<std::string, std::string, std::string>;
+
+	// extended fields: ident, error, is fit var?
+	using t_var_fit = std::tuple<std::string, std::string, bool>;
+
 
 protected:
 	bool m_bOk = false;
+	std::vector<t_var_fit> m_vecFit;
+
 
 public:
 	/**
@@ -44,9 +50,11 @@ public:
 
 	// return model variables
 	virtual std::vector<t_var> GetVars() const = 0;
+	virtual const std::vector<t_var_fit>& GetFitVars() const { return m_vecFit; }
 
 	// set model variables
 	virtual void SetVars(const std::vector<t_var>&) = 0;
+	virtual void SetFitVars(const std::vector<t_var_fit>& vecFit) { m_vecFit = vecFit; }
 	virtual bool SetVarIfAvail(const std::string& strKey, const std::string& strNewVal);
 
 	virtual SqwBase* shallow_copy() const = 0;

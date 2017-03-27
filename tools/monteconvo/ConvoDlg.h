@@ -88,7 +88,8 @@ protected slots:
 
 	void SqwModelChanged(int);
 	void createSqwModel(const QString& qstrFile);
-	void SqwParamsChanged(const std::vector<SqwBase::t_var>&);
+	void SqwParamsChanged(const std::vector<SqwBase::t_var>&, 
+		const std::vector<SqwBase::t_var_fit>*);
 
 	void scanFileChanged(const QString& qstrFile);
 	void scanCheckToggled(bool);
@@ -120,7 +121,7 @@ public:
 	virtual ~ConvoDlg();
 
 signals:
-	void SqwLoaded(const std::vector<SqwBase::t_var>&);
+	void SqwLoaded(const std::vector<SqwBase::t_var>&, const std::vector<SqwBase::t_var_fit>*);
 };
 
 #endif

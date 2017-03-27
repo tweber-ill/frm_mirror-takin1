@@ -29,13 +29,13 @@ public:
 	virtual ~SqwParamDlg();
 
 public slots:
-	void SqwLoaded(const std::vector<SqwBase::t_var>&);
+	void SqwLoaded(const std::vector<SqwBase::t_var>&, const std::vector<SqwBase::t_var_fit>*);
 
 protected slots:
 	void ButtonBoxClicked(QAbstractButton *pBtn);
 
 signals:
-	void SqwParamsChanged(const std::vector<SqwBase::t_var>&);
+	void SqwParamsChanged(const std::vector<SqwBase::t_var>&, const std::vector<SqwBase::t_var_fit>*);
 };
 
 #endif
