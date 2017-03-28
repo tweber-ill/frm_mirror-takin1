@@ -7,8 +7,10 @@
 #
 
 TOOL=install_name_tool
-QTVER="5.8.0_1"
 PRG="takin.app"
+
+OS_BIN="bin"	# set accordingly
+QT_VER="5.8.0_1"
 
 
 declare -a filestochange=(
@@ -35,29 +37,29 @@ declare -a filestochange=(
 	"${PRG}/Contents/Frameworks/libboost_python.dylib"
 	"${PRG}/Contents/Frameworks/libboost_regex.dylib"
 	"${PRG}/Contents/Frameworks/libboost_system.dylib"
-	"${PRG}/Contents/bin/takin"
-	"${PRG}/Contents/bin/convofit"
-	"${PRG}/Contents/bin/convoseries"
+	"${PRG}/Contents/${OS_BIN}/takin"
+	"${PRG}/Contents/${OS_BIN}/convofit"
+	"${PRG}/Contents/${OS_BIN}/convoseries"
 )
 
 declare -a changefrom=(
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtCore.framework/Versions/5/QtCore"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtCore.framework/Versions/5/QtCore"
 	"/usr/local/opt/qt5/lib/QtCore.framework/Versions/5/QtCore"
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtGui.framework/Versions/5/QtGui"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtGui.framework/Versions/5/QtGui"
 	"/usr/local/opt/qt5/lib/QtGui.framework/Versions/5/QtGui"
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtWidgets.framework/Versions/5/QtWidgets"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtWidgets.framework/Versions/5/QtWidgets"
 	"/usr/local/opt/qt5/lib/QtWidgets.framework/Versions/5/QtWidgets"
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtOpenGL.framework/Versions/5/QtOpenGL"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtOpenGL.framework/Versions/5/QtOpenGL"
 	"/usr/local/opt/qt5/lib/QtOpenGL.framework/Versions/5/QtOpenGL"
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtConcurrent.framework/Versions/5/QtConcurrent"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtConcurrent.framework/Versions/5/QtConcurrent"
 	"/usr/local/opt/qt5/lib/QtConcurrent.framework/Versions/5/QtConcurrent"
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtXml.framework/Versions/5/QtXml"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtXml.framework/Versions/5/QtXml"
 	"/usr/local/opt/qt5/lib/QtXml.framework/Versions/5/QtXml"
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtXmlPatterns.framework/Versions/5/QtXmlPatterns"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtXmlPatterns.framework/Versions/5/QtXmlPatterns"
 	"/usr/local/opt/qt5/lib/QtXmlPatterns.framework/Versions/5/QtXmlPatterns"
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtSvg.framework/Versions/5/QtSvg"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtSvg.framework/Versions/5/QtSvg"
 	"/usr/local/opt/qt5/lib/QtSvg.framework/Versions/5/QtSvg"
-	"/usr/local/Cellar/qt5/${QTVER}/lib/QtPrintSupport.framework/Versions/5/QtPrintSupport"
+	"/usr/local/Cellar/qt5/${QT_VER}/lib/QtPrintSupport.framework/Versions/5/QtPrintSupport"
 	"/usr/local/opt/qt5/lib/QtPrintSupport.framework/Versions/5/QtPrintSupport"
 	"/usr/local/opt/qwt/lib/qwt.framework/Versions/6/qwt"
 	"/usr/lib/libz.1.dylib"
@@ -69,6 +71,8 @@ declare -a changefrom=(
 	"/usr/local/opt/boost/lib/libboost_regex.dylib"
 	"/usr/local/opt/boost/lib/libboost_program_options.dylib"
 	"/usr/local/opt/boost-python/lib/libboost_python.dylib"
+	"/usr/local/opt/freetype/lib/libfreetype.6.dylib"
+	"/usr/local/opt/libpng/lib/libpng16.16.dylib"
 )
 
 declare -a changeto=(
@@ -100,6 +104,8 @@ declare -a changeto=(
 	"@executable_path/../Frameworks/libboost_regex.dylib"
 	"@executable_path/../Frameworks/libboost_program_options.dylib"
 	"@executable_path/../Frameworks/libboost_python.dylib"
+	"@executable_path/../Frameworks/libfreetype.6.dylib"
+	"@executable_path/../Frameworks/libpng16.16.dylib"
 )
 
 CNT=$(expr ${#changefrom[*]} - 1)

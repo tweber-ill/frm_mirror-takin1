@@ -1402,8 +1402,7 @@ void ConvoDlg::Stop()
 
 void ConvoDlg::ShowFavourites()
 {
-	m_pFavDlg->show();
-	m_pFavDlg->activateWindow();
+	focus_dlg(m_pFavDlg);
 }
 
 void ConvoDlg::UpdateCurFavPos()
@@ -1533,8 +1532,7 @@ void ConvoDlg::scaleChanged()
 
 void ConvoDlg::showSqwParamDlg()
 {
-	m_pSqwParamDlg->show();
-	m_pSqwParamDlg->activateWindow();
+	focus_dlg(m_pSqwParamDlg);
 }
 
 

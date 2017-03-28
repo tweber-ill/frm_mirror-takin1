@@ -784,8 +784,8 @@ void PowderDlg::ShowAtomDlg()
 	}
 
 	m_pAtomsDlg->SetAtoms(m_vecAtoms);
-	m_pAtomsDlg->show();
-	m_pAtomsDlg->activateWindow();
+
+	focus_dlg(m_pAtomsDlg);
 }
 
 void PowderDlg::cursorMoved(const QPointF& pt)

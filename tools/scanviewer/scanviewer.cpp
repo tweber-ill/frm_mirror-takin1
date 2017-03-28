@@ -848,8 +848,7 @@ void ScanViewerDlg::UpdateFileList()
 
 void ScanViewerDlg::ShowFitParams()
 {
-	m_pFitParamDlg->show();
-	m_pFitParamDlg->activateWindow();
+	focus_dlg(m_pFitParamDlg);
 }
 
 /**

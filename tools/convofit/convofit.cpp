@@ -31,6 +31,8 @@
 #include "../monteconvo/sqwfactory.h"
 #include "../res/defs.h"
 
+#define DEFAULT_TERM "x11 noraise"
+//#define DEFAULT_TERM "qt noraise"
 
 //using t_real = tl::t_real_min;
 using t_real = t_real_reso;
@@ -207,7 +209,7 @@ bool run_job(const std::string& _strJob)
 	{
 		plt.reset(new tl::GnuPlot<t_real>());
 		plt->Init();
-		std::string strTerm = prop.Query<std::string>("output/plot_term", "x11 noraise");
+		std::string strTerm = prop.Query<std::string>("output/plot_term", DEFAULT_TERM);
 		plt->SetTerminal(0, strTerm.c_str());
 	}
 

@@ -691,10 +691,7 @@ bool TazDlg::Import(const char* pcFile)
 	if(iScanNum && m_pGotoDlg)
 	{
 		if(m_pGotoDlg->GotoPos(0))
-		{
-			m_pGotoDlg->show();
-			m_pGotoDlg->activateWindow();
-		}
+			focus_dlg(m_pGotoDlg);
 	}
 
 	return true;
@@ -705,8 +702,7 @@ void TazDlg::ShowScanViewer()
 	if(!m_pScanViewer)
 		m_pScanViewer = new ScanViewerDlg(this);
 
-	m_pScanViewer->show();
-	m_pScanViewer->activateWindow();
+	focus_dlg(m_pScanViewer);
 }
 
 void TazDlg::ShowScanPos()
@@ -714,6 +710,5 @@ void TazDlg::ShowScanPos()
 	if(!m_pScanPos)
 		m_pScanPos = new ScanPosDlg(this, &m_settings);
 
-	m_pScanPos->show();
-	m_pScanPos->activateWindow();
+	focus_dlg(m_pScanPos);
 }

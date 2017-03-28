@@ -14,6 +14,7 @@
 
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QDialog>
 
 #include "tlibs/string/string.h"
 
@@ -88,6 +89,15 @@ enum class QtStdPath
 };
 
 extern std::vector<std::string> get_qt_std_path(QtStdPath path);
+
+
+// ----------------------------------------------------------------------------
+
+
+/**
+ * focus a dialog
+ */
+extern void focus_dlg(QDialog* pDlg);
 
 
 #endif

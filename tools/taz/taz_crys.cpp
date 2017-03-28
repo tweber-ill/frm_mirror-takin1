@@ -582,8 +582,7 @@ void TazDlg::ShowSpurions()
 		m_sceneRecip.emitAllParams();
 	}
 
-	m_pSpuri->show();
-	m_pSpuri->activateWindow();
+	focus_dlg(m_pSpuri);
 }
 
 void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
@@ -685,9 +684,7 @@ void TazDlg::InitReso()
 void TazDlg::ShowResoParams()
 {
 	InitReso();
-
-	m_pReso->show();
-	m_pReso->activateWindow();
+	focus_dlg(m_pReso);
 }
 
 void TazDlg::ShowResoEllipses()
@@ -703,8 +700,7 @@ void TazDlg::ShowResoEllipses()
 		m_pReso->EmitResults();
 	}
 
-	m_pEllipseDlg->show();
-	m_pEllipseDlg->activateWindow();
+	focus_dlg(m_pEllipseDlg);
 }
 
 void TazDlg::InitResoConv()
@@ -716,8 +712,7 @@ void TazDlg::InitResoConv()
 void TazDlg::ShowResoConv()
 {
 	InitResoConv();
-	m_pConvoDlg->show();
-	m_pConvoDlg->activateWindow();
+	focus_dlg(m_pConvoDlg);
 }
 
 #ifndef NO_3D
@@ -735,8 +730,7 @@ void TazDlg::ShowResoEllipses3D()
 		m_pReso->EmitResults();
 	}
 
-	m_pEllipseDlg3D->show();
-	m_pEllipseDlg3D->activateWindow();
+	focus_dlg(m_pEllipseDlg3D);
 }
 
 #else
@@ -752,8 +746,8 @@ void TazDlg::ShowFormfactorDlg()
 {
 	if(!m_pFormfactorDlg)
 		m_pFormfactorDlg = new FormfactorDlg(this, &m_settings);
-	m_pFormfactorDlg->show();
-	m_pFormfactorDlg->activateWindow();
+
+	focus_dlg(m_pFormfactorDlg);
 }
 
 void TazDlg::ShowAtomsDlg()
@@ -766,8 +760,7 @@ void TazDlg::ShowAtomsDlg()
 	}
 
 	m_pAtomsDlg->SetAtoms(m_vecAtoms);
-	m_pAtomsDlg->show();
-	m_pAtomsDlg->activateWindow();
+	focus_dlg(m_pAtomsDlg);
 }
 
 void TazDlg::ApplyAtoms(const std::vector<AtomPos<t_real>>& vecAtoms)
@@ -780,6 +773,6 @@ void TazDlg::ShowSgListDlg()
 {
 	if(!m_pSgListDlg)
 		m_pSgListDlg = new SgListDlg(this);
-	m_pSgListDlg->show();
-	m_pSgListDlg->activateWindow();
+
+	focus_dlg(m_pSgListDlg);
 }

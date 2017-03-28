@@ -119,3 +119,14 @@ std::vector<std::string> get_qt_std_path(QtStdPath path)
 }
 
 #endif
+
+
+// ----------------------------------------------------------------------------
+
+
+void focus_dlg(QDialog* pDlg)
+{
+	pDlg->show();
+	pDlg->raise();
+	pDlg->activateWindow();
+}
