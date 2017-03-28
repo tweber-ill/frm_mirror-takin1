@@ -56,10 +56,12 @@ protected:
 	std::vector<QDoubleSpinBox*> m_vecSpinBoxes;
 	std::vector<QSpinBox*> m_vecIntSpinBoxes;
 	std::vector<QLineEdit*> m_vecEditBoxes;
+	std::vector<QPlainTextEdit*> m_vecTextBoxes;
 	std::vector<QComboBox*> m_vecComboBoxes;
 	std::vector<QCheckBox*> m_vecCheckBoxes;
 
-	std::vector<std::string> m_vecSpinNames, m_vecIntSpinNames, m_vecEditNames,
+	std::vector<std::string> m_vecSpinNames, m_vecIntSpinNames,
+		m_vecEditNames, m_vecTextNames,
 		m_vecComboNames, m_vecCheckNames;
 
 	QAction *m_pLiveResults = nullptr, *m_pLivePlots = nullptr;
@@ -98,6 +100,7 @@ protected slots:
 	void SaveResult();
 
 	void Start();		// convolution
+	void StartFit();	// convolution fit
 	void StartDisp();	// plot dispersion
 	void Stop();		// stop convo
 

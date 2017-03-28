@@ -25,6 +25,18 @@ std::string convert_monteconvo(
 	mapJob["input/instrument_file"] = propMC.Query<std::string>("taz/monteconvo/instr");
 	mapJob["input/sqw_model"] = propMC.Query<std::string>("taz/monteconvo/sqw");
 	mapJob["input/sqw_file"] = propMC.Query<std::string>("taz/monteconvo/sqw_conf");
+	mapJob["input/counts_col"] = propMC.Query<std::string>("taz/convofit/counter");
+	mapJob["input/monitor_col"] = propMC.Query<std::string>("taz/convofit/monitor");
+
+	// input overrides
+	std::string strTOver = propMC.Query<std::string>("taz/convofit/temp_override");
+	std::string strBOver = propMC.Query<std::string>("taz/convofit/field_override");
+	std::string strSqwOver = propMC.Query<std::string>("taz/convofit/sqw_params");
+	for(std::string *pstr : {&strTOver, &strBOver, &strSqwOver})
+		tl::trim(*pstr);
+
+	if(strTOver != "") mapJob["input/temp_override"] = strTOver;
+	if(strBOver != "") mapJob["input/field_override"] = strBOver;
 
 
 	// outputs
@@ -37,13 +49,23 @@ std::string convert_monteconvo(
 
 	// neutrons
 	mapJob["montecarlo/neutrons"] = propMC.Query<std::string>("taz/monteconvo/neutron_count");
+	mapJob["montecarlo/sample_positions"] =
+		propMC.Query<std::string>("taz/monteconvo/sample_step_count", "1");
+	mapJob["montecarlo/recycle_neutrons"] =
+		propMC.Query<std::string>("taz/convofit/recycle_neutrons", "1");
 
 
 	// fitting
-	mapJob["fitter/minimiser"] = "simplex";
-	mapJob["fitter/strategy"] = "1";
-	mapJob["fitter/max_funccalls"] = "250.";
-	mapJob["fitter/tolerance"] = "25.";
+	std::string strMin = "simplex";
+	switch(propMC.Query<int>("taz/convofit/minimiser"))
+	{
+		case 0: strMin = "simplex"; break;
+		case 1: strMin = "migrad"; break;
+	}
+	mapJob["fitter/minimiser"] = strMin;
+	mapJob["fitter/strategy"] = propMC.Query<std::string>("taz/convofit/strategy", "1");
+	mapJob["fitter/max_funccalls"] = propMC.Query<std::string>("taz/convofit/max_calls", "250");
+	mapJob["fitter/tolerance"] = propMC.Query<std::string>("taz/convofit/tolerance", "25.");
 	mapJob["fitter/sigma"] = "1.";
 
 
@@ -80,8 +102,6 @@ std::string convert_monteconvo(
 	mapJob["resolution/focus_ana_v"] = strFocAnaV;
 	mapJob["resolution/focus_ana_h"] = strFocAnaH;
 
-	mapJob["resolution/use_r0"] = "1";
-
 
 	// parameters
 	t_real dScale = propMC.Query<t_real>("taz/monteconvo/S_scale", t_real(1));
@@ -89,8 +109,10 @@ std::string convert_monteconvo(
 
 	mapJob["fit_parameters/params"] = "scale offs ";
 	mapJob["fit_parameters/fixed"] = "1 1 ";
-	mapJob["fit_parameters/values"] = tl::var_to_str(dScale) + " " + tl::var_to_str(dOffs) + " ";
-	mapJob["fit_parameters/errors"] = tl::var_to_str(dScale*0.1) + " " + tl::var_to_str(dOffs*0.1) + " ";
+	mapJob["fit_parameters/values"] =
+		tl::var_to_str(dScale) + " " + tl::var_to_str(dOffs) + " ";
+	mapJob["fit_parameters/errors"] =
+		tl::var_to_str(dScale*0.1) + " " + tl::var_to_str(dOffs*0.1) + " ";
 
 	std::vector<std::string> vecParams = propMC.GetChildNodes("taz/monteconvo/sqw_params/");
 	for(const std::string& strParam : vecParams)
@@ -117,6 +139,10 @@ std::string convert_monteconvo(
 			mapJob["input/sqw_set_params"] += strParam + " = " + strVal + "; ";
 		}
 	}
+
+	// additional user-given sqw params
+	if(strSqwOver != "")
+		mapJob["input/sqw_set_params"] += strSqwOver + "; ";
 
 
 	// write temporary job file if none given

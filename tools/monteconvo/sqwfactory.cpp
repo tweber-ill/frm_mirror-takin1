@@ -171,7 +171,7 @@ void load_sqw_plugins()
 				{
 					tl::log_err("Skipping S(q,w) plugin \"", strPlugin,
 					"\" as it was compiled for Takin version ", strTakVer,
-					" but this is version ", TAKIN_VER, ".");
+					", but this is version ", TAKIN_VER, ".");
 					continue;
 				}
 

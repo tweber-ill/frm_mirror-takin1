@@ -48,6 +48,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 		spinStopH, spinStopK, spinStopL, spinStopE,
 		spinStopH2, spinStopK2, spinStopL2, spinStopE2,
 		spinKfix,
+		spinTolerance
 	};
 
 	m_vecSpinNames = {
@@ -55,21 +56,41 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 		"monteconvo/h_to", "monteconvo/k_to", "monteconvo/l_to", "monteconvo/E_to",
 		"monteconvo/h_to_2", "monteconvo/k_to_2", "monteconvo/l_to_2", "monteconvo/E_to_2",
 		"monteconvo/kfix",
+		"convofit/tolerance"
 	};
 
-	m_vecIntSpinBoxes = { spinNeutrons, spinSampleSteps, spinStepCnt };
-	m_vecIntSpinNames = { "monteconvo/neutron_count", "monteconvo/sample_step_count", "monteconvo/step_count" };
+	m_vecIntSpinBoxes = { spinNeutrons, spinSampleSteps, spinStepCnt,
+		spinStrategy, spinMaxCalls };
+	m_vecIntSpinNames = { "monteconvo/neutron_count", "monteconvo/sample_step_count", "monteconvo/step_count",
+	"convofit/strategy", "convofit/max_calls"
+	};
 
-	m_vecEditBoxes = { editCrys, editRes, editSqw, editScan, editScale, editOffs };
+	m_vecEditBoxes = { editCrys, editRes, editSqw, editScan, editScale, editOffs,
+		editCounter, editMonitor, editTemp, editField
+	};
 	m_vecEditNames = { "monteconvo/crys", "monteconvo/instr", "monteconvo/sqw_conf",
-		"monteconvo/scanfile", "monteconvo/S_scale", "monteconvo/S_offs" };
+		"monteconvo/scanfile", "monteconvo/S_scale", "monteconvo/S_offs",
+		"convofit/counter", "convofit/monitor",
+		"convofit/temp_override", "convofit/field_override"
+	};
 
-	m_vecComboBoxes = { comboAlgo, comboFixedK, comboFocMono, comboFocAna };
+	m_vecTextBoxes = { editSqwParams };
+	m_vecTextNames = { "convofit/sqw_params" };
+
+	m_vecComboBoxes = { comboAlgo, comboFixedK, comboFocMono, comboFocAna,
+		comboFitter
+	};
 	m_vecComboNames = { "monteconvo/algo", "monteconvo/fixedk", "monteconvo/mono_foc",
-		"monteconvo/ana_foc" };
+		"monteconvo/ana_foc",
+		"convofit/minimiser"
+	};
 
-	m_vecCheckBoxes = { checkScan, check2dMap };
-	m_vecCheckNames = { "monteconvo/has_scanfile", "monteconvo/scan_2d" };
+	m_vecCheckBoxes = { checkScan, check2dMap,
+		checkRnd, checkNorm, checkFlip
+	};
+	m_vecCheckNames = { "monteconvo/has_scanfile", "monteconvo/scan_2d",
+		"convofit/recycle_neutrons", "convofit/normalise", "convofit/flip_coords"
+	};
 	// -------------------------------------------------------------------------
 
 	if(m_pSett)
@@ -80,6 +101,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	}
 
 	btnStart->setIcon(load_icon("res/icons/media-playback-start.svg"));
+	btnStartFit->setIcon(load_icon("res/icons/media-playback-start.svg"));
 	btnStop->setIcon(load_icon("res/icons/media-playback-stop.svg"));
 
 	/*
@@ -302,6 +324,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(editOffs, SIGNAL(textChanged(const QString&)), this, SLOT(scaleChanged()));
 
 	QObject::connect(btnStart, SIGNAL(clicked()), this, SLOT(Start()));
+	QObject::connect(btnStartFit, SIGNAL(clicked()), this, SLOT(StartFit()));
 	QObject::connect(btnStop, SIGNAL(clicked()), this, SLOT(Stop()));
 
 	QObject::connect(checkScan, SIGNAL(toggled(bool)), this, SLOT(scanCheckToggled(bool)));
@@ -456,6 +479,7 @@ void ConvoDlg::Start1D()
 	bool bLivePlots = m_pLivePlots->isChecked();
 
 	btnStart->setEnabled(false);
+	btnStartFit->setEnabled(false);
 	tabSettings->setEnabled(false);
 	m_pMenuBar->setEnabled(false);
 	btnStop->setEnabled(true);
@@ -475,6 +499,7 @@ void ConvoDlg::Start1D()
 			QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(m_pMenuBar, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(btnStartFit, "setEnabled", Q_ARG(bool, true));
 		};
 
 		t_stopwatch watch;
@@ -775,6 +800,7 @@ void ConvoDlg::Start2D()
 	bool bLivePlots = m_pLivePlots->isChecked();
 
 	btnStart->setEnabled(false);
+	btnStartFit->setEnabled(false);
 	tabSettings->setEnabled(false);
 	m_pMenuBar->setEnabled(false);
 	btnStop->setEnabled(true);
@@ -793,6 +819,7 @@ void ConvoDlg::Start2D()
 			QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(m_pMenuBar, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(btnStartFit, "setEnabled", Q_ARG(bool, true));
 		};
 
 		t_stopwatch watch;
@@ -1124,6 +1151,7 @@ void ConvoDlg::StartDisp()
 	bool bLivePlots = m_pLivePlots->isChecked();
 
 	btnStart->setEnabled(false);
+	btnStartFit->setEnabled(false);
 	tabSettings->setEnabled(false);
 	m_pMenuBar->setEnabled(false);
 	btnStop->setEnabled(true);
@@ -1142,6 +1170,7 @@ void ConvoDlg::StartDisp()
 			QMetaObject::invokeMethod(tabSettings, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(m_pMenuBar, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(btnStartFit, "setEnabled", Q_ARG(bool, true));
 		};
 
 		t_stopwatch watch;
@@ -1349,6 +1378,19 @@ void ConvoDlg::Start()
 }
 
 
+/**
+ * TODO: start 1d or 2d convolution fits
+ */
+void ConvoDlg::StartFit()
+{
+	QMessageBox::information(this, "Info", "Fitting is not yet supported in the GUI program.\n"
+		"Use \"File\" -> \"Export to Convofit...\" and run the \"convofit\" command-line tool instead.");
+}
+
+
+/**
+ * stop running operations
+ */
 void ConvoDlg::Stop()
 {
 	m_atStop.store(true);
@@ -1503,7 +1545,7 @@ void ConvoDlg::ShowAboutDlg()
 	std::ostringstream ostrAbout;
 	ostrAbout << "Takin/Monteconvo version " << TAKIN_VER << ".\n";
 	ostrAbout << "Written by Tobias Weber <tobias.weber@tum.de>,\n";
-	ostrAbout << "2015 - 2016.\n";
+	ostrAbout << "2015 - 2017.\n";
 
 	QMessageBox::about(this, "About Monteconvo", ostrAbout.str().c_str());
 }

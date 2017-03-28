@@ -122,6 +122,11 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		boost::optional<std::string> odEditVal = xml.QueryOpt<std::string>(strXmlRoot+m_vecEditNames[iEditBox]);
 		if(odEditVal) m_vecEditBoxes[iEditBox]->setText((*odEditVal).c_str());
 	}
+	for(std::size_t iEditBox=0; iEditBox<m_vecTextBoxes.size(); ++iEditBox)
+	{
+		boost::optional<std::string> odEditVal = xml.QueryOpt<std::string>(strXmlRoot+m_vecTextNames[iEditBox]);
+		if(odEditVal) m_vecTextBoxes[iEditBox]->setPlainText((*odEditVal).c_str());
+	}
 	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
 		boost::optional<int> obChecked = xml.QueryOpt<int>(strXmlRoot+m_vecCheckNames[iCheck]);
@@ -342,6 +347,8 @@ void ConvoDlg::accept()
 		m_pSett->setValue(m_vecIntSpinNames[iSpinBox].c_str(), m_vecIntSpinBoxes[iSpinBox]->value());
 	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
 		m_pSett->setValue(m_vecEditNames[iEditBox].c_str(), m_vecEditBoxes[iEditBox]->text());
+	for(std::size_t iEditBox=0; iEditBox<m_vecTextBoxes.size(); ++iEditBox)
+		m_pSett->setValue(m_vecTextNames[iEditBox].c_str(), m_vecTextBoxes[iEditBox]->toPlainText());
 	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
 		m_pSett->setValue(m_vecComboNames[iCombo].c_str(), m_vecComboBoxes[iCombo]->currentIndex());
 	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)

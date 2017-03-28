@@ -714,6 +714,7 @@ int main(int argc, char** argv)
 			if(err) tl::log_err("Error: ", err.message(), ", error category: ", err.category().name(), ".");
 			ioSrv.stop();
 	#ifdef SIGKILL
+			// TODO: use specific PIDs
 			std::system("killall -s KILL gnuplot");
 			std::raise(SIGKILL);
 	#endif
@@ -731,7 +732,7 @@ int main(int argc, char** argv)
 
 
 		tl::log_info("This is the Takin command-line convolution fitter, version " TAKIN_VER ".");
-		tl::log_info("Written by Tobias Weber <tobias.weber@tum.de>, 2014-2016.");
+		tl::log_info("Written by Tobias Weber <tobias.weber@tum.de>, 2014-2017.");
 		tl::log_debug("Resolution calculation uses ", sizeof(t_real_reso)*8, " bit ", tl::get_typename<t_real_reso>(), "s.");
 		tl::log_debug("Fitting uses ", sizeof(tl::t_real_min)*8, " bit ", tl::get_typename<tl::t_real_min>(), "s.");
 
