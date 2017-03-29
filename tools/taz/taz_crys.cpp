@@ -522,8 +522,12 @@ void TazDlg::RepopulateSpaceGroups()
 	for(int iCnt=comboSpaceGroups->count()-1; iCnt>0; --iCnt)
 		comboSpaceGroups->removeItem(iCnt);
 
+	// filter string
 	std::string strFilter = editSpaceGroupsFilter->text().toStdString();
+	// look for space group number instead of name?
+	bool bWantsNr = tl::str_is_digits<decltype(strFilter)>(strFilter);
 
+	// number, string containing number + name, pointer
 	using t_sgitem = std::tuple<unsigned int, std::string, void*>;
 	std::vector<t_sgitem> vecSGs;
 
@@ -536,13 +540,18 @@ void TazDlg::RepopulateSpaceGroups()
 
 		// apply user filter
 		typedef const boost::iterator_range<std::string::const_iterator> t_striterrange;
-		if(strFilter!="" &&
-			!boost::ifind_first(t_striterrange(strName.begin(), strName.end()),
-			t_striterrange(strFilter.begin(), strFilter.end())))
-			continue;
+		if(strFilter!="")
+		{
+			// sg number or name?
+			const std::string *pStrToFilter = bWantsNr ? &strSGNr : &strName;
+
+			if(!boost::ifind_first(t_striterrange(pStrToFilter->begin(), pStrToFilter->end()),
+				t_striterrange(strFilter.begin(), strFilter.end())))
+				continue;
+		}
 
 		vecSGs.push_back(std::make_tuple(pair.second.GetNr(),
-			"(" + strSGNr + ") " + strName,
+			"(" + strSGNr + ") " + strName, 
 			(void*)&pair.second));
 	}
 
@@ -562,8 +571,20 @@ void TazDlg::RepopulateSpaceGroups()
 
 
 	int iSGIdx = comboSpaceGroups->findText(strCurSG);
-	if(iSGIdx >= 0)
+	if(iSGIdx > 0)
+	{	// select previously selected space group
 		comboSpaceGroups->setCurrentIndex(iSGIdx);
+	}
+	else if(vecSGs.size() == 1)
+	{	// if old sg is not compatible with filter -> select new sg, if unique
+		int iNewSGIdx = comboSpaceGroups->findText(std::get<1>(vecSGs[0]).c_str());
+		if(iNewSGIdx > 0)
+			comboSpaceGroups->setCurrentIndex(iNewSGIdx);
+	}
+	else
+	{	// not set
+		comboSpaceGroups->setCurrentIndex(0);
+	}
 }
 
 
