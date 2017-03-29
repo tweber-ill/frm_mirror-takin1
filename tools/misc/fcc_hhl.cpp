@@ -2,7 +2,7 @@
  * gcc -o fcc_hhl fcc_hhl.cpp -std=c++11 -lstdc++ -lm
  * draws 1st BZ of fcc in hhl plane
  * @date 2016
- * @author tweber
+ * @author Tobias Weber <tobias.weber@tum.de>
  */
 
 #include <iostream>

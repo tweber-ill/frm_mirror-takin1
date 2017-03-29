@@ -1,6 +1,6 @@
 /**
  * S(q,w) parameters dialog
- * @author tweber
+ * @author Tobias Weber <tobias.weber@tum.de>
  * @date aug-2015
  * @license GPLv2
  */

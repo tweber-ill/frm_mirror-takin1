@@ -1,6 +1,6 @@
 /**
- * Convert monteconvo format to convofit
- * @author Tobias Weber
+ * Converts monteconvo format to convofit
+ * @author Tobias Weber <tobias.weber@tum.de>
  * @date mar-2017
  * @license GPLv2
  */

@@ -1,6 +1,6 @@
 /**
  * Form factor and scattering length tables
- * @author Tobias Weber
+ * @author Tobias Weber <tobias.weber@tum.de>
  * @date nov-2015
  * @license GPLv2
  */
