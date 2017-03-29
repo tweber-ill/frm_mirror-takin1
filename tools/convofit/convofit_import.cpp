@@ -8,9 +8,12 @@
 #include "convofit_import.h"
 #include "tlibs/file/tmp.h"
 #include "../res/defs.h"
-using t_real = t_real_reso;
 
 #include <map>
+#include <boost/filesystem.hpp>
+
+using t_real = t_real_reso;
+namespace fs = boost::filesystem;
 
 
 /**
@@ -19,6 +22,11 @@ using t_real = t_real_reso;
 std::string convert_monteconvo(
 	const tl::Prop<std::string>& propMC, std::string strFile)
 {
+	// write temporary job file if none given
+	if(strFile == "")
+		strFile = tl::create_tmp_file<char>("convofit");
+
+
 	// inputs
 	std::map<std::string, std::string> mapJob;
 	mapJob["input/scan_file"] = propMC.Query<std::string>("taz/monteconvo/scanfile");
@@ -40,9 +48,17 @@ std::string convert_monteconvo(
 
 
 	// outputs
-	mapJob["output/scan_file"] = "scan.out";
-	mapJob["output/model_file"] = "model.out";
-	mapJob["output/log_file"] = "log.out";
+	fs::path pathFile = fs::path(strFile);
+	fs::path pathFileBase = pathFile.filename().replace_extension("");
+	pathFile.remove_filename();
+
+	fs::path pathScan = pathFile; pathScan /= "sc"; pathScan += pathFileBase; pathScan += ".dat";
+	fs::path pathModel = pathFile; pathModel /= "mod"; pathModel += pathFileBase; pathModel += ".dat";
+	fs::path pathLog = pathFile; pathLog /= "log"; pathLog += pathFileBase; pathLog += ".dat";
+
+	mapJob["output/scan_file"] = pathScan.string();
+	mapJob["output/model_file"] = pathModel.string();
+	mapJob["output/log_file"] = pathLog.string();
 	mapJob["output/plot"] = "1";
 	mapJob["output/plot_intermediate"] = "1";
 
@@ -144,10 +160,6 @@ std::string convert_monteconvo(
 	if(strSqwOver != "")
 		mapJob["input/sqw_set_params"] += strSqwOver + "; ";
 
-
-	// write temporary job file if none given
-	if(strFile == "")
-		strFile = tl::create_tmp_file<char>("convofit");
 
 	tl::Prop<std::string> job;
 	job.Add(mapJob);
