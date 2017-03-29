@@ -402,7 +402,8 @@ OBJ_MONTECONVO = obj/log.o obj/debug.o obj/sqw.o obj/sqwbase.o \
 
 OBJ_CONVOFIT = obj/convofit.o obj/convo_scan.o obj/convo_model.o \
 	obj/loadinstr.o obj/eval.o obj/gnuplot.o ${OBJ_MONTECONVO} \
-	obj/globals.o obj/tmp.o obj/convofit_import.o
+	obj/globals.o obj/tmp.o obj/convofit_import.o \
+	obj/convofit_main.o
 OBJ_CONVOSERIES = obj/scanseries.o obj/log.o obj/debug.o
 
 OBJ_RESO = obj/log.o obj/debug.o obj/rand.o \
@@ -687,6 +688,8 @@ obj/posextract.o: tools/posextract/posextract.cpp
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 
 obj/convofit.o: tools/convofit/convofit.cpp tools/convofit/convofit.h
+	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
+obj/convofit_main.o: tools/convofit/convofit_main.cpp tools/convofit/convofit.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
 obj/convofit_import.o: tools/convofit/convofit_import.cpp tools/convofit/convofit_import.h
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<

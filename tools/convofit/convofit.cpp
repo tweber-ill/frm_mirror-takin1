@@ -9,20 +9,11 @@
 #include "tlibs/file/loaddat.h"
 #include "tlibs/log/log.h"
 #include "tlibs/log/debug.h"
-#include "tlibs/helper/thread.h"
-#include "tlibs/gfx/gnuplot.h"
-#include "tlibs/time/stopwatch.h"
 #include "tlibs/math/rand.h"
-#include "libs/version.h"
 
 #include <iostream>
 #include <fstream>
 #include <locale>
-
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/signal_set.hpp>
-#include <boost/scope_exit.hpp>
-#include <boost/program_options.hpp>
 
 #include "convofit.h"
 #include "convofit_import.h"
@@ -31,26 +22,80 @@
 #include "../monteconvo/sqwfactory.h"
 #include "../res/defs.h"
 
-#define DEFAULT_TERM "x11 noraise"
-//#define DEFAULT_TERM "qt noraise"
 
 //using t_real = tl::t_real_min;
 using t_real = t_real_reso;
 
-namespace asio = boost::asio;
-namespace sys = boost::system;
-namespace opts = boost::program_options;
 
-// global overrides
+// ----------------------------------------------------------------------------
+// default plotter
+
+#define DEFAULT_TERM "x11 noraise"
+//#define DEFAULT_TERM "qt noraise"
+
+void* init_convofit_plot(const std::string& strTerm)
+{
+	tl::GnuPlot<t_real> *pPlt = new tl::GnuPlot<t_real>();
+	pPlt->Init();
+	pPlt->SetTerminal(0, strTerm.c_str());
+
+	return pPlt;
+}
+
+void deinit_convofit_plot(void *&_pPlt)
+{
+	if(_pPlt)
+	{
+		tl::GnuPlot<t_real> *pPlt = reinterpret_cast<tl::GnuPlot<t_real>*>(_pPlt);
+		delete pPlt;
+		_pPlt = nullptr;
+	}
+}
+
+void convofit_plot(void* _pPlt, const char* pcX, const char* pcY,
+	const tl::PlotObj<t_real>& pltMeas, const tl::PlotObj<t_real>& pltMod,
+	bool bIsFinal)
+{
+	tl::GnuPlot<t_real> *pPlt = reinterpret_cast<tl::GnuPlot<t_real>*>(_pPlt);
+
+	pPlt->StartPlot();
+	pPlt->SetXLabel(pcX);
+	pPlt->SetYLabel(pcY);
+	pPlt->AddLine(pltMod);
+	pPlt->AddLine(pltMeas);
+	pPlt->FinishPlot();
+}
+
+// ----------------------------------------------------------------------------
+
+
+Convofit::Convofit(bool bUseDefaultPlotter)
+{
+	if(bUseDefaultPlotter)
+	{
+		addsig_initplotter(&::init_convofit_plot);
+		addsig_deinitplotter(&::deinit_convofit_plot);
+		addsig_plot(&::convofit_plot);
+	}
+}
+
+Convofit::~Convofit()
+{
+	m_sigDeinitPlotter(m_pPlt);
+}
+
+
+// ----------------------------------------------------------------------------
+// global command line overrides
 bool g_bSkipFit = 0;
 bool g_bUseValuesFromModel = 0;
 unsigned int g_iNumNeutrons = 0;
 std::string g_strSetParams;
 std::string g_strOutFileSuffix;
+// ----------------------------------------------------------------------------
 
 
-
-bool run_job(const std::string& _strJob)
+bool Convofit::run_job(const std::string& _strJob)
 {
 	std::string strJob;
 
@@ -203,14 +248,12 @@ bool run_job(const std::string& _strJob)
 	bool bPlotIntermediate = prop.Query<bool>("output/plot_intermediate", 0);
 	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot_points", 128);
 
-
-	std::unique_ptr<tl::GnuPlot<t_real>> plt;
 	if(bPlot || bPlotIntermediate)
 	{
-		plt.reset(new tl::GnuPlot<t_real>());
-		plt->Init();
 		std::string strTerm = prop.Query<std::string>("output/plot_term", DEFAULT_TERM);
-		plt->SetTerminal(0, strTerm.c_str());
+		boost::optional<void*> optPlt = m_sigInitPlotter(strTerm);
+		if(optPlt)
+			m_pPlt = *optPlt;
 	}
 
 	if(g_strOutFileSuffix != "")
@@ -434,7 +477,7 @@ bool run_job(const std::string& _strJob)
 	std::vector<t_real> vecModTmpX, vecModTmpY;
 	// slots
 	mod.AddFuncResultSlot(
-	[&plt, &pltMeas, &vecModTmpX, &vecModTmpY, bPlotIntermediate](t_real h, t_real k, t_real l, t_real E, t_real S)
+	[this, &pltMeas, &vecModTmpX, &vecModTmpY, bPlotIntermediate](t_real h, t_real k, t_real l, t_real E, t_real S)
 	{
 		tl::log_info("Q = (", h, ", ", k, ", ", l, ") rlu, E = ", E, " meV -> S = ", S);
 
@@ -449,11 +492,7 @@ bool run_job(const std::string& _strJob)
 			pltMod.linestyle = tl::STYLE_LINES_SOLID;
 			pltMod.odSize = 1.5;
 
-			plt->StartPlot();
-			plt->SetYLabel("Intensity");
-			plt->AddLine(pltMod);
-			plt->AddLine(pltMeas);
-			plt->FinishPlot();
+			m_sigPlot(this->m_pPlt, "", "Intensity", pltMeas, pltMod, 0);
 		}
 	});
 	mod.AddParamsChangedSlot(
@@ -634,17 +673,10 @@ bool run_job(const std::string& _strJob)
 
 
 
-
 	// --------------------------------------------------------------------
 	// Plotting
 	if(bPlot)
 	{
-		/*std::ostringstream ostr;
-		ostr << "gnuplot -p -e \"plot \\\""
-			<< strModOutFile.c_str() << "\\\" using 1:2 w lines lw 1.5 lt 1, \\\""
-			<< strScOutFile.c_str() << "\\\" using 1:2:3 w yerrorbars ps 1 pt 7\"\n";
-		std::system(ostr.str().c_str());*/
-
 		tl::DatFile<t_real, char> datMod;
 		if(datMod.Load(strModOutFile))
 		{
@@ -654,11 +686,7 @@ bool run_job(const std::string& _strJob)
 			pltMod.linestyle = tl::STYLE_LINES_SOLID;
 			pltMod.odSize = 1.5;
 
-			plt->StartPlot();
-			plt->SetYLabel("Intensity");
-			plt->AddLine(pltMod);
-			plt->AddLine(pltMeas);
-			plt->FinishPlot();
+			m_sigPlot(m_pPlt, "", "Intensity", pltMeas, pltMod, 1);
 		}
 		else
 		{
@@ -667,8 +695,6 @@ bool run_job(const std::string& _strJob)
 		}
 	}
 	// --------------------------------------------------------------------
-
-
 
 
 	// remove thread-local loggers
@@ -681,174 +707,4 @@ bool run_job(const std::string& _strJob)
 
 	if(!bDoFit) return 1;
 	return bValidFit;
-}
-
-
-
-template<class T>
-static inline void get_prog_option(opts::variables_map& map, const char* pcKey, T& var)
-{
-	if(map.count(pcKey))
-		var = map[pcKey].as<T>();
-}
-
-
-int main(int argc, char** argv)
-{
-	try
-	{
-	#ifdef NO_TERM_CMDS
-		tl::Log::SetUseTermCmds(0);
-	#endif
-
-		// plain C locale
-		/*std::*/setlocale(LC_ALL, "C");
-		std::locale::global(std::locale::classic());
-
-
-		// --------------------------------------------------------------------
-		// install exit signal handlers
-		asio::io_service ioSrv;
-		asio::signal_set sigInt(ioSrv, SIGABRT, SIGTERM, SIGINT);
-		sigInt.async_wait([&ioSrv](const sys::error_code& err, int iSig)
-		{
-			tl::log_warn("Hard exit requested via signal ", iSig, ". This may cause a fault.");
-			if(err) tl::log_err("Error: ", err.message(), ", error category: ", err.category().name(), ".");
-			ioSrv.stop();
-	#ifdef SIGKILL
-			// TODO: use specific PIDs
-			std::system("killall -s KILL gnuplot");
-			std::raise(SIGKILL);
-	#endif
-			exit(-1);
-		});
-		std::thread thSig([&ioSrv]() { ioSrv.run(); });
-		BOOST_SCOPE_EXIT(&ioSrv, &thSig)
-		{
-			//tl::log_debug("Exiting...");
-			ioSrv.stop();
-			thSig.join();
-		}
-		BOOST_SCOPE_EXIT_END
-		// --------------------------------------------------------------------
-
-
-		tl::log_info("This is the Takin command-line convolution fitter, version " TAKIN_VER ".");
-		tl::log_info("Written by Tobias Weber <tobias.weber@tum.de>, 2014-2017.");
-		tl::log_debug("Resolution calculation uses ", sizeof(t_real_reso)*8, " bit ", tl::get_typename<t_real_reso>(), "s.");
-		tl::log_debug("Fitting uses ", sizeof(tl::t_real_min)*8, " bit ", tl::get_typename<tl::t_real_min>(), "s.");
-
-		// --------------------------------------------------------------------
-		// get job files and program options
-		std::vector<std::string> vecJobs;
-
-		// normal args
-		opts::options_description args("convofit options (overriding job file settings)");
-		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("job-file",
-			opts::value<decltype(vecJobs)>(&vecJobs),
-			"convolution fitting job file")));
-		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("neutrons",
-			opts::value<decltype(g_iNumNeutrons)>(&g_iNumNeutrons),
-			"neutron count")));
-		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("skip-fit",
-			opts::bool_switch(&g_bSkipFit),
-			"skip the fitting step")));
-		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("keep-model",
-			opts::bool_switch(&g_bUseValuesFromModel),
-			"keep the initial values from the model file")));
-		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("model-params",
-			opts::value<decltype(g_strSetParams)>(&g_strSetParams),
-			"set S(q,w) model parameters")));
-		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("outfile-suffix",
-			opts::value<decltype(g_strOutFileSuffix)>(&g_strOutFileSuffix),
-			"suffix to append to output files")));
-
-
-		// positional args
-		opts::positional_options_description args_pos;
-		args_pos.add("job-file", -1);
-
-		opts::basic_command_line_parser<char> clparser(argc, argv);
-		clparser.options(args);
-		clparser.positional(args_pos);
-		opts::basic_parsed_options<char> parsedopts = clparser.run();
-
-		opts::variables_map opts_map;
-		opts::store(parsedopts, opts_map);
-		opts::notify(opts_map);
-
-		//get_prog_option<decltype(vecJobs)>(opts_map, "job-file", vecJobs);
-
-
-		if(vecJobs.size() >= 2)
-		{
-			for(tl::Log* log : { &tl::log_info, &tl::log_warn, &tl::log_err, &tl::log_crit, &tl::log_debug })
-				log->SetShowThread(1);
-		}
-
-		if(argc <= 1)
-		{
-			std::ostringstream ostrHelp;
-			ostrHelp << "Usage: " << argv[0] << " [options] <job-file 1> <job-file 2> ...\n";
-			ostrHelp << args;
-			tl::log_info(ostrHelp.str());
-			return -1;
-		}
-
-		if(vecJobs.size() == 0)
-		{
-			tl::log_err("No job files given.");
-			return -1;
-		}
-		// --------------------------------------------------------------------
-
-
-		unsigned int iNumThreads = std::thread::hardware_concurrency();
-		tl::ThreadPool<bool()> tp(iNumThreads);
-
-		for(std::size_t iJob=0; iJob<vecJobs.size(); ++iJob)
-		{
-			const std::string& strJob = vecJobs[iJob];
-			tp.AddTask([iJob, strJob]() -> bool
-			{
-				tl::log_info("Executing job file ", iJob+1, ": \"", strJob, "\".");
-
-				return run_job(strJob);
-				//if(argc > 2) tl::log_info("================================================================================");
-			});
-		}
-
-		tl::Stopwatch<t_real> watch;
-		watch.start();
-		tp.StartTasks();
-
-		auto& lstFut = tp.GetFutures();
-		std::size_t iTask = 0;
-		for(auto& fut : lstFut)
-		{
-			bool bOk = fut.get();
-			if(!bOk)
-				tl::log_err("Job ", iTask+1, " (", vecJobs[iTask], ") failed or fit invalid!");
-			++iTask;
-		}
-
-		watch.stop();
-		tl::log_info("================================================================================");
-		tl::log_info("Start time:     ", watch.GetStartTimeStr());
-		tl::log_info("Stop time:      ", watch.GetStopTimeStr());
-		tl::log_info("Execution time: ", tl::get_duration_str_secs<t_real>(watch.GetDur()));
-		tl::log_info("================================================================================");
-	}
-	catch(const std::exception& ex)
-	{
-		tl::log_crit(ex.what());
-	}
-
-	return 0;
 }
