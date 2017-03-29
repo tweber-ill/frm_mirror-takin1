@@ -37,6 +37,7 @@ declare -a filestochange=(
 	"${PRG}/Contents/Frameworks/libboost_python.dylib"
 	"${PRG}/Contents/Frameworks/libboost_regex.dylib"
 	"${PRG}/Contents/Frameworks/libboost_system.dylib"
+	"${PRG}/Contents/Frameworks/libboost_program_options.dylib"
 	"${PRG}/Contents/${OS_BIN}/takin"
 	"${PRG}/Contents/${OS_BIN}/convofit"
 	"${PRG}/Contents/${OS_BIN}/convoseries"
