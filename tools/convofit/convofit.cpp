@@ -33,7 +33,7 @@ using t_real = t_real_reso;
 #define DEFAULT_TERM "x11 noraise"
 //#define DEFAULT_TERM "qt noraise"
 
-void* init_convofit_plot(const std::string& strTerm)
+static void* init_convofit_plot(const std::string& strTerm)
 {
 	tl::GnuPlot<t_real> *pPlt = new tl::GnuPlot<t_real>();
 	pPlt->Init();
@@ -42,7 +42,7 @@ void* init_convofit_plot(const std::string& strTerm)
 	return pPlt;
 }
 
-void deinit_convofit_plot(void *&_pPlt)
+static void deinit_convofit_plot(void *&_pPlt)
 {
 	if(_pPlt)
 	{
@@ -52,10 +52,11 @@ void deinit_convofit_plot(void *&_pPlt)
 	}
 }
 
-void convofit_plot(void* _pPlt, const char* pcX, const char* pcY,
+static void convofit_plot(void* _pPlt, const char* pcX, const char* pcY,
 	const tl::PlotObj<t_real>& pltMeas, const tl::PlotObj<t_real>& pltMod,
 	bool bIsFinal)
 {
+	if(!_pPlt) return;
 	tl::GnuPlot<t_real> *pPlt = reinterpret_cast<tl::GnuPlot<t_real>*>(_pPlt);
 
 	pPlt->StartPlot();

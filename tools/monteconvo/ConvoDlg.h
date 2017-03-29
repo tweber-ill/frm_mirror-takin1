@@ -32,6 +32,9 @@
 #include "TASReso.h"
 
 
+#define CONVO_MAX_CURVES			16
+#define CONVO_DISP_CURVE_START 		3
+
 class ConvoDlg : public QDialog, Ui::ConvoDlg
 { Q_OBJECT
 protected:

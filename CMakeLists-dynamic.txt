@@ -104,6 +104,7 @@ add_executable(takin
 	tools/res/ResoDlg.cpp tools/res/ResoDlg_file.cpp
 
 	tools/monteconvo/ConvoDlg.cpp tools/monteconvo/ConvoDlg_file.cpp
+	tools/monteconvo/ConvoDlg_sim.cpp tools/monteconvo/ConvoDlg_fit.cpp
 	tools/convofit/convofit_import.cpp
 	tools/monteconvo/SqwParamDlg.cpp tools/monteconvo/TASReso.cpp
 	tools/monteconvo/sqw.cpp tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
