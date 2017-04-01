@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # @date 22-mar-17
-# @author tw
+# @author Tobias Weber <tobias.weber@tum.de>
+# @license GPLv2
 #
 # makes the framework libraries locally usable
 #

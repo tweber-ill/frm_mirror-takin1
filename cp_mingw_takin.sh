@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# creates a distro for mingw
+# @author Tobias Weber <tobias.weber@tum.de>
+# @license GPLv2
+#
 
 
 # installation directory

@@ -127,7 +127,18 @@ ResoResults calc_cn(const CNParams& cn)
 	}*/
 
 	// -------------------------------------------------------------------------
-	// transformation matrix
+	// transformation matrix -> [mit84], equ. A.15
+	//
+	// (  Ti11   Ti12      0   Tf11   Tf12      0 )   ( dki_x )   ( dQ_x  )
+	// (  Ti12   Ti22      0   Tf12   Tf22      0 )   ( dki_y )   ( dQ_y  )
+	// (     0      0      1      0      0     -1 ) * ( dki_z ) = ( dQ_z  )
+	// ( 2ki*c      0      0 -2kf*c      0      0 )   ( dkf_x )   ( dE    )
+	// (     1      0      0      0      0      0 )   ( dkf_y )   ( dki_x )
+	// (     0      0      1      0      0      0 )   ( dkf_z )   ( dki_z )
+	//
+	// e.g. E ~ ki^2 - kf^2
+	// dE ~ 2ki*dki - 2kf*dkf
+	//
 	angle thetaa = cn.thetaa * cn.dana_sense;
 	angle thetam = cn.thetam * cn.dmono_sense;
 	angle ki_Q = cn.angle_ki_Q;
@@ -148,6 +159,7 @@ ResoResults calc_cn(const CNParams& cn)
 	U(4,0) = 1.; U(5,2) = 1.;
 	//tl::log_info("Trafo matrix (CN) = ", U);
 
+	// V matrix -> [mit84], equ. A.16
 	t_mat V(6,6);
 	if(!tl::inverse(U, V))
 	{

@@ -42,15 +42,16 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	labelDesc->setOpenExternalLinks(1);
 	labelLicense->setOpenExternalLinks(1);
 
-	std::string strCC = "Built using " + std::string(BOOST_COMPILER);
+	std::string strCC = "Built";
+#ifdef BOOST_PLATFORM
+		strCC += " for " + std::string(BOOST_PLATFORM);
+#endif
+	strCC += " using " + std::string(BOOST_COMPILER);
 #ifdef __cplusplus
 	strCC += " (standard: " + tl::var_to_str(__cplusplus) + ")";
 #endif
 #ifdef BOOST_STDLIB
 		strCC += " with " + std::string(BOOST_STDLIB);
-#endif
-#ifdef BOOST_PLATFORM
-		strCC += " for " + std::string(BOOST_PLATFORM);
 #endif
 	strCC += ".";
 	labelCC->setText(strCC.c_str());
