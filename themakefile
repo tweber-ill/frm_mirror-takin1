@@ -5,27 +5,32 @@
 # @license GPLv2
 #
 
-#CC = gcc
+# -----------------------------------------------------------------------------
+# system-specific build flags
+
+#CC = gcc				# which compiler?
 CC = clang
 
-DO_DEBUG = 0
-NATIVE_OPTS = 1
-IS_UNSTABLE = 0
-QT_VER = 4
-QWT_VER = 6
-USE_LAPACK = 0
-USE_3D = 1
-USE_NET = 1
-USE_IOSTR = 1
-USE_BOOST_REGEX = 0
-USE_GIL = 1
-USE_PY = 1
-USE_JL = 0
-USE_PLUGINS = 1
-USE_FADDEEVA = 1
-USE_CPP11_ABI = 1
-USE_FRAMEWORKS = 0
-NON_STANDALONE_MINUIT_HACK = 1
+DO_DEBUG = 0			# debug version?
+NATIVE_OPTS = 1			# optimise specifically for THIS processor?
+IS_UNSTABLE = 0			# is this a test version?
+QT_VER = 4				# which Qt version? 4 or 5
+QWT_VER = 6				# which Qwt version? 5 or 6
+USE_LAPACK = 0			# use Lapack instead of internal linalg routines?
+USE_3D = 1				# compile the ogl code?
+USE_NET = 1				# compile the network code?
+USE_IOSTR = 1			# use boost's iostreams?
+USE_BOOST_REGEX = 1		# use boost's regex?
+USE_GIL = 1				# use boost's image lib?
+USE_PY = 1				# compile the python interface?
+USE_JL = 0				# compile the julia interface?
+USE_PLUGINS = 0			# enable the plugin interface?
+USE_FADDEEVA = 0		# compile the faddeeva functions?
+USE_CPP11_ABI = 1		# which ABI to use: C++98 or C++11?
+USE_FRAMEWORKS = 0		# enable Framework libs
+NON_STANDALONE_MINUIT_HACK = 0	# is Minuit a non-standalone installation?
+# -----------------------------------------------------------------------------
+
 
 
 STD_CPP = -std=c++11

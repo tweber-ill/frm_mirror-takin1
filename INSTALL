@@ -18,10 +18,24 @@ For example, on *buntu systems, use the following commands:
 	* cd Minuit2-5.34.14
 	* ./configure --disable-openmp
 	* make && make install
+	* exit
 
+
+
+===============================================================================
+
+
+
+Getting Takin, tlibs, and dependencies
+--------------------------------------
+
+
+Set up takin (if not already downloaded):
+	* wget http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git/snapshot/tastools-master.tar.bz2
+	* tar -xjvf tastools-master.tar.bz2
+	* cd tastools-master
 
 Set up takin data files and tlibs library:
-	* "cd" to the takin directory
 	* ./setup_tlibs.sh
 
 Set up other external dependencies:
@@ -30,6 +44,7 @@ Set up other external dependencies:
 
 
 ===============================================================================
+
 
 
 Building Takin using the CMake path
