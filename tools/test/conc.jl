@@ -34,6 +34,20 @@ function ellipse(angle, xrad, yrad, xoffs, yoffs)
 end
 
 
+function correl(C)
+	return C[1,2] / sqrt(C[1,1] * C[2,2])
+end
+
+
+# regression line: y = mx + b
+function fit_line(C, offs)
+	m = C[1,2] / C[1,1]
+	b = offs[2] - m*offs[1]
+
+	return [m, b]
+end
+
+
 
 # ellipsoid offsets
 offs = Float64[]
@@ -90,16 +104,26 @@ end
 
 # assuming 2d ellipses from here on
 
+coeff = correl(C)
+println("Correlation coefficient: ", coeff, ", angle: ", acos(coeff)/pi*180.)
+
 angle = vec2_angle(evecs[:, 1])
 println("Ellipse angle: ", angle/pi*180., " deg")
+
+m, b = fit_line(C, offs)
+println("Regression line: slope = ", m, ", y0 = ", b)
 
 
 # plot
 open(`gnuplot -p`, "w", DevNull) do gpl
 	ell = ellipse(angle, lens[1], lens[2], offs[1], offs[2])
 
-	print(gpl, "plot \"-\" u 1:2 w points pt 7 ps 1.5, ")
-	println(gpl, "\"-\" u 1:2 w lines ls 1.5 \\\n")
+	println(gpl, "m = ", m, "\nb = ", b)
+	println(gpl, "line(x) = m*x + b")
+
+	print(gpl, "plot \"-\" u 1:2 w points pt 7 ps 1.5 lc rgb '#ff0000' title 'measurements', ")
+	print(gpl, "\"-\" u 1:2 w lines lw 1.5 lc rgb '#009900' title 'concentration ellipse', ")
+	println(gpl, "line(x) lw 1.5 lc rgb '#0000ff' title 'regression line' \\\n")
 
 	# points
 	for iPt = 1:size(A_meas)[1]
