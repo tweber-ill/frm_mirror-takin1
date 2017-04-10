@@ -1,3 +1,8 @@
+/**
+ * @author Tobias Weber <tobias.weber@tum.de>
+ * @license GPLv2
+ */
+
 #include <fontconfig/fontconfig.h>
 #include <iostream>
 #include "../helper/string.h"

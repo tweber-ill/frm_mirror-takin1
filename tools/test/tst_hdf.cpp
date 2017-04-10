@@ -1,7 +1,8 @@
 /**
  * hdf test
- * @author tw
+ * @author Tobias Weber <tobias.weber@tum.de>
  * @date 9-apr-17
+ * @license GPLv2
  * 
  * gcc -lstdc++ -o tst_hdf tst_hdf.cpp -lstdc++ -lhdf5
  */

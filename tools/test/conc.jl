@@ -2,6 +2,7 @@
 # testing the calculation of the concentration matrix
 # @author Tobias Weber <tobias.weber@tum.de>
 # @date 6-apr-2017
+# @license GPLv2
 # @desc see e.g.: (Arens 2015) p. 795
 #
 

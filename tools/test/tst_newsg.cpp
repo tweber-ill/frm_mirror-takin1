@@ -1,3 +1,8 @@
+/**
+ * @author Tobias Weber <tobias.weber@tum.de>
+ * @license GPLv2
+ */
+
 // gcc -DNO_QT -I../.. -o tst_newsg tst_newsg.cpp ../../helper/spacegroup.cpp ../../helper/crystalsys.cpp ../../tlibs/log/log.cpp -lstdc++ -std=c++11 -lm
 
 #include <iostream>

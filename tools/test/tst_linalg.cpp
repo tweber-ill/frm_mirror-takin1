@@ -1,3 +1,8 @@
+/**
+ * @author Tobias Weber <tobias.weber@tum.de>
+ * @license GPLv2
+ */
+
 #include "../helper/linalg.h"
 #include "../helper/quat.h"
 #include <iostream>

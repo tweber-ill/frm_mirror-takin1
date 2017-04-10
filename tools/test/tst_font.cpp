@@ -1,3 +1,8 @@
+/**
+ * @author Tobias Weber <tobias.weber@tum.de>
+ * @license GPLv2
+ */
+
 // gcc -I/usr/include/freetype2 -o tst_font tst_font.cpp -lstdc++ -lfreetype -std=c++11
 
 #include <iostream>

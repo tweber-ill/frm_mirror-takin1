@@ -292,7 +292,7 @@ endif()
 
 add_executable(convoseries
 	tools/convofit/scanseries.cpp
-	
+
 	# statically link tlibs externals
 	tlibs/log/log.cpp
 )
