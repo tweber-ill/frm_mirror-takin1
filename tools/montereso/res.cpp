@@ -57,7 +57,7 @@ Resolution calc_res(std::vector<vector<t_real>>&& Q_vec,
 	reso.res.resize(4,4,0);
 	reso.cov.resize(4,4,0);
 
-	reso.cov = tl::covariance(Q_vec, pp_vec);
+	std::tie(reso.cov, std::ignore) = tl::covariance(Q_vec, pp_vec);
 	reso.cov = tl::transform<matrix<t_real>>(reso.cov, trafo, true);
 
 	tl::log_info("Covariance matrix: ", reso.cov);
