@@ -1,0 +1,116 @@
+/**
+ * create plots using the external heli model
+ * @author Tobias Weber <tobias.weber@tum.de>
+ * @date dec-2016
+ * @license GPLv2
+ */
+
+// clang -O2 -march=native -Itastools/ -I/usr/include/python2.7 -o heli heli.cpp tastools/tools/monteconvo/sqwbase.cpp tastools/tlibs/log/log.cpp tastools/tools/monteconvo/sqw_py.cpp -std=c++11 -lstdc++ -lm -lboost_python -lpython2.7 -lboost_system -lboost_filesystem
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <tuple>
+#include "tools/monteconvo/sqw_py.h"
+
+using t_real = double;
+using t_vec = ublas::vector<t_real>;
+using t_mat = ublas::matrix<t_real>;
+
+
+constexpr t_real a = 4.56;
+constexpr t_real kh_A = 0.036;
+constexpr t_real kh_rlu = kh_A / (2.*M_PI / a);
+
+
+void plotmag(SqwPy& sqw)
+{
+	std::ofstream ofstrP("mag_plus_heli.dat");
+	std::ofstream ofstrM("mag_minus_heli.dat");
+	std::ofstream ofstrPerp("mag_perp_heli.dat");
+	std::ofstream ofstrPerpHori("mag_perp_hori_heli.dat");
+
+	t_real q_kh = 2.5;
+	t_real qh = q_kh / std::sqrt(2.) * kh_rlu;
+	t_real hkl[] = { 1.-qh, 1.+qh, 0. };
+
+	t_real dmag0 = 0.001;
+	t_real dmag1 = 0.55;
+	std::size_t iSteps = 256;
+
+	for(std::size_t iStep=0; iStep<iSteps; ++iStep)
+	{
+		std::cout << "Step " << iStep << " of " << iSteps << std::endl;
+
+		t_real dFrac = t_real(iStep)/t_real(iSteps-1);
+		t_real dMag = tl::lerp(dmag0, dmag1, dFrac);
+
+		sqw.SetVarIfAvail("g_Borient", "array([1, -1, 0])");	// plus
+		sqw.SetVarIfAvail("g_H", tl::var_to_str(dMag));
+
+		std::vector<t_real> vecE, vecW;
+		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
+		ofstrP << std::left << std::setw(10) << dMag << " ";
+
+		for(std::size_t iE=0; iE<vecE.size(); ++iE)
+			ofstrP << std::left << std::setw(10) << vecE[iE] << " "
+				<< std::left << std::setw(10) << vecW[iE] << " ";
+		ofstrP << "\n";
+
+		// --------------------------------------------------------------------
+
+		sqw.SetVarIfAvail("g_Borient", "array([-1, 1, 0])");	// minus
+
+		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
+		ofstrM << std::left << std::setw(10) << -dMag << " ";
+
+		for(std::size_t iE=0; iE<vecE.size(); ++iE)
+			ofstrM << std::left << std::setw(10) << vecE[iE] << " "
+				<< std::left << std::setw(10) << vecW[iE] << " ";
+		ofstrM << "\n";
+
+
+		// --------------------------------------------------------------------
+
+		sqw.SetVarIfAvail("g_Borient", "array([0, 0, 1])");	// perp
+
+		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
+		ofstrPerp << std::left << std::setw(10) << dMag << " ";
+
+		for(std::size_t iE=0; iE<vecE.size(); ++iE)
+			ofstrPerp << std::left << std::setw(10) << vecE[iE] << " "
+				<< std::left << std::setw(10) << vecW[iE] << " ";
+		ofstrPerp << "\n";
+
+
+		// --------------------------------------------------------------------
+
+		sqw.SetVarIfAvail("g_Borient", "array([1, 1, 0])");	// perp, in plane
+
+		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
+		ofstrPerpHori << std::left << std::setw(10) << dMag << " ";
+
+		for(std::size_t iE=0; iE<vecE.size(); ++iE)
+			ofstrPerpHori << std::left << std::setw(10) << vecE[iE] << " "
+				<< std::left << std::setw(10) << vecW[iE] << " ";
+		ofstrPerpHori << "\n";
+	}
+}
+
+
+int main()
+{
+	SqwPy sqw("./helis.py");
+	if(!sqw.IsOk()) return -1;
+
+	sqw.SetVarIfAvail("g_T", "20.");
+	sqw.SetVarIfAvail("g_A", "1.");
+	sqw.SetVarIfAvail("g_Ainc", "0.");
+	sqw.SetVarIfAvail("g_dw", "0.005");
+	sqw.SetVarIfAvail("g_sigmainc", "0.005");
+	sqw.SetVarIfAvail("g_H", "0.1");
+
+	plotmag(sqw);
+
+	return 0;
+}

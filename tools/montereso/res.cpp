@@ -12,6 +12,7 @@
 #include "res.h"
 
 #include "tlibs/math/neutrons.h"
+#include "tlibs/math/stat.h"
 #include "tlibs/log/log.h"
 
 #include <algorithm>
