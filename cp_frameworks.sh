@@ -9,8 +9,11 @@
 
 
 PRG="takin.app"
-DST_DIR="${PRG}/Contents/Frameworks/"
+OS_BIN="bin"	# set accordingly
 
+PLUGIN_DIR="/usr/local/opt/qt5/plugins/"
+DST_DIR="${PRG}/Contents/Frameworks/"
+DST_PLUGIN_DIR="${PRG}/Contents/PlugIns/"
 
 declare -a SRC_LIBS=(
 	"/usr/local/opt/qt5/lib/QtCore.framework"
@@ -35,20 +38,52 @@ declare -a SRC_LIBS=(
 	"/usr/local/opt/libpng/lib/libpng16.16.dylib"
 )
 
+declare -a SRC_PLUGINS=(
+	"printsupport/libcocoaprintersupport.dylib"
+	"imageformats/libqsvg.dylib"
+	"imageformats/libqicns.dylib"
+	"imageformats/libqjpeg.dylib"
+	"iconengines/libqsvgicon.dylib"
+	"platforms/libqcocoa.dylib"
+)
 
 
 # create dirs
 mkdir -pv ${DST_DIR}
+mkdir -pv "${DST_PLUGIN_DIR}/printsupport"
+mkdir -pv "${DST_PLUGIN_DIR}/imageformats"
+mkdir -pv "${DST_PLUGIN_DIR}/iconengines"
+mkdir -pv "${DST_PLUGIN_DIR}/platforms"
+mkdir -pv "${PRG}/Contents/${OS_BIN}"
+
 
 # copy libs
 for srclib in ${SRC_LIBS[@]}; do
-	echo -e "Copying library \"${cfile}\"..."
+	echo -e "Copying library \"${srclib}\"..."
 	cp -rv ${srclib} ${DST_DIR}
 done
 
 
+# copy plugins
+for srclib in ${SRC_PLUGINS[@]}; do
+	echo -e "Copying plugin \"${srclib}\"..."
+	cp -v "${PLUGIN_DIR}${srclib}" "${DST_PLUGIN_DIR}${srclib}"
+	chmod a+rx "${DST_PLUGIN_DIR}${srclib}"
+done
+
+
+# copy binaries
+cp -v bin/takin "${PRG}/Contents/${OS_BIN}/"
+cp -v bin/convofit "${PRG}/Contents/${OS_BIN}/"
+cp -v bin/convoseries "${PRG}/Contents/${OS_BIN}/"
+
+
 # attribs
-chmod -R -u+rw ${DST_DIR}
+chmod -R -u+rwa+r ${DST_DIR}
+chmod -R -u+rwa+r ${DST_PLUGIN_DIR}
+
+find {DST_DIR} -type d -print0 | xargs -0 chmod a+x
+find {DST_PLUGIN_DIR} -type d -print0 | xargs -0 chmod a+x
 
 
 # delete unnecessary files
