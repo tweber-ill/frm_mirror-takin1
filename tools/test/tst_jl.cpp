@@ -1,7 +1,7 @@
 /**
  * julia test
  * gcc -I../../ -I/usr/include/julia -o tst_jl.so tst_jl.cpp -lstdc++ -std=c++11 -shared -fPIC
- * 
+ *
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 23-apr-2017
  * @license GPLv2

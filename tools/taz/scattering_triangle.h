@@ -82,7 +82,6 @@ class RecipPeak : public QGraphicsItem
 	protected:
 		QColor m_color = Qt::red;
 		QString m_strLabel;
-		//const Brillouin2D<t_real_glob>* m_pBZ = 0;
 		t_real_glob m_dRadius = 3.;
 
 	protected:
@@ -97,7 +96,6 @@ class RecipPeak : public QGraphicsItem
 
 		void SetRadius(t_real_glob dRad) { m_dRadius = dRad; }
 		t_real_glob GetRadius() const { return m_dRadius; }
-		//void SetBZ(const Brillouin2D<t_real_glob>* pBZ) { this->m_pBZ = pBZ; }
 };
 
 class ScatteringTriangleScene;
@@ -129,6 +127,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		bool m_bShowBZ = 1;
 		tl::Brillouin2D<t_real_glob> m_bz;
+		tl::Brillouin3D<t_real_glob> m_bz3;
 
 		//tl::Lattice<t_real_glob> m_recip_unrot;
 		//t_real_glob m_dAngleRot = 0.;

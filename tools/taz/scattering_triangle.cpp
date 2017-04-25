@@ -892,9 +892,16 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 				//const t_real dG = ublas::norm_2(vecPeak);
 
 
-				// add peak in 1/A and rlu units
+				// add peak in 1/A and rlu units (only 1/A vectors are used for kd calculation)
 				lstPeaksForKd.push_back(std::vector<t_real>
 					{ vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/ });
+
+				// 3d calculation of 1st BZ
+				// TODO: check if 2 next neighbours is sufficient for all space groups
+				if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
+					m_bz3.SetCentralReflex(vecPeak);
+				else if(std::abs(ih-veciCent[0]) <= 2 && std::abs(ik-veciCent[1]) <= 2 && std::abs(il-veciCent[2]) <= 2)
+					m_bz3.AddReflex(vecPeak);
 
 				t_real dDist = 0.;
 				t_vec vecDropped = recipcommon.plane.GetDroppedPerp(vecPeak, &dDist);
@@ -973,11 +980,10 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 							m_scene.addItem(pPeak);
 						}
 
-						// 1st BZ
+						// 2d approximation of 1st BZ
 						if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
 						{
 							t_vec vecCentral = tl::make_vec({dX, dY});
-							//tl::log_debug("Central ", ih, ik, il, ": ", vecCentral);
 							m_bz.SetCentralReflex(vecCentral);
 						}
 						// TODO: check if 2 next neighbours is sufficient for all space groups
@@ -986,7 +992,6 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 							&& std::abs(il-veciCent[2]) <= 2)
 						{
 							t_vec vecN = tl::make_vec({dX, dY});
-							//tl::log_debug("Reflex: ", vecN);
 							m_bz.AddReflex(vecN);
 						}
 					}
@@ -998,12 +1003,9 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 
 	if(!bIsPowder)
 	{
-		//for(const auto& vec : m_bz.GetNeighbours()) std::cout << vec << std::endl;
 		m_bz.CalcBZ();
-		//for(RecipPeak* pPeak : m_vecPeaks)
-		//	pPeak->SetBZ(&m_bz);
-
 		m_kdLattice.Load(lstPeaksForKd, 3);
+		//m_bz3.Print(std::cout);
 	}
 
 	// single crystal peaks
@@ -1126,6 +1128,7 @@ t_vec ScatteringTriangle::GetKfVecPlane() const
 void ScatteringTriangle::ClearPeaks()
 {
 	m_bz.Clear();
+	m_bz3.Clear();
 
 	for(RecipPeak*& pPeak : m_vecPeaks)
 	{
