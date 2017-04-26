@@ -197,12 +197,6 @@ void ScatteringTriangle::SetBZVisible(bool bVisible)
 	this->update();
 }
 
-void ScatteringTriangle::SetUse3dBZ(bool b3D)
-{
-	m_bUse3DBZ = b3D;
-	this->update();
-}
-
 void ScatteringTriangle::SetEwaldSphereVisible(EwaldSphere iEw)
 {
 	m_bShowEwaldSphere = (iEw != EWALD_NONE);
@@ -234,7 +228,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 		std::vector<QPointF> vecBZ3;
 
 		// use 3d BZ code
-		if(m_bUse3DBZ && m_bz3.IsValid())
+		if(g_b3dBZ && m_bz3.IsValid())
 		{
 			// convert vertices to QPointFs
 			vecBZ3.reserve(m_vecBZ3Verts.size());
@@ -253,7 +247,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 			peakPos *= m_dZoom;
 
 			// use 3d BZ code
-			if(m_bUse3DBZ && m_bz3.IsValid())
+			if(g_b3dBZ && m_bz3.IsValid())
 			{
 				std::vector<QPointF> vecBZ3_peak = vecBZ3;
 				for(auto& vecVert : vecBZ3_peak)
@@ -906,6 +900,7 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 				const t_real h = t_real(ih);
 				const t_real k = t_real(ik);
 				const t_real l = t_real(il);
+				const t_vec vecPeakHKL = tl::make_vec<t_vec>({h,k,l});
 
 				bool bHasRefl = 1;
 				bool bHasGenRefl = 1;
@@ -929,13 +924,12 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 					{ vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/ });
 
 				// add peaks for 3d calculation of 1st BZ
-				if(m_bUse3DBZ)
+				if(g_b3dBZ)
 				{
-					// TODO: check if 2 next neighbours is sufficient for all space groups
 					if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
-						m_bz3.SetCentralReflex(vecPeak);
+						m_bz3.SetCentralReflex(vecPeak, &vecPeakHKL);
 					else if(std::abs(ih-veciCent[0]) <= 2 && std::abs(ik-veciCent[1]) <= 2 && std::abs(il-veciCent[2]) <= 2)
-						m_bz3.AddReflex(vecPeak);
+						m_bz3.AddReflex(vecPeak, &vecPeakHKL);
 				}
 
 				t_real dDist = 0.;
@@ -1017,14 +1011,13 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 
 
 						// add peaks for 2d approximation of 1st BZ
-						if(!m_bUse3DBZ)
+						if(!g_b3dBZ)
 						{
 							if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
 							{
 								t_vec vecCentral = tl::make_vec({dX, dY});
 								m_bz.SetCentralReflex(vecCentral);
 							}
-							// TODO: check if 2 next neighbours is sufficient for all space groups
 							else if(std::abs(ih-veciCent[0]) <= 2
 								&& std::abs(ik-veciCent[1]) <= 2
 								&& std::abs(il-veciCent[2]) <= 2)
@@ -1042,7 +1035,7 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 
 	if(!bIsPowder)
 	{
-		if(m_bUse3DBZ)
+		if(g_b3dBZ)
 		{
 			m_bz3.CalcBZ();
 

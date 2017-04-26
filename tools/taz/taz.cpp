@@ -437,6 +437,10 @@ TazDlg::TazDlg(QWidget* pParent)
 	pProjExport->setIcon(load_icon("res/icons/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pProjExport);
 
+	QAction *pBZ3DExport = new QAction("Export 3D Brillouin Zone Model...", this);
+	pBZ3DExport->setIcon(load_icon("res/icons/image-x-generic.svg"));
+	m_pMenuViewRecip->addAction(pBZ3DExport);
+
 #ifdef USE_GIL
 	QAction *pBZExport = new QAction("Export Brillouin Zone Image...", this);
 	pBZExport->setIcon(load_icon("res/icons/image-x-generic.svg"));
@@ -682,6 +686,7 @@ TazDlg::TazDlg(QWidget* pParent)
 #endif
 
 	QObject::connect(pRecipExport, SIGNAL(triggered()), this, SLOT(ExportRecip()));
+	QObject::connect(pBZ3DExport, SIGNAL(triggered()), this, SLOT(ExportBZ3DModel()));
 	QObject::connect(pProjExport, SIGNAL(triggered()), this, SLOT(ExportProj()));
 	QObject::connect(pRealExport, SIGNAL(triggered()), this, SLOT(ExportReal()));
 	QObject::connect(pTofExport, SIGNAL(triggered()), this, SLOT(ExportTof()));
