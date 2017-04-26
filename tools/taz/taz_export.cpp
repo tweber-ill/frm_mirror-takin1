@@ -161,6 +161,24 @@ void TazDlg::ExportBZ3DModel()
 		x3d.GetScene().AddChild(pPoly);
 	}
 
+
+	/*// test plane cut
+	tl::Plane<t_real> plane(bz.GetCentralReflex(), tl::make_vec({1., -1., 0.}));
+	auto tupLinesandVerts = bz.GetIntersection(plane);
+
+	for(const t_vec& vec : std::get<1>(tupLinesandVerts))
+	{
+		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
+		pTrafo->SetTrans(vec - bz.GetCentralReflex());
+
+		tl::X3dSphere *pSphere = new tl::X3dSphere(0.05);
+		pSphere->SetColor(tl::make_vec({1., 1., 0.}));
+		pTrafo->AddChild(pSphere);
+
+		x3d.GetScene().AddChild(pTrafo);
+	}*/
+
+
 	bool bOk = x3d.Save(strFile.toStdString().c_str());
 
 

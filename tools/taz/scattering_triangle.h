@@ -130,9 +130,6 @@ class ScatteringTriangle : public QGraphicsItem
 		tl::Brillouin3D<t_real_glob> m_bz3;
 		std::vector<ublas::vector<t_real_glob>> m_vecBZ3Verts;
 
-		//tl::Lattice<t_real_glob> m_recip_unrot;
-		//t_real_glob m_dAngleRot = 0.;
-
 		bool m_bqVisible = 0;
 		bool m_bShowEwaldSphere = 1;
 		bool m_bEwaldAroundKi = 0;
@@ -306,7 +303,11 @@ class ScatteringTriangleView : public QGraphicsView
 	Q_OBJECT
 	protected:
 		t_real_glob m_dTotalScale = 1.;
+
+		void DoZoom(t_real_glob delta);
 		virtual void wheelEvent(QWheelEvent* pEvt) override;
+		virtual void keyPressEvent(QKeyEvent *pEvt) override;
+		virtual void keyReleaseEvent(QKeyEvent *pEvt) override;
 
 	public:
 		ScatteringTriangleView(QWidget* pParent = 0);
