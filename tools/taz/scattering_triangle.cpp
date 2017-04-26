@@ -197,6 +197,12 @@ void ScatteringTriangle::SetBZVisible(bool bVisible)
 	this->update();
 }
 
+void ScatteringTriangle::SetUse3dBZ(bool b3D)
+{
+	m_bUse3DBZ = b3D;
+	this->update();
+}
+
 void ScatteringTriangle::SetEwaldSphereVisible(EwaldSphere iEw)
 {
 	m_bShowEwaldSphere = (iEw != EWALD_NONE);
@@ -219,29 +225,56 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	painter->setFont(g_fontGfx);
 
 	// Brillouin zone
-	if(m_bShowBZ && m_bz.IsValid())
+	if(m_bShowBZ && (m_bz.IsValid() || m_bz3.IsValid()))
 	{
 		QPen penOrg = painter->pen();
 		painter->setPen(Qt::lightGray);
 
-		const t_vec& vecCentral = m_bz.GetCentralReflex() * m_dScaleFactor*m_dZoom;
-		//std::cout << vecCentral << std::endl;
+		t_vec vecCentral2d;
+		std::vector<QPointF> vecBZ3;
+
+		// use 3d BZ code
+		if(m_bUse3DBZ && m_bz3.IsValid())
+		{
+			// convert vertices to QPointFs
+			vecBZ3.reserve(m_vecBZ3Verts.size());
+			for(const auto& vecVert : m_vecBZ3Verts)
+				vecBZ3.push_back(vec_to_qpoint(vecVert * m_dScaleFactor * m_dZoom));
+		}
+		// use 2d BZ code
+		else if(m_bz.IsValid())
+		{
+			vecCentral2d = m_bz.GetCentralReflex() * m_dScaleFactor*m_dZoom;
+		}
+
 		for(const RecipPeak* pPeak : m_vecPeaks)
 		{
 			QPointF peakPos = pPeak->pos();
 			peakPos *= m_dZoom;
 
-			const tl::Brillouin2D<t_real>::t_vertices<t_real>& verts = m_bz.GetVertices();
-			for(const tl::Brillouin2D<t_real>::t_vecpair<t_real>& vertpair : verts)
+			// use 3d BZ code
+			if(m_bUse3DBZ && m_bz3.IsValid())
 			{
-				const t_vec& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
-				const t_vec& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
+				std::vector<QPointF> vecBZ3_peak = vecBZ3;
+				for(auto& vecVert : vecBZ3_peak)
+					vecVert += peakPos;
+				painter->drawPolygon(vecBZ3_peak.data(), vecBZ3_peak.size());
+			}
+			// use 2d BZ code
+			else if(m_bz.IsValid())
+			{
+				const tl::Brillouin2D<t_real>::t_vertices<t_real>& verts = m_bz.GetVertices();
+				for(const tl::Brillouin2D<t_real>::t_vecpair<t_real>& vertpair : verts)
+				{
+					const t_vec& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
+					const t_vec& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
 
-				QPointF pt1 = vec_to_qpoint(vec1 - vecCentral) + peakPos;
-				QPointF pt2 = vec_to_qpoint(vec2 - vecCentral) + peakPos;
+					QPointF pt1 = vec_to_qpoint(vec1 - vecCentral2d) + peakPos;
+					QPointF pt2 = vec_to_qpoint(vec2 - vecCentral2d) + peakPos;
 
-				QLineF lineBZ(pt1, pt2);
-				painter->drawLine(lineBZ);
+					QLineF lineBZ(pt1, pt2);
+					painter->drawLine(lineBZ);
+				}
 			}
 		}
 
@@ -833,7 +866,6 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 			continue;
 		break;
 	}
-	//std::cout << veciCent << std::endl;
 
 	if(!veciCent.size())
 		veciCent = tl::make_vec({0.,0.,0.});
@@ -896,12 +928,15 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 				lstPeaksForKd.push_back(std::vector<t_real>
 					{ vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/ });
 
-				// 3d calculation of 1st BZ
-				// TODO: check if 2 next neighbours is sufficient for all space groups
-				if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
-					m_bz3.SetCentralReflex(vecPeak);
-				else if(std::abs(ih-veciCent[0]) <= 2 && std::abs(ik-veciCent[1]) <= 2 && std::abs(il-veciCent[2]) <= 2)
-					m_bz3.AddReflex(vecPeak);
+				// add peaks for 3d calculation of 1st BZ
+				if(m_bUse3DBZ)
+				{
+					// TODO: check if 2 next neighbours is sufficient for all space groups
+					if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
+						m_bz3.SetCentralReflex(vecPeak);
+					else if(std::abs(ih-veciCent[0]) <= 2 && std::abs(ik-veciCent[1]) <= 2 && std::abs(il-veciCent[2]) <= 2)
+						m_bz3.AddReflex(vecPeak);
+				}
 
 				t_real dDist = 0.;
 				t_vec vecDropped = recipcommon.plane.GetDroppedPerp(vecPeak, &dDist);
@@ -980,19 +1015,23 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 							m_scene.addItem(pPeak);
 						}
 
-						// 2d approximation of 1st BZ
-						if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
+
+						// add peaks for 2d approximation of 1st BZ
+						if(!m_bUse3DBZ)
 						{
-							t_vec vecCentral = tl::make_vec({dX, dY});
-							m_bz.SetCentralReflex(vecCentral);
-						}
-						// TODO: check if 2 next neighbours is sufficient for all space groups
-						else if(std::abs(ih-veciCent[0]) <= 2
-							&& std::abs(ik-veciCent[1]) <= 2
-							&& std::abs(il-veciCent[2]) <= 2)
-						{
-							t_vec vecN = tl::make_vec({dX, dY});
-							m_bz.AddReflex(vecN);
+							if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
+							{
+								t_vec vecCentral = tl::make_vec({dX, dY});
+								m_bz.SetCentralReflex(vecCentral);
+							}
+							// TODO: check if 2 next neighbours is sufficient for all space groups
+							else if(std::abs(ih-veciCent[0]) <= 2
+								&& std::abs(ik-veciCent[1]) <= 2
+								&& std::abs(il-veciCent[2]) <= 2)
+							{
+								t_vec vecN = tl::make_vec({dX, dY});
+								m_bz.AddReflex(vecN);
+							}
 						}
 					}
 				}
@@ -1003,9 +1042,33 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 
 	if(!bIsPowder)
 	{
-		m_bz.CalcBZ();
+		if(m_bUse3DBZ)
+		{
+			m_bz3.CalcBZ();
+
+			// calculate intersection with scattering plane
+			tl::Plane<t_real> planeBZ3 = tl::Plane<t_real>(m_bz3.GetCentralReflex(),
+				recipcommon.plane.GetDir0(), recipcommon.plane.GetDir1());
+
+			std::vector<t_vec> vecBZ3Verts;
+			std::tie(std::ignore, vecBZ3Verts) = m_bz3.GetIntersection(planeBZ3);
+			t_vec vecBZ3Centre = tl::mean_value(vecBZ3Verts);
+
+			for(t_vec& vecBZ3Vert : vecBZ3Verts)
+			{
+				vecBZ3Vert = ublas::prod(m_matPlane_inv, vecBZ3Vert-vecBZ3Centre);
+				vecBZ3Vert.resize(2, true);
+				vecBZ3Vert[1] = -vecBZ3Vert[1];
+
+				m_vecBZ3Verts.push_back(vecBZ3Vert);
+			}
+		}
+		else
+		{
+			m_bz.CalcBZ();
+		}
+
 		m_kdLattice.Load(lstPeaksForKd, 3);
-		//m_bz3.Print(std::cout);
 	}
 
 	// single crystal peaks
@@ -1129,6 +1192,7 @@ void ScatteringTriangle::ClearPeaks()
 {
 	m_bz.Clear();
 	m_bz3.Clear();
+	m_vecBZ3Verts.clear();
 
 	for(RecipPeak*& pPeak : m_vecPeaks)
 	{

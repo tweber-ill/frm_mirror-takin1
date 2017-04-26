@@ -126,8 +126,10 @@ class ScatteringTriangle : public QGraphicsItem
 		tl::Kd<t_real_glob> m_kdLattice;
 
 		bool m_bShowBZ = 1;
+		bool m_bUse3DBZ = 0;
 		tl::Brillouin2D<t_real_glob> m_bz;
 		tl::Brillouin3D<t_real_glob> m_bz3;
+		std::vector<ublas::vector<t_real_glob>> m_vecBZ3Verts;
 
 		//tl::Lattice<t_real_glob> m_recip_unrot;
 		//t_real_glob m_dAngleRot = 0.;
@@ -183,6 +185,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		void SetqVisible(bool bVisible);
 		void SetBZVisible(bool bVisible);
+		void SetUse3dBZ(bool b3d);
 		void SetEwaldSphereVisible(EwaldSphere iEw);
 
 		const std::vector<t_powderline>& GetPowder() const { return m_vecPowderLines; }
