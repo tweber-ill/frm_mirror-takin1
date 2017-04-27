@@ -56,12 +56,18 @@ struct PlotObjGl
 	std::string strLabel;
 };
 
+struct PlotGlSize
+{
+	int iW = 800, iH = 600;
+	bool bDoResize = true;
+};
+
 class PlotGl : public t_qglwidget, QThread
 {
 protected:
 	QSettings *m_pSettings = 0;
 	std::atomic<bool> m_bEnabled;
-	QMutex m_mutex;
+	QMutex m_mutex, m_mutex_resize;
 
 	static constexpr t_real_gl m_dFOV = 45./180.*M_PI;
 	tl::t_mat4 m_matProj, m_matView;
@@ -78,9 +84,8 @@ protected:
 	t_real_gl m_dZMin=-10., m_dZMax=10.;
 	t_real_gl m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
 
-	//void initializeGL();
-	void resizeEvent(QResizeEvent*);
-	void paintEvent(QPaintEvent*);
+	virtual void resizeEvent(QResizeEvent*) override;
+	virtual void paintEvent(QPaintEvent*) override;
 
 	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a=1.);
 	void SetColor(std::size_t iIdx);
@@ -114,7 +119,6 @@ protected:
 
 	// ------------------------------------------------------------------------
 	// render thread
-	bool m_bDoResize = 1;
 	bool m_bRenderThreadActive = 1;
 
 	void initializeGLThread();
@@ -122,9 +126,9 @@ protected:
 	void resizeGLThread(int w, int h);
 	void paintGLThread();
 	void tickThread(t_real_gl dTime);
-	void run();
+	virtual void run() override;
 
-	int m_iW=640, m_iH=480;
+	PlotGlSize m_size;
 	// ------------------------------------------------------------------------
 
 public:

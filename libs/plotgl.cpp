@@ -39,8 +39,8 @@ void sleep_nano(long ns)
 }
 
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real_gl dMouseScale)
-	: t_qglwidget(pParent), m_pSettings(pSettings), m_bEnabled(true),
-		m_mutex(QMutex::Recursive),
+	: t_qglwidget(pParent), m_pSettings(pSettings),
+		m_bEnabled(true), m_mutex(QMutex::Recursive), m_mutex_resize(QMutex::Recursive),
 		m_matProj(tl::unit_matrix<tl::t_mat4>(4)), m_matView(tl::unit_matrix<tl::t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
@@ -158,6 +158,8 @@ void PlotGl::freeGLThread()
 
 void PlotGl::resizeGLThread(int w, int h)
 {
+	makeCurrent();
+
 	if(w<=0) w=1;
 	if(h<=0) h=1;
 	glViewport(0, 0, w, h);
@@ -176,6 +178,7 @@ void PlotGl::tickThread(t_real_gl dTime) {}
 
 void PlotGl::paintGLThread()
 {
+	makeCurrent();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	bool bEnabled = m_bEnabled.load();
@@ -317,15 +320,18 @@ void PlotGl::run()
 	t_real_gl dTime = 0.;
 	while(m_bRenderThreadActive)
 	{
-		if(m_bDoResize)
+		if(m_size.bDoResize)
 		{
-			std::lock_guard<QMutex> _lck(m_mutex);
-			resizeGLThread(m_iW, m_iH);
-			m_bDoResize = 0;
+			// mutex for protection of the matrix modes
+			std::lock_guard<QMutex> _lck(m_mutex_resize);
+			resizeGLThread(m_size.iW, m_size.iH);
+
+			m_size.bDoResize = false;
 		}
 
 		if(isVisible())
 		{
+			std::lock_guard<QMutex> _lck(m_mutex_resize);
 			tickThread(dTime);
 			paintGLThread();
 		}
@@ -347,12 +353,11 @@ void PlotGl::paintEvent(QPaintEvent *)
 void PlotGl::resizeEvent(QResizeEvent *pEvt)
 {
 	if(!pEvt) return;
-	std::lock_guard<QMutex> _lck(m_mutex);
 
-	m_iW = pEvt->size().width();
-	m_iH = pEvt->size().height();
-
-	m_bDoResize = 1;
+	std::lock_guard<QMutex> _lck(m_mutex_resize);
+	m_size.iW = pEvt->size().width();
+	m_size.iH = pEvt->size().height();
+	m_size.bDoResize = true;
 }
 
 void PlotGl::clear()
@@ -507,8 +512,8 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		updateViewMatrix();
 
 
-	m_dMouseX = 2.*pEvt->POS_F().x()/t_real_gl(m_iW) - 1.;
-	m_dMouseY = -(2.*pEvt->POS_F().y()/t_real_gl(m_iH) - 1.);
+	m_dMouseX = 2.*pEvt->POS_F().x()/t_real_gl(m_size.iW) - 1.;
+	m_dMouseY = -(2.*pEvt->POS_F().y()/t_real_gl(m_size.iH) - 1.);
 
 	bool bHasSelected = 0;
 	if(m_bEnabled.load())
