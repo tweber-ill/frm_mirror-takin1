@@ -33,7 +33,6 @@ namespace ublas = boost::numeric::ublas;
 namespace sig = boost::signals2;
 
 
-using tl::t_real_gl;
 using t_qglwidget = QGLWidget;
 //using t_qglwidget = QOpenGLWidget;
 
@@ -51,7 +50,7 @@ enum PlotTypeGl
 struct PlotObjGl
 {
 	PlotTypeGl plttype = PLOT_INVALID;
-	std::vector<t_real_gl> vecParams;
+	std::vector<t_real_glob> vecParams;
 	std::vector<t_real_glob> vecColor;
 
 	std::vector<ublas::vector<t_real_glob>> vecVertices;
@@ -74,20 +73,20 @@ protected:
 	std::atomic<bool> m_bEnabled;
 	QMutex m_mutex, m_mutex_resize;
 
-	static constexpr t_real_gl m_dFOV = 45./180.*M_PI;
-	tl::t_mat4 m_matProj, m_matView;
+	static constexpr t_real_glob m_dFOV = 45./180.*M_PI;
+	tl::t_mat4_gen<t_real_glob> m_matProj, m_matView;
 
-	tl::GlFontMap *m_pFont = nullptr;
+	tl::GlFontMap<t_real_glob> *m_pFont = nullptr;
 
 	std::vector<PlotObjGl> m_vecObjs;
 	GLuint m_iLstSphere[8];
 	QString m_strLabels[3];
 
 	std::size_t m_iPrec = 6;
-	t_real_gl m_dXMin=-10., m_dXMax=10.;
-	t_real_gl m_dYMin=-10., m_dYMax=10.;
-	t_real_gl m_dZMin=-10., m_dZMax=10.;
-	t_real_gl m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
+	t_real_glob m_dXMin=-10., m_dXMax=10.;
+	t_real_glob m_dYMin=-10., m_dYMax=10.;
+	t_real_glob m_dZMin=-10., m_dZMax=10.;
+	t_real_glob m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
 
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void paintEvent(QPaintEvent*) override;
@@ -99,21 +98,21 @@ protected:
 	// ------------------------------------------------------------------------
 	// mouse stuff
 	bool m_bMouseRotateActive = 0;
-	t_real_gl m_dMouseRot[2];
-	t_real_gl m_dMouseBegin[2];
+	t_real_glob m_dMouseRot[2];
+	t_real_glob m_dMouseBegin[2];
 
 	bool m_bMouseScaleActive = 0;
-	t_real_gl m_dMouseScale;
-	t_real_gl m_dMouseScaleBegin;
+	t_real_glob m_dMouseScale;
+	t_real_glob m_dMouseScaleBegin;
 
-	t_real_gl m_dMouseX = 0., m_dMouseY = 0.;
+	t_real_glob m_dMouseX = 0., m_dMouseY = 0.;
 
 	void mousePressEvent(QMouseEvent*);
 	void mouseReleaseEvent(QMouseEvent*);
 	void mouseMoveEvent(QMouseEvent*);
 
 	void updateViewMatrix();
-	void mouseSelectObj(t_real_gl dX, t_real_gl dY);
+	void mouseSelectObj(t_real_glob dX, t_real_glob dY);
 
 public:
 	using t_sigHover = sig::signal<void(const PlotObjGl*)>;
@@ -130,22 +129,22 @@ protected:
 	void freeGLThread();
 	void resizeGLThread(int w, int h);
 	void paintGLThread();
-	void tickThread(t_real_gl dTime);
+	void tickThread(t_real_glob dTime);
 	virtual void run() override;
 
 	PlotGlSize m_size;
 	// ------------------------------------------------------------------------
 
 public:
-	PlotGl(QWidget* pParent, QSettings *pSettings=nullptr, t_real_gl dMouseScale=25.);
+	PlotGl(QWidget* pParent, QSettings *pSettings=nullptr, t_real_glob dMouseScale=25.);
 	virtual ~PlotGl();
 
 	void clear();
 
-	void PlotSphere(const ublas::vector<t_real_gl>& vecPos, t_real_gl dRadius, int iObjIdx=-1);
-	void PlotEllipsoid(const ublas::vector<t_real_gl>& widths,
-		const ublas::vector<t_real_gl>& offsets,
-		const ublas::matrix<t_real_gl>& rot,
+	void PlotSphere(const ublas::vector<t_real_glob>& vecPos, t_real_glob dRadius, int iObjIdx=-1);
+	void PlotEllipsoid(const ublas::vector<t_real_glob>& widths,
+		const ublas::vector<t_real_glob>& offsets,
+		const ublas::matrix<t_real_glob>& rot,
 		int iObjsIdx=-1);
 	void PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx=-1);
 	void PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx=-1);
@@ -169,7 +168,7 @@ public:
 		m_dZMinMaxOffs =  pOffs ? (*pOffs)[2] : 0.;
 	}
 
-	template<class t_vec=ublas::vector<t_real_gl>>
+	template<class t_vec=ublas::vector<t_real_glob>>
 	void SetMinMax(const t_vec& vec, const t_vec* pOffs=0)
 	{
 		m_dXMin = -vec[0]; m_dXMax = vec[0];

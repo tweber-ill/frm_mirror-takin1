@@ -21,6 +21,10 @@
 
 
 using t_real = t_real_glob;
+using t_mat4 = tl::t_mat4_gen<t_real>;
+using t_mat3 = tl::t_mat3_gen<t_real>;
+using t_vec4 = tl::t_vec4_gen<t_real>;
+using t_vec3 = tl::t_vec3_gen<t_real>;
 
 
 #if QT_VER>=5
@@ -42,10 +46,10 @@ void sleep_nano(long ns)
 // ----------------------------------------------------------------------------
 
 
-PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real_gl dMouseScale)
+PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real dMouseScale)
 	: t_qglwidget(pParent), m_pSettings(pSettings),
 		m_bEnabled(true), m_mutex(QMutex::Recursive), m_mutex_resize(QMutex::Recursive),
-		m_matProj(tl::unit_matrix<tl::t_mat4>(4)), m_matView(tl::unit_matrix<tl::t_mat4>(4))
+		m_matProj(tl::unit_matrix<t_mat4>(4)), m_matView(tl::unit_matrix<t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
 	m_dMouseScale = dMouseScale;
@@ -78,13 +82,13 @@ void PlotGl::SetEnabled(bool b)
 
 void PlotGl::SetColor(t_real r, t_real g, t_real b, t_real a)
 {
-	GLfloat pfCol[] = {GLfloat(r), GLfloat(g), GLfloat(b), GLfloat(a)};
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, pfCol);
+	t_real pfCol[] = {r, g, b, a};
+	tl::gl_traits<t_real>::SetMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, pfCol);
 }
 
 void PlotGl::SetColor(std::size_t iIdx)
 {
-	static const GLfloat cols[4][4] =
+	static const t_real cols[4][4] =
 	{
 		{ 0., 0., 1., 0.7 },
 		{ 0., 0.5, 0., 0.7 },
@@ -92,7 +96,7 @@ void PlotGl::SetColor(std::size_t iIdx)
 		{ 0., 0., 0., 0.7 }
 	};
 
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, cols[iIdx % 4]);
+	tl::gl_traits<t_real>::SetMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, cols[iIdx % 4]);
 }
 
 void PlotGl::initializeGLThread()
@@ -118,8 +122,8 @@ void PlotGl::initializeGLThread()
 	glFrontFace(GL_CCW);
 	glCullFace(GL_BACK);
 
-	GLfloat vecLightCol[] = { 1., 1., 1., 1. };
-	glLightfv(GL_LIGHT0, GL_AMBIENT_AND_DIFFUSE, vecLightCol);
+	t_real vecLightCol[] = { 1., 1., 1., 1. };
+	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_AMBIENT_AND_DIFFUSE, vecLightCol);
 
 	unsigned int iLOD = 32;
 	for(std::size_t iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
@@ -130,8 +134,8 @@ void PlotGl::initializeGLThread()
 		gluQuadricDrawStyle(pQuadSphere, GLU_FILL /*GLU_LINE*/);
 		gluQuadricNormals(pQuadSphere, GLU_SMOOTH);
 		glNewList(m_iLstSphere[iSphere], GL_COMPILE);
-			GLfloat vecLight0[] = { 1., 1., 1., 0. };
-			glLightfv(GL_LIGHT0, GL_POSITION, vecLight0);
+			t_real vecLight0[] = { 1., 1., 1., 0. };
+			tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_POSITION, vecLight0);
 			gluSphere(pQuadSphere, 1., iLOD, iLOD);
 		glEndList();
 		gluDeleteQuadric(pQuadSphere);
@@ -143,7 +147,7 @@ void PlotGl::initializeGLThread()
 
 	if(g_strFontGL == "") g_strFontGL = DEF_FONT;
 	if(g_iFontGLSize <= 0) g_iFontGLSize = DEF_FONT_SIZE;
-	m_pFont = new tl::GlFontMap(g_strFontGL.c_str(), g_iFontGLSize);
+	m_pFont = new tl::GlFontMap<t_real>(g_strFontGL.c_str(), g_iFontGLSize);
 
 #if QT_VER>=5
 	QWidget::
@@ -173,9 +177,9 @@ void PlotGl::resizeGLThread(int w, int h)
 	glViewport(0, 0, w, h);
 
 	glMatrixMode(GL_PROJECTION);
-	m_matProj = tl::perspective_matrix(m_dFOV, t_real_gl(w)/t_real_gl(h), 0.1, 100.);
+	m_matProj = tl::perspective_matrix(m_dFOV, t_real(w)/t_real(h), 0.1, 100.);
 	//m_matProj = ortho_matrix(-1.,1.,-1.,1.,0.1,100.);
-	t_real_gl glmat[16]; tl::to_gl_array(m_matProj, glmat);
+	t_real glmat[16]; tl::to_gl_array(m_matProj, glmat);
 	glLoadMatrixd(glmat);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -183,7 +187,7 @@ void PlotGl::resizeGLThread(int w, int h)
 }
 
 
-void PlotGl::tickThread(t_real_gl dTime) {}
+void PlotGl::tickThread(t_real dTime) {}
 
 
 void PlotGl::paintGLThread()
@@ -195,7 +199,7 @@ void PlotGl::paintGLThread()
 	if(!bEnabled) return;
 
 	glMatrixMode(GL_MODELVIEW);
-	t_real_gl glmat[16];
+	t_real glmat[16];
 	{
 		std::lock_guard<QMutex> _lck(m_mutex);
 		tl::to_gl_array(m_matView, glmat);
@@ -209,16 +213,16 @@ void PlotGl::paintGLThread()
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
 		glLineWidth(2.);
-		glColor3d(0., 0., 0.);
+		tl::gl_traits<t_real>::SetColor(0., 0., 0.);
 
-		const t_real_gl dAxisScale = 1.8;
+		const t_real dAxisScale = 1.8;
 		glBegin(GL_LINES);
-			glVertex3d(m_dXMin*dAxisScale, 0., 0.);
-			glVertex3d(m_dXMax*dAxisScale, 0., 0.);
-			glVertex3d(0., m_dYMin*dAxisScale, 0.);
-			glVertex3d(0., m_dYMax*dAxisScale, 0.);
-			glVertex3d(0., 0., m_dZMin*dAxisScale);
-			glVertex3d(0., 0., m_dZMax*dAxisScale);
+			tl::gl_traits<t_real>::SetVertex(m_dXMin*dAxisScale, 0., 0.);
+			tl::gl_traits<t_real>::SetVertex(m_dXMax*dAxisScale, 0., 0.);
+			tl::gl_traits<t_real>::SetVertex(0., m_dYMin*dAxisScale, 0.);
+			tl::gl_traits<t_real>::SetVertex(0., m_dYMax*dAxisScale, 0.);
+			tl::gl_traits<t_real>::SetVertex(0., 0., m_dZMin*dAxisScale);
+			tl::gl_traits<t_real>::SetVertex(0., 0., m_dZMax*dAxisScale);
 		glEnd();
 	glPopMatrix();
 
@@ -264,7 +268,7 @@ void PlotGl::paintGLThread()
 		{
 			glTranslated(obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]);
 
-			t_real_gl dMatRot[] = {obj.vecParams[6], obj.vecParams[7], obj.vecParams[8], 0.,
+			t_real dMatRot[] = {obj.vecParams[6], obj.vecParams[7], obj.vecParams[8], 0.,
 				obj.vecParams[9], obj.vecParams[10], obj.vecParams[11], 0.,
 				obj.vecParams[12], obj.vecParams[13], obj.vecParams[14], 0.,
 				0., 0., 0., 1. };
@@ -276,9 +280,9 @@ void PlotGl::paintGLThread()
 		else if(obj.plttype == PLOT_POLY)
 		{
 			glBegin(GL_POLYGON);
-				for(const ublas::vector<t_real_glob>& vec : obj.vecVertices)
+				for(const ublas::vector<t_real>& vec : obj.vecVertices)
 				{
-					glVertex3d(vec[0], vec[1], vec[2]);
+					tl::gl_traits<t_real>::SetVertex(vec[0], vec[1], vec[2]);
 					// TODO: normals
 				}
  			glEnd();
@@ -286,8 +290,8 @@ void PlotGl::paintGLThread()
 		else if(obj.plttype == PLOT_LINES)
 		{
 			glBegin(GL_LINE_LOOP);
-				for(const ublas::vector<t_real_glob>& vec : obj.vecVertices)
-					glVertex3d(vec[0], vec[1], vec[2]);
+				for(const ublas::vector<t_real>& vec : obj.vecVertices)
+					tl::gl_traits<t_real>::SetVertex(vec[0], vec[1], vec[2]);
  			glEnd();
 		}
 		else
@@ -300,7 +304,7 @@ void PlotGl::paintGLThread()
 		{
 			if(obj.bUseLOD)
 			{
-				t_real_gl dLenDist = tl::gl_proj_sphere_size(/*dRadius*/1.);
+				t_real dLenDist = tl::gl_proj_sphere_size(/*dRadius*/1.);
 				iLOD = dLenDist * 50.;
 
 				if(iLOD >= int(sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)))
@@ -320,7 +324,7 @@ void PlotGl::paintGLThread()
 		{
 			glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_LIGHTING_BIT);
 			m_pFont->BindTexture();
-			glColor4d(0., 0., 0., 1.);
+			tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
 			m_pFont->DrawText(0., 0., 0., obj.strLabel);
 			glPopAttrib();
 		}
@@ -337,12 +341,12 @@ void PlotGl::paintGLThread()
 		{
 			m_pFont->BindTexture();
 
-			glColor4d(0., 0., 1., 1.);
+			tl::gl_traits<t_real>::SetColor(0., 0., 1., 1.);
 			m_pFont->DrawText(m_dXMax*dAxisScale, 0., 0., m_strLabels[0].toStdString());
 			m_pFont->DrawText(0., m_dYMax*dAxisScale , 0., m_strLabels[1].toStdString());
 			m_pFont->DrawText(0., 0., m_dZMax*dAxisScale , m_strLabels[2].toStdString());
 
-			glColor4d(0., 0., 0., 1.);
+			tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
 			m_pFont->DrawText(m_dXMin, 0., 0., tl::var_to_str(m_dXMin+m_dXMinMaxOffs, m_iPrec));
 			m_pFont->DrawText(m_dXMax, 0., 0., tl::var_to_str(m_dXMax+m_dXMinMaxOffs, m_iPrec));
 			m_pFont->DrawText(0., m_dYMin, 0., tl::var_to_str(m_dYMin+m_dYMinMaxOffs, m_iPrec));
@@ -365,7 +369,7 @@ void PlotGl::run()
 	makeCurrent();
 	initializeGLThread();
 
-	t_real_gl dTime = 0.;
+	t_real dTime = 0.;
 	while(m_bRenderThreadActive)
 	{
 		if(m_size.bDoResize)
@@ -387,7 +391,7 @@ void PlotGl::run()
 		long fps = isVisible() ? RENDER_FPS : (RENDER_FPS/10);
 		long lns = long(1e9) / fps;
 		sleep_nano(lns);
-		dTime += t_real_gl(lns) * 1e-9;
+		dTime += t_real(lns) * 1e-9;
 	}
 
 	doneCurrent();
@@ -451,8 +455,8 @@ void PlotGl::SetObjectUseLOD(std::size_t iObjIdx, bool bLOD)
 
 // ----------------------------------------------------------------------------
 
-void PlotGl::PlotSphere(const ublas::vector<t_real_gl>& vecPos,
-	t_real_gl dRadius, int iObjIdx)
+void PlotGl::PlotSphere(const ublas::vector<t_real>& vecPos,
+	t_real dRadius, int iObjIdx)
 {
 	if(iObjIdx < 0)
 	{
@@ -479,9 +483,9 @@ void PlotGl::PlotSphere(const ublas::vector<t_real_gl>& vecPos,
 }
 
 
-void PlotGl::PlotEllipsoid(const ublas::vector<t_real_gl>& widths,
-	const ublas::vector<t_real_gl>& offsets,
-	const ublas::matrix<t_real_gl>& rot,
+void PlotGl::PlotEllipsoid(const ublas::vector<t_real>& widths,
+	const ublas::vector<t_real>& offsets,
+	const ublas::matrix<t_real>& rot,
 	int iObjIdx)
 {
 	if(iObjIdx < 0)
@@ -516,7 +520,7 @@ void PlotGl::PlotEllipsoid(const ublas::vector<t_real_gl>& widths,
 }
 
 
-void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx)
+void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices, int iObjIdx)
 {
 	if(iObjIdx < 0)
 	{
@@ -537,7 +541,7 @@ void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices
 }
 
 
-void PlotGl::PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx)
+void PlotGl::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices, int iObjIdx)
 {
 	if(iObjIdx < 0)
 	{
@@ -591,8 +595,8 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	bool bUpdateView = 0;
 	if(m_bMouseRotateActive)
 	{
-		t_real_gl dNewX = t_real_gl(pEvt->POS_F().x());
-		t_real_gl dNewY = t_real_gl(pEvt->POS_F().y());
+		t_real dNewX = t_real(pEvt->POS_F().x());
+		t_real dNewY = t_real(pEvt->POS_F().y());
 
 		m_dMouseRot[0] += dNewX - m_dMouseBegin[0];
 		m_dMouseRot[1] += dNewY - m_dMouseBegin[1];
@@ -605,9 +609,9 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 
 	if(m_bMouseScaleActive)
 	{
-		t_real_gl dNewY = t_real_gl(pEvt->POS_F().y());
+		t_real dNewY = t_real(pEvt->POS_F().y());
 
-		m_dMouseScale *= 1.-(dNewY - m_dMouseScaleBegin)/t_real_gl(height()) * 2.;
+		m_dMouseScale *= 1.-(dNewY - m_dMouseScaleBegin)/t_real(height()) * 2.;
 		m_dMouseScaleBegin = dNewY;
 
 		bUpdateView = 1;
@@ -617,8 +621,8 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		updateViewMatrix();
 
 
-	m_dMouseX = 2.*pEvt->POS_F().x()/t_real_gl(m_size.iW) - 1.;
-	m_dMouseY = -(2.*pEvt->POS_F().y()/t_real_gl(m_size.iH) - 1.);
+	m_dMouseX = 2.*pEvt->POS_F().x()/t_real(m_size.iW) - 1.;
+	m_dMouseY = -(2.*pEvt->POS_F().y()/t_real(m_size.iH) - 1.);
 
 	bool bHasSelected = 0;
 	if(m_bEnabled.load())
@@ -645,20 +649,20 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 
 void PlotGl::updateViewMatrix()
 {
-	tl::t_mat4 matScale = tl::make_mat<tl::t_mat4>(
+	t_mat4 matScale = tl::make_mat<t_mat4>(
 		{{m_dMouseScale,              0,             0, 0},
 		{            0,   m_dMouseScale,             0, 0},
 		{            0,               0, m_dMouseScale, 0},
 		{            0,               0,             0, 1}});
 
-	tl::t_mat4 matR0 = tl::rotation_matrix_3d_z(tl::d2r<t_real>(m_dMouseRot[0]));
-	tl::t_mat4 matR1 = tl::rotation_matrix_3d_x(tl::d2r<t_real>(-90. + m_dMouseRot[1]));
+	t_mat4 matR0 = tl::rotation_matrix_3d_z(tl::d2r<t_real>(m_dMouseRot[0]));
+	t_mat4 matR1 = tl::rotation_matrix_3d_x(tl::d2r<t_real>(-90. + m_dMouseRot[1]));
 	matR0.resize(4,4,1); matR1.resize(4,4,1);
 	matR0(3,3) = matR1(3,3) = 1.;
 	for(short i=0; i<3; ++i) matR0(i,3)=matR0(3,i)=matR1(i,3)=matR1(3,i)=0.;
-	tl::t_mat4 matRot0 = matR0, matRot1 = matR1;
+	t_mat4 matRot0 = matR0, matRot1 = matR1;
 
-	tl::t_mat4 matTrans = tl::make_mat<tl::t_mat4>(
+	t_mat4 matTrans = tl::make_mat<t_mat4>(
 		{{ 1, 0, 0,  0},
 		{  0, 1, 0,  0},
 		{  0, 0, 1, -2},
@@ -677,36 +681,36 @@ void PlotGl::AddHoverSlot(const typename t_sigHover::slot_type& conn)
 	m_sigHover.connect(conn);
 }
 
-void PlotGl::mouseSelectObj(t_real_gl dX, t_real_gl dY)
+void PlotGl::mouseSelectObj(t_real dX, t_real dY)
 {
 	std::lock_guard<QMutex> _lck(m_mutex);
-	tl::Line<t_real_gl> ray = tl::screen_ray(dX, dY, m_matProj, m_matView);
+	tl::Line<t_real> ray = tl::screen_ray(dX, dY, m_matProj, m_matView);
 
 	for(PlotObjGl& obj : m_vecObjs)
 	{
 		obj.bSelected = 0;
 
-		std::unique_ptr<tl::Quadric<t_real_gl>> pQuad;
-		tl::t_vec3 vecOffs = ublas::zero_vector<t_real_gl>(3);
+		std::unique_ptr<tl::Quadric<t_real>> pQuad;
+		t_vec3 vecOffs = ublas::zero_vector<t_real>(3);
 
 		if(obj.plttype == PLOT_SPHERE)
 		{
-			pQuad.reset(new tl::QuadSphere<t_real_gl>(obj.vecParams[3]));
-			vecOffs = tl::make_vec<tl::t_vec3>({obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]});
+			pQuad.reset(new tl::QuadSphere<t_real>(obj.vecParams[3]));
+			vecOffs = tl::make_vec<t_vec3>({obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]});
 		}
 		else if(obj.plttype == PLOT_ELLIPSOID)
 		{
-			pQuad.reset(new tl::QuadEllipsoid<t_real_gl>(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]));
+			pQuad.reset(new tl::QuadEllipsoid<t_real>(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]));
 
-			vecOffs = tl::make_vec<tl::t_vec3>({obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]});
-			tl::t_mat3 matRot = tl::make_mat<tl::t_mat3>(
+			vecOffs = tl::make_vec<t_vec3>({obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]});
+			t_mat3 matRot = tl::make_mat<t_mat3>(
 				{{obj.vecParams[6],  obj.vecParams[7],  obj.vecParams[8]},
 				 {obj.vecParams[9],  obj.vecParams[10], obj.vecParams[11]},
 				 {obj.vecParams[12], obj.vecParams[13], obj.vecParams[14]}});
 			pQuad->transform(matRot);
 		}
 
-		std::vector<t_real_gl> vecT;
+		std::vector<t_real> vecT;
 		if(pQuad)
 		{
 			pQuad->SetOffset(vecOffs);
@@ -715,7 +719,7 @@ void PlotGl::mouseSelectObj(t_real_gl dX, t_real_gl dY)
 
 		if(vecT.size() > 0)
 		{
-			for(t_real_gl t : vecT)
+			for(t_real t : vecT)
 			{
 				if(t < 0.) continue; // beyond "near" plane
 				if(t > 1.) continue; // beyond "far" plane
