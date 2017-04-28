@@ -1025,12 +1025,13 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 			tl::Plane<t_real> planeBZ3 = tl::Plane<t_real>(m_bz3.GetCentralReflex(),
 				recipcommon.plane.GetNorm());
 
-			std::vector<t_vec> vecBZ3Verts;
-			std::tie(std::ignore, vecBZ3Verts) = m_bz3.GetIntersection(planeBZ3);
+			std::tie(std::ignore, m_vecBZ3VertsUnproj) = m_bz3.GetIntersection(planeBZ3);
 
-			for(t_vec& vecBZ3Vert : vecBZ3Verts)
+			for(t_vec& _vecBZ3Vert : m_vecBZ3VertsUnproj)
 			{
-				vecBZ3Vert = ublas::prod(m_matPlane_inv, vecBZ3Vert-m_bz3.GetCentralReflex());
+				_vecBZ3Vert -= m_bz3.GetCentralReflex();
+
+				t_vec vecBZ3Vert = ublas::prod(m_matPlane_inv, _vecBZ3Vert);
 				vecBZ3Vert.resize(2, true);
 				vecBZ3Vert[1] = -vecBZ3Vert[1];
 
@@ -1166,6 +1167,7 @@ void ScatteringTriangle::ClearPeaks()
 {
 	m_bz.Clear();
 	m_bz3.Clear();
+	m_vecBZ3VertsUnproj.clear();
 	m_vecBZ3Verts.clear();
 
 	for(RecipPeak*& pPeak : m_vecPeaks)

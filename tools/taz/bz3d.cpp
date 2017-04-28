@@ -68,7 +68,8 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
 // ----------------------------------------------------------------------------
 
 
-void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz)
+void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
+	const std::vector<ublas::vector<t_real_glob>>* pScatPlaneVerts)
 {
 	if(!bz.IsValid() || !m_pPlot)
 		return;
@@ -76,31 +77,46 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz)
 	static const std::vector<t_real> vecColVertices = { 1., 0., 0., 0.75 };
 	static const std::vector<t_real> vecColPolys = { 0., 0., 1., 0.75 };
 	static const std::vector<t_real> vecColEdges = { 0., 0., 0., 1. };
+	static const std::vector<t_real> vecColScatPlane = { 1., 1., 0., 1. };
 
 	m_pPlot->SetEnabled(0);
 	m_pPlot->clear();
 
 
 	// all objects: vertices + polys + edges
-	const std::size_t iNumObjs = bz.GetVertices().size() + 2*bz.GetPolys().size();
+	std::size_t iNumObjs = bz.GetVertices().size() + 2*bz.GetPolys().size();
+	if(pScatPlaneVerts)
+		++iNumObjs;
 	m_pPlot->SetObjectCount(iNumObjs);
 
+
+	// minimum and maximum coordinates
+	const t_real dLimMax = std::numeric_limits<t_real>::max();
+	std::vector<t_real> vecMin = { dLimMax, dLimMax, dLimMax },
+		vecMax = { -dLimMax, -dLimMax, -dLimMax };
 
 	std::size_t iCurObjIdx = 0;
 
 	// render vertices
 	for(const t_vec& vec : bz.GetVertices())
 	{
-		m_pPlot->PlotSphere(vec, 0.05, iCurObjIdx);
+		m_pPlot->PlotSphere(vec, 0.02, iCurObjIdx);
 		m_pPlot->SetObjectColor(iCurObjIdx, vecColVertices);
+
+		// min & max
+		for(unsigned int i=0; i<3; ++i)
+		{
+			vecMin[i] = std::min(vec[i], vecMin[i]);
+			vecMax[i] = std::max(vec[i], vecMax[i]);
+		}
 
 		++iCurObjIdx;
 	}
 
 	// render polygons
-	for(const std::vector<t_vec>& vecPoly : bz.GetPolys())
+	for(std::size_t iPoly=0; iPoly<bz.GetPolys().size(); ++iPoly)
 	{
-		m_pPlot->PlotPoly(vecPoly, iCurObjIdx);
+		m_pPlot->PlotPoly(bz.GetPolys()[iPoly], bz.GetPlanes()[iPoly].GetNorm(), iCurObjIdx);
 		m_pPlot->SetObjectColor(iCurObjIdx, vecColPolys);
 
 		++iCurObjIdx;
@@ -115,7 +131,16 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz)
 		++iCurObjIdx;
 	}
 
+	// render scattering plane if available
+	if(pScatPlaneVerts)
+	{
+		m_pPlot->PlotLines(*pScatPlaneVerts, iCurObjIdx);
+		m_pPlot->SetObjectColor(iCurObjIdx, vecColScatPlane);
 
+		++iCurObjIdx;
+	}
+
+	m_pPlot->SetMinMax(vecMin, vecMax);
 	m_pPlot->SetEnabled(1);
 }
 

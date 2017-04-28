@@ -29,7 +29,8 @@ public:
 	BZ3DDlg(QWidget* pParent, QSettings* = 0);
 	virtual ~BZ3DDlg() = default;
 
-	void RenderBZ(const tl::Brillouin3D<t_real_glob>& bz);
+	void RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
+		const std::vector<ublas::vector<t_real_glob>>* pScatPlaneVerts = nullptr);
 	
 
 protected:

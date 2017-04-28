@@ -50,10 +50,15 @@ enum PlotTypeGl
 struct PlotObjGl
 {
 	PlotTypeGl plttype = PLOT_INVALID;
-	std::vector<t_real_glob> vecParams;
+
+	ublas::vector<t_real_glob> vecPos;
+	ublas::vector<t_real_glob> vecScale;
+	std::vector<t_real_glob> vecRotMat;
+
 	std::vector<t_real_glob> vecColor;
 
 	std::vector<ublas::vector<t_real_glob>> vecVertices;
+	ublas::vector<t_real_glob> vecNorm;
 
 	bool bSelected = 0;
 	bool bUseLOD = 1;
@@ -146,7 +151,8 @@ public:
 		const ublas::vector<t_real_glob>& offsets,
 		const ublas::matrix<t_real_glob>& rot,
 		int iObjsIdx=-1);
-	void PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx=-1);
+	void PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices,
+		const ublas::vector<t_real_glob>& vecNorm, int iObjIdx=-1);
 	void PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx=-1);
 
 	void SetObjectCount(std::size_t iSize) { m_vecObjs.resize(iSize); }

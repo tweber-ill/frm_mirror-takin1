@@ -169,7 +169,7 @@ void TazDlg::ExportBZ3DModel()
 	for(const t_vec& vec : std::get<1>(tupLinesandVerts))
 	{
 		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
-		pTrafo->SetTrans(vec - bz.GetCentralReflex());
+		pTrafo->SetTrans(vec);
 
 		tl::X3dSphere *pSphere = new tl::X3dSphere(0.05);
 		pSphere->SetColor(tl::make_vec({1., 1., 0.}));

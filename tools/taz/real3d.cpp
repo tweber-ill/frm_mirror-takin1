@@ -110,6 +110,7 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 		latticecommon.lattice.GetPos(0,0,-d), latticecommon.lattice.GetPos(0,0,d),
 	};
 
+	// minimum and maximum coordinates
 	for(const t_vec& vecPeak : vecPeaks)
 	{
 		for(unsigned int i=0; i<3; ++i)

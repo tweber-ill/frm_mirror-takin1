@@ -122,8 +122,12 @@ void PlotGl::initializeGLThread()
 	glFrontFace(GL_CCW);
 	glCullFace(GL_BACK);
 
-	t_real vecLightCol[] = { 1., 1., 1., 1. };
-	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_AMBIENT_AND_DIFFUSE, vecLightCol);
+	const t_real vecLightColDiff[] = { 1., 1., 1., 1. };
+	const t_real vecLightColAmb[] = { 0.5, 0.5, 0.5, 1. };
+	const t_real vecLight0[] = { 1., 1., 1., 0. };
+	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_AMBIENT, vecLightColAmb);
+	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_DIFFUSE, vecLightColDiff);
+	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_POSITION, vecLight0);
 
 	unsigned int iLOD = 32;
 	for(std::size_t iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
@@ -134,8 +138,6 @@ void PlotGl::initializeGLThread()
 		gluQuadricDrawStyle(pQuadSphere, GLU_FILL /*GLU_LINE*/);
 		gluQuadricNormals(pQuadSphere, GLU_SMOOTH);
 		glNewList(m_iLstSphere[iSphere], GL_COMPILE);
-			t_real vecLight0[] = { 1., 1., 1., 0. };
-			tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_POSITION, vecLight0);
 			gluSphere(pQuadSphere, 1., iLOD, iLOD);
 		glEndList();
 		gluDeleteQuadric(pQuadSphere);
@@ -259,21 +261,21 @@ void PlotGl::paintGLThread()
 		glPushMatrix();
 		if(obj.plttype == PLOT_SPHERE)
 		{
-			glTranslated(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
-			glScaled(obj.vecParams[3], obj.vecParams[3], obj.vecParams[3]);
+			tl::gl_traits<t_real>::SetTranslate(obj.vecPos[0], obj.vecPos[1], obj.vecPos[2]);
+			tl::gl_traits<t_real>::SetScale(obj.vecScale[0], obj.vecScale[0], obj.vecScale[0]);
 
 			bIsSphereLikeObj = 1;
 		}
 		else if(obj.plttype == PLOT_ELLIPSOID)
 		{
-			glTranslated(obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]);
+			tl::gl_traits<t_real>::SetTranslate(obj.vecPos[0], obj.vecPos[1], obj.vecPos[2]);
 
-			t_real dMatRot[] = {obj.vecParams[6], obj.vecParams[7], obj.vecParams[8], 0.,
-				obj.vecParams[9], obj.vecParams[10], obj.vecParams[11], 0.,
-				obj.vecParams[12], obj.vecParams[13], obj.vecParams[14], 0.,
+			t_real dMatRot[] = {obj.vecRotMat[0], obj.vecRotMat[1], obj.vecRotMat[2], 0.,
+				obj.vecRotMat[3], obj.vecRotMat[4], obj.vecRotMat[5], 0.,
+				obj.vecRotMat[6], obj.vecRotMat[7], obj.vecRotMat[8], 0.,
 				0., 0., 0., 1. };
 			glMultMatrixd(dMatRot);
-			glScaled(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
+			tl::gl_traits<t_real>::SetScale(obj.vecScale[0], obj.vecScale[1], obj.vecScale[2]);
 
 			bIsSphereLikeObj = 1;
 		}
@@ -283,9 +285,9 @@ void PlotGl::paintGLThread()
 				for(const ublas::vector<t_real>& vec : obj.vecVertices)
 				{
 					tl::gl_traits<t_real>::SetVertex(vec[0], vec[1], vec[2]);
-					// TODO: normals
+					tl::gl_traits<t_real>::SetNorm(obj.vecNorm[0], obj.vecNorm[1], obj.vecNorm[2]);
 				}
- 			glEnd();
+			glEnd();
 		}
 		else if(obj.plttype == PLOT_LINES)
 		{
@@ -472,20 +474,14 @@ void PlotGl::PlotSphere(const ublas::vector<t_real>& vecPos,
 		PlotObjGl& obj = m_vecObjs[iObjIdx];
 
 		obj.plttype = PLOT_SPHERE;
-		if(obj.vecParams.size() != 4)
-			obj.vecParams.resize(4);
-
-		obj.vecParams[0] = vecPos[0];
-		obj.vecParams[1] = vecPos[1];
-		obj.vecParams[2] = vecPos[2];
-		obj.vecParams[3] = dRadius;
+		obj.vecPos = vecPos;
+		obj.vecScale = tl::make_vec<ublas::vector<t_real>>({ dRadius });
 	}
 }
 
 
 void PlotGl::PlotEllipsoid(const ublas::vector<t_real>& widths,
-	const ublas::vector<t_real>& offsets,
-	const ublas::matrix<t_real>& rot,
+	const ublas::vector<t_real>& offsets, const ublas::matrix<t_real>& rot,
 	int iObjIdx)
 {
 	if(iObjIdx < 0)
@@ -502,25 +498,22 @@ void PlotGl::PlotEllipsoid(const ublas::vector<t_real>& widths,
 		PlotObjGl& obj = m_vecObjs[iObjIdx];
 
 		obj.plttype = PLOT_ELLIPSOID;
-		if(obj.vecParams.size() != 15)
-			obj.vecParams.resize(15);
+		obj.vecScale = tl::make_vec<ublas::vector<t_real>>({ widths[0], widths[1], widths[2] });
+		obj.vecPos = offsets;
 
-		obj.vecParams[0] = widths[0];
-		obj.vecParams[1] = widths[1];
-		obj.vecParams[2] = widths[2];
-		obj.vecParams[3] = offsets[0];
-		obj.vecParams[4] = offsets[1];
-		obj.vecParams[5] = offsets[2];
+		if(obj.vecRotMat.size() != 9)
+			obj.vecRotMat.resize(9);
 
-		std::size_t iNum = 6;
+		std::size_t iNum = 0;
 		for(std::size_t i=0; i<3; ++i)
 			for(std::size_t j=0; j<3; ++j)
-				obj.vecParams[iNum++] = rot(j,i);
+				obj.vecRotMat[iNum++] = rot(j,i);
 	}
 }
 
 
-void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices, int iObjIdx)
+void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices,
+	const ublas::vector<t_real>& vecNorm, int iObjIdx)
 {
 	if(iObjIdx < 0)
 	{
@@ -537,6 +530,7 @@ void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices, int
 
 		obj.plttype = PLOT_POLY;
 		obj.vecVertices = vecVertices;
+		obj.vecNorm = vecNorm;
 	}
 }
 
@@ -695,18 +689,18 @@ void PlotGl::mouseSelectObj(t_real dX, t_real dY)
 
 		if(obj.plttype == PLOT_SPHERE)
 		{
-			pQuad.reset(new tl::QuadSphere<t_real>(obj.vecParams[3]));
-			vecOffs = tl::make_vec<t_vec3>({obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]});
+			pQuad.reset(new tl::QuadSphere<t_real>(obj.vecScale[0]));
+			vecOffs = obj.vecPos;
 		}
 		else if(obj.plttype == PLOT_ELLIPSOID)
 		{
-			pQuad.reset(new tl::QuadEllipsoid<t_real>(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]));
+			pQuad.reset(new tl::QuadEllipsoid<t_real>(obj.vecScale[0], obj.vecScale[1], obj.vecScale[2]));
 
-			vecOffs = tl::make_vec<t_vec3>({obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]});
+			vecOffs = obj.vecPos;
 			t_mat3 matRot = tl::make_mat<t_mat3>(
-				{{obj.vecParams[6],  obj.vecParams[7],  obj.vecParams[8]},
-				 {obj.vecParams[9],  obj.vecParams[10], obj.vecParams[11]},
-				 {obj.vecParams[12], obj.vecParams[13], obj.vecParams[14]}});
+				{{obj.vecRotMat[0], obj.vecRotMat[1], obj.vecRotMat[2]},
+				 {obj.vecRotMat[3], obj.vecRotMat[4], obj.vecRotMat[5]},
+				 {obj.vecRotMat[6], obj.vecRotMat[7], obj.vecRotMat[8]}});
 			pQuad->transform(matRot);
 		}
 
