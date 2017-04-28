@@ -111,11 +111,13 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 	};
 
 	for(const t_vec& vecPeak : vecPeaks)
+	{
 		for(unsigned int i=0; i<3; ++i)
 		{
 			vecMin[i] = std::min(vecPeak[i], vecMin[i]);
 			vecMax[i] = std::max(vecPeak[i], vecMax[i]);
 		}
+	}
 
 	for(std::size_t iAtom=0; iAtom<latticecommon.vecAllAtoms.size(); ++iAtom)
 	{
@@ -126,12 +128,6 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 
 		m_pPlot->PlotSphere(vecThisAtom, 0.1, iPeakIdx);
 		m_pPlot->SetObjectColor(iPeakIdx, vecColor[iCurAtomType % vecColor.size()]);
-
-		/*for(unsigned int i=0; i<3; ++i)
-		{
-			vecMin[i] = std::min(vecThisAtom[i], vecMin[i]);
-			vecMax[i] = std::max(vecThisAtom[i], vecMax[i]);
-		}*/
 
 		std::ostringstream ostrTip;
 		ostrTip.precision(g_iPrecGfx);

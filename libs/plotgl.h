@@ -5,8 +5,8 @@
  * @license GPLv2
  */
 
-#ifndef __MIEZE_PLOT_GL__
-#define __MIEZE_PLOT_GL__
+#ifndef __TAKIN_PLOT_GL__
+#define __TAKIN_PLOT_GL__
 
 #if QT_VER>=5
        	#include <QtWidgets>
@@ -43,6 +43,9 @@ enum PlotTypeGl
 
 	PLOT_SPHERE,
 	PLOT_ELLIPSOID,
+
+	PLOT_POLY,
+	PLOT_LINES,
 };
 
 struct PlotObjGl
@@ -50,6 +53,8 @@ struct PlotObjGl
 	PlotTypeGl plttype = PLOT_INVALID;
 	std::vector<t_real_gl> vecParams;
 	std::vector<t_real_glob> vecColor;
+
+	std::vector<ublas::vector<t_real_glob>> vecVertices;
 
 	bool bSelected = 0;
 	bool bUseLOD = 1;
@@ -135,16 +140,20 @@ public:
 	PlotGl(QWidget* pParent, QSettings *pSettings=nullptr, t_real_gl dMouseScale=25.);
 	virtual ~PlotGl();
 
+	void clear();
+
 	void PlotSphere(const ublas::vector<t_real_gl>& vecPos, t_real_gl dRadius, int iObjIdx=-1);
 	void PlotEllipsoid(const ublas::vector<t_real_gl>& widths,
 		const ublas::vector<t_real_gl>& offsets,
 		const ublas::matrix<t_real_gl>& rot,
 		int iObjsIdx=-1);
+	void PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx=-1);
+	void PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx=-1);
+
 	void SetObjectCount(std::size_t iSize) { m_vecObjs.resize(iSize); }
 	void SetObjectColor(std::size_t iObjIdx, const std::vector<t_real_glob>& vecCol);
 	void SetObjectLabel(std::size_t iObjIdx, const std::string& strLab);
 	void SetObjectUseLOD(std::size_t iObjIdx, bool bLOD);
-	void clear();
 
 	void SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ);
 

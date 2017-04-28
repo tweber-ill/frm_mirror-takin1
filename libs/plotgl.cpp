@@ -38,6 +38,10 @@ void sleep_nano(long ns)
 	nanosleep(&ts, 0);
 }
 
+
+// ----------------------------------------------------------------------------
+
+
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real_gl dMouseScale)
 	: t_qglwidget(pParent), m_pSettings(pSettings),
 		m_bEnabled(true), m_mutex(QMutex::Recursive), m_mutex_resize(QMutex::Recursive),
@@ -62,6 +66,10 @@ PlotGl::~PlotGl()
 	m_bRenderThreadActive = 0;
 	wait();
 }
+
+
+// ----------------------------------------------------------------------------
+
 
 void PlotGl::SetEnabled(bool b)
 {
@@ -174,7 +182,9 @@ void PlotGl::resizeGLThread(int w, int h)
 	glLoadIdentity();
 }
 
+
 void PlotGl::tickThread(t_real_gl dTime) {}
+
 
 void PlotGl::paintGLThread()
 {
@@ -193,6 +203,7 @@ void PlotGl::paintGLThread()
 	glLoadMatrixd(glmat);
 
 
+	// draw axes
 	glPushMatrix();
 		glDisable(GL_LIGHTING);
 		glDisable(GL_BLEND);
@@ -216,11 +227,15 @@ void PlotGl::paintGLThread()
 	glEnable(GL_LIGHT0);
 	glDisable(GL_TEXTURE_2D);
 
+
 	std::unique_lock<QMutex> _lck(m_mutex);
 	std::size_t iPltIdx = 0;
+
+	// draw objects
 	for(const PlotObjGl& obj : m_vecObjs)
 	{
 		int iLOD = 0;
+		bool bIsSphereLikeObj = 0;
 
 		bool bColorSet = 0;
 		if(obj.bSelected)
@@ -228,12 +243,22 @@ void PlotGl::paintGLThread()
 			SetColor(0.25, 0.25, 0.25, 0.9);
 			bColorSet = 1;
 		}
+		else
+		{
+			if(obj.vecColor.size())
+				SetColor(obj.vecColor[0], obj.vecColor[1], obj.vecColor[2], obj.vecColor[3]);
+			else
+				SetColor(iPltIdx);
+		}
+
 
 		glPushMatrix();
 		if(obj.plttype == PLOT_SPHERE)
 		{
 			glTranslated(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
 			glScaled(obj.vecParams[3], obj.vecParams[3], obj.vecParams[3]);
+
+			bIsSphereLikeObj = 1;
 		}
 		else if(obj.plttype == PLOT_ELLIPSOID)
 		{
@@ -245,31 +270,52 @@ void PlotGl::paintGLThread()
 				0., 0., 0., 1. };
 			glMultMatrixd(dMatRot);
 			glScaled(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
+
+			bIsSphereLikeObj = 1;
+		}
+		else if(obj.plttype == PLOT_POLY)
+		{
+			glBegin(GL_POLYGON);
+				for(const ublas::vector<t_real_glob>& vec : obj.vecVertices)
+				{
+					glVertex3d(vec[0], vec[1], vec[2]);
+					// TODO: normals
+				}
+ 			glEnd();
+		}
+		else if(obj.plttype == PLOT_LINES)
+		{
+			glBegin(GL_LINE_LOOP);
+				for(const ublas::vector<t_real_glob>& vec : obj.vecVertices)
+					glVertex3d(vec[0], vec[1], vec[2]);
+ 			glEnd();
 		}
 		else
+		{
 			tl::log_warn("Unknown plot object.");
-
-		if(obj.bUseLOD)
-		{
-			t_real_gl dLenDist = tl::gl_proj_sphere_size(/*dRadius*/1.);
-			//std::cout << "proj sphere size: " << dLenDist << std::endl;
-			iLOD = dLenDist * 50.;
-			if(iLOD >= int(sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)))
-				iLOD = sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)-1;
-			if(iLOD < 0) iLOD = 0;
-			iLOD = sizeof(m_iLstSphere)/sizeof(*m_iLstSphere) - iLOD - 1;
-			//std::cout << "dist: " << dLenDist << ", lod: " << iLOD << std::endl;
 		}
 
-		if(!bColorSet)
-		{
-			if(obj.vecColor.size())
-				SetColor(obj.vecColor[0], obj.vecColor[1], obj.vecColor[2], obj.vecColor[3]);
-			else
-				SetColor(iPltIdx);
-		}
-		glCallList(m_iLstSphere[iLOD]);
 
+		if(bIsSphereLikeObj)
+		{
+			if(obj.bUseLOD)
+			{
+				t_real_gl dLenDist = tl::gl_proj_sphere_size(/*dRadius*/1.);
+				iLOD = dLenDist * 50.;
+
+				if(iLOD >= int(sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)))
+					iLOD = sizeof(m_iLstSphere)/sizeof(*m_iLstSphere)-1;
+				if(iLOD < 0)
+					iLOD = 0;
+
+				iLOD = sizeof(m_iLstSphere)/sizeof(*m_iLstSphere) - iLOD - 1;
+			}
+
+			glCallList(m_iLstSphere[iLOD]);
+		}
+
+
+		// draw label of selected object
 		if(obj.bSelected && obj.strLabel.length() && m_pFont && m_pFont->IsOk())
 		{
 			glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_LIGHTING_BIT);
@@ -278,13 +324,14 @@ void PlotGl::paintGLThread()
 			m_pFont->DrawText(0., 0., 0., obj.strLabel);
 			glPopAttrib();
 		}
-
 		glPopMatrix();
 
 		++iPltIdx;
 	}
 	_lck.unlock();
 
+
+	// draw text
 	glPushMatrix();
 		if(m_pFont && m_pFont->IsOk())
 		{
@@ -307,6 +354,7 @@ void PlotGl::paintGLThread()
 
 	swapBuffers();
 }
+
 
 void PlotGl::run()
 {
@@ -347,6 +395,10 @@ void PlotGl::run()
 	tl::log_debug("GL thread ", iThisThread, " ended.");
 }
 
+
+// ----------------------------------------------------------------------------
+
+
 void PlotGl::paintEvent(QPaintEvent *)
 {}
 
@@ -359,6 +411,9 @@ void PlotGl::resizeEvent(QResizeEvent *pEvt)
 	m_size.iH = pEvt->size().height();
 	m_size.bDoResize = true;
 }
+
+
+// ----------------------------------------------------------------------------
 
 void PlotGl::clear()
 {
@@ -393,6 +448,9 @@ void PlotGl::SetObjectUseLOD(std::size_t iObjIdx, bool bLOD)
 	m_vecObjs[iObjIdx].bUseLOD = bLOD;
 }
 
+
+// ----------------------------------------------------------------------------
+
 void PlotGl::PlotSphere(const ublas::vector<t_real_gl>& vecPos,
 	t_real_gl dRadius, int iObjIdx)
 {
@@ -419,6 +477,7 @@ void PlotGl::PlotSphere(const ublas::vector<t_real_gl>& vecPos,
 		obj.vecParams[3] = dRadius;
 	}
 }
+
 
 void PlotGl::PlotEllipsoid(const ublas::vector<t_real_gl>& widths,
 	const ublas::vector<t_real_gl>& offsets,
@@ -455,6 +514,52 @@ void PlotGl::PlotEllipsoid(const ublas::vector<t_real_gl>& widths,
 				obj.vecParams[iNum++] = rot(j,i);
 	}
 }
+
+
+void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx)
+{
+	if(iObjIdx < 0)
+	{
+		clear();
+		iObjIdx = 0;
+	}
+
+	{
+		std::lock_guard<QMutex> _lck(m_mutex);
+
+		if(iObjIdx >= int(m_vecObjs.size()))
+			m_vecObjs.resize(iObjIdx+1);
+		PlotObjGl& obj = m_vecObjs[iObjIdx];
+
+		obj.plttype = PLOT_POLY;
+		obj.vecVertices = vecVertices;
+	}
+}
+
+
+void PlotGl::PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx)
+{
+	if(iObjIdx < 0)
+	{
+		clear();
+		iObjIdx = 0;
+	}
+
+	{
+		std::lock_guard<QMutex> _lck(m_mutex);
+
+		if(iObjIdx >= int(m_vecObjs.size()))
+			m_vecObjs.resize(iObjIdx+1);
+		PlotObjGl& obj = m_vecObjs[iObjIdx];
+
+		obj.plttype = PLOT_LINES;
+		obj.vecVertices = vecVertices;
+	}
+}
+
+
+// ----------------------------------------------------------------------------
+
 
 void PlotGl::mousePressEvent(QMouseEvent *event)
 {
@@ -534,6 +639,10 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		m_sigHover(nullptr);
 }
 
+// ----------------------------------------------------------------------------
+
+
+
 void PlotGl::updateViewMatrix()
 {
 	tl::t_mat4 matScale = tl::make_mat<tl::t_mat4>(
@@ -577,17 +686,17 @@ void PlotGl::mouseSelectObj(t_real_gl dX, t_real_gl dY)
 	{
 		obj.bSelected = 0;
 
-		tl::Quadric<t_real_gl> *pQuad = nullptr;
+		std::unique_ptr<tl::Quadric<t_real_gl>> pQuad;
 		tl::t_vec3 vecOffs = ublas::zero_vector<t_real_gl>(3);
 
 		if(obj.plttype == PLOT_SPHERE)
 		{
-			pQuad = new tl::QuadSphere<t_real_gl>(obj.vecParams[3]);
+			pQuad.reset(new tl::QuadSphere<t_real_gl>(obj.vecParams[3]));
 			vecOffs = tl::make_vec<tl::t_vec3>({obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]});
 		}
 		else if(obj.plttype == PLOT_ELLIPSOID)
 		{
-			pQuad = new tl::QuadEllipsoid<t_real_gl>(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]);
+			pQuad.reset(new tl::QuadEllipsoid<t_real_gl>(obj.vecParams[0], obj.vecParams[1], obj.vecParams[2]));
 
 			vecOffs = tl::make_vec<tl::t_vec3>({obj.vecParams[3], obj.vecParams[4], obj.vecParams[5]});
 			tl::t_mat3 matRot = tl::make_mat<tl::t_mat3>(
@@ -597,9 +706,13 @@ void PlotGl::mouseSelectObj(t_real_gl dX, t_real_gl dY)
 			pQuad->transform(matRot);
 		}
 
-		pQuad->SetOffset(vecOffs);
+		std::vector<t_real_gl> vecT;
+		if(pQuad)
+		{
+			pQuad->SetOffset(vecOffs);
+			vecT = pQuad->intersect(ray);
+		}
 
-		std::vector<t_real_gl> vecT = pQuad->intersect(ray);
 		if(vecT.size() > 0)
 		{
 			for(t_real_gl t : vecT)
@@ -609,8 +722,6 @@ void PlotGl::mouseSelectObj(t_real_gl dX, t_real_gl dY)
 				obj.bSelected = 1;
 			}
 		}
-
-		delete pQuad;
 	}
 }
 
