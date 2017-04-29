@@ -57,7 +57,7 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 			m_pStatus->clearMessage();
 	});
 
-	m_pPlot->SetLabels("a", "b", "c");
+	m_pPlot->SetLabels("a (A)", "b (A)", "c (A)");
 	m_pPlot->SetEnabled(1);
 }
 

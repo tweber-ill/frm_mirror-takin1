@@ -9,8 +9,8 @@
 # system-specific build flags
 
 # which compiler?
-CC = gcc
-#CC = clang
+#CC = gcc
+CC = clang
 
 # debug or unstable version?
 DO_DEBUG = 0
@@ -774,9 +774,11 @@ clean:
 	rm -f obj/*.o
 	rm -f ui/*.h
 	rm -f *.moc
+	rm -f libs/*.moc
 	rm -f tools/taz/*.moc
 	rm -f tools/res/*.moc
 	rm -f tools/scanviewer/*.moc
+	rm -f tools/scanpos/*.moc
 	rm -f tools/monteconvo/*.moc
 	rm -f tools/sglist/*.moc
 	rm -f dialogs/*.moc

@@ -123,7 +123,7 @@ void PlotGl::initializeGLThread()
 	glCullFace(GL_BACK);
 
 	const t_real vecLightColDiff[] = { 1., 1., 1., 1. };
-	const t_real vecLightColAmb[] = { 0.5, 0.5, 0.5, 1. };
+	const t_real vecLightColAmb[] = { 0.25, 0.25, 0.25, 1. };
 	const t_real vecLight0[] = { 1., 1., 1., 0. };
 	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_AMBIENT, vecLightColAmb);
 	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_DIFFUSE, vecLightColDiff);
@@ -174,8 +174,8 @@ void PlotGl::resizeGLThread(int w, int h)
 {
 	makeCurrent();
 
-	if(w<=0) w=1;
-	if(h<=0) h=1;
+	if(w <= 0) w = 1;
+	if(h <= 0) h = 1;
 	glViewport(0, 0, w, h);
 
 	glMatrixMode(GL_PROJECTION);
@@ -337,7 +337,7 @@ void PlotGl::paintGLThread()
 	_lck.unlock();
 
 
-	// draw text
+	// draw axis labels
 	glPushMatrix();
 		if(m_pFont && m_pFont->IsOk())
 		{
@@ -348,13 +348,16 @@ void PlotGl::paintGLThread()
 			m_pFont->DrawText(0., m_dYMax*dAxisScale , 0., m_strLabels[1].toStdString());
 			m_pFont->DrawText(0., 0., m_dZMax*dAxisScale , m_strLabels[2].toStdString());
 
-			tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
-			m_pFont->DrawText(m_dXMin, 0., 0., tl::var_to_str(m_dXMin+m_dXMinMaxOffs, m_iPrec));
-			m_pFont->DrawText(m_dXMax, 0., 0., tl::var_to_str(m_dXMax+m_dXMinMaxOffs, m_iPrec));
-			m_pFont->DrawText(0., m_dYMin, 0., tl::var_to_str(m_dYMin+m_dYMinMaxOffs, m_iPrec));
-			m_pFont->DrawText(0., m_dYMax, 0., tl::var_to_str(m_dYMax+m_dYMinMaxOffs, m_iPrec));
-			m_pFont->DrawText(0., 0., m_dZMin, tl::var_to_str(m_dZMin+m_dZMinMaxOffs, m_iPrec));
-			m_pFont->DrawText(0., 0., m_dZMax, tl::var_to_str(m_dZMax+m_dZMinMaxOffs, m_iPrec));
+			if(m_bDrawMinMax)
+			{
+				tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
+				m_pFont->DrawText(m_dXMin, 0., 0., tl::var_to_str(m_dXMin+m_dXMinMaxOffs, m_iPrec));
+				m_pFont->DrawText(m_dXMax, 0., 0., tl::var_to_str(m_dXMax+m_dXMinMaxOffs, m_iPrec));
+				m_pFont->DrawText(0., m_dYMin, 0., tl::var_to_str(m_dYMin+m_dYMinMaxOffs, m_iPrec));
+				m_pFont->DrawText(0., m_dYMax, 0., tl::var_to_str(m_dYMax+m_dYMinMaxOffs, m_iPrec));
+				m_pFont->DrawText(0., 0., m_dZMin, tl::var_to_str(m_dZMin+m_dZMinMaxOffs, m_iPrec));
+				m_pFont->DrawText(0., 0., m_dZMax, tl::var_to_str(m_dZMax+m_dZMinMaxOffs, m_iPrec));
+			}
 		}
 	glPopMatrix();
 

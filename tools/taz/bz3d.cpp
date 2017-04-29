@@ -14,6 +14,7 @@
 
 using t_real = t_real_glob;
 using t_vec = ublas::vector<t_real>;
+using t_mat = ublas::matrix<t_real>;
 
 
 BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
@@ -61,6 +62,7 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
 	});
 
 	m_pPlot->SetLabels("x (1/A)", "y (1/A)", "z (1/A)");
+	m_pPlot->SetDrawMinMax(0);
 	m_pPlot->SetEnabled(1);
 }
 
@@ -68,7 +70,12 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
 // ----------------------------------------------------------------------------
 
 
+/**
+ * draw 3d BZ
+ * assumes to be centred around (0,0,0): see CALC_BZ_AROUND_ZERO in scattering_triangle.cpp
+ */
 void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
+	const LatticeCommon<t_real_glob>& lattice,
 	const std::vector<ublas::vector<t_real_glob>>* pScatPlaneVerts)
 {
 	if(!bz.IsValid() || !m_pPlot)
@@ -81,6 +88,8 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 
 	m_pPlot->SetEnabled(0);
 	m_pPlot->clear();
+
+	t_mat matBinv = lattice.matA / (tl::get_pi<t_real>()*t_real(2));
 
 
 	// all objects: vertices + polys + edges
@@ -100,8 +109,18 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	// render vertices
 	for(const t_vec& vec : bz.GetVertices())
 	{
-		m_pPlot->PlotSphere(vec, 0.02, iCurObjIdx);
+		t_vec vecRLU = ublas::prod(matBinv, vec);
+		tl::set_eps_0(vecRLU);
+
+		m_pPlot->PlotSphere(vec, 0.025, iCurObjIdx);
 		m_pPlot->SetObjectColor(iCurObjIdx, vecColVertices);
+
+		// label
+		std::ostringstream ostrTip;
+		ostrTip.precision(g_iPrecGfx);
+		ostrTip << "(" << vecRLU[0] << ", " << vecRLU[1] << ", " << vecRLU[2] << ") rlu";
+		ostrTip << "\n(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ") 1/A";
+		m_pPlot->SetObjectLabel(iCurObjIdx, ostrTip.str());
 
 		// min & max
 		for(unsigned int i=0; i<3; ++i)

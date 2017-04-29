@@ -87,11 +87,14 @@ protected:
 	GLuint m_iLstSphere[8];
 	QString m_strLabels[3];
 
+
 	std::size_t m_iPrec = 6;
 	t_real_glob m_dXMin=-10., m_dXMax=10.;
 	t_real_glob m_dYMin=-10., m_dYMax=10.;
 	t_real_glob m_dZMin=-10., m_dZMax=10.;
 	t_real_glob m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
+	bool m_bDrawMinMax = 1;
+
 
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void paintEvent(QPaintEvent*) override;
@@ -161,6 +164,7 @@ public:
 	void SetObjectUseLOD(std::size_t iObjIdx, bool bLOD);
 
 	void SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ);
+	void SetDrawMinMax(bool b) { m_bDrawMinMax = b; }
 
 	template<class t_vec>
 	void SetMinMax(const t_vec& vecMin, const t_vec& vecMax, const t_vec* pOffs=0)
