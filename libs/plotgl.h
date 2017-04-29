@@ -80,6 +80,7 @@ protected:
 
 	static constexpr t_real_glob m_dFOV = 45./180.*M_PI;
 	tl::t_mat4_gen<t_real_glob> m_matProj, m_matView;
+	bool m_bPerspective = 1; // perspective or orthogonal projection?
 
 	tl::GlFontMap<t_real_glob> *m_pFont = nullptr;
 
@@ -115,9 +116,9 @@ protected:
 
 	t_real_glob m_dMouseX = 0., m_dMouseY = 0.;
 
-	void mousePressEvent(QMouseEvent*);
-	void mouseReleaseEvent(QMouseEvent*);
-	void mouseMoveEvent(QMouseEvent*);
+	virtual void mousePressEvent(QMouseEvent*) override;
+	virtual void mouseReleaseEvent(QMouseEvent*) override;
+	virtual void mouseMoveEvent(QMouseEvent*) override;
 
 	void updateViewMatrix();
 	void mouseSelectObj(t_real_glob dX, t_real_glob dY);
@@ -148,6 +149,7 @@ public:
 	virtual ~PlotGl();
 
 	void clear();
+	void TogglePerspective();
 
 	void PlotSphere(const ublas::vector<t_real_glob>& vecPos, t_real_glob dRadius, int iObjIdx=-1);
 	void PlotEllipsoid(const ublas::vector<t_real_glob>& widths,

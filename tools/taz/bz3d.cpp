@@ -113,6 +113,35 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 
 	std::size_t iCurObjIdx = 0;
 
+	// render vertices
+	for(const t_vec& vec : bz.GetVertices())
+	{
+		t_vec vecRLU = ublas::prod(matBinv, vec);
+		tl::set_eps_0(vecRLU);
+
+		if(bShowVerts)
+		{
+			m_pPlot->PlotSphere(vec, 0.025, iCurObjIdx);
+			m_pPlot->SetObjectColor(iCurObjIdx, vecColVertices);
+
+			// label
+			std::ostringstream ostrTip;
+			ostrTip.precision(g_iPrecGfx);
+			ostrTip << "(" << vecRLU[0] << ", " << vecRLU[1] << ", " << vecRLU[2] << ") rlu";
+			ostrTip << "\n(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ") 1/A";
+			m_pPlot->SetObjectLabel(iCurObjIdx, ostrTip.str());
+
+			++iCurObjIdx;
+		}
+
+		// min & max
+		for(unsigned int i=0; i<3; ++i)
+		{
+			vecMin[i] = std::min(vec[i], vecMin[i]);
+			vecMax[i] = std::max(vec[i], vecMax[i]);
+		}
+	}
+
 	// render polygons
 	for(std::size_t iPoly=0; iPoly<bz.GetPolys().size(); ++iPoly)
 	{
@@ -138,35 +167,6 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 		m_pPlot->SetObjectColor(iCurObjIdx, vecColScatPlane);
 
 		++iCurObjIdx;
-	}
-
-	// render vertices
-	if(bShowVerts)
-	{
-		for(const t_vec& vec : bz.GetVertices())
-		{
-			t_vec vecRLU = ublas::prod(matBinv, vec);
-			tl::set_eps_0(vecRLU);
-
-			m_pPlot->PlotSphere(vec, 0.025, iCurObjIdx);
-			m_pPlot->SetObjectColor(iCurObjIdx, vecColVertices);
-
-			// label
-			std::ostringstream ostrTip;
-			ostrTip.precision(g_iPrecGfx);
-			ostrTip << "(" << vecRLU[0] << ", " << vecRLU[1] << ", " << vecRLU[2] << ") rlu";
-			ostrTip << "\n(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ") 1/A";
-			m_pPlot->SetObjectLabel(iCurObjIdx, ostrTip.str());
-
-			// min & max
-			for(unsigned int i=0; i<3; ++i)
-			{
-				vecMin[i] = std::min(vec[i], vecMin[i]);
-				vecMax[i] = std::max(vec[i], vecMax[i]);
-			}
-
-			++iCurObjIdx;
-		}
 	}
 
 	// render points of high symmetry if available
@@ -198,6 +198,15 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 
 // ----------------------------------------------------------------------------
 
+void BZ3DDlg::keyPressEvent(QKeyEvent* pEvt)
+{
+	if(!m_pPlot) return;
+
+	if(pEvt->key() == Qt::Key_Space)
+		m_pPlot->TogglePerspective();
+
+	QDialog::keyPressEvent(pEvt);
+}
 
 void BZ3DDlg::closeEvent(QCloseEvent* pEvt)
 {

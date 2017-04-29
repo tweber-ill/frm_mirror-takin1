@@ -151,6 +151,21 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 	m_pPlot->SetEnabled(1);
 }
 
+
+// ----------------------------------------------------------------------------
+
+
+void Real3DDlg::keyPressEvent(QKeyEvent* pEvt)
+{
+	if(!m_pPlot) return;
+
+	if(pEvt->key() == Qt::Key_Space)
+		m_pPlot->TogglePerspective();
+
+	QDialog::keyPressEvent(pEvt);
+}
+
+
 void Real3DDlg::closeEvent(QCloseEvent* pEvt)
 {
 	if(m_pSettings)

@@ -180,8 +180,10 @@ void PlotGl::resizeGLThread(int w, int h)
 	glViewport(0, 0, w, h);
 
 	glMatrixMode(GL_PROJECTION);
-	m_matProj = tl::perspective_matrix(m_dFOV, t_real(w)/t_real(h), 0.1, 100.);
-	//m_matProj = ortho_matrix(-1.,1.,-1.,1.,0.1,100.);
+	if(m_bPerspective)
+		m_matProj = tl::perspective_matrix(m_dFOV, t_real(w)/t_real(h), 0.1, 100.);
+	else
+		m_matProj = tl::ortho_matrix(-1.,1.,-1.,1.,0.1,100.);
 	t_real glmat[16]; tl::to_gl_array(m_matProj, glmat);
 	glLoadMatrixd(glmat);
 
@@ -645,6 +647,14 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	}
 	if(!bHasSelected)
 		m_sigHover(nullptr);
+}
+
+void PlotGl::TogglePerspective()
+{
+	std::lock_guard<QMutex> _lck(m_mutex_resize);
+
+	m_bPerspective = !m_bPerspective;
+	m_size.bDoResize = 1;
 }
 
 // ----------------------------------------------------------------------------
