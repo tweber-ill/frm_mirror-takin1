@@ -9,6 +9,8 @@
 #include "tlibs/phys/atoms.h"
 #include "tlibs/file/x3d.h"
 #include "tlibs/log/log.h"
+#include "tlibs/time/chrono.h"
+#include "libs/version.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -136,8 +138,21 @@ void TazDlg::ExportBZ3DModel()
 	using t_vec = ublas::vector<t_real>;
 	tl::X3d x3d;
 
-	// vertices
+	/*// vertices
 	for(const t_vec& vec : bz.GetVertices())
+	{
+		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
+		pTrafo->SetTrans(vec - bz.GetCentralReflex());
+
+		tl::X3dSphere *pSphere = new tl::X3dSphere(0.025);
+		pSphere->SetColor(tl::make_vec({1., 0., 0.}));
+		pTrafo->AddChild(pSphere);
+
+		x3d.GetScene().AddChild(pTrafo);
+	}*/
+
+	// symmetry points
+	for(const t_vec& vec : pTri->GetBZ3DSymmVerts())
 	{
 		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
 		pTrafo->SetTrans(vec - bz.GetCentralReflex());
@@ -178,6 +193,17 @@ void TazDlg::ExportBZ3DModel()
 		x3d.GetScene().AddChild(pTrafo);
 	}*/
 
+
+	// Comment
+	std::ostringstream ostrComment;
+	ostrComment << "Brillouin zone contains: ";
+	ostrComment << bz.GetPolys().size() << " faces, ";
+	ostrComment << bz.GetVertices().size() << " vertices, ";
+	ostrComment << pTri->GetBZ3DSymmVerts().size() << " symmetry points.\n";
+
+	std::string strTakin = "\nCreated with Takin " + std::string(TAKIN_VER) + ".\n";
+	strTakin += "Timestamp: " + tl::epoch_to_str<t_real>(tl::epoch<t_real>()) + "\n\n";
+	x3d.SetComment(strTakin + ostrComment.str());
 
 	bool bOk = x3d.Save(strFile.toStdString().c_str());
 
@@ -331,7 +357,6 @@ void TazDlg::ExportUCModel()
 
 
 	tl::X3d x3d;
-	std::ostringstream ostrComment;
 
 	std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
 	std::vector<std::size_t> vecAllAtomTypes, vecIdxSC;
@@ -397,6 +422,9 @@ void TazDlg::ExportUCModel()
 	}
 
 	// comment
+	std::ostringstream ostrComment;
+	ostrComment << "Unit cell.\n";
+
 	for(std::size_t iAtom=0; iAtom<vecAtoms.size(); ++iAtom)
 	{
 		ostrComment << "Atom " << (iAtom+1) << ": " << vecAtomNames[iAtom]
@@ -416,7 +444,9 @@ void TazDlg::ExportUCModel()
 
 
 	tl::log_info(ostrComment.str());
-	x3d.SetComment(std::string("\nCreated with Takin.\n\n") + ostrComment.str());
+	std::string strTakin = "\nCreated with Takin " + std::string(TAKIN_VER) + ".\n";
+	strTakin += "Timestamp: " + tl::epoch_to_str<t_real>(tl::epoch<t_real>()) + "\n\n";
+	x3d.SetComment(strTakin + ostrComment.str());
 
 	bool bOk = x3d.Save(strFile.toStdString().c_str());
 

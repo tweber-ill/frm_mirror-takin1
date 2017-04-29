@@ -226,7 +226,7 @@ void ScatteringTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem
 	if(m_bShowBZ && (m_bz.IsValid() || m_bz3.IsValid()))
 	{
 		QPen penOrg = painter->pen();
-		painter->setPen(Qt::lightGray);
+		painter->setPen(Qt::darkGray);
 
 		t_vec vecCentral2d;
 		std::vector<QPointF> vecBZ3;
