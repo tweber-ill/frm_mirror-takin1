@@ -76,12 +76,14 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
  */
 void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	const LatticeCommon<t_real_glob>& lattice,
-	const std::vector<ublas::vector<t_real_glob>>* pScatPlaneVerts)
+	const std::vector<ublas::vector<t_real_glob>>* pScatPlaneVerts,
+	const std::vector<ublas::vector<t_real_glob>>* pvecSymmPts)
 {
 	if(!bz.IsValid() || !m_pPlot)
 		return;
 
-	static const std::vector<t_real> vecColVertices = { 1., 0., 0., 0.75 };
+	static const std::vector<t_real> vecColVertices = { 0., 0., 0., 0.75 };
+	static const std::vector<t_real> vecColSymmVerts = { 1., 0., 0., 0.75 };
 	static const std::vector<t_real> vecColPolys = { 0., 0., 1., 0.75 };
 	static const std::vector<t_real> vecColEdges = { 0., 0., 0., 1. };
 	static const std::vector<t_real> vecColScatPlane = { 1., 1., 0., 1. };
@@ -92,10 +94,15 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	t_mat matBinv = lattice.matA / (tl::get_pi<t_real>()*t_real(2));
 
 
-	// all objects: vertices + polys + edges
-	std::size_t iNumObjs = bz.GetVertices().size() + 2*bz.GetPolys().size();
+	const bool bShowVerts = 0;
+	// all objects: polys + edges
+	std::size_t iNumObjs =  2*bz.GetPolys().size();
+	if(bShowVerts)
+		iNumObjs += bz.GetVertices().size();
 	if(pScatPlaneVerts)
 		++iNumObjs;
+	if(pvecSymmPts)
+		iNumObjs += pvecSymmPts->size();
 	m_pPlot->SetObjectCount(iNumObjs);
 
 
@@ -105,32 +112,6 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 		vecMax = { -dLimMax, -dLimMax, -dLimMax };
 
 	std::size_t iCurObjIdx = 0;
-
-	// render vertices
-	for(const t_vec& vec : bz.GetVertices())
-	{
-		t_vec vecRLU = ublas::prod(matBinv, vec);
-		tl::set_eps_0(vecRLU);
-
-		m_pPlot->PlotSphere(vec, 0.025, iCurObjIdx);
-		m_pPlot->SetObjectColor(iCurObjIdx, vecColVertices);
-
-		// label
-		std::ostringstream ostrTip;
-		ostrTip.precision(g_iPrecGfx);
-		ostrTip << "(" << vecRLU[0] << ", " << vecRLU[1] << ", " << vecRLU[2] << ") rlu";
-		ostrTip << "\n(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ") 1/A";
-		m_pPlot->SetObjectLabel(iCurObjIdx, ostrTip.str());
-
-		// min & max
-		for(unsigned int i=0; i<3; ++i)
-		{
-			vecMin[i] = std::min(vec[i], vecMin[i]);
-			vecMax[i] = std::max(vec[i], vecMax[i]);
-		}
-
-		++iCurObjIdx;
-	}
 
 	// render polygons
 	for(std::size_t iPoly=0; iPoly<bz.GetPolys().size(); ++iPoly)
@@ -157,6 +138,57 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 		m_pPlot->SetObjectColor(iCurObjIdx, vecColScatPlane);
 
 		++iCurObjIdx;
+	}
+
+	// render vertices
+	if(bShowVerts)
+	{
+		for(const t_vec& vec : bz.GetVertices())
+		{
+			t_vec vecRLU = ublas::prod(matBinv, vec);
+			tl::set_eps_0(vecRLU);
+
+			m_pPlot->PlotSphere(vec, 0.025, iCurObjIdx);
+			m_pPlot->SetObjectColor(iCurObjIdx, vecColVertices);
+
+			// label
+			std::ostringstream ostrTip;
+			ostrTip.precision(g_iPrecGfx);
+			ostrTip << "(" << vecRLU[0] << ", " << vecRLU[1] << ", " << vecRLU[2] << ") rlu";
+			ostrTip << "\n(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ") 1/A";
+			m_pPlot->SetObjectLabel(iCurObjIdx, ostrTip.str());
+
+			// min & max
+			for(unsigned int i=0; i<3; ++i)
+			{
+				vecMin[i] = std::min(vec[i], vecMin[i]);
+				vecMax[i] = std::max(vec[i], vecMax[i]);
+			}
+
+			++iCurObjIdx;
+		}
+	}
+
+	// render points of high symmetry if available
+	if(pvecSymmPts)
+	{
+		for(const t_vec& vec : *pvecSymmPts)
+		{
+			t_vec vecRLU = ublas::prod(matBinv, vec);
+			tl::set_eps_0(vecRLU);
+
+			m_pPlot->PlotSphere(vec, 0.025, iCurObjIdx);
+			m_pPlot->SetObjectColor(iCurObjIdx, vecColSymmVerts);
+
+			// label
+			std::ostringstream ostrTip;
+			ostrTip.precision(g_iPrecGfx);
+			ostrTip << "(" << vecRLU[0] << ", " << vecRLU[1] << ", " << vecRLU[2] << ") rlu";
+			ostrTip << "\n(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ") 1/A";
+			m_pPlot->SetObjectLabel(iCurObjIdx, ostrTip.str());
+
+			++iCurObjIdx;
+		}
 	}
 
 	m_pPlot->SetMinMax(vecMin, vecMax);

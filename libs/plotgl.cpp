@@ -104,10 +104,11 @@ void PlotGl::initializeGLThread()
 	glClearColor(1.,1.,1.,0.);
 	glShadeModel(GL_SMOOTH);
 
+	glClearDepth(1.);
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LEQUAL);
 	glDisable(GL_DEPTH_TEST);
 	//glEnable(GL_DEPTH_TEST);
-	glClearDepth(1.);
-	glDepthFunc(GL_LEQUAL);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -209,11 +210,17 @@ void PlotGl::paintGLThread()
 	glLoadMatrixd(glmat);
 
 
+	glEnable(GL_BLEND);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glDisable(GL_TEXTURE_2D);
+
+
 	// draw axes
 	glPushMatrix();
+	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_LIGHTING_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_BLEND);
-		glDisable(GL_TEXTURE_2D);
 		glLineWidth(2.);
 		tl::gl_traits<t_real>::SetColor(0., 0., 0.);
 
@@ -226,12 +233,8 @@ void PlotGl::paintGLThread()
 			tl::gl_traits<t_real>::SetVertex(0., 0., m_dZMin*dAxisScale);
 			tl::gl_traits<t_real>::SetVertex(0., 0., m_dZMax*dAxisScale);
 		glEnd();
+	glPopAttrib();
 	glPopMatrix();
-
-	glEnable(GL_BLEND);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glDisable(GL_TEXTURE_2D);
 
 
 	std::unique_lock<QMutex> _lck(m_mutex);
@@ -324,10 +327,12 @@ void PlotGl::paintGLThread()
 		// draw label of selected object
 		if(obj.bSelected && obj.strLabel.length() && m_pFont && m_pFont->IsOk())
 		{
-			glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_LIGHTING_BIT);
+			glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_LIGHTING_BIT | GL_DEPTH_BUFFER_BIT);
+
 			m_pFont->BindTexture();
 			tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
 			m_pFont->DrawText(0., 0., 0., obj.strLabel);
+
 			glPopAttrib();
 		}
 		glPopMatrix();
@@ -338,28 +343,30 @@ void PlotGl::paintGLThread()
 
 
 	// draw axis labels
-	glPushMatrix();
-		if(m_pFont && m_pFont->IsOk())
+	if(m_pFont && m_pFont->IsOk())
+	{
+		glPushMatrix();
+		glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_LIGHTING_BIT | GL_DEPTH_BUFFER_BIT);
+		m_pFont->BindTexture();
+
+		tl::gl_traits<t_real>::SetColor(0., 0., 1., 1.);
+		m_pFont->DrawText(m_dXMax*dAxisScale, 0., 0., m_strLabels[0].toStdString());
+		m_pFont->DrawText(0., m_dYMax*dAxisScale , 0., m_strLabels[1].toStdString());
+		m_pFont->DrawText(0., 0., m_dZMax*dAxisScale , m_strLabels[2].toStdString());
+
+		if(m_bDrawMinMax)
 		{
-			m_pFont->BindTexture();
-
-			tl::gl_traits<t_real>::SetColor(0., 0., 1., 1.);
-			m_pFont->DrawText(m_dXMax*dAxisScale, 0., 0., m_strLabels[0].toStdString());
-			m_pFont->DrawText(0., m_dYMax*dAxisScale , 0., m_strLabels[1].toStdString());
-			m_pFont->DrawText(0., 0., m_dZMax*dAxisScale , m_strLabels[2].toStdString());
-
-			if(m_bDrawMinMax)
-			{
-				tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
-				m_pFont->DrawText(m_dXMin, 0., 0., tl::var_to_str(m_dXMin+m_dXMinMaxOffs, m_iPrec));
-				m_pFont->DrawText(m_dXMax, 0., 0., tl::var_to_str(m_dXMax+m_dXMinMaxOffs, m_iPrec));
-				m_pFont->DrawText(0., m_dYMin, 0., tl::var_to_str(m_dYMin+m_dYMinMaxOffs, m_iPrec));
-				m_pFont->DrawText(0., m_dYMax, 0., tl::var_to_str(m_dYMax+m_dYMinMaxOffs, m_iPrec));
-				m_pFont->DrawText(0., 0., m_dZMin, tl::var_to_str(m_dZMin+m_dZMinMaxOffs, m_iPrec));
-				m_pFont->DrawText(0., 0., m_dZMax, tl::var_to_str(m_dZMax+m_dZMinMaxOffs, m_iPrec));
-			}
+			tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
+			m_pFont->DrawText(m_dXMin, 0., 0., tl::var_to_str(m_dXMin+m_dXMinMaxOffs, m_iPrec));
+			m_pFont->DrawText(m_dXMax, 0., 0., tl::var_to_str(m_dXMax+m_dXMinMaxOffs, m_iPrec));
+			m_pFont->DrawText(0., m_dYMin, 0., tl::var_to_str(m_dYMin+m_dYMinMaxOffs, m_iPrec));
+			m_pFont->DrawText(0., m_dYMax, 0., tl::var_to_str(m_dYMax+m_dYMinMaxOffs, m_iPrec));
+			m_pFont->DrawText(0., 0., m_dZMin, tl::var_to_str(m_dZMin+m_dZMinMaxOffs, m_iPrec));
+			m_pFont->DrawText(0., 0., m_dZMax, tl::var_to_str(m_dZMax+m_dZMinMaxOffs, m_iPrec));
 		}
-	glPopMatrix();
+		glPopAttrib();
+		glPopMatrix();
+	}
 
 	swapBuffers();
 }

@@ -129,6 +129,7 @@ class ScatteringTriangle : public QGraphicsItem
 		tl::Brillouin2D<t_real_glob> m_bz;
 		tl::Brillouin3D<t_real_glob> m_bz3;
 		std::vector<ublas::vector<t_real_glob>> m_vecBZ3VertsUnproj, m_vecBZ3Verts;
+		std::vector<ublas::vector<t_real_glob>> m_vecBZ3SymmPts;
 
 		bool m_bqVisible = 0;
 		bool m_bShowEwaldSphere = 1;
@@ -188,6 +189,7 @@ class ScatteringTriangle : public QGraphicsItem
 
 		const tl::Brillouin3D<t_real_glob>& GetBZ3D() const { return m_bz3; }
 		const std::vector<ublas::vector<t_real_glob>>& GetBZ3DPlaneVerts() const { return m_vecBZ3VertsUnproj; }
+		const std::vector<ublas::vector<t_real_glob>>& GetBZ3DSymmVerts() const { return m_vecBZ3SymmPts; }
 
 	public:
 		std::vector<ScatteringTriangleNode*> GetNodes();

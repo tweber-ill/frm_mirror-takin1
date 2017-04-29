@@ -881,6 +881,7 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 	std::list<std::vector<t_real>> lstPeaksForKd;
 	t_real dMinF = std::numeric_limits<t_real>::max(), dMaxF = -1.;
 
+	// iterate over all bragg peaks
 	const int iMaxPeaks = bIsPowder ? m_iMaxPeaks/2 : m_iMaxPeaks;
 	for(int ih=-iMaxPeaks; ih<=iMaxPeaks; ++ih)
 		for(int ik=-iMaxPeaks; ik<=iMaxPeaks; ++ik)
@@ -1015,12 +1016,35 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 					powder.AddPeak(ih, ik, il, dF);
 			}
 
+	// single crystal
 	if(!bIsPowder)
 	{
 		if(g_b3dBZ)
 		{
 			m_bz3.CalcBZ();
 
+			// ----------------------------------------------------------------
+			// calculate points of high symmetry
+			std::vector<t_vec> vecSymmDirs = {
+				tl::make_vec<t_vec>({1,0,0}), tl::make_vec<t_vec>({0,1,0}), tl::make_vec<t_vec>({0,0,1}),
+
+				tl::make_vec<t_vec>({1,1,0}), tl::make_vec<t_vec>({0,1,1}), tl::make_vec<t_vec>({1,0,1}),
+				tl::make_vec<t_vec>({1,-1,0}), tl::make_vec<t_vec>({0,1,-1}), tl::make_vec<t_vec>({1,0,-1}),
+
+				tl::make_vec<t_vec>({1,1,1}), tl::make_vec<t_vec>({1,1,-1}), tl::make_vec<t_vec>({1,-1,-1}),
+				tl::make_vec<t_vec>({1,-1,1}),
+			};
+			for(const t_vec& vecSymmDir : vecSymmDirs)
+			{
+				const t_vec vecSymmDirInvA = m_recip.GetPos(vecSymmDir[0], vecSymmDir[1], vecSymmDir[2]);
+				tl::Line<t_real> lineSymmDir(m_bz3.GetCentralReflex(), vecSymmDirInvA);
+				std::vector<t_vec> vecSymmIntersects = m_bz3.GetIntersection(lineSymmDir);
+				for(t_vec& vecSymmIntersect : vecSymmIntersects)
+					m_vecBZ3SymmPts.emplace_back(std::move(vecSymmIntersect));
+			}
+			// ----------------------------------------------------------------
+
+			// ----------------------------------------------------------------
 			// calculate intersection with scattering plane
 			tl::Plane<t_real> planeBZ3 = tl::Plane<t_real>(m_bz3.GetCentralReflex(),
 				recipcommon.plane.GetNorm());
@@ -1035,6 +1059,7 @@ void ScatteringTriangle::CalcPeaks(const LatticeCommon<t_real>& recipcommon, boo
 
 				m_vecBZ3Verts.push_back(vecBZ3Vert);
 			}
+			// ----------------------------------------------------------------
 		}
 		else
 		{
@@ -1167,6 +1192,7 @@ void ScatteringTriangle::ClearPeaks()
 	m_bz3.Clear();
 	m_vecBZ3VertsUnproj.clear();
 	m_vecBZ3Verts.clear();
+	m_vecBZ3SymmPts.clear();
 
 	for(RecipPeak*& pPeak : m_vecPeaks)
 	{

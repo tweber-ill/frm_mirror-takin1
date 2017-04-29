@@ -284,7 +284,8 @@ void TazDlg::CalcPeaks()
 			if(m_pBZ3d)
 				m_pBZ3d->RenderBZ(m_sceneRecip.GetTriangle()->GetBZ3D(),
 					m_latticecommon,
-					&m_sceneRecip.GetTriangle()->GetBZ3DPlaneVerts());
+					&m_sceneRecip.GetTriangle()->GetBZ3DPlaneVerts(),
+					&m_sceneRecip.GetTriangle()->GetBZ3DSymmVerts());
 #endif
 		}
 		else
