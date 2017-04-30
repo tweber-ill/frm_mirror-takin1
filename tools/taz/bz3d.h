@@ -34,7 +34,6 @@ public:
 		const LatticeCommon<t_real_glob>& lattice,
 		const std::vector<ublas::vector<t_real_glob>>* pScatPlaneVerts = nullptr,
 		const std::vector<ublas::vector<t_real_glob>>* pvecSymmPts = nullptr);
-	
 
 protected:
 	virtual void hideEvent(QHideEvent*) override;

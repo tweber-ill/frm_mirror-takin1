@@ -56,6 +56,7 @@ struct PlotObjGl
 	std::vector<t_real_glob> vecRotMat;
 
 	std::vector<t_real_glob> vecColor;
+	t_real_glob dLineWidth = 2.;
 
 	std::vector<ublas::vector<t_real_glob>> vecVertices;
 	ublas::vector<t_real_glob> vecNorm;
@@ -81,6 +82,8 @@ protected:
 	static constexpr t_real_glob m_dFOV = 45./180.*M_PI;
 	tl::t_mat4_gen<t_real_glob> m_matProj, m_matView;
 	bool m_bPerspective = 1; // perspective or orthogonal projection?
+	ublas::vector<t_real_glob> m_vecCam;
+	bool m_bDoZTest = 0;
 
 	tl::GlFontMap<t_real_glob> *m_pFont = nullptr;
 
@@ -97,6 +100,7 @@ protected:
 	bool m_bDrawMinMax = 1;
 
 
+protected:
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void paintEvent(QPaintEvent*) override;
 
@@ -113,8 +117,6 @@ protected:
 	bool m_bMouseScaleActive = 0;
 	t_real_glob m_dMouseScale;
 	t_real_glob m_dMouseScaleBegin;
-
-	t_real_glob m_dMouseX = 0., m_dMouseY = 0.;
 
 	virtual void mousePressEvent(QMouseEvent*) override;
 	virtual void mouseReleaseEvent(QMouseEvent*) override;
@@ -141,6 +143,8 @@ protected:
 	void tickThread(t_real_glob dTime);
 	virtual void run() override;
 
+	t_real_glob GetCamObjDist(const PlotObjGl& obj) const;
+	std::vector<std::size_t> GetObjSortOrder() const;
 	PlotGlSize m_size;
 	// ------------------------------------------------------------------------
 
@@ -150,6 +154,7 @@ public:
 
 	void clear();
 	void TogglePerspective();
+	void ToggleZTest() { m_bDoZTest = !m_bDoZTest; }
 
 	void PlotSphere(const ublas::vector<t_real_glob>& vecPos, t_real_glob dRadius, int iObjIdx=-1);
 	void PlotEllipsoid(const ublas::vector<t_real_glob>& widths,
@@ -158,7 +163,8 @@ public:
 		int iObjsIdx=-1);
 	void PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices,
 		const ublas::vector<t_real_glob>& vecNorm, int iObjIdx=-1);
-	void PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices, int iObjIdx=-1);
+	void PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices,
+		t_real_glob dLW=2., int iObjIdx=-1);
 
 	void SetObjectCount(std::size_t iSize) { m_vecObjs.resize(iSize); }
 	void SetObjectColor(std::size_t iObjIdx, const std::vector<t_real_glob>& vecCol);

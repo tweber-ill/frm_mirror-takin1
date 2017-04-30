@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <numeric>
 
 #define RENDER_FPS 40
 
@@ -51,6 +52,10 @@ PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real dMouseScale)
 		m_bEnabled(true), m_mutex(QMutex::Recursive), m_mutex_resize(QMutex::Recursive),
 		m_matProj(tl::unit_matrix<t_mat4>(4)), m_matView(tl::unit_matrix<t_mat4>(4))
 {
+	QGLFormat form = format();
+	form.setSampleBuffers(1);
+	setFormat(form);
+
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
 	m_dMouseScale = dMouseScale;
 	updateViewMatrix();
@@ -99,29 +104,34 @@ void PlotGl::SetColor(std::size_t iIdx)
 	tl::gl_traits<t_real>::SetMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, cols[iIdx % 4]);
 }
 
+
 void PlotGl::initializeGLThread()
 {
 	glClearColor(1.,1.,1.,0.);
 	glShadeModel(GL_SMOOTH);
+	//glShadeModel(GL_FLAT);
 
 	glClearDepth(1.);
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
 	glDisable(GL_DEPTH_TEST);
-	//glEnable(GL_DEPTH_TEST);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POINT_SMOOTH);
+	//glEnable(GL_POLYGON_SMOOTH);
+	glEnable(GL_MULTISAMPLE);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
-	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 
 	const t_real vecLightColDiff[] = { 1., 1., 1., 1. };
 	const t_real vecLightColAmb[] = { 0.25, 0.25, 0.25, 1. };
@@ -129,6 +139,7 @@ void PlotGl::initializeGLThread()
 	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_AMBIENT, vecLightColAmb);
 	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_DIFFUSE, vecLightColDiff);
 	tl::gl_traits<t_real>::SetLight(GL_LIGHT0, GL_POSITION, vecLight0);
+
 
 	unsigned int iLOD = 32;
 	for(std::size_t iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
@@ -158,6 +169,7 @@ void PlotGl::initializeGLThread()
 	setMouseTracking(1);
 }
 
+
 void PlotGl::freeGLThread()
 {
 #if QT_VER>=5
@@ -170,6 +182,7 @@ void PlotGl::freeGLThread()
 
 	if(m_pFont) { delete m_pFont; m_pFont = nullptr; }
 }
+
 
 void PlotGl::resizeGLThread(int w, int h)
 {
@@ -192,9 +205,80 @@ void PlotGl::resizeGLThread(int w, int h)
 }
 
 
-void PlotGl::tickThread(t_real dTime) {}
+/**
+ * average distance of object from camera position
+ */
+t_real PlotGl::GetCamObjDist(const PlotObjGl& obj) const
+{
+	ublas::vector<t_real> vecPos;
+	t_real dShiftPt = 0.;
+
+	if(obj.plttype == PLOT_POLY || obj.plttype == PLOT_LINES)
+	{
+		// mean position
+		vecPos = tl::mean_value(obj.vecVertices);
+		//if(obj.plttype == PLOT_LINES)
+		//	dShiftPt = obj.dLineWidth*0.25;
+	}
+	else if(obj.plttype == PLOT_SPHERE || obj.plttype == PLOT_ELLIPSOID)
+	{
+		vecPos = obj.vecPos;
+		// point on sphere closest to camera
+		dShiftPt = ublas::norm_2(obj.vecScale);
+	}
+	else
+	{
+		return t_real(0);
+	}
+
+	// shift position towards camera
+	if(!tl::float_equal(dShiftPt, t_real(0)))
+	{
+		ublas::vector<t_real> vecCamObj = m_vecCam - vecPos;
+		vecCamObj /= ublas::norm_2(vecCamObj);
+		vecPos += vecCamObj*dShiftPt;
+	}
+
+	if(vecPos.size() != m_vecCam.size())
+		return t_real(0);
+	return ublas::norm_2(vecPos - m_vecCam);
+}
+
+/**
+ * get sorted object indices based on distance to camera
+ */
+std::vector<std::size_t> PlotGl::GetObjSortOrder() const
+{
+	std::vector<std::size_t> vecIdx(m_vecObjs.size());
+	std::iota(vecIdx.begin(), vecIdx.end(), 0);
+
+	// sort indices based on obj distance
+	std::sort(vecIdx.begin(), vecIdx.end(),
+		[this](const std::size_t& iIdx0, const std::size_t& iIdx1) -> bool
+		{
+			if(iIdx0 < m_vecObjs.size() && iIdx1 < m_vecObjs.size())
+			{
+				t_real tDist0 = GetCamObjDist(m_vecObjs[iIdx0]);
+				t_real tDist1 = GetCamObjDist(m_vecObjs[iIdx1]);
+				return m_bDoZTest ? tDist0 < tDist1 : tDist0 >= tDist1;
+			}
+			return false;
+		});
+
+	return vecIdx;
+}
 
 
+/**
+ * advance time
+ */
+void PlotGl::tickThread(t_real dTime)
+{}
+
+
+/**
+ * main render function
+ */
 void PlotGl::paintGLThread()
 {
 	makeCurrent();
@@ -212,10 +296,25 @@ void PlotGl::paintGLThread()
 	glLoadMatrixd(glmat);
 
 
-	glEnable(GL_BLEND);
+	// camera position
+	tl::Line<t_real> rayMid = tl::screen_ray(t_real(0.5), t_real(0.5), m_matProj, m_matView);
+	m_vecCam = rayMid.GetX0();
+
+
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glDisable(GL_TEXTURE_2D);
+
+	if(m_bDoZTest)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+	}
+	else
+	{
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+	}
 
 
 	// draw axes
@@ -240,11 +339,14 @@ void PlotGl::paintGLThread()
 
 
 	std::unique_lock<QMutex> _lck(m_mutex);
-	std::size_t iPltIdx = 0;
 
 	// draw objects
-	for(const PlotObjGl& obj : m_vecObjs)
+	for(std::size_t iObjIdx : GetObjSortOrder())
 	{
+		if(iObjIdx >= m_vecObjs.size())
+			continue;
+		const PlotObjGl& obj = m_vecObjs[iObjIdx];
+
 		int iLOD = 0;
 		bool bIsSphereLikeObj = 0;
 
@@ -259,7 +361,7 @@ void PlotGl::paintGLThread()
 			if(obj.vecColor.size())
 				SetColor(obj.vecColor[0], obj.vecColor[1], obj.vecColor[2], obj.vecColor[3]);
 			else
-				SetColor(iPltIdx);
+				SetColor(iObjIdx);
 		}
 
 
@@ -287,15 +389,14 @@ void PlotGl::paintGLThread()
 		else if(obj.plttype == PLOT_POLY)
 		{
 			glBegin(GL_POLYGON);
+				tl::gl_traits<t_real>::SetNorm(obj.vecNorm[0], obj.vecNorm[1], obj.vecNorm[2]);
 				for(const ublas::vector<t_real>& vec : obj.vecVertices)
-				{
 					tl::gl_traits<t_real>::SetVertex(vec[0], vec[1], vec[2]);
-					tl::gl_traits<t_real>::SetNorm(obj.vecNorm[0], obj.vecNorm[1], obj.vecNorm[2]);
-				}
 			glEnd();
 		}
 		else if(obj.plttype == PLOT_LINES)
 		{
+			glLineWidth(obj.dLineWidth);
 			glBegin(GL_LINE_LOOP);
 				for(const ublas::vector<t_real>& vec : obj.vecVertices)
 					tl::gl_traits<t_real>::SetVertex(vec[0], vec[1], vec[2]);
@@ -338,8 +439,6 @@ void PlotGl::paintGLThread()
 			glPopAttrib();
 		}
 		glPopMatrix();
-
-		++iPltIdx;
 	}
 	_lck.unlock();
 
@@ -487,7 +586,7 @@ void PlotGl::PlotSphere(const ublas::vector<t_real>& vecPos,
 
 		obj.plttype = PLOT_SPHERE;
 		obj.vecPos = vecPos;
-		obj.vecScale = tl::make_vec<ublas::vector<t_real>>({ dRadius });
+		obj.vecScale = tl::make_vec<ublas::vector<t_real>>({ dRadius, dRadius, dRadius });
 	}
 }
 
@@ -547,7 +646,8 @@ void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices,
 }
 
 
-void PlotGl::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices, int iObjIdx)
+void PlotGl::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices,
+	t_real_glob dLW, int iObjIdx)
 {
 	if(iObjIdx < 0)
 	{
@@ -564,6 +664,7 @@ void PlotGl::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices, in
 
 		obj.plttype = PLOT_LINES;
 		obj.vecVertices = vecVertices;
+		obj.dLineWidth = dLW;
 	}
 }
 
@@ -627,13 +728,13 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		updateViewMatrix();
 
 
-	m_dMouseX = 2.*pEvt->POS_F().x()/t_real(m_size.iW) - 1.;
-	m_dMouseY = -(2.*pEvt->POS_F().y()/t_real(m_size.iH) - 1.);
+	t_real dMouseX = 2.*pEvt->POS_F().x()/t_real(m_size.iW) - 1.;
+	t_real dMouseY = -(2.*pEvt->POS_F().y()/t_real(m_size.iH) - 1.);
 
 	bool bHasSelected = 0;
 	if(m_bEnabled.load())
 	{
-		mouseSelectObj(m_dMouseX, m_dMouseY);
+		mouseSelectObj(dMouseX, dMouseY);
 
 		for(PlotObjGl& obj : m_vecObjs)
 		{

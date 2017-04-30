@@ -82,9 +82,9 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	if(!bz.IsValid() || !m_pPlot)
 		return;
 
-	static const std::vector<t_real> vecColVertices = { 0., 0., 0., 0.75 };
-	static const std::vector<t_real> vecColSymmVerts = { 1., 0., 0., 0.75 };
-	static const std::vector<t_real> vecColPolys = { 0., 0., 1., 0.75 };
+	static const std::vector<t_real> vecColVertices = { 0., 0., 0., 0.85 };
+	static const std::vector<t_real> vecColSymmVerts = { 1., 0., 0., 0.85 };
+	static const std::vector<t_real> vecColPolys = { 0., 0., 1., 0.85 };
 	static const std::vector<t_real> vecColEdges = { 0., 0., 0., 1. };
 	static const std::vector<t_real> vecColScatPlane = { 1., 1., 0., 1. };
 
@@ -154,7 +154,7 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	// render edges
 	for(const std::vector<t_vec>& vecPoly : bz.GetPolys())
 	{
-		m_pPlot->PlotLines(vecPoly, iCurObjIdx);
+		m_pPlot->PlotLines(vecPoly, 2., iCurObjIdx);
 		m_pPlot->SetObjectColor(iCurObjIdx, vecColEdges);
 
 		++iCurObjIdx;
@@ -163,7 +163,8 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	// render scattering plane if available
 	if(pScatPlaneVerts)
 	{
-		m_pPlot->PlotLines(*pScatPlaneVerts, iCurObjIdx);
+		m_pPlot->PlotLines(*pScatPlaneVerts, 4., iCurObjIdx);
+		//m_pPlot->PlotPoly(*pScatPlaneVerts, tl::make_vec({0.,0.,1.}), iCurObjIdx);
 		m_pPlot->SetObjectColor(iCurObjIdx, vecColScatPlane);
 
 		++iCurObjIdx;
@@ -204,6 +205,8 @@ void BZ3DDlg::keyPressEvent(QKeyEvent* pEvt)
 
 	if(pEvt->key() == Qt::Key_Space)
 		m_pPlot->TogglePerspective();
+	else if(pEvt->key() == Qt::Key_Z)
+		m_pPlot->ToggleZTest();
 
 	QDialog::keyPressEvent(pEvt);
 }
