@@ -98,7 +98,7 @@ ifeq ($(IS_UNSTABLE), 1)
 endif
 
 ifeq ($(USE_3D), 1)
-	DEFINES += -DUSE_3D
+	DEFINES += -DUSE_3D -DUSE_MULTI_TEXTURES
 else
 	DEFINES += -DNO_3D
 endif

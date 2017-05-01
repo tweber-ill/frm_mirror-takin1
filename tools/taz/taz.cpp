@@ -1250,7 +1250,7 @@ void TazDlg::Show3DBZ()
 #else
 void TazDlg::Show3D() {}
 void TazDlg::Show3DReal() {}
-void TazDlg::SHow3DBZ() {}
+void TazDlg::Show3DBZ() {}
 #endif
 
 void TazDlg::EnableSmallq(bool bEnable)

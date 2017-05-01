@@ -125,12 +125,14 @@ void PlotGl::initializeGLThread()
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_POINT_SMOOTH);
 	//glEnable(GL_POLYGON_SMOOTH);
+#ifdef USE_MULTI_TEXTURES
 	glEnable(GL_MULTISAMPLE);
+	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+#endif
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
 	glFrontFace(GL_CCW);
 	glCullFace(GL_BACK);
@@ -160,7 +162,9 @@ void PlotGl::initializeGLThread()
 		iLOD *= 0.8;
 	}
 
+#ifdef USE_MULTI_TEXTURES
 	glActiveTexture(GL_TEXTURE0);
+#endif
 
 	if(g_strFontGL == "") g_strFontGL = DEF_FONT;
 	if(g_iFontGLSize <= 0) g_iFontGLSize = DEF_FONT_SIZE;
