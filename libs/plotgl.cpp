@@ -35,7 +35,10 @@ using t_vec3 = tl::t_vec3_gen<t_real>;
 #endif
 
 
-void sleep_nano(long ns)
+// ----------------------------------------------------------------------------
+
+
+static inline void sleep_nano(long ns)
 {
 	timespec ts;
 	ts.tv_nsec = ns;
@@ -172,6 +175,7 @@ void PlotGl::initializeGLThread()
 
 void PlotGl::freeGLThread()
 {
+	SetEnabled(0);
 #if QT_VER>=5
 	QWidget::
 #endif
@@ -243,6 +247,7 @@ t_real PlotGl::GetCamObjDist(const PlotObjGl& obj) const
 		return t_real(0);
 	return ublas::norm_2(vecPos - m_vecCam);
 }
+
 
 /**
  * get sorted object indices based on distance to camera
@@ -568,6 +573,7 @@ void PlotGl::SetObjectUseLOD(std::size_t iObjIdx, bool bLOD)
 
 // ----------------------------------------------------------------------------
 
+
 void PlotGl::PlotSphere(const ublas::vector<t_real>& vecPos,
 	t_real dRadius, int iObjIdx)
 {
@@ -577,17 +583,15 @@ void PlotGl::PlotSphere(const ublas::vector<t_real>& vecPos,
 		iObjIdx = 0;
 	}
 
-	{
-		std::lock_guard<QMutex> _lck(m_mutex);
+	std::lock_guard<QMutex> _lck(m_mutex);
 
-		if(iObjIdx >= int(m_vecObjs.size()))
-			m_vecObjs.resize(iObjIdx+1);
-		PlotObjGl& obj = m_vecObjs[iObjIdx];
+	if(iObjIdx >= int(m_vecObjs.size()))
+		m_vecObjs.resize(iObjIdx+1);
+	PlotObjGl& obj = m_vecObjs[iObjIdx];
 
-		obj.plttype = PLOT_SPHERE;
-		obj.vecPos = vecPos;
-		obj.vecScale = tl::make_vec<ublas::vector<t_real>>({ dRadius, dRadius, dRadius });
-	}
+	obj.plttype = PLOT_SPHERE;
+	obj.vecPos = vecPos;
+	obj.vecScale = tl::make_vec<ublas::vector<t_real>>({ dRadius, dRadius, dRadius });
 }
 
 
@@ -601,25 +605,23 @@ void PlotGl::PlotEllipsoid(const ublas::vector<t_real>& widths,
 		iObjIdx = 0;
 	}
 
-	{
-		std::lock_guard<QMutex> _lck(m_mutex);
+	std::lock_guard<QMutex> _lck(m_mutex);
 
-		if(iObjIdx >= int(m_vecObjs.size()))
-			m_vecObjs.resize(iObjIdx+1);
-		PlotObjGl& obj = m_vecObjs[iObjIdx];
+	if(iObjIdx >= int(m_vecObjs.size()))
+		m_vecObjs.resize(iObjIdx+1);
+	PlotObjGl& obj = m_vecObjs[iObjIdx];
 
-		obj.plttype = PLOT_ELLIPSOID;
-		obj.vecScale = tl::make_vec<ublas::vector<t_real>>({ widths[0], widths[1], widths[2] });
-		obj.vecPos = offsets;
+	obj.plttype = PLOT_ELLIPSOID;
+	obj.vecScale = tl::make_vec<ublas::vector<t_real>>({ widths[0], widths[1], widths[2] });
+	obj.vecPos = offsets;
 
-		if(obj.vecRotMat.size() != 9)
-			obj.vecRotMat.resize(9);
+	if(obj.vecRotMat.size() != 9)
+		obj.vecRotMat.resize(9);
 
-		std::size_t iNum = 0;
-		for(std::size_t i=0; i<3; ++i)
-			for(std::size_t j=0; j<3; ++j)
-				obj.vecRotMat[iNum++] = rot(j,i);
-	}
+	std::size_t iNum = 0;
+	for(std::size_t i=0; i<3; ++i)
+		for(std::size_t j=0; j<3; ++j)
+			obj.vecRotMat[iNum++] = rot(j,i);
 }
 
 
@@ -632,17 +634,15 @@ void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices,
 		iObjIdx = 0;
 	}
 
-	{
-		std::lock_guard<QMutex> _lck(m_mutex);
+	std::lock_guard<QMutex> _lck(m_mutex);
 
-		if(iObjIdx >= int(m_vecObjs.size()))
-			m_vecObjs.resize(iObjIdx+1);
-		PlotObjGl& obj = m_vecObjs[iObjIdx];
+	if(iObjIdx >= int(m_vecObjs.size()))
+		m_vecObjs.resize(iObjIdx+1);
+	PlotObjGl& obj = m_vecObjs[iObjIdx];
 
-		obj.plttype = PLOT_POLY;
-		obj.vecVertices = vecVertices;
-		obj.vecNorm = vecNorm;
-	}
+	obj.plttype = PLOT_POLY;
+	obj.vecVertices = vecVertices;
+	obj.vecNorm = vecNorm;
 }
 
 
@@ -655,17 +655,15 @@ void PlotGl::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices,
 		iObjIdx = 0;
 	}
 
-	{
-		std::lock_guard<QMutex> _lck(m_mutex);
+	std::lock_guard<QMutex> _lck(m_mutex);
 
-		if(iObjIdx >= int(m_vecObjs.size()))
-			m_vecObjs.resize(iObjIdx+1);
-		PlotObjGl& obj = m_vecObjs[iObjIdx];
+	if(iObjIdx >= int(m_vecObjs.size()))
+		m_vecObjs.resize(iObjIdx+1);
+	PlotObjGl& obj = m_vecObjs[iObjIdx];
 
-		obj.plttype = PLOT_LINES;
-		obj.vecVertices = vecVertices;
-		obj.dLineWidth = dLW;
-	}
+	obj.plttype = PLOT_LINES;
+	obj.vecVertices = vecVertices;
+	obj.dLineWidth = dLW;
 }
 
 
@@ -750,6 +748,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		m_sigHover(nullptr);
 }
 
+
 void PlotGl::TogglePerspective()
 {
 	std::lock_guard<QMutex> _lck(m_mutex_resize);
@@ -758,8 +757,8 @@ void PlotGl::TogglePerspective()
 	m_size.bDoResize = 1;
 }
 
-// ----------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------
 
 
 void PlotGl::updateViewMatrix()
@@ -791,10 +790,12 @@ void PlotGl::updateViewMatrix()
 	}
 }
 
+
 void PlotGl::AddHoverSlot(const typename t_sigHover::slot_type& conn)
 {
 	m_sigHover.connect(conn);
 }
+
 
 void PlotGl::mouseSelectObj(t_real dX, t_real dY)
 {
@@ -843,6 +844,7 @@ void PlotGl::mouseSelectObj(t_real dX, t_real dY)
 		}
 	}
 }
+
 
 void PlotGl::SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ)
 {
