@@ -527,7 +527,7 @@ void TazDlg::RepopulateSpaceGroups()
 		}
 
 		vecSGs.push_back(std::make_tuple(pair.second.GetNr(),
-			"(" + strSGNr + ") " + strName, 
+			"(" + strSGNr + ") " + strName,
 			(void*)&pair.second));
 	}
 

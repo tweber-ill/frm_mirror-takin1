@@ -77,7 +77,7 @@ class PlotGl : public t_qglwidget, QThread
 protected:
 	QSettings *m_pSettings = 0;
 	std::atomic<bool> m_bEnabled;
-	QMutex m_mutex, m_mutex_resize;
+	mutable QMutex m_mutex, m_mutex_resize;
 
 	static constexpr t_real_glob m_dFOV = 45./180.*M_PI;
 	tl::t_mat4_gen<t_real_glob> m_matProj, m_matView;

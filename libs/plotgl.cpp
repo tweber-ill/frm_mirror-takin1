@@ -262,7 +262,7 @@ std::vector<std::size_t> PlotGl::GetObjSortOrder() const
 	std::iota(vecIdx.begin(), vecIdx.end(), 0);
 
 	// sort indices based on obj distance
-	std::sort(vecIdx.begin(), vecIdx.end(),
+	std::stable_sort(vecIdx.begin(), vecIdx.end(),
 		[this](const std::size_t& iIdx0, const std::size_t& iIdx1) -> bool
 		{
 			if(iIdx0 < m_vecObjs.size() && iIdx1 < m_vecObjs.size())
@@ -271,7 +271,11 @@ std::vector<std::size_t> PlotGl::GetObjSortOrder() const
 				t_real tDist1 = GetCamObjDist(m_vecObjs[iIdx1]);
 				return m_bDoZTest ? tDist0 < tDist1 : tDist0 >= tDist1;
 			}
-			return false;
+			else
+			{
+				tl::log_err("Possible corruption in GL object list.");
+				return false;
+			}
 		});
 
 	return vecIdx;
