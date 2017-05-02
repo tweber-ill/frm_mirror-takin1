@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 3.0)
 
 # native or mingw build?
 set(BUILD_FOR_MINGW FALSE)
+#set(BUILD_FOR_MINGW TRUE)
 
 
 #set(CMAKE_VERBOSE_MAKEFILE TRUE)
