@@ -209,7 +209,7 @@ void EllipseDlg::Calc()
 						}
 						else
 						{
-							tl::log_err("Error in res.conf: Wrong size of parameters for ",
+							tl::log_err("Error in resolution config: Wrong size of parameters for ",
 								strProj,  ".");
 						}
 					}
