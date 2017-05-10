@@ -68,8 +68,8 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 	const std::wstring strAA = tl::get_spec_char_utf16("AA");
 	try
 	{
-		const t_mat matA = latt.GetMetric();	// frac -> A
-		//const t_mat matB = recip.GetMetric();	// rlu -> 1/A
+		const t_mat matA = latt.GetBaseMatrixCov();	// frac -> A
+		//const t_mat matB = recip.GetBaseMatrixCov();	// rlu -> 1/A
 		const std::vector<t_mat>& vecSymTrafos = pSG->GetTrafos();
 
 		// all primitive atoms
