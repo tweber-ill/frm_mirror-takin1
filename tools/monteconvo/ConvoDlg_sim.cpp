@@ -355,26 +355,6 @@ void ConvoDlg::Start1D()
 		}
 
 
-/*		// calculate chi^2
-		if(bUseScan && m_pSqw)
-		{
-			const std::size_t iNumScanPts = m_scan.vecPoints.size();
-			auto fktS = [this, dScale, dOffs](std::size_t iPt) -> t_real
-			{
-				const ScanPoint& pt = m_scan.vecPoints[iPt];
-				t_real dS = (*m_pSqw)(pt.h, pt.k, pt.l, t_real(pt.E / tl::one_meV));
-				dS = dS*dScale + dOffs;
-				// TODO: convolution...
-
-				tl::log_debug(pt.h, " ", pt.k, " ", pt.l, " ", t_real(pt.E / tl::one_meV), ": ", dS);
-				return dS;
-			};
-
-			t_real tChi2 = tl::chi2_idx<t_real>(fktS, iNumScanPts, m_scan.vecCts.data(), m_scan.vecCtsErr.data());
-			tl::log_info("chi^2 = ", tChi2);
-		}
-*/
-
 		// approximate chi^2
 		if(bUseScan && m_pSqw)
 		{
