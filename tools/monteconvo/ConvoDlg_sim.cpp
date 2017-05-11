@@ -326,10 +326,10 @@ void ConvoDlg::Start1D()
 						auto minmaxX = std::minmax_element(m_scan.vecX.begin(), m_scan.vecX.end());
 						auto minmaxY = std::minmax_element(m_scan.vecCts.begin(), m_scan.vecCts.end());
 
-						dLeft = std::min(dLeft, *minmaxX.first);
-						dRight = std::max(dRight, *minmaxX.second);
-						dBottom = std::min(dBottom, *minmaxY.first);
-						dTop = std::max(dTop, *minmaxY.second);
+						dLeft = std::min<t_real_qwt>(dLeft, *minmaxX.first);
+						dRight = std::max<t_real_qwt>(dRight, *minmaxX.second);
+						dBottom = std::min<t_real_qwt>(dBottom, *minmaxY.first);
+						dTop = std::max<t_real_qwt>(dTop, *minmaxY.second);
 					}
 
 					set_zoomer_base(m_plotwrap->GetZoomer(),
