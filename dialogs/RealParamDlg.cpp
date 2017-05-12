@@ -8,10 +8,13 @@
 #include "RealParamDlg.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
+#include "tlibs/math/linalg.h"
 #include "tlibs/phys/neutrons.h"
 #include "tlibs/phys/atoms.h"
 #include "tlibs/phys/nn.h"
 #include "tlibs/string/spec_char.h"
+#include "tlibs/string/string.h"
+
 
 using t_real = t_real_glob;
 using t_mat = ublas::matrix<t_real>;
@@ -22,6 +25,10 @@ RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
 {
 	this->setupUi(this);
+
+	QObject::connect(editVec1, SIGNAL(textChanged(const QString&)), this, SLOT(CalcVecs()));
+	QObject::connect(editVec2, SIGNAL(textChanged(const QString&)), this, SLOT(CalcVecs()));
+
 	if(m_pSettings)
 	{
 		QFont font;
@@ -34,7 +41,9 @@ RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
 		restoreGeometry(m_pSettings->value("real_params/geo").toByteArray());
 }
 
+
 RealParamDlg::~RealParamDlg() {}
+
 
 void RealParamDlg::paramsChanged(const RealParams& parms)
 {
@@ -68,16 +77,19 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 			(*postr) << "<table border=\"0\" width=\"100%\">\n";
 		}
 
-		t_mat matGCov = latt.GetMetricCov();
+		m_matGCov = latt.GetMetricCov();
 		//t_mat matGCont = 2.*M_PI*2.*M_PI * latt.GetMetricCont();
-		t_mat matGCont = recip.GetMetricCov();
+		m_matGCont = recip.GetMetricCov();
+
+		// also update vector calculations
+		CalcVecs();
 
 		t_mat matReal = latt.GetBaseMatrixCov();
 		//t_mat matRecip = 2.*M_PI * latt.GetBaseMatrixCont();
 		t_mat matRecip = recip.GetBaseMatrixCov();
 
-		tl::set_eps_0(matGCov, g_dEps);
-		tl::set_eps_0(matGCont, g_dEps);
+		tl::set_eps_0(m_matGCov, g_dEps);
+		tl::set_eps_0(m_matGCont, g_dEps);
 		tl::set_eps_0(matReal, g_dEps);
 		tl::set_eps_0(matRecip, g_dEps);
 
@@ -92,8 +104,8 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 			}			
 		};
 
-		fktPrintMatrix(ostrRealG, matGCov);
-		fktPrintMatrix(ostrRecipG, matGCont);
+		fktPrintMatrix(ostrRealG, m_matGCov);
+		fktPrintMatrix(ostrRecipG, m_matGCont);
 		fktPrintMatrix(ostrBasisReal, matReal);
 		fktPrintMatrix(ostrBasisRecip, matRecip);
 
@@ -247,6 +259,58 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 			tl::log_err(ex.what());
 		}
 	}
+}
+
+
+void RealParamDlg::CalcVecs()
+{
+	if(m_matGCont.size1()!=3 || m_matGCov.size1()!=3)
+		return;
+
+	auto fktGetVec = [this](QLineEdit* pEdit) -> t_vec
+	{
+		std::vector<t_real> _vec;
+		tl::get_tokens<t_real>(pEdit->text().toStdString(), std::string(",;"), _vec);
+
+		t_vec vec = tl::make_vec<t_vec, std::vector>(_vec);
+		vec.resize(3,1);
+
+		return vec;
+	};
+	
+	// get vectors 1 & 2
+	t_vec vec1 = fktGetVec(editVec1);
+	t_vec vec2 = fktGetVec(editVec2);
+
+	t_real dAngleReal = tl::r2d(tl::vec_angle(m_matGCov, vec1, vec2));
+	t_real dAngleRecip = tl::r2d(tl::vec_angle(m_matGCont, vec1, vec2));
+	t_real dLen1Real = tl::vec_len(m_matGCov, vec1);
+	t_real dLen2Real = tl::vec_len(m_matGCov, vec2);
+	t_real dLen1Recip = tl::vec_len(m_matGCont, vec1);
+	t_real dLen2Recip = tl::vec_len(m_matGCont, vec2);
+
+	tl::set_eps_0(dAngleReal, g_dEps);	tl::set_eps_0(dAngleRecip, g_dEps);
+	tl::set_eps_0(dLen1Real, g_dEps);	tl::set_eps_0(dLen2Real, g_dEps);
+	tl::set_eps_0(dLen1Recip, g_dEps);	tl::set_eps_0(dLen2Recip, g_dEps);
+
+	std::ostringstream ostr;
+	ostr.precision(g_iPrec);
+	ostr << "<html><body>\n";
+
+	ostr << "<p><b>Reciprocal Vectors 1 and 2:</b>\n<ul>\n";
+	ostr << "\t<li> Angle: " << dAngleRecip << " deg </li>\n";
+	ostr << "\t<li> Length 1: " << dLen1Recip << " 1/A </li>\n";
+	ostr << "\t<li> Length 2: " << dLen2Recip << " 1/A </li>\n";
+	ostr << "</ul></p>";
+
+	ostr << "<p><b>Real Vectors 1 and 2:</b>\n<ul>\n";
+	ostr << "\t<li> Angle: " << dAngleReal << " deg </li>\n";
+	ostr << "\t<li> Length 1: " << dLen1Real << " A </li>\n";
+	ostr << "\t<li> Length 2: " << dLen2Real << " A </li>\n";
+	ostr << "</ul></p>";
+
+	ostr << "</body></html>\n";
+	editCalc->setHtml(QString::fromUtf8(ostr.str().c_str()));
 }
 
 
