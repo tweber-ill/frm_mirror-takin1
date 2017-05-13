@@ -127,7 +127,10 @@ void ConvoDlg::Save()
 	const std::string strXmlRoot("taz/");
 
 	if(m_strLastFile == "")
+	{
+		SaveAs();
 		return;
+	}
 
 	setWindowTitle((s_strTitle + " - " + m_strLastFile).c_str());
 
