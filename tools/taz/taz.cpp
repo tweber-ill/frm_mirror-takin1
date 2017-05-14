@@ -1206,7 +1206,9 @@ void TazDlg::RecipProjChanged()
 }
 
 
+// 3d stuff
 #if !defined NO_3D
+
 void TazDlg::Show3D()
 {
 	if(!m_pRecip3d)
@@ -1239,7 +1241,13 @@ void TazDlg::Show3DReal()
 void TazDlg::Show3DBZ()
 {
 	if(!m_pBZ3d)
+	{
 		m_pBZ3d = new BZ3DDlg(this, &m_settings);
+		// also track current q position
+		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+			m_pBZ3d, SLOT(RecipParamsChanged(const RecipParams&)));
+		m_sceneRecip.emitAllParams();
+	}
 
 	if(!m_pBZ3d->isVisible())
 		m_pBZ3d->show();
@@ -1247,11 +1255,15 @@ void TazDlg::Show3DBZ()
 
 	CalcPeaks();
 }
+
 #else
+
 void TazDlg::Show3D() {}
 void TazDlg::Show3DReal() {}
 void TazDlg::Show3DBZ() {}
+
 #endif
+
 
 void TazDlg::EnableSmallq(bool bEnable)
 {
