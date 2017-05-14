@@ -825,7 +825,7 @@ TazDlg::TazDlg(QWidget* pParent)
 #if !defined NO_3D
 	if(m_pRecip3d)
 	{
-		m_pRecip3d->SetMaxPeaks((t_real)iMaxPeaks);
+		m_pRecip3d->SetMaxPeaks(t_real(iMaxPeaks/2));
 		m_pRecip3d->SetPlaneDistTolerance(s_dPlaneDistTolerance);
 	}
 #endif

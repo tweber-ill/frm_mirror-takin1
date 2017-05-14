@@ -30,7 +30,7 @@ protected:
 	QSettings* m_pSettings = nullptr;
 	QStatusBar *m_pStatus = nullptr;
 	PlotGl* m_pPlot = nullptr;
-	t_real_glob m_dMaxPeaks = 5.;
+	t_real_glob m_dMaxPeaks = 4.;
 	t_real_glob m_dPlaneDistTolerance = 0.01;
 
 	boost::optional<std::size_t> m_iQIdx;

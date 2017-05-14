@@ -79,19 +79,23 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 	const tl::Lattice<t_real>& recip = recipcommon.recip;
 	const SpaceGroup<t_real>* pSpaceGroup = recipcommon.pSpaceGroup;
 	const tl::Plane<t_real>& plane = recipcommon.plane;
+	const t_vec &vec0 = plane.GetDir0(),
+		&vec1 = plane.GetDir1(),
+		&vecNorm = plane.GetNorm();
 
-	static const std::vector<t_real> vecColPeak = {0., 0., 1., 0.7};
-	static const std::vector<t_real> vecColPeakPlane = {1., 0., 0., 0.7};
-	static const std::vector<t_real> vecCol000 = {0., 1., 0., 0.7};
+	static const std::vector<t_real> vecColPeak = { 0., 0., 1., 0.7 };
+	static const std::vector<t_real> vecColPeakPlane = { 1., 0., 0., 0.7 };
+	static const std::vector<t_real> vecCol000 = { 0., 1., 0., 0.7 };
 	static const std::vector<t_real> vecColCurQ = { 0., 0., 0., 1. };
-	static const std::vector<t_real> vecColScatPlane = { 1., 1., 0., 1. };
+	static const std::vector<t_real> vecColScatPlane = { 0., 0., 0.75, 0.15 };
+	static const std::vector<t_real> vecColLine = { 0., 0., 0., 1. };
 
-	bool bShowScatPlane = 0;
+	bool bShowScatPlane = 1;
 	bool bShowCurQ = 1;
 
 	std::size_t iObjCnt = (unsigned int)((m_dMaxPeaks*2 + 1)*
 		(m_dMaxPeaks*2 + 1) * (m_dMaxPeaks*2 + 1));
-	if(bShowScatPlane) ++iObjCnt;
+	if(bShowScatPlane) iObjCnt += 2;
 	if(bShowCurQ) ++iObjCnt;
 
 	m_pPlot->SetEnabled(0);
@@ -129,16 +133,17 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 				const std::vector<t_real> *pvecColor = &vecColPeak;
 				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
 				{
-					bool bIsDirectBeam = 0;
+					// (000) peak?
 					if(tl::float_equal<t_real>(h, 0., g_dEps) &&
 						tl::float_equal<t_real>(k, 0., g_dEps) &&
 						tl::float_equal<t_real>(l, 0., g_dEps))
-						bIsDirectBeam = 1;
-
-					if(bIsDirectBeam)
+					{
 						pvecColor = &vecCol000;
+					}
 					else
+					{
 						pvecColor = &vecColPeakPlane;
+					}
 
 					bInScatteringPlane = 1;
 				}
@@ -157,9 +162,22 @@ void Recip3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& recipcommon)
 	// scattering plane
 	if(bShowScatPlane)
 	{
-		//m_pPlot->PlotPoly(*pScatPlaneVerts, tl::make_vec({0.,0.,1.}), iCurObjIdx);
-		//m_pPlot->SetObjectColor(iCurObjIdx, vecColScatPlane);
-		//++iCurObjIdx;
+		std::vector<t_vec> vecVerts = 
+		{
+			-vec0*m_dMaxPeaks - vec1*m_dMaxPeaks,
+			-vec0*m_dMaxPeaks + vec1*m_dMaxPeaks,
+			 vec0*m_dMaxPeaks + vec1*m_dMaxPeaks,
+			 vec0*m_dMaxPeaks - vec1*m_dMaxPeaks
+		};
+
+		m_pPlot->PlotPoly(vecVerts, vecNorm, iCurObjIdx);
+		m_pPlot->SetObjectColor(iCurObjIdx, vecColScatPlane);
+		m_pPlot->SetObjectCull(iCurObjIdx, 0);
+		++iCurObjIdx;
+
+		m_pPlot->PlotLines(vecVerts, 2., iCurObjIdx);
+		m_pPlot->SetObjectColor(iCurObjIdx, vecColLine);
+		++iCurObjIdx;
 	}
 
 

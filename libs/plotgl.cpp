@@ -381,6 +381,11 @@ void PlotGl::paintGLThread()
 		int iLOD = 0;
 		bool bIsSphereLikeObj = 0;
 
+		if(obj.bCull)
+			glEnable(GL_CULL_FACE);
+		else
+			glDisable(GL_CULL_FACE);
+
 		bool bColorSet = 0;
 		if(obj.bSelected)
 		{
@@ -600,6 +605,15 @@ void PlotGl::SetObjectUseLOD(std::size_t iObjIdx, bool bLOD)
 	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].bUseLOD = bLOD;
+}
+
+void PlotGl::SetObjectCull(std::size_t iObjIdx, bool bCull)
+{
+	std::lock_guard<QMutex> _lck(m_mutex);
+
+	if(m_vecObjs.size() <= iObjIdx)
+		return;
+	m_vecObjs[iObjIdx].bCull = bCull;
 }
 
 void PlotGl::SetObjectAnimation(std::size_t iObjIdx, bool bAnim)
