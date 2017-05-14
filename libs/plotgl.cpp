@@ -301,7 +301,7 @@ void PlotGl::tickThread(t_real dTime)
 		{
 			if(!obj.bAnimated) continue;
 
-			obj.dScaleMult = fktCycle(dTime, 0.5, 2.);
+			obj.dScaleMult = fktCycle(2.*dTime, 0.5, 2.);
 		}
 	}
 }

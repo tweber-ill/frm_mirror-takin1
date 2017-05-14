@@ -1217,6 +1217,11 @@ void TazDlg::Show3D()
 
 		t_real dTol = s_dPlaneDistTolerance;
 		m_pRecip3d->SetPlaneDistTolerance(dTol);
+
+		// also track current Q position
+		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
+			m_pRecip3d, SLOT(RecipParamsChanged(const RecipParams&)));
+		m_sceneRecip.emitAllParams();
 	}
 
 	if(!m_pRecip3d->isVisible())
@@ -1243,6 +1248,7 @@ void TazDlg::Show3DBZ()
 	if(!m_pBZ3d)
 	{
 		m_pBZ3d = new BZ3DDlg(this, &m_settings);
+
 		// also track current q position
 		QObject::connect(&m_sceneRecip, SIGNAL(paramsChanged(const RecipParams&)),
 			m_pBZ3d, SLOT(RecipParamsChanged(const RecipParams&)));
