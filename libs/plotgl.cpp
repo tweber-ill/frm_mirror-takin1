@@ -386,11 +386,9 @@ void PlotGl::paintGLThread()
 		else
 			glDisable(GL_CULL_FACE);
 
-		bool bColorSet = 0;
 		if(obj.bSelected)
 		{
 			SetColor(0.25, 0.25, 0.25, 0.9);
-			bColorSet = 1;
 		}
 		else
 		{

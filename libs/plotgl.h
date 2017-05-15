@@ -22,6 +22,7 @@
 #include <atomic>
 
 #include "tlibs/gfx/gl.h"
+#include "tlibs/gfx/gl_font.h"
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 
