@@ -103,7 +103,7 @@ protected:
 	tl::GlFontMap<t_real_glob> *m_pFont = nullptr;
 
 	std::vector<PlotObjGl> m_vecObjs;
-	GLuint m_iLstSphere[8];
+	GLuint m_iLstSphere[4];
 	QString m_strLabels[3];
 
 
@@ -218,6 +218,8 @@ public:
 
 	void SetEnabled(bool b);
 	void SetPrec(std::size_t iPrec) { m_iPrec = iPrec; }
+
+	virtual void keyPressEvent(QKeyEvent*) override;
 };
 
 #endif
