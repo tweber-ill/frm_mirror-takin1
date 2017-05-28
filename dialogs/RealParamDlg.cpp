@@ -56,17 +56,18 @@ void RealParamDlg::paramsChanged(const RealParams& parms)
 	this->edit2ThetaA->setText(tl::var_to_str<t_real>(tl::r2d(parms.dAnaTT), g_iPrec).c_str());
 	this->editThetaA->setText(tl::var_to_str<t_real>(tl::r2d(parms.dAnaT), g_iPrec).c_str());
 
-
 	this->editLenMonoSample->setText(tl::var_to_str<t_real>(parms.dLenMonoSample, g_iPrec).c_str());
 	this->editLenSampleAna->setText(tl::var_to_str<t_real>(parms.dLenSampleAna, g_iPrec).c_str());
 	this->editLenAnaDet->setText(tl::var_to_str<t_real>(parms.dLenAnaDet, g_iPrec).c_str());
 }
 
 
-void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
-	const tl::Lattice<t_real>& recip, const SpaceGroup<t_real>* pSG,
-	const std::vector<AtomPos<t_real>>* pAtoms)
+void RealParamDlg::CrystalChanged(const LatticeCommon<t_real>& lattcomm)
 {
+	const tl::Lattice<t_real>& latt = lattcomm.lattice;
+	const tl::Lattice<t_real>& recip = lattcomm.recip;
+	const std::vector<AtomPos<t_real>>* pAtoms = lattcomm.pvecAtomPos;
+
 	// crystal coordinates
 	{
 		std::ostringstream ostrRealG, ostrRecipG, ostrBasisReal, ostrBasisRecip;
@@ -126,33 +127,21 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 	{
 		treeNN->clear();
 		listAtoms->clear();
-		if(!pAtoms || !pSG) return;
-
-		const unsigned iSC = 3;
-		const t_real dEpsShell = 0.01;
+		if(!pAtoms || !lattcomm.pSpaceGroup) return;
 
 		const std::wstring strAA = tl::get_spec_char_utf16("AA");
 		try
 		{
 			const t_mat matA = latt.GetBaseMatrixCov();	// frac -> A
 			//const t_mat matB = recip.GetBaseMatrixCov();	// rlu -> 1/A
-			const std::vector<t_mat>& vecSymTrafos = pSG->GetTrafos();
+			const std::vector<t_mat>& vecSymTrafos = lattcomm.pSpaceGroup->GetTrafos();
 
 			// all primitive atoms
-			std::vector<t_vec> vecAtoms, vecAtomsUC, vecAtomsUCFrac,
-				vecAtomsSC, vecAtomsNN;
-			for(const AtomPos<t_real>& atom : *pAtoms)
-				vecAtoms.push_back(atom.vecPos);
+			const std::vector<t_vec> &vecAtomsUC = lattcomm.vecAllAtoms,
+				&vecAtomsUCFrac = lattcomm.vecAllAtomsFrac;
 
 			// all atoms in unit cell
-			std::vector<std::size_t> vecIdxUC, vecIdxSC;
-			std::tie(std::ignore, vecAtomsUC, vecAtomsUCFrac, vecIdxUC) =
-			tl::generate_all_atoms<t_mat, t_vec, std::vector, std::string>
-				(vecSymTrafos, vecAtoms, nullptr, matA,
-				t_real(-0.5), t_real(0.5), g_dEps);
-
-			for(t_vec& vecAt : vecAtomsUC) tl::set_eps_0(vecAt, g_dEps);
-			for(t_vec& vecAt : vecAtomsUCFrac) tl::set_eps_0(vecAt, g_dEps);
+			const std::vector<std::size_t>& vecIdxUC = lattcomm.vecAllAtomTypes;
 
 			// fill list widget
 			std::size_t iCurAtom = 0;
@@ -174,6 +163,9 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 
 
 			// all atoms in super cell
+			const unsigned iSC = 3;
+			std::vector<t_vec> vecAtomsSC;
+			std::vector<std::size_t> vecIdxSC;
 			std::vector<std::complex<t_real>> vecDummy;
 			std::tie(vecAtomsSC, std::ignore, vecIdxSC) =
 				tl::generate_supercell<t_vec, std::vector, t_real>
@@ -181,6 +173,7 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 			std::vector<std::string> vecNamesSC;
 			for(std::size_t iIdxSC : vecIdxSC)
 				vecNamesSC.push_back((*pAtoms)[vecIdxUC[iIdxSC]].strAtomName);
+
 
 			// get neighbours of all atoms
 			for(const AtomPos<t_real>& atom : *pAtoms)
@@ -212,6 +205,7 @@ void RealParamDlg::CrystalChanged(const tl::Lattice<t_real>& latt,
 
 
 				// neighbours
+				const t_real dEpsShell = 0.01;
 				std::vector<std::vector<std::size_t>> vecIdxNN =
 					tl::get_neighbours<t_vec, std::vector, t_real>
 						(vecAtomsSC, vecCentreAA, dEpsShell);
