@@ -5,7 +5,7 @@
  * @license GPLv2
  */
 
-// clang -O2 -march=native -Itastools/ -I/usr/include/python2.7 -o heli heli.cpp tastools/tools/monteconvo/sqwbase.cpp tastools/tlibs/log/log.cpp tastools/tools/monteconvo/sqw_py.cpp -std=c++11 -lstdc++ -lm -lboost_python -lpython2.7 -lboost_system -lboost_filesystem
+// clang -O2 -march=native -I../../ -I/usr/include/python2.7 -o heli heli.cpp ../monteconvo/sqwbase.cpp ../../tlibs/log/log.cpp ../monteconvo/sqw_py.cpp -std=c++11 -lstdc++ -lm -lboost_python -lpython2.7 -lboost_system -lboost_filesystem
 
 #include <iostream>
 #include <fstream>
@@ -21,6 +21,81 @@ using t_mat = ublas::matrix<t_real>;
 constexpr t_real a = 4.56;
 constexpr t_real kh_A = 0.036;
 constexpr t_real kh_rlu = kh_A / (2.*M_PI / a);
+
+
+// vars from S(q,E) model
+constexpr const char* pcBdir = "g_Bdir";
+constexpr const char* pcBmag = "g_B";
+constexpr const char* pcTemp = "g_T";
+
+
+void plotdisp(SqwPy& sqw)
+{
+	t_real qh = 4. / std::sqrt(2.) * kh_rlu;
+	t_real hkl_0[] = {1.-qh, 1.+qh, 0.};
+	t_real hkl_1[] = {1.+qh, 1.-qh, 0.};
+	std::size_t iSteps = 256;
+
+	sqw.SetVarIfAvail(pcBmag, "0.2");
+	sqw.SetVarIfAvail(pcBdir, "array([1, -1, 0])");	// plus
+	std::ofstream ofstrP("disp_plus_heli.dat");
+
+	for(std::size_t iStep=0; iStep<iSteps; ++iStep)
+	{
+		std::cout << "Step " << (iStep+1) << " of " << iSteps << std::endl;
+
+		t_real dFrac = t_real(iStep)/t_real(iSteps-1);
+		t_real hkl[] =
+		{
+			tl::lerp(hkl_0[0], hkl_1[0], dFrac),
+			tl::lerp(hkl_0[1], hkl_1[1], dFrac),
+			tl::lerp(hkl_0[2], hkl_1[2], dFrac)
+		};
+
+		std::vector<t_real> vecE, vecW;
+		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
+
+		ofstrP << std::left << std::setw(10) << hkl[0] << " "
+			<< std::left << std::setw(10) << hkl[1] << " "
+			<< std::left << std::setw(10) << hkl[2] << " ";
+
+		for(std::size_t iE=0; iE<vecE.size(); ++iE)
+			ofstrP << std::left << std::setw(10) << vecE[iE] << " "
+				<< std::left << std::setw(10) << vecW[iE] << " ";
+		ofstrP << "\n";
+	}
+
+	// ------------------------------------------------------------------------
+
+	sqw.SetVarIfAvail(pcBmag, "-0.2");
+	sqw.SetVarIfAvail(pcBdir, "array([1, -1, 0])");	// minus
+	std::ofstream ofstrM("disp_minus_heli.dat");
+
+	for(std::size_t iStep=0; iStep<iSteps; ++iStep)
+	{
+		std::cout << "Step " << (iStep+1) << " of " << iSteps << std::endl;
+
+		t_real dFrac = t_real(iStep)/t_real(iSteps-1);
+		t_real hkl[] =
+		{
+			tl::lerp(hkl_0[0], hkl_1[0], dFrac),
+			tl::lerp(hkl_0[1], hkl_1[1], dFrac),
+			tl::lerp(hkl_0[2], hkl_1[2], dFrac)
+		};
+
+		std::vector<t_real> vecE, vecW;
+		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
+
+		ofstrM << std::left << std::setw(10) << hkl[0] << " "
+			<< std::left << std::setw(10) << hkl[1] << " "
+			<< std::left << std::setw(10) << hkl[2] << " ";
+
+		for(std::size_t iE=0; iE<vecE.size(); ++iE)
+			ofstrM << std::left << std::setw(10) << vecE[iE] << " "
+				<< std::left << std::setw(10) << vecW[iE] << " ";
+		ofstrM << "\n";
+	}
+}
 
 
 void plotmag(SqwPy& sqw)
@@ -40,13 +115,13 @@ void plotmag(SqwPy& sqw)
 
 	for(std::size_t iStep=0; iStep<iSteps; ++iStep)
 	{
-		std::cout << "Step " << iStep << " of " << iSteps << std::endl;
+		std::cout << "Step " << (iStep+1) << " of " << iSteps << std::endl;
 
 		t_real dFrac = t_real(iStep)/t_real(iSteps-1);
 		t_real dMag = tl::lerp(dmag0, dmag1, dFrac);
 
-		sqw.SetVarIfAvail("g_Borient", "array([1, -1, 0])");	// plus
-		sqw.SetVarIfAvail("g_H", tl::var_to_str(dMag));
+		sqw.SetVarIfAvail(pcBdir, "array([1, -1, 0])");	// plus
+		sqw.SetVarIfAvail(pcBmag, tl::var_to_str(dMag));
 
 		std::vector<t_real> vecE, vecW;
 		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
@@ -59,7 +134,7 @@ void plotmag(SqwPy& sqw)
 
 		// --------------------------------------------------------------------
 
-		sqw.SetVarIfAvail("g_Borient", "array([-1, 1, 0])");	// minus
+		sqw.SetVarIfAvail(pcBdir, "array([-1, 1, 0])");	// minus
 
 		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
 		ofstrM << std::left << std::setw(10) << -dMag << " ";
@@ -72,7 +147,7 @@ void plotmag(SqwPy& sqw)
 
 		// --------------------------------------------------------------------
 
-		sqw.SetVarIfAvail("g_Borient", "array([0, 0, 1])");	// perp
+		sqw.SetVarIfAvail(pcBdir, "array([0, 0, 1])");	// perp
 
 		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
 		ofstrPerp << std::left << std::setw(10) << dMag << " ";
@@ -85,7 +160,7 @@ void plotmag(SqwPy& sqw)
 
 		// --------------------------------------------------------------------
 
-		sqw.SetVarIfAvail("g_Borient", "array([1, 1, 0])");	// perp, in plane
+		sqw.SetVarIfAvail(pcBdir, "array([1, 1, 0])");	// perp, in plane
 
 		std::tie(vecE, vecW) = sqw.disp(hkl[0], hkl[1], hkl[2]);
 		ofstrPerpHori << std::left << std::setw(10) << dMag << " ";
@@ -103,13 +178,11 @@ int main()
 	SqwPy sqw("./helis.py");
 	if(!sqw.IsOk()) return -1;
 
-	sqw.SetVarIfAvail("g_T", "20.");
-	sqw.SetVarIfAvail("g_A", "1.");
-	sqw.SetVarIfAvail("g_Ainc", "0.");
-	sqw.SetVarIfAvail("g_dw", "0.005");
-	sqw.SetVarIfAvail("g_sigmainc", "0.005");
-	sqw.SetVarIfAvail("g_H", "0.1");
+	sqw.SetVarIfAvail(pcTemp, "20.");
+	sqw.SetVarIfAvail(pcBmag, "0.2");
+	sqw.SetVarIfAvail("g_nonrecip_reinit", "1");
 
+	plotdisp(sqw);
 	plotmag(sqw);
 
 	return 0;
