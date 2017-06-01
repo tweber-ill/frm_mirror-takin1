@@ -299,7 +299,7 @@ void TazDlg::ExportUCModel()
 		return;
 	}
 
-	const std::vector<t_mat>& vecTrafos = pSpaceGroup->GetTrafos();
+	const tl::Lattice<t_real>& lattice = m_latticecommon.lattice;
 
 	std::vector<t_vec> vecAtoms;
 	std::vector<std::string> vecAtomNames;
@@ -311,16 +311,6 @@ void TazDlg::ExportUCModel()
 		vecAtoms.push_back(std::move(vecAtomPos));
 		vecAtomNames.push_back(atom.strAtomName);
 	}
-
-
-	const t_real a = editA->text().toDouble();
-	const t_real b = editB->text().toDouble();
-	const t_real c = editC->text().toDouble();
-	const t_real alpha = tl::d2r(editAlpha->text().toDouble());
-	const t_real beta = tl::d2r(editBeta->text().toDouble());
-	const t_real gamma = tl::d2r(editGamma->text().toDouble());
-	const tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
-	const t_mat matA = lattice.GetBaseMatrixCov();
 
 
 	const std::vector<t_vec> vecColors =
@@ -358,65 +348,44 @@ void TazDlg::ExportUCModel()
 
 	tl::X3d x3d;
 
-	std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
-	std::vector<std::size_t> vecAllAtomTypes, vecIdxSC;
-
-	// unit cell
-	const t_real dUCSize = 1.;
-	std::tie(std::ignore, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
-		tl::generate_all_atoms<t_mat, t_vec, std::vector>
-			(vecTrafos, vecAtoms,
-			static_cast<const std::vector<std::string>*>(0), matA,
-			-dUCSize*t_real(0.5), dUCSize*t_real(0.5), g_dEps);
-
-	// super cell
-	const std::size_t iSC_NN = 2;
-	std::vector<t_vec> vecAtomsSC;
-	std::vector<std::complex<t_real>> vecJUC;
-	std::tie(vecAtomsSC, std::ignore, vecIdxSC) =
-		tl::generate_supercell<t_vec, std::vector, t_real>
-			(lattice, vecAllAtoms, vecJUC, iSC_NN);
-
-	//for(std::size_t iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
-	for(std::size_t iAtom=0; iAtom<vecIdxSC.size(); ++iAtom)
+	for(std::size_t iAtom=0; iAtom<m_latticecommon.vecAllAtoms.size(); ++iAtom)
+	//for(std::size_t iAtom=0; iAtom<m_latticecommon.vecIdxSC.size(); ++iAtom)
 	{
-		//std::size_t iAtomType = vecAllAtomTypes[iAtom];
-		//t_vec vecCoord = vecAllAtoms[iAtom];
+		std::size_t iAtomType = m_latticecommon.vecAllAtomTypes[iAtom];
+		t_vec vecCoord = m_latticecommon.vecAllAtoms[iAtom];
 
-		std::size_t iAtomType = vecAllAtomTypes[vecIdxSC[iAtom]];
+		//std::size_t iAtomType = m_latticecommon.vecAllAtomTypes[m_latticecommon.vecIdxSC[iAtom]];
 		//if(iAtomType != 1) continue;	// testing: keep only one atom type
 
-		const t_vec& vecCentral = vecAtomsSC[iAtom];
-		t_vec vecCoord = vecCentral;
+		//const t_vec& vecCentral = m_latticecommon.vecAtomsSC[iAtom];
+		//t_vec vecCoord = vecCentral;
+
 		vecCoord.resize(4,1); vecCoord[3] = 1.;
 
 		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
-		pTrafo->SetTrans(tl::mult<t_mat, t_vec>(matGlobal, vecCoord));
+		//pTrafo->SetTrans(tl::mult<t_mat, t_vec>(matGlobal, vecCoord));
+		pTrafo->SetTrans(vecCoord);
+
 		t_real dRadius = vecRadii[iAtomType % vecRadii.size()];
 		tl::X3dSphere *pSphere = new tl::X3dSphere(dRadius);
 		pSphere->SetColor(vecColors[iAtomType % vecColors.size()]);
 		pTrafo->AddChild(pSphere);
 
-		// surroundings
-		/*if(iAtomType == 0)
-		{
-			std::vector<std::vector<std::size_t>> vecNN =
-				tl::get_neighbours<t_vec, std::vector, t_real>
-					(vecAtomsSC, vecCentral);
 
-			if(vecNN.size() > 1 && vecNN[1].size() > 2)
+		// coordination polyhedra
+		if(m_latticecommon.vecAllAtomPosAux.size() == m_latticecommon.vecAllAtoms.size())
+		{
+			for(const auto& vecPoly : m_latticecommon.vecAllAtomPosAux[iAtom].vecPolys)
 			{
 				tl::X3dPolygon *pPoly = new tl::X3dPolygon();
+				pPoly->SetColor(vecColors[iAtomType % vecColors.size()]);
 
-				for(std::size_t iNN : vecNN[1])
-				{
-					const t_vec& vecNeighbour = vecAtomsSC[iNN];
-					pPoly->AddVertex(vecNeighbour);
-				}
+				for(const t_vec& vecVertex : vecPoly)
+					pPoly->AddVertex(vecVertex);
 
-				x3d.GetScene().AddChild(pPoly);
+				pTrafo->AddChild(pPoly);
 			}
-		}*/
+		}
 
 		x3d.GetScene().AddChild(pTrafo);
 	}
@@ -430,13 +399,19 @@ void TazDlg::ExportUCModel()
 		ostrComment << "Atom " << (iAtom+1) << ": " << vecAtomNames[iAtom]
 			<< ", colour: " << vecColors[iAtom % vecColors.size()] << "\n";
 	}
-	ostrComment << "Unit cell contains " << vecAllAtoms.size() << " atoms.\n";
-	if(iSC_NN > 1)
-		ostrComment << "Super cell contains " << vecIdxSC.size() << " atoms.\n";
+	ostrComment << "Unit cell contains " << m_latticecommon.vecAllAtoms.size() << " atoms.\n";
+	ostrComment << "Super cell contains " << m_latticecommon.vecIdxSC.size() << " atoms.\n";
 
 
 	if(lattice.IsCubic())
 	{
+		const t_real a = editA->text().toDouble();
+		const t_real b = editB->text().toDouble();
+		const t_real c = editC->text().toDouble();
+		const t_real alpha = tl::d2r(editAlpha->text().toDouble());
+		const t_real beta = tl::d2r(editBeta->text().toDouble());
+		const t_real gamma = tl::d2r(editGamma->text().toDouble());
+
 		tl::X3dCube *pCube = new tl::X3dCube(a,b,c);
 		pCube->SetColor(tl::make_vec({1., 1., 1., 0.75}));
 		x3d.GetScene().AddChild(pCube);

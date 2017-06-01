@@ -71,6 +71,7 @@ struct LatticeCommon
 	std::vector<t_vec> vecAllAtoms, vecAllAtomsFrac;
 	std::vector<std::size_t> vecAllAtomTypes;
 	std::vector<std::complex<t_real>> vecScatlens;
+	std::vector<AtomPosAux<t_real>> vecAllAtomPosAux;
 
 	std::vector<t_vec> vecAtomsSC;
 	std::vector<std::size_t> vecIdxSC;
@@ -150,19 +151,13 @@ struct LatticeCommon
 			vecNamesSC.push_back((*pvecAtomPos)[vecAllAtomTypes[iIdxSC]].strAtomName);
 
 
-		// neighbours of atoms
-		for(const AtomPos<t_real>& atom : *pvecAtomPos)
+		auto fktgetNN = [this](const t_vec& vecCentre) -> AtomPosAux<t_real>
 		{
 			AtomPosAux<t_real> atomaux;
 
-			const std::string& strName = atom.strAtomName;
-			const t_vec& vecCentreFrac = atom.vecPos;
-			atomaux.vecPosAA = tl::mult<t_mat, t_vec>(matA, vecCentreFrac);
-			if(tl::is_nan_or_inf(vecCentreFrac) || tl::is_nan_or_inf(atomaux.vecPosAA))
-			{
-				tl::log_err("Invalid atomic position for \"", strName, "\".");
-				break;
-			}
+			atomaux.vecPosAA = vecCentre;
+			if(tl::is_nan_or_inf(vecCentre))
+				tl::log_err("Invalid atomic position: ", vecCentre, ".");
 			tl::set_eps_0(atomaux.vecPosAA, g_dEps);
 
 
@@ -195,8 +190,19 @@ struct LatticeCommon
 				}
 			}
 
-			vecAtomPosAux.emplace_back(std::move(atomaux));
+			return atomaux;
+		};
+
+		// neighbours of all atoms in primitive UC
+		for(const AtomPos<t_real>& atomPos : *pvecAtomPos)
+		{
+			t_vec vecPosAA = tl::mult<t_mat, t_vec>(matA, atomPos.vecPos);
+			vecAtomPosAux.emplace_back(std::move(fktgetNN(vecPosAA)));
 		}
+
+		// neighbours of all atoms in conventional UC
+		for(const t_vec& vecCentre : vecAllAtoms)
+			vecAllAtomPosAux.emplace_back(std::move(fktgetNN(vecCentre)));
 	}
 
 
