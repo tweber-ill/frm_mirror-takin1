@@ -316,7 +316,7 @@ void TazDlg::ExportUCModel()
 
 	const std::vector<t_vec> vecColors =
 	{
-		tl::make_vec({1., 0., 0.}), tl::make_vec({0., 1., 0.}), tl::make_vec({0., 0., 1.}),
+		tl::make_vec({0., 0., 1.}), tl::make_vec({1., 0., 0.}), tl::make_vec({0., 1., 0.}),
 		tl::make_vec({1., 1., 0.}), tl::make_vec({0., 1., 1.}), tl::make_vec({1., 0., 1.}),
 		tl::make_vec({0.5, 0., 0.}), tl::make_vec({0., 0.5, 0.}), tl::make_vec({0., 0., 0.5}),
 		tl::make_vec({0.5, 0.5, 0.}), tl::make_vec({0., 0.5, 0.5}), tl::make_vec({0.5, 0., 0.5}),
@@ -327,6 +327,7 @@ void TazDlg::ExportUCModel()
 	{
 		0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2
 	};
+	const t_real dRadScale = 1.;
 
 	// to transform into program-specific coordinate systems
 	const t_mat matGlobal = tl::make_mat(
@@ -367,7 +368,7 @@ void TazDlg::ExportUCModel()
 		//pTrafo->SetTrans(tl::mult<t_mat, t_vec>(matGlobal, vecCoord));
 		pTrafo->SetTrans(vecCoord);
 
-		t_real dRadius = vecRadii[iAtomType % vecRadii.size()];
+		t_real dRadius = vecRadii[iAtomType % vecRadii.size()] * dRadScale;
 		tl::X3dSphere *pSphere = new tl::X3dSphere(dRadius);
 		pSphere->SetColor(vecColors[iAtomType % vecColors.size()]);
 		pTrafo->AddChild(pSphere);
