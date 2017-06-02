@@ -450,7 +450,7 @@ void PlotGl::paintGLThread()
 		}
 		else
 		{
-			tl::log_warn("Unknown plot object.");
+			tl::log_warn("Unknown plot object at index ", iObjIdx, ".");
 		}
 
 

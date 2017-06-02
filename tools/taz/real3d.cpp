@@ -79,9 +79,9 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 
 	t_real dA = 0.7;
 	std::vector<std::vector<t_real>> vecColor = {
+		{0., 0., 1., dA},
 		{1., 0., 0., dA},
 		{0., 1., 0., dA},
-		{0., 0., 1., dA},
 		{1., 1., 0., dA},
 		{0., 1., 1., dA},
 		{1., 0., 1., dA},
@@ -98,7 +98,7 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 		{0.5, 0.5, 0.5, dA},
 	};
 
-	std::size_t iPeakIdx = 0;
+	std::size_t iObjIdx = 0;
 	const t_real dLimMax = std::numeric_limits<t_real>::max();
 	std::vector<t_real> vecMin = {dLimMax, dLimMax, dLimMax},
 		vecMax = {-dLimMax, -dLimMax, -dLimMax};
@@ -127,8 +127,8 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 		const t_vec& vecThisAtomFrac = latticecommon.vecAllAtomsFrac[iAtom];
 		std::size_t iCurAtomType = latticecommon.vecAllAtomTypes[iAtom];
 
-		m_pPlot->PlotSphere(vecThisAtom, 0.1, iPeakIdx);
-		m_pPlot->SetObjectColor(iPeakIdx, vecColor[iCurAtomType % vecColor.size()]);
+		m_pPlot->PlotSphere(vecThisAtom, 0.1, iObjIdx);
+		m_pPlot->SetObjectColor(iObjIdx, vecColor[iCurAtomType % vecColor.size()]);
 
 		std::ostringstream ostrTip;
 		ostrTip.precision(g_iPrecGfx);
@@ -142,9 +142,28 @@ void Real3DDlg::CalcPeaks(const LatticeCommon<t_real_glob>& latticecommon)
 			<< vecThisAtom[1] << ", "
 			<< vecThisAtom[2] << ") A";
 
-		m_pPlot->SetObjectLabel(iPeakIdx, ostrTip.str());
+		m_pPlot->SetObjectLabel(iObjIdx, ostrTip.str());
+		++iObjIdx;
 
-		++iPeakIdx;
+
+		// coordination polyhedra
+		if(latticecommon.vecAllAtomPosAux.size() == latticecommon.vecAllAtoms.size())
+		{
+			for(auto vecPoly : latticecommon.vecAllAtomPosAux[iAtom].vecPolys)
+			{
+				// add centre to polyhedron
+				for(auto& vecVert : vecPoly) vecVert += vecThisAtom;
+
+				m_pPlot->PlotPoly(vecPoly, 
+					tl::get_face_normal<t_vec, std::vector, t_real>(vecPoly, vecThisAtom), iObjIdx);
+				m_pPlot->SetObjectColor(iObjIdx, vecColor[iCurAtomType % vecColor.size()]);
+				++iObjIdx;
+
+				m_pPlot->PlotLines(vecPoly, 2., iObjIdx);
+				m_pPlot->SetObjectColor(iObjIdx, {0., 0., 0., 1.});
+				++iObjIdx;
+			}
+		}
 	}
 
 	m_pPlot->SetMinMax(vecMin, vecMax);
