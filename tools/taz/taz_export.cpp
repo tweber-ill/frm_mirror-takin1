@@ -6,6 +6,7 @@
  */
 
 #include "taz.h"
+#include "tlibs/math/geo_prim.h"
 #include "tlibs/phys/atoms.h"
 #include "tlibs/file/x3d.h"
 #include "tlibs/log/log.h"
@@ -408,13 +409,26 @@ void TazDlg::ExportUCModel()
 		const t_real a = editA->text().toDouble();
 		const t_real b = editB->text().toDouble();
 		const t_real c = editC->text().toDouble();
-		const t_real alpha = tl::d2r(editAlpha->text().toDouble());
-		const t_real beta = tl::d2r(editBeta->text().toDouble());
-		const t_real gamma = tl::d2r(editGamma->text().toDouble());
+		//const t_real alpha = tl::d2r(editAlpha->text().toDouble());
+		//const t_real beta = tl::d2r(editBeta->text().toDouble());
+		//const t_real gamma = tl::d2r(editGamma->text().toDouble());
 
-		tl::X3dCube *pCube = new tl::X3dCube(a,b,c);
-		pCube->SetColor(tl::make_vec({1., 1., 1., 0.75}));
-		x3d.GetScene().AddChild(pCube);
+		tl::X3dTrafo *pTrafo = new tl::X3dTrafo();
+		pTrafo->SetScale(tl::make_vec<t_vec>({a,b,c}));
+
+		tl::Cube<t_vec> cube;
+		for(std::size_t iPoly=0; iPoly<cube.GetPolyCount(); ++iPoly)
+		{
+			auto *pPoly = new tl::X3dLines() /*tl::X3dPolygon()*/;
+			pPoly->SetColor(tl::make_vec({0., 0., 0., 1.}));
+
+			for(const t_vec& vecVert : cube.GetPoly(iPoly))
+				pPoly->AddVertex(t_real(0.5)*vecVert);
+
+			pTrafo->AddChild(pPoly);
+		}
+
+		x3d.GetScene().AddChild(pTrafo);
 	}
 
 
