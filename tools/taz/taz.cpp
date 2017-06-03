@@ -424,7 +424,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 #if !defined NO_3D
 	QAction *pView3DBZ = new QAction("3D Brillouin Zone...", this);
-	//pView3DBZ->setIcon(QIcon::fromTheme("applications-graphics"));
+	pView3DBZ->setIcon(load_icon("res/icons/brillouin3d.svg"));
 	m_pMenuViewRecip->addAction(pView3DBZ);
 
 	QAction *pView3D = new QAction("3D Bragg Peaks...", this);
@@ -443,15 +443,16 @@ TazDlg::TazDlg(QWidget* pParent)
 	pProjExport->setIcon(load_icon("res/icons/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pProjExport);
 
-	QAction *pBZ3DExport = new QAction("Export 3D Brillouin Zone Model...", this);
-	pBZ3DExport->setIcon(load_icon("res/icons/image-x-generic.svg"));
-	m_pMenuViewRecip->addAction(pBZ3DExport);
-
 #ifdef USE_GIL
 	QAction *pBZExport = new QAction("Export Brillouin Zone Image...", this);
 	pBZExport->setIcon(load_icon("res/icons/image-x-generic.svg"));
 	m_pMenuViewRecip->addAction(pBZExport);
 #endif
+
+	QAction *pBZ3DExport = new QAction("Export 3D Brillouin Zone Model...", this);
+	pBZ3DExport->setIcon(load_icon("res/icons/image-x-generic.svg"));
+	m_pMenuViewRecip->addAction(pBZ3DExport);
+
 
 
 	// --------------------------------------------------------------------------------
@@ -479,7 +480,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 #if !defined NO_3D
 	QAction *pView3DReal = new QAction("3D Unit Cell...", this);
-	//pView3DReal->setIcon(QIcon::fromTheme("applications-graphics"));
+	pView3DReal->setIcon(load_icon("res/icons/unitcell3d.svg"));
 	m_pMenuViewReal->addAction(pView3DReal);
 
 	m_pMenuViewReal->addSeparator();
@@ -503,7 +504,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pMenuViewReal->addAction(pWSExport);
 #endif
 
-	QAction *pExportUC = new QAction("Export Unit Cell Model...", this);
+	QAction *pExportUC = new QAction("Export 3D Unit Cell Model...", this);
 	pExportUC->setIcon(load_icon("res/icons/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pExportUC);
 
@@ -769,6 +770,7 @@ TazDlg::TazDlg(QWidget* pParent)
 
 	// --------------------------------------------------------------------------------
 	// tool bars
+	// file
 	QToolBar *pFileTools = new QToolBar(this);
 	pFileTools->setWindowTitle("File");
 	pFileTools->addAction(pNew);
@@ -778,6 +780,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	pFileTools->addAction(pSaveAs);
 	addToolBar(pFileTools);
 
+	// recip
 	QToolBar *pRecipTools = new QToolBar(this);
 	pRecipTools->setWindowTitle("Reciprocal Space");
 	pRecipTools->addAction(m_pGoto);
@@ -786,19 +789,31 @@ TazDlg::TazDlg(QWidget* pParent)
 	//pRecipTools->addAction(m_pEwaldSphere);
 	addToolBar(pRecipTools);
 
+	// reso
 	QToolBar *pResoTools = new QToolBar(this);
 	pResoTools->setWindowTitle("Resolution");
 	pResoTools->addAction(pResoParams);
 	pResoTools->addAction(pResoEllipses);
 	addToolBar(pResoTools);
 
+	// calc
 	QToolBar *pCalcTools = new QToolBar(this);
 	pCalcTools->setWindowTitle("Calculation");
 	pCalcTools->addAction(pNeutronProps);
 	pCalcTools->addAction(pPowder);
 	addToolBar(pCalcTools);
 
+#if !defined NO_3D
+	// 3d tools
+	QToolBar *p3dTools = new QToolBar(this);
+	p3dTools->setWindowTitle("3D Tools");
+	p3dTools->addAction(pView3DBZ);
+	p3dTools->addAction(pView3DReal);
+	addToolBar(p3dTools);
+#endif
+
 #if !defined NO_NET
+	// net
 	QToolBar *pNetTools = new QToolBar(this);
 	pNetTools->setWindowTitle("Network");
 	pNetTools->addAction(pConn);
