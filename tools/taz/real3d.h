@@ -14,6 +14,7 @@
 #include "libs/plotgl.h"
 #include "tlibs/math/linalg.h"
 #include "libs/spacegroups/latticehelper.h"
+#include "tlibs/phys/bz.h"
 #include "libs/globals.h"
 
 
@@ -28,7 +29,8 @@ public:
 	Real3DDlg(QWidget* pParent, QSettings* = 0);
 	virtual ~Real3DDlg();
 
-	void CalcPeaks(const LatticeCommon<t_real_glob>& realcommon);
+	void CalcPeaks(const tl::Brillouin3D<t_real_glob>& ws,
+		const LatticeCommon<t_real_glob>& realcommon);
 
 protected:
 	virtual void hideEvent(QHideEvent*) override;

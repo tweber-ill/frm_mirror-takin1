@@ -469,7 +469,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pShowRealQDir->setChecked(m_sceneReal.GetTasLayout()->GetRealQVisible());
 	m_pMenuViewReal->addAction(m_pShowRealQDir);
 
-	m_pWS = new QAction("Show Wigner-Seitz Cell", this);
+	m_pWS = new QAction("Show Unit Cell", this);
 	m_pWS->setIcon(load_icon("res/icons/brillouin.svg"));
 	m_pWS->setCheckable(1);
 	m_pWS->setChecked(bWSVisible);
@@ -498,7 +498,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	m_pMenuViewReal->addAction(pTofExport);
 
 #ifdef USE_GIL
-	QAction *pWSExport = new QAction("Export Wigner-Seitz Cell Image...", this);
+	QAction *pWSExport = new QAction("Export Unit Cell Image...", this);
 	pWSExport->setIcon(load_icon("res/icons/image-x-generic.svg"));
 	m_pMenuViewReal->addAction(pWSExport);
 #endif
