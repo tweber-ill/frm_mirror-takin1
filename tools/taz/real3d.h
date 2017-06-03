@@ -11,6 +11,8 @@
 #include <QDialog>
 #include <QStatusBar>
 
+#include <memory>
+
 #include "libs/plotgl.h"
 #include "tlibs/math/linalg.h"
 #include "libs/spacegroups/latticehelper.h"
@@ -23,11 +25,11 @@ class Real3DDlg : public QDialog
 protected:
 	QSettings *m_pSettings = nullptr;
 	QStatusBar *m_pStatus = nullptr;
-	PlotGl *m_pPlot = nullptr;
+	std::unique_ptr<PlotGl> m_pPlot;
 
 public:
 	Real3DDlg(QWidget* pParent, QSettings* = 0);
-	virtual ~Real3DDlg();
+	virtual ~Real3DDlg() = default;
 
 	void CalcPeaks(const tl::Brillouin3D<t_real_glob>& ws,
 		const LatticeCommon<t_real_glob>& realcommon);

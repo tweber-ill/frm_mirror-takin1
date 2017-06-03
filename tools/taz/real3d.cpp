@@ -42,7 +42,7 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 
 	QGridLayout *gridLayout = new QGridLayout(this);
 	gridLayout->setContentsMargins(4, 4, 4, 4);
-	gridLayout->addWidget(m_pPlot, 0, 0, 1, 1);
+	gridLayout->addWidget(m_pPlot.get(), 0, 0, 1, 1);
 	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
 
 	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
@@ -59,16 +59,8 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	});
 
 	m_pPlot->SetLabels("a (A)", "b (A)", "c (A)");
+	m_pPlot->SetDrawMinMax(0);
 	m_pPlot->SetEnabled(1);
-}
-
-Real3DDlg::~Real3DDlg()
-{
-	if(m_pPlot)
-	{
-		delete m_pPlot;
-		m_pPlot = 0;
-	}
 }
 
 
@@ -170,9 +162,10 @@ void Real3DDlg::CalcPeaks(const tl::Brillouin3D<t_real_glob>& ws,
 				// add centre to polyhedron
 				for(auto& vecVert : vecPoly) vecVert += vecThisAtom;
 
-				m_pPlot->PlotPoly(vecPoly, 
-					tl::get_face_normal<t_vec, std::vector, t_real>(vecPoly, vecThisAtom), iCurObjIdx);
+				t_vec vecPolyNorm = tl::get_face_normal<t_vec, std::vector, t_real>(vecPoly, vecThisAtom);
+				m_pPlot->PlotPoly(vecPoly, vecPolyNorm, iCurObjIdx);
 				m_pPlot->SetObjectColor(iCurObjIdx, vecColor[iCurAtomType % vecColor.size()]);
+				//m_pPlot->SetObjectCull(iCurObjIdx, 1);
 				++iCurObjIdx;
 
 				m_pPlot->PlotLines(vecPoly, 2., iCurObjIdx);
