@@ -264,7 +264,7 @@ endif
 
 
 
-INC = ${QT_INC} ${QWT_INC} -I . \
+INC = ${QT_INC} ${QWT_INC} -I . -I ./3rdparty/ \
 	-I/usr/local/opt/minuit2/include/Minuit2 \
 	-I/opt/local/include -I/opt/local/include/GL \
 	-I/usr/local/include -I/usr/local/include/GL \
@@ -353,7 +353,7 @@ endif
 
 ifeq (${USE_FADDEEVA}, 1)
 	FAD_DEFS += -DHAS_COMPLEX_ERF
-	FAD_LIBS += /usr/local/include/Faddeeva.cc
+	FAD_LIBS += ./3rdparty/Faddeeva.cc
 else
 	FAD_DEFS =
 	FAD_LIBS =

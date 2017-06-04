@@ -12,6 +12,7 @@ obj/*
 !obj/.dir
 plugins/*
 !plugins/.dir
+3rdparty/*
 perf.data
 perf.data.old
 gmon.out
