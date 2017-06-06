@@ -56,8 +56,8 @@ function dl_fadd
 	if [ ! -f 3rdparty/Faddeeva.hh  ]; then
 		echo -e "Downloading Faddeeva library...\n"
 
-		if ! (wget ${FADD}.hh -O 3rdparty/${FADD}.hh &&
-			wget ${FADD}.cc -O 3rdparty/${FADD}.cc); then
+		if ! (wget ${FADD}.hh -O 3rdparty/Faddeevy.hh &&
+			wget ${FADD}.cc -O 3rdparty/Faddeeva.cc); then
 			echo -e "Error: Cannot download Faddeeva library.";
 			exit -1;
 		fi
