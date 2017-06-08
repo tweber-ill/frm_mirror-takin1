@@ -42,7 +42,7 @@ function dl_findqwt
 
 		if ! wget ${FINDQWT}; then
 			echo -e "Error: Cannot download FindQwt.";
-			exit -1;
+			return -1;
 		fi
 	fi
 }
@@ -59,7 +59,7 @@ function dl_fadd
 		if ! (wget ${FADD}.hh -O 3rdparty/Faddeeva.hh &&
 			wget ${FADD}.cc -O 3rdparty/Faddeeva.cc); then
 			echo -e "Error: Cannot download Faddeeva library.";
-			exit -1;
+			return -1;
 		fi
 	fi
 }
@@ -77,7 +77,7 @@ function dl_tangoicons
 
 		if ! wget ${TANGOICONS} -O tmp/tango-icon-theme.tar.gz; then
 			echo -e "Error: Cannot download Tango icons.";
-			exit -1;
+			return -1;
 		fi
 	fi
 
@@ -123,7 +123,7 @@ function dl_scatlens
 
 		if ! wget ${SCATLENS} -O tmp/${SCATLENS##*/}; then
 			echo -e "Error: Cannot download scattering length list.";
-			exit -1;
+			return -1;
 		fi
 
 		if [ ! -f tmp/${SCATLENS##*/} ]; then
@@ -156,7 +156,7 @@ function dl_magffacts
 #			wget ${MAGFFACT_J2_3} -O tmp/${MAGFFACT_J2_3##*/} &&
 #			wget ${MAGFFACT_J2_4} -O tmp/${MAGFFACT_J2_4##*/}); then
 #			echo -e "Error: Cannot download magnetic form factor lists.";
-#			exit -1;
+#			return -1;
 #		fi
 
 		if [ ! -f tmp/${MAGFFACT_J2_4##*/} ]; then
