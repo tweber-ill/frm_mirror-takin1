@@ -34,9 +34,9 @@ QRectF TasLayoutNode::boundingRect() const
 		10.*0.1*g_dFontSize, 10.*0.1*g_dFontSize);
 }
 
-void TasLayoutNode::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+void TasLayoutNode::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidget*)
 {
-	painter->drawEllipse(QRectF(-2.*0.1*g_dFontSize, -2.*0.1*g_dFontSize,
+	pPainter->drawEllipse(QRectF(-2.*0.1*g_dFontSize, -2.*0.1*g_dFontSize,
 		4.*0.1*g_dFontSize, 4.*0.1*g_dFontSize));
 }
 
@@ -269,10 +269,10 @@ QRectF TasLayout::boundingRect() const
 		200.*m_dZoom*g_dFontSize, 200.*m_dZoom*g_dFontSize);
 }
 
-void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	const bool bDisplayLengths = 0;
-	painter->setFont(g_fontGfx);
+	pPainter->setFont(g_fontGfx);
 
 	QPointF ptSrc = mapFromItem(m_pSrc.get(), 0, 0) * m_dZoom;
 	QPointF ptMono = mapFromItem(m_pMono.get(), 0, 0) * m_dZoom;
@@ -285,16 +285,16 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 	QLineF lineKf(ptSample, ptAna);
 	QLineF lineAnaDet(ptAna, ptDet);
 
-	QPen penOrig = painter->pen();
+	QPen penOrig = pPainter->pen();
 
 	QPen penNew = penOrig;	
 	penNew.setWidthF(g_dFontSize*0.1);
-	painter->setPen(penNew);
+	pPainter->setPen(penNew);
 
-	painter->drawLine(lineSrcMono);
-	painter->drawLine(lineKi);
-	painter->drawLine(lineKf);
-	painter->drawLine(lineAnaDet);
+	pPainter->drawLine(lineSrcMono);
+	pPainter->drawLine(lineKi);
+	pPainter->drawLine(lineKf);
+	pPainter->drawLine(lineAnaDet);
 
 
 	// write lengths
@@ -313,9 +313,9 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 		ostrLenKf << m_dLenSampleAna << " cm";
 		ostrLenAnaDet << m_dLenAnaDet << " cm";
 
-		painter->drawText(ptMidKi, ostrLenKi.str().c_str());
-		painter->drawText(ptMidKf, ostrLenKf.str().c_str());
-		painter->drawText(ptMidAnaDet, ostrLenAnaDet.str().c_str());
+		pPainter->drawText(ptMidKi, ostrLenKi.str().c_str());
+		pPainter->drawText(ptMidKf, ostrLenKf.str().c_str());
+		pPainter->drawText(ptMidAnaDet, ostrLenAnaDet.str().c_str());
 	}
 
 
@@ -354,42 +354,42 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 
 		QPen pen(colThs[iTh]);
 		pen.setWidthF(1.5*g_dFontSize*0.1);
-		painter->setPen(pen);
-		painter->drawLine(lineRot[iTh]);
+		pPainter->setPen(pen);
+		pPainter->drawLine(lineRot[iTh]);
 
 
 		// component names
-		painter->setPen(penOrig);
-		painter->save();
-			painter->translate(vec_to_qpoint(*vecPos[iTh]));
+		pPainter->setPen(penOrig);
+		pPainter->save();
+			pPainter->translate(vec_to_qpoint(*vecPos[iTh]));
 			t_real dCompAngle = 180. + tl::r2d(tl::vec_angle(vecRotDir));
-			painter->rotate(dCompAngle);
-			painter->translate(-4., 16.*0.1*g_dFontSize);
+			pPainter->rotate(dCompAngle);
+			pPainter->translate(-4., 16.*0.1*g_dFontSize);
 			if(flip_text(dCompAngle))
 			{
-				painter->translate(4., -8.*0.1*g_dFontSize);
-				painter->rotate(180.);
+				pPainter->translate(4., -8.*0.1*g_dFontSize);
+				pPainter->rotate(180.);
 			}
-			painter->drawText(QPointF(0., 0.), pcComp[iTh]);
-		painter->restore();
+			pPainter->drawText(QPointF(0., 0.), pcComp[iTh]);
+		pPainter->restore();
 	}
 
-	painter->drawText(ptMono - vec_to_qpoint(vecSrcMono*1.1), "R");
-	painter->drawText(ptAna + vec_to_qpoint(vecAnaDet*1.1), "D");
+	pPainter->drawText(ptMono - vec_to_qpoint(vecSrcMono*1.1), "R");
+	pPainter->drawText(ptAna + vec_to_qpoint(vecAnaDet*1.1), "D");
 
 
 	// dashed extended lines
 	QPen penDash(Qt::DashLine);
 	penDash.setWidthF(g_dFontSize*0.1);
 
-	painter->setPen(penDash);
+	pPainter->setPen(penDash);
 	QLineF lineSrcMono_ext(ptMono, ptMono + (ptMono-ptSrc)/2.);
 	QLineF lineki_ext(ptSample, ptSample + (ptSample-ptMono)/2.);
 	QLineF linekf_ext(ptAna, ptAna + (ptAna-ptSample)/2.);
 
-	painter->drawLine(lineSrcMono_ext);
-	painter->drawLine(lineki_ext);
-	painter->drawLine(linekf_ext);
+	pPainter->drawLine(lineSrcMono_ext);
+	pPainter->drawLine(lineki_ext);
+	pPainter->drawLine(linekf_ext);
 
 
 
@@ -414,19 +414,19 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 		QPen penRed(Qt::red);
 		penRed.setWidthF(g_dFontSize*0.1);
 
-		painter->setPen(penRed);
-		painter->drawLine(*plineQ);
-		painter->save();
-			painter->translate(ptSample);
+		pPainter->setPen(penRed);
+		pPainter->drawLine(*plineQ);
+		pPainter->save();
+			pPainter->translate(ptSample);
 			const t_real dQAngle = -plineQ->angle();
-			painter->rotate(dQAngle);
-			painter->translate(QPointF(plineQ->length()/2., 12.*0.1*g_dFontSize));
+			pPainter->rotate(dQAngle);
+			pPainter->translate(QPointF(plineQ->length()/2., 12.*0.1*g_dFontSize));
 			if(flip_text(dQAngle))
-				painter->rotate(180.);
-			painter->drawText(QPointF(0,0), "Q");
-		painter->restore();
+				pPainter->rotate(180.);
+			pPainter->drawText(QPointF(0,0), "Q");
+		pPainter->restore();
 	}
-	painter->setPen(penOrig);
+	pPainter->setPen(penOrig);
 
 
 	// angle arcs
@@ -463,8 +463,8 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 			ostrAngle << "invalid";
 		}
 
-		painter->setPen(*arcPens[i]);
-		painter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2.,
+		pPainter->setPen(*arcPens[i]);
+		pPainter->drawArc(QRectF(pPoints[i]->x()-dArcSize/2., pPoints[i]->y()-dArcSize/2.,
 			dArcSize, dArcSize), dBeginArcAngle*16., dArcAngle*16.);
 
 		bool bFlip = dAngleOffs[i] > 90.;
@@ -472,23 +472,23 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 		if(bFlip) dTotalAngle += 180.;
 		t_real dTransScale = bFlip ? -40. : 80.;
 		dTransScale *= m_dZoom;
-		painter->save();
-			painter->translate(*pPoints[i]);
-			painter->rotate(dTotalAngle);
-			painter->translate(-dTransScale, +4.*0.1*0.5*g_dFontSize);
+		pPainter->save();
+			pPainter->translate(*pPoints[i]);
+			pPainter->rotate(dTotalAngle);
+			pPainter->translate(-dTransScale, +4.*0.1*0.5*g_dFontSize);
 			if(flip_text(dTotalAngle))
 			{
 				if(bFlip)
-					painter->translate(-dTransScale, -8.*0.1*0.5*g_dFontSize);
+					pPainter->translate(-dTransScale, -8.*0.1*0.5*g_dFontSize);
 				else
-					painter->translate(dTransScale*0.5, -8.*0.1*0.5*g_dFontSize);
-				painter->rotate(180.);
+					pPainter->translate(dTransScale*0.5, -8.*0.1*0.5*g_dFontSize);
+				pPainter->rotate(180.);
 			}
-			painter->drawText(QPointF(0.,0.), QString::fromWCharArray(ostrAngle.str().c_str()));
-		painter->restore();
+			pPainter->drawText(QPointF(0.,0.), QString::fromWCharArray(ostrAngle.str().c_str()));
+		pPainter->restore();
 	}
 
-	painter->setPen(penOrig);
+	pPainter->setPen(penOrig);
 
 
 	// arrow heads
@@ -517,11 +517,11 @@ void TasLayout::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidge
 		QPen penArrow(colArrowHead[i]);
 		penArrow.setWidthF(g_dFontSize*0.1);
 
-		painter->setPen(penArrow);
-		painter->fillPath(triag, colArrowHead[i]);
+		pPainter->setPen(penArrow);
+		pPainter->fillPath(triag, colArrowHead[i]);
 	}
 
-	painter->setPen(penOrig);
+	pPainter->setPen(penOrig);
 }
 
 

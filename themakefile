@@ -39,7 +39,7 @@ USE_GIL = 1
 
 # compile the python or julia interfaces?
 USE_PY = 1
-USE_JL = 1
+USE_JL = 0
 
 # enable the plugin interface?
 USE_PLUGINS = 1
@@ -73,14 +73,18 @@ JL_APP = /Applications/Julia-0.5.app/Contents/Resources/julia
 STD_CPP = -std=c++11
 #STD_CPP += -stdlib=libc++
 
+ifeq ($(CC), gcc)
+	MT_LIBS = -fopenmp -lrt
+else
+	MT_LIBS = -lpthread -lgomp -lrt
+endif
+
 STD_LIBS = -lstdc++
 #STD_LIBS = -lc++ -lc++abi
 STD_LIBS += -lm
 ifeq ($(USE_FRAMEWORKS), 0)
-	STD_LIBS += -lpthread -lrt -lgomp
+	STD_LIBS += $(MT_LIBS)
 endif
-
-
 
 # -----------------------------------------------------------------------------
 

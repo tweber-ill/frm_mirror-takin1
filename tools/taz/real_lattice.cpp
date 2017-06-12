@@ -52,20 +52,20 @@ QRectF LatticePoint::boundingRect() const
 		7.*g_dFontSize, 5.*g_dFontSize);
 }
 
-void LatticePoint::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+void LatticePoint::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidget*)
 {
-	painter->setFont(g_fontGfx);
-	painter->setBrush(m_color);
-	painter->drawEllipse(QRectF(-3.*0.1*g_dFontSize, -3.*0.1*g_dFontSize,
+	pPainter->setFont(g_fontGfx);
+	pPainter->setBrush(m_color);
+	pPainter->drawEllipse(QRectF(-3.*0.1*g_dFontSize, -3.*0.1*g_dFontSize,
 		6.*0.1*g_dFontSize, 6.*0.1*g_dFontSize));
 
 	if(m_strLabel != "")
 	{
-		painter->setPen(m_color);
+		pPainter->setPen(m_color);
 		QRectF rect = boundingRect();
 		rect.setTop(rect.top()+1.65*g_dFontSize);
-		//painter->drawRect(rect);
-		painter->drawText(rect, Qt::AlignHCenter|Qt::AlignTop, m_strLabel);
+		//pPainter->drawRect(rect);
+		pPainter->drawText(rect, Qt::AlignHCenter|Qt::AlignTop, m_strLabel);
 	}
 }
 
@@ -84,21 +84,21 @@ QRectF LatticeAtom::boundingRect() const
 		7.*g_dFontSize, 5.*g_dFontSize);
 }
 
-void LatticeAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+void LatticeAtom::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidget*)
 {
-	painter->setFont(g_fontGfx);
-	painter->setBrush(m_color);
-	painter->setPen(Qt::darkCyan);
-	painter->drawEllipse(QRectF(-3.*0.1*g_dFontSize, -3.*0.1*g_dFontSize,
+	pPainter->setFont(g_fontGfx);
+	pPainter->setBrush(m_color);
+	pPainter->setPen(Qt::darkCyan);
+	pPainter->drawEllipse(QRectF(-3.*0.1*g_dFontSize, -3.*0.1*g_dFontSize,
 		6.*0.1*g_dFontSize, 6.*0.1*g_dFontSize));
 
 	if(m_strElem != "")
 	{
-		painter->setPen(m_color);
+		pPainter->setPen(m_color);
 		QRectF rect = boundingRect();
 		rect.setTop(rect.top()+1.65*g_dFontSize);
-		//painter->drawRect(rect);
-		painter->drawText(rect, Qt::AlignHCenter|Qt::AlignTop, m_strElem.c_str());
+		//pPainter->drawRect(rect);
+		pPainter->drawText(rect, Qt::AlignHCenter|Qt::AlignTop, m_strElem.c_str());
 	}
 }
 
@@ -142,17 +142,17 @@ void RealLattice::SetWSVisible(bool bVisible)
 /**
  * paint real lattice & unit cell
  */
-void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+void RealLattice::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidget*)
 {
-	painter->setFont(g_fontGfx);
+	pPainter->setFont(g_fontGfx);
 
 	// Brillouin zone
 	if(m_bShowWS && (m_ws.IsValid() || m_ws3.IsValid()))
 	{
-		QPen penOrg = painter->pen();
+		QPen penOrg = pPainter->pen();
 		QPen penGray(Qt::darkGray);
 		penGray.setWidthF(g_dFontSize*0.1);
-		painter->setPen(penGray);
+		pPainter->setPen(penGray);
 
 		t_vec vecCentral2d;
 		std::vector<QPointF> vecWS3;
@@ -182,7 +182,7 @@ void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 				std::vector<QPointF> vecWS3_peak = vecWS3;
 				for(auto& vecVert : vecWS3_peak)
 					vecVert += peakPos;
-				painter->drawPolygon(vecWS3_peak.data(), vecWS3_peak.size());
+				pPainter->drawPolygon(vecWS3_peak.data(), vecWS3_peak.size());
 			}
 			// use 2d BZ code
 			else if(m_ws.IsValid())
@@ -197,12 +197,12 @@ void RealLattice::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWid
 					QPointF pt2 = vec_to_qpoint(vec2 - vecCentral2d) + peakPos;
 
 					QLineF lineWS(pt1, pt2);
-					painter->drawLine(lineWS);
+					pPainter->drawLine(lineWS);
 				}
 			}
 		}
 
-		painter->setPen(penOrg);
+		pPainter->setPen(penOrg);
 	}
 }
 
