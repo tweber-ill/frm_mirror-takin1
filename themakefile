@@ -56,6 +56,12 @@ USE_FRAMEWORKS = 0
 # is Minuit a non-standalone installation?
 NON_STANDALONE_MINUIT_HACK = 1
 
+# build tools needed for setup?
+BUILD_SETUP_PROGS = 1
+# build auxiliary tas tools?
+BUILD_AUX_PROGS = 1
+
+
 
 # set possible system-dependent library suffixes...
 BOOST_SUFFIX = 
@@ -487,8 +493,20 @@ OBJ_TAZ += obj/SgListDlg.o obj/spacegroup.o
 
 .PHONY: all clean #doc
 
-all: takin  montereso  monteconvo xmonteconvo posextract \
-	scanviewer gentab sglist sfact convofit convoseries reso
+BASE_PROGS = takin convofit convoseries
+SETUP_PROGS = gentab
+AUX_PROGS = montereso monteconvo xmonteconvo posextract \
+	scanviewer sglist sfact reso
+
+ALL_PROGS = ${BASE_PROGS}
+ifeq ($(BUILD_SETUP_PROGS), 1)
+	ALL_PROGS += ${SETUP_PROGS}
+endif
+ifeq ($(BUILD_AUX_PROGS), 1)
+	ALL_PROGS += ${AUX_PROGS}
+endif
+
+all: ${ALL_PROGS}$
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
