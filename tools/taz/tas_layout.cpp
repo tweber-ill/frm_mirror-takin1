@@ -392,6 +392,71 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	pPainter->drawLine(linekf_ext);
 
 
+	// dead angles
+	if(m_pvecDeadAngles)
+	{
+		QPen pen(QColor(0x90,0x50,0x20));
+		pen.setWidthF(3.*g_dFontSize*0.1);
+		pPainter->setPen(pen);
+
+		const t_real dArcSize = (lineKi.length() + lineKf.length()) / 2. / 2.;
+
+		for(const DeadAngle<t_real>& angle : *m_pvecDeadAngles)
+		{
+			// default case: around sample
+			QPointF *pCentre = &ptSample;
+			QLineF *pLineIn = &lineKi;
+			QLineF *pLineOut = &lineKf;
+			t_real dCrystalTheta = tl::r2d(m_dTheta);
+
+			switch(angle.iCentreOn)
+			{
+				case 0:	// around mono
+				{
+					pCentre = &ptMono;
+					pLineIn = &lineSrcMono;
+					pLineOut = &lineKi;
+					dCrystalTheta = tl::r2d(m_dMonoTwoTheta/t_real(2.));
+					break;
+				}
+				case 2:	// around ana
+				{
+					pCentre = &ptAna;
+					pLineIn = &lineKf;
+					pLineOut = &lineAnaDet;
+					dCrystalTheta = tl::r2d(m_dAnaTwoTheta/t_real(2.));
+					break;
+				}
+			}
+
+			t_real dAbsOffs = 0.;
+			switch(angle.iRelativeTo)
+			{
+				case 0:	// relative to crystal angle theta
+				{
+					dAbsOffs = pLineIn->angle() + dCrystalTheta;
+					break;
+				}
+				case 1:	// relative to incoming axis
+				{
+					dAbsOffs = pLineIn->angle();
+					break;
+				}
+				case 2:	// relative to outgoing axis
+				{
+					dAbsOffs = pLineOut->angle();
+					break;
+				}
+			}
+
+			t_real dAngleStart = angle.dAngleStart + angle.dAngleOffs + dAbsOffs;
+			t_real dAngleRange = angle.dAngleEnd - angle.dAngleStart;
+
+			pPainter->drawArc(QRectF(pCentre->x()-dArcSize/2., pCentre->y()-dArcSize/2.,
+				dArcSize, dArcSize), dAngleStart*16., dAngleRange*16.);
+		}
+	}
+
 
 	std::unique_ptr<QLineF> plineQ(nullptr);
 	std::unique_ptr<QPointF> pptQ(nullptr);
@@ -601,6 +666,13 @@ std::vector<std::string> TasLayout::GetNodeNames() const
 {
 	return std::vector<std::string>
 		{ "source", "monochromator", "sample", "analyser", "detector" };
+}
+
+
+void TasLayout::SetDeadAngles(const std::vector<DeadAngle<t_real_glob>> *pvecDeadAngles)
+{
+	m_pvecDeadAngles = pvecDeadAngles;
+	update();
 }
 
 // --------------------------------------------------------------------------------
