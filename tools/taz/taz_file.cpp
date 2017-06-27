@@ -326,11 +326,9 @@ bool TazDlg::Load(const char* pcFile)
 		}
 
 		if(m_pDeadAnglesDlg)
-		{
 			m_pDeadAnglesDlg->SetDeadAngles(m_vecDeadAngles);
-			if(m_sceneReal.GetTasLayout())
-				m_sceneReal.GetTasLayout()->SetDeadAngles(&m_vecDeadAngles);
-		}
+		if(m_sceneReal.GetTasLayout())
+			m_sceneReal.GetTasLayout()->SetDeadAngles(&m_vecDeadAngles);
 	}
 
 
