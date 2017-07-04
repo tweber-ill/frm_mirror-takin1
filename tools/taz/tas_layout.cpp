@@ -263,12 +263,17 @@ void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 	}
 }
 
+
 QRectF TasLayout::boundingRect() const
 {
 	return QRectF(-100.*m_dZoom*g_dFontSize, -100.*m_dZoom*g_dFontSize,
 		200.*m_dZoom*g_dFontSize, 200.*m_dZoom*g_dFontSize);
 }
 
+
+/**
+ * draws the TAS schematic
+ */
 void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	const bool bDisplayLengths = 0;
@@ -297,6 +302,7 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	pPainter->drawLine(lineAnaDet);
 
 
+	// ------------------------------------------------------------------------
 	// write lengths
 	QPointF ptMidKi = ptMono + (ptSample-ptMono)/2.;
 	QPointF ptMidKf = ptSample + (ptAna-ptSample)/2.;
@@ -317,9 +323,11 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 		pPainter->drawText(ptMidKf, ostrLenKf.str().c_str());
 		pPainter->drawText(ptMidAnaDet, ostrLenAnaDet.str().c_str());
 	}
+	// ------------------------------------------------------------------------
 
 
 
+	// ------------------------------------------------------------------------
 	t_vec vecSrc = qpoint_to_vec(ptSrc);
 	t_vec vecMono = qpoint_to_vec(ptMono);
 	t_vec vecSample = qpoint_to_vec(ptSample);
@@ -336,11 +344,14 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	std::vector<const t_vec*> vecDirs = {&vecSrcMono, &vecSampleAna, &vecMonoSample};
 	QColor colThs[] = {Qt::gray, Qt::gray, Qt::red};
 	const char* pcComp[] = {"M", "A", "S"};
+	// ------------------------------------------------------------------------
 
+
+	// ------------------------------------------------------------------------
+	// mono/ana/sample theta rotation
 	QLineF lineRot[3];
 	QPointF ptThP[3];
 
-	// mono/ana/sample theta rotation
 	for(std::size_t iTh=0; iTh<sizeof(dThetas)/sizeof(*dThetas); ++iTh)
 	{
 		t_vec vecRotDir =
@@ -376,8 +387,10 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 
 	pPainter->drawText(ptMono - vec_to_qpoint(vecSrcMono*1.1), "R");
 	pPainter->drawText(ptAna + vec_to_qpoint(vecAnaDet*1.1), "D");
+	// ------------------------------------------------------------------------
 
 
+	// ------------------------------------------------------------------------
 	// dashed extended lines
 	QPen penDash(Qt::DashLine);
 	penDash.setWidthF(g_dFontSize*0.1);
@@ -390,9 +403,47 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	pPainter->drawLine(lineSrcMono_ext);
 	pPainter->drawLine(lineki_ext);
 	pPainter->drawLine(linekf_ext);
+	// ------------------------------------------------------------------------
 
 
+	// ------------------------------------------------------------------------
 	// dead angles
+	bool bBeamObstructed = 0;
+
+	struct DeadAngleArc
+	{
+		t_real dCentre[2];
+		t_real dAngleStart, dAngleRange;
+
+		QLineF *pLineIn = nullptr;
+		QLineF *pLineOut = nullptr;
+
+		bool intersects() const
+		{
+			for(const QLineF* pLine : {pLineIn, pLineOut})
+			{
+				if(!pLine) continue;
+
+				t_real dLineAngle = pLine->angle();
+				if(pLine == pLineIn)
+				{
+					dLineAngle += 180.;
+					dLineAngle = std::fmod(dLineAngle, 360.);
+				}
+
+				bool bIntersect = tl::is_in_angular_range(
+					tl::d2r(dAngleStart), tl::d2r(dAngleRange), tl::d2r(dLineAngle));
+				if(bIntersect)
+				{
+					//std::cout << dLineAngle << " " << dAngleStart << " " << dAngleRange << std::endl;
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+
+
 	if(m_pvecDeadAngles)
 	{
 		QPen pen(QColor(0x90,0x50,0x20));
@@ -403,10 +454,12 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 
 		for(const DeadAngle<t_real>& angle : *m_pvecDeadAngles)
 		{
+			DeadAngleArc deadarc;
+
 			// default case: around sample
 			QPointF *pCentre = &ptSample;
-			QLineF *pLineIn = &lineKi;
-			QLineF *pLineOut = &lineKf;
+			deadarc.pLineIn = &lineKi;
+			deadarc.pLineOut = &lineKf;
 			t_real dCrystalTheta = tl::r2d(m_dTheta);
 
 			switch(angle.iCentreOn)
@@ -414,16 +467,16 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 				case 0:	// around mono
 				{
 					pCentre = &ptMono;
-					pLineIn = &lineSrcMono;
-					pLineOut = &lineKi;
+					deadarc.pLineIn = &lineSrcMono;
+					deadarc.pLineOut = &lineKi;
 					dCrystalTheta = tl::r2d(m_dMonoTwoTheta/t_real(2.));
 					break;
 				}
 				case 2:	// around ana
 				{
 					pCentre = &ptAna;
-					pLineIn = &lineKf;
-					pLineOut = &lineAnaDet;
+					deadarc.pLineIn = &lineKf;
+					deadarc.pLineOut = &lineAnaDet;
 					dCrystalTheta = tl::r2d(m_dAnaTwoTheta/t_real(2.));
 					break;
 				}
@@ -434,30 +487,35 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 			{
 				case 0:	// relative to crystal angle theta
 				{
-					dAbsOffs = pLineIn->angle() + dCrystalTheta;
+					dAbsOffs = deadarc.pLineIn->angle() + dCrystalTheta;
 					break;
 				}
 				case 1:	// relative to incoming axis
 				{
-					dAbsOffs = pLineIn->angle();
+					dAbsOffs = deadarc.pLineIn->angle();
 					break;
 				}
 				case 2:	// relative to outgoing axis
 				{
-					dAbsOffs = pLineOut->angle();
+					dAbsOffs = deadarc.pLineOut->angle();
 					break;
 				}
 			}
 
-			t_real dAngleStart = angle.dAngleStart + angle.dAngleOffs + dAbsOffs;
-			t_real dAngleRange = angle.dAngleEnd - angle.dAngleStart;
+			deadarc.dAngleStart = angle.dAngleStart + angle.dAngleOffs + dAbsOffs;
+			deadarc.dAngleRange = angle.dAngleEnd - angle.dAngleStart;
 
 			pPainter->drawArc(QRectF(pCentre->x()-dArcSize/2., pCentre->y()-dArcSize/2.,
-				dArcSize, dArcSize), dAngleStart*16., dAngleRange*16.);
+				dArcSize, dArcSize), deadarc.dAngleStart*16., deadarc.dAngleRange*16.);
+
+			if(!bBeamObstructed && deadarc.intersects())
+				bBeamObstructed = 1;
 		}
 	}
+	// ------------------------------------------------------------------------
 
 
+	// ------------------------------------------------------------------------
 	std::unique_ptr<QLineF> plineQ(nullptr);
 	std::unique_ptr<QPointF> pptQ(nullptr);
 	// Q vector direction visible?
@@ -492,8 +550,10 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 		pPainter->restore();
 	}
 	pPainter->setPen(penOrig);
+	// ------------------------------------------------------------------------
 
 
+	// ------------------------------------------------------------------------
 	// angle arcs
 	const QLineF* pLines1[] = {&lineSrcMono, &lineKi, &lineKf, &lineRot[2]};
 	const QLineF* pLines2[] = {&lineKi, &lineKf, &lineAnaDet, &lineKi};
@@ -554,8 +614,10 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	}
 
 	pPainter->setPen(penOrig);
+	// ------------------------------------------------------------------------
 
 
+	// ------------------------------------------------------------------------
 	// arrow heads
 	const QLineF* pLines_arrow[] = {&lineKi, &lineKf, plineQ.get(), &lineSrcMono, &lineAnaDet};
 	const QPointF* pPoints_arrow[] = {&ptSample, &ptAna, pptQ.get(), &ptMono, &ptDet};
@@ -585,6 +647,19 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 		pPainter->setPen(penArrow);
 		pPainter->fillPath(triag, colArrowHead[i]);
 	}
+
+
+
+	// ------------------------------------------------------------------------
+	if(bBeamObstructed)
+	{
+		QPen pen(QColor(0xff,0x00,0x00));
+		pPainter->setPen(pen);
+
+		pPainter->drawText(QPointF(0.,0.), "Beam obstructed!");
+	}
+	// ------------------------------------------------------------------------
+
 
 	pPainter->setPen(penOrig);
 }

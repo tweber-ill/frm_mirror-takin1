@@ -106,7 +106,7 @@ void DeadAnglesDlg::AddAngle()
 	tableAngles->setCellWidget(iRow, static_cast<int>(AngleInfo::CENTRE), pComboCentreOn);
 
 	QComboBox *pComboRelativeTo = new QComboBox(tableAngles);
-	pComboRelativeTo->addItem("Angle");
+	pComboRelativeTo->addItem("Xtal Angle");
 	pComboRelativeTo->addItem("In Axis");
 	pComboRelativeTo->addItem("Out Axis");
 	tableAngles->setCellWidget(iRow, static_cast<int>(AngleInfo::RELATIVE), pComboRelativeTo);
