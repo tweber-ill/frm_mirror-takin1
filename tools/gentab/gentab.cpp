@@ -247,6 +247,86 @@ bool gen_scatlens()
 }
 
 
+bool gen_scatlens_npy()
+{
+	tl::Prop<std::string> propIn, propOut;
+	propIn.SetSeparator('/');
+	propOut.SetSeparator('.');
+
+	if(!propIn.Load("tmp/scattering_lengths.json", tl::PropType::JSON))
+	{
+		tl::log_err("Cannot load scattering length table \"tmp/scattering_lengths.json\".");
+		return false;
+	}
+
+	std::vector<std::string> vecNuclei = propIn.GetChildNodes("/");
+
+	std::size_t iNucl = 0;
+	for(const std::string& strNucl : vecNuclei)
+	{
+		t_cplx cCohb = propIn.Query<t_real>("/" + strNucl + "/Coh b");
+		t_cplx cIncb = propIn.Query<t_real>("/" + strNucl + "/Inc b");
+		t_real dAbsXs = propIn.Query<t_real>("/" + strNucl + "/Abs xs");
+		t_real dCohXs = propIn.Query<t_real>("/" + strNucl + "/Coh xs");
+		t_real dIncXs = propIn.Query<t_real>("/" + strNucl + "/Inc xs");
+		t_real dScatXs = propIn.Query<t_real>("/" + strNucl + "/Scatt xs");
+		std::string strAbund = propIn.Query<std::string>("/" + strNucl + "/conc");
+
+		// complex?
+		auto vecValsCohb = propIn.GetChildValues<t_real>("/" + strNucl + "/Coh b");
+		auto vecValsIncb = propIn.GetChildValues<t_real>("/" + strNucl + "/Inc b");
+
+		if(vecValsCohb.size() >= 2)
+		{
+			cCohb.real(vecValsCohb[0]);
+			cCohb.imag(vecValsCohb[1]);
+		}
+		if(vecValsIncb.size() >= 2)
+		{
+			cIncb.real(vecValsIncb[0]);
+			cIncb.imag(vecValsIncb[1]);
+		}
+
+		t_real dAbOrHL = t_real(0);
+		bool bAb = get_abundance_or_hl(strAbund, dAbOrHL);
+
+		std::ostringstream ostr;
+		ostr << "scatlens.atom_" << iNucl;
+		std::string strAtom = ostr.str();
+
+		propOut.Add(strAtom + ".name", strNucl);
+		propOut.Add(strAtom + ".coh", tl::var_to_str(cCohb, g_iPrec));
+		propOut.Add(strAtom + ".incoh", tl::var_to_str(cIncb, g_iPrec));
+
+		propOut.Add(strAtom + ".xsec_coh", tl::var_to_str(dCohXs, g_iPrec));
+		propOut.Add(strAtom + ".xsec_incoh", tl::var_to_str(dIncXs, g_iPrec));
+		propOut.Add(strAtom + ".xsec_scat", tl::var_to_str(dScatXs, g_iPrec));
+		propOut.Add(strAtom + ".xsec_abs", tl::var_to_str(dAbsXs, g_iPrec));
+
+		if(bAb)
+			propOut.Add(strAtom + ".abund", tl::var_to_str(dAbOrHL, g_iPrec));
+		else
+			propOut.Add(strAtom + ".hl", tl::var_to_str(dAbOrHL, g_iPrec));
+
+		++iNucl;
+	}
+
+	propOut.Add("scatlens.num_atoms", tl::var_to_str(vecNuclei.size()));
+
+	propOut.Add("scatlens.source", "Scattering lengths and cross-sections extracted from NeutronPy by D. Fobes"
+		" (which itself is based on <a href=http://dx.doi.org/10.1080/10448639208218770>this paper</a>).");
+	propOut.Add("scatlens.source_url", "https://github.com/neutronpy/neutronpy/blob/master/neutronpy/database/scattering_lengths.json");
+
+	if(!propOut.Save("res/data/scatlens.xml.gz"))
+	{
+		tl::log_err("Cannot write \"res/data/scatlens.xml.gz\".");
+		return false;
+	}
+
+	return true;
+}
+
+
 // ============================================================================
 
 
@@ -454,6 +534,64 @@ bool gen_magformfacts()
 }
 
 
+
+bool gen_magformfacts_npy()
+{
+	tl::Prop<std::string> propIn, propOut;
+	propIn.SetSeparator('/');
+	propOut.SetSeparator('.');
+
+	if(!propIn.Load("tmp/magnetic_form_factors.json", tl::PropType::JSON))
+	{
+		tl::log_err("Cannot load scattering length table \"tmp/magnetic_form_factors.json\".");
+		return false;
+	}
+
+	std::vector<std::string> vecNuclei = propIn.GetChildNodes("/");
+
+	std::size_t iNucl = 0;
+	for(const std::string& strNucl : vecNuclei)
+	{
+		auto vecJ0 = propIn.GetChildValues<t_real>("/" + strNucl + "/j0");
+		auto vecJ2 = propIn.GetChildValues<t_real>("/" + strNucl + "/j2");
+		auto vecJ4 = propIn.GetChildValues<t_real>("/" + strNucl + "/j4");
+
+		std::string strJ0, strJ2, strJ4;
+
+		for(t_real dVal : vecJ0)
+			strJ0 += tl::var_to_str(dVal, g_iPrec) + " ";
+		for(t_real dVal : vecJ2)
+			strJ2 += tl::var_to_str(dVal, g_iPrec) + " ";
+		for(t_real dVal : vecJ4)
+			strJ4 += tl::var_to_str(dVal, g_iPrec) + " ";
+
+		std::ostringstream ostr;
+		ostr << "magffacts.atom_" << iNucl;
+		std::string strAtom = ostr.str();
+
+		propOut.Add(strAtom + ".name", strNucl);
+		propOut.Add(strAtom + ".j0", strJ0);
+		propOut.Add(strAtom + ".j2", strJ2);
+		propOut.Add(strAtom + ".j4", strJ4);
+
+		++iNucl;
+	}
+
+	propOut.Add("magffacts.num_atoms", tl::var_to_str(vecNuclei.size()));
+
+	propOut.Add("magffacts.source", "Magnetic form factor coefficients extracted from NeutronPy by D. Fobes");
+	propOut.Add("magffacts.source_url", "https://github.com/neutronpy/neutronpy/blob/master/neutronpy/database/magnetic_form_factors.json");
+
+	if(!propOut.Save("res/data/magffacts.xml.gz"))
+	{
+		tl::log_err("Cannot write \"res/data/magffacts.xml.gz\".");
+		return false;
+	}
+
+	return true;
+}
+
+
 // ============================================================================
 
 
@@ -468,8 +606,16 @@ int main()
 		std::cout << "OK" << std::endl;
 
 	std::cout << "Generating scattering length table ... ";
-	if(gen_scatlens())
+	if(gen_scatlens_npy())
+	{
 		std::cout << "OK" << std::endl;
+	}
+	else
+	{
+		std::cout << "Generating scattering length table (alternative) ... ";
+		if(gen_scatlens())
+			std::cout << "OK" << std::endl;
+	}
 
 	std::cout << "Generating space group table ... ";
 	if(gen_spacegroups())
@@ -478,6 +624,10 @@ int main()
 	std::cout << "Generating magnetic form factor coefficient table ... ";
 	if(gen_magformfacts())
 		std::cout << "OK" << std::endl;
+
+	/*std::cout << "Generating magnetic form factor coefficient table ... ";
+	if(gen_magformfacts_npy())
+		std::cout << "OK" << std::endl;*/
 
 	return 0;
 }
