@@ -508,16 +508,19 @@ bool gen_magformfacts()
 			t_real dc = tl::str_to_var<t_real>(iterElem++->second.data());
 			t_real dD = tl::str_to_var<t_real>(iterElem->second.data());
 
+			std::string strA = tl::var_to_str(dA, g_iPrec) + "; " +
+				tl::var_to_str(dB, g_iPrec) + "; " +
+				tl::var_to_str(dC, g_iPrec) + "; " +
+				tl::var_to_str(dD, g_iPrec);
+			std::string stra = tl::var_to_str(da, g_iPrec) + "; " +
+				tl::var_to_str(db, g_iPrec) + "; " +
+				tl::var_to_str(dc, g_iPrec);
+
 			std::ostringstream ostrAtom;
 			ostrAtom << "magffacts." + strJ + ".atom_" << iAtom;
 			propOut.Add(ostrAtom.str() + ".name", strElem);
-			propOut.Add(ostrAtom.str() + ".A", tl::var_to_str(dA, g_iPrec));
-			propOut.Add(ostrAtom.str() + ".a", tl::var_to_str(da, g_iPrec));
-			propOut.Add(ostrAtom.str() + ".B", tl::var_to_str(dB, g_iPrec));
-			propOut.Add(ostrAtom.str() + ".b", tl::var_to_str(db, g_iPrec));
-			propOut.Add(ostrAtom.str() + ".C", tl::var_to_str(dC, g_iPrec));
-			propOut.Add(ostrAtom.str() + ".c", tl::var_to_str(dc, g_iPrec));
-			propOut.Add(ostrAtom.str() + ".D", tl::var_to_str(dD, g_iPrec));
+			propOut.Add(ostrAtom.str() + ".A", strA);
+			propOut.Add(ostrAtom.str() + ".a", stra);
 			++iAtom;
 		}
 	}
@@ -556,23 +559,70 @@ bool gen_magformfacts_npy()
 		auto vecJ2 = propIn.GetChildValues<t_real>("/" + strNucl + "/j2");
 		auto vecJ4 = propIn.GetChildValues<t_real>("/" + strNucl + "/j4");
 
-		std::string strJ0, strJ2, strJ4;
+		std::string strJ0A, strJ2A, strJ4A, strJ0a, strJ2a, strJ4a;;
 
-		for(t_real dVal : vecJ0)
-			strJ0 += tl::var_to_str(dVal, g_iPrec) + " ";
-		for(t_real dVal : vecJ2)
-			strJ2 += tl::var_to_str(dVal, g_iPrec) + " ";
-		for(t_real dVal : vecJ4)
-			strJ4 += tl::var_to_str(dVal, g_iPrec) + " ";
+		for(std::size_t iJ=0; iJ<vecJ0.size(); ++iJ)
+		{
+			t_real dVal = vecJ0[iJ];
+			bool bEven = tl::is_even(iJ);
+			if(bEven)
+			{
+				if(strJ0A != "") strJ0A += "; ";
+				strJ0A += tl::var_to_str(dVal, g_iPrec);
+			}
+			else
+			{
+				if(strJ0a != "") strJ0a += "; ";
+				strJ0a += tl::var_to_str(dVal, g_iPrec);
+			}
+		}
+		for(std::size_t iJ=0; iJ<vecJ2.size(); ++iJ)
+		{
+			t_real dVal = vecJ2[iJ];
+			bool bEven = tl::is_even(iJ);
+			if(bEven)
+			{
+				if(strJ2A != "") strJ2A += "; ";
+				strJ2A += tl::var_to_str(dVal, g_iPrec);
+			}
+			else
+			{
+				if(strJ2a != "") strJ2a += "; ";
+				strJ2a += tl::var_to_str(dVal, g_iPrec);
+			}
+		}
+		for(std::size_t iJ=0; iJ<vecJ4.size(); ++iJ)
+		{
+			t_real dVal = vecJ4[iJ];
+			bool bEven = tl::is_even(iJ);
+			if(bEven)
+			{
+				if(strJ4A != "") strJ4A += "; ";
+				strJ4A += tl::var_to_str(dVal, g_iPrec);
+			}
+			else
+			{
+				if(strJ4a != "") strJ4a += "; ";
+				strJ4a += tl::var_to_str(dVal, g_iPrec);
+			}
+		}
 
 		std::ostringstream ostr;
-		ostr << "magffacts.atom_" << iNucl;
+		ostr << "atom_" << iNucl;
 		std::string strAtom = ostr.str();
 
-		propOut.Add(strAtom + ".name", strNucl);
-		propOut.Add(strAtom + ".j0", strJ0);
-		propOut.Add(strAtom + ".j2", strJ2);
-		propOut.Add(strAtom + ".j4", strJ4);
+		propOut.Add("magffacts.j0." + strAtom + ".name", strNucl);
+		propOut.Add("magffacts.j2." + strAtom + ".name", strNucl);
+		propOut.Add("magffacts.j4." + strAtom + ".name", strNucl);
+
+		propOut.Add("magffacts.j0." + strAtom + ".A", strJ0A);
+		propOut.Add("magffacts.j0." + strAtom + ".a", strJ0a);
+
+		propOut.Add("magffacts.j2." + strAtom + ".A", strJ2A);
+		propOut.Add("magffacts.j2." + strAtom + ".a", strJ2a);
+
+		propOut.Add("magffacts.j4." + strAtom + ".A", strJ4A);
+		propOut.Add("magffacts.j4." + strAtom + ".a", strJ4a);
 
 		++iNucl;
 	}

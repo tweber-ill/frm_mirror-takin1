@@ -138,16 +138,19 @@ MagFormfactList<T>::MagFormfactList()
 		tl::log_err("No data in magnetic form factor list.");
 		return;
 	}
+
 	for(unsigned int iSf=0; iSf<iNumDat; ++iSf)
 	{
 		elem_type ffact;
 		std::string strAtom = "magffacts/j0/atom_" + tl::var_to_str(iSf);
 
+		std::string strvecA = xml.Query<std::string>(strAtom + "/A");
+		std::string strveca = xml.Query<std::string>(strAtom + "/a");
+
+		tl::get_tokens<value_type>(strvecA, std::string(";"), ffact.A0);
+		tl::get_tokens<value_type>(strveca, std::string(";"), ffact.a0);
+
 		ffact.strAtom = xml.Query<std::string>((strAtom + "/name").c_str(), "");
-		for(const std::string& strA : {"/A", "/B", "/C", "/D"})
-			ffact.A0.push_back(xml.Query<value_type>((strAtom + strA).c_str(), 0.));
-		for(const std::string& stra : {"/a", "/b", "/c"})
-			ffact.a0.push_back(xml.Query<value_type>((strAtom + stra).c_str(), 0.));
 
 		s_vecAtoms.push_back(std::move(ffact));
 	}
@@ -165,10 +168,11 @@ MagFormfactList<T>::MagFormfactList()
 			continue;
 		}
 
-		for(const std::string& strA : {"/A", "/B", "/C", "/D"})
-			pElem->A2.push_back(xml.Query<value_type>((strAtom + strA).c_str(), 0.));
-		for(const std::string& stra : {"/a", "/b", "/c"})
-			pElem->a2.push_back(xml.Query<value_type>((strAtom + stra).c_str(), 0.));
+		std::string strvecA = xml.Query<std::string>(strAtom + "/A");
+		std::string strveca = xml.Query<std::string>(strAtom + "/a");
+
+		tl::get_tokens<value_type>(strvecA, std::string(";"), pElem->A2);
+		tl::get_tokens<value_type>(strveca, std::string(";"), pElem->a2);
 	}
 
 	s_strSrc = xml.Query<std::string>("magffacts/source", "");

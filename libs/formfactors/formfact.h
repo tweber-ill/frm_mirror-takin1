@@ -95,6 +95,7 @@ class MagFormfact
 		std::string strAtom;
 		std::vector<T> A0, a0;
 		std::vector<T> A2, a2;
+		std::vector<T> A4, a4;
 
 	public:
 		const std::string& GetAtomIdent() const { return strAtom; }
