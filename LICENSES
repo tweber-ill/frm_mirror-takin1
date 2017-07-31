@@ -215,6 +215,21 @@ SOFTWARE.
 
 
 -------------------------------------------------------------------------------- 
+Blue Obelisk Data Repository
+URL: http://dx.doi.org/10.1021/ci050400b, https://github.com/egonw/bodr
+
+Copyright (c) 2006 by G. Hutchinson, C. Niehaus, E. Willighagen, J. Buchwald,
+	M. Pfeiffer, D. Leidert, J. Brefort, B. de Jong, and A. Vaitkus
+
+License: CC0 1.0
+
+(see: https://github.com/egonw/bodr/blob/master/bodr/COPYING)
+--------------------------------------------------------------------------------
+
+
+
+
+-------------------------------------------------------------------------------- 
 Gnuplot
 URL: http://www.gnuplot.info
 

@@ -100,6 +100,96 @@ bool gen_formfacts()
 // ============================================================================
 
 
+/**
+ * periodic table of elements
+ */
+bool gen_elements()
+{
+	using t_propval = tl::Prop<std::string>::t_propval;
+
+	tl::Prop<std::string> propIn, propOut;
+	propIn.SetSeparator('/');
+	propOut.SetSeparator('.');
+
+	if(!propIn.Load("tmp/elements.xml", tl::PropType::XML))
+	{
+		tl::log_err("Cannot load periodic table of elements \"tmp/elements.xml\".");
+		return false;
+	}
+
+
+	// iterate over all elements
+	std::vector<t_propval> vecElems = propIn.GetFullChildNodes("/list");
+	std::size_t iElem = 0;
+	for(const t_propval& elem : vecElems)
+	{
+		if(elem.first != "atom") continue;
+
+		try
+		{
+			tl::Prop<std::string> propelem(elem.second);
+
+			std::string strName = propelem.Query<std::string>("<xmlattr>/id", "");
+			if(strName == "" || strName == "Xx") continue;
+
+			t_real dMass = t_real(0);
+			int iNr = 0;
+			std::string strConfig;
+
+			// iterate over all properties
+			for(auto iterVal=propelem.GetProp().begin(); iterVal!=propelem.GetProp().end(); ++iterVal)
+			{
+				tl::Prop<std::string> propVal(iterVal->second);
+				std::string strKey = propVal.Query<std::string>("<xmlattr>/dictRef", "");
+				std::string strVal = propVal.Query<std::string>("/", "");
+				//std::cout << strKey << " = " << strVal << std::endl;
+
+				if(strKey.find("atomicNumber") != std::string::npos)
+					iNr = tl::str_to_var<int>(strVal);
+				else if(strKey.find("exactMass") != std::string::npos)
+					dMass = tl::str_to_var<t_real>(strVal);
+				else if(strKey.find("electronicConfiguration") != std::string::npos)
+					strConfig = strVal;
+			}
+
+			std::ostringstream ostr;
+			ostr << "pte.elem_" << iElem;
+			std::string strElem = ostr.str();
+
+			propOut.Add(strElem + ".name", strName);
+			propOut.Add(strElem + ".number", tl::var_to_str(iNr, g_iPrec));
+			propOut.Add(strElem + ".mass", tl::var_to_str(dMass, g_iPrec));
+			propOut.Add(strElem + ".orbials", strConfig);
+		}
+		catch(const std::exception& ex)
+		{
+			tl::log_err("Element ", iElem, ": ", ex.what());
+		}
+
+		++iElem;
+	}
+
+
+	propOut.Add("pte.num_elems", iElem);
+
+	propOut.Add("pte.source", "Elements obtained from the "
+		"<a href=http://dx.doi.org/10.1021/ci050400b>Blue Obelisk Data Repository</a>).");
+	propOut.Add("pte.source_url", "https://github.com/egonw/bodr/blob/master/bodr/elements/elements.xml");
+
+	if(!propOut.Save("res/data/elements.xml.gz"))
+	{
+		tl::log_err("Cannot write \"res/data/elements.xml.gz\".");
+		return false;
+	}
+
+	return true;
+}
+
+
+
+// ============================================================================
+
+
 t_cplx get_number(std::string str)
 {
 	tl::string_rm<std::string>(str, "(", ")");
@@ -650,6 +740,10 @@ int main()
 #ifdef NO_TERM_CMDS
 	tl::Log::SetUseTermCmds(0);
 #endif
+
+	std::cout << "Generating periodic table of elements ... ";
+	if(gen_elements())
+		std::cout << "OK" << std::endl;
 
 	std::cout << "Generating atomic form factor coefficient table ... ";
 	if(gen_formfacts())

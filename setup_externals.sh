@@ -33,6 +33,7 @@ MAGFFACT_J2_4=https://www.ill.eu/sites/ccsl/ffacts/ffactnode12.html
 SCATLENS2=https://raw.githubusercontent.com/neutronpy/neutronpy/master/neutronpy/database/scattering_lengths.json
 MAGFFACT2=https://raw.githubusercontent.com/neutronpy/neutronpy/master/neutronpy/database/magnetic_form_factors.json
 
+ELEMENTS=https://raw.githubusercontent.com/egonw/bodr/master/bodr/elements/elements.xml
 
 
 #
@@ -117,6 +118,30 @@ function dl_tangoicons
 
 	cd ..
 	mv -v tmp/*.svg res/icons/
+}
+
+
+
+#
+# periodic table of elements
+#
+function dl_elements
+{
+	if [ ! -f tmp/${ELEMENTS##*/} ]; then
+		echo -e "Obtaining periodic table of elements...\n"
+
+		if ! wget ${ELEMENTS} -O tmp/${ELEMENTS##*/}; then
+			echo -e "Error: Cannot download periodic table.";
+			return -1;
+		fi
+
+		if [ ! -f tmp/${ELEMENTS##*/} ]; then
+			echo -e "Files cannot be automatically downloaded. "
+			echo -e "Please download the following file manually and place them in the ./tmp subfolder:\n"
+			echo -e "\t${ELEMENTS}\n"
+			echo -e "Afterwards, please run this script again.\n"
+		fi
+	fi
 }
 
 
@@ -245,11 +270,13 @@ function dl_magffacts2
 
 mkdir tmp
 echo -e "--------------------------------------------------------------------------------"
+dl_elements
+echo -e "--------------------------------------------------------------------------------"
 dl_scatlens
 dl_scatlens2
 echo -e "--------------------------------------------------------------------------------"
 dl_magffacts
-#dl_magffacts2
+dl_magffacts2
 echo -e "--------------------------------------------------------------------------------"
 dl_fadd
 echo -e "--------------------------------------------------------------------------------"
