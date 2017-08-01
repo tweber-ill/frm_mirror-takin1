@@ -127,7 +127,7 @@ bool gen_elements()
 
 		try
 		{
-			tl::Prop<std::string> propelem(elem.second);
+			tl::Prop<std::string> propelem(elem.second, '/');
 
 			std::string strName = propelem.Query<std::string>("<xmlattr>/id", "");
 			if(strName == "" || strName == "Xx") continue;
@@ -139,7 +139,7 @@ bool gen_elements()
 			// iterate over all properties
 			for(auto iterVal=propelem.GetProp().begin(); iterVal!=propelem.GetProp().end(); ++iterVal)
 			{
-				tl::Prop<std::string> propVal(iterVal->second);
+				tl::Prop<std::string> propVal(iterVal->second, '/');
 				std::string strKey = propVal.Query<std::string>("<xmlattr>/dictRef", "");
 				std::string strVal = propVal.Query<std::string>("/", "");
 				//std::cout << strKey << " = " << strVal << std::endl;
