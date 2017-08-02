@@ -538,7 +538,7 @@ ifeq ($(BUILD_AUX_PROGS), 1)
 	ALL_PROGS += ${AUX_PROGS}
 endif
 
-all: ${ALL_PROGS}$
+all: ${ALL_PROGS}
 
 
 takin: ${OBJ_COMMON} ${OBJ_TAZ}
