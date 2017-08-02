@@ -33,7 +33,7 @@ bool gen_formfacts()
 	tl::Prop<std::string> prop;
 	prop.SetSeparator('.');
 
-	prop.Add("ffacts.source", "Form factor coefficients extracted from Clipper.");
+	prop.Add("ffacts.source", "Form factor coefficients extracted from Clipper (by K. Cowtan).");
 	prop.Add("ffacts.source_url", "http://www.ysbl.york.ac.uk/~cowtan/clipper/");
 	prop.Add("ffacts.num_atoms", tl::var_to_str(dat::numsfdata));
 
@@ -75,7 +75,7 @@ bool gen_spacegroups()
 	prop.SetSeparator('.');
 
 	const unsigned int iNumSGs = 230;
-	prop.Add("sgroups.source", "Space group data extracted from Clipper.");
+	prop.Add("sgroups.source", "Space group data extracted from Clipper (by K. Cowtan).");
 	prop.Add("sgroups.source_url", "http://www.ysbl.york.ac.uk/~cowtan/clipper/");
 	prop.Add("sgroups.num_groups", tl::var_to_str(iNumSGs));
 

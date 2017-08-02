@@ -83,9 +83,12 @@ bool gen_elements()
 			std::string strName = propelem.Query<std::string>("<xmlattr>/id", "");
 			if(strName == "" || strName == "Xx") continue;
 
-			t_real dMass = t_real(0);
-			int iNr = 0;
-			std::string strConfig;
+			t_real dMass = t_real(-1);
+			t_real dRadCov=t_real(-1), dRadVdW=t_real(-1);
+			t_real dEIon=t_real(-1), dEAffin(-1);
+			t_real dTMelt=t_real(-1), dTBoil=t_real(-1);
+			int iNr=-1, iPeriod=-1, iGroup=-1;
+			std::string strConfig, strBlock;
 
 			// iterate over all properties
 			for(auto iterVal=propelem.GetProp().begin(); iterVal!=propelem.GetProp().end(); ++iterVal)
@@ -97,10 +100,28 @@ bool gen_elements()
 
 				if(strKey.find("atomicNumber") != std::string::npos)
 					iNr = tl::str_to_var<int>(strVal);
-				else if(strKey.find("exactMass") != std::string::npos)
-					dMass = tl::str_to_var<t_real>(strVal);
 				else if(strKey.find("electronicConfiguration") != std::string::npos)
 					strConfig = strVal;
+				else if(strKey.find("periodTableBlock") != std::string::npos)
+					strBlock = strVal;
+				else if(strKey.find("period") != std::string::npos)
+					iPeriod = tl::str_to_var<int>(strVal);
+				else if(strKey.find("group") != std::string::npos)
+					iGroup = tl::str_to_var<int>(strVal);
+				else if(strKey.find("exactMass") != std::string::npos)
+					dMass = tl::str_to_var<t_real>(strVal);
+				else if(strKey.find("radiusCovalent") != std::string::npos)
+					dRadCov = tl::str_to_var<t_real>(strVal);
+				else if(strKey.find("radiusVDW") != std::string::npos)
+					dRadVdW = tl::str_to_var<t_real>(strVal);
+				else if(strKey.find("ionization") != std::string::npos)
+					dEIon = tl::str_to_var<t_real>(strVal);
+				else if(strKey.find("electronAffinity") != std::string::npos)
+					dEAffin = tl::str_to_var<t_real>(strVal);
+				else if(strKey.find("melting") != std::string::npos)
+					dTMelt = tl::str_to_var<t_real>(strVal);
+				else if(strKey.find("boiling") != std::string::npos)
+					dTBoil = tl::str_to_var<t_real>(strVal);
 			}
 
 			std::ostringstream ostr;
@@ -108,9 +129,18 @@ bool gen_elements()
 			std::string strElem = ostr.str();
 
 			propOut.Add(strElem + ".name", strName);
-			propOut.Add(strElem + ".number", tl::var_to_str(iNr, g_iPrec));
-			propOut.Add(strElem + ".mass", tl::var_to_str(dMass, g_iPrec));
-			propOut.Add(strElem + ".orbials", strConfig);
+			propOut.Add(strElem + ".num", tl::var_to_str(iNr, g_iPrec));
+			propOut.Add(strElem + ".period", tl::var_to_str(iPeriod, g_iPrec));
+			propOut.Add(strElem + ".group", tl::var_to_str(iGroup, g_iPrec));
+			propOut.Add(strElem + ".orbitals", strConfig);
+			propOut.Add(strElem + ".block", strBlock);
+			propOut.Add(strElem + ".m", tl::var_to_str(dMass, g_iPrec));
+			propOut.Add(strElem + ".r_cov", tl::var_to_str(dRadCov, g_iPrec));
+			propOut.Add(strElem + ".r_vdW", tl::var_to_str(dRadVdW, g_iPrec));
+			propOut.Add(strElem + ".E_ion", tl::var_to_str(dEIon, g_iPrec));
+			propOut.Add(strElem + ".E_affin", tl::var_to_str(dEAffin, g_iPrec));
+			propOut.Add(strElem + ".T_melt", tl::var_to_str(dTMelt, g_iPrec));
+			propOut.Add(strElem + ".T_boil", tl::var_to_str(dTBoil, g_iPrec));
 
 			g_mapElems[strName] = iNr;
 		}
@@ -125,7 +155,7 @@ bool gen_elements()
 
 	propOut.Add("pte.num_elems", iElem);
 
-	propOut.Add("pte.source", "Elements obtained from the "
+	propOut.Add("pte.source", "Periodic table of the elements obtained from the "
 		"<a href=http://dx.doi.org/10.1021/ci050400b>Blue Obelisk Data Repository</a>).");
 	propOut.Add("pte.source_url", "https://github.com/egonw/bodr/blob/master/bodr/elements/elements.xml");
 
@@ -261,7 +291,7 @@ bool gen_scatlens_npy()
 
 	propOut.Add("scatlens.num_atoms", tl::var_to_str(vecNuclei.size()));
 
-	propOut.Add("scatlens.source", "Scattering lengths and cross-sections extracted from NeutronPy by D. Fobes"
+	propOut.Add("scatlens.source", "Scattering lengths and cross-sections extracted from NeutronPy (by D. Fobes)"
 		" (which itself is based on <a href=http://dx.doi.org/10.1080/10448639208218770>this paper</a>).");
 	propOut.Add("scatlens.source_url", "https://github.com/neutronpy/neutronpy/blob/master/neutronpy/database/scattering_lengths.json");
 
@@ -412,7 +442,7 @@ bool gen_magformfacts_npy()
 
 	propOut.Add("magffacts.num_atoms", tl::var_to_str(vecNuclei.size()));
 
-	propOut.Add("magffacts.source", "Magnetic form factor coefficients extracted from NeutronPy by D. Fobes");
+	propOut.Add("magffacts.source", "Magnetic form factor coefficients extracted from NeutronPy (by D. Fobes).");
 	propOut.Add("magffacts.source_url", "https://github.com/neutronpy/neutronpy/blob/master/neutronpy/database/magnetic_form_factors.json");
 
 	if(!propOut.Save("res/data/magffacts.xml.gz"))
