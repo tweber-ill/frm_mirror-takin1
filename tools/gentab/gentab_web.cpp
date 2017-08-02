@@ -91,7 +91,7 @@ bool gen_scatlens()
 	tl::Prop<std::string> prop;
 	prop.SetSeparator('.');
 	prop.Add("scatlens.source", "Scattering lengths and cross-sections extracted from NIST table"
-		" (which itself is based on <a href=http://dx.doi.org/10.1080/10448639208218770>this paper</a>).");
+		" (which itself is based on <a href=\"http://dx.doi.org/10.1080/10448639208218770\">this paper</a>).");
 	prop.Add("scatlens.source_url", "https://www.ncnr.nist.gov/resources/n-lengths/list.html");
 
 	unsigned int iAtom = 0;

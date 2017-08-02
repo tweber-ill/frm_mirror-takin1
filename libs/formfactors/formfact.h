@@ -1,5 +1,5 @@
 /**
- * Form factor and scattering length tables
+ * Form factors, elements, and scattering length tables
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date nov-2015
  * @license GPLv2
@@ -18,6 +18,65 @@
 #include "tlibs/phys/atoms.h"
 #include "tlibs/phys/mag.h"
 #include "libs/globals.h"
+
+
+
+template<typename T=double>
+class PeriodicElement
+{
+	template<typename> friend class PeriodicSystem;
+
+	public:
+		typedef T value_type;
+
+	protected:
+		std::string strAtom;
+		int iNr = -1, iPeriod = -1, iGroup = -1;
+
+		T dMass = T(-1);
+		T dRadCov = T(-1), dRadVdW = T(-1);
+		T dEIon = T(-1), dEAffin = T(-1);
+		T dTMelt = T(-1), dTBoil = T(-1);
+		std::string strOrbitals, strBlock;
+
+	public:
+		const std::string& GetAtomIdent() const { return strAtom; }
+};
+
+template<typename T/*=double*/>
+class PeriodicSystem
+{
+	public:
+		typedef PeriodicElement<T> elem_type;
+		typedef typename elem_type::value_type value_type;
+
+	private:
+		static std::shared_ptr<PeriodicSystem> s_inst;
+		static std::mutex s_mutex;
+
+		PeriodicSystem();
+
+	protected:
+		std::vector<elem_type> s_vecAtoms;
+		std::string s_strSrc, s_strSrcUrl;
+
+	public:
+		virtual ~PeriodicSystem();
+		static std::shared_ptr<const PeriodicSystem> GetInstance();
+
+		std::size_t GetNumAtoms() const { return s_vecAtoms.size(); }
+		const elem_type& GetAtom(std::size_t i) const
+		{ return s_vecAtoms[i]; }
+
+		const elem_type* Find(const std::string& strElem) const;
+
+		const std::string& GetSource() const { return s_strSrc; }
+		const std::string& GetSourceUrl() const { return s_strSrcUrl; }
+};
+
+
+// ----------------------------------------------------------------------------
+
 
 
 template<typename T=double>

@@ -156,7 +156,7 @@ bool gen_elements()
 	propOut.Add("pte.num_elems", iElem);
 
 	propOut.Add("pte.source", "Periodic table of the elements obtained from the "
-		"<a href=http://dx.doi.org/10.1021/ci050400b>Blue Obelisk Data Repository</a>).");
+		"<a href=\"http://dx.doi.org/10.1021/ci050400b\">Blue Obelisk Data Repository</a>.");
 	propOut.Add("pte.source_url", "https://github.com/egonw/bodr/blob/master/bodr/elements/elements.xml");
 
 	if(!propOut.Save("res/data/elements.xml.gz"))
@@ -292,7 +292,7 @@ bool gen_scatlens_npy()
 	propOut.Add("scatlens.num_atoms", tl::var_to_str(vecNuclei.size()));
 
 	propOut.Add("scatlens.source", "Scattering lengths and cross-sections extracted from NeutronPy (by D. Fobes)"
-		" (which itself is based on <a href=http://dx.doi.org/10.1080/10448639208218770>this paper</a>).");
+		" (which itself is based on <a href=\"http://dx.doi.org/10.1080/10448639208218770\">this paper</a>).");
 	propOut.Add("scatlens.source_url", "https://github.com/neutronpy/neutronpy/blob/master/neutronpy/database/scattering_lengths.json");
 
 	if(!propOut.Save("res/data/scatlens.xml.gz"))

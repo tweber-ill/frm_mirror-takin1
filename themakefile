@@ -169,11 +169,11 @@ DEFINES += -DQT_VER=$(QT_VER)
 
 
 ifeq ($(QT_VER), 5)	# qt 5
-	QT_INC =	-I${MYINC}/qt5 \
-                        -I${MYINC}/qt5/QtCore \
-                        -I${MYINC}/qt5/QtWidgets \
-                        -I${MYINC}/qt5/QtGui \
-                        -I${MYINC}/qt5/QtOpenGL \
+	QT_INC =-I${MYINC}/qt5 \
+			-I${MYINC}/qt5/QtCore \
+			-I${MYINC}/qt5/QtWidgets \
+			-I${MYINC}/qt5/QtGui \
+			-I${MYINC}/qt5/QtOpenGL \
 			-I/usr/local/opt/qt5/Frameworks/QtOpenGL.framework/Versions/5/Headers \
 			-I/usr/local/opt/qt5/Frameworks/QtWidgets.framework/Versions/5/Headers \
 			-I/usr/local/opt/qt5/Frameworks/QtCore.framework/Versions/5/Headers \
@@ -190,7 +190,7 @@ ifeq ($(QT_VER), 5)	# qt 5
 			-I/usr/include/qt5/QtGui \
 			-I/usr/include/qt5/QtOpenGL
 
-	QT_LIB =	-L${MYLIB}/qt5 \
+	QT_LIB =-L${MYLIB}/qt5 \
 			-L${MYLIB}/qt5/lib \
 			-L/opt/local/libexec/qt5/lib \
 			-L/usr/lib64/qt5 \
