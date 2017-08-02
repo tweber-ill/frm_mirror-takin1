@@ -43,6 +43,10 @@ protected:
 	std::vector<t_real_glob> m_vecElem, m_vecSc;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrapSc;
 
+	// elements
+	std::vector<t_real_glob> m_vecElemX, m_vecElemY;
+	std::unique_ptr<QwtPlotWrapper> m_plotwrapElem;
+
 
 protected:
 	virtual void closeEvent(QCloseEvent* pEvt) override;
@@ -65,8 +69,13 @@ protected slots:
 	void Calcg();
 
 	void SearchSLAtom(const QString& qstr);
+	void SearchElement(const QString& qstr);
+
 	void PlotScatteringLengths();
+	void PlotElements();
+
 	void SetupScatteringLengths();
+	void SetupElements();
 
 	void cursorMoved(const QPointF& pt);
 

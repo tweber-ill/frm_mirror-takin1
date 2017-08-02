@@ -41,6 +41,21 @@ class PeriodicElement
 
 	public:
 		const std::string& GetAtomIdent() const { return strAtom; }
+
+		int GetNr() const { return iNr; }
+		int GetPeriod() const { return iPeriod; }
+		int GetGroup() const { return iGroup; }
+		
+		T GetMass() const { return dMass; }
+		T GetRadiusCov() const { return dRadCov; }
+		T GetRadiusVdW() const { return dRadVdW; }
+		T GetEIon() const { return dEIon; }
+		T GetEAffin() const { return dEAffin; }
+		T GetTMelt() const { return dTMelt; }
+		T GetTBoil() const { return dTBoil; }
+
+		const std::string& GetOrbitals() const { return strOrbitals; }
+		const std::string& GetBlock() const { return strBlock; }
 };
 
 template<typename T/*=double*/>
