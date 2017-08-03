@@ -475,7 +475,7 @@ void FormfactorDlg::PlotElements()
 		const PeriodicSystem<t_real>::elem_type& sc = lstel->GetAtom(iAtom);
 
 		t_real dVal = t_real(-1);
-		
+
 		if(radioElemMass->isChecked())
 			dVal = sc.GetMass();
 		else if(radioElemRadCov->isChecked())
@@ -499,7 +499,7 @@ void FormfactorDlg::PlotElements()
 	}
 
 	if(radioElemMass->isChecked())
-		m_plotwrapElem->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Mass (amu)");
+		m_plotwrapElem->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Mass (u)");
 	else if(radioElemRadCov->isChecked() || radioElemRadVdW->isChecked())
 		m_plotwrapElem->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Length (A)");
 	else if(radioElemIon->isChecked() || radioElemAffin->isChecked())
@@ -652,7 +652,7 @@ void FormfactorDlg::SetupElements()
 		t_real dTMelt = pelem->GetTMelt();
 		t_real dTBoil = pelem->GetTBoil();
 
-		std::string strMass = dMass>=0. ? tl::var_to_str(dMass, g_iPrec) + " amu" : "";
+		std::string strMass = dMass>=0. ? tl::var_to_str(dMass, g_iPrec) + " u" : "";
 		std::string strRadCov = dRadCov>=0. ? tl::var_to_str(dRadCov, g_iPrec) + " A" : "";
 		std::string strRadVdW = dRadVdW>=0. ? tl::var_to_str(dRadVdW, g_iPrec) + " A" : "";
 		std::string strEIon = dEIon>=0. ? tl::var_to_str(dEIon, g_iPrec) + " eV" : "";
@@ -667,7 +667,7 @@ void FormfactorDlg::SetupElements()
 		tableElems->setItem(iElem, ELEM_ITEM_NAME, new QTableWidgetItem(pelem->GetAtomIdent().c_str()));
 		tableElems->setItem(iElem, ELEM_ITEM_BLOCK, new QTableWidgetItem(pelem->GetBlock().c_str()));
 		tableElems->setItem(iElem, ELEM_ITEM_ORBITALS, new QTableWidgetItem(pelem->GetOrbitals().c_str()));
-		
+
 		tableElems->setItem(iElem, ELEM_ITEM_MASS, new QTableWidgetItemWrapper<t_real>(dMass, strMass));
 		tableElems->setItem(iElem, ELEM_ITEM_RAD_COV, new QTableWidgetItemWrapper<t_real>(dRadCov, strRadCov));
 		tableElems->setItem(iElem, ELEM_ITEM_RAD_VDW, new QTableWidgetItemWrapper<t_real>(dRadVdW, strRadVdW));
@@ -693,7 +693,7 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 		t_real dX = pt.x();
 		std::wstring strX = std::to_wstring(dX);
 		std::wstring strY;
-		
+
 		if(iCurTabIdx == 1)		// magnetic
 			strY = std::to_wstring(GetMagFormFact(dX));
 		if(iCurTabIdx == 2)		// atomic
