@@ -44,6 +44,8 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 			this, SLOT(AtomSelected(QListWidgetItem*, QListWidgetItem*)));
 		QObject::connect(editFilter, SIGNAL(textEdited(const QString&)),
 			this, SLOT(SearchAtom(const QString&)));
+		for(QDoubleSpinBox* pSpin : {spinXQMin, spinXQMax})
+			QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(RefreshAtom()));
 
 		SearchAtom("H");
 	}
@@ -72,7 +74,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 
 		for(QDoubleSpinBox* pSpin : {spinL, spinS, spinJ})
 			QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(Calcg()));
-		for(QDoubleSpinBox* pSpin : {sping, spinL, spinS, spinJ})
+		for(QDoubleSpinBox* pSpin : {sping, spinL, spinS, spinJ, spinMagQMin, spinMagQMax})
 			QObject::connect(pSpin, SIGNAL(valueChanged(double)), this, SLOT(RefreshMagAtom()));
 
 		QObject::connect(editOrbital, SIGNAL(textEdited(const QString&)),
@@ -282,8 +284,8 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	m_pCurAtom = pItem;
 	if(!m_pCurAtom || !m_pCurAtom->data(Qt::UserRole).toUInt()) return;
 
-	t_real dMinQ = 0.;
-	t_real dMaxQ = 25.;
+	t_real dMinQ = spinXQMin->value();
+	t_real dMaxQ = spinXQMax->value();
 
 	m_vecQ.clear();
 	m_vecFF.clear();
@@ -302,6 +304,12 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecFF);
 }
+
+void FormfactorDlg::RefreshAtom()
+{
+	AtomSelected(listAtoms->currentItem(), nullptr);
+}
+
 
 
 // ----------------------------------------------------------------------------
@@ -340,8 +348,8 @@ void FormfactorDlg::MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	m_pCurMagAtom = pItem;
 	if(!m_pCurMagAtom || !m_pCurMagAtom->data(Qt::UserRole).toUInt()) return;
 
-	t_real dMinQ = 0.;
-	t_real dMaxQ = 15.;
+	t_real dMinQ = spinMagQMin->value();
+	t_real dMaxQ = spinMagQMax->value();
 
 	m_vecQ_m.clear();
 	m_vecFF_m.clear();
@@ -368,7 +376,9 @@ void FormfactorDlg::RefreshMagAtom()
 	MagAtomSelected(listMAtoms->currentItem(), nullptr);
 }
 
+
 // ----------------------------------------------------------------------------
+
 
 void FormfactorDlg::Calcg()
 {
@@ -393,20 +403,39 @@ void FormfactorDlg::Calcg()
 
 void FormfactorDlg::CalcTermSymbol(const QString& qstr)
 {
-	try
+	bool bReset = 0;
+
+	if(qstr != "")
 	{
-		std::string strOrbitals = qstr.toStdString();
+		try
+		{
+			std::string strOrbitals = qstr.toStdString();
 
-		t_real dS, dL, dJ;
-		std::tie(dS, dL, dJ) = tl::hund(strOrbitals);
+			t_real dS, dL, dJ;
+			std::tie(dS, dL, dJ) = tl::hund(strOrbitals);
 
-		spinS->setValue(dS);
-		spinL->setValue(dL);
-		spinJ->setValue(dJ);
+			spinS->setValue(dS);
+			spinL->setValue(dL);
+			spinJ->setValue(dJ);
+		}
+		catch(const std::exception& ex)
+		{
+			bReset = 1;
+			tl::log_err(ex.what());
+		}
 	}
-	catch(const std::exception& ex)
+	else
 	{
-		tl::log_err(ex.what());
+		bReset = 1;
+	}
+
+	if(bReset)
+	{
+		// reset defaults
+		sping->setValue(2.);
+		spinS->setValue(2.);
+		spinJ->setValue(2.);
+		spinL->setValue(0.);
 	}
 }
 

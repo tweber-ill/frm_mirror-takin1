@@ -561,7 +561,7 @@ TazDlg::TazDlg(QWidget* pParent)
 	QAction *pFormfactor = nullptr;
 	if(g_bHasFormfacts && g_bHasScatlens)
 	{
-		pFormfactor = new QAction("Form Factors...", this);
+		pFormfactor = new QAction("Elements && Form Factors...", this);
 		pMenuCalc->addAction(pFormfactor);
 	}
 

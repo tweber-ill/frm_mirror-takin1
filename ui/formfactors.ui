@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
-    <height>484</height>
+    <width>682</width>
+    <height>493</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -235,103 +235,6 @@
            <property name="spacing">
             <number>2</number>
            </property>
-           <item row="4" column="0">
-            <widget class="QDoubleSpinBox" name="spinL">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="prefix">
-              <string>L=</string>
-             </property>
-             <property name="decimals">
-              <number>1</number>
-             </property>
-             <property name="singleStep">
-              <double>0.500000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QDoubleSpinBox" name="spinJ">
-             <property name="prefix">
-              <string>J=</string>
-             </property>
-             <property name="decimals">
-              <number>1</number>
-             </property>
-             <property name="singleStep">
-              <double>0.500000000000000</double>
-             </property>
-             <property name="value">
-              <double>2.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QDoubleSpinBox" name="spinS">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="prefix">
-              <string>S=</string>
-             </property>
-             <property name="decimals">
-              <number>1</number>
-             </property>
-             <property name="singleStep">
-              <double>0.500000000000000</double>
-             </property>
-             <property name="value">
-              <double>2.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0" colspan="2">
-            <widget class="QListWidget" name="listMAtoms">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="alternatingRowColors">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Search:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="editMFilter">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Search Atoms</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Orbitals:</string>
-             </property>
-            </widget>
-           </item>
            <item row="5" column="1">
             <widget class="QLineEdit" name="editOrbital">
              <property name="sizePolicy">
@@ -358,6 +261,132 @@
              </property>
              <property name="value">
               <double>2.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Orbitals:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QDoubleSpinBox" name="spinL">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="prefix">
+              <string>L=</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="singleStep">
+              <double>0.500000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QListWidget" name="listMAtoms">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QDoubleSpinBox" name="spinS">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="prefix">
+              <string>S=</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="singleStep">
+              <double>0.500000000000000</double>
+             </property>
+             <property name="value">
+              <double>2.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="editMFilter">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Search Atoms</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QDoubleSpinBox" name="spinJ">
+             <property name="prefix">
+              <string>J=</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="singleStep">
+              <double>0.500000000000000</double>
+             </property>
+             <property name="value">
+              <double>2.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Search:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QDoubleSpinBox" name="spinMagQMin">
+             <property name="toolTip">
+              <string>Minimum Q</string>
+             </property>
+             <property name="suffix">
+              <string> Å⁻¹</string>
+             </property>
+             <property name="maximum">
+              <double>99.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QDoubleSpinBox" name="spinMagQMax">
+             <property name="toolTip">
+              <string>Maximum Q</string>
+             </property>
+             <property name="suffix">
+              <string> Å⁻¹</string>
+             </property>
+             <property name="maximum">
+              <double>99.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>15.000000000000000</double>
              </property>
             </widget>
            </item>
@@ -406,7 +435,7 @@
             <number>4</number>
            </property>
            <property name="spacing">
-            <number>4</number>
+            <number>2</number>
            </property>
            <item row="1" column="1">
             <widget class="QLineEdit" name="editFilter">
@@ -422,6 +451,35 @@
              </property>
              <property name="alternatingRowColors">
               <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QDoubleSpinBox" name="spinXQMin">
+             <property name="toolTip">
+              <string>Minimum Q</string>
+             </property>
+             <property name="prefix">
+              <string>Qmin = </string>
+             </property>
+             <property name="suffix">
+              <string> Å⁻¹</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QDoubleSpinBox" name="spinXQMax">
+             <property name="toolTip">
+              <string>Maximum Q</string>
+             </property>
+             <property name="prefix">
+              <string>Qmax = </string>
+             </property>
+             <property name="suffix">
+              <string> Å⁻¹</string>
+             </property>
+             <property name="value">
+              <double>25.000000000000000</double>
              </property>
             </widget>
            </item>
@@ -743,10 +801,15 @@
   <tabstop>spinL</tabstop>
   <tabstop>spinS</tabstop>
   <tabstop>editOrbital</tabstop>
+  <tabstop>spinMagQMin</tabstop>
+  <tabstop>spinMagQMax</tabstop>
   <tabstop>listAtoms</tabstop>
   <tabstop>editFilter</tabstop>
+  <tabstop>spinXQMin</tabstop>
+  <tabstop>spinXQMax</tabstop>
   <tabstop>tabEl</tabstop>
   <tabstop>tableElems</tabstop>
+  <tabstop>editElemSearch</tabstop>
   <tabstop>radioElemMass</tabstop>
   <tabstop>radioElemRadCov</tabstop>
   <tabstop>radioElemRadVdW</tabstop>
@@ -755,12 +818,7 @@
   <tabstop>radioElemMelt</tabstop>
   <tabstop>radioElemBoil</tabstop>
   <tabstop>buttonBox</tabstop>
-  <tabstop>radioIncoherent_2</tabstop>
-  <tabstop>editSLSearch_2</tabstop>
-  <tabstop>tableSL_2</tabstop>
   <tabstop>editSLSearch</tabstop>
-  <tabstop>editElemSearch</tabstop>
-  <tabstop>radioCoherent_2</tabstop>
  </tabstops>
  <resources/>
  <connections>

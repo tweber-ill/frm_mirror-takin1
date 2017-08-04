@@ -61,6 +61,7 @@ protected:
 protected slots:
 	void SearchAtom(const QString& qstr);
 	void AtomSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
+	void RefreshAtom();
 
 	void SearchMagAtom(const QString& qstr);
 	void MagAtomSelected(QListWidgetItem *pItem, QListWidgetItem *pItemPrev);
