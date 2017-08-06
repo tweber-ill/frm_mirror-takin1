@@ -173,6 +173,97 @@ bool gen_elements()
 // ============================================================================
 
 
+/**
+ * space groups (alternative)
+ */
+bool gen_spacegroups()
+{
+	using t_propval = tl::Prop<std::string>::t_propval;
+
+	tl::Prop<std::string> propIn, propOut;
+	propIn.SetSeparator('/');
+	propOut.SetSeparator('.');
+
+	if(!propIn.Load("tmp/space-groups.xml", tl::PropType::XML))
+	{
+		tl::log_err("Cannot load space group table \"tmp/space-groups.xml\".");
+		return false;
+	}
+
+
+	// iterate over all groups
+	std::vector<t_propval> vecGroups = propIn.GetFullChildNodes("/list");
+	std::size_t iGroup = 0;
+	for(const t_propval& grp : vecGroups)
+	{
+		if(grp.first != "group") continue;
+
+		try
+		{
+			tl::Prop<std::string> propgrp(grp.second, '/');
+
+			std::string strId = propgrp.Query<std::string>("<xmlattr>/id", "");
+			if(strId == "") continue;
+			int iNr = tl::str_to_var<int>(strId);
+
+			std::string strName = propgrp.Query<std::string>("<xmlattr>/HM", "");
+			if(strName == "") continue;
+
+
+			std::ostringstream ostr;
+			ostr << "sgroups.group_" << iGroup;
+			std::string strGroup = ostr.str();
+
+			std::vector<t_propval> vecTrafos = propgrp.GetFullChildNodes("/");
+			std::size_t iTrafo=0;
+			for(const t_propval& trafo : vecTrafos)
+			{
+				if(trafo.first != "transform") continue;
+
+				tl::Prop<std::string> proptrafo(trafo.second, '/');
+				std::string strTrafo = proptrafo.Query<std::string>("/", "");
+
+				std::ostringstream ostrTrafo;
+				ostrTrafo << strGroup << ".trafo_" << iTrafo;
+				std::string strTrafoKey = ostrTrafo.str();
+
+				propOut.Add(strTrafoKey, strTrafo);
+				++iTrafo;
+			}
+
+			propOut.Add(strGroup + ".num", tl::var_to_str(iNr, g_iPrec));
+			propOut.Add(strGroup + ".name", strName);
+			propOut.Add(strGroup + ".num_trafos", tl::var_to_str(iTrafo, g_iPrec));
+		}
+		catch(const std::exception& ex)
+		{
+			tl::log_err("Space group ", iGroup, ": ", ex.what());
+		}
+
+		++iGroup;
+	}
+
+
+	propOut.Add("sgroups.num_groups", iGroup);
+
+	propOut.Add("sgroups.source", "Space groups obtained from the "
+		"<a href=\"http://dx.doi.org/10.1021/ci050400b\">Blue Obelisk Data Repository</a>.");
+	propOut.Add("sgroups.source_url", "https://github.com/egonw/bodr/blob/master/bodr/crystal/space-groups.xml");
+
+	if(!propOut.Save("res/data/sgroups2.xml.gz"))
+	{
+		tl::log_err("Cannot write \"res/data/sgroups2.xml.gz\".");
+		return false;
+	}
+
+	return true;
+}
+
+
+
+// ============================================================================
+
+
 struct ffact
 {
 	std::string strName;
@@ -466,12 +557,10 @@ int main()
 
 	std::cout << "Generating periodic table of elements ... ";
 	bool bHasElems = gen_elements();
-	if(bHasElems)
-		std::cout << "OK" << std::endl;
+	if(bHasElems) std::cout << "OK" << std::endl;
 
 	std::cout << "Generating atomic form factor coefficient table ... ";
-	if(gen_formfacts())
-		std::cout << "OK" << std::endl;
+	if(gen_formfacts_clp()) std::cout << "OK" << std::endl;
 
 	std::cout << "Generating scattering length table ... ";
 	if(gen_scatlens_npy())
@@ -481,23 +570,22 @@ int main()
 	else
 	{
 		std::cout << "Generating scattering length table (alternative) ... ";
-		if(gen_scatlens())
-			std::cout << "OK" << std::endl;
+		if(gen_scatlens()) std::cout << "OK" << std::endl;
 	}
 
 	std::cout << "Generating space group table ... ";
-	if(gen_spacegroups())
-		std::cout << "OK" << std::endl;
+	if(gen_spacegroups_clp()) std::cout << "OK" << std::endl;
+
+	//std::cout << "Generating space group table (alternative) ... ";
+	//if(gen_spacegroups()) std::cout << "OK" << std::endl;
 
 	//std::cout << "Generating magnetic form factor coefficient table ... ";
-	//if(gen_magformfacts())
-	//	std::cout << "OK" << std::endl;
+	//if(gen_magformfacts()) std::cout << "OK" << std::endl;
 
 	if(bHasElems)
 	{
 		std::cout << "Generating magnetic form factor coefficient table ... ";
-		if(gen_magformfacts_npy())
-			std::cout << "OK" << std::endl;
+		if(gen_magformfacts_npy()) std::cout << "OK" << std::endl;
 	}
 	else
 	{
