@@ -755,7 +755,7 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 		std::complex<t_real> b_inc = elem.GetIncoherent();
 
 		std::ostringstream ostr;
-		ostr.precision(g_iPrecGfx);
+		ostr.precision(g_iPrec);
 		ostr << iElem << ", " << strName
 			<< ": b_coh = " << b_coh << ", b_inc = " << b_inc;
 		labelStatus->setText(ostr.str().c_str());
@@ -814,7 +814,7 @@ void FormfactorDlg::cursorMoved(const QPointF& pt)
 		}
 
 		std::ostringstream ostr;
-		ostr.precision(g_iPrecGfx);
+		ostr.precision(g_iPrec);
 		ostr << iElem << ", " << strName;
 
 		if(bSel1 || bSel2)
