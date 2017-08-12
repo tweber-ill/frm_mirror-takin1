@@ -15,7 +15,9 @@
 #include "tlibs/file/prop.h"
 #include "tlibs/log/log.h"
 #include "tlibs/math/linalg.h"
+#include "libs/spacegroups/sghelper.h"
 #include "libs/spacegroups/spacegroup_clp.h"
+
 
 #ifndef USE_BOOST_REX
 	#include <regex>
@@ -227,7 +229,8 @@ bool gen_spacegroups()
 				ostrTrafo << strGroup << ".trafo_" << iTrafo;
 				std::string strTrafoKey = ostrTrafo.str();
 
-				propOut.Add(strTrafoKey, strTrafo);
+				t_mat matTrafo = get_desc_trafo<t_real>(strTrafo);
+				propOut.Add(strTrafoKey, tl::var_to_str(matTrafo));
 				++iTrafo;
 			}
 
