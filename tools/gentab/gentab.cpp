@@ -210,6 +210,7 @@ bool gen_spacegroups()
 
 			std::string strName = propgrp.Query<std::string>("<xmlattr>/HM", "");
 			if(strName == "") continue;
+			convert_hm_symbol(strName);
 
 
 			std::ostringstream ostr;
@@ -230,7 +231,11 @@ bool gen_spacegroups()
 				std::string strTrafoKey = ostrTrafo.str();
 
 				t_mat matTrafo = get_desc_trafo<t_real>(strTrafo);
-				propOut.Add(strTrafoKey, tl::var_to_str(matTrafo));
+				std::string strAttribs = "; ";
+				if(tl::is_centering_matrix<t_mat>(matTrafo))
+					strAttribs += "c";
+
+				propOut.Add(strTrafoKey, tl::var_to_str(matTrafo) + strAttribs);
 				++iTrafo;
 			}
 
