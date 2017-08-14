@@ -196,6 +196,7 @@ bool gen_spacegroups()
 	// iterate over all groups
 	std::vector<t_propval> vecGroups = propIn.GetFullChildNodes("/list");
 	std::size_t iGroup = 0;
+	std::set<std::string> setNames;
 	for(const t_propval& grp : vecGroups)
 	{
 		if(grp.first != "group") continue;
@@ -212,6 +213,23 @@ bool gen_spacegroups()
 			if(strName == "") continue;
 			convert_hm_symbol(strName);
 
+			// find an unique name
+			std::size_t iNameCtr = 1;
+			while(1)
+			{
+				std::ostringstream ostrNewName;
+				ostrNewName << strName;
+				if(iNameCtr >= 2)
+					ostrNewName << " [" << iNameCtr << "]";
+				if(setNames.find(ostrNewName.str()) == setNames.end())
+				{
+					strName = ostrNewName.str();
+					setNames.insert(strName);
+					break;
+				}
+
+				++iNameCtr;
+			}
 
 			std::ostringstream ostr;
 			ostr << "sgroups.group_" << iGroup;
@@ -232,14 +250,18 @@ bool gen_spacegroups()
 
 				t_mat matTrafo = get_desc_trafo<t_real>(strTrafo);
 				std::string strAttribs = "; ";
-				if(tl::is_centering_matrix<t_mat>(matTrafo))
+				if(tl::is_identity_matrix(matTrafo) ||
+					tl::is_inverting_matrix<t_mat>(tl::submatrix(matTrafo,3,3)))
+					strAttribs += "i";
+				if(tl::is_identity_matrix(matTrafo) ||
+					tl::is_centering_matrix<t_mat>(matTrafo))
 					strAttribs += "c";
 
-				propOut.Add(strTrafoKey, tl::var_to_str(matTrafo) + strAttribs);
+				propOut.Add(strTrafoKey, tl::var_to_str(matTrafo, g_iPrec) + strAttribs);
 				++iTrafo;
 			}
 
-			propOut.Add(strGroup + ".num", tl::var_to_str(iNr, g_iPrec));
+			propOut.Add(strGroup + ".number", tl::var_to_str(iNr, g_iPrec));
 			propOut.Add(strGroup + ".name", strName);
 			propOut.Add(strGroup + ".num_trafos", tl::var_to_str(iTrafo, g_iPrec));
 		}
