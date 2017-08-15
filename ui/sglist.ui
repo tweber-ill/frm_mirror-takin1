@@ -80,7 +80,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabWidget_2Page1">
        <attribute name="title">
@@ -378,6 +378,9 @@
   <tabstop>checkMatrices</tabstop>
   <tabstop>listSymOps</tabstop>
   <tabstop>spinX</tabstop>
+  <tabstop>spinY</tabstop>
+  <tabstop>spinZ</tabstop>
+  <tabstop>spinW</tabstop>
   <tabstop>listTrafo</tabstop>
  </tabstops>
  <resources/>
