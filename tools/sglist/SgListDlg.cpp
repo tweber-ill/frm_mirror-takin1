@@ -83,11 +83,10 @@ void SgListDlg::SetupSpacegroups()
 
 	// prevents double insertion of headers if two space groups have the same number
 	bool bAlreadySeen[7] = { 0, 0, 0, 0, 0, 0, 0 };
-	const char* pcHeader[7] = { "Triclinic", "Monoclinic", "Orthorhombic", "Tetragonal",
-		"Trigonal", "Hexagonal", "Cubic" };
-	const unsigned int iStartNr[7] = { 1, 3, 16, 75, 143, 168, 195 };
+	const char** pcHeader = get_crystal_system_names(1);
+	const unsigned int *piStartNr = get_crystal_system_start_indices();
+	const QColor itemCols[] = {QColor(0xff, 0xff, 0xff), QColor(0xe0, 0xe0, 0xe0)};
 
-	// actually: space group TYPE, not space group...
 	for(unsigned int iSG=0; iSG<pvecSG->size(); ++iSG)
 	{
 		const SpaceGroup<t_real>* psg = pvecSG->at(iSG);
@@ -96,7 +95,7 @@ void SgListDlg::SetupSpacegroups()
 		// crystal system headers
 		for(unsigned int iCrystSys=0; iCrystSys<7; ++iCrystSys)
 		{
-			if(iSgNr==iStartNr[iCrystSys] && !bAlreadySeen[iCrystSys])
+			if(iSgNr==piStartNr[iCrystSys] && !bAlreadySeen[iCrystSys])
 			{
 				listSGs->addItem(create_header_item(pcHeader[iCrystSys]));
 				bAlreadySeen[iCrystSys] = 1;
@@ -109,6 +108,7 @@ void SgListDlg::SetupSpacegroups()
 
 		QListWidgetItem* pItem = new QListWidgetItem(ostrSg.str().c_str());
 		pItem->setData(Qt::UserRole, iSG);
+		pItem->setBackgroundColor(itemCols[iSgNr % (sizeof(itemCols)/sizeof(itemCols[0]))]);
 		listSGs->addItem(pItem);
 	}
 }

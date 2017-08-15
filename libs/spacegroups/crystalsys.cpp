@@ -9,21 +9,40 @@
 #include "tlibs/string/string.h"
 
 
-CrystalSystem get_crystal_system_from_space_group(int iSGNr)
+const unsigned int* get_crystal_system_start_indices()
 {
-	if(iSGNr>=1 && iSGNr<=2)
+	static const unsigned int iStartNr[7] = { 1, 3, 16, 75, 143, 168, 195 };
+	return iStartNr;
+}
+
+const char** get_crystal_system_names(bool bCapital)
+{
+	static const char* pcNames[] = { "triclinic", "monoclinic", "orthorhombic", 
+	"tetragonal", "trigonal", "hexagonal", "cubic" };
+	static const char* pcNamesCap[] = { "Triclinic", "Monoclinic", "Orthorhombic", 
+	"Tetragonal", "Trigonal", "Hexagonal", "Cubic" };
+
+	return bCapital ? pcNamesCap : pcNames;
+}
+
+
+CrystalSystem get_crystal_system_from_space_group(unsigned int iSGNr)
+{
+	const unsigned int* pIdx = get_crystal_system_start_indices();
+
+	if(iSGNr>=pIdx[0] && iSGNr<=pIdx[1]-1)
 		return CRYS_TRICLINIC;
-	else if(iSGNr>=3 && iSGNr<=15)
+	else if(iSGNr>=pIdx[1] && iSGNr<=pIdx[2]-1)
 		return CRYS_MONOCLINIC;
-	else if(iSGNr>=16 && iSGNr<=74)
+	else if(iSGNr>=pIdx[2] && iSGNr<=pIdx[3]-1)
 		return CRYS_ORTHORHOMBIC;
-	else if(iSGNr>=75 && iSGNr<=142)
+	else if(iSGNr>=pIdx[3] && iSGNr<=pIdx[4]-1)
 		return CRYS_TETRAGONAL;
-	else if(iSGNr>=143 && iSGNr<=167)
+	else if(iSGNr>=pIdx[4] && iSGNr<=pIdx[5]-1)
 		return CRYS_TRIGONAL;
-	else if(iSGNr>=168 && iSGNr<=194)
+	else if(iSGNr>=pIdx[5] && iSGNr<=pIdx[6]-1)
 		return CRYS_HEXAGONAL;
-	else if(iSGNr>=195 && iSGNr<=230)
+	else if(iSGNr>=pIdx[6] && iSGNr<=230)
 		return CRYS_CUBIC;
 
 	return CRYS_NOT_SET;
@@ -56,16 +75,18 @@ CrystalSystem get_crystal_system_from_laue_group(const char* pcLaue)
 
 const char* get_crystal_system_name(CrystalSystem ty)
 {
+	const char **pcNames = get_crystal_system_names();
+
 	switch(ty)
 	{
 		case CRYS_NOT_SET: return "<not set>";
-		case CRYS_TRICLINIC: return "triclinic";
-		case CRYS_MONOCLINIC: return "monoclinic";
-		case CRYS_ORTHORHOMBIC: return "orthorhombic";
-		case CRYS_TETRAGONAL: return "tetragonal";
-		case CRYS_TRIGONAL: return "trigonal";
-		case CRYS_HEXAGONAL: return "hexagonal";
-		case CRYS_CUBIC: return "cubic";
+		case CRYS_TRICLINIC: return pcNames[0];
+		case CRYS_MONOCLINIC: return pcNames[1];
+		case CRYS_ORTHORHOMBIC: return pcNames[2];
+		case CRYS_TETRAGONAL: return pcNames[3];
+		case CRYS_TRIGONAL: return pcNames[4];
+		case CRYS_HEXAGONAL: return pcNames[5];
+		case CRYS_CUBIC: return pcNames[6];
 	}
 
 	return "<unknown>";
