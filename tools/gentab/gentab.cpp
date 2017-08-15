@@ -280,9 +280,9 @@ bool gen_spacegroups()
 		"<a href=\"http://dx.doi.org/10.1021/ci050400b\">Blue Obelisk Data Repository</a>.");
 	propOut.Add("sgroups.source_url", "https://github.com/egonw/bodr/blob/master/bodr/crystal/space-groups.xml");
 
-	if(!propOut.Save("res/data/sgroups2.xml.gz"))
+	if(!propOut.Save("res/data/sgroups.xml.gz"))
 	{
-		tl::log_err("Cannot write \"res/data/sgroups2.xml.gz\".");
+		tl::log_err("Cannot write \"res/data/sgroups.xml.gz\".");
 		return false;
 	}
 
@@ -599,15 +599,20 @@ int main()
 	}
 	else
 	{
-		std::cout << "Generating scattering length table (alternative) ... ";
+		std::cout << "FAILED.\nGenerating scattering length table (alternative) ... ";
 		if(gen_scatlens()) std::cout << "OK" << std::endl;
 	}
 
 	std::cout << "Generating space group table ... ";
-	if(gen_spacegroups_clp()) std::cout << "OK" << std::endl;
-
-	//std::cout << "Generating space group table (alternative) ... ";
-	//if(gen_spacegroups()) std::cout << "OK" << std::endl;
+	if(gen_spacegroups())
+	{
+		std::cout << "OK" << std::endl;
+	}
+	else
+	{
+		std::cout << "FAILED.\nGenerating space group type table (alternative) ... ";
+		if(gen_spacegroups_clp()) std::cout << "OK" << std::endl;
+	}
 
 	//std::cout << "Generating magnetic form factor coefficient table ... ";
 	//if(gen_magformfacts()) std::cout << "OK" << std::endl;

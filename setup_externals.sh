@@ -296,7 +296,7 @@ function dl_magffacts2
 mkdir tmp
 echo -e "--------------------------------------------------------------------------------"
 dl_elements
-#dl_spacegroups
+dl_spacegroups
 echo -e "--------------------------------------------------------------------------------"
 dl_scatlens
 dl_scatlens2

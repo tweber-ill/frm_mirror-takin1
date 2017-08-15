@@ -8,6 +8,28 @@
 #include "crystalsys.h"
 #include "tlibs/string/string.h"
 
+
+CrystalSystem get_crystal_system_from_space_group(int iSGNr)
+{
+	if(iSGNr>=1 && iSGNr<=2)
+		return CRYS_TRICLINIC;
+	else if(iSGNr>=3 && iSGNr<=15)
+		return CRYS_MONOCLINIC;
+	else if(iSGNr>=16 && iSGNr<=74)
+		return CRYS_ORTHORHOMBIC;
+	else if(iSGNr>=75 && iSGNr<=142)
+		return CRYS_TETRAGONAL;
+	else if(iSGNr>=143 && iSGNr<=167)
+		return CRYS_TRIGONAL;
+	else if(iSGNr>=168 && iSGNr<=194)
+		return CRYS_HEXAGONAL;
+	else if(iSGNr>=195 && iSGNr<=230)
+		return CRYS_CUBIC;
+
+	return CRYS_NOT_SET;
+}
+
+
 CrystalSystem get_crystal_system_from_laue_group(const char* pcLaue)
 {
 	std::string strLaue = pcLaue;
@@ -31,6 +53,7 @@ CrystalSystem get_crystal_system_from_laue_group(const char* pcLaue)
 	return CRYS_NOT_SET;
 }
 
+
 const char* get_crystal_system_name(CrystalSystem ty)
 {
 	switch(ty)
@@ -48,7 +71,9 @@ const char* get_crystal_system_name(CrystalSystem ty)
 	return "<unknown>";
 }
 
+
 #ifndef NO_QT
+
 
 /**
  * allowed lattice definitions for crystal systems
@@ -203,4 +228,5 @@ void set_crystal_system_edits(CrystalSystem crystalsys,
 			break;
 	}
 }
+
 #endif

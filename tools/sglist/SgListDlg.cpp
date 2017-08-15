@@ -146,8 +146,12 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	editNr->setText(tl::var_to_str(iSgNr).c_str());
 	editHM->setText(strHM.c_str());
 	//editHall->setText(psg.symbol_hall().c_str());
-	editLaue->setText(("PG: " + strPointGroup + ", LG: " + strLaue +
-		" (" + strCrysSys + ")").c_str());
+
+	std::string strPtGr = "PG: " + strPointGroup;
+	if(strLaue != "")
+		strPtGr += ", LG: " + strLaue;
+	strPtGr += " (" + strCrysSys + ")";
+	editLaue->setText(strPtGr.c_str());
 
 	bool bShowMatrices = checkMatrices->isChecked();
 
