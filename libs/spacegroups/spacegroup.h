@@ -151,7 +151,10 @@ class SpaceGroups
 		static std::shared_ptr<SpaceGroups<t_real>> s_inst;
 		static std::mutex s_mutex;
 
-		SpaceGroups();
+#ifdef _SGR_NO_SINGLETON
+	public:
+#endif
+		SpaceGroups(const char* pcMainFile=nullptr);
 
 	protected:
 		t_mapSpaceGroups g_mapSpaceGroups;

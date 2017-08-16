@@ -85,7 +85,7 @@ void SgListDlg::SetupSpacegroups()
 	bool bAlreadySeen[7] = { 0, 0, 0, 0, 0, 0, 0 };
 	const char** pcHeader = get_crystal_system_names(1);
 	const unsigned int *piStartNr = get_crystal_system_start_indices();
-	const QColor itemCols[] = {QColor(0xff, 0xff, 0xff), QColor(0xe0, 0xe0, 0xe0)};
+	const QColor itemCols[] = {QColor(0xff, 0xff, 0xff), QColor(0xee, 0xee, 0xee)};
 
 	for(unsigned int iSG=0; iSG<pvecSG->size(); ++iSG)
 	{

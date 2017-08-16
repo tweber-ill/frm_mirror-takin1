@@ -211,6 +211,9 @@ bool gen_spacegroups()
 
 			std::string strName = propgrp.Query<std::string>("<xmlattr>/HM", "");
 			if(strName == "") continue;
+			tl::find_all_and_replace<std::string>(strName, ":1", "");
+			tl::find_all_and_replace<std::string>(strName, ":2", "");
+			tl::find_all_and_replace<std::string>(strName, ":3", "");
 			convert_hm_symbol(strName);
 
 			// find an unique name
