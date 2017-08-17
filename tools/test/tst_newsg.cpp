@@ -47,6 +47,12 @@ void chk_sgs()
 			continue;
 		}
 
+		if(sg1.GetCenterTrafos().size() != sg2.GetCenterTrafos().size())
+		{
+			std::cerr << RED "CENTERING TRAFO SIZE MISMATCH." CLR << std::endl;
+			continue;
+		}
+
 		bool bMismatch = 0;
 		for(const auto& trafo2 : sg2.GetTrafos())
 		{
@@ -71,6 +77,35 @@ void chk_sgs()
 
 		if(bMismatch)
 			continue;
+
+
+		for(unsigned int iIdx2 : sg2.GetCenterTrafos())
+		{
+			const auto& trafo2 = sg2.GetTrafos()[iIdx2];
+			bool bFound = 0;
+
+			for(unsigned int iIdx1 : sg1.GetCenterTrafos())
+			{
+				const auto& trafo1 = sg1.GetTrafos()[iIdx1];
+
+				if(tl::mat_equal(trafo1, trafo2, g_eps))
+				{
+					bFound = 1;
+					break;
+				}
+			}
+
+			if(!bFound)
+			{
+				bMismatch = 1;
+				std::cerr << RED "CENTERING TRAFO MISMATCH." CLR << std::endl;
+				break;
+			}
+		}
+
+		if(bMismatch)
+			continue;
+
 
 		std::cout << GRN "OK." CLR << std::endl;
 	}
