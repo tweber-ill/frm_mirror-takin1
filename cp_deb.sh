@@ -36,6 +36,7 @@ cp -v LICENSES			${INSTDIR}/usr/local/share/takin
 cp -v LITERATURE		${INSTDIR}/usr/local/share/takin
 cp -v AUTHORS			${INSTDIR}/usr/local/share/takin
 cp -v /usr/local/lib/libMinuit2.so.0 ${INSTDIR}/usr/local/lib
+cp -v takin.desktop		${INSTDIR}/usr/share/applications
 
 
 # stripping

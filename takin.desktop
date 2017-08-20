@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Takin
+Type=Application
+Exec=/usr/local/bin/takin
+Icon=/usr/local/share/takin/res/icons/takin.svg
+Categories=Science;
+Comment=Inelastic neutron scattering package.
+Terminal=false
+StartupNotify=false
