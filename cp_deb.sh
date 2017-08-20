@@ -14,6 +14,7 @@ INSTDIR=~/tmp/takin
 mkdir -p ${INSTDIR}/usr/local/bin
 mkdir -p ${INSTDIR}/usr/local/lib
 mkdir -p ${INSTDIR}/usr/local/share/takin/res
+mkdir -p ${INSTDIR}/usr/share/applications
 mkdir -p ${INSTDIR}/DEBIAN
 
 
