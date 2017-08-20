@@ -23,13 +23,13 @@ echo -e "Description: inelastic neutron scattering software" >> ${INSTDIR}/DEBIA
 echo -e "Maintainer: n/a" >> ${INSTDIR}/DEBIAN/control
 echo -e "Architecture: $(dpkg --print-architecture)" >> ${INSTDIR}/DEBIAN/control
 echo -e "Section: base\nPriority: optional" >> ${INSTDIR}/DEBIAN/control
-echo -e "Depends: libstdc++6, libboost, libqtcore4 (>=4.8.0), libqtgui4 (>=4.8.0), libqtopengl4 (>=4.8.0), libqtsvg4 (>=4.8.0), libqtxml4 (>=4.8.0), libqwt, python, freetype6\n" >> ${INSTDIR}/DEBIAN/control
+echo -e "Depends: libstdc++6, libboost-system1.58.0 (>=1.58.0), libboost-filesystem1.58.0 (>=1.58.0), libboost-iostreams1.58.0 (>=1.58.0), libboost-regex1.58.0 (>=1.58.0), libboost-program-options1.58.0 (>=1.58.0), libboost-python1.58.0 (>=1.58.0), libqtcore4 (>=4.8.0), libqtgui4 (>=4.8.0), libqt4-opengl (>=4.8.0), libqt4-svg (>=4.8.0), libqt4-xml (>=4.8.0), libqwt6abi1 (>=6.1.0), libpython2.7 (>=2.7.0), libfreetype6\n" >> ${INSTDIR}/DEBIAN/control
 
 
 # copy files
 cp -v bin/takin			${INSTDIR}/usr/local/bin
 cp -v bin/convofit		${INSTDIR}/usr/local/bin
-cp -v bin/convoseries	${INSTDIR}/usr/local/bin
+cp -v bin/convoseries		${INSTDIR}/usr/local/bin
 cp -rv res/*			${INSTDIR}/usr/local/share/takin/res/
 cp -v COPYING			${INSTDIR}/usr/local/share/takin
 cp -v LICENSES			${INSTDIR}/usr/local/share/takin
