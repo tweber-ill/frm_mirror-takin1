@@ -83,11 +83,12 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		ResoAlgo m_algo = ResoAlgo::UNKNOWN;
 
 	public:
-		EllipseDlg(QWidget* pParent=0, QSettings* pSett=0);
+		EllipseDlg(QWidget* pParent=nullptr, QSettings* pSett=nullptr, Qt::WindowFlags fl=Qt::Tool);
 		virtual ~EllipseDlg();
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt) override;
+		virtual void closeEvent(QCloseEvent *pEvt) override;
 		virtual void accept() override;
 
 	protected slots:

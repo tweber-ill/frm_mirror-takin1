@@ -177,7 +177,7 @@ void ConvoDlg::Start1D()
 		m_vecS.reserve(iNumSteps);
 		m_vecScaledS.reserve(iNumSteps);
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : std::thread::hardware_concurrency();
+		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
 
 		void (*pThStartFunc)() = []{ tl::init_rand(); };
 		tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
@@ -228,7 +228,7 @@ void ConvoDlg::Start1D()
 					}
 
 					Ellipsoid4d<t_real> elli =
-						localreso.GenerateMC(iNumNeutrons, vecNeutrons);
+						localreso.GenerateMC_deferred(iNumNeutrons, vecNeutrons);
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 					{
@@ -543,6 +543,7 @@ void ConvoDlg::Start2D()
 
 
 		TASReso reso;
+
 		if(!reso.LoadRes(editRes->text().toStdString().c_str()))
 		{
 			//QMessageBox::critical(this, "Error", "Could not load resolution file.");
@@ -610,7 +611,7 @@ void ConvoDlg::Start2D()
 			}
 		}
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : std::thread::hardware_concurrency();
+		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
 
 		void (*pThStartFunc)() = []{ tl::init_rand(); };
 		tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
@@ -661,7 +662,7 @@ void ConvoDlg::Start2D()
 					}
 
 					Ellipsoid4d<t_real> elli =
-						localreso.GenerateMC(iNumNeutrons, vecNeutrons);
+						localreso.GenerateMC_deferred(iNumNeutrons, vecNeutrons);
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 					{
@@ -869,7 +870,7 @@ void ConvoDlg::StartDisp()
 		m_vecvecE.clear();
 		m_vecvecW.clear();
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : std::thread::hardware_concurrency();
+		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
 
 		tl::ThreadPool<std::tuple<bool, std::vector<t_real>, std::vector<t_real>>()>
 			tp(iNumThreads);

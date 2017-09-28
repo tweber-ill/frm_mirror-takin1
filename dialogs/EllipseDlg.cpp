@@ -13,8 +13,8 @@
 #include <future>
 
 
-EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett)
-	: QDialog(pParent, Qt::Tool), m_pSettings(pSett)
+EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett, Qt::WindowFlags fl)
+	: QDialog(pParent, fl), m_pSettings(pSett)
 {
 	setupUi(this);
 	setWindowTitle(m_pcTitle);
@@ -381,6 +381,11 @@ void EllipseDlg::accept()
 void EllipseDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
+}
+
+void EllipseDlg::closeEvent(QCloseEvent *pEvt)
+{
+	QDialog::closeEvent(pEvt);
 }
 
 

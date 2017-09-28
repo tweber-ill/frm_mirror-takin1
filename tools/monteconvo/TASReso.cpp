@@ -53,6 +53,7 @@ const TASReso& TASReso::operator=(const TASReso& res)
 	this->m_res = res.m_res;
 	this->m_bKiFix = res.m_bKiFix;
 	this->m_dKFix = res.m_dKFix;
+	//this->m_bEnableThreads = res.m_bEnableThreads;
 
 	return *this;
 }
@@ -486,8 +487,17 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	return resores.bOk;
 }
 
+
+/**
+ * generates MC neutrons using available threads
+ */
 Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& vecNeutrons) const
 {
+	// use deferred version if threading is disabled
+	//if(!m_bEnableThreads)
+	//	return GenerateMC_deferred(iNum, vecNeutrons);
+
+
 	// number of iterations over random sample positions
 	std::size_t iIter = m_res.size();
 	if(vecNeutrons.size() != iNum*iIter)
@@ -501,7 +511,7 @@ Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& ve
 		Ellipsoid4d<t_real> ell4d = calc_res_ellipsoid4d<t_real>(
 			resores.reso, resores.reso_v, resores.reso_s, resores.Q_avg);
 
-		unsigned int iNumThreads = std::thread::hardware_concurrency();
+		unsigned int iNumThreads = get_max_threads();
 		std::size_t iNumPerThread = iNum / iNumThreads;
 		std::size_t iRemaining = iNum % iNumThreads;
 
@@ -531,6 +541,10 @@ Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& ve
 	return ell4dret;
 }
 
+
+/**
+ * generates MC neutrons without using threads
+ */
 Ellipsoid4d<t_real> TASReso::GenerateMC_deferred(std::size_t iNum, std::vector<t_vec>& vecNeutrons) const
 {
 	// number of iterations over random sample positions

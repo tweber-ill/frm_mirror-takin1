@@ -9,15 +9,18 @@
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
 #include "dialogs/EllipseDlg.h"
+#include "../res/helper.h"
 
 #include <clocale>
 #include <fstream>
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <memory>
 
 using namespace ublas;
 using t_real = t_real_reso;
+
 
 static void add_param(std::unordered_map<std::string, std::string>& map, const std::string& strLine)
 {
@@ -33,6 +36,7 @@ static void add_param(std::unordered_map<std::string, std::string>& map, const s
 
 	map.insert(pair);
 }
+
 
 template<class t_map>
 static void print_map(std::ostream& ostr, const t_map& map)
@@ -51,6 +55,7 @@ enum class FileType
 
 	UNKNOWN
 };
+
 
 static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 {
@@ -89,22 +94,25 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 
 	if(reso.bHasRes)
 	{
-		vector<t_real>& dQ = reso.dQ;
-
-		dQ.resize(4, 0);
-		reso.Q_avg.resize(4, 0);
-		for(int iQ=0; iQ<4; ++iQ)
-			dQ[iQ] = tl::get_SIGMA2HWHM<t_real>()/sqrt(res(iQ,iQ));
+		std::vector<t_real>& dQ = reso.dQ;
+		reso.dQ = calc_bragg_fwhms(reso.res);
+		reso.dQinc = get_vanadium_fwhms(reso);
 
 		std::ostringstream ostrVals;
-		ostrVals << "Gaussian HWHM values: ";
-		std::copy(dQ.begin(), dQ.end(), std::ostream_iterator<t_real>(ostrVals, ", "));
+		ostrVals << "Coherent / Bragg FWHM values (Qx, Qy, Qz, E): ";
+		std::copy(reso.dQ.begin(), reso.dQ.end(), std::ostream_iterator<t_real>(ostrVals, ", "));
+
+		std::ostringstream ostrIncVals;
+		ostrIncVals << "Incoherent / Vanadium FWHM values (Qy, E): "
+			<< std::get<0>(reso.dQinc) << ", " << std::get<1>(reso.dQinc);
 
 		tl::log_info(ostrVals.str());
+		tl::log_info(ostrIncVals.str());
 	}
 
 	return reso.bHasRes;
 }
+
 
 static bool load_mc_list(const char* pcFile, Resolution& res)
 {
@@ -178,9 +186,9 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 			istr >> dPos[0] >> dPos[2] >> dPos[1];
 			istr >> dPi >> dPf;
 
-			dKi[1] = -dKi[1];
-			dKf[1] = -dKf[1];
-			dPos[1] = -dPos[1];
+			dKi[0] = -dKi[0];
+			dKf[0] = -dKf[0];
+			dPos[0] = -dPos[0];
 
 			vecKi.push_back(tl::make_vec<vector<t_real>>({dKi[0], dKi[1], dKi[2]}));
 			vecKf.push_back(tl::make_vec<vector<t_real>>({dKf[0], dKf[1], dKf[2]}));
@@ -213,9 +221,10 @@ static bool load_mc_list(const char* pcFile, Resolution& res)
 	return 1;
 }
 
+
 static EllipseDlg* show_ellipses(const Resolution& res)
 {
-	EllipseDlg* pdlg = new EllipseDlg(0);
+	EllipseDlg* pdlg = new EllipseDlg(0, 0, Qt::Window);
 	pdlg->show();
 
 	matrix<t_real> matDummy;
@@ -276,10 +285,10 @@ int main(int argc, char **argv)
 
 	QLocale::setDefault(QLocale::English);
 	QApplication app(argc, argv);
+	app.setQuitOnLastWindowClosed(1);
 
-	EllipseDlg* pElliDlg = show_ellipses(res);
+	std::unique_ptr<EllipseDlg> pElliDlg(show_ellipses(res));
 	int iRet = app.exec();
 
-	if(pElliDlg) delete pElliDlg;
 	return iRet;
 }
