@@ -12,7 +12,7 @@
 
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
-#include "libs/recent.h"
+#include "libs/qt/recent.h"
 #include "tools/convofit/convofit_import.h"
 
 #include <iostream>
@@ -282,7 +282,7 @@ void ConvoDlg::SaveConvofit()
 	tl::Prop<std::string> xml;
 	xml.Add(mapConf);
 
-	if(convert_monteconvo(xml, strFile) != strFile)
+	if(convert_monteconvo(xml, strFile, checkRel->isChecked()) != strFile)
 	{
 		QMessageBox::critical(this, "Error", "Could not export convofit job file.");
 		return;

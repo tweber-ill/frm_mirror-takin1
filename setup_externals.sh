@@ -179,10 +179,10 @@ function dl_scatlens
 	if [ ! -f tmp/scatlens.html ]; then
 		echo -e "Obtaining scattering length list...\n"
 
-		if ! wget ${SCATLENS} -O tmp/${SCATLENS##*/}; then
-			echo -e "Error: Cannot download scattering length list.";
-			return -1;
-		fi
+#		if ! wget ${SCATLENS} -O tmp/${SCATLENS##*/}; then
+#			echo -e "Error: Cannot download scattering length list.";
+#			return -1;
+#		fi
 
 		if [ ! -f tmp/${SCATLENS##*/} ]; then
 			echo -e "Files cannot be automatically downloaded. "
@@ -298,7 +298,7 @@ echo -e "-----------------------------------------------------------------------
 dl_elements
 dl_spacegroups
 echo -e "--------------------------------------------------------------------------------"
-dl_scatlens
+#dl_scatlens
 dl_scatlens2
 echo -e "--------------------------------------------------------------------------------"
 #dl_magffacts

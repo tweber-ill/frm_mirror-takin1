@@ -15,6 +15,9 @@
 #include <fstream>
 #include <locale>
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 #include "convofit.h"
 #include "convofit_import.h"
 #include "scan.h"
@@ -101,22 +104,38 @@ unsigned int g_iPlotSkipEnd = 0;
 
 bool Convofit::run_job(const std::string& _strJob)
 {
-	std::string strJob;
+	// --------------------------------------------------------------------
+	// set working directory for job
+	bool bChangedCWD = 0;
+	fs::path pathProg = fs::system_complete(_strJob).remove_filename();
+	if(pathProg.filename().string() == ".")		// remove "./"
+		pathProg.remove_filename();
+	fs::path pathCWD = fs::system_complete(fs::current_path());
+	if(pathProg != pathCWD)
+	{
+		fs::current_path(pathProg);
+		bChangedCWD = 1;
+		tl::log_debug("Working directory: ", pathProg.string(), ".");
+	}
+	// --------------------------------------------------------------------
+
+
+	std::string strJob = _strJob;
+
+	if(bChangedCWD)
+		strJob = fs::path(strJob).filename().string();
+
 
 	// if a monteconvo file is given, convert it to a convofit job file
 	tl::Prop<std::string> propMC;
-	if(propMC.Load(_strJob.c_str(), tl::PropType::XML) &&
+	if(propMC.Load(strJob.c_str(), tl::PropType::XML) &&
 		propMC.Exists("taz/monteconvo"))
 	{
-		tl::log_info("Importing monteconvo file \"", _strJob, "\".");
+		tl::log_info("Importing monteconvo file \"", strJob, "\".");
 		strJob = convert_monteconvo(propMC);
 		if(strJob == "")
 			return false;
 		tl::log_info("Converted convofit file is \"", strJob, "\".");
-	}
-	else	// use the job file directly
-	{
-		strJob = _strJob;
 	}
 
 
@@ -154,6 +173,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	std::string strSetParams = prop.Query<std::string>("input/sqw_set_params", "");
 	bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
 	bool bFlipCoords = prop.Query<bool>("input/flip_lhs_rhs", 0);
+	bool bUseFirstAndLastScanPt = prop.Query<bool>("input/use_first_last_pt", 0);
 
 	if(g_strSetParams != "")
 	{
@@ -375,6 +395,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	}
 
 
+
 	// --------------------------------------------------------------------
 	// Scan files
 	std::vector<Scan> vecSc;
@@ -390,7 +411,8 @@ bool Convofit::run_job(const std::string& _strJob)
 
 		if(vecvecScFiles.size() > 1)
 			tl::log_info("Loading scan group ", iSc, ".");
-		if(!load_file(vecvecScFiles[iSc], sc, bNormToMon, filter, bFlipCoords))
+		if(!load_file(vecvecScFiles[iSc], sc, bNormToMon, filter,
+			bFlipCoords, bUseFirstAndLastScanPt))
 		{
 			tl::log_err("Cannot load scan files of group ", iSc, ".");
 			continue;
@@ -674,6 +696,7 @@ bool Convofit::run_job(const std::string& _strJob)
 			strCurModOutFile += tl::var_to_str(iSc);
 			strCurScOutFile += tl::var_to_str(iSc);
 		}
+		mod.SetParamSet(iSc);
 		std::pair<decltype(sc.vecX)::const_iterator, decltype(sc.vecX)::const_iterator> xminmax
 			= std::minmax_element(sc.vecX.begin(), sc.vecX.end());
 		mod.Save(strCurModOutFile.c_str(), *xminmax.first, *xminmax.second,
@@ -686,7 +709,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	// --------------------------------------------------------------------
 	// Plotting
-	if(bPlot)
+	if(bPlot && vecSc.size() <= 1)
 	{
 		tl::DatFile<t_real, char> datMod;
 		if(datMod.Load(strModOutFile))

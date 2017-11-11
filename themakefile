@@ -9,8 +9,8 @@
 # system-specific build flags
 
 # which compiler?
-#CC = gcc
-CC = clang
+CC = gcc
+#CC = clang
 
 # debug or unstable version?
 DO_DEBUG = 0
@@ -53,6 +53,8 @@ USE_CPP11_ABI = 1
 # enable Framework libs
 USE_FRAMEWORKS = 0
 
+USE_CLP = 1
+
 # is Minuit a non-standalone installation?
 NON_STANDALONE_MINUIT_HACK = 1
 
@@ -76,7 +78,7 @@ QWT5_SUFFIX = -qt4
 #QWT5_SUFFIX = 5-qt4
 
 # ... and prefixes
-JL_APP = /Applications/Julia-0.5.app/Contents/Resources/julia
+JL_APP = /Applications/Julia-0.6.app/Contents/Resources/julia
 # -----------------------------------------------------------------------------
 
 
@@ -416,7 +418,7 @@ endif
 ifeq ($(USE_JL), 1)
 	JL_LIBS = -L${JL_APP}/lib -ljulia
 	JL_OBJS = obj/sqw_jl.o 
-	JL_INC = -I/usr/include/julia -I${JL_APP}/include/julia
+	JL_INC = -I/usr/local/include/julia -I/usr/include/julia -I${JL_APP}/include/julia
 else
 	JL_LIBS =
 	JL_OBJS =
@@ -435,6 +437,13 @@ else
 	DL_LIBS =
 endif
 
+ifeq ($(USE_CLP), 1)
+	DEFINES += -DUSE_CLP
+	CLP_LIBS = -lclipper-core
+else
+	DEFINES += -DNO_CLP
+	CLP_LIBS = 
+endif
 
 LIBS_TAZ = ${BASIC_LIBS} ${FAD_LIBS} ${QT_LIB} ${QWT_LIB} ${GL_LIBS} \
 	${PY_LIBS} ${JL_LIBS} ${GIL_LIBS} ${DL_LIBS} ${LAPACK_LIBS} ${STD_LIBS}
@@ -465,9 +474,9 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/sqw.o obj/sqwbase.o obj/sqwfact.o ${PY_OBJS} ${JL_OBJS} \
 	obj/tasreso.o obj/ConvoDlg.o obj/ConvoDlg_file.o obj/SqwParamDlg.o \
 	obj/scanviewer.o obj/FitParamDlg.o obj/x3d.o obj/eval.o \
-	obj/tlibs_ver.o obj/AboutDlg.o obj/convo_scan.o obj/ScanPosDlg.o \
+	obj/tlibs_ver.o obj/libcrystal_ver.o obj/AboutDlg.o obj/convo_scan.o obj/ScanPosDlg.o \
 	obj/convofit_import.o obj/ConvoDlg_fit.o obj/ConvoDlg_sim.o \
-	obj/DeadAnglesDlg.o
+	obj/DeadAnglesDlg.o obj/LogDlg.o
 
 OBJ_MONTERESO = obj/montereso_res.o obj/montereso_res_main.o \
 	obj/qthelper.o obj/qwthelper.o obj/globals.o obj/globals_qt.o
@@ -498,12 +507,16 @@ OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup.o obj/crystalsys.o \
 	obj/log.o obj/debug.o obj/globals.o obj/globals_qt.o
 
-OBJ_GENTAB = obj/spacegroup_clp.o obj/gentab.o obj/crystalsys_noqt.o obj/log.o \
+OBJ_GENTAB = obj/gentab.o obj/crystalsys_noqt.o obj/log.o \
 	obj/debug.o obj/eval.o
 
-OBJ_SFACT = obj/sfact.o obj/spacegroup_clp.o obj/crystalsys_noqt.o obj/globals.o \
+OBJ_SFACT = obj/sfact.o obj/spacegroup.o obj/crystalsys_noqt.o obj/globals.o \
 	obj/formfact.o obj/log.o obj/debug.o obj/rand.o
 
+
+ifeq ($(USE_CLP), 1)
+	OBJ_GENTAB += obj/spacegroup_clp.o
+endif
 
 ifeq ($(USE_3D), 1)
 	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/real3d.o obj/bz3d.o obj/EllipseDlg3D.o
@@ -594,11 +607,11 @@ sglist: ${OBJ_SGLIST}
 
 gentab: ${OBJ_GENTAB}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/gentab $+ \
-		${BASIC_LIBS} -lclipper-core ${STD_LIBS}
+		${BASIC_LIBS} ${CLP_LIBS} ${STD_LIBS}
 
 sfact: ${OBJ_SFACT}
 	${CC} ${FLAGS} ${LIB_DIRS} -o bin/sfact $+ \
-		${BASIC_LIBS} -lclipper-core ${STD_LIBS}
+		${BASIC_LIBS} ${STD_LIBS}
 
 doc: doc/takin.qhcp doc/takin.qhp doc/*.html
 	qcollectiongenerator doc/takin.qhcp -o doc/takin.qhc
@@ -655,9 +668,9 @@ obj/globals.o: libs/globals.cpp libs/globals.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/globals_qt.o: libs/globals_qt.cpp libs/globals_qt.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/qthelper.o: libs/qthelper.cpp libs/qthelper.h
+obj/qthelper.o: libs/qt/qthelper.cpp libs/qt/qthelper.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/qwthelper.o: libs/qwthelper.cpp libs/qwthelper.h
+obj/qwthelper.o: libs/qt/qwthelper.cpp libs/qt/qwthelper.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/PowderDlg.o: dialogs/PowderDlg.cpp dialogs/PowderDlg.h tlibs/phys/lattice.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -671,7 +684,7 @@ obj/FilePreviewDlg.o: dialogs/FilePreviewDlg.cpp dialogs/FilePreviewDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/DynPlaneDlg.o: dialogs/DynPlaneDlg.cpp dialogs/DynPlaneDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/FormfactorDlg.o: dialogs/FormfactorDlg.cpp dialogs/FormfactorDlg.h
+obj/FormfactorDlg.o: tools/ffact/FormfactorDlg.cpp tools/ffact/FormfactorDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/NeutronDlg.o: dialogs/NeutronDlg.cpp dialogs/NeutronDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -689,8 +702,12 @@ obj/sics.o: tools/taz/sics.cpp tools/taz/sics.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/DeadAnglesDlg.o: dialogs/DeadAnglesDlg.cpp dialogs/DeadAnglesDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
+obj/LogDlg.o: dialogs/LogDlg.cpp dialogs/LogDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
 
 obj/tlibs_ver.o: tlibs/version.cpp tlibs/version.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/libcrystal_ver.o: libcrystal/version.cpp libcrystal/version.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/spec_char.o: tlibs/string/spec_char.cpp tlibs/string/spec_char.h
 	${CC} ${FLAGS} -c -o $@ $<
@@ -722,7 +739,7 @@ obj/loadinstr.o: tlibs/file/loadinstr.cpp tlibs/file/loadinstr.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/x3d.o: tlibs/file/x3d.cpp tlibs/file/x3d.h
 	${CC} ${FLAGS} -c -o $@ $<
-obj/recent.o: libs/recent.cpp libs/recent.h
+obj/recent.o: libs/qt/recent.cpp libs/qt/recent.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/tmp.o: tlibs/file/tmp.cpp tlibs/file/tmp.h
 	${CC} ${FLAGS} -c -o $@ $<

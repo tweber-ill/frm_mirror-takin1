@@ -96,9 +96,11 @@ bool TASReso::LoadLattice(const char* pcXmlFile)
 bool TASReso::LoadRes(const char* pcXmlFile)
 {
 	const std::string strXmlRoot("taz/");
+	std::string strXmlFile = pcXmlFile;
+	std::string strXmlDir = tl::get_dir(strXmlFile);
 
 	tl::Prop<std::string> xml;
-	if(!xml.Load(pcXmlFile, tl::PropType::XML))
+	if(!xml.Load(strXmlFile, tl::PropType::XML))
 	{
 		tl::log_err("Cannot load resolution file \"", pcXmlFile, "\".");
 		return false;
@@ -121,8 +123,28 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.coll_v_post_sample = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/v_coll_after_sample").c_str(), 0.)) * rads;
 	m_reso.coll_v_post_ana = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/v_coll_ana").c_str(), 0.)) * rads;
 
+
 	m_reso.dmono_refl = xml.Query<t_real>((strXmlRoot + "reso/mono_refl").c_str(), 0.);
 	m_reso.dana_effic = xml.Query<t_real>((strXmlRoot + "reso/ana_effic").c_str(), 0.);
+
+	std::string strMonoRefl = xml.Query<std::string>((strXmlRoot + "reso/mono_refl_file").c_str(), "");
+	std::string strAnaEffic = xml.Query<std::string>((strXmlRoot + "reso/ana_effic_file").c_str(), "");
+
+	std::vector<std::string> vecRelDirs = { strXmlDir, "." };
+
+	if(strMonoRefl != "")
+	{
+		m_reso.mono_refl_curve = std::make_shared<ReflCurve<t_real_reso>>(strMonoRefl, &vecRelDirs);
+		if(!m_reso.mono_refl_curve)
+			tl::log_err("Cannot load mono reflectivity file \"", strMonoRefl, "\".");
+	}
+	if(strAnaEffic != "")
+	{
+		m_reso.ana_effic_curve = std::make_shared<ReflCurve<t_real_reso>>(strAnaEffic, &vecRelDirs);
+		if(!m_reso.ana_effic_curve)
+			tl::log_err("Cannot load ana reflectivity file \"", strAnaEffic, "\".");
+	}
+
 
 	if(xml.Query<int>((strXmlRoot + "reso/use_ki3").c_str(), 1))
 		m_reso.flags |= CALC_KI3;

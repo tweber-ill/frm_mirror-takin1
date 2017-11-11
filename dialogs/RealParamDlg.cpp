@@ -28,7 +28,7 @@ RealParamDlg::RealParamDlg(QWidget* pParent, QSettings* pSett)
 
 	for(QLineEdit* pEdit : { editVec1, editVec2 })
 		QObject::connect(pEdit, SIGNAL(textChanged(const QString&)), this, SLOT(CalcVecs()));
-	for(QLineEdit* pEdit : { editRotCoords, editRotTo, editRotKi, editRotNorm, 
+	for(QLineEdit* pEdit : { editRotCoords, editRotTo, editRotKi, editRotNorm,
 		editRotBaseX, editRotBaseY, editRotBaseZ })
 		QObject::connect(pEdit, SIGNAL(textChanged(const QString&)), this, SLOT(CalcCrystalRot()));
 
@@ -96,11 +96,11 @@ void RealParamDlg::paramsChanged(const RealParams& parms)
 }
 
 
-void RealParamDlg::CrystalChanged(const LatticeCommon<t_real>& lattcomm)
+void RealParamDlg::CrystalChanged(const xtl::LatticeCommon<t_real>& lattcomm)
 {
 	const tl::Lattice<t_real>& latt = lattcomm.lattice;
 	const tl::Lattice<t_real>& recip = lattcomm.recip;
-	const std::vector<AtomPos<t_real>>* pAtoms = lattcomm.pvecAtomPos;
+	const std::vector<xtl::AtomPos<t_real>>* pAtoms = lattcomm.pvecAtomPos;
 	m_pLatt = &latt;
 
 	// crystal coordinates
@@ -148,6 +148,31 @@ void RealParamDlg::CrystalChanged(const LatticeCommon<t_real>& lattcomm)
 	}
 
 
+	// crystal infos
+	{
+		std::ostringstream ostr;
+		ostr.precision(g_iPrec);
+		ostr << "<html><body>\n";
+
+		ostr << "<p><b>Unit Cell Volume:</b> " << lattcomm.dVol << " A^3\n";
+
+		ostr << "<p><b>Microscopic cross-sections:</b>\n<ul>\n";
+		ostr << "\t<li> Coherent: " << lattcomm.dsigCoh << " fm^2 </li>\n";
+		ostr << "\t<li> Incoherent: " << lattcomm.dsigInc << " fm^2 </li>\n";
+		ostr << "\t<li> Scattering: " << lattcomm.dsigScat << " fm^2 </li>\n";
+		ostr << "\t<li> Absorption: " << lattcomm.dsigAbs << " fm^2 </li>\n";
+		ostr << "</ul></p>\n";
+
+		ostr << "<p><b>Macroscopic cross-sections (thermal):</b>\n<ul>\n";
+		ostr << "\t<li> Scattering: " << lattcomm.dSigScat << " / cm </li>\n";
+		ostr << "\t<li> Absorption: " << lattcomm.dSigAbs << " / cm </li>\n";
+		ostr << "</ul></p>\n";
+
+		ostr << "</body></html>\n";
+		editCell->setHtml(QString::fromUtf8(ostr.str().c_str()));
+	}
+
+
 	// unit cell
 	{
 		treeNN->clear();
@@ -180,8 +205,8 @@ void RealParamDlg::CrystalChanged(const LatticeCommon<t_real>& lattcomm)
 			// get neighbours of all atoms
 			for(std::size_t iAtom=0; iAtom<pAtoms->size(); ++iAtom)
 			{
-				const AtomPos<t_real>& atom = (*pAtoms)[iAtom];
-				const AtomPosAux<t_real>& atomaux = lattcomm.vecAtomPosAux[iAtom];
+				const xtl::AtomPos<t_real>& atom = (*pAtoms)[iAtom];
+				const xtl::AtomPosAux<t_real>& atomaux = lattcomm.vecAtomPosAux[iAtom];
 
 				const std::string& strName = atom.strAtomName;
 				const t_vec& vecCentreAA = atomaux.vecPosAA;

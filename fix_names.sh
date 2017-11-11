@@ -8,10 +8,11 @@
 #
 
 PRG="takin.app"
-OS_BIN="bin"	# set accordingly
+OS_BIN="$BIN_DIR"	# set accordingly
 
 TOOL=install_name_tool
-QT_VER="5.8.0_2"
+STRIP=strip
+QT_VER="5.9.2"
 
 
 declare -a filestochange=(
@@ -33,6 +34,8 @@ declare -a filestochange=(
 	"${PRG}/Contents/Frameworks/qwt.framework/Versions/6/qwt"
 	"${PRG}/Contents/Frameworks/libfreetype.6.dylib"
 	"${PRG}/Contents/Frameworks/libpng16.16.dylib"
+	"${PRG}/Contents/Frameworks/libjpeg.9.dylib"
+	"${PRG}/Contents/Frameworks/libtiff.5.dylib"
 	"${PRG}/Contents/Frameworks/libboost_iostreams.dylib"
 	"${PRG}/Contents/Frameworks/libboost_filesystem.dylib"
 	"${PRG}/Contents/Frameworks/libboost_python.dylib"
@@ -42,6 +45,7 @@ declare -a filestochange=(
 	"${PRG}/Contents/${OS_BIN}/takin"
 	"${PRG}/Contents/${OS_BIN}/convofit"
 	"${PRG}/Contents/${OS_BIN}/convoseries"
+	"${PRG}/Contents/${OS_BIN}/sfact"
 )
 
 declare -a changefrom=(
@@ -82,8 +86,6 @@ declare -a changefrom=(
 	"/usr/local/opt/qt/lib/QtPrintSupport.framework/Versions/5/QtPrintSupport"
 	"/usr/local/opt/qt5/lib/QtPrintSupport.framework/Versions/5/QtPrintSupport"
 	"/usr/local/opt/qwt/lib/qwt.framework/Versions/6/qwt"
-	"/usr/lib/libz.1.dylib"
-	"/usr/lib/libbz2.1.0.dylib"
 	"/usr/local/opt/minuit2/lib/libMinuit2.0.dylib"
 	"/usr/local/opt/boost/lib/libboost_system.dylib"
 	"/usr/local/opt/boost/lib/libboost_filesystem.dylib"
@@ -93,7 +95,13 @@ declare -a changefrom=(
 	"/usr/local/opt/boost-python/lib/libboost_python.dylib"
 	"/usr/local/opt/freetype/lib/libfreetype.6.dylib"
 	"/usr/local/opt/libpng/lib/libpng16.16.dylib"
+	"/usr/local/opt/libjpeg/lib/libjpeg.9.dylib"
+	"/usr/local/opt/jpeg/lib/libjpeg.9.dylib"
+	"/usr/local/opt/libtiff/lib/libtiff.5.dylib"
+#	"/usr/local/lib/libz.1.dylib"
+#	"/usr/local/lib/libbz2.1.0.dylib"
 )
+
 
 declare -a changeto=(
 	"@executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore"
@@ -133,8 +141,6 @@ declare -a changeto=(
 	"@executable_path/../Frameworks/QtPrintSupport.framework/Versions/5/QtPrintSupport"
 	"@executable_path/../Frameworks/QtPrintSupport.framework/Versions/5/QtPrintSupport"
 	"@executable_path/../Frameworks/qwt.framework/Versions/6/qwt"
-	"@executable_path/../Frameworks/libz.1.dylib"
-	"@executable_path/../Frameworks/libbz2.1.0.dylib"
 	"@executable_path/../Frameworks/libMinuit2.0.dylib"
 	"@executable_path/../Frameworks/libboost_system.dylib"
 	"@executable_path/../Frameworks/libboost_filesystem.dylib"
@@ -144,7 +150,13 @@ declare -a changeto=(
 	"@executable_path/../Frameworks/libboost_python.dylib"
 	"@executable_path/../Frameworks/libfreetype.6.dylib"
 	"@executable_path/../Frameworks/libpng16.16.dylib"
+	"@executable_path/../Frameworks/libjpeg.9.dylib"
+	"@executable_path/../Frameworks/libjpeg.9.dylib"
+	"@executable_path/../Frameworks/libtiff.5.dylib"
+#	"@executable_path/../Frameworks/libz.1.dylib"
+#	"@executable_path/../Frameworks/libbz2.1.0.dylib"
 )
+
 
 CNT=$(expr ${#changefrom[*]} - 1)
 
@@ -162,5 +174,6 @@ for cfile in ${filestochange[@]}; do
 		${TOOL} -change ${cfrom} ${cto} ${cfile}
 	done
 
+	${STRIP} ${cfile}
 	echo -e ""
 done

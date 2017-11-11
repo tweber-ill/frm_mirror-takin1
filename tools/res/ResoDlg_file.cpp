@@ -67,6 +67,7 @@ void ResoDlg::SaveRes()
 		m_pSettings->setValue("reso/last_dir", QString(strDir.c_str()));
 }
 
+
 void ResoDlg::LoadRes()
 {
 	const std::string strXmlRoot("taz/");
@@ -98,12 +99,57 @@ void ResoDlg::LoadRes()
 	}
 
 	Load(xml, strXmlRoot);
+	m_strCurDir = strDir;
+
 	if(m_pSettings)
 		m_pSettings->setValue("reso/last_dir", QString(strDir.c_str()));
 
 }
 
+
+void ResoDlg::LoadMonoRefl()
+{
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		strDirLast = m_pSettings->value("reso/last_dir_refl", ".").toString();
+	QString qstrFile = QFileDialog::getOpenFileName(this,
+		"Open reflectivity file...",
+		strDirLast,
+		"Data files (*.dat *.DAT);;All files (*.*)", nullptr,
+		fileopt);
+	if(qstrFile == "")
+		return;
+
+	editMonoRefl->setText(qstrFile);
+}
+
+void ResoDlg::LoadAnaEffic()
+{
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		strDirLast = m_pSettings->value("reso/last_dir_refl", ".").toString();
+	QString qstrFile = QFileDialog::getOpenFileName(this,
+		"Open reflectivity file...",
+		strDirLast,
+		"Data files (*.dat *.DAT);;All files (*.*)", nullptr,
+		fileopt);
+	if(qstrFile == "")
+		return;
+
+	editAnaEffic->setText(qstrFile);
+}
+
+
 // -----------------------------------------------------------------------------
+
 
 void ResoDlg::WriteLastConfig()
 {
@@ -114,6 +160,8 @@ void ResoDlg::WriteLastConfig()
 		m_pSettings->setValue(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
 		m_pSettings->setValue(m_vecIntSpinNames[iSpinBox].c_str(), m_vecIntSpinBoxes[iSpinBox]->value());
+	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+		m_pSettings->setValue(m_vecEditNames[iEditBox].c_str(), m_vecEditBoxes[iEditBox]->text());
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
 		m_pSettings->setValue(m_vecPosEditNames[iEditBox].c_str(), m_vecPosEditBoxes[iEditBox]->text().toDouble());
 	for(std::size_t iRadio=0; iRadio<m_vecRadioPlus.size(); ++iRadio)
@@ -128,6 +176,7 @@ void ResoDlg::WriteLastConfig()
 
 	m_pSettings->setValue("reso/use_guide", groupGuide->isChecked());
 }
+
 
 void ResoDlg::ReadLastConfig()
 {
@@ -149,6 +198,14 @@ void ResoDlg::ReadLastConfig()
 		if(!m_pSettings->contains(m_vecIntSpinNames[iSpinBox].c_str()))
 			continue;
 		m_vecIntSpinBoxes[iSpinBox]->setValue(m_pSettings->value(m_vecIntSpinNames[iSpinBox].c_str()).value<int>());
+	}
+
+	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	{
+		if(!m_pSettings->contains(m_vecEditNames[iEditBox].c_str()))
+			continue;
+		QString strEdit = m_pSettings->value(m_vecEditNames[iEditBox].c_str()).value<QString>();
+		m_vecEditBoxes[iEditBox]->setText(strEdit);
 	}
 
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
@@ -202,6 +259,10 @@ void ResoDlg::ReadLastConfig()
 	//Calc();
 }
 
+
+// -----------------------------------------------------------------------------
+
+
 void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
@@ -221,6 +282,12 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 		ostrVal << m_vecIntSpinBoxes[iSpinBox]->value();
 
 		mapConf[strXmlRoot + m_vecIntSpinNames[iSpinBox]] = ostrVal.str();
+	}
+
+	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	{
+		std::string strVal = m_vecEditBoxes[iEditBox]->text().toStdString();
+		mapConf[strXmlRoot + m_vecEditNames[iEditBox]] = strVal;
 	}
 
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
@@ -247,6 +314,7 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 	mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real_reso>(tl::epoch<t_real_reso>());
 }
 
+
 void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	bool bOldDontCalc = m_bDontCalc;
@@ -262,6 +330,12 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	{
 		boost::optional<int> odSpinVal = xml.QueryOpt<int>(strXmlRoot+m_vecIntSpinNames[iSpinBox]);
 		if(odSpinVal) m_vecIntSpinBoxes[iSpinBox]->setValue(*odSpinVal);
+	}
+
+	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	{
+		boost::optional<std::string> odEditVal = xml.QueryOpt<std::string>(strXmlRoot+m_vecEditNames[iEditBox]);
+		if(odEditVal) m_vecEditBoxes[iEditBox]->setText(odEditVal->c_str());
 	}
 
 	for(std::size_t iEditBox=0; iEditBox<m_vecPosEditBoxes.size(); ++iEditBox)
@@ -310,7 +384,9 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 }
 
 
+
 // -----------------------------------------------------------------------------
+
 
 void ResoDlg::RefreshSimCmd()
 {

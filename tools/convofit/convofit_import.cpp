@@ -17,14 +17,42 @@ namespace fs = boost::filesystem;
 
 
 /**
+ * if possible re-express strFile relative to pathBase
+ */
+static void trymake_relpath(std::string& strFile, const fs::path& pathBase)
+{
+	fs::path pathFile(strFile);
+	pathFile.remove_filename();
+
+	if(pathFile == pathBase)
+	{
+		fs::path pathOnlyFile = fs::path(strFile).filename();
+		strFile = (fs::path(".") / pathOnlyFile).string();
+	}
+}
+
+
+/**
  * converts from monteconvo input file format
  */
 std::string convert_monteconvo(
-	const tl::Prop<std::string>& propMC, std::string strFile)
+	const tl::Prop<std::string>& propMC, std::string strFile, bool bRelPaths)
 {
 	// write temporary job file if none given
 	if(strFile == "")
 		strFile = tl::create_tmp_file<char>("convofit");
+
+
+	// paths
+	fs::path pathFile = fs::path(strFile);
+	fs::path pathFileBase = pathFile.filename().replace_extension("");
+	fs::path pathBase = pathFile;
+	pathBase.remove_filename();
+
+	if(bRelPaths)
+		pathFile = ".";
+	else
+		pathFile = pathBase;
 
 
 	// inputs
@@ -35,6 +63,15 @@ std::string convert_monteconvo(
 	mapJob["input/sqw_file"] = propMC.Query<std::string>("taz/monteconvo/sqw_conf");
 	mapJob["input/counts_col"] = propMC.Query<std::string>("taz/convofit/counter");
 	mapJob["input/monitor_col"] = propMC.Query<std::string>("taz/convofit/monitor");
+	mapJob["input/flip_lhs_rhs"] = propMC.Query<std::string>("taz/convofit/flip_coords", "0");
+
+	if(bRelPaths)
+	{
+		trymake_relpath(mapJob["input/scan_file"], pathBase);
+		trymake_relpath(mapJob["input/instrument_file"], pathBase);
+		trymake_relpath(mapJob["input/sqw_file"], pathBase);
+	}
+
 
 	// input overrides
 	std::string strTOver = propMC.Query<std::string>("taz/convofit/temp_override");
@@ -46,11 +83,6 @@ std::string convert_monteconvo(
 	if(strTOver != "") mapJob["input/temp_override"] = strTOver;
 	if(strBOver != "") mapJob["input/field_override"] = strBOver;
 
-
-	// outputs
-	fs::path pathFile = fs::path(strFile);
-	fs::path pathFileBase = pathFile.filename().replace_extension("");
-	pathFile.remove_filename();
 
 	fs::path pathScan = pathFile; pathScan /= "sc"; pathScan += pathFileBase; pathScan += ".dat";
 	fs::path pathModel = pathFile; pathModel /= "mod"; pathModel += pathFileBase; pathModel += ".dat";
@@ -69,7 +101,6 @@ std::string convert_monteconvo(
 		propMC.Query<std::string>("taz/monteconvo/sample_step_count", "1");
 	mapJob["montecarlo/recycle_neutrons"] =
 		propMC.Query<std::string>("taz/convofit/recycle_neutrons", "1");
-
 
 	// fitting
 	std::string strMin = "simplex";

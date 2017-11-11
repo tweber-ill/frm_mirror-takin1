@@ -235,23 +235,25 @@ add_executable(takin
 	dialogs/DispDlg.cpp dialogs/FavDlg.cpp
 	dialogs/RecipParamDlg.cpp dialogs/RealParamDlg.cpp
 	dialogs/SrvDlg.cpp dialogs/NetCacheDlg.cpp dialogs/ScanMonDlg.cpp
-	dialogs/EllipseDlg.cpp dialogs/FormfactorDlg.cpp
+	dialogs/EllipseDlg.cpp tools/ffact/FormfactorDlg.cpp
 	dialogs/AtomsDlg.cpp dialogs/AboutDlg.cpp
-	dialogs/DeadAnglesDlg.cpp
+	dialogs/DeadAnglesDlg.cpp dialogs/LogDlg.cpp
 
 	libs/spacegroups/spacegroup.cpp tools/sglist/SgListDlg.cpp
 	libs/globals.cpp libs/globals_qt.cpp libs/spacegroups/crystalsys.cpp
-	libs/formfactors/formfact.cpp libs/qthelper.cpp libs/qwthelper.cpp
+	libs/formfactors/formfact.cpp libs/qt/qthelper.cpp libs/qt/qwthelper.cpp
 
 	${SRCS_3D}
 
 	# statically link tlibs externals
 	#tlibs/file/loadinstr.cpp
-	libs/recent.cpp  tlibs/file/x3d.cpp
+	libs/qt/recent.cpp  tlibs/file/x3d.cpp
 	tlibs/log/log.cpp tlibs/log/debug.cpp
 	tlibs/math/rand.cpp
 	tlibs/string/spec_char.cpp
 	tlibs/helper/flags.cpp  tlibs/version.cpp
+
+	libcrystal/version.cpp
 )
 
 target_link_libraries(takin

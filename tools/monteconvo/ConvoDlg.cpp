@@ -16,7 +16,7 @@
 
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
-#include "libs/recent.h"
+#include "libs/qt/recent.h"
 
 #include <iostream>
 #include <fstream>
@@ -585,7 +585,7 @@ void ConvoDlg::scanFileChanged(const QString& qstrFile)
 
 	Filter filter;
 	m_scan = Scan();
-	if(!::load_file(vecFiles, m_scan, 1, filter))
+	if(!::load_file(vecFiles, m_scan, 1, filter, checkFlip->isChecked()))
 	{
 		tl::log_err("Cannot load scan(s).");
 		return;

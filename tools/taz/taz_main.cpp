@@ -11,10 +11,12 @@
 #include "tlibs/math/rand.h"
 #include "tlibs/log/debug.h"
 #include "tlibs/time/chrono.h"
-#include "tlibs/version.h"
-#include "libs/version.h"
 #include "libs/globals.h"
 #include "dialogs/NetCacheDlg.h"
+
+#include "tlibs/version.h"
+#include "libs/version.h"
+#include "libcrystal/version.h"
 
 #include <system_error>
 #include <boost/version.hpp>
@@ -33,6 +35,13 @@
 #include <QSplashScreen>
 
 
+namespace chr = std::chrono;
+namespace asio = boost::asio;
+namespace sys = boost::system;
+
+
+// ----------------------------------------------------------------------------
+// hacks
 #ifdef NON_STANDALONE_MINUIT
 	//#include <root/TError.h>
 	void SetErrorHandler(void (*)(int, bool, const char*, const char*));
@@ -45,13 +54,12 @@
 #ifdef Q_WS_X11
 	extern "C" int XInitThreads();
 #endif
+// ----------------------------------------------------------------------------
 
 
-namespace chr = std::chrono;
-namespace asio = boost::asio;
-namespace sys = boost::system;
 
-
+// ----------------------------------------------------------------------------
+// logging
 static bool add_logfile(std::ofstream* postrLog, bool bAdd=1)
 {
 	if(!postrLog || !postrLog->is_open())
@@ -89,13 +97,63 @@ static void show_splash_msg(QApplication *pApp, QSplashScreen *pSplash, const st
 	pApp->processEvents();
 }
 
-
 #define TAKIN_CHECK " Please check if Takin is correctly installed and the current working directory is set to the Takin main directory."
+// ----------------------------------------------------------------------------
 
+
+
+// ----------------------------------------------------------------------------
+class TakAppl : public QApplication
+{
+protected:
+	std::shared_ptr<TazDlg> m_pTakDlg;
+	std::string m_strToLoad;
+
+protected:
+
+public:
+	TakAppl(int argc, char** argv) : QApplication(argc, argv, 1) {}
+	virtual ~TakAppl() {}
+
+	void SetTakDlg(std::shared_ptr<TazDlg> pDlg) { m_pTakDlg = pDlg; }
+
+	virtual bool event(QEvent *pEvt) override
+	{
+		if(pEvt->type() == QEvent::FileOpen)
+		{
+			m_strToLoad = ((QFileOpenEvent*)pEvt)->file().toStdString();
+			return true;
+		}
+
+		return QApplication::event(pEvt);
+	}
+
+	void DoPendingRequests()
+	{
+		if(!m_pTakDlg) return;
+
+		// user clicked on an associated file to load?
+		if(m_strToLoad != "")
+		{
+			//QMessageBox::information(0, "Takin - Info", ("File: " + m_strToLoad).c_str());
+			m_pTakDlg->Load(m_strToLoad.c_str());
+		}
+	}
+};
+
+// ----------------------------------------------------------------------------
+
+
+
+/**
+ * main entry point
+ */
 int main(int argc, char** argv)
 {
 	try
 	{
+		std::ios_base::sync_with_stdio(0);
+
 #ifdef NO_TERM_CMDS
 		tl::Log::SetUseTermCmds(0);
 #endif
@@ -148,7 +206,7 @@ int main(int argc, char** argv)
 		qRegisterMetaType<std::string>("std::string");
 		qRegisterMetaType<CacheVal>("CacheVal");
 
-		std::unique_ptr<QApplication> app(new QApplication(argc, argv));
+		std::unique_ptr<TakAppl> app(new TakAppl(argc, argv));
 
 		std::setlocale(LC_ALL, "C");
 		std::locale::global(std::locale::classic());
@@ -191,7 +249,7 @@ int main(int argc, char** argv)
 
 
 		// ------------------------------------------------------------
-		// tlibs version check
+		// tlibs & libcrystal version checks
 		tl::log_info("Using tlibs version ", tl::get_tlibs_version(), ".");
 		if(!tl::check_tlibs_version(TLIBS_VERSION))
 		{
@@ -202,6 +260,18 @@ int main(int argc, char** argv)
 			QMessageBox::critical(0, "Takin - Error", "Broken build: Mismatch in tlibs version.");
 			return -1;
 		}
+
+		tl::log_info("Using libcrystal version ", xtl::get_libcrystal_version(), ".");
+		if(!xtl::check_libcrystal_version(LIBCRYSTAL_VERSION))
+		{
+			tl::log_crit("Version mismatch in LibCrystal. Please recompile.");
+			tl::log_crit("LibCrystal versions: library: ", xtl::get_libcrystal_version(),
+				", headers: ", LIBCRYSTAL_VERSION, ".");
+
+			QMessageBox::critical(0, "Takin - Error", "Broken build: Mismatch in libcrystal version.");
+			return -1;
+		}
+
 
 		show_splash_msg(app.get(), pSplash.get(), strStarting + "\nChecking resources ...");
 
@@ -285,13 +355,15 @@ int main(int argc, char** argv)
 #endif
 
 		show_splash_msg(app.get(), pSplash.get(), strStarting + "\nLoading 1/2 ...");
-		std::unique_ptr<TazDlg> pDlg(new TazDlg(0));
+		std::shared_ptr<TazDlg> pTakDlg(new TazDlg(nullptr, strLog));
+		app->SetTakDlg(pTakDlg);
 		show_splash_msg(app.get(), pSplash.get(), strStarting + "\nLoading 2/2 ...");
+		app->DoPendingRequests();
 
-		pSplash->finish(pDlg.get());
+		pSplash->finish(pTakDlg.get());
 		if(argc > 1)
-			pDlg->Load(argv[1]);
-		pDlg->show();
+			pTakDlg->Load(argv[1]);
+		pTakDlg->show();
 		int iRet = app->exec();
 
 
