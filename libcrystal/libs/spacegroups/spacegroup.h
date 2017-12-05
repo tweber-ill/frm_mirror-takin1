@@ -38,54 +38,80 @@ protected:
 	std::string m_strCrystalSysName;
 
 	std::vector<t_mat> m_vecTrafos, m_vecCentringTrafos;
-	std::vector<unsigned int> m_vecInvTrafos, m_vecPrimTrafos, m_vecCenterTrafos;
+	std::vector<unsigned int> m_vecInvTrafos, m_vecPrimTrafos,
+		m_vecCenterTrafos, m_vecTrans;
 
 public:
 	SpaceGroup() = default;
 	~SpaceGroup() = default;
+
 	SpaceGroup(const SpaceGroup& sg)
 		: m_iNr(sg.m_iNr), m_strName(sg.m_strName), m_strLaue(sg.m_strLaue),
 		m_strPoint(sg.m_strPoint), m_crystalsys(sg.m_crystalsys),
 		m_strCrystalSysName(sg.m_strCrystalSysName), m_vecTrafos(sg.m_vecTrafos),
 		m_vecCentringTrafos(sg.m_vecCentringTrafos),
 		m_vecInvTrafos(sg.m_vecInvTrafos), m_vecPrimTrafos(sg.m_vecPrimTrafos),
-		m_vecCenterTrafos(sg.m_vecCenterTrafos)
+		m_vecCenterTrafos(sg.m_vecCenterTrafos), m_vecTrans(sg.m_vecTrans)
 	{}
+
 	SpaceGroup(SpaceGroup&& sg)
 		: m_iNr(sg.m_iNr), m_strName(std::move(sg.m_strName)), m_strLaue(std::move(sg.m_strLaue)),
 		m_strPoint(std::move(sg.m_strPoint)), m_crystalsys(std::move(sg.m_crystalsys)),
 		m_strCrystalSysName(std::move(sg.m_strCrystalSysName)), m_vecTrafos(std::move(sg.m_vecTrafos)),
 		m_vecCentringTrafos(sg.m_vecCentringTrafos),
 		m_vecInvTrafos(std::move(sg.m_vecInvTrafos)), m_vecPrimTrafos(std::move(sg.m_vecPrimTrafos)),
-		m_vecCenterTrafos(std::move(sg.m_vecCenterTrafos))
+		m_vecCenterTrafos(std::move(sg.m_vecCenterTrafos)), m_vecTrans(std::move(sg.m_vecTrans))
 	{}
 
-	bool HasReflection(int h, int k, int l) const
+
+	/**
+	 * reflection systematically allowed? if not, return index of trafo which forbids it
+	 */
+	bool HasReflection(int h, int k, int l, std::size_t* pTrafoIdx=nullptr) const
 	{
-		return is_reflection_allowed<std::vector, t_mat, t_vec>
-			(h,k,l, m_vecTrafos);
+		std::pair<bool, std::size_t> pair =
+			is_reflection_allowed<std::vector, t_mat, t_vec>
+				(h,k,l, m_vecTrafos);
+
+		if(pTrafoIdx)
+			*pTrafoIdx = pair.second;
+		return pair.first;
 	}
+
+
+	/*bool HasReflection2(int h, int k, int l) const
+	{
+		return is_reflection_allowed_2<std::vector, t_mat, t_vec>
+		(h,k,l, m_vecTrafos);
+	}*/
+
 
 	/**
 	 * is reflection allowed based only on centring?
 	 */
-	bool HasGenReflection(int h, int k, int l) const
+	bool HasGenReflection(int h, int k, int l, std::size_t* pTrafoIdx=nullptr) const
 	{
 		bool bAllowed = 1;
 
 		if(m_vecCentringTrafos.size()) // calculate from space group
 		{
-			bAllowed = is_reflection_allowed<std::vector, t_mat, t_vec>
-				(h,k,l, m_vecCentringTrafos);
-			//tl::log_debug(h,k,l, " -> ", bAllowed, ", # trafos: ", m_vecCentringTrafos.size());
+			std::pair<bool, std::size_t> pair =
+				is_reflection_allowed<std::vector, t_mat, t_vec>
+					(h,k,l, m_vecCentringTrafos);
+			bAllowed = pair.first;
+			if(pTrafoIdx)
+				*pTrafoIdx = pair.second;
 		}
 		else	// use equivalent pre-calculated rules alternatively
 		{
 			bAllowed = is_centering_reflection_allowed<int>(GetName(), h,k,l);
+			if(pTrafoIdx)
+				*pTrafoIdx = 0;
 		}
 
 		return bAllowed;
 	}
+
 
 	void SetNr(unsigned int iNr)
 	{
@@ -94,12 +120,14 @@ public:
 	}
 	unsigned int GetNr() const { return m_iNr; }
 
+
 	void SetName(const std::string& str)
 	{
 		m_strName = str;
 		m_strPoint = get_pointgroup(m_strName);
 	}
 	const std::string& GetName() const { return m_strName; }
+
 
 	void SetCrystalSystem(const CrystalSystem& crys)
 	{
@@ -112,6 +140,7 @@ public:
 	CrystalSystem GetCrystalSystem() const { return m_crystalsys; }
 	const std::string& GetCrystalSystemName() const { return m_strCrystalSysName; }
 
+
 	void SetLaueGroup(const std::string& str)
 	{
 		m_strLaue = str;
@@ -119,6 +148,7 @@ public:
 	}
 	const std::string& GetLaueGroup() const { return m_strLaue; }
 	const std::string& GetPointGroup() const { return m_strPoint; }
+
 
 	void SetTrafos(std::vector<t_mat>&& vecTrafos) { m_vecTrafos = std::move(vecTrafos); }
 	void SetTrafos(const std::vector<t_mat>& vecTrafos) { m_vecTrafos = vecTrafos; }
@@ -135,11 +165,21 @@ public:
 		for(unsigned int iIdx : m_vecCenterTrafos)
 			m_vecCentringTrafos.push_back(m_vecTrafos[iIdx]);
 	}
-	void SetCenterTrafos(const std::vector<unsigned int>& vecTrafos) { m_vecCenterTrafos = vecTrafos; }
+	void SetCenterTrafos(const std::vector<unsigned int>& vecTrafos)
+	{
+		m_vecCentringTrafos.clear();
+		m_vecCenterTrafos = vecTrafos;
+		for(unsigned int iIdx : m_vecCenterTrafos)
+			m_vecCentringTrafos.push_back(m_vecTrafos[iIdx]);
+	}
+	void SetTransTrafos(std::vector<unsigned int>&& vecTrafos) { m_vecTrans = std::move(vecTrafos); }
+	void SetTransTrafos(const std::vector<unsigned int>& vecTrafos) { m_vecTrans = vecTrafos; }
+
 
 	const std::vector<unsigned int>& GetInvTrafos() const { return m_vecInvTrafos; }
 	const std::vector<unsigned int>& GetPrimTrafos() const { return m_vecPrimTrafos; }
 	const std::vector<unsigned int>& GetCenterTrafos() const { return m_vecCenterTrafos; }
+	const std::vector<unsigned int>& GetTransTrafos() const { return m_vecTrans; }
 };
 
 

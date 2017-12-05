@@ -92,7 +92,7 @@ bool SpaceGroups<t_real>::LoadSpaceGroups(const std::string& strFile, bool bMand
 		unsigned int iNumTrafos = xml.Query<unsigned int>(strXmlRoot + "/" + strGroup + "/num_trafos", 0);
 
 		std::vector<t_mat> vecTrafos;
-		std::vector<unsigned int> vecInvTrafos, vecPrimTrafos, vecCenterTrafos;
+		std::vector<unsigned int> vecInvTrafos, vecPrimTrafos, vecCenterTrafos, vecTrans;
 		vecTrafos.reserve(iNumTrafos);
 
 		unsigned int iTrafo = 0;
@@ -117,6 +117,7 @@ bool SpaceGroups<t_real>::LoadSpaceGroups(const std::string& strFile, bool bMand
 				if(std::tolower(c)=='p') vecPrimTrafos.push_back(iTrafo);
 				if(std::tolower(c)=='i') vecInvTrafos.push_back(iTrafo);
 				if(std::tolower(c)=='c') vecCenterTrafos.push_back(iTrafo);
+				if(std::tolower(c)=='t') vecTrans.push_back(iTrafo);
 			}
 
 			vecTrafos.push_back(std::move(mat));
@@ -137,6 +138,7 @@ bool SpaceGroups<t_real>::LoadSpaceGroups(const std::string& strFile, bool bMand
 		sg.SetInvTrafos(std::move(vecInvTrafos));
 		sg.SetPrimTrafos(std::move(vecPrimTrafos));
 		sg.SetCenterTrafos(std::move(vecCenterTrafos));
+		sg.SetTransTrafos(std::move(vecTrans));
 
 		auto pairSG = g_mapSpaceGroups.insert(t_val(sg.GetName(), std::move(sg)));
 		g_vecSpaceGroups.push_back(&pairSG.first->second);

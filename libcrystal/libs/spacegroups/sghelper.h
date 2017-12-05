@@ -386,18 +386,25 @@ bool is_centering_reflection_allowed(const std::string& strSG, t_int h, t_int k,
  * checks for allowed Bragg reflections
  * algorithm based on Clipper's HKL_class
  * constructor in clipper/core/coords.cpp by K. Cowtan
+ *
+ * symmetry operation S on position r: R*r + t
+ * F = sum<S>( exp(2*pi*i * (R*r + t)*G) )
+ *   = sum<S>( exp(2*pi*i * ((R*r)*G + t*G)) )
+ *   = sum<S>( exp(2*pi*i * (r*(G*R) + t*G)) )
+ *   = sum<S>( exp(2*pi*i * (r*(G*R))  *  exp(2*pi*i * (G*t)) )
  */
 template<template<class...> class t_cont = std::vector,
 	class t_mat = ublas::matrix<double>,
 	class t_vec = ublas::vector<typename t_mat::value_type>>
-bool is_reflection_allowed(int h, int k, int l, const t_cont<t_mat>& vecTrafos)
+std::pair<bool, std::size_t> is_reflection_allowed(int h, int k, int l, const t_cont<t_mat>& vecTrafos)
 {
 	using t_real = typename t_mat::value_type;
 	const constexpr t_real dEps = t_real(1e-6);
 	t_vec vecHKL = tl::make_vec({t_real(h), t_real(k), t_real(l)});
 
-	for(const t_mat& mat : vecTrafos)
+	for(std::size_t iMat=0; iMat<vecTrafos.size(); ++iMat)
 	{
+		const t_mat& mat = vecTrafos[iMat];
 		// rotation part of the symmetry trafo
 		t_mat matRot = ublas::trans(mat);	// recip -> transpose
 		matRot.resize(3,3,1);
@@ -405,25 +412,19 @@ bool is_reflection_allowed(int h, int k, int l, const t_cont<t_mat>& vecTrafos)
 		// rotate hkl coordinates
 		t_vec vecHKLrot = ublas::prod(matRot, vecHKL);
 
+		// does hkl transform rotate into itself
 		if(tl::vec_equal(vecHKL, vecHKLrot, dEps))
 		{
 			// translation part of the symmetry trafo
 			t_vec vecTrans = tl::make_vec({mat(0,3), mat(1,3), mat(2,3)});
 
-			// inner product of rotated hkl coordiantes and translation vector
-			t_real dInner = ublas::inner_prod(vecTrans, vecHKLrot);
-			dInner = std::abs(std::fmod(dInner, t_real(1)));	// map into [0,1]
-
-			// not allowed if vecTrans and vecHKLrot not perpendicular or parallel
-			if(!tl::float_equal<t_real>(dInner, t_real(0), dEps) &&
-				!tl::float_equal<t_real>(dInner, t_real(1), dEps))
-			{
-				//tl::log_debug("No allowed: t*r = ", dInner, ", mat = ", mat);
-				return false;
-			}
+			// is inner product of hkl coordinates and translation vector an int?
+			if(!tl::is_integer<t_real>(ublas::inner_prod(vecTrans, vecHKL), dEps))
+				return std::make_pair(false, iMat);
 		}
 	}
-	return true;
+
+	return std::make_pair(true, vecTrafos.size());
 }
 
 }

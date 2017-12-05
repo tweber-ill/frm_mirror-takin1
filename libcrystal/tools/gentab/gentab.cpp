@@ -242,7 +242,7 @@ bool gen_spacegroups()
 			std::string strGroup = ostr.str();
 
 			std::vector<t_propval> vecTrafos = propgrp.GetFullChildNodes("/");
-			std::size_t iTrafo=0;
+			std::size_t iTrafo = 0;
 			for(const t_propval& trafo : vecTrafos)
 			{
 				if(trafo.first != "transform") continue;
@@ -262,6 +262,14 @@ bool gen_spacegroups()
 				if(tl::is_identity_matrix(matTrafo) ||
 					tl::is_centering_matrix<t_mat>(matTrafo))
 					strAttribs += "c";
+				/*if(tl::is_identity_matrix(matTrafo) ||
+					(tl::has_translation_components<t_mat>(matTrafo) &&
+						!tl::is_centering_matrix<t_mat>(matTrafo) &&
+						!tl::is_inverting_matrix<t_mat>(tl::submatrix(matTrafo,3,3))))
+					strAttribs += "s";*/
+				if(tl::is_identity_matrix(matTrafo) ||
+					tl::has_translation_components<t_mat>(matTrafo))
+					strAttribs += "t";
 
 				propOut.Add(strTrafoKey, tl::var_to_str(matTrafo, g_iPrec) + strAttribs);
 				++iTrafo;

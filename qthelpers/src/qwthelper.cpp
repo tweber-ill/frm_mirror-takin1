@@ -661,7 +661,7 @@ t_real_qwt MyQwtRasterData::value(t_real_qwt dx, t_real_qwt dy) const
 MyQwtRasterData::~MyQwtRasterData()
 {}
 
-MyQwtRasterData::MyQwtRasterData(const MyQwtRasterData& dat)
+MyQwtRasterData::MyQwtRasterData(const MyQwtRasterData& dat) : QwtRasterData()
 {
 	this->operator=(dat);
 }

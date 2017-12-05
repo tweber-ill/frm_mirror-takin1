@@ -123,12 +123,10 @@ struct LatticeCommon
 				vecNames.push_back((*pvecAtomPos)[iAtom].strAtomName);
 			}
 
-			const t_real dUCSize = 1.;
 			std::tie(vecAllNames, vecAllAtoms, vecAllAtomsFrac, vecAllAtomTypes) =
 			tl::generate_all_atoms<t_mat, t_vec, std::vector>
 				(*pvecSymTrafos, vecAtoms, &vecNames, matA,
-				/*t_real(0), t_real(1)*/ -dUCSize/t_real(2), dUCSize/t_real(2),
-				 g_dEps);
+				g_dEps, &matB);
 
 			for(std::size_t iAtom=0; iAtom<vecAllAtoms.size(); ++iAtom)
 			{

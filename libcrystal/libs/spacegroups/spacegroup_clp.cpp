@@ -51,7 +51,7 @@ bool SpaceGroupClp::HasReflection(int h, int k, int l) const
 	std::vector<ublas::matrix<double>> vecTrafos;
 	GetSymTrafos(vecTrafos);
 	return is_reflection_allowed<std::vector,
-		ublas::matrix<double>, ublas::vector<double>>(h,k,l, vecTrafos);
+		ublas::matrix<double>, ublas::vector<double>>(h,k,l, vecTrafos).first;
 }
 
 // using clipper

@@ -165,10 +165,15 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 
 		for(unsigned int iSymOp=0; iSymOp<vecTrafos.size(); ++iSymOp)
 		{
+			std::string strDesc;
 			if(bShowMatrices)
-				listSymOps->addItem(xtl::print_matrix(vecTrafos[iSymOp]).c_str());
+				strDesc = xtl::print_matrix(vecTrafos[iSymOp]);
 			else
-				listSymOps->addItem(xtl::get_trafo_desc(vecTrafos[iSymOp]).c_str());
+				strDesc = xtl::get_trafo_desc(vecTrafos[iSymOp]);
+
+	                QListWidgetItem* pItem = new QListWidgetItem(strDesc.c_str());
+        	        pItem->setData(Qt::UserRole, iSymOp);
+			listSymOps->addItem(pItem);
 		}
 	}
 
@@ -225,6 +230,41 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 		}
 	}
 
+	const std::vector<unsigned int>& vecTrans = psg->GetTransTrafos();
+
+	if(vecTrans.size())
+	{
+		std::ostringstream ostr;
+		ostr << "Translating Symmetry Operations (" << (vecTrans.size()) << ")";
+		listSymOps->addItem(create_header_item(ostr.str().c_str()));
+		for(unsigned int iSymOp=0; iSymOp<vecTrans.size(); ++iSymOp)
+		{
+			if(bShowMatrices)
+				listSymOps->addItem(xtl::print_matrix(vecTrafos[vecTrans[iSymOp]]).c_str());
+			else
+				listSymOps->addItem(xtl::get_trafo_desc(vecTrafos[vecTrans[iSymOp]]).c_str());
+		}
+	}
+
+/*
+	// screw axes (rotation around and translation along axis)
+	// and glide planes (reflection at and translation parallel to plane)
+	const std::vector<unsigned int>& vecScrews = psg->GetScrewsNGlides();
+
+	if(vecScrews.size())
+	{
+		std::ostringstream ostr;
+		ostr << "Screw/Glide Symmetry Operations (" << (vecScrews.size()) << ")";
+		listSymOps->addItem(create_header_item(ostr.str().c_str()));
+		for(unsigned int iSymOp=0; iSymOp<vecScrews.size(); ++iSymOp)
+		{
+			if(bShowMatrices)
+				listSymOps->addItem(xtl::print_matrix(vecTrafos[vecScrews[iSymOp]]).c_str());
+			else
+				listSymOps->addItem(xtl::get_trafo_desc(vecTrafos[vecScrews[iSymOp]]).c_str());
+		}
+	}
+*/
 
 	RecalcBragg();
 	CalcTrafo();
@@ -240,7 +280,7 @@ void SgListDlg::RecalcBragg()
 	const int l = spinL->value();
 	const bool bOnlyCentring = 0;
 
-	bool (xtl::SpaceGroup<t_real>::*pAllowedFkt)(int, int, int) const =
+	bool (xtl::SpaceGroup<t_real>::*pAllowedFkt)(int, int, int, std::size_t*) const =
 		bOnlyCentring ? &xtl::SpaceGroup<t_real>::HasGenReflection
 			: &xtl::SpaceGroup<t_real>::HasReflection;
 
@@ -251,7 +291,23 @@ void SgListDlg::RecalcBragg()
 		return;
 
 	const xtl::SpaceGroup<t_real>* psg = pvecSG->at(iSG);
-	const bool bForbidden = !(psg->*pAllowedFkt)(h,k,l);;
+	std::size_t idxTrafo = 0;
+	const bool bForbidden = !(psg->*pAllowedFkt)(h,k,l, &idxTrafo);
+
+	if(bForbidden)
+	{
+		// mark the symmetry operation responsible for the absence
+		for(int iItem=0; iItem<listSGs->count(); ++iItem)
+		{
+			QListWidgetItem *pItem = listSymOps->item(iItem);
+			unsigned int iTrafo = pItem->data(Qt::UserRole).toUInt();
+			if(iTrafo == idxTrafo)
+			{
+				listSymOps->setCurrentItem(pItem);
+				break;
+			}
+		}
+	}
 
 	QFont font = spinH->font();
 	font.setStrikeOut(bForbidden);
@@ -289,10 +345,13 @@ void SgListDlg::CalcTrafo()
 	std::vector<xtl::SpaceGroup<t_real>::t_vec> vecUnique;
 
 	listTrafo->addItem(create_header_item("All Transformation Results"));
-	for(const xtl::SpaceGroup<t_real>::t_mat& mat : vecTrafos)
+	for(unsigned int iMat=0; iMat<vecTrafos.size(); ++iMat)
 	{
+		const xtl::SpaceGroup<t_real>::t_mat& mat = vecTrafos[iMat];
 		xtl::SpaceGroup<t_real>::t_vec vec = ublas::prod(mat, vecIn);
-		listTrafo->addItem(xtl::print_vector(vec).c_str());
+		QListWidgetItem* pItem = new QListWidgetItem(xtl::print_vector(vec).c_str());
+		pItem->setData(Qt::UserRole, iMat);
+		listTrafo->addItem(pItem);
 
 		if(!xtl::is_vec_in_container<std::vector, xtl::SpaceGroup<t_real>::t_vec>(vecUnique, vec))
 			vecUnique.push_back(vec);
