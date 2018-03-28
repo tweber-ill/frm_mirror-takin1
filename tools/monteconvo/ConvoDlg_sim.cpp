@@ -72,27 +72,35 @@ void ConvoDlg::Start1D()
 		std::vector<t_real> vecE = tl::linspace<t_real,t_real>(
 			spinStartE->value(), spinStopE->value(), iNumSteps);
 
+		const int iScanAxis = comboAxis->currentIndex();
+		int iScanAxisIdx = 0;
+
 		std::string strScanVar = "";
 		std::vector<t_real> *pVecScanX = nullptr;
-		if(!tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu))
+		// either scan axis is directly selected OR (automatic is set AND the start/stop values are different)
+		if(iScanAxis==1 || (iScanAxis==0 && !tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu)))
 		{
 			pVecScanX = &vecH;
 			strScanVar = "h (rlu)";
+			iScanAxisIdx = 0;
 		}
-		else if(!tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu))
+		else if(iScanAxis==2 || (iScanAxis==0 && !tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu)))
 		{
 			pVecScanX = &vecK;
 			strScanVar = "k (rlu)";
+			iScanAxisIdx = 1;
 		}
-		else if(!tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu))
+		else if(iScanAxis==3 || (iScanAxis==0 && !tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu)))
 		{
 			pVecScanX = &vecL;
 			strScanVar = "l (rlu)";
+			iScanAxisIdx = 2;
 		}
-		else if(!tl::float_equal(spinStartE->value(), spinStopE->value(), g_dEpsRlu))
+		else if(iScanAxis==4 || (iScanAxis==0 && !tl::float_equal(spinStartE->value(), spinStopE->value(), g_dEpsRlu)))
 		{
 			pVecScanX = &vecE;
 			strScanVar = "E (meV)";
+			iScanAxisIdx = 3;
 		}
 		else
 		{
@@ -109,13 +117,23 @@ void ConvoDlg::Start1D()
 			Q_ARG(const QString&, QString(strScanVar.c_str())));
 
 
+		// -------------------------------------------------------------------------
+		// Load reso file
 		TASReso reso;
-		if(!reso.LoadRes(editRes->text().toStdString().c_str()))
+
+		std::string _strResoFile = editRes->text().toStdString();
+		tl::trim(_strResoFile);
+		const std::string strResoFile = find_file_in_global_paths(_strResoFile);
+
+		tl::log_debug("Loading resolution from \"", strResoFile, "\".");
+		if(strResoFile == "" || !reso.LoadRes(strResoFile.c_str()))
 		{
 			//QMessageBox::critical(this, "Error", "Could not load resolution file.");
 			fktEnableButtons();
 			return;
 		}
+		// -------------------------------------------------------------------------
+
 
 		if(bUseScan)	// get crystal definition from scan file
 		{
@@ -128,14 +146,22 @@ void ConvoDlg::Start1D()
 				m_scan.sample.alpha, m_scan.sample.beta, m_scan.sample.gamma,
 				vec1, vec2);
 		}
-		else			// use crystal config file
+		else	// use crystal config file
 		{
-			if(!reso.LoadLattice(editCrys->text().toStdString().c_str()))
+			// -------------------------------------------------------------------------
+			// Load lattice
+			std::string _strLatticeFile = editCrys->text().toStdString();
+			tl::trim(_strLatticeFile);
+			const std::string strLatticeFile = find_file_in_global_paths(_strLatticeFile);
+
+			tl::log_debug("Loading crystal from \"", strLatticeFile, "\".");
+			if(strLatticeFile == "" || !reso.LoadLattice(strLatticeFile.c_str()))
 			{
 				//QMessageBox::critical(this, "Error", "Could not load crystal file.");
 				fktEnableButtons();
 				return;
 			}
+			// -------------------------------------------------------------------------
 		}
 
 		reso.SetAlgo(ResoAlgo(comboAlgo->currentIndex()+1));
@@ -296,7 +322,7 @@ void ConvoDlg::Start1D()
 				set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecScaledS, 0, false);
 				set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecScaledS, 1, false);
 				if(bUseScan)
-					set_qwt_data<t_real>()(*m_plotwrap, m_scan.vecX, m_scan.vecCts, 2, false, &m_scan.vecCtsErr);
+					set_qwt_data<t_real>()(*m_plotwrap, m_scan.vechklE[iScanAxisIdx], m_scan.vecCts, 2, false, &m_scan.vecCtsErr);
 				else
 					set_qwt_data<t_real>()(*m_plotwrap, vecNull, vecNull, 2, false);
 
@@ -321,9 +347,9 @@ void ConvoDlg::Start1D()
 						dTop = *minmaxS.second;
 					}
 
-					if(bUseScan && m_scan.vecX.size() && m_scan.vecCts.size())
+					if(bUseScan && m_scan.vechklE[iScanAxisIdx].size() && m_scan.vecCts.size())
 					{
-						auto minmaxX = std::minmax_element(m_scan.vecX.begin(), m_scan.vecX.end());
+						auto minmaxX = std::minmax_element(m_scan.vechklE[iScanAxisIdx].begin(), m_scan.vechklE[iScanAxisIdx].end());
 						auto minmaxY = std::minmax_element(m_scan.vecCts.begin(), m_scan.vecCts.end());
 
 						dLeft = std::min<t_real_qwt>(dLeft, *minmaxX.first);
@@ -478,27 +504,30 @@ void ConvoDlg::Start2D()
 
 		// -------------------------------------------------------------------------
 		// find axis labels and ranges
+		const int iScanAxis1 = comboAxis->currentIndex();
+		const int iScanAxis2 = comboAxis2->currentIndex();
+
 		std::string strScanVar1 = "";
 		t_real dStart1{}, dStop1{};
-		if(!tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu))
+		if(iScanAxis1==1 || (iScanAxis1==0 && !tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu)))
 		{
 			strScanVar1 = "h (rlu)";
 			dStart1 = spinStartH->value();
 			dStop1 = spinStopH->value();
 		}
-		else if(!tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu))
+		else if(iScanAxis1==2 || (iScanAxis1==0 && !tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu)))
 		{
 			strScanVar1 = "k (rlu)";
 			dStart1 = spinStartK->value();
 			dStop1 = spinStopK->value();
 		}
-		else if(!tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu))
+		else if(iScanAxis1==3 || (iScanAxis1==0 && !tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu)))
 		{
 			strScanVar1 = "l (rlu)";
 			dStart1 = spinStartL->value();
 			dStop1 = spinStopL->value();
 		}
-		else if(!tl::float_equal(spinStartE->value(), spinStopE->value(), g_dEpsRlu))
+		else if(iScanAxis1==4 || (iScanAxis1==0 && !tl::float_equal(spinStartE->value(), spinStopE->value(), g_dEpsRlu)))
 		{
 			strScanVar1 = "E (meV)";
 			dStart1 = spinStartE->value();
@@ -507,25 +536,25 @@ void ConvoDlg::Start2D()
 
 		std::string strScanVar2 = "";
 		t_real dStart2{}, dStop2{};
-		if(!tl::float_equal(spinStartH->value(), spinStopH2->value(), g_dEpsRlu))
+		if(iScanAxis2==1 || (iScanAxis2==0 && !tl::float_equal(spinStartH->value(), spinStopH2->value(), g_dEpsRlu)))
 		{
 			strScanVar2 = "h (rlu)";
 			dStart2 = spinStartH->value();
 			dStop2 = spinStopH2->value();
 		}
-		else if(!tl::float_equal(spinStartK->value(), spinStopK2->value(), g_dEpsRlu))
+		else if(iScanAxis2==2 || (iScanAxis2==0 && !tl::float_equal(spinStartK->value(), spinStopK2->value(), g_dEpsRlu)))
 		{
 			strScanVar2 = "k (rlu)";
 			dStart2 = spinStartK->value();
 			dStop2 = spinStopK2->value();
 		}
-		else if(!tl::float_equal(spinStartL->value(), spinStopL2->value(), g_dEpsRlu))
+		else if(iScanAxis2==3 || (iScanAxis2==0 && !tl::float_equal(spinStartL->value(), spinStopL2->value(), g_dEpsRlu)))
 		{
 			strScanVar2 = "l (rlu)";
 			dStart2 = spinStartL->value();
 			dStop2 = spinStopL2->value();
 		}
-		else if(!tl::float_equal(spinStartE->value(), spinStopE2->value(), g_dEpsRlu))
+		else if(iScanAxis2==4 || (iScanAxis2==0 && !tl::float_equal(spinStartE->value(), spinStopE2->value(), g_dEpsRlu)))
 		{
 			strScanVar2 = "E (meV)";
 			dStart2 = spinStartE->value();
@@ -542,21 +571,39 @@ void ConvoDlg::Start2D()
 		// -------------------------------------------------------------------------
 
 
-		TASReso reso;
 
-		if(!reso.LoadRes(editRes->text().toStdString().c_str()))
+		// -------------------------------------------------------------------------
+		// Load reso file
+		TASReso reso;
+		std::string _strResoFile = editRes->text().toStdString();
+		tl::trim(_strResoFile);
+		const std::string strResoFile = find_file_in_global_paths(_strResoFile);
+
+		tl::log_debug("Loading resolution from \"", strResoFile, "\".");
+		if(strResoFile == "" || !reso.LoadRes(strResoFile.c_str()))
 		{
 			//QMessageBox::critical(this, "Error", "Could not load resolution file.");
 			fktEnableButtons();
 			return;
 		}
+		// -------------------------------------------------------------------------
 
-		if(!reso.LoadLattice(editCrys->text().toStdString().c_str()))
+
+		// -------------------------------------------------------------------------
+		// Load lattice
+		std::string _strLatticeFile = editCrys->text().toStdString();
+		tl::trim(_strLatticeFile);
+		const std::string strLatticeFile = find_file_in_global_paths(_strLatticeFile);
+
+		tl::log_debug("Loading crystal from \"", strLatticeFile, "\".");
+		if(strLatticeFile == "" || !reso.LoadLattice(strLatticeFile.c_str()))
 		{
 			//QMessageBox::critical(this, "Error", "Could not load crystal file.");
 			fktEnableButtons();
 			return;
 		}
+		// -------------------------------------------------------------------------
+
 
 		reso.SetAlgo(ResoAlgo(comboAlgo->currentIndex()+1));
 		reso.SetKiFix(comboFixedK->currentIndex()==0);
@@ -811,19 +858,20 @@ void ConvoDlg::StartDisp()
 		std::vector<t_real> vecL = tl::linspace<t_real,t_real>(
 			spinStartL->value(), spinStopL->value(), iNumSteps);
 
+		const int iScanAxis = comboAxis->currentIndex();
 		std::string strScanVar = "";
 		std::vector<t_real> *pVecScanX = nullptr;
-		if(!tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu))
+		if(iScanAxis==1 || (iScanAxis==0 && !tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu)))
 		{
 			pVecScanX = &vecH;
 			strScanVar = "h (rlu)";
 		}
-		else if(!tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu))
+		else if(iScanAxis==2 || (iScanAxis==0 && !tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu)))
 		{
 			pVecScanX = &vecK;
 			strScanVar = "k (rlu)";
 		}
-		else if(!tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu))
+		else if(iScanAxis==3 || (iScanAxis==0 && !tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu)))
 		{
 			pVecScanX = &vecL;
 			strScanVar = "l (rlu)";

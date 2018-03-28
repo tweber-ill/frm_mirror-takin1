@@ -104,6 +104,10 @@ endif
 
 DEFINES = -DNO_JPEG -DNO_TIFF
 
+# hack to prevent the math forward definitions
+# in /usr/include/boost/math_fwd.hpp 
+#DEFINES += -DBOOST_MATH_FWD_HPP
+
 
 LIB_MIN = -lMinuit2
 
@@ -190,7 +194,12 @@ ifeq ($(QT_VER), 5)	# qt 5
 			-I/usr/include/qt5/QtCore \
 			-I/usr/include/qt5/QtWidgets \
 			-I/usr/include/qt5/QtGui \
-			-I/usr/include/qt5/QtOpenGL
+			-I/usr/include/qt5/QtOpenGL \
+			-I/usr/include/qt \
+			-I/usr/include/qt/QtCore \
+			-I/usr/include/qt/QtWidgets \
+			-I/usr/include/qt/QtGui \
+			-I/usr/include/qt/QtOpenGL
 
 	QT_LIB =-L${MYLIB}/qt5 \
 			-L${MYLIB}/qt5/lib \
@@ -266,10 +275,13 @@ ifeq ($(QWT_VER), 6)
 				-I${MYINC}/qwt-qt5 \
 				-I/usr/local/opt/qwt/lib/qwt.framework/Versions/6/Headers \
 				-I/opt/local/libexec/qt5/include/qwt \
+				-I/usr/local/include/qwt \
 				-I/usr/include/qt5/qwt \
-				-I/usr/include/qwt-qt5
+				-I/usr/include/qwt-qt5 \
+				-I/usr/include/qwt
 		ifeq ($(USE_FRAMEWORKS), 0)
 			QWT_LIB = -lqwt-qt5
+			#QWT_LIB = -lqwt
 		else
 			QWT_LIB = -F/usr/local/opt/qwt/lib -framework qwt
 		endif
@@ -278,6 +290,8 @@ ifeq ($(QWT_VER), 6)
 				-I${MYINC}/qwt-qt4 \
 				-I/usr/local/opt/qwt/lib/qwt.framework/Versions/6/Headers \
 				-I/opt/local/libexec/qt4/include/qwt \
+				-I/usr/local/include/qwt6 \
+				-I/usr/local/include/qwt \
 				-I/usr/include/qwt6 \
 				-I/usr/include/qwt \
 				-I/usr/include/qwt-qt4 \
@@ -474,7 +488,8 @@ OBJ_TAZ = obj/taz_main.o obj/taz.o obj/taz_crys.o \
 	obj/sqw.o obj/sqwbase.o obj/sqwfact.o ${PY_OBJS} ${JL_OBJS} \
 	obj/tasreso.o obj/ConvoDlg.o obj/ConvoDlg_file.o obj/SqwParamDlg.o \
 	obj/scanviewer.o obj/FitParamDlg.o obj/x3d.o obj/eval.o \
-	obj/tlibs_ver.o obj/libcrystal_ver.o obj/AboutDlg.o obj/convo_scan.o obj/ScanPosDlg.o \
+	obj/tlibs_ver.o obj/libcrystal_ver.o obj/AboutDlg.o obj/convo_scan.o \
+	obj/ScanPosDlg.o obj/PowderFitDlg.o \
 	obj/convofit_import.o obj/ConvoDlg_fit.o obj/ConvoDlg_sim.o \
 	obj/DeadAnglesDlg.o obj/LogDlg.o
 
@@ -502,7 +517,7 @@ OBJ_RESO = obj/log.o obj/debug.o obj/rand.o \
 OBJ_SCANVIEWER = obj/scanviewer_main.o obj/scanviewer.o \
 	obj/loadinstr.o obj/log.o obj/debug.o obj/qthelper.o \
 	obj/qwthelper.o obj/spec_char.o obj/FitParamDlg.o \
-	obj/globals.o obj/globals_qt.o obj/rand.o
+	obj/globals.o obj/globals_qt.o obj/rand.o obj/eval.o
 
 OBJ_SGLIST = obj/sglist_main.o obj/SgListDlg.o obj/spacegroup.o obj/crystalsys.o \
 	obj/log.o obj/debug.o obj/globals.o obj/globals_qt.o
@@ -824,6 +839,8 @@ obj/FitParamDlg.o: tools/scanviewer/FitParamDlg.cpp tools/scanviewer/FitParamDlg
 
 obj/ScanPosDlg.o: tools/scanpos/ScanPosDlg.cpp tools/scanpos/ScanPosDlg.h
 	${CC} ${FLAGS} -c -o $@ $<
+obj/PowderFitDlg.o: tools/powderfit/PowderFitDlg.cpp tools/powderfit/PowderFitDlg.h
+	${CC} ${FLAGS} -c -o $@ $<
 
 obj/gentab.o: tools/gentab/gentab.cpp
 	${CC} ${FLAGS} -DNO_QT -c -o $@ $<
@@ -855,6 +872,7 @@ clean:
 	rm -f tools/res/*.moc
 	rm -f tools/scanviewer/*.moc
 	rm -f tools/scanpos/*.moc
+	rm -f tools/powderfit/*.moc
 	rm -f tools/monteconvo/*.moc
 	rm -f tools/sglist/*.moc
 	rm -f dialogs/*.moc

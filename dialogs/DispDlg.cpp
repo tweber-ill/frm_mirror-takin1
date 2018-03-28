@@ -46,6 +46,7 @@ enum : unsigned
 	TABLE_NN_DIST	= 5
 };
 
+
 DispDlg::DispDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett),
 	m_pmapSpaceGroups(xtl::SpaceGroups<t_real>::GetInstance()->get_space_groups())
@@ -61,7 +62,6 @@ DispDlg::DispDlg(QWidget* pParent, QSettings* pSett)
 	btnSave->setIcon(load_icon("res/icons/document-save.svg"));
 	btnLoad->setIcon(load_icon("res/icons/document-open.svg"));
 
-
 	//tableNN->sortByColumn(TABLE_NN_ORDER);
 	tableNN->sortItems(TABLE_NN_ORDER);
 	tableNN->verticalHeader()->setDefaultSectionSize(tableNN->verticalHeader()->defaultSectionSize()*0.8);
@@ -73,7 +73,6 @@ DispDlg::DispDlg(QWidget* pParent, QSettings* pSett)
 	tableNN->setColumnWidth(TABLE_NN_Z, 75);
 	tableNN->setColumnWidth(TABLE_NN_DIST, 75);
 
-
 	m_plotwrapFerro.reset(new QwtPlotWrapper(plotFerro));
 	m_plotwrapFerro->GetCurve(0)->setTitle("Ferromagnetic Dispersion");
 	m_plotwrapFerro->GetPlot()->setAxisTitle(QwtPlot::xBottom, "q (rlu)");
@@ -82,9 +81,7 @@ DispDlg::DispDlg(QWidget* pParent, QSettings* pSett)
 		connect(m_plotwrapFerro->GetPicker(), SIGNAL(moved(const QPointF&)),
 			this, SLOT(cursorMoved(const QPointF&)));
 
-
 	spinCentreIdx->setMinimum(0);
-
 
 	std::vector<QLineEdit*> vecEditsUC = {editA, editB, editC, editAlpha, editBeta, editGamma};
 	for(QLineEdit* pEdit : vecEditsUC)
@@ -120,7 +117,33 @@ DispDlg::DispDlg(QWidget* pParent, QSettings* pSett)
 		restoreGeometry(m_pSettings->value("disp/geo").toByteArray());
 }
 
-DispDlg::~DispDlg() {}
+
+DispDlg::~DispDlg()
+{
+	ClearPlots();
+	setAcceptDrops(0);
+	m_bDontCalc = 1;
+	m_pmapSpaceGroups = nullptr;
+
+	// ----------------------------------------------
+	// hack to circumvent bizarre object deletion bug
+	delete btnAtoms; btnAtoms = 0;
+	delete btnLoad; btnLoad = 0;
+	delete btnSave; btnSave = 0;
+	m_plotwrapFerro.reset(nullptr);
+	delete plotFerro; plotFerro = 0;
+	delete tabWidget; tabWidget = 0;
+	// ----------------------------------------------
+}
+
+
+void DispDlg::ClearPlots()
+{
+	static const std::vector<t_real> vecZero;
+
+	if(m_plotwrapFerro)
+		set_qwt_data<t_real>()(*m_plotwrapFerro, vecZero, vecZero);
+}
 
 
 void DispDlg::Calc()
@@ -233,7 +256,7 @@ void DispDlg::Calc()
 				{
 					vecAtomsNN.push_back(vecThisAtom - vecCentre);
 
-					t_real dJ = iOuterIdx > vecJbyOrder.size() 
+					t_real dJ = iOuterIdx > vecJbyOrder.size()
 						? t_real(0) : vecJbyOrder[iOuterIdx-1];
 					t_cplx J = dJ * t_real(k_B / one_meV * kelvin);
 					vecJNN.push_back(J);
@@ -275,6 +298,8 @@ void DispDlg::Calc()
 
 		// ---------------------------------------------------------------------
 		// ferro plot
+		ClearPlots();
+
 		m_vecFerroQ.clear();
 		m_vecFerroE.clear();
 		m_vecFerroQ.reserve(GFX_NUM_POINTS);
@@ -293,7 +318,8 @@ void DispDlg::Calc()
 			m_vecFerroE.push_back(dE);
 		}
 
-		set_qwt_data<t_real>()(*m_plotwrapFerro, m_vecFerroQ, m_vecFerroE);
+		if(m_plotwrapFerro)
+			set_qwt_data<t_real>()(*m_plotwrapFerro, m_vecFerroQ, m_vecFerroE);
 	}
 	catch(const std::exception& ex)
 	{
@@ -311,6 +337,7 @@ const xtl::SpaceGroup<t_real>* DispDlg::GetCurSpaceGroup() const
 	return pSpaceGroup;
 }
 
+
 void DispDlg::SpaceGroupChanged()
 {
 	m_crystalsys = xtl::CrystalSystem::CRYS_NOT_SET;
@@ -327,6 +354,7 @@ void DispDlg::SpaceGroupChanged()
 	CheckCrystalType();
 	Calc();
 }
+
 
 void DispDlg::RepopulateSpaceGroups()
 {
@@ -353,11 +381,20 @@ void DispDlg::RepopulateSpaceGroups()
 	}
 }
 
+
 void DispDlg::CheckCrystalType()
 {
+	if(m_pSettings && m_pSettings->value("main/ignore_xtal_restrictions", 0).toBool())
+	{
+		for(QLineEdit* pEdit : {editA, editB, editC, editAlpha, editBeta, editGamma})
+			pEdit->setEnabled(true);
+		return;
+	}
+
 	set_crystal_system_edits(m_crystalsys, editA, editB, editC,
 		editAlpha, editBeta, editGamma);
 }
+
 
 void DispDlg::Save()
 {
@@ -397,10 +434,12 @@ void DispDlg::Save()
 		m_pSettings->setValue("disp/last_dir", QString(strDir.c_str()));
 }
 
+
 void DispDlg::dragEnterEvent(QDragEnterEvent *pEvt)
 {
 	if(pEvt) pEvt->accept();
 }
+
 
 void DispDlg::dropEvent(QDropEvent *pEvt)
 {
@@ -435,6 +474,7 @@ void DispDlg::dropEvent(QDropEvent *pEvt)
 	}
 }
 
+
 void DispDlg::Load()
 {
 	const std::string strXmlRoot("taz/");
@@ -468,6 +508,7 @@ void DispDlg::Load()
 	if(m_pSettings)
 		m_pSettings->setValue("disp/last_dir", QString(strDir.c_str()));
 }
+
 
 void DispDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
@@ -508,6 +549,7 @@ void DispDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 		//	tl::var_to_str(atom.J, g_iPrec);
 	}
 }
+
 
 void DispDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
@@ -571,6 +613,7 @@ void DispDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	Calc();
 }
 
+
 void DispDlg::ApplyAtoms(const std::vector<xtl::AtomPos<t_real>>& vecAtoms)
 {
 	m_vecAtoms = vecAtoms;
@@ -610,6 +653,7 @@ void DispDlg::cursorMoved(const QPointF& pt)
 	labStatus->setText(QString::fromWCharArray(ostr.str().c_str()));
 }
 
+
 void DispDlg::accept()
 {
 	if(m_pSettings)
@@ -617,6 +661,7 @@ void DispDlg::accept()
 
 	QDialog::accept();
 }
+
 
 void DispDlg::showEvent(QShowEvent *pEvt)
 {

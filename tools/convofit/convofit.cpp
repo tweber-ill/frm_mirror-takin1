@@ -174,6 +174,8 @@ bool Convofit::run_job(const std::string& _strJob)
 	bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
 	bool bFlipCoords = prop.Query<bool>("input/flip_lhs_rhs", 0);
 	bool bUseFirstAndLastScanPt = prop.Query<bool>("input/use_first_last_pt", 0);
+	unsigned iScanAxis = prop.Query<unsigned>("input/scan_axis", 0);
+
 
 	if(g_strSetParams != "")
 	{
@@ -412,7 +414,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		if(vecvecScFiles.size() > 1)
 			tl::log_info("Loading scan group ", iSc, ".");
 		if(!load_file(vecvecScFiles[iSc], sc, bNormToMon, filter,
-			bFlipCoords, bUseFirstAndLastScanPt))
+			bFlipCoords, bUseFirstAndLastScanPt, iScanAxis))
 		{
 			tl::log_err("Cannot load scan files of group ", iSc, ".");
 			continue;
@@ -697,10 +699,7 @@ bool Convofit::run_job(const std::string& _strJob)
 			strCurScOutFile += tl::var_to_str(iSc);
 		}
 		mod.SetParamSet(iSc);
-		std::pair<decltype(sc.vecX)::const_iterator, decltype(sc.vecX)::const_iterator> xminmax
-			= std::minmax_element(sc.vecX.begin(), sc.vecX.end());
-		mod.Save(strCurModOutFile.c_str(), *xminmax.first, *xminmax.second,
-			iPlotPoints, iPlotPointsSkipBegin, iPlotPointsSkipEnd);
+		mod.Save(strCurModOutFile.c_str(), iPlotPoints, iPlotPointsSkipBegin, iPlotPointsSkipEnd);
 		save_file(strCurScOutFile.c_str(), sc);
 	}
 	// --------------------------------------------------------------------

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>755</width>
-    <height>514</height>
+    <width>840</width>
+    <height>598</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -106,6 +106,9 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="toolTip">
+          <string>Ordinate / y axis.</string>
+         </property>
         </widget>
        </item>
        <item row="0" column="0" colspan="4">
@@ -113,7 +116,7 @@
          <property name="currentIndex">
           <number>0</number>
          </property>
-         <widget class="QWidget" name="tab_3">
+         <widget class="QWidget" name="tabPlot">
           <attribute name="title">
            <string>Plot</string>
           </attribute>
@@ -202,8 +205,21 @@
               </item>
               <item row="1" column="0">
                <widget class="QCheckBox" name="checkSwarm">
+                <property name="toolTip">
+                 <string>Uses a swarming algorithm as pre-fitter.</string>
+                </property>
                 <property name="text">
                  <string>Swarm Pre-Fitter</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QCheckBox" name="checkSloped">
+                <property name="toolTip">
+                 <string>Adds a sloping background to the Gaussian, Lorentzian and Voigtian peaks.</string>
+                </property>
+                <property name="text">
+                 <string>Sloped Peaks</string>
                 </property>
                </widget>
               </item>
@@ -212,7 +228,117 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab">
+         <widget class="QWidget" name="tabPol">
+          <attribute name="title">
+           <string>Polarisation</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_15">
+           <property name="margin">
+            <number>2</number>
+           </property>
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="groupBox_4">
+             <property name="title">
+              <string>(Pseudo-) Device Names</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_13">
+              <property name="margin">
+               <number>4</number>
+              </property>
+              <property name="spacing">
+               <number>2</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_17">
+                <property name="text">
+                 <string>Polarisation Vectors:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="editPolVec1">
+                <property name="toolTip">
+                 <string>Initial.</string>
+                </property>
+                <property name="text">
+                 <string>p1</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QLineEdit" name="editPolVec2">
+                <property name="toolTip">
+                 <string>Final.</string>
+                </property>
+                <property name="text">
+                 <string>p2</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>Dipole Currents:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="editPolCur1">
+                <property name="toolTip">
+                 <string>Initial.</string>
+                </property>
+                <property name="text">
+                 <string>i1</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QLineEdit" name="editPolCur2">
+                <property name="toolTip">
+                 <string>Final.</string>
+                </property>
+                <property name="text">
+                 <string>i2</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="groupBox_5">
+             <property name="title">
+              <string>Polarisation Matrix Elements</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_14">
+              <property name="margin">
+               <number>4</number>
+              </property>
+              <property name="spacing">
+               <number>2</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QTextEdit" name="editPolMat">
+                <property name="tabChangesFocus">
+                 <bool>true</bool>
+                </property>
+                <property name="undoRedoEnabled">
+                 <bool>false</bool>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabExp">
           <attribute name="title">
            <string>Experiment</string>
           </attribute>
@@ -545,7 +671,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab_4">
+         <widget class="QWidget" name="tabProp">
           <attribute name="title">
            <string>All Properties</string>
           </attribute>
@@ -587,7 +713,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab_2">
+         <widget class="QWidget" name="tabExport">
           <attribute name="title">
            <string>Export</string>
           </attribute>
@@ -647,6 +773,140 @@
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="tabAbout">
+          <attribute name="title">
+           <string>About</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_12">
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelTitle">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:16pt; font-weight:600;&quot;&gt;Takin / Scan Viewer&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="labelVersion">
+             <property name="text">
+              <string>Version 1</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="labelWritten">
+             <property name="text">
+              <string>Written by Tobias Weber</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="0">
+            <widget class="QLabel" name="labelCC">
+             <property name="text">
+              <string>Built with cc</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="labelSubtitle">
+             <property name="text">
+              <string>A minimalistic TAS scan file browser.</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <spacer name="verticalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>16</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="2" column="0">
+            <spacer name="verticalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>16</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="labelYears">
+             <property name="text">
+              <string>2014 - 2017</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="labelLicense">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Takin&lt;/span&gt; is free software: you can redistribute it and/or modify it under the terms of the &lt;a href=&quot;http://www.gnu.org/licenses/old-licenses/gpl-2.0.html&quot;&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline; color:#0000ff;&quot;&gt;GNU General Public License version 2&lt;/span&gt;&lt;/a&gt; as published by the &lt;a href=&quot;http://www.fsf.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Free Software Foundation&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Takin&lt;/span&gt; is distributed in the hope that it will be useful, but &lt;span style=&quot; font-weight:600;&quot;&gt;WITHOUT ANY WARRANTY&lt;/span&gt;; without even the implied warranty of &lt;span style=&quot; font-weight:600;&quot;&gt;MERCHANTABILITY&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;FITNESS FOR A PARTICULAR PURPOSE&lt;/span&gt;. See the GNU General Public License for more details.&lt;/p&gt;&lt;p&gt;You should have received a copy of the GNU General Public License along with &lt;span style=&quot; font-style:italic;&quot;&gt;Takin&lt;/span&gt;. If not, see &lt;a href=&quot;http://www.gnu.org/licenses/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://www.gnu.org/licenses/&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+             <property name="openExternalLinks">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
+            <spacer name="verticalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
        <item row="1" column="1">
@@ -656,6 +916,35 @@
            <horstretch>1</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Abscissa / x axis.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="spinStart">
+         <property name="toolTip">
+          <string>Index of first data row.</string>
+         </property>
+         <property name="prefix">
+          <string>Start Index: </string>
+         </property>
+         <property name="maximum">
+          <number>99999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QSpinBox" name="spinSkip">
+         <property name="toolTip">
+          <string>Number of rows to skip between data rows.</string>
+         </property>
+         <property name="prefix">
+          <string>Interleave: </string>
+         </property>
+         <property name="maximum">
+          <number>99999</number>
          </property>
         </widget>
        </item>
@@ -675,8 +964,6 @@
  <tabstops>
   <tabstop>listFiles</tabstop>
   <tabstop>tabWidget</tabstop>
-  <tabstop>editPath</tabstop>
-  <tabstop>btnBrowse</tabstop>
   <tabstop>btnParam</tabstop>
   <tabstop>btnGauss</tabstop>
   <tabstop>btnLorentz</tabstop>
@@ -684,8 +971,18 @@
   <tabstop>btnLine</tabstop>
   <tabstop>btnSine</tabstop>
   <tabstop>checkSwarm</tabstop>
+  <tabstop>checkSloped</tabstop>
   <tabstop>comboX</tabstop>
   <tabstop>comboY</tabstop>
+  <tabstop>spinStart</tabstop>
+  <tabstop>spinSkip</tabstop>
+  <tabstop>editPath</tabstop>
+  <tabstop>btnBrowse</tabstop>
+  <tabstop>editPolVec1</tabstop>
+  <tabstop>editPolVec2</tabstop>
+  <tabstop>editPolCur1</tabstop>
+  <tabstop>editPolCur2</tabstop>
+  <tabstop>editPolMat</tabstop>
   <tabstop>editTitle</tabstop>
   <tabstop>editUser</tabstop>
   <tabstop>editKfix</tabstop>
@@ -705,9 +1002,9 @@
   <tabstop>editPlaneY1</tabstop>
   <tabstop>editPlaneY2</tabstop>
   <tabstop>tableProps</tabstop>
+  <tabstop>editSearch</tabstop>
   <tabstop>comboExport</tabstop>
   <tabstop>textRoot</tabstop>
-  <tabstop>editSearch</tabstop>
  </tabstops>
  <resources/>
  <connections/>

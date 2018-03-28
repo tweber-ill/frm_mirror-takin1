@@ -23,12 +23,12 @@ bool save_file(const char* pcFile, const Scan& sc)
 
 	ofstr.precision(16);
 
-	ofstr << "# scan_origin = " 
+	ofstr << "# scan_origin = "
 		<< sc.vecScanOrigin[0] << " "
 		<< sc.vecScanOrigin[1] << " "
 		<< sc.vecScanOrigin[2] << " "
 		<< sc.vecScanOrigin[3] << "\n";
-	ofstr << "# scan_dir = " 
+	ofstr << "# scan_dir = "
 		<< sc.vecScanDir[0] << " "
 		<< sc.vecScanDir[1] << " "
 		<< sc.vecScanDir[2] << " "
@@ -62,7 +62,8 @@ bool save_file(const char* pcFile, const Scan& sc)
  * loading multiple scan files
  */
 bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormToMon,
-	const Filter& filter, bool bFlipCoords, bool bUseFirstAndLastPoints)
+	const Filter& filter, bool bFlipCoords, bool bUseFirstAndLastPoints,
+	unsigned iScanAxis)
 {
 	if(!vecFiles.size()) return 0;
 	tl::log_info("Loading \"", vecFiles[0], "\".");
@@ -99,8 +100,8 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 
 	std::function<t_real_sc(t_real_sc)> funcErr = [](t_real_sc d) -> t_real_sc
 	{
-		//if(tl::float_equal<t_real_sc>(d, 0.))	// error 0 causes problems with minuit
-		//	return d/100.;
+		if(tl::float_equal<t_real_sc>(d, 0.))
+			return t_real_sc(1);
 		return std::sqrt(d);
 	};
 	scan.vecCtsErr = tl::apply_fkt(scan.vecCts, funcErr);
@@ -208,7 +209,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 		if(pt.E < ptMin.E) ptMin.E = pt.E;
 
 		tl::log_info("Point ", iPt+1, ": ", "h=", pt.h, ", k=", pt.k, ", l=", pt.l,
-			", ki=", t_real_sc(pt.ki * tl::get_one_angstrom<t_real_sc>()), 
+			", ki=", t_real_sc(pt.ki * tl::get_one_angstrom<t_real_sc>()),
 			", kf=", t_real_sc(pt.kf * tl::get_one_angstrom<t_real_sc>()),
 			", E=", t_real_sc(pt.E / tl::get_one_meV<t_real_sc>())/*, ", Q=", pt.Q*tl::angstrom*/,
 			", Cts=", scan.vecCts[iPt]/*, "+-", scan.vecCtsErr[iPt]*/,
@@ -219,8 +220,8 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 
 
 	// TODO: find start and end point of scan when the points are unsorted
-	const ScanPoint* ptBegin = &ptMin; 
-	const ScanPoint* ptEnd = &ptMax; 
+	const ScanPoint* ptBegin = &ptMin;
+	const ScanPoint* ptEnd = &ptMax;
 
 	// old behaviour: first and last points instead of component-wise min and max
 	if(bUseFirstAndLastPoints)
@@ -241,30 +242,37 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 
 	const t_real_sc dEps = 0.01;
 
-	for(unsigned int i=0; i<4; ++i)
+
+	// principal scan axis
+	for(unsigned iAx=0; iAx<4; ++iAx)
+		scan.vecMainScanDir[iAx] = 0.;
+
+	scan.m_iScIdx = 0;
+
+	if(iScanAxis >= 1 && iScanAxis <=4)
 	{
-		if(!tl::float_equal<t_real_sc>(scan.vecScanDir[i], 0., dEps))
+		scan.m_iScIdx = iScanAxis-1;
+		scan.vecMainScanDir[scan.m_iScIdx] = 1.;
+	}
+	else	// automatic determination
+	{
+		for(unsigned int i=0; i<4; ++i)
 		{
-			scan.vecScanDir[i] = 1.;
-			scan.vecScanOrigin[i] = 0.;
-		}
-		else
-		{
-			scan.vecScanDir[i] = 0.;
+			if(!tl::float_equal<t_real_sc>(scan.vecScanDir[i], 0., dEps))
+			{
+				scan.vecMainScanDir[i] = 1.;
+				scan.m_iScIdx = i;
+				break;
+			}
 		}
 	}
 
 	tl::log_info("Scan origin: (", scan.vecScanOrigin[0], " ", scan.vecScanOrigin[1], " ", scan.vecScanOrigin[2], " ", scan.vecScanOrigin[3], ").");
 	tl::log_info("Scan dir: [", scan.vecScanDir[0], " ", scan.vecScanDir[1], " ", scan.vecScanDir[2], " ", scan.vecScanDir[3], "].");
+	tl::log_info("Principal scan axis: [", scan.vecMainScanDir[0], " ", scan.vecMainScanDir[1], " ", scan.vecMainScanDir[2], " ", scan.vecMainScanDir[3], "].");
 
 
-
-	unsigned int iScIdx = 0;
-	for(iScIdx=0; iScIdx<4; ++iScIdx)
-		if(!tl::float_equal<t_real_sc>(scan.vecScanDir[iScIdx], 0., dEps))
-			break;
-
-	if(iScIdx >= 4)
+	if(scan.m_iScIdx >= 4)
 	{
 		tl::log_err("No scan variable found!");
 		return false;
@@ -275,7 +283,11 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 		const ScanPoint& pt = scan.vecPoints[iPt];
 
 		t_real_sc dPos[] = { pt.h, pt.k, pt.l, pt.E/tl::get_one_meV<t_real_sc>() };
-		scan.vecX.push_back(dPos[iScIdx]);
+		scan.vecX.push_back(dPos[scan.m_iScIdx]);
+
+		for(int ihklE=0; ihklE<4; ++ihklE)
+			scan.vechklE[ihklE].push_back(dPos[ihklE]);
+
 		//tl::log_info("Added pos: ", *scan.vecX.rbegin());
 	}
 
@@ -284,6 +296,8 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	// filter
 	decltype(scan.vecX) vecXNew;
 	decltype(scan.vecCts) vecCtsNew, vecMonNew, vecCtsErrNew, vecMonErrNew;
+	decltype(scan.vechklE) vechklENew;
+
 	for(std::size_t i=0; i<scan.vecX.size(); ++i)
 	{
 		if(filter.bLower && scan.vecX[i] <= filter.dLower) continue;
@@ -294,12 +308,20 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 		vecMonNew.push_back(scan.vecMon[i]);
 		vecCtsErrNew.push_back(scan.vecCtsErr[i]);
 		vecMonErrNew.push_back(scan.vecMonErr[i]);
+
+		for(int ihklE=0; ihklE<4; ++ihklE)
+			vechklENew[ihklE].push_back(scan.vechklE[ihklE][i]);
+
 	}
+
 	scan.vecX = std::move(vecXNew);
 	scan.vecCts = std::move(vecCtsNew);
 	scan.vecMon = std::move(vecMonNew);
 	scan.vecCtsErr = std::move(vecCtsErrNew);
 	scan.vecMonErr = std::move(vecMonErrNew);
+
+	for(int ihklE=0; ihklE<4; ++ihklE)
+		scan.vechklE[ihklE] = std::move(vechklENew[ihklE]);
 
 
 	return true;

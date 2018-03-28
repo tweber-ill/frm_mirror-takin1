@@ -29,11 +29,14 @@ using t_real = t_real_reso;
 // -----------------------------------------------------------------------------
 // file operations
 
+
 void ConvoDlg::New()
 {
+	clear_global_paths();
 	m_strLastFile = "";
 	setWindowTitle(s_strTitle.c_str());
 }
+
 
 void ConvoDlg::Load()
 {
@@ -51,6 +54,7 @@ void ConvoDlg::Load()
 	Load(_strFile);
 }
 
+
 void ConvoDlg::Load(const QString& _strFile)
 {
 	const std::string strXmlRoot("taz/");
@@ -61,6 +65,13 @@ void ConvoDlg::Load(const QString& _strFile)
 	std::string strFile = _strFile.toStdString();
 	if(!tl::file_exists(strFile.c_str()))
 		return;
+
+	// add the location of the convo file as a possible global path
+	std::string strGlobDir = tl::get_dir(strFile);
+	clear_global_paths();
+	if(strGlobDir != "")
+		add_global_path(strGlobDir);
+
 
 	tl::Prop<std::string> xml;
 	if(!xml.Load(strFile, tl::PropType::XML))
@@ -203,6 +214,10 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 			emit SqwLoaded(m_pSqw->GetVars(), &m_pSqw->GetFitVars());
 		}
 	}
+
+
+	if(checkScan->isChecked())
+		scanFileChanged(editScan->text());
 	m_bAllowSqwReinit = 1;
 }
 
@@ -388,11 +403,13 @@ void ConvoDlg::LoadSettings()
 		restoreGeometry(m_pSett->value("monteconvo/geo").toByteArray());
 }
 
+
 void ConvoDlg::showEvent(QShowEvent *pEvt)
 {
 	//LoadSettings();
 	QDialog::showEvent(pEvt);
 }
+
 
 void ConvoDlg::accept()
 {
@@ -420,6 +437,7 @@ void ConvoDlg::accept()
 
 // -----------------------------------------------------------------------------
 
+
 void ConvoDlg::browseCrysFiles()
 {
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
@@ -441,6 +459,7 @@ void ConvoDlg::browseCrysFiles()
 	if(m_pSett)
 		m_pSett->setValue("convo/last_dir_crys", QString(strDir.c_str()));
 }
+
 
 void ConvoDlg::browseResoFiles()
 {
@@ -464,6 +483,7 @@ void ConvoDlg::browseResoFiles()
 		m_pSett->setValue("convo/last_dir_reso", QString(strDir.c_str()));
 }
 
+
 void ConvoDlg::browseSqwFiles()
 {
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
@@ -485,6 +505,7 @@ void ConvoDlg::browseSqwFiles()
 	if(m_pSett)
 		m_pSett->setValue("convo/last_dir_sqw", QString(strDir.c_str()));
 }
+
 
 void ConvoDlg::browseScanFiles()
 {

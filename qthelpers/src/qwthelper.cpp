@@ -66,6 +66,7 @@ public:
 // ----------------------------------------------------------------------------
 
 
+
 class MyQwtPlotPicker : public QwtPlotPicker
 {
 protected:
@@ -163,9 +164,11 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 		m_vecCurves.reserve(iNumCurves);
 		for(unsigned int iCurve=0; iCurve<iNumCurves; ++iCurve)
 		{
-			QwtPlotCurve* pCurve = new QwtPlotCurve();
+			MyQwtCurve* pCurve = new MyQwtCurve();
 			pCurve->setPen(penCurve);
 			pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+			//QwtSymbol *pSym = new MyQwtSymbol();
+			//pCurve->setSymbol(pSym);
 
 			if(bUseSpline)
 			{
@@ -272,7 +275,7 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 
 	if(bReplot)
 	{
-		set_zoomer_base(m_pZoomer, vecX, vecY);
+		set_zoomer_base(m_pZoomer, vecX, vecY, false, nullptr, m_vecCurves[iCurve]->GetShowErrors());
 		m_pPlot->replot();
 	}
 }
@@ -710,7 +713,96 @@ QwtInterval MyQwtRasterData::range() const
 	return QwtInterval(GetZMin(), GetZMax());
 }
 
+
+
 // ----------------------------------------------------------------------------
+
+
+MyQwtSymbol::MyQwtSymbol() : QwtSymbol(QwtSymbol::UserStyle)
+{
+	setSize(16, 16);
+}
+
+MyQwtSymbol::~MyQwtSymbol()
+{}
+
+
+void MyQwtSymbol::renderSymbols(QPainter *pPainter, const QPointF* pPts, int iNumPts) const
+{
+	pPainter->setPen(this->pen());
+	pPainter->setBrush(this->brush());
+
+	const t_real_qwt rad = 4.;
+	for(int iPt=0; iPt<iNumPts; ++iPt)
+		pPainter->drawEllipse(pPts[iPt], rad, rad);
+}
+
+
+// ----------------------------------------------------------------------------
+
+
+MyQwtCurve::MyQwtCurve() : QwtPlotCurve()
+{}
+
+MyQwtCurve::~MyQwtCurve()
+{}
+
+
+void MyQwtCurve::drawDots(QPainter* pPainter,
+	const QwtScaleMap& scX, const QwtScaleMap& scY,
+	const QRectF& rect, int iPtFirst, int iPtLast) const
+{
+	QPen oldpen = pPainter->pen();
+	QBrush oldbrush = pPainter->brush();
+
+
+	// error bars
+	if(m_bShowErrors)
+	{
+		QPen penErr(Qt::black);
+		penErr.setWidthF(1.5);
+		pPainter->setPen(penErr);
+
+		for(int iPt=iPtFirst; iPt<=iPtLast; ++iPt)
+		{
+			QPointF pt = data()->sample(iPt);
+			// so far only poisson statistics is assumed
+			t_real_qwt err = tl::float_equal(pt.y(), t_real_qwt(0)) ? 1. : sqrt(pt.y());
+
+			QPointF ptUpper(scX.transform(pt.x()), scY.transform(pt.y()+err));
+			QPointF ptLower(scX.transform(pt.x()), scY.transform(pt.y()-err));
+			QPointF ptUpperLeft(scX.transform(pt.x())-4, scY.transform(pt.y()+err));
+			QPointF ptUpperRight(scX.transform(pt.x())+4, scY.transform(pt.y()+err));
+			QPointF ptLowerLeft(scX.transform(pt.x())-4, scY.transform(pt.y()-err));
+			QPointF ptLowerRight(scX.transform(pt.x())+4, scY.transform(pt.y()-err));
+
+			pPainter->drawLine(QLineF(ptLower, ptUpper));
+			pPainter->drawLine(QLineF(ptUpperLeft, ptUpperRight));
+			pPainter->drawLine(QLineF(ptLowerLeft, ptLowerRight));
+		}
+	}
+
+
+	// points
+	pPainter->setPen(oldpen);
+	pPainter->setBrush(oldpen.color());
+
+	for(int iPt=iPtFirst; iPt<=iPtLast; ++iPt)
+	{
+		QPointF pt = data()->sample(iPt);
+		QPointF ptMid(scX.transform(pt.x()), scY.transform(pt.y()));
+		pPainter->drawEllipse(ptMid, 2, 2);
+	}
+
+
+	// reset painter
+	pPainter->setBrush(oldbrush);
+	pPainter->setPen(oldpen);
+}
+
+
+// ----------------------------------------------------------------------------
+
 
 
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
@@ -751,7 +843,8 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
  */
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
-	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
+	bool bMetaCall, QwtPlotWrapper* pPlotWrap,
+	bool bUseYErrs)
 {
 	if(!pZoomer || !vecX.size() || !vecY.size())
 		return;
@@ -761,6 +854,21 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 
 	t_real_qwt dminmax[] = {*minmaxX.first, *minmaxX.second,
 		*minmaxY.first, *minmaxY.second};
+
+	// only poisson statistics so far
+	if(bUseYErrs)
+	{
+		t_real_qwt dErrYMin = std::sqrt(dminmax[2]);
+		t_real_qwt dErrYMax = std::sqrt(dminmax[3]);
+
+		if(tl::float_equal(dErrYMin, t_real_qwt(0)))
+			dErrYMin = 1.;
+		if(tl::float_equal(dErrYMax, t_real_qwt(0)))
+			dErrYMax = 1.;
+
+		dminmax[2] -= dErrYMin;
+		dminmax[3] += dErrYMax;
+	}
 
 	if(tl::float_equal<t_real_qwt>(dminmax[0], dminmax[1]))
 	{
@@ -774,7 +882,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	}
 
 	set_zoomer_base(pZoomer,
-		dminmax[0],dminmax[1],dminmax[2],dminmax[3],
+		dminmax[0], dminmax[1], dminmax[2], dminmax[3],
 		bMetaCall, pPlotWrap);
 }
 
@@ -785,7 +893,8 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<std::vector<t_real_qwt>>& vecvecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
-	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
+	bool bMetaCall, QwtPlotWrapper* pPlotWrap,
+	bool bUseYErrs)
 {
 	if(!pZoomer || !vecvecX.size() || !vecvecY.size())
 		return;
@@ -797,7 +906,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 		vecY.insert(vecY.end(), vecvecY[iVec].begin(), vecvecY[iVec].end());
 	}
 
-	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap);
+	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap, bUseYErrs);
 }
 
 /**
@@ -806,7 +915,8 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
-	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
+	bool bMetaCall, QwtPlotWrapper* pPlotWrap,
+	bool bUseYErrs)
 {
 	if(!pZoomer || !vecX.size() || !vecvecY.size())
 		return;
@@ -815,7 +925,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	for(std::size_t iVec=0; iVec<vecvecY.size(); ++iVec)
 		vecY.insert(vecY.end(), vecvecY[iVec].begin(), vecvecY[iVec].end());
 
-	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap);
+	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap, bUseYErrs);
 }
 
 

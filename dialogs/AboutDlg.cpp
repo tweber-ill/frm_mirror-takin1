@@ -39,7 +39,7 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 
 	labelVersion->setText("Version " TAKIN_VER ".");
 	labelWritten->setText("Written by Tobias Weber <tobias.weber@tum.de>.");
-	labelYears->setText("Years: 2014 - 2017.");
+	labelYears->setText("Years: 2014 - 2018.");
 
 #ifdef PRIVATE_SRC_VERSION
 	labelRepo->setText("Source repo: <a href=\"https://github.com/t-weber/takin\">https://github.com/t-weber/takin</a>.");
@@ -57,19 +57,19 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 
 	std::string strCC = "Built";
 #ifdef BOOST_PLATFORM
-		strCC += " for " + std::string(BOOST_PLATFORM);
+	strCC += " for " + std::string(BOOST_PLATFORM);
 #endif
 	strCC += " using " + std::string(BOOST_COMPILER);
 #ifdef __cplusplus
 	strCC += " (standard: " + tl::var_to_str(__cplusplus) + ")";
 #endif
 #ifdef BOOST_STDLIB
-		strCC += " with " + std::string(BOOST_STDLIB);
+	strCC += " with " + std::string(BOOST_STDLIB);
 #endif
 	strCC += ".";
 	labelCC->setText(strCC.c_str());
 	labelBuildDate->setText(QString("Build date: ") +
-		QString(__DATE__) + ", " + QString(__TIME__));
+		QString(__DATE__) + ", " + QString(__TIME__) + ".");
 
 
 	// -------------------------------------------------------------------------

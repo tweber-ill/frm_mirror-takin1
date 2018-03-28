@@ -43,6 +43,7 @@ enum : unsigned int
 	TABLE_IX	= 7
 };
 
+
 PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett),
 	m_pmapSpaceGroups(xtl::SpaceGroups<t_real>::GetInstance()->get_space_groups())
@@ -105,13 +106,13 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(editSpaceGroupsFilter, SIGNAL(textChanged(const QString&)), this, SLOT(RepopulateSpaceGroups()));
 	QObject::connect(comboSpaceGroups, SIGNAL(currentIndexChanged(int)), this, SLOT(SpaceGroupChanged()));
 
-	connect(btnSaveTable, SIGNAL(clicked()), this, SLOT(SaveTable()));
-	connect(btnSave, SIGNAL(clicked()), this, SLOT(SavePowder()));
-	connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadPowder()));
-	connect(btnAtoms, SIGNAL(clicked()), this, SLOT(ShowAtomDlg()));
+	QObject::connect(btnSaveTable, SIGNAL(clicked()), this, SLOT(SaveTable()));
+	QObject::connect(btnSave, SIGNAL(clicked()), this, SLOT(SavePowder()));
+	QObject::connect(btnLoad, SIGNAL(clicked()), this, SLOT(LoadPowder()));
+	QObject::connect(btnAtoms, SIGNAL(clicked()), this, SLOT(ShowAtomDlg()));
 
-	connect(btnSyncKi, SIGNAL(clicked()), this, SLOT(SetExtKi()));
-	connect(btnSyncKf, SIGNAL(clicked()), this, SLOT(SetExtKf()));
+	QObject::connect(btnSyncKi, SIGNAL(clicked()), this, SLOT(SetExtKi()));
+	QObject::connect(btnSyncKf, SIGNAL(clicked()), this, SLOT(SetExtKf()));
 
 	m_bDontCalc = 0;
 	RepopulateSpaceGroups();
@@ -123,12 +124,28 @@ PowderDlg::PowderDlg(QWidget* pParent, QSettings* pSett)
 		restoreGeometry(m_pSettings->value("powder/geo").toByteArray());
 }
 
+
 PowderDlg::~PowderDlg()
-{}
+{
+	ClearPlots();
+	setAcceptDrops(0);
+	m_bDontCalc = 1;
+
+	// ----------------------------------------------
+	// hack to circumvent bizarre object deletion bug
+	delete btnAtoms; btnAtoms = 0;
+	delete btnLoad; btnLoad = 0;
+	delete btnSave; btnSave = 0;
+	delete btnSaveTable; btnSaveTable = 0;
+	// ----------------------------------------------
+
+	if(m_pAtomsDlg) { delete m_pAtomsDlg; m_pAtomsDlg = nullptr; }
+}
 
 
 void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 {
+
 	using t_iter = typename std::vector<const PowderLine*>::const_iterator;
 	std::pair<t_iter, t_iter> pairMinMax =
 		boost::minmax_element(vecLines.begin(), vecLines.end(),
@@ -147,6 +164,9 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 		dMaxTT += tl::d2r(10.);
 		if(dMinTT < 0.) dMinTT = 0.;
 	}
+
+
+	ClearPlots();
 
 	m_vecTT.clear();
 	m_vecTTx.clear();
@@ -183,8 +203,21 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 		m_vecIntx.push_back(dIntX);
 	}
 
-	set_qwt_data<t_real>()(*m_plotwrapN, m_vecTT, m_vecInt);
-	set_qwt_data<t_real>()(*m_plotwrapX, m_vecTTx, m_vecIntx);
+	if(m_plotwrapN)
+		set_qwt_data<t_real>()(*m_plotwrapN, m_vecTT, m_vecInt);
+	if(m_plotwrapX)
+		set_qwt_data<t_real>()(*m_plotwrapX, m_vecTTx, m_vecIntx);
+}
+
+
+void PowderDlg::ClearPlots()
+{
+	static const std::vector<t_real> vecZero;
+
+	if(m_plotwrapN)
+		set_qwt_data<t_real>()(*m_plotwrapN, vecZero, vecZero);
+	if(m_plotwrapX)
+		set_qwt_data<t_real>()(*m_plotwrapX, vecZero, vecZero);
 }
 
 
@@ -469,12 +502,13 @@ void PowderDlg::CalcPeaks()
 
 const xtl::SpaceGroup<t_real>* PowderDlg::GetCurSpaceGroup() const
 {
-	xtl::SpaceGroup<t_real>* pSpaceGroup = 0;
+	xtl::SpaceGroup<t_real>* pSpaceGroup = nullptr;
 	int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
 	if(iSpaceGroupIdx != 0)
 		pSpaceGroup = (xtl::SpaceGroup<t_real>*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
 	return pSpaceGroup;
 }
+
 
 void PowderDlg::SpaceGroupChanged()
 {
@@ -492,6 +526,7 @@ void PowderDlg::SpaceGroupChanged()
 	CheckCrystalType();
 	CalcPeaks();
 }
+
 
 void PowderDlg::RepopulateSpaceGroups()
 {
@@ -518,11 +553,20 @@ void PowderDlg::RepopulateSpaceGroups()
 	}
 }
 
+
 void PowderDlg::CheckCrystalType()
 {
+	if(m_pSettings && m_pSettings->value("main/ignore_xtal_restrictions", 0).toBool())
+	{
+		for(QLineEdit* pEdit : {editA, editB, editC, editAlpha, editBeta, editGamma})
+			pEdit->setEnabled(true);
+		return;
+	}
+
 	set_crystal_system_edits(m_crystalsys, editA, editB, editC,
 		editAlpha, editBeta, editGamma);
 }
+
 
 void PowderDlg::SavePowder()
 {
@@ -562,10 +606,12 @@ void PowderDlg::SavePowder()
 		m_pSettings->setValue("powder/last_dir", QString(strDir.c_str()));
 }
 
+
 void PowderDlg::dragEnterEvent(QDragEnterEvent *pEvt)
 {
 	if(pEvt) pEvt->accept();
 }
+
 
 void PowderDlg::dropEvent(QDropEvent *pEvt)
 {
@@ -599,6 +645,7 @@ void PowderDlg::dropEvent(QDropEvent *pEvt)
 		Load(xml, strXmlRoot);
 	}
 }
+
 
 void PowderDlg::LoadPowder()
 {
@@ -634,6 +681,7 @@ void PowderDlg::LoadPowder()
 		m_pSettings->setValue("powder/last_dir", QString(strDir.c_str()));
 }
 
+
 void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
 	mapConf[strXmlRoot + "sample/a"] = editA->text().toStdString();
@@ -666,6 +714,7 @@ void PowderDlg::Save(std::map<std::string, std::string>& mapConf, const std::str
 			tl::var_to_str(atom.vecPos[2], g_iPrec);
 	}
 }
+
 
 void PowderDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
@@ -755,10 +804,12 @@ void PowderDlg::paramsChanged(const RecipParams& parms)
 	m_dExtKf = parms.dkf;
 }
 
+
 void PowderDlg::SetExtKi()
 {
 	spinLam->setValue(tl::k2lam(m_dExtKi/angs)/angs);
 }
+
 
 void PowderDlg::SetExtKf()
 {
@@ -771,6 +822,7 @@ void PowderDlg::ApplyAtoms(const std::vector<xtl::AtomPos<t_real>>& vecAtoms)
 	m_vecAtoms = vecAtoms;
 	CalcPeaks();
 }
+
 
 void PowderDlg::ShowAtomDlg()
 {
@@ -788,6 +840,7 @@ void PowderDlg::ShowAtomDlg()
 	focus_dlg(m_pAtomsDlg);
 }
 
+
 void PowderDlg::cursorMoved(const QPointF& pt)
 {
 	const t_real dX = pt.x();
@@ -802,6 +855,7 @@ void PowderDlg::cursorMoved(const QPointF& pt)
 	labelStatus->setText(QString::fromWCharArray(ostr.str().c_str()));
 }
 
+
 void PowderDlg::accept()
 {
 	if(m_pSettings)
@@ -809,6 +863,7 @@ void PowderDlg::accept()
 
 	QDialog::accept();
 }
+
 
 void PowderDlg::showEvent(QShowEvent *pEvt)
 {

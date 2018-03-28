@@ -17,6 +17,7 @@
 #include <qwt_plot.h>
 #include <qwt_plot_spectrogram.h>
 #include <qwt_raster_data.h>
+#include <qwt_symbol.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
@@ -101,6 +102,42 @@ public:
 // ----------------------------------------------------------------------------
 
 
+class MyQwtSymbol : public QwtSymbol
+{
+protected:
+	virtual void renderSymbols(QPainter *pPainter, const QPointF* pPts, int iNumPts) const /*override*/;
+
+public:
+	MyQwtSymbol();
+	virtual ~MyQwtSymbol();
+};
+
+
+// ----------------------------------------------------------------------------
+
+
+class MyQwtCurve : public QwtPlotCurve
+{
+protected:
+	bool m_bShowErrors = false;
+
+protected:
+	virtual void drawDots(QPainter* pPainter,
+		const QwtScaleMap& scX, const QwtScaleMap& scY,
+		const QRectF& rect, int iPtFirst, int iPtLast) const /*override*/;
+
+public:
+	MyQwtCurve();
+	virtual ~MyQwtCurve();
+
+	void SetShowErrors(bool bErr) { m_bShowErrors = bErr; }
+	bool GetShowErrors() const { return m_bShowErrors; }
+};
+
+
+// ----------------------------------------------------------------------------
+
+
 class QwtPlotWrapper : public QObject
 { Q_OBJECT
 protected:
@@ -112,7 +149,7 @@ protected:
 	QwtPlotZoomer *m_pZoomer = nullptr;
 	QwtPlotPanner *m_pPanner = nullptr;
 
-	std::vector<QwtPlotCurve*> m_vecCurves;	// 1d plots
+	std::vector<MyQwtCurve*> m_vecCurves;	// 1d plots
 	QwtPlotSpectrogram *m_pSpec = nullptr;	// 2d plot
 
 	bool m_bHasDataPtrs = 1;
@@ -129,7 +166,7 @@ public:
 	virtual ~QwtPlotWrapper();
 
 	QwtPlot* GetPlot() { return m_pPlot; }
-	QwtPlotCurve* GetCurve(unsigned int iCurve=0) { return m_vecCurves[iCurve]; }
+	MyQwtCurve* GetCurve(unsigned int iCurve=0) { return m_vecCurves[iCurve]; }
 	QwtPlotZoomer* GetZoomer() { return m_pZoomer; }
 	QwtPlotPicker* GetPicker() { return m_pPicker; }
 	MyQwtRasterData* GetRaster() { return m_pRaster; }
@@ -211,17 +248,20 @@ extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
-	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr);
+	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr,
+	bool bUseYErrs=0);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<std::vector<t_real_qwt>>& vecvecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
-	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr);
+	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr,
+	bool bUseYErrs=0);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
-	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr);
+	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr,
+	bool bUseYErrs=0);
 
 
 #endif

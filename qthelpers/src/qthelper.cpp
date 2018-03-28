@@ -43,11 +43,13 @@ bool save_table(const char* pcFile, const QTableWidget* pTable)
 	}
 
 	for(int iRow=0; iRow<iNumRows; ++iRow)
+	{
 		for(int iCol=0; iCol<iNumCols; ++iCol)
 		{
 			const QTableWidgetItem *pItem = pTable->item(iRow, iCol);
 			ptrMaxTxtLen[iCol] = std::max(pItem ? pItem->text().length() : 0, ptrMaxTxtLen[iCol]);
 		}
+	}
 
 
 	// write items
@@ -136,6 +138,8 @@ std::vector<std::string> get_qt_std_path(QtStdPath path)
 
 void focus_dlg(QDialog* pDlg)
 {
+	if(!pDlg) return;
+
 	pDlg->show();
 	pDlg->raise();
 	pDlg->activateWindow();

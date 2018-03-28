@@ -46,6 +46,9 @@ public:
 	ScanViewerDlg(QWidget* pParent = nullptr);
 	virtual ~ScanViewerDlg();
 
+private:
+	void SetAbout();
+
 protected:
 	void ClearPlot();
 	void PlotScan();
@@ -80,6 +83,7 @@ protected slots:
 
 	void XAxisSelected(const QString&);
 	void YAxisSelected(const QString&);
+	void StartOrSkipChanged(int);
 
 	void ShowFitParams();
 	void FitGauss();
@@ -88,6 +92,7 @@ protected slots:
 	void FitLine();
 	void FitSine();
 
+	void CalcPol();
 	//void openExternally();
 };
 

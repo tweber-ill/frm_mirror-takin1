@@ -73,11 +73,10 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_vecTextNames = { "convofit/sqw_params" };
 
 	m_vecComboBoxes = { comboAlgo, comboFixedK, comboFocMono, comboFocAna,
-		comboFitter
+		comboFitter, comboAxis, comboAxis2,
 	};
 	m_vecComboNames = { "monteconvo/algo", "monteconvo/fixedk", "monteconvo/mono_foc",
-		"monteconvo/ana_foc",
-		"convofit/minimiser"
+		"monteconvo/ana_foc", "convofit/minimiser", "convofit/scanaxis", "convofit/scanaxis2",
 	};
 
 	m_vecCheckBoxes = { checkScan, check2dMap,
@@ -185,9 +184,9 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	// file menu
 	QMenu *pMenuFile = new QMenu("File", this);
 
-    QAction *pNew = new QAction("New", this);
-    pNew->setIcon(load_icon("res/icons/document-new.svg"));
-    pMenuFile->addAction(pNew);
+	QAction *pNew = new QAction("New", this);
+	pNew->setIcon(load_icon("res/icons/document-new.svg"));
+	pMenuFile->addAction(pNew);
 
 	pMenuFile->addSeparator();
 
@@ -384,6 +383,7 @@ void ConvoDlg::SqwModelChanged(int)
 	//emit SqwLoaded(std::vector<SqwBase::t_var>{}, nullptr);
 }
 
+
 void ConvoDlg::createSqwModel(const QString& qstrFile)
 {
 	if(!m_bAllowSqwReinit) return;
@@ -395,8 +395,9 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	}
 
 	std::string strSqwIdent = comboSqw->itemData(comboSqw->currentIndex()).toString().toStdString();
-	std::string strSqwFile = qstrFile.toStdString();
-	tl::trim(strSqwFile);
+	std::string _strSqwFile = qstrFile.toStdString();
+	tl::trim(_strSqwFile);
+	std::string strSqwFile = find_file_in_global_paths(_strSqwFile);
 
 	if(strSqwFile == "")
 	{
@@ -570,6 +571,7 @@ void ConvoDlg::scanCheckToggled(bool bChecked)
 		scanFileChanged(editScan->text());
 }
 
+
 void ConvoDlg::scanFileChanged(const QString& qstrFile)
 {
 	m_bUseScan = 0;
@@ -584,12 +586,33 @@ void ConvoDlg::scanFileChanged(const QString& qstrFile)
 	std::for_each(vecFiles.begin(), vecFiles.end(), [](std::string& str){ tl::trim(str); });
 
 	Filter filter;
+	const bool bFlip = checkFlip->isChecked();
 	m_scan = Scan();
-	if(!::load_file(vecFiles, m_scan, 1, filter, checkFlip->isChecked()))
+
+
+	bool bLoaded = ::load_file(vecFiles, m_scan, 1, filter, bFlip);
+
+	// if file was not found, alternatively look in global paths
+	if(!bLoaded)
+	{
+		const std::vector<std::string>& vecGlobPaths = get_global_paths();
+		for(const std::string& strGlobPath : vecGlobPaths)
+		{
+			std::vector<std::string> _vecFiles;
+			for(const std::string& _strFile : vecFiles)
+				_vecFiles.push_back(strGlobPath + "/" + _strFile);
+
+			if((bLoaded = ::load_file(_vecFiles, m_scan, 1, filter, bFlip)))
+				break;
+		}
+	}
+
+	if(!bLoaded)
 	{
 		tl::log_err("Cannot load scan(s).");
 		return;
 	}
+
 
 	if(!m_scan.vecPoints.size())
 	{
@@ -615,6 +638,7 @@ void ConvoDlg::scanFileChanged(const QString& qstrFile)
 
 	m_bUseScan = 1;
 }
+
 
 void ConvoDlg::scaleChanged()
 {
@@ -648,7 +672,7 @@ void ConvoDlg::ShowAboutDlg()
 	std::ostringstream ostrAbout;
 	ostrAbout << "Takin/Monteconvo version " << TAKIN_VER << ".\n";
 	ostrAbout << "Written by Tobias Weber <tobias.weber@tum.de>,\n";
-	ostrAbout << "2015 - 2017.\n";
+	ostrAbout << "2015 - 2018.\n";
 	ostrAbout << "\n" << TAKIN_LICENSE("Takin/Monteconvo");
 
 	QMessageBox::about(this, "About Monteconvo", ostrAbout.str().c_str());

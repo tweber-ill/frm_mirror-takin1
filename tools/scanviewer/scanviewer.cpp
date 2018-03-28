@@ -14,16 +14,22 @@
 
 #include <iostream>
 #include <set>
+#include <unordered_set>
 #include <string>
 #include <algorithm>
 #include <iterator>
+
+#include <boost/config.hpp>
+#include <boost/version.hpp>
 #include <boost/filesystem.hpp>
 
 #include "tlibs/math/math.h"
 #include "tlibs/math/stat.h"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
+#include "tlibs/file/file.h"
 #include "tlibs/log/log.h"
+#include "libs/version.h"
 
 #ifndef NO_FIT
 	#include "tlibs/fit/minuit.h"
@@ -44,10 +50,12 @@ namespace fs = boost::filesystem;
 ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint),
 		m_settings("tobis_stuff", "scanviewer"),
-		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG" }),
+		m_vecExts({	".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG", "" }),
 		m_pFitParamDlg(new FitParamDlg(this, &m_settings))
 {
 	this->setupUi(this);
+	SetAbout();
+
 	QFont font;
 	if(m_settings.contains("main/font_gen") && font.fromString(m_settings.value("main/font_gen", "").toString()))
 		setFont(font);
@@ -99,6 +107,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(listFiles, &QListWidget::itemSelectionChanged, pThis, &ScanViewerDlg::FileSelected);
 	QObject::connect(editSearch, &QLineEdit::textEdited, pThis, &ScanViewerDlg::SearchProps);
 	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, &ScanViewerDlg::SelectDir);
+	for(QLineEdit* pEdit : {editPolVec1, editPolVec2, editPolCur1, editPolCur2})
+		QObject::connect(pEdit, &QLineEdit::textEdited, pThis, &ScanViewerDlg::CalcPol);
 #ifndef NO_FIT
 	QObject::connect(btnParam, &QToolButton::clicked, pThis, &ScanViewerDlg::ShowFitParams);
 	QObject::connect(btnGauss, &QToolButton::clicked, pThis, &ScanViewerDlg::FitGauss);
@@ -109,6 +119,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 #endif
 	QObject::connect(comboX, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::XAxisSelected);
 	QObject::connect(comboY, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxisSelected);
+	QObject::connect(spinStart, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
+	QObject::connect(spinSkip, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
 	QObject::connect(tableProps, &QTableWidget::currentItemChanged, pThis, &ScanViewerDlg::PropSelected);
 	QObject::connect(comboExport, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::GenerateExternal);
 #else
@@ -118,6 +130,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(editSearch, SIGNAL(textEdited(const QString&)),
 		this, SLOT(SearchProps(const QString&)));
 	QObject::connect(btnBrowse, SIGNAL(clicked(bool)), this, SLOT(SelectDir()));
+	for(QLineEdit* pEdit : {editPolVec1, editPolVec2, editPolCur1, editPolCur2})
+		QObject::connect(pEdit, SIGNAL(textEdited(const QString&)), this, SLOT(CalcPol()));
 #ifndef NO_FIT
 	QObject::connect(btnParam, SIGNAL(clicked(bool)), this, SLOT(ShowFitParams()));
 	QObject::connect(btnGauss, SIGNAL(clicked(bool)), this, SLOT(FitGauss()));
@@ -130,6 +144,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 		this, SLOT(XAxisSelected(const QString&)));
 	QObject::connect(comboY, SIGNAL(currentIndexChanged(const QString&)),
 		this, SLOT(YAxisSelected(const QString&)));
+	QObject::connect(spinStart, SIGNAL(valueChanged(int)), this, SLOT(StartOrSkipChanged(int)));
+	QObject::connect(spinSkip, SIGNAL(valueChanged(int)), this, SLOT(StartOrSkipChanged(int)));
 	QObject::connect(tableProps, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)),
 		this, SLOT(PropSelected(QTableWidgetItem*, QTableWidgetItem*)));
 	QObject::connect(comboExport, SIGNAL(currentIndexChanged(int)),
@@ -139,6 +155,15 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 
 	QString strDir = m_settings.value("last_dir", tl::wstr_to_str(fs::current_path().native()).c_str()).toString();
 	editPath->setText(strDir);
+
+	if(m_settings.contains("pol/vec1"))
+		editPolVec1->setText(m_settings.value("pol/vec1").toString());
+	if(m_settings.contains("pol/vec2"))
+		editPolVec2->setText(m_settings.value("pol/vec2").toString());
+	if(m_settings.contains("pol/cur1"))
+		editPolCur1->setText(m_settings.value("pol/cur1").toString());
+	if(m_settings.contains("pol/cur2"))
+		editPolCur2->setText(m_settings.value("pol/cur2").toString());
 
 	m_bDoUpdate = 1;
 	ChangedPath();
@@ -168,9 +193,38 @@ ScanViewerDlg::~ScanViewerDlg()
 }
 
 
+void ScanViewerDlg::SetAbout()
+{
+	labelVersion->setText("Version " TAKIN_VER ".");
+	labelWritten->setText("Written by Tobias Weber <tobias.weber@tum.de>.");
+	labelYears->setText("Years: 2015 - 2018.");
+
+	std::string strCC = "Built";
+#ifdef BOOST_PLATFORM
+	strCC += " for " + std::string(BOOST_PLATFORM);
+#endif
+	strCC += " using " + std::string(BOOST_COMPILER);
+#ifdef __cplusplus
+	strCC += " (standard: " + tl::var_to_str(__cplusplus) + ")";
+#endif
+#ifdef BOOST_STDLIB
+	strCC += " with " + std::string(BOOST_STDLIB);
+#endif
+	strCC += " on " + std::string(__DATE__) + ", " + std::string(__TIME__);
+	strCC += ".";
+	labelCC->setText(strCC.c_str());
+}
+
+
 void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
 {
+	// save settings
+	m_settings.setValue("pol/vec1", editPolVec1->text());
+	m_settings.setValue("pol/vec2", editPolVec2->text());
+	m_settings.setValue("pol/cur1", editPolCur1->text());
+	m_settings.setValue("pol/cur2", editPolCur2->text());
 	m_settings.setValue("geo", saveGeometry());
+
 	QDialog::closeEvent(pEvt);
 }
 
@@ -209,9 +263,12 @@ void ScanViewerDlg::ClearPlot()
 	comboX->clear();
 	comboY->clear();
 	textRoot->clear();
+	spinStart->setValue(0);
+	spinSkip->setValue(0);
 
 	m_plotwrap->GetPlot()->replot();
 }
+
 
 /**
  * new scan directory selected
@@ -235,6 +292,8 @@ void ScanViewerDlg::SelectDir()
 
 void ScanViewerDlg::XAxisSelected(const QString& strLab) { PlotScan(); }
 void ScanViewerDlg::YAxisSelected(const QString& strLab) { PlotScan(); }
+void ScanViewerDlg::StartOrSkipChanged(int) { PlotScan(); }
+
 
 /**
  * new file selected
@@ -315,10 +374,247 @@ void ScanViewerDlg::FileSelected()
 	comboX->setCurrentIndex(iIdxX);
 	comboY->setCurrentIndex(iIdxY);
 
+	CalcPol();
+
+	int iNumPol = static_cast<int>(m_pInstr->NumPolChannels()) - 1;
+	if(iNumPol < 0) iNumPol = 0;
+	spinSkip->setValue(iNumPol);
+
 	m_bDoUpdate = 1;
 
 	ShowProps();
 	PlotScan();
+}
+
+
+/**
+ * polarisation device named changed
+ */
+void ScanViewerDlg::CalcPol()
+{
+	editPolMat->clear();
+	if(!m_pInstr)
+		return;
+
+	const std::string strPolVec1 = editPolVec1->text().toStdString();
+	const std::string strPolVec2 = editPolVec2->text().toStdString();
+	const std::string strPolCur1 = editPolCur1->text().toStdString();
+	const std::string strPolCur2 = editPolCur2->text().toStdString();
+
+	m_pInstr->SetPolNames(strPolVec1.c_str(), strPolVec2.c_str(),
+		strPolCur1.c_str(), strPolCur2.c_str());
+	m_pInstr->ParsePolData();
+
+	const std::vector<std::array<t_real, 6>>& vecPolStates = m_pInstr->GetPolStates();
+	const std::size_t iNumPolStates = vecPolStates.size();
+	if(iNumPolStates == 0)
+	{
+		editPolMat->setHtml("<html><body><font size=\"5\" color=\"#ff0000\">No polarisation data.</font></body></html>");
+		return;
+	}
+
+
+	// get the SF state to a given NSF state
+	auto find_spinflip_state_idx = [&vecPolStates, iNumPolStates]
+		(const std::array<t_real, 6>& state) -> std::size_t
+	{
+		t_real dPix1 = state[0], dPiy1 = state[1], dPiz1 = state[2];
+		t_real dPfx1 = state[3], dPfy1 = state[4], dPfz1 = state[5];
+
+		for(std::size_t iPol=0; iPol<iNumPolStates; ++iPol)
+		{
+			t_real dPix2 = vecPolStates[iPol][0];
+			t_real dPiy2 = vecPolStates[iPol][1];
+			t_real dPiz2 = vecPolStates[iPol][2];
+			t_real dPfx2 = vecPolStates[iPol][3];
+			t_real dPfy2 = vecPolStates[iPol][4];
+			t_real dPfz2 = vecPolStates[iPol][5];
+
+			if(tl::float_equal(dPix1, dPix2, g_dEps) &&
+				tl::float_equal(dPiy1, dPiy2, g_dEps) &&
+				tl::float_equal(dPiz1, dPiz2, g_dEps) &&
+				tl::float_equal(dPfx1, -dPfx2, g_dEps) &&
+				tl::float_equal(dPfy1, -dPfy2, g_dEps) &&
+				tl::float_equal(dPfz1, -dPfz2, g_dEps))
+			{
+				return iPol;
+			}
+		}
+
+		// none found
+		return iNumPolStates;
+	};
+
+
+	auto propagate_err = [](t_real x, t_real y, t_real dx, t_real dy) -> t_real
+	{
+		// d((x-y)/(x+y)) = dx * 2*y/(x+y)^2 - dy * 2*x/(x+y)^2
+		return std::sqrt(dx*2.*y/((x+y)*(x+y))*dx*2.*y/((x+y)*(x+y))
+			+ dy*2.*x/((x+y)*(x+y))*dy*2.*x/((x+y)*(x+y)));
+	};
+
+
+	// convert polarisation vector to string representation
+	auto polvec_str = [](t_real x, t_real y, t_real z) -> std::string
+	{
+		std::ostringstream ostr;
+		ostr.precision(g_iPrec);
+
+		if(tl::float_equal<t_real>(x, 1., g_dEps) &&
+			tl::float_equal<t_real>(y, 0., g_dEps) &&
+			tl::float_equal<t_real>(z, 0., g_dEps))
+			ostr << "x";
+		else if(tl::float_equal<t_real>(x, -1., g_dEps) &&
+			tl::float_equal<t_real>(y, 0., g_dEps) &&
+			tl::float_equal<t_real>(z, 0., g_dEps))
+			ostr << "-x";
+		else if(tl::float_equal<t_real>(x, 0., g_dEps) &&
+			tl::float_equal<t_real>(y, 1., g_dEps) &&
+			tl::float_equal<t_real>(z, 0., g_dEps))
+			ostr << "y";
+		else if(tl::float_equal<t_real>(x, 0., g_dEps) &&
+			tl::float_equal<t_real>(y, -1., g_dEps) &&
+			tl::float_equal<t_real>(z, 0., g_dEps))
+			ostr << "-y";
+		else if(tl::float_equal<t_real>(x, 0., g_dEps) &&
+			tl::float_equal<t_real>(y, 0., g_dEps) &&
+			tl::float_equal<t_real>(z, 1., g_dEps))
+			ostr << "z";
+		else if(tl::float_equal<t_real>(x, 0., g_dEps) &&
+			tl::float_equal<t_real>(y, 0., g_dEps) &&
+			tl::float_equal<t_real>(z, -1., g_dEps))
+			ostr << "-z";
+		else
+			ostr << "[" << x << " " << y << " " << z << "]";
+
+		return ostr.str();
+	};
+
+
+	std::vector<bool> vecHasSFPartner;
+	// indices to spin-flipped states
+	std::vector<std::size_t> vecSFIdx;
+
+	for(std::size_t iPol=0; iPol<iNumPolStates; ++iPol)
+	{
+		const std::array<t_real, 6>& state = vecPolStates[iPol];
+		std::size_t iIdx = find_spinflip_state_idx(state);
+
+		vecHasSFPartner.push_back(iIdx < iNumPolStates);
+		vecSFIdx.push_back(iIdx);
+	}
+
+
+	const std::vector<t_real>& vecCnts = m_pInstr->GetCol(m_pInstr->GetCountVar().c_str());
+
+
+	// raw counts per polarisation channel
+	std::ostringstream ostrCnts;
+	ostrCnts.precision(g_iPrec);
+	ostrCnts << "<p><h2>Counts in Polarisation Channels</h2>";
+
+	// iterate over scan points
+	for(std::size_t iPt=0; iPt<vecCnts.size();)
+	{
+		ostrCnts << "<p><b>Scan Point " << (iPt/iNumPolStates+1) << "</b>";
+		ostrCnts << "<table border=\"1\" cellpadding=\"0\">";
+		ostrCnts << "<tr><th>Init. Pol. Vec.</th>";
+		ostrCnts << "<th>Fin. Pol. Vec.</th>";
+		ostrCnts << "<th>Counts</th>";
+		ostrCnts << "<th>Error</th></tr>";
+
+		// iterate over polarisation states
+		for(std::size_t iPol=0; iPol<iNumPolStates; ++iPol, ++iPt)
+		{
+			t_real dPix = vecPolStates[iPol][0];
+			t_real dPiy = vecPolStates[iPol][1];
+			t_real dPiz = vecPolStates[iPol][2];
+
+			t_real dPfx = vecPolStates[iPol][3];
+			t_real dPfy = vecPolStates[iPol][4];
+			t_real dPfz = vecPolStates[iPol][5];
+
+			std::size_t iCnts = std::size_t(vecCnts[iPt]);
+			t_real dErr = (iCnts==0 ? 1 : std::sqrt(vecCnts[iPt]));
+
+			ostrCnts << "<tr><td>" << polvec_str(dPix, dPiy, dPiz) << "</td>"
+				<< "<td>" << polvec_str(dPfx, dPfy, dPfz) << "</td>"
+				<< "<td><b>" << iCnts << "</b></td>"
+				<< "<td><b>" << dErr << "</b></td>"
+				<< "</tr>";
+		}
+		ostrCnts << "</table></p>";
+	}
+	ostrCnts << "</p>";
+
+
+	// polarisation matrix elements
+	std::ostringstream ostrPol;
+	ostrPol.precision(g_iPrec);
+	ostrPol << "<p><h2>Polarisation Matrix Elements</h2>";
+	bool bHasAnyData = false;
+
+	// iterate over scan points
+	for(std::size_t iPt=0; iPt<vecCnts.size()/iNumPolStates; ++iPt)
+	{
+		ostrPol << "<p><b>Scan Point " << (iPt+1) << "</b>";
+		ostrPol << "<table border=\"1\" cellpadding=\"0\">";
+		ostrPol << "<tr><th>Index 1</th>";
+		ostrPol << "<th>Index 2</th>";
+		ostrPol << "<th>Polarisation</th>";
+		ostrPol << "<th>Error</th></tr>";
+
+		// iterate over all polarisation states which have a SF partner
+		std::unordered_set<std::size_t> setPolAlreadySeen;
+		for(std::size_t iPol=0; iPol<iNumPolStates; ++iPol)
+		{
+			if(!vecHasSFPartner[iPol]) continue;
+			if(setPolAlreadySeen.find(iPol) != setPolAlreadySeen.end())
+				continue;
+
+			const std::size_t iSF = vecSFIdx[iPol];
+			const std::array<t_real, 6>& state = vecPolStates[iPol];
+			//const std::array<t_real, 6>& stateSF = vecPolStates[iSF];
+
+			setPolAlreadySeen.insert(iPol);
+			setPolAlreadySeen.insert(iSF);
+
+			const t_real dCntsNSF = vecCnts[iPt*iNumPolStates + iPol];
+			const t_real dCntsSF = vecCnts[iPt*iNumPolStates + iSF];
+			t_real dNSFErr = std::sqrt(dCntsNSF);
+			t_real dSFErr = std::sqrt(dCntsSF);
+			if(tl::float_equal(dCntsNSF, t_real(0), g_dEps))
+				dNSFErr = 1.;
+			if(tl::float_equal(dCntsSF, t_real(0), g_dEps))
+				dSFErr = 1.;
+
+			bool bInvalid = tl::float_equal(dCntsNSF+dCntsSF, t_real(0), g_dEps);
+			t_real dPolElem = 0., dPolErr = 1.;
+			if(!bInvalid)
+			{
+				dPolElem = std::abs((dCntsNSF-dCntsSF) / (dCntsNSF+dCntsSF));
+				dPolErr = propagate_err(dCntsNSF, dCntsSF, dNSFErr, dSFErr);
+			}
+
+			// polarisation matrix elements, e.g. <[100] | P | [010]> = <x|P|y>
+			ostrPol << "<tr><td>" << polvec_str(state[0], state[1], state[2]) << "</td>"
+				<< "<td>" << polvec_str(state[3], state[4], state[5]) << "</td>"
+				<< "<td><b>" << (bInvalid ? "--- ": tl::var_to_str(dPolElem, g_iPrec)) << "</b></td>"
+				<< "<td><b>" << (bInvalid ? "--- ": tl::var_to_str(dPolErr, g_iPrec)) << "</b></td>"
+				<< "</tr>";
+
+			bHasAnyData = true;
+		}
+		ostrPol << "</table></p>";
+	}
+	ostrPol << "</p>";
+
+	if(!bHasAnyData)
+		ostrPol << "<font size=\"5\" color=\"#ff0000\">Insufficient Data.</font>";
+
+	std::string strHtml = "<html><body>" + ostrPol.str() + "<br><hr><br>"
+		+ ostrCnts.str() + "</body></html>";
+	editPolMat->setHtml(QString::fromUtf8(strHtml.c_str()));
 }
 
 
@@ -340,12 +636,49 @@ void ScanViewerDlg::PlotScan()
 
 	m_strX = comboX->itemData(comboX->currentIndex(), Qt::UserRole).toString().toStdString();
 	m_strY = comboY->itemData(comboY->currentIndex(), Qt::UserRole).toString().toStdString();
-	std::string strTitle = m_pInstr->GetTitle();
+	const int iStartIdx = spinStart->value();
+	const int iSkipRows = spinSkip->value();
+	const std::string strTitle = m_pInstr->GetTitle();
 	m_strCmd = m_pInstr->GetScanCommand();
 
 	m_vecX = m_pInstr->GetCol(m_strX.c_str());
 	m_vecY = m_pInstr->GetCol(m_strY.c_str());
-	//tl::log_debug("Number of points: ", m_vecX.size(), ", ", m_vecY.size());
+
+	bool bYIsACountVar = (m_strY == m_pInstr->GetCountVar() || m_strY == m_pInstr->GetMonVar());
+	m_plotwrap->GetCurve(1)->SetShowErrors(bYIsACountVar);
+
+
+	// remove points from start
+	if(iStartIdx != 0)
+	{
+		if(std::size_t(iStartIdx) >= m_vecX.size())
+			m_vecX.clear();
+		else
+			m_vecX.erase(m_vecX.begin(), m_vecX.begin()+iStartIdx);
+
+		if(std::size_t(iStartIdx) >= m_vecY.size())
+			m_vecY.clear();
+		else
+			m_vecY.erase(m_vecY.begin(), m_vecY.begin()+iStartIdx);
+	}
+
+	// interleave rows
+	if(iSkipRows != 0)
+	{
+		decltype(m_vecX) vecXNew, vecYNew;
+
+		for(std::size_t iRow=0; iRow<std::min(m_vecX.size(), m_vecY.size()); ++iRow)
+		{
+			vecXNew.push_back(m_vecX[iRow]);
+			vecYNew.push_back(m_vecY[iRow]);
+
+			iRow += iSkipRows;
+		}
+
+		m_vecX = std::move(vecXNew);
+		m_vecY = std::move(vecYNew);
+	}
+
 
 	std::array<t_real, 3> arrLatt = m_pInstr->GetSampleLattice();
 	std::array<t_real, 3> arrAng = m_pInstr->GetSampleAngles();
@@ -383,8 +716,8 @@ void ScanViewerDlg::PlotScan()
 	plot->setTitle(m_strCmd.c_str());
 
 
-	if(m_vecX.size()==0 || m_vecY.size()==0)
-		return;
+	//if(m_vecX.size()==0 || m_vecY.size()==0)
+	//	return;
 
 	if(m_vecFitX.size())
 		set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, 0, 0);
@@ -444,7 +777,12 @@ end)RAWSTR";
 
 
 	std::vector<t_real> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d) { d = std::sqrt(d); });
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d)
+	{
+		if(tl::float_equal(d, t_real(0.), g_dEps))
+			d = 1.;
+		d = std::sqrt(d);
+	});
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
@@ -529,7 +867,12 @@ plt.show())RAWSTR";
 
 
 	std::vector<t_real> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d) { d = std::sqrt(d); });
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d)
+	{
+		if(tl::float_equal(d, t_real(0.), g_dEps))
+			d = 1.;
+		d = std::sqrt(d);
+	});
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
@@ -660,7 +1003,12 @@ R"RAWSTR(void scan_plot()
 
 
 	std::vector<t_real> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d) { d = std::sqrt(d); });
+	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d)
+	{
+		if(tl::float_equal(d, t_real(0.), g_dEps))
+			d = 1.;
+		d = std::sqrt(d);
+	});
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
@@ -845,12 +1193,19 @@ void ScanViewerDlg::UpdateFileList()
 		std::copy_if(dir_begin, dir_end, std::insert_iterator<decltype(lst)>(lst, lst.end()),
 			[this](const fs::path& p) -> bool
 			{
+				// ignore non-existing files and directories
+				if(!tl::file_exists(p.string().c_str()))
+					return false;
+
 				std::string strExt = tl::wstr_to_str(p.extension().native());
 				if(strExt == ".bz2" || strExt == ".gz" || strExt == ".z")
 					strExt = "." + tl::wstr_to_str(tl::get_fileext2(p.filename().native()));
 
+				// allow everything if no extensions are defined
 				if(this->m_vecExts.size() == 0)
 					return true;
+
+				// see if extension is in list
 				return std::find(this->m_vecExts.begin(), this->m_vecExts.end(),
 					strExt) != this->m_vecExts.end();
 			});
@@ -863,12 +1218,14 @@ void ScanViewerDlg::UpdateFileList()
 }
 
 
+
 #ifndef NO_FIT
 
 void ScanViewerDlg::ShowFitParams()
 {
 	focus_dlg(m_pFitParamDlg);
 }
+
 
 /**
  * fit a function to data points
@@ -946,6 +1303,7 @@ bool ScanViewerDlg::Fit(t_func&& func,
 	}
 
 	PlotScan();
+	m_pFitParamDlg->UnsetAllBold();
 	return true;
 }
 
@@ -995,24 +1353,63 @@ void ScanViewerDlg::FitLine()
 }
 
 
+/**
+ * sin(x + pi) = -sin(x)
+ * sin(-x + phi) = -sin(x - phi)
+ */
+template<class t_real = double>
+void sanitise_sine_params(t_real& amp, t_real& freq, t_real& phase, t_real& offs)
+{
+	if(freq < t_real(0))
+	{
+		freq = -freq;
+		phase = -phase;
+		amp = -amp;
+	}
+
+	if(amp < t_real(0))
+	{
+		amp = -amp;
+		phase += tl::get_pi<t_real>();
+	}
+
+	if(phase < t_real(0))
+	{
+		int iNum = std::abs(int(phase / (t_real(2)*tl::get_pi<t_real>()))) + 1;
+		phase += t_real(2*iNum) * tl::get_pi<t_real>();
+	}
+
+	phase = std::fmod(phase, t_real(2)*tl::get_pi<t_real>());
+}
+
+
 void ScanViewerDlg::FitSine()
 {
 	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
 		return;
 
+	const bool bUseSlope = checkSloped->isChecked();
+
 	auto func = [](t_real x, t_real amp, t_real freq, t_real phase, t_real offs) -> t_real
 		{ return amp*std::sin(freq*x + phase) + offs; };
 	constexpr std::size_t iFuncArgs = 5;
+
+	auto funcSloped = [](t_real x, t_real amp, t_real freq, t_real phase, t_real offs, t_real slope) -> t_real
+	{ return amp*std::sin(freq*x + phase) + slope*x + offs; };
+	constexpr std::size_t iFuncArgsSloped = 6;
+
 
 	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
 	t_real_glob dFreq = m_pFitParamDlg->GetFreq(),	dFreqErr = m_pFitParamDlg->GetFreqErr();
 	t_real_glob dPhase = m_pFitParamDlg->GetPhase(),dPhaseErr = m_pFitParamDlg->GetPhaseErr();
 	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),	dOffsErr = m_pFitParamDlg->GetOffsErr();
+	t_real_glob dSlope = m_pFitParamDlg->GetSlope(),	dSlopeErr = m_pFitParamDlg->GetSlopeErr();
 
 	bool bAmpFixed = m_pFitParamDlg->GetAmpFixed();
 	bool bFreqFixed = m_pFitParamDlg->GetFreqFixed();
 	bool bPhaseFixed = m_pFitParamDlg->GetPhaseFixed();
 	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+	bool bSlopeFixed = m_pFitParamDlg->GetSlopeFixed();
 
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
@@ -1021,12 +1418,13 @@ void ScanViewerDlg::FitSine()
 		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
 
 		dFreq = t_real(2.*M_PI) / (*minmaxX.second - *minmaxX.first);
-		dOffs = *minmaxY.first + (*minmaxY.second - *minmaxY.first)*0.5;
-		dAmp = *minmaxY.second - dOffs;
+		//dOffs = *minmaxY.first + (*minmaxY.second - *minmaxY.first)*0.5;
+		dOffs = tl::mean_value(m_vecY);
+		dAmp = (std::abs(*minmaxY.second - dOffs) + std::abs(dOffs - *minmaxY.first)) * 0.5;
 		dPhase = 0.;
 
 		dFreqErr = dFreq * 0.1;
-		dOffsErr = dOffs * 0.1;
+		dOffsErr = tl::std_dev(m_vecY);;
 		dAmpErr = dAmp * 0.1;
 		dPhaseErr = M_PI;
 
@@ -1038,16 +1436,38 @@ void ScanViewerDlg::FitSine()
 	std::vector<t_real> vecErrs = { dAmpErr, dFreqErr, dPhaseErr, dOffsErr };
 	std::vector<bool> vecFixed = { bAmpFixed, bFreqFixed, bPhaseFixed, bOffsFixed };
 
-	if(!Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed))
+	if(bUseSlope)
+	{
+		vecParamNames.push_back("slope");
+		vecVals.push_back(dSlope);
+		vecErrs.push_back(dSlopeErr);
+		vecFixed.push_back(bSlopeFixed);
+	}
+
+	bool bOk = false;
+	if(bUseSlope)
+		bOk = Fit<iFuncArgsSloped>(funcSloped, vecParamNames, vecVals, vecErrs, vecFixed);
+	else
+		bOk = Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed);
+	if(!bOk)
 		return;
 
 	for(t_real &d : vecErrs)
 		d = std::abs(d);
 
+	sanitise_sine_params<t_real>(vecVals[0], vecVals[1], vecVals[2], vecVals[3]);
+
+
 	m_pFitParamDlg->SetAmp(vecVals[0]);		m_pFitParamDlg->SetAmpErr(vecErrs[0]);
 	m_pFitParamDlg->SetFreq(vecVals[1]);	m_pFitParamDlg->SetFreqErr(vecErrs[1]);
 	m_pFitParamDlg->SetPhase(vecVals[2]);	m_pFitParamDlg->SetPhaseErr(vecErrs[2]);
 	m_pFitParamDlg->SetOffs(vecVals[3]);	m_pFitParamDlg->SetOffsErr(vecErrs[3]);
+
+	if(bUseSlope)
+	{
+		m_pFitParamDlg->SetSlope(vecVals[4]);
+		m_pFitParamDlg->SetSlopeErr(vecErrs[4]);
+	}
 }
 
 
@@ -1056,18 +1476,24 @@ void ScanViewerDlg::FitGauss()
 	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
 		return;
 
+	const bool bUseSlope = checkSloped->isChecked();
+
 	auto func = tl::gauss_model_amp<t_real>;
+	auto funcSloped = tl::gauss_model_amp_slope<t_real>;
 	constexpr std::size_t iFuncArgs = 5;
+	constexpr std::size_t iFuncArgsSloped = iFuncArgs+1;
 
 	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
 	t_real_glob dSig = m_pFitParamDlg->GetSig(),	dSigErr = m_pFitParamDlg->GetSigErr();
 	t_real_glob dX0 = m_pFitParamDlg->GetX0(),		dX0Err = m_pFitParamDlg->GetX0Err();
 	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),	dOffsErr = m_pFitParamDlg->GetOffsErr();
+	t_real_glob dSlope = m_pFitParamDlg->GetSlope(),	dSlopeErr = m_pFitParamDlg->GetSlopeErr();
 
 	bool bAmpFixed = m_pFitParamDlg->GetAmpFixed();
 	bool bSigFixed = m_pFitParamDlg->GetSigFixed();
 	bool bX0Fixed = m_pFitParamDlg->GetX0Fixed();
 	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+	bool bSlopeFixed = m_pFitParamDlg->GetSlopeFixed();
 
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
@@ -1093,7 +1519,20 @@ void ScanViewerDlg::FitGauss()
 	std::vector<t_real> vecErrs = { dX0Err, dSigErr, dAmpErr, dOffsErr };
 	std::vector<bool> vecFixed = { bX0Fixed, bSigFixed, bAmpFixed, bOffsFixed };
 
-	if(!Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed))
+	if(bUseSlope)
+	{
+		vecParamNames.push_back("slope");
+		vecVals.push_back(dSlope);
+		vecErrs.push_back(dSlopeErr);
+		vecFixed.push_back(bSlopeFixed);
+	}
+
+	bool bOk = false;
+	if(bUseSlope)
+		bOk = Fit<iFuncArgsSloped>(funcSloped, vecParamNames, vecVals, vecErrs, vecFixed);
+	else
+		bOk = Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed);
+	if(!bOk)
 		return;
 
 	for(t_real &d : vecErrs) d = std::abs(d);
@@ -1103,6 +1542,12 @@ void ScanViewerDlg::FitGauss()
 	m_pFitParamDlg->SetSig(vecVals[1]);		m_pFitParamDlg->SetSigErr(vecErrs[1]);
 	m_pFitParamDlg->SetAmp(vecVals[2]);		m_pFitParamDlg->SetAmpErr(vecErrs[2]);
 	m_pFitParamDlg->SetOffs(vecVals[3]);	m_pFitParamDlg->SetOffsErr(vecErrs[3]);
+
+	if(bUseSlope)
+	{
+		m_pFitParamDlg->SetSlope(vecVals[4]);
+		m_pFitParamDlg->SetSlopeErr(vecErrs[4]);
+	}
 }
 
 
@@ -1111,18 +1556,24 @@ void ScanViewerDlg::FitLorentz()
 	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
 		return;
 
+	const bool bUseSlope = checkSloped->isChecked();
+
 	auto func = tl::lorentz_model_amp<t_real>;
+	auto funcSloped = tl::lorentz_model_amp_slope<t_real>;
 	constexpr std::size_t iFuncArgs = 5;
+	constexpr std::size_t iFuncArgsSloped = iFuncArgs+1;
 
 	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
 	t_real_glob dHWHM = m_pFitParamDlg->GetHWHM(),	dHWHMErr = m_pFitParamDlg->GetHWHMErr();
 	t_real_glob dX0 = m_pFitParamDlg->GetX0(),		dX0Err = m_pFitParamDlg->GetX0Err();
 	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),	dOffsErr = m_pFitParamDlg->GetOffsErr();
+	t_real_glob dSlope = m_pFitParamDlg->GetSlope(),	dSlopeErr = m_pFitParamDlg->GetSlopeErr();
 
 	bool bAmpFixed = m_pFitParamDlg->GetAmpFixed();
 	bool bHWHMFixed = m_pFitParamDlg->GetHWHMFixed();
 	bool bX0Fixed = m_pFitParamDlg->GetX0Fixed();
 	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+	bool bSlopeFixed = m_pFitParamDlg->GetSlopeFixed();
 
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
@@ -1145,10 +1596,23 @@ void ScanViewerDlg::FitLorentz()
 
 	std::vector<std::string> vecParamNames = { "x0", "hwhm", "amp", "offs" };
 	std::vector<t_real> vecVals = { dX0, dHWHM, dAmp, dOffs };
-	std::vector<t_real> vecErrs = { dX0Err, dHWHMErr, dAmpErr, dOffsErr };
+	std::vector<t_real> vecErrs = { dX0Err, dHWHMErr, dAmpErr, dOffsErr  };
 	std::vector<bool> vecFixed = { bX0Fixed, bHWHMFixed, bAmpFixed, bOffsFixed };
 
-	if(!Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed))
+	if(bUseSlope)
+	{
+		vecParamNames.push_back("slope");
+		vecVals.push_back(dSlope);
+		vecErrs.push_back(dSlopeErr);
+		vecFixed.push_back(bSlopeFixed);
+	}
+
+	bool bOk = false;
+	if(bUseSlope)
+		bOk = Fit<iFuncArgsSloped>(funcSloped, vecParamNames, vecVals, vecErrs, vecFixed);
+	else
+		bOk = Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed);
+	if(!bOk)
 		return;
 
 	for(t_real &d : vecErrs) d = std::abs(d);
@@ -1158,6 +1622,12 @@ void ScanViewerDlg::FitLorentz()
 	m_pFitParamDlg->SetHWHM(vecVals[1]);	m_pFitParamDlg->SetHWHMErr(vecErrs[1]);
 	m_pFitParamDlg->SetAmp(vecVals[2]);		m_pFitParamDlg->SetAmpErr(vecErrs[2]);
 	m_pFitParamDlg->SetOffs(vecVals[3]);	m_pFitParamDlg->SetOffsErr(vecErrs[3]);
+
+	if(bUseSlope)
+	{
+		m_pFitParamDlg->SetSlope(vecVals[4]);
+		m_pFitParamDlg->SetSlopeErr(vecErrs[4]);
+	}
 }
 
 
@@ -1172,20 +1642,26 @@ void ScanViewerDlg::FitVoigt()
 	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
 		return;
 
+	const bool bUseSlope = checkSloped->isChecked();
+
 	auto func = tl::voigt_model_amp<t_real>;
+	auto funcSloped = tl::voigt_model_amp_slope<t_real>;
 	constexpr std::size_t iFuncArgs = 6;
+	constexpr std::size_t iFuncArgsSloped = iFuncArgs+1;
 
 	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
 	t_real_glob dSig = m_pFitParamDlg->GetSig(),	dSigErr = m_pFitParamDlg->GetSigErr();
 	t_real_glob dHWHM = m_pFitParamDlg->GetHWHM(),	dHWHMErr = m_pFitParamDlg->GetHWHMErr();
 	t_real_glob dX0 = m_pFitParamDlg->GetX0(),		dX0Err = m_pFitParamDlg->GetX0Err();
 	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),	dOffsErr = m_pFitParamDlg->GetOffsErr();
+	t_real_glob dSlope = m_pFitParamDlg->GetSlope(),	dSlopeErr = m_pFitParamDlg->GetSlopeErr();
 
 	bool bAmpFixed = m_pFitParamDlg->GetAmpFixed();
 	bool bSigFixed = m_pFitParamDlg->GetSigFixed();
 	bool bHWHMFixed = m_pFitParamDlg->GetHWHMFixed();
 	bool bX0Fixed = m_pFitParamDlg->GetX0Fixed();
 	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+	bool bSlopeFixed = m_pFitParamDlg->GetSlopeFixed();
 
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
@@ -1212,7 +1688,20 @@ void ScanViewerDlg::FitVoigt()
 	std::vector<t_real> vecErrs = { dX0Err, dSigErr, dHWHMErr, dAmpErr, dOffsErr };
 	std::vector<bool> vecFixed = { bX0Fixed, bSigFixed, bHWHMFixed, bAmpFixed, bOffsFixed };
 
-	if(!Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed))
+	if(bUseSlope)
+	{
+		vecParamNames.push_back("slope");
+		vecVals.push_back(dSlope);
+		vecErrs.push_back(dSlopeErr);
+		vecFixed.push_back(bSlopeFixed);
+	}
+
+	bool bOk = false;
+	if(bUseSlope)
+		bOk = Fit<iFuncArgsSloped>(funcSloped, vecParamNames, vecVals, vecErrs, vecFixed);
+	else
+		bOk = Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed);
+	if(!bOk)
 		return;
 
 	for(t_real &d : vecErrs) d = std::abs(d);
@@ -1224,6 +1713,12 @@ void ScanViewerDlg::FitVoigt()
 	m_pFitParamDlg->SetHWHM(vecVals[2]);	m_pFitParamDlg->SetHWHMErr(vecErrs[2]);
 	m_pFitParamDlg->SetAmp(vecVals[3]);		m_pFitParamDlg->SetAmpErr(vecErrs[3]);
 	m_pFitParamDlg->SetOffs(vecVals[4]);	m_pFitParamDlg->SetOffsErr(vecErrs[4]);
+
+	if(bUseSlope)
+	{
+		m_pFitParamDlg->SetSlope(vecVals[5]);
+		m_pFitParamDlg->SetSlopeErr(vecErrs[5]);
+	}
 }
 #endif
 

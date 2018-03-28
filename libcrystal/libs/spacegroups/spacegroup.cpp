@@ -5,12 +5,13 @@
  * @license GPLv2
  */
 
+#define NO_QT
 #include "spacegroup.h"
 #include "spacegroup_impl.h"
 
 
 namespace xtl {
-	
+
 template class SpaceGroup<double>;
 template class SpaceGroups<double>;
 

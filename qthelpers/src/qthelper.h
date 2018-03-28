@@ -27,7 +27,7 @@ template<typename T=double>
 class QTableWidgetItemWrapper : public QTableWidgetItem
 {
 protected:
-	T m_tVal;
+	T m_tVal = T(0);
 	unsigned int m_iPrec = std::numeric_limits<T>::digits10;
 
 public:
