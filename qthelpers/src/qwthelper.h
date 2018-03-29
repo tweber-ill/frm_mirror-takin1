@@ -17,13 +17,13 @@
 #include <qwt_plot.h>
 #include <qwt_plot_spectrogram.h>
 #include <qwt_raster_data.h>
-#include <qwt_symbol.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
 #include <qwt_color_map.h>
+//#include <qwt_symbol.h>
 
 #include "tlibs/string/string.h"
 
@@ -101,19 +101,6 @@ public:
 
 // ----------------------------------------------------------------------------
 
-
-class MyQwtSymbol : public QwtSymbol
-{
-protected:
-	virtual void renderSymbols(QPainter *pPainter, const QPointF* pPts, int iNumPts) const /*override*/;
-
-public:
-	MyQwtSymbol();
-	virtual ~MyQwtSymbol();
-};
-
-
-// ----------------------------------------------------------------------------
 
 
 class MyQwtCurve : public QwtPlotCurve

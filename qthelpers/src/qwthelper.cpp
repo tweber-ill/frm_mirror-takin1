@@ -25,6 +25,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QCoreApplication>
 
 
@@ -717,28 +718,6 @@ QwtInterval MyQwtRasterData::range() const
 
 // ----------------------------------------------------------------------------
 
-
-MyQwtSymbol::MyQwtSymbol() : QwtSymbol(QwtSymbol::UserStyle)
-{
-	setSize(16, 16);
-}
-
-MyQwtSymbol::~MyQwtSymbol()
-{}
-
-
-void MyQwtSymbol::renderSymbols(QPainter *pPainter, const QPointF* pPts, int iNumPts) const
-{
-	pPainter->setPen(this->pen());
-	pPainter->setBrush(this->brush());
-
-	const t_real_qwt rad = 4.;
-	for(int iPt=0; iPt<iNumPts; ++iPt)
-		pPainter->drawEllipse(pPts[iPt], rad, rad);
-}
-
-
-// ----------------------------------------------------------------------------
 
 
 MyQwtCurve::MyQwtCurve() : QwtPlotCurve()
