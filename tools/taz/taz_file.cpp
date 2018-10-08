@@ -106,6 +106,12 @@ bool TazDlg::LoadFile(const QString& strFile)
 
 bool TazDlg::Load(const char* pcFile)
 {
+	if(!tl::file_exists(pcFile))
+	{
+		tl::log_err("File \"", pcFile, "\" does not exist.");
+		return 0;
+	}
+
 	m_bReady = 0;
 	BOOST_SCOPE_EXIT(&m_bReady, &m_sceneReal, &m_sceneRecip)
 	{
@@ -244,6 +250,10 @@ bool TazDlg::Load(const char* pcFile)
 		int bSmallqEnabled = xml.Query<int>((strXmlRoot + "recip/enable_q").c_str(), 0, &bOk);
 		if(bOk)
 			m_pSmallq->setChecked(bSmallqEnabled!=0);
+
+		int bCoordAxesEnabled = xml.Query<int>((strXmlRoot + "recip/enable_axes").c_str(), 0, &bOk);
+		if(bOk)
+			m_pCoordAxes->setChecked(bCoordAxesEnabled!=0);
 
 		int bSmallqSnapped = xml.Query<int>((strXmlRoot + "recip/snap_q").c_str(), 1, &bOk);
 		if(bOk)
@@ -409,11 +419,9 @@ bool TazDlg::Save()
 
 	// edit boxes
 	std::vector<const std::vector<QLineEdit*>*> vecEdits
-			= {&m_vecEdits_real, &m_vecEdits_recip,
-				&m_vecEdits_plane, &m_vecEdits_monoana};
+		= {&m_vecEdits_real, &m_vecEdits_recip, &m_vecEdits_plane, &m_vecEdits_monoana};
 	std::vector<const std::vector<std::string>*> vecEditNames
-			= {&m_vecEditNames_real, &m_vecEditNames_recip,
-				&m_vecEditNames_plane, &m_vecEditNames_monoana};
+		= {&m_vecEditNames_real, &m_vecEditNames_recip, &m_vecEditNames_plane, &m_vecEditNames_monoana};
 	unsigned int iIdxEdit = 0;
 	for(const std::vector<QLineEdit*>* pVec : vecEdits)
 	{
@@ -481,6 +489,9 @@ bool TazDlg::Save()
 
 	bool bSmallqEnabled = m_pSmallq->isChecked();
 	mapConf[strXmlRoot + "recip/enable_q"] = (bSmallqEnabled ? "1" : "0");
+
+	bool bCoordAxesEnabled = m_pCoordAxes->isChecked();
+	mapConf[strXmlRoot + "recip/enable_axes"] = (bCoordAxesEnabled ? "1" : "0");
 
 	bool bSmallqSnapped = m_sceneRecip.getSnapq();
 	mapConf[strXmlRoot + "recip/snap_q"] = (bSmallqSnapped ? "1" : "0");
@@ -559,6 +570,7 @@ bool TazDlg::Save()
 	if(m_pReso) m_pReso->Save(mapConf, strXmlRoot);
 	if(m_pConvoDlg) m_pConvoDlg->Save(mapConf, strXmlRoot);
 	if(m_pGotoDlg) m_pGotoDlg->Save(mapConf, strXmlRoot);
+	//if(m_pPowderDlg) m_pPowderDlg->Save(mapConf, strXmlRoot);
 
 
 	tl::Prop<std::string> xml;

@@ -33,6 +33,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QSplashScreen>
+#include <QStyleFactory>
 
 
 namespace chr = std::chrono;
@@ -217,6 +218,21 @@ int main(int argc, char** argv)
 		app->setApplicationName("Takin");
 		app->setApplicationVersion(TAKIN_VER);
 
+		QSettings settings("tobis_stuff", "takin");
+
+
+		// set user-selected GUI style
+		if(settings.contains("main/gui_style_value"))
+		{
+			QString strStyle = settings.value("main/gui_style_value", "").toString();
+			QStyle *pStyle = QStyleFactory::create(strStyle);
+			if(pStyle)
+				QApplication::setStyle(pStyle);
+			else
+				tl::log_err("Style \"", strStyle.toStdString(), "\" was not found.");
+		}
+
+
 		std::string strHome = QDir::homePath().toStdString() + "/.takin";
 		std::string strApp = app->applicationDirPath().toStdString();
 		tl::log_info("Program path: ", strApp);
@@ -331,9 +347,9 @@ int main(int argc, char** argv)
 
 		// ------------------------------------------------------------
 
-#ifdef IS_EXPERIMENTAL_BUILD
+
 		{
-			QSettings settings("tobis_stuff", "takin");
+#ifdef IS_EXPERIMENTAL_BUILD
 			int iPrevDaysSinceEpoch = 0;
 			if(settings.contains("debug/last_warned"))
 				iPrevDaysSinceEpoch = settings.value("debug/last_warned").toInt();
@@ -351,8 +367,18 @@ int main(int argc, char** argv)
 				QMessageBox::warning(0, "Takin", strExp.c_str());
 				settings.setValue("debug/last_warned", iDaysSinceEpoch);
 			}
-		}
 #endif
+
+			// Warnings due to version changes
+			if(settings.value("debug/last_warning_shown", 0).toInt() < 1)
+			{
+				QMessageBox::warning(0, "Takin", "Please beware that in this version "
+					"the correction factors for the resolution convolution have been re-worked. "
+					"Any global scaling factors will have changed.");
+				settings.setValue("debug/last_warning_shown", 1);
+			}
+		}
+
 
 		show_splash_msg(app.get(), pSplash.get(), strStarting + "\nLoading 1/2 ...");
 		std::shared_ptr<TazDlg> pTakDlg(new TazDlg(nullptr, strLog));

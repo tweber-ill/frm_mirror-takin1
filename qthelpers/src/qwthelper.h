@@ -107,6 +107,7 @@ class MyQwtCurve : public QwtPlotCurve
 {
 protected:
 	bool m_bShowErrors = false;
+	const std::vector<t_real_qwt>* m_pvecYErr = nullptr;
 
 protected:
 	virtual void drawDots(QPainter* pPainter,
@@ -119,6 +120,8 @@ public:
 
 	void SetShowErrors(bool bErr) { m_bShowErrors = bErr; }
 	bool GetShowErrors() const { return m_bShowErrors; }
+
+	void SetYErr(const std::vector<t_real_qwt>* pvecYErr) { m_pvecYErr = pvecYErr; }
 };
 
 
@@ -236,7 +239,7 @@ extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr,
-	bool bUseYErrs=0);
+	bool bUseYErrs=0, const std::vector<t_real_qwt> *vecYErr=nullptr);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<std::vector<t_real_qwt>>& vecvecX,

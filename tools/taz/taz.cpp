@@ -54,6 +54,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 {
 	//log_debug("In ", __func__, ".");
 	const bool bSmallqVisible = 0;
+	const bool bCoordAxesVisible = 1;
 	const bool bBZVisible = 1;
 	const bool bWSVisible = 1;
 
@@ -361,6 +362,11 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	QAction *pRecipParams = new QAction("Information...", this);
 	m_pMenuViewRecip->addAction(pRecipParams);
 	m_pMenuViewRecip->addSeparator();
+
+	m_pCoordAxes = new QAction("Show Coordinate Axes", this);
+	m_pCoordAxes->setCheckable(1);
+	m_pCoordAxes->setChecked(bCoordAxesVisible);
+	m_pMenuViewRecip->addAction(m_pCoordAxes);
 
 	m_pSmallq = new QAction("Show Reduced Scattering Vector q", this);
 	m_pSmallq->setIcon(load_icon("res/icons/q.svg"));
@@ -694,6 +700,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	QObject::connect(pExit, SIGNAL(triggered()), this, SLOT(close()));
 
 	QObject::connect(m_pSmallq, SIGNAL(toggled(bool)), this, SLOT(EnableSmallq(bool)));
+	QObject::connect(m_pCoordAxes, SIGNAL(toggled(bool)), this, SLOT(EnableCoordAxes(bool)));
 	QObject::connect(m_pBZ, SIGNAL(toggled(bool)), this, SLOT(EnableBZ(bool)));
 	QObject::connect(m_pWS, SIGNAL(toggled(bool)), this, SLOT(EnableWS(bool)));
 
@@ -878,6 +885,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 
 
 	m_sceneRecip.GetTriangle()->SetqVisible(bSmallqVisible);
+	m_sceneRecip.GetTriangle()->SetCoordAxesVisible(bCoordAxesVisible);
 	m_sceneRecip.GetTriangle()->SetBZVisible(bBZVisible);
 	m_sceneRecip.GetTriangle()->SetEwaldSphereVisible(EWALD_KF);
 	m_sceneRealLattice.GetLattice()->SetWSVisible(bWSVisible);
@@ -959,21 +967,21 @@ void TazDlg::keyPressEvent(QKeyEvent *pEvt)
 {
 	// x rotation
 	if(pEvt->key() == Qt::Key_8)
-		RotatePlane(0, tl::d2r(-5.));
+		RotatePlane(0, tl::d2r<t_real>(-5.));
 	else if(pEvt->key() == Qt::Key_2)
-		RotatePlane(0, tl::d2r(5.));
+		RotatePlane(0, tl::d2r<t_real>(5.));
 
 	// y rotation
 	else if(pEvt->key() == Qt::Key_4)
-		RotatePlane(1, tl::d2r(-5.));
+		RotatePlane(1, tl::d2r<t_real>(-5.));
 	else if(pEvt->key() == Qt::Key_6)
-		RotatePlane(1, tl::d2r(5.));
+		RotatePlane(1, tl::d2r<t_real>(5.));
 
 	// z rotation
 	else if(pEvt->key() == Qt::Key_9)
-		RotatePlane(2, tl::d2r(-5.));
+		RotatePlane(2, tl::d2r<t_real>(-5.));
 	else if(pEvt->key() == Qt::Key_7)
-		RotatePlane(2, tl::d2r(5.));
+		RotatePlane(2, tl::d2r<t_real>(5.));
 
 	QMainWindow::keyPressEvent(pEvt);
 }
@@ -1266,6 +1274,10 @@ void TazDlg::RecipProjChanged()
 
 void TazDlg::Show3D()
 {
+#ifdef REINIT_3D_DLGS
+	if(m_pRecip3d) { delete m_pRecip3d; m_pRecip3d = 0; }
+#endif
+
 	if(!m_pRecip3d)
 	{
 		m_pRecip3d = new Recip3DDlg(this, &m_settings);
@@ -1289,6 +1301,10 @@ void TazDlg::Show3D()
 
 void TazDlg::Show3DReal()
 {
+#ifdef REINIT_3D_DLGS
+	if(m_pReal3d) { delete m_pReal3d; m_pReal3d = 0; }
+#endif
+
 	if(!m_pReal3d)
 		m_pReal3d = new Real3DDlg(this, &m_settings);
 
@@ -1302,6 +1318,10 @@ void TazDlg::Show3DReal()
 
 void TazDlg::Show3DBZ()
 {
+#ifdef REINIT_3D_DLGS
+	if(m_pBZ3d) { delete m_pBZ3d; m_pBZ3d = 0; }
+#endif
+
 	if(!m_pBZ3d)
 	{
 		m_pBZ3d = new BZ3DDlg(this, &m_settings);
@@ -1335,6 +1355,11 @@ void TazDlg::Show3DBZ() {}
 void TazDlg::EnableSmallq(bool bEnable)
 {
 	m_sceneRecip.GetTriangle()->SetqVisible(bEnable);
+}
+
+void TazDlg::EnableCoordAxes(bool bEnable)
+{
+	m_sceneRecip.GetTriangle()->SetCoordAxesVisible(bEnable);
 }
 
 void TazDlg::EnableBZ(bool bEnable)

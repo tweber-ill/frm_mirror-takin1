@@ -1,7 +1,7 @@
 /**
  * Scan viewer
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date mar-2015
+ * @date mar-2015 - 2018
  * @license GPLv2
  */
 
@@ -35,10 +35,10 @@ protected:
 
 	bool m_bDoUpdate = 0;
 	tl::FileInstrBase<t_real_glob> *m_pInstr = nullptr;
-	std::vector<t_real_glob> m_vecX, m_vecY;
+	std::vector<t_real_glob> m_vecX, m_vecY, m_vecYErr;
 	std::vector<t_real_glob> m_vecFitX, m_vecFitY;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
-	std::string m_strX, m_strY, m_strCmd;
+	std::string m_strX, m_strY, m_strMon, m_strCmd;
 
 	FitParamDlg *m_pFitParamDlg = nullptr;
 
@@ -58,6 +58,8 @@ protected:
 	void GenerateForGnuplot();
 	void GenerateForPython();
 	void GenerateForHermelin();
+
+	int HasRecentPath(const QString& strPath);
 
 	virtual void closeEvent(QCloseEvent* pEvt) override;
 
@@ -83,6 +85,9 @@ protected slots:
 
 	void XAxisSelected(const QString&);
 	void YAxisSelected(const QString&);
+	void MonAxisSelected(const QString&);
+	void NormaliseStateChanged(int iState);
+	//void LogStateChanged(int iState);
 	void StartOrSkipChanged(int);
 
 	void ShowFitParams();
@@ -90,6 +95,7 @@ protected slots:
 	void FitLorentz();
 	void FitVoigt();
 	void FitLine();
+	void FitParabola();
 	void FitSine();
 
 	void CalcPol();

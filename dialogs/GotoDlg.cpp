@@ -83,7 +83,13 @@ GotoDlg::GotoDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSett
 		if(m_pSettings->contains("goto_pos/geo"))
 			restoreGeometry(m_pSettings->value("goto_pos/geo").toByteArray());
 		if(m_pSettings->contains("goto_pos/ki_fix"))
-			radioFixedKi->setChecked(m_pSettings->value("goto_pos/ki_fix").toBool());
+		{
+			bool bKi = m_pSettings->value("goto_pos/ki_fix").toBool();
+			if(bKi)
+				radioFixedKi->setChecked(1);
+			else
+				radioFixedKf->setChecked(1);
+		}
 	}
 }
 

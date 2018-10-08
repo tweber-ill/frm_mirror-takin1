@@ -67,7 +67,7 @@ struct LatticeCommon
 	const std::vector<AtomPos<t_real>>* pvecAtomPos = nullptr;
 	std::vector<AtomPosAux<t_real>> vecAtomPosAux;
 
-	t_mat matPlane, matPlane_inv;
+	t_mat matPlane, matPlaneRLU, matPlane_inv;
 	t_mat matPlaneReal, matPlaneReal_inv;
 
 	std::vector<std::string> vecAllNames;
@@ -284,6 +284,11 @@ struct LatticeCommon
 				planeRLU.GetDir1()[1] * recip.GetVec(1) +
 				planeRLU.GetDir1()[2] * recip.GetVec(2);
 			plane = tl::Plane<t_real>(vecX0, vecPlaneX, vecPlaneY);
+
+			std::vector<t_vec> vecOrthRlu =
+				tl::gram_schmidt<t_vec>(
+					{planeRLU.GetDir0(), planeRLU.GetDir1(), planeRLU.GetNorm()}, 1);
+			matPlaneRLU = tl::column_matrix(vecOrthRlu);
 
 			std::vector<t_vec> vecOrth =
 				tl::gram_schmidt<t_vec>(

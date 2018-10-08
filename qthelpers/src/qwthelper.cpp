@@ -253,6 +253,7 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 #else
 		m_vecCurves[iCurve]->setRawData(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 #endif
+		m_vecCurves[iCurve]->SetYErr(pvecYErr);
 
 		m_bHasDataPtrs = 1;
 		if(iCurve >= m_vecDataPtrs.size())
@@ -269,6 +270,7 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 #else
 		m_vecCurves[iCurve]->setData(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 #endif
+		//m_vecCurves[iCurve]->SetYErr(pvecYErr);
 
 		m_bHasDataPtrs = 0;
 		m_vecDataPtrs.clear();
@@ -276,7 +278,8 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 
 	if(bReplot)
 	{
-		set_zoomer_base(m_pZoomer, vecX, vecY, false, nullptr, m_vecCurves[iCurve]->GetShowErrors());
+		set_zoomer_base(m_pZoomer, vecX, vecY, false, nullptr,
+			m_vecCurves[iCurve]->GetShowErrors(), pvecYErr);
 		m_pPlot->replot();
 	}
 }
@@ -745,8 +748,11 @@ void MyQwtCurve::drawDots(QPainter* pPainter,
 		for(int iPt=iPtFirst; iPt<=iPtLast; ++iPt)
 		{
 			QPointF pt = data()->sample(iPt);
-			// so far only poisson statistics is assumed
-			t_real_qwt err = tl::float_equal(pt.y(), t_real_qwt(0)) ? 1. : sqrt(pt.y());
+			t_real_qwt err = 0;
+			if(m_pvecYErr)
+				err = (*m_pvecYErr)[iPt];
+			else	// poisson statistics is assumed
+				err = tl::float_equal(pt.y(), t_real_qwt(0)) ? 1. : sqrt(pt.y());
 
 			QPointF ptUpper(scX.transform(pt.x()), scY.transform(pt.y()+err));
 			QPointF ptLower(scX.transform(pt.x()), scY.transform(pt.y()-err));
@@ -823,7 +829,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 	bool bMetaCall, QwtPlotWrapper* pPlotWrap,
-	bool bUseYErrs)
+	bool bUseYErrs, const std::vector<t_real_qwt> *vecYErr)
 {
 	if(!pZoomer || !vecX.size() || !vecY.size())
 		return;
@@ -834,16 +840,29 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	t_real_qwt dminmax[] = {*minmaxX.first, *minmaxX.second,
 		*minmaxY.first, *minmaxY.second};
 
-	// only poisson statistics so far
 	if(bUseYErrs)
 	{
-		t_real_qwt dErrYMin = std::sqrt(dminmax[2]);
-		t_real_qwt dErrYMax = std::sqrt(dminmax[3]);
+		t_real_qwt dErrYMin = 0.;
+		t_real_qwt dErrYMax = 0.;
 
-		if(tl::float_equal(dErrYMin, t_real_qwt(0)))
-			dErrYMin = 1.;
-		if(tl::float_equal(dErrYMax, t_real_qwt(0)))
-			dErrYMax = 1.;
+		if(vecYErr)
+		{	// use error array if given
+			const std::size_t iIdxMin = minmaxY.first - vecY.begin();
+			const std::size_t iIdxMax = minmaxY.second - vecY.begin();
+
+			dErrYMin = (*vecYErr)[iIdxMin];
+			dErrYMax = (*vecYErr)[iIdxMax];
+		}
+		else
+		{ // otherwise assume poisson statistics
+			dErrYMin = std::sqrt(dminmax[2]);
+			dErrYMax = std::sqrt(dminmax[3]);
+
+			if(tl::float_equal(dErrYMin, t_real_qwt(0)))
+				dErrYMin = 1.;
+			if(tl::float_equal(dErrYMax, t_real_qwt(0)))
+				dErrYMax = 1.;
+		}
 
 		dminmax[2] -= dErrYMin;
 		dminmax[3] += dErrYMax;

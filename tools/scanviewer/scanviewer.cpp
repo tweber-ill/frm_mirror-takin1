@@ -1,7 +1,7 @@
 /**
  * Scan viewer
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date 2015-2016
+ * @date 2015-2018
  * @license GPLv2
  */
 
@@ -29,6 +29,7 @@
 #include "tlibs/string/spec_char.h"
 #include "tlibs/file/file.h"
 #include "tlibs/log/log.h"
+#include "tlibs/helper/misc.h"
 #include "libs/version.h"
 
 #ifndef NO_FIT
@@ -103,7 +104,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 
 #if QT_VER>=5
 	ScanViewerDlg *pThis = this;
-	QObject::connect(editPath, &QLineEdit::textEdited, pThis, &ScanViewerDlg::ChangedPath);
+	QObject::connect(comboPath, &QComboBox::editTextChanged, pThis, &ScanViewerDlg::ChangedPath);
 	QObject::connect(listFiles, &QListWidget::itemSelectionChanged, pThis, &ScanViewerDlg::FileSelected);
 	QObject::connect(editSearch, &QLineEdit::textEdited, pThis, &ScanViewerDlg::SearchProps);
 	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, &ScanViewerDlg::SelectDir);
@@ -115,16 +116,21 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(btnLorentz, &QToolButton::clicked, pThis, &ScanViewerDlg::FitLorentz);
 	QObject::connect(btnVoigt, &QToolButton::clicked, pThis, &ScanViewerDlg::FitVoigt);
 	QObject::connect(btnLine, &QToolButton::clicked, pThis, &ScanViewerDlg::FitLine);
+	QObject::connect(btnParabola, &QToolButton::clicked, pThis, &ScanViewerDlg::FitParabola);
 	QObject::connect(btnSine, &QToolButton::clicked, pThis, &ScanViewerDlg::FitSine);
 #endif
 	QObject::connect(comboX, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::XAxisSelected);
 	QObject::connect(comboY, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxisSelected);
+	QObject::connect(comboMon, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::MonAxisSelected);
+	QObject::connect(checkNorm, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), pThis, &ScanViewerDlg::NormaliseStateChanged);
+	//QObject::connect(checkLog, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), pThis, &ScanViewerDlg::LogStateChanged);
 	QObject::connect(spinStart, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
+	QObject::connect(spinStop, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
 	QObject::connect(spinSkip, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
 	QObject::connect(tableProps, &QTableWidget::currentItemChanged, pThis, &ScanViewerDlg::PropSelected);
 	QObject::connect(comboExport, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::GenerateExternal);
 #else
-	QObject::connect(editPath, SIGNAL(textEdited(const QString&)),
+	QObject::connect(comboPath, SIGNAL(editTextChanged(const QString&)),
 		this, SLOT(ChangedPath()));
 	QObject::connect(listFiles, SIGNAL(itemSelectionChanged()), this, SLOT(FileSelected()));
 	QObject::connect(editSearch, SIGNAL(textEdited(const QString&)),
@@ -138,13 +144,19 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(btnLorentz, SIGNAL(clicked(bool)), this, SLOT(FitLorentz()));
 	QObject::connect(btnVoigt, SIGNAL(clicked(bool)), this, SLOT(FitVoigt()));
 	QObject::connect(btnLine, SIGNAL(clicked(bool)), this, SLOT(FitLine()));
+	QObject::connect(btnParabola, SIGNAL(clicked(bool)), this, SLOT(FitParabola()));
 	QObject::connect(btnSine, SIGNAL(clicked(bool)), this, SLOT(FitSine()));
 #endif
 	QObject::connect(comboX, SIGNAL(currentIndexChanged(const QString&)),
 		this, SLOT(XAxisSelected(const QString&)));
 	QObject::connect(comboY, SIGNAL(currentIndexChanged(const QString&)),
 		this, SLOT(YAxisSelected(const QString&)));
+	QObject::connect(comboMon, SIGNAL(currentIndexChanged(const QString&)),
+		this, SLOT(MonAxisSelected(const QString&)));
+	QObject::connect(checkNorm, SIGNAL(stateChanged(int)), this, SLOT(NormaliseStateChanged(int)));
+	//QObject::connect(checkLog, SIGNAL(stateChanged(int)), this, SLOT(LogStateChanged(int)));
 	QObject::connect(spinStart, SIGNAL(valueChanged(int)), this, SLOT(StartOrSkipChanged(int)));
+	QObject::connect(spinStop, SIGNAL(valueChanged(int)), this, SLOT(StartOrSkipChanged(int)));
 	QObject::connect(spinSkip, SIGNAL(valueChanged(int)), this, SLOT(StartOrSkipChanged(int)));
 	QObject::connect(tableProps, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)),
 		this, SLOT(PropSelected(QTableWidgetItem*, QTableWidgetItem*)));
@@ -153,8 +165,36 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	//QObject::connect(btnOpenExt, SIGNAL(clicked()), this, SLOT(openExternally()));
 #endif
 
+
+	// fill recent paths combobox
+	QStringList lstDirs = m_settings.value("recent_dirs").toStringList();
+	for(const QString& strDir : lstDirs)
+	{
+		fs::path dir(strDir.toStdString());
+		if(*tl::wstr_to_str(dir.native()).rbegin() != fs::path::preferred_separator)
+			dir /= std::string("")+fs::path::preferred_separator;
+
+		if(HasRecentPath(strDir) < 0)
+			comboPath->addItem(tl::wstr_to_str(dir.native()).c_str());
+	}
+
+	// last selected dir
 	QString strDir = m_settings.value("last_dir", tl::wstr_to_str(fs::current_path().native()).c_str()).toString();
-	editPath->setText(strDir);
+
+	int idx = HasRecentPath(strDir);
+	if(idx < 0)
+	{
+		fs::path dir(strDir.toStdString());
+		if(*tl::wstr_to_str(dir.native()).rbegin() != fs::path::preferred_separator)
+			dir /= std::string("")+fs::path::preferred_separator;
+
+		comboPath->addItem(tl::wstr_to_str(dir.native()).c_str());
+		idx = comboPath->findText(strDir);
+	}
+
+	comboPath->setCurrentIndex(idx);
+	//comboPath->setEditText(strDir);
+
 
 	if(m_settings.contains("pol/vec1"))
 		editPolVec1->setText(m_settings.value("pol/vec1").toString());
@@ -174,6 +214,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	btnLorentz->setEnabled(false);
 	btnVoigt->setEnabled(false);
 	btnLine->setEnabled(false);
+	btnParabola->setEnabled(false);
 	btnSine->setEnabled(false);
 #endif
 
@@ -224,6 +265,12 @@ void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
 	m_settings.setValue("pol/cur1", editPolCur1->text());
 	m_settings.setValue("pol/cur2", editPolCur2->text());
 	m_settings.setValue("geo", saveGeometry());
+	m_settings.setValue("last_dir", QString(m_strCurDir.c_str()));
+
+	QStringList lstDirs;
+	for(int iDir=0; iDir<comboPath->count(); ++iDir)
+		lstDirs << comboPath->itemText(iDir);
+	m_settings.setValue("recent_dirs", lstDirs);
 
 	QDialog::closeEvent(pEvt);
 }
@@ -239,6 +286,7 @@ void ScanViewerDlg::ClearPlot()
 
 	m_vecX.clear();
 	m_vecY.clear();
+	m_vecYErr.clear();
 	m_vecFitX.clear();
 	m_vecFitY.clear();
 
@@ -262,11 +310,37 @@ void ScanViewerDlg::ClearPlot()
 
 	comboX->clear();
 	comboY->clear();
+	comboMon->clear();
 	textRoot->clear();
 	spinStart->setValue(0);
+	spinStop->setValue(0);
 	spinSkip->setValue(0);
 
 	m_plotwrap->GetPlot()->replot();
+}
+
+
+/**
+ * check if given path is already in the "recent paths" list
+ */
+int ScanViewerDlg::HasRecentPath(const QString& strPath)
+{
+	fs::path dir(strPath.toStdString());
+	if(*tl::wstr_to_str(dir.native()).rbegin() != fs::path::preferred_separator)
+		dir /= std::string("")+fs::path::preferred_separator;
+
+	for(int iDir=0; iDir<comboPath->count(); ++iDir)
+	{
+		QString strOtherPath = comboPath->itemText(iDir);
+		fs::path dirOther(strOtherPath.toStdString());
+		if(*tl::wstr_to_str(dirOther.native()).rbegin() != fs::path::preferred_separator)
+			dirOther /= std::string("")+fs::path::preferred_separator;
+
+		if(dir == dirOther)
+			return iDir;
+	}
+
+	return -1;
 }
 
 
@@ -284,7 +358,18 @@ void ScanViewerDlg::SelectDir()
 		strCurDir, QFileDialog::ShowDirsOnly | fileopt);
 	if(strDir != "")
 	{
-		editPath->setText(strDir);
+		int idx = HasRecentPath(strDir);
+		if(idx < 0)
+		{
+			fs::path dir(strDir.toStdString());
+			if(*tl::wstr_to_str(dir.native()).rbegin() != fs::path::preferred_separator)
+				dir /= std::string("")+fs::path::preferred_separator;
+
+			comboPath->addItem(tl::wstr_to_str(dir.native()).c_str());
+			idx = comboPath->findText(tl::wstr_to_str(dir.native()).c_str());
+		}
+		comboPath->setCurrentIndex(idx);
+		//comboPath->setEditText(strDir);
 		ChangedPath();
 	}
 }
@@ -292,6 +377,9 @@ void ScanViewerDlg::SelectDir()
 
 void ScanViewerDlg::XAxisSelected(const QString& strLab) { PlotScan(); }
 void ScanViewerDlg::YAxisSelected(const QString& strLab) { PlotScan(); }
+void ScanViewerDlg::MonAxisSelected(const QString& strLab) { PlotScan(); }
+void ScanViewerDlg::NormaliseStateChanged(int iState) { PlotScan(); }
+//void ScanViewerDlg::LogStateChanged(int iState) { PlotScan(); }
 void ScanViewerDlg::StartOrSkipChanged(int) { PlotScan(); }
 
 
@@ -334,13 +422,14 @@ void ScanViewerDlg::FileSelected()
 
 	std::vector<std::string> vecScanVars = m_pInstr->GetScannedVars();
 	std::string strCntVar = m_pInstr->GetCountVar();
-	//std::string strMonVar = m_pInstr->GetMonVar();
+	std::string strMonVar = m_pInstr->GetMonVar();
 	//tl::log_info("Count var: ", strCntVar, ", mon var: ", strMonVar);
 
 	const std::wstring strPM = tl::get_spec_char_utf16("pm");
 
 	m_bDoUpdate = 0;
-	int iIdxX=-1, iIdxY=-1, iCurIdx=0;
+	int iIdxX=-1, iIdxY=-1, iIdxMon=-1, iCurIdx=0;
+	int iAlternateX = -1;
 	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_pInstr->GetColNames();
 	for(const tl::FileInstrBase<t_real>::t_vecColNames::value_type& strCol : vecColNames)
 	{
@@ -362,17 +451,28 @@ void ScanViewerDlg::FileSelected()
 
 		comboX->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
 		comboY->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
+		comboMon->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
 
-		if(vecScanVars.size() && vecScanVars[0]==strCol)
+		std::string strFirstScanVar = tl::str_to_lower(vecScanVars[0]);
+		std::string strColLower = tl::str_to_lower(strCol);
+
+		if(vecScanVars.size() && strFirstScanVar == strColLower)
 			iIdxX = iCurIdx;
-		if(strCntVar==strCol)
+		if(vecScanVars.size() && strFirstScanVar.substr(0, strCol.length()) == strColLower)
+			iIdxX = iCurIdx;
+		if(tl::str_to_lower(strCntVar) == strColLower)
 			iIdxY = iCurIdx;
+		if(tl::str_to_lower(strMonVar) == strColLower)
+			iIdxMon = iCurIdx;
 
 		++iCurIdx;
 	}
 
+	if(iIdxX < 0 && iAlternateX >= 0)
+		iIdxX = iAlternateX;
 	comboX->setCurrentIndex(iIdxX);
 	comboY->setCurrentIndex(iIdxY);
+	comboMon->setCurrentIndex(iIdxMon);
 
 	CalcPol();
 
@@ -401,8 +501,7 @@ void ScanViewerDlg::CalcPol()
 	const std::string strPolCur1 = editPolCur1->text().toStdString();
 	const std::string strPolCur2 = editPolCur2->text().toStdString();
 
-	m_pInstr->SetPolNames(strPolVec1.c_str(), strPolVec2.c_str(),
-		strPolCur1.c_str(), strPolCur2.c_str());
+	m_pInstr->SetPolNames(strPolVec1.c_str(), strPolVec2.c_str(), strPolCur1.c_str(), strPolCur2.c_str());
 	m_pInstr->ParsePolData();
 
 	const std::vector<std::array<t_real, 6>>& vecPolStates = m_pInstr->GetPolStates();
@@ -505,6 +604,11 @@ void ScanViewerDlg::CalcPol()
 	}
 
 
+	const std::vector<std::string> vecScanVars = m_pInstr->GetScannedVars();
+	std::string strX;
+	if(vecScanVars.size())
+		strX = vecScanVars[0];
+	const std::vector<t_real>& vecX = m_pInstr->GetCol(strX.c_str());
 	const std::vector<t_real>& vecCnts = m_pInstr->GetCol(m_pInstr->GetCountVar().c_str());
 
 
@@ -516,7 +620,10 @@ void ScanViewerDlg::CalcPol()
 	// iterate over scan points
 	for(std::size_t iPt=0; iPt<vecCnts.size();)
 	{
-		ostrCnts << "<p><b>Scan Point " << (iPt/iNumPolStates+1) << "</b>";
+		ostrCnts << "<p><b>Scan Point " << (iPt/iNumPolStates+1);
+		if(strX != "" && iPt < vecX.size())
+			ostrCnts << " (" << strX << " = " << vecX[iPt + 0] << ")";
+		ostrCnts << "</b>";
 		ostrCnts << "<table border=\"1\" cellpadding=\"0\">";
 		ostrCnts << "<tr><th>Init. Pol. Vec.</th>";
 		ostrCnts << "<th>Fin. Pol. Vec.</th>";
@@ -557,7 +664,10 @@ void ScanViewerDlg::CalcPol()
 	// iterate over scan points
 	for(std::size_t iPt=0; iPt<vecCnts.size()/iNumPolStates; ++iPt)
 	{
-		ostrPol << "<p><b>Scan Point " << (iPt+1) << "</b>";
+		ostrPol << "<p><b>Scan Point " << (iPt+1);
+		if(strX != "" && iPt*iNumPolStates < vecX.size())
+			ostrPol << " (" << strX << " = " << vecX[iPt*iNumPolStates + 0] << ")";
+		ostrPol << "</b>";
 		ostrPol << "<table border=\"1\" cellpadding=\"0\">";
 		ostrPol << "<tr><th>Index 1</th>";
 		ostrPol << "<th>Index 2</th>";
@@ -592,7 +702,7 @@ void ScanViewerDlg::CalcPol()
 			t_real dPolElem = 0., dPolErr = 1.;
 			if(!bInvalid)
 			{
-				dPolElem = std::abs((dCntsNSF-dCntsSF) / (dCntsNSF+dCntsSF));
+				dPolElem = /*std::abs*/((dCntsSF-dCntsNSF) / (dCntsSF+dCntsNSF));
 				dPolErr = propagate_err(dCntsNSF, dCntsSF, dNSFErr, dSFErr);
 			}
 
@@ -634,15 +744,22 @@ void ScanViewerDlg::PlotScan()
 	if(m_pInstr==nullptr || !m_bDoUpdate)
 		return;
 
+	bool bNormalise = checkNorm->isChecked();
+	//const bool bLog = checkLog->isChecked();
+
 	m_strX = comboX->itemData(comboX->currentIndex(), Qt::UserRole).toString().toStdString();
 	m_strY = comboY->itemData(comboY->currentIndex(), Qt::UserRole).toString().toStdString();
+	m_strMon = comboMon->itemData(comboMon->currentIndex(), Qt::UserRole).toString().toStdString();
+
 	const int iStartIdx = spinStart->value();
+	const int iEndSkip = spinStop->value();
 	const int iSkipRows = spinSkip->value();
 	const std::string strTitle = m_pInstr->GetTitle();
 	m_strCmd = m_pInstr->GetScanCommand();
 
 	m_vecX = m_pInstr->GetCol(m_strX.c_str());
 	m_vecY = m_pInstr->GetCol(m_strY.c_str());
+	std::vector<t_real> vecMon = m_pInstr->GetCol(m_strMon.c_str());
 
 	bool bYIsACountVar = (m_strY == m_pInstr->GetCountVar() || m_strY == m_pInstr->GetMonVar());
 	m_plotwrap->GetCurve(1)->SetShowErrors(bYIsACountVar);
@@ -657,26 +774,86 @@ void ScanViewerDlg::PlotScan()
 			m_vecX.erase(m_vecX.begin(), m_vecX.begin()+iStartIdx);
 
 		if(std::size_t(iStartIdx) >= m_vecY.size())
+		{
 			m_vecY.clear();
+			vecMon.clear();
+		}
 		else
+		{
 			m_vecY.erase(m_vecY.begin(), m_vecY.begin()+iStartIdx);
+			vecMon.erase(vecMon.begin(), vecMon.begin()+iStartIdx);
+		}
+	}
+
+	// remove points from end
+	if(iEndSkip != 0)
+	{
+		if(std::size_t(iEndSkip) >= m_vecX.size())
+			m_vecX.clear();
+		else
+			m_vecX.erase(m_vecX.end()-iEndSkip, m_vecX.end());
+
+		if(std::size_t(iEndSkip) >= m_vecY.size())
+		{
+			m_vecY.clear();
+			vecMon.clear();
+		}
+		else
+		{
+			m_vecY.erase(m_vecY.end()-iEndSkip, m_vecY.end());
+			vecMon.erase(vecMon.end()-iEndSkip, vecMon.end());
+		}
 	}
 
 	// interleave rows
 	if(iSkipRows != 0)
 	{
-		decltype(m_vecX) vecXNew, vecYNew;
+		decltype(m_vecX) vecXNew, vecYNew, vecMonNew;
 
 		for(std::size_t iRow=0; iRow<std::min(m_vecX.size(), m_vecY.size()); ++iRow)
 		{
 			vecXNew.push_back(m_vecX[iRow]);
 			vecYNew.push_back(m_vecY[iRow]);
+			vecMonNew.push_back(vecMon[iRow]);
 
 			iRow += iSkipRows;
 		}
 
 		m_vecX = std::move(vecXNew);
 		m_vecY = std::move(vecYNew);
+		vecMon = std::move(vecMonNew);
+	}
+
+
+	// errors
+	if(vecMon.size() < m_vecY.size())
+	{
+		bNormalise = 0;
+		tl::log_err("Counter and monitor data count mismatch.");
+	}
+
+	m_vecYErr.clear();
+	m_vecYErr.reserve(m_vecY.size());
+	for(std::size_t iY=0; iY<m_vecY.size(); ++iY)
+	{
+		// normalise to monitor?
+		if(bNormalise)
+		{
+			t_real y = m_vecY[iY];
+			t_real m = vecMon[iY];
+			t_real dy = tl::float_equal(y, 0., g_dEps) ? 1. : std::sqrt(y);
+			t_real dm = tl::float_equal(m, 0., g_dEps) ? 1. : std::sqrt(m);
+
+			// y_new = y/m
+			// dy_new = 1/m dy - y/m^2 dm
+			m_vecY[iY] = y/m;
+			m_vecYErr.push_back(std::sqrt(std::pow(dy/m, 2.) + std::pow(dm*y/(m*m), 2.)));
+		}
+		else
+		{
+			t_real err = tl::float_equal(m_vecY[iY], 0., g_dEps) ? 1. : std::sqrt(m_vecY[iY]);
+			m_vecYErr.push_back(err);
+		}
 	}
 
 
@@ -711,8 +888,14 @@ void ScanViewerDlg::PlotScan()
 	editTimestamp->setText(m_pInstr->GetTimestamp().c_str());
 
 
+	QString strY = m_strY.c_str();
+	if(bNormalise)
+	{
+		strY += " / ";
+		strY += m_strMon.c_str();
+	}
 	plot->setAxisTitle(QwtPlot::xBottom, m_strX.c_str());
-	plot->setAxisTitle(QwtPlot::yLeft, m_strY.c_str());
+	plot->setAxisTitle(QwtPlot::yLeft, strY);
 	plot->setTitle(m_strCmd.c_str());
 
 
@@ -723,7 +906,7 @@ void ScanViewerDlg::PlotScan()
 		set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, 0, 0);
 	else
 		set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 0, 0);
-	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 1, 1);
+	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 1, 1, &m_vecYErr);
 
 	GenerateExternal(comboExport->currentIndex());
 }
@@ -761,32 +944,124 @@ void ScanViewerDlg::GenerateForGnuplot()
 	const std::string& strLabelY = m_strY;
 
 	std::string strPySrc =
-R"RAWSTR(set term wxt
+R"RAWSTR(# --------------------------------------------------------------------------------
+# choose an output terminal
+set term wxt
+#set term pdf color enhanced font "Helvetica, 14" size 4,3.5
+#set output "plot.pdf"
+# --------------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------------
+# parameters
+maxx = %%MAXX%%
+minx = %%MINX%%
+maxy = %%MAXY%%
+miny = %%MINY%%
+rangex = maxx - minx
+rangey = maxy - miny
+
+rangex_tics = rangex / 5.
+rangey_tics = rangey / 5.
+# --------------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------------
+# functions for fitting
+gauss(x, a, s, x0, y0) = a*exp(-0.5 * ((x-x0)/s)**2.) + y0
+gauss2(x, a1,s1,x01, a2,s2,x02, y0) = \
+	gauss(x, a1,s1,x01, 0) + \
+	gauss(x, a2,s2,x02, 0) + \
+	y0
+gauss3(x, a1,s1,x01, a2,s2,x02, a3,s3,x03, y0) = \
+	gauss(x, a1,s1,x01, 0) + \
+	gauss(x, a2,s2,x02, 0) + \
+	gauss(x, a3,s3,x03, 0) + \
+	y0
+
+lorentz(x, a, h, x0, y0) = a*h**2. / ((x-x0)**2. + h**2.) + y0
+lorentz2(x, a1,h1,x01, a2,h2,x02, y0) = \
+	lorentz(x, a1,h1,x01, 0) + \
+	lorentz(x, a2,h2,x02, 0) + \
+	y0
+lorentz3(x, a1,h1,x01, a2,h2,x02, a3,h3,x03, y0) = \
+	lorentz(x, a1,h1,x01, 0) + \
+	lorentz(x, a2,h2,x02, 0) + \
+	lorentz(x, a3,h3,x03, 0) + \
+	y0
+
+parabola(x, a, x0, y0) = a * (x-x0)**2. + y0
+line(x, m, y0) = m*x + y0
+sine(x, a, f, p, y0) = a*sin(f*x + p) + y0
+# --------------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------------
+# fitting
+
+# initial guesses for gauss and others ...
+a1 = rangey
+s1 = rangex*0.5		# sigma
+x01 = minx + rangex*0.5
+y0 = miny
+
+# ... and for line
+m1 = rangey / rangex
+
+# ... and for sine
+f1 = 1.		# frequency
+p1 = 0.		# phase
+
+# ... and for lorentz
+h1 = rangex*0.5		# HWHM
+
+# actual fitting
+#fit line(x, m1,y0) "-" using ($1):($2):($3) yerrors via m1,y0
+#fit parabola(x, a1,x01, y0) "-" using ($1):($2):($3) yerrors via a1,x01,y0
+#fit sine(x, a1,f1,p1, y0) "-" using ($1):($2):($3) yerrors via a1,h1,x01,y0
+#fit lorentz(x, a1,h1,x01, y0) "-" using ($1):($2):($3) yerrors via a1,h1,x01,y0
+fit gauss(x, a1,s1,x01, y0) "-" using ($1):($2):($3) yerrors via a1,s1,x01,y0
+%%POINTS%%
+end
+# --------------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------------
+# plotting
+line1_col = "#000000"
+points1_col = "#000000"
 
 set xlabel "%%LABELX%%"
 set ylabel "%%LABELY%%"
 set title "%%TITLE%%"
 set grid
 
-set xrange [%%MINX%%:%%MAXX%%]
-set yrange [%%MINY%%:%%MAXY%%]
+set xrange [minx : maxx]
+set yrange [miny : maxy]
 
-plot "-" using ($1):($2):(sqrt($2)) pointtype 7 with yerrorbars title "Data"
+#set xtics rangex_tics
+#set ytics rangey_tics
+#set mxtics 2
+#set mytics 2
+
+# use these functions with the plot command below
+#	line(x,m1,y0) with lines linewidth 2 linecolor rgb line1_col notitle, \
+#	parabola(x,a1,x01,y0) with lines linewidth 2 linecolor rgb line1_col notitle, \
+#	sine(x,a1,f1,p1,y0) with lines linewidth 2 linecolor rgb line1_col notitle, \
+#	lorentz(x,a1,h1,x01,y0) with lines linewidth 2 linecolor rgb line1_col notitle, \
+
+plot \
+	gauss(x,a1,s1,x01,y0) with lines linewidth 2 linecolor rgb line1_col notitle, \
+	"-" using ($1):($2):($3) pointtype 7 pointsize 1 linecolor rgb points1_col with yerrorbars title "Data"
 %%POINTS%%
-end)RAWSTR";
+end
+# --------------------------------------------------------------------------------
+)RAWSTR";
 
-
-	std::vector<t_real> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d)
-	{
-		if(tl::float_equal(d, t_real(0.), g_dEps))
-			d = 1.;
-		d = std::sqrt(d);
-	});
 
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-	t_real dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+	t_real dMaxErrY = *std::max_element(m_vecYErr.begin(), m_vecYErr.end());
 
 	std::ostringstream ostrPoints;
 	ostrPoints.precision(g_iPrec);
@@ -795,17 +1070,18 @@ end)RAWSTR";
 	{
 		ostrPoints
 			<< std::left << std::setw(g_iPrec*2) << m_vecX[i] << " "
-			<< std::left << std::setw(g_iPrec*2) << m_vecY[i] << "\n";
+			<< std::left << std::setw(g_iPrec*2) << m_vecY[i] << " "
+			<< std::left << std::setw(g_iPrec*2) << m_vecYErr[i] << "\n";
 	}
 
-	tl::find_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first, g_iPrec));
-	tl::find_and_replace<std::string>(strPySrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second, g_iPrec));
-	tl::find_and_replace<std::string>(strPySrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY, g_iPrec));
-	tl::find_and_replace<std::string>(strPySrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY, g_iPrec));
-	tl::find_and_replace<std::string>(strPySrc, "%%TITLE%%", strTitle);
-	tl::find_and_replace<std::string>(strPySrc, "%%LABELX%%", strLabelX);
-	tl::find_and_replace<std::string>(strPySrc, "%%LABELY%%", strLabelY);
-	tl::find_and_replace<std::string>(strPySrc, "%%POINTS%%", ostrPoints.str());
+	tl::find_all_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first, g_iPrec));
+	tl::find_all_and_replace<std::string>(strPySrc, "%%MAXX%%", tl::var_to_str(*minmaxX.second, g_iPrec));
+	tl::find_all_and_replace<std::string>(strPySrc, "%%MINY%%", tl::var_to_str(*minmaxY.first-dMaxErrY, g_iPrec));
+	tl::find_all_and_replace<std::string>(strPySrc, "%%MAXY%%", tl::var_to_str(*minmaxY.second+dMaxErrY, g_iPrec));
+	tl::find_all_and_replace<std::string>(strPySrc, "%%TITLE%%", strTitle);
+	tl::find_all_and_replace<std::string>(strPySrc, "%%LABELX%%", strLabelX);
+	tl::find_all_and_replace<std::string>(strPySrc, "%%LABELY%%", strLabelY);
+	tl::find_all_and_replace<std::string>(strPySrc, "%%POINTS%%", ostrPoints.str());
 
 	textRoot->setText(strPySrc.c_str());
 }
@@ -866,17 +1142,9 @@ plt.plot(x_fine, y_fit)
 plt.show())RAWSTR";
 
 
-	std::vector<t_real> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d)
-	{
-		if(tl::float_equal(d, t_real(0.), g_dEps))
-			d = 1.;
-		d = std::sqrt(d);
-	});
-
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-	t_real dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+	t_real dMaxErrY = *std::max_element(m_vecYErr.begin(), m_vecYErr.end());
 
 	std::ostringstream ostrX, ostrY, ostrYErr;
 	ostrX.precision(g_iPrec);
@@ -887,7 +1155,7 @@ plt.show())RAWSTR";
 	{
 		ostrX << m_vecX[i] << ", ";
 		ostrY << m_vecY[i] << ", ";
-		ostrYErr << vecYErr[i] << ", ";
+		ostrYErr << m_vecYErr[i] << ", ";
 	}
 
 	tl::find_and_replace<std::string>(strPySrc, "%%MINX%%", tl::var_to_str(*minmaxX.first, g_iPrec));
@@ -1002,17 +1270,9 @@ R"RAWSTR(void scan_plot()
 })RAWSTR";
 
 
-	std::vector<t_real> vecYErr = m_vecY;
-	std::for_each(vecYErr.begin(), vecYErr.end(), [](t_real& d)
-	{
-		if(tl::float_equal(d, t_real(0.), g_dEps))
-			d = 1.;
-		d = std::sqrt(d);
-	});
-
 	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 	auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
-	t_real dMaxErrY = *std::max_element(vecYErr.begin(), vecYErr.end());
+	t_real dMaxErrY = *std::max_element(m_vecYErr.begin(), m_vecYErr.end());
 
 	std::ostringstream ostrX, ostrY, ostrYErr;
 	ostrX.precision(g_iPrec);
@@ -1023,7 +1283,7 @@ R"RAWSTR(void scan_plot()
 	{
 		ostrX << m_vecX[i] << ", ";
 		ostrY << m_vecY[i] << ", ";
-		ostrYErr << vecYErr[i] << ", ";
+		ostrYErr << m_vecYErr[i] << ", ";
 	}
 
 	tl::find_and_replace<std::string>(strRootSrc, "%%MINX%%", tl::var_to_str(*minmaxX.first, g_iPrec));
@@ -1132,7 +1392,7 @@ void ScanViewerDlg::ChangedPath()
 	ClearPlot();
 	tableProps->setRowCount(0);
 
-	std::string strPath = editPath->text().toStdString();
+	std::string strPath = comboPath->currentText().toStdString();
 	fs::path dir(strPath);
 	if(fs::exists(dir) && fs::is_directory(dir))
 	{
@@ -1147,8 +1407,6 @@ void ScanViewerDlg::ChangedPath()
 		m_pWatcher->addPath(m_strCurDir.c_str());
 		QObject::connect(m_pWatcher.get(), SIGNAL(directoryChanged(const QString&)),
 			this, SLOT(DirWasModified(const QString&)));
-
-		m_settings.setValue("last_dir", QString(m_strCurDir.c_str()));
 	}
 }
 
@@ -1237,20 +1495,13 @@ bool ScanViewerDlg::Fit(t_func&& func,
 	std::vector<t_real>& vecErrs,
 	const std::vector<bool>& vecFixed)
 {
+	bool bUseSwarm = m_settings.value("use_swarm", false).toBool();
+
 	m_vecFitX.clear();
 	m_vecFitY.clear();
 
 	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
 		return false;
-
-	std::vector<t_real> m_vecYErr;
-	m_vecYErr.reserve(m_vecY.size());
-	for(t_real d : m_vecY)
-	{
-		if(tl::float_equal(d, t_real(0.), g_dEps))
-			d = 1.;
-		m_vecYErr.push_back(std::sqrt(d));
-	}
 
 	bool bOk = 0;
 	try
@@ -1259,7 +1510,7 @@ bool ScanViewerDlg::Fit(t_func&& func,
 			_vecVals = tl::container_cast<t_real_min, t_real, std::vector>()(vecVals),
 			_vecErrs = tl::container_cast<t_real_min, t_real, std::vector>()(vecErrs);
 
-		if(checkSwarm->isChecked())
+		if(bUseSwarm)
 		{
 			bOk = tl::swarmfit<t_real, iFuncArgs>
 				(func, m_vecX, m_vecY, m_vecYErr, vecParamNames, vecVals, vecErrs);
@@ -1350,6 +1601,84 @@ void ScanViewerDlg::FitLine()
 
 	m_pFitParamDlg->SetSlope(vecVals[0]);	m_pFitParamDlg->SetSlopeErr(vecErrs[0]);
 	m_pFitParamDlg->SetOffs(vecVals[1]);	m_pFitParamDlg->SetOffsErr(vecErrs[1]);
+}
+
+
+/**
+ * parabola: y = amp*(x-x0)^2 + offs
+ */
+void ScanViewerDlg::FitParabola()
+{
+	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+		return;
+
+	const bool bUseSlope = checkSloped->isChecked();
+
+	auto func = tl::parabola_model<t_real>;
+	auto funcSloped = tl::parabola_model_slope<t_real>;
+	constexpr std::size_t iFuncArgs = 4;
+	constexpr std::size_t iFuncArgsSloped = iFuncArgs+1;
+
+	t_real_glob dAmp = m_pFitParamDlg->GetAmp(),	dAmpErr = m_pFitParamDlg->GetAmpErr();
+	t_real_glob dX0 = m_pFitParamDlg->GetX0(),	dX0Err = m_pFitParamDlg->GetX0Err();
+	t_real_glob dOffs = m_pFitParamDlg->GetOffs(),	dOffsErr = m_pFitParamDlg->GetOffsErr();
+	t_real_glob dSlope = m_pFitParamDlg->GetSlope(),dSlopeErr = m_pFitParamDlg->GetSlopeErr();
+
+	bool bAmpFixed = m_pFitParamDlg->GetAmpFixed();
+	bool bX0Fixed = m_pFitParamDlg->GetX0Fixed();
+	bool bOffsFixed = m_pFitParamDlg->GetOffsFixed();
+	bool bSlopeFixed = m_pFitParamDlg->GetSlopeFixed();
+
+	// automatic parameter determination
+	if(!m_pFitParamDlg->WantParams())
+	{
+		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+
+		dX0 = m_vecX[minmaxY.second - m_vecY.begin()];
+		dAmp = std::abs(*minmaxY.second-*minmaxY.first);
+		dOffs = *minmaxY.first;
+
+		dX0Err = dX0 * 0.1;
+		dAmpErr = dAmp * 0.1;
+		dOffsErr = dOffs * 0.1;
+
+		bAmpFixed = bX0Fixed = bOffsFixed = 0;
+	}
+
+	std::vector<std::string> vecParamNames = { "x0", "amp", "offs" };
+	std::vector<t_real> vecVals = { dX0, dAmp, dOffs };
+	std::vector<t_real> vecErrs = { dX0Err, dAmpErr, dOffsErr };
+	std::vector<bool> vecFixed = { bX0Fixed, bAmpFixed, bOffsFixed };
+
+	if(bUseSlope)
+	{
+		vecParamNames.push_back("slope");
+		vecVals.push_back(dSlope);
+		vecErrs.push_back(dSlopeErr);
+		vecFixed.push_back(bSlopeFixed);
+	}
+
+	bool bOk = false;
+	if(bUseSlope)
+		bOk = Fit<iFuncArgsSloped>(funcSloped, vecParamNames, vecVals, vecErrs, vecFixed);
+	else
+		bOk = Fit<iFuncArgs>(func, vecParamNames, vecVals, vecErrs, vecFixed);
+	if(!bOk)
+		return;
+
+	for(t_real &d : vecErrs) d = std::abs(d);
+	vecVals[1] = std::abs(vecVals[1]);
+
+	m_pFitParamDlg->SetX0(vecVals[0]);	m_pFitParamDlg->SetX0Err(vecErrs[0]);
+	m_pFitParamDlg->SetAmp(vecVals[1]);	m_pFitParamDlg->SetAmpErr(vecErrs[1]);
+	m_pFitParamDlg->SetOffs(vecVals[2]);	m_pFitParamDlg->SetOffsErr(vecErrs[2]);
+
+	if(bUseSlope)
+	{
+		m_pFitParamDlg->SetSlope(vecVals[3]);
+		m_pFitParamDlg->SetSlopeErr(vecErrs[3]);
+	}
 }
 
 

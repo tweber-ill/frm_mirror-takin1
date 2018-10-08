@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>840</width>
-    <height>598</height>
+    <width>844</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,14 +17,14 @@
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
+   <property name="margin">
+    <number>4</number>
+   </property>
+   <property name="spacing">
+    <number>4</number>
+   </property>
    <item row="0" column="0">
     <widget class="QSplitter" name="splitter">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -33,29 +33,6 @@
        <property name="spacing">
         <number>4</number>
        </property>
-       <item row="1" column="0">
-        <widget class="QLineEdit" name="editPath">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QToolButton" name="btnBrowse">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="0" colspan="2">
         <widget class="QListWidget" name="listFiles">
          <property name="sizePolicy">
@@ -75,42 +52,45 @@
          </property>
         </widget>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="layoutWidget_2">
-      <layout class="QGridLayout" name="gridLayout_2">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetDefaultConstraint</enum>
-       </property>
-       <property name="spacing">
-        <number>4</number>
-       </property>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+       <item row="1" column="0" rowspan="2">
+        <widget class="QComboBox" name="comboPath">
+         <property name="toolTip">
+          <string>Current and recent directories.</string>
          </property>
-         <property name="text">
-          <string>Axes:</string>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+         <property name="maxVisibleItems">
+          <number>16</number>
+         </property>
+         <property name="insertPolicy">
+          <enum>QComboBox::NoInsert</enum>
          </property>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QComboBox" name="comboY">
+       <item row="1" column="1" rowspan="2">
+        <widget class="QToolButton" name="btnBrowse">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>1</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="toolTip">
-          <string>Ordinate / y axis.</string>
+          <string>Browse for data directories...</string>
+         </property>
+         <property name="text">
+          <string>...</string>
          </property>
         </widget>
        </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QGridLayout" name="gridLayout_2">
+       <property name="spacing">
+        <number>4</number>
+       </property>
        <item row="0" column="0" colspan="4">
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
@@ -170,6 +150,9 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fits:&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;y = amp * exp{ -1/2 * [(x-x&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;mean&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;)/sigma)]&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:super;&quot;&gt;2 &lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;} + offs &lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;[ &lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;+ (x-x&lt;/span&gt;&lt;span style=&quot; font-style:italic; vertical-align:sub;&quot;&gt;mean&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;) * slope ]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Fit Gaussian</string>
                 </property>
@@ -177,6 +160,9 @@
               </item>
               <item row="0" column="2">
                <widget class="QPushButton" name="btnLorentz">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fits:&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;y = amp*hwhm&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:super;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; / [ (x-x&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;mean&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:super;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; + hwhm&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:super;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; ] + offs&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;[ + (x-x&lt;/span&gt;&lt;span style=&quot; font-style:italic; vertical-align:sub;&quot;&gt;mean&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;)*slope ]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Fit Lorentzian</string>
                 </property>
@@ -191,35 +177,41 @@
               </item>
               <item row="1" column="1">
                <widget class="QPushButton" name="btnLine">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fits:&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;y = slope*x + offs&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Fit Line</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="2">
-               <widget class="QPushButton" name="btnSine">
-                <property name="text">
-                 <string>Fit Sine</string>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="0">
-               <widget class="QCheckBox" name="checkSwarm">
-                <property name="toolTip">
-                 <string>Uses a swarming algorithm as pre-fitter.</string>
-                </property>
-                <property name="text">
-                 <string>Swarm Pre-Fitter</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="3">
                <widget class="QCheckBox" name="checkSloped">
                 <property name="toolTip">
                  <string>Adds a sloping background to the Gaussian, Lorentzian and Voigtian peaks.</string>
                 </property>
                 <property name="text">
                  <string>Sloped Peaks</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QPushButton" name="btnSine">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fits:&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;y = amp * sin(freq*x + phase) + offs&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;[ + slope*x ]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Fit Sine</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QPushButton" name="btnParabola">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fits:&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;y = amp*(x-x&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;mean&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:super;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; + offs&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;[ + (x-x&lt;/span&gt;&lt;span style=&quot; font-style:italic; vertical-align:sub;&quot;&gt;mean&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;)*slope ]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Fit Parabola</string>
                 </property>
                </widget>
               </item>
@@ -918,17 +910,49 @@
           </sizepolicy>
          </property>
          <property name="toolTip">
-          <string>Abscissa / x axis.</string>
+          <string>Abscissa (x), scan axis.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QComboBox" name="comboY">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Ordinate (y), e.g. main counter.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QComboBox" name="comboMon">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Monitor counter to normalise to.</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QSpinBox" name="spinStart">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="toolTip">
-          <string>Index of first data row.</string>
+          <string>Start index of first data row.</string>
          </property>
          <property name="prefix">
-          <string>Start Index: </string>
+          <string>Start: </string>
          </property>
          <property name="maximum">
           <number>99999</number>
@@ -936,7 +960,32 @@
         </widget>
        </item>
        <item row="2" column="2">
+        <widget class="QSpinBox" name="spinStop">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>End index of last data row.</string>
+         </property>
+         <property name="prefix">
+          <string>Stop: </string>
+         </property>
+         <property name="maximum">
+          <number>99999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
         <widget class="QSpinBox" name="spinSkip">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="toolTip">
           <string>Number of rows to skip between data rows.</string>
          </property>
@@ -945,6 +994,26 @@
          </property>
          <property name="maximum">
           <number>99999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="checkNorm">
+         <property name="toolTip">
+          <string>Normalise main counter to monitor counter.</string>
+         </property>
+         <property name="text">
+          <string>Norm.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Axes:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -963,21 +1032,24 @@
  </customwidgets>
  <tabstops>
   <tabstop>listFiles</tabstop>
+  <tabstop>comboPath</tabstop>
+  <tabstop>btnBrowse</tabstop>
+  <tabstop>comboX</tabstop>
+  <tabstop>comboY</tabstop>
+  <tabstop>comboMon</tabstop>
+  <tabstop>checkNorm</tabstop>
+  <tabstop>spinStart</tabstop>
+  <tabstop>spinStop</tabstop>
+  <tabstop>spinSkip</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>btnParam</tabstop>
+  <tabstop>checkSloped</tabstop>
   <tabstop>btnGauss</tabstop>
   <tabstop>btnLorentz</tabstop>
   <tabstop>btnVoigt</tabstop>
   <tabstop>btnLine</tabstop>
+  <tabstop>btnParabola</tabstop>
   <tabstop>btnSine</tabstop>
-  <tabstop>checkSwarm</tabstop>
-  <tabstop>checkSloped</tabstop>
-  <tabstop>comboX</tabstop>
-  <tabstop>comboY</tabstop>
-  <tabstop>spinStart</tabstop>
-  <tabstop>spinSkip</tabstop>
-  <tabstop>editPath</tabstop>
-  <tabstop>btnBrowse</tabstop>
   <tabstop>editPolVec1</tabstop>
   <tabstop>editPolVec2</tabstop>
   <tabstop>editPolCur1</tabstop>
