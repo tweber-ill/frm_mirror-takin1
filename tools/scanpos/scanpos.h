@@ -11,9 +11,11 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/linalg_ops.h"
 #include "tlibs/file/loadinstr.h"
-#include "libs/globals.h"
+#include "tlibs/time/chrono.h"
 #include "tlibs/log/log.h"
 #include "tlibs/version.h"
+#include "libs/globals.h"
+#include "libs/version.h"
 
 #include <vector>
 #include <iostream>
@@ -74,9 +76,14 @@ bool make_plot(std::ostream& ostr,
 
 	(*pOstr).precision(g_iPrec);
 	(*pOstr) << "#!/usr/bin/gnuplot -p\n";
-	(*pOstr) << "# Created with tlibs version " << TLIBS_VERSION << ".\n\n";
+	(*pOstr) << "#\n";
+	(*pOstr) << "# Created with Takin version " << TAKIN_VER
+		<< " and tlibs version " << TLIBS_VERSION << ".\n";
+	(*pOstr) << "# Date: " << tl::epoch_to_str<t_real>(tl::epoch<t_real>(),
+		"%b %d, %Y at %H:%M:%S (%Z).") << "\n";
+	(*pOstr) << "#\n\n";
 
-	(*pOstr) << "#set term pdf enhanced color font \"NimbusSanL-Regu,16\"\n";
+	(*pOstr) << "#set term pdf enhanced color font \"Helvetica, 16\"\n";
 	(*pOstr) << "#set output \"" << "scanpos.pdf\"\n\n";
 
 	(*pOstr) << "col_bragg = \"#ff0000\"\n";
@@ -104,14 +111,18 @@ bool make_plot(std::ostream& ostr,
 	t_real dLabelPadX = std::abs(vecBragg[0]*0.0025);
 	t_real dLabelPadY = std::abs(vecBragg[1]*0.0025);
 
+	// Bragg peak
 	(*pOstr) << "set label 1"
 		<< " at " << vecBragg[0]+dLabelPadX << "," << vecBragg[1]
 		<< " \"(" << vecBraggHKL[0] << ", " << vecBraggHKL[1] << ", " << vecBraggHKL[2] << ")\""
+		<< " tc rgb col_bragg"
+		<< " # center rotate by 90"
 		<< " \n";
 
 	t_real xmin = vecBragg[0], xmax = vecBragg[0];
 	t_real ymin = vecBragg[1], ymax = vecBragg[1];
 
+	// scan positions
 	for(std::size_t iPos=0; iPos<vecAllPos.size(); ++iPos)
 	{
 		const t_vec& vecHKL = vecAllHKL[iPos];
@@ -125,6 +136,8 @@ bool make_plot(std::ostream& ostr,
 		(*pOstr) << "set label " << (iPos+2)
 			<< " at " << vecPos[0]+dLabelPadX << "," << vecPos[1]
 			<< " \"(" << vecHKL[0] << ", " << vecHKL[1] << ", " << vecHKL[2] << ")\""
+			<< " tc rgb col_pos"
+			<< " # center rotate by 90"
 			<< " \n";
 	}
 	(*pOstr) << "\n";
@@ -133,6 +146,8 @@ bool make_plot(std::ostream& ostr,
 	// ranges
 	t_real xpad = (xmax-xmin)*0.1 + dLabelPadX*10.;
 	t_real ypad = (ymax-ymin)*0.1 + dLabelPadY*10.;
+	if(tl::float_equal<t_real>(ypad, 0)) ypad = xpad;
+
 	(*pOstr) << "xpad = " << xpad << "\n";
 	(*pOstr) << "ypad = " << ypad << "\n";
 	(*pOstr) << "set xrange [" << xmin << "-xpad" << " : " << xmax << "+xpad" << "]\n";

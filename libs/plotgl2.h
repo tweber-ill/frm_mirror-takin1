@@ -1,39 +1,33 @@
 /**
- * gl plotter
+ * gl plotter without threading
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 19-may-2013 -- jan-2019
  * @license GPLv2
  */
 
-#ifndef __TAKIN_PLOT_GL__
-#define __TAKIN_PLOT_GL__
+#ifndef __TAKIN_PLOT_GL_2__
+#define __TAKIN_PLOT_GL_2__
 
 #include "plotgl_iface.h"
-
-#include <QMouseEvent>
-#include <QThread>
-#include <QMutex>
-#include <QSettings>
-
-#include <atomic>
-
-#include "tlibs/gfx/gl_font.h"
+#include "plotgl.h"
+#include <QTimer>
 
 
-extern QGLFormat get_gl_format(QGLFormat form);
-
-
-class PlotGl : public PlotGl_iface, QThread
+class PlotGl2 : public PlotGl_iface, public QTimer
 {
 protected:
 	QSettings *m_pSettings = nullptr;
-	std::atomic<bool> m_bEnabled;
-	mutable QMutex m_mutex, m_mutex_resize;
+	bool m_bEnabled;
 
 	static constexpr t_real_glob m_dFOV = 45./180.*M_PI;
 	tl::t_mat4_gen<t_real_glob> m_matProj, m_matView;
-	bool m_bPerspective = 1; // perspective or orthogonal projection?
+	bool m_bPerspective = 1;	// perspective or orthogonal projection?
+	bool m_bResetPrespective = 0;
 	ublas::vector<t_real_glob> m_vecCam;
+	bool m_bDoZTest = 0;
+	bool m_bDrawPolys = 1;
+	bool m_bDrawLines = 1;
+	bool m_bDrawSpheres = 1;
 
 	tl::GlFontMap<t_real_glob> *m_pFont = nullptr;
 
@@ -41,24 +35,18 @@ protected:
 	GLuint m_iLstSphere[4];
 	QString m_strLabels[3];
 
-	bool m_bDoZTest = 0;
-	bool m_bDrawPolys = 1;
-	bool m_bDrawLines = 1;
-	bool m_bDrawSpheres = 1;
+	std::size_t m_iPrec = 6;
 	bool m_bDrawMinMax = 1;
 
-	std::size_t m_iPrec = 6;
+	t_real_glob m_dTime = 0.;
 
 	PlotGl_iface::t_sigHover m_sigHover;
 
 protected:
-	virtual bool event(QEvent*) override;
-	virtual void resizeEvent(QResizeEvent*) override;
-	virtual void paintEvent(QPaintEvent*) override;
+	virtual void timerEvent(QTimerEvent *pEvt) override;
 
 	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a=1.);
 	void SetColor(std::size_t iIdx);
-
 
 	// ------------------------------------------------------------------------
 	// mouse stuff
@@ -79,25 +67,21 @@ protected:
 	void mouseSelectObj(t_real_glob dX, t_real_glob dY);
 
 protected:
-	// ------------------------------------------------------------------------
-	// render thread
-	bool m_bRenderThreadActive = 1;
+	virtual void initializeGL() override;
+	virtual void resizeGL(int w, int h) override;
+	virtual void paintGL() override;
 
-	void initializeGLThread();
-	void freeGLThread();
-	void resizeGLThread(int w, int h);
-	void paintGLThread();
-	void tickThread(t_real_glob dTime);
-	virtual void run() override;
+	void SetPerspective(int w, int h);
+	void freeGL();
+	void tick(t_real_glob dTime);
 
 	t_real_glob GetCamObjDist(const PlotObjGl& obj) const;
 	std::vector<std::size_t> GetObjSortOrder() const;
 	PlotGlSize m_size;
-	// ------------------------------------------------------------------------
 
 public:
-	PlotGl(QWidget* pParent, QSettings *pSettings=nullptr, t_real_glob dMouseScale=25.);
-	virtual ~PlotGl();
+	PlotGl2(QWidget* pParent, QSettings *pSettings=nullptr, t_real_glob dMouseScale=25.);
+	virtual ~PlotGl2();
 
 	virtual void AddHoverSlot(const typename PlotGl_iface::t_sigHover::slot_type& conn) override;
 
@@ -134,5 +118,9 @@ public:
 	virtual void keyPressEvent(QKeyEvent*) override;
 };
 
-#endif
 
+// choose between threaded and non-threaded plotters
+extern PlotGl_iface*
+make_gl_plotter(bool bThreaded, QWidget* pParent, QSettings *pSettings=nullptr, t_real_glob dMouseScale=25.);
+
+#endif

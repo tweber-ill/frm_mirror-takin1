@@ -14,6 +14,7 @@
 #include <memory>
 
 #include "libs/plotgl.h"
+#include "libs/plotgl2.h"
 #include "tlibs/math/linalg.h"
 #include "libs/spacegroups/latticehelper.h"
 #include "tlibs/phys/bz.h"
@@ -25,7 +26,7 @@ class Real3DDlg : public QDialog
 protected:
 	QSettings *m_pSettings = nullptr;
 	QStatusBar *m_pStatus = nullptr;
-	std::unique_ptr<PlotGl> m_pPlot;
+	std::unique_ptr<PlotGl_iface> m_pPlot;
 
 public:
 	Real3DDlg(QWidget* pParent, QSettings* = 0);

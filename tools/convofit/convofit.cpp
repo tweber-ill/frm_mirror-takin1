@@ -39,9 +39,10 @@ using t_real = t_real_reso;
 static void* init_convofit_plot(const std::string& strTerm)
 {
 	tl::GnuPlot<t_real> *pPlt = new tl::GnuPlot<t_real>();
-	pPlt->Init();
-	pPlt->SetTerminal(0, strTerm.c_str());
+	if(!pPlt->Init())
+		return nullptr;
 
+	pPlt->SetTerminal(0, strTerm.c_str());
 	return pPlt;
 }
 
@@ -91,6 +92,7 @@ Convofit::~Convofit()
 
 // ----------------------------------------------------------------------------
 // global command line overrides
+bool g_bVerbose = 0;
 bool g_bSkipFit = 0;
 bool g_bUseValuesFromModel = 0;
 unsigned int g_iNumNeutrons = 0;
@@ -286,7 +288,11 @@ bool Convofit::run_job(const std::string& _strJob)
 		boost::optional<void*> optPlt = m_sigInitPlotter(strTerm);
 		if(optPlt)
 			m_pPlt = *optPlt;
+
+		if(!m_pPlt)
+			tl::log_err("Could not initialise plotter. Is gnuplot (correctly) installed?");
 	}
+
 
 	if(g_strOutFileSuffix != "")
 		strLogOutFile += g_strOutFileSuffix;
@@ -414,7 +420,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		if(vecvecScFiles.size() > 1)
 			tl::log_info("Loading scan group ", iSc, ".");
 		if(!load_file(vecvecScFiles[iSc], sc, bNormToMon, filter,
-			bFlipCoords, bUseFirstAndLastScanPt, iScanAxis))
+			bFlipCoords, bUseFirstAndLastScanPt, iScanAxis, g_bVerbose))
 		{
 			tl::log_err("Cannot load scan files of group ", iSc, ".");
 			continue;
@@ -513,7 +519,8 @@ bool Convofit::run_job(const std::string& _strJob)
 	mod.AddFuncResultSlot(
 	[this, &pltMeas, &vecModTmpX, &vecModTmpY, bPlotIntermediate](t_real h, t_real k, t_real l, t_real E, t_real S)
 	{
-		tl::log_info("Q = (", h, ", ", k, ", ", l, ") rlu, E = ", E, " meV -> S = ", S);
+		if(g_bVerbose)
+			tl::log_info("Q = (", h, ", ", k, ", ", l, ") rlu, E = ", E, " meV -> S = ", S);
 
 		if(bPlotIntermediate)
 		{
@@ -616,7 +623,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		t_real dErr = vecFitErrors[iParam];
 
 		// not a S(q,w) model parameter
-		if(strParam=="scale" || strParam=="offs")
+		if(strParam=="scale" || strParam=="slope" || strParam=="offs")
 			continue;
 
 		mod.AddModelFitParams(strParam, dVal, dErr);

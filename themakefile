@@ -23,6 +23,14 @@ NATIVE_OPTS = 1
 QT_VER = 4
 QWT_VER = 6
 
+# which Py version to use for scripting
+PY_INC_VER = 2.7
+#PY_INC_VER = 3.7
+
+PY_LIB_VER = ${PY_INC_VER}
+PY_BOOSTLIB_VER = $(subst .,,${PY_LIB_VER})
+#$(info Py boost lib: ${PY_BOOSTLIB_VER})
+
 # use Lapack instead of internal linalg routines?
 USE_LAPACK = 0
 
@@ -107,7 +115,7 @@ DEFINES = -DNO_JPEG -DNO_TIFF
 
 # hack to prevent the math forward definitions
 # in /usr/include/boost/math_fwd.hpp 
-DEFINES += -DBOOST_MATH_FWD_HPP
+#DEFINES += -DBOOST_MATH_FWD_HPP
 
 
 LIB_MIN = -lMinuit2
@@ -170,6 +178,10 @@ ifeq ($(USE_PLUGINS), 1)
 	DEFINES += -DUSE_PLUGINS
 else
 	DEFINES += -DNO_PLUGINS
+endif
+
+ifeq ($(USE_FRAMEWORKS), 1)
+	DEFINES += -DUSING_FRAMEWORKS
 endif
 
 DEFINES += -DQWT_VER=$(QWT_VER)
@@ -334,8 +346,8 @@ INC =	-I${MYINC} \
 	-I/usr/local/opt/freetype/include/freetype2 \
 	-I/usr/include/freetype2 \
 	-I/usr/include/lapacke \
-	-I/usr/local/opt/python/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
-	-I/usr/include/python2.7 -idirafter /usr/include/root \
+	-I/usr/local/opt/python/Frameworks/Python.framework/Versions/${PY_INC_VER}/Headers/ \
+	-I/usr/include/python${PY_INC_VER} -idirafter /usr/include/root \
 	-I/usr/include -I/usr/include/GL
 
 LIB_DIRS =	-L${MYLIB} \
@@ -423,15 +435,19 @@ else
 endif
 
 ifeq ($(USE_PY), 1)
-#	ifeq ($(USE_FRAMEWORKS), 0)
-		PY_LIBS = -lboost_python${BOOST_SUFFIX}
-#		PY_LIBS = -lboost_python27${BOOST_SUFFIX}
-		PY_LIBS += -lpython2.7
-#		PY_LIBS = -lboost_python3${BOOST_SUFFIX}
-#		PY_LIBS += -lpython3
-#	else
-#		PY_LIBS = -lboost_python${BOOST_SUFFIX} -F /usr/local/opt/python/Frameworks -framework Python
-#	endif
+	PY_LIBS = -lboost_python${PY_BOOSTLIB_VER}${BOOST_SUFFIX}
+	#PY_LIBS = -lboost_python${BOOST_SUFFIX}
+
+	ifeq ($(USE_FRAMEWORKS), 0)
+		PY_LIBS += -lpython${PY_LIB_VER}
+	else
+		ifeq ($(PY_INC_VER), 2.7)
+			PY_LIBS += -F /usr/local/opt/python/Frameworks -framework Python
+		else
+			PY_LIBS += -L/usr/local/opt/python/Frameworks/Python.framework/Versions/${PY_INC_VER}/lib -lpython${PY_LIB_VER}
+		endif
+	endif
+
 	PY_OBJS = obj/sqw_py.o 
 else
 	PY_LIBS =
@@ -545,7 +561,7 @@ ifeq ($(USE_CLP), 1)
 endif
 
 ifeq ($(USE_3D), 1)
-	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/recip3d.o obj/real3d.o obj/bz3d.o obj/EllipseDlg3D.o
+	OBJ_TAZ += obj/gl.o obj/plotgl.o obj/plotgl2.o obj/recip3d.o obj/real3d.o obj/bz3d.o obj/EllipseDlg3D.o
 endif
 
 ifeq ($(USE_NET), 1)
@@ -756,6 +772,8 @@ obj/formfact.o: libs/formfactors/formfact.cpp libs/formfactors/formfact.h
 obj/rand.o: tlibs/math/rand.cpp tlibs/math/rand.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/plotgl.o: libs/plotgl.cpp libs/plotgl.h
+	${CC} ${FLAGS} -c -o $@ $<
+obj/plotgl2.o: libs/plotgl2.cpp libs/plotgl2.h
 	${CC} ${FLAGS} -c -o $@ $<
 obj/gl.o: tlibs/gfx/gl.cpp tlibs/gfx/gl.h
 	${CC} ${FLAGS} -c -o $@ $<

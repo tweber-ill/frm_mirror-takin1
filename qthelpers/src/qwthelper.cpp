@@ -752,7 +752,7 @@ void MyQwtCurve::drawDots(QPainter* pPainter,
 			if(m_pvecYErr)
 				err = (*m_pvecYErr)[iPt];
 			else	// poisson statistics is assumed
-				err = tl::float_equal(pt.y(), t_real_qwt(0)) ? 1. : sqrt(pt.y());
+				err = tl::float_equal<t_real_qwt>(pt.y(), t_real_qwt(0)) ? 1. : sqrt(pt.y());
 
 			QPointF ptUpper(scX.transform(pt.x()), scY.transform(pt.y()+err));
 			QPointF ptLower(scX.transform(pt.x()), scY.transform(pt.y()-err));

@@ -1,11 +1,11 @@
 /**
- * gl plotter
+ * gl plotter, non-threaded
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 19-may-2013 -- jan-2019
  * @license GPLv2
  */
 
-#include "plotgl.h"
+#include "plotgl2.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/math.h"
 #include "tlibs/math/geo_prim.h"
@@ -17,10 +17,6 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
-
-#ifdef USING_FRAMEWORKS
-	#include <OpenGL/OpenGL.h>
-#endif
 
 
 #define RENDER_FPS 40
@@ -39,84 +35,58 @@ using t_vec3 = tl::t_vec3_gen<t_real>;
 #endif
 
 
-// ----------------------------------------------------------------------------
-
-
-static inline void sleep_nano(long ns)
-{
-	timespec ts;
-	ts.tv_nsec = ns;
-	ts.tv_sec = 0;
-	nanosleep(&ts, 0);
-}
-
-
-QGLFormat get_gl_format(QGLFormat form)
-{
-	form.setProfile(QGLFormat::CoreProfile);
-	//form.setVersion(2,1);
-	form.setVersion(1,5);
-	//form.setDirectRendering(0);
-	form.setDoubleBuffer(1);
-	//form.setOverlay(0);
-	//form.setSampleBuffers(1);
-
-	return form;
-}
+static const int g_iTimerInterval = int(t_real(1e3) / t_real(RENDER_FPS));
 
 // ----------------------------------------------------------------------------
 
 
-PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real dMouseScale) :
+PlotGl2::PlotGl2(QWidget* pParent, QSettings *pSettings, t_real dMouseScale) :
 #ifdef USING_FRAMEWORKS
 	PlotGl_iface(pParent),	// leads to averse reactions when setting the format
 #else
 	PlotGl_iface(get_gl_format(QGLFormat::defaultFormat()), pParent),
 #endif
 	m_pSettings(pSettings),
-	m_bEnabled(true), m_mutex(QMutex::Recursive), m_mutex_resize(QMutex::Recursive),
-	m_matProj(tl::unit_m<t_mat4>(4)), m_matView(tl::unit_m<t_mat4>(4))
+	m_bEnabled(true), m_matProj(tl::unit_m<t_mat4>(4)), m_matView(tl::unit_m<t_mat4>(4))
 {
-	//setFormat(get_gl_format(format()));
-
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
 	m_dMouseScale = dMouseScale;
 	updateViewMatrix();
 
-	setAutoBufferSwap(false);
-	//setUpdatesEnabled(0);
-	doneCurrent();
-#if QT_VER>=5
-	context()->moveToThread((QThread*)this);
-#endif
+	setAutoBufferSwap(0);
+	setUpdatesEnabled(1);
 
-	start();		// render thread
+	QTimer::setSingleShot(0);
 }
 
 
-PlotGl::~PlotGl()
+PlotGl2::~PlotGl2()
 {
 	SetEnabled(0);
-	m_bRenderThreadActive = 0;
-	wait();
 }
 
 
 // ----------------------------------------------------------------------------
 
 
-void PlotGl::SetEnabled(bool b)
+void PlotGl2::SetEnabled(bool b)
 {
-	m_bEnabled.store(b);
+	m_bEnabled = b;
+
+	// stop updating if widget is disabled
+	if(b)
+		QTimer::start(g_iTimerInterval);
+	else
+		QTimer::stop();
 }
 
-void PlotGl::SetColor(t_real r, t_real g, t_real b, t_real a)
+void PlotGl2::SetColor(t_real r, t_real g, t_real b, t_real a)
 {
 	t_real pfCol[] = {r, g, b, a};
 	tl::gl_traits<t_real>::SetMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, pfCol);
 }
 
-void PlotGl::SetColor(std::size_t iIdx)
+void PlotGl2::SetColor(std::size_t iIdx)
 {
 	static const t_real cols[4][4] =
 	{
@@ -130,8 +100,13 @@ void PlotGl::SetColor(std::size_t iIdx)
 }
 
 
-void PlotGl::initializeGLThread()
+void PlotGl2::initializeGL()
 {
+	QGLFormat form = format();
+	std::string strDB = form.doubleBuffer() ? "double-buffered" : "single-buffered";
+	tl::log_debug("Renderer started using ", strDB, " GL version ",
+		form.majorVersion(), ".", form.minorVersion(), ".");
+
 	glClearColor(1.,1.,1.,0.);
 	glShadeModel(GL_SMOOTH);
 	//glShadeModel(GL_FLAT);
@@ -204,6 +179,8 @@ void PlotGl::initializeGLThread()
 	if(g_iFontGLSize <= 0) g_iFontGLSize = DEF_FONT_SIZE;
 	m_pFont = new tl::GlFontMap<t_real>(g_strFontGL.c_str(), g_iFontGLSize);
 
+	QTimer::start(g_iTimerInterval);
+
 #if QT_VER>=5
 	QWidget::
 #endif
@@ -211,7 +188,7 @@ void PlotGl::initializeGLThread()
 }
 
 
-void PlotGl::freeGLThread()
+void PlotGl2::freeGL()
 {
 	SetEnabled(0);
 #if QT_VER>=5
@@ -226,17 +203,8 @@ void PlotGl::freeGLThread()
 }
 
 
-void PlotGl::resizeGLThread(int w, int h)
+void PlotGl2::SetPerspective(int w, int h)
 {
-	//tl::log_debug("GL size: ", w, ", ", h, ".");
-	//tl::log_debug("resizeGLThread, thread ID: ", QThread::currentThreadId());
-	makeCurrent();
-	if(!isValid()) return;
-
-	if(w <= 0) w = 1;
-	if(h <= 0) h = 1;
-	glViewport(0, 0, w, h);
-
 	glMatrixMode(GL_PROJECTION);
 	if(m_bPerspective)
 		m_matProj = tl::perspective_matrix<t_mat4, t_real>(m_dFOV, t_real(w)/t_real(h), 0.1, 100.);
@@ -247,15 +215,26 @@ void PlotGl::resizeGLThread(int w, int h)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+}
 
-	doneCurrent();
+
+void PlotGl2::resizeGL(int w, int h)
+{
+	m_size.iW = w;
+	m_size.iH = h;
+
+	if(w <= 0) w = 1;
+	if(h <= 0) h = 1;
+
+	glViewport(0, 0, w, h);
+	SetPerspective(w, h);
 }
 
 
 /**
  * average distance of object from camera position
  */
-t_real PlotGl::GetCamObjDist(const PlotObjGl& obj) const
+t_real PlotGl2::GetCamObjDist(const PlotObjGl& obj) const
 {
 	ublas::vector<t_real> vecPos;
 	t_real dShiftPt = 0.;
@@ -295,7 +274,7 @@ t_real PlotGl::GetCamObjDist(const PlotObjGl& obj) const
 /**
  * get sorted object indices based on distance to camera
  */
-std::vector<std::size_t> PlotGl::GetObjSortOrder() const
+std::vector<std::size_t> PlotGl2::GetObjSortOrder() const
 {
 	std::vector<std::size_t> vecIdx(m_vecObjs.size());
 	std::iota(vecIdx.begin(), vecIdx.end(), 0);
@@ -321,11 +300,22 @@ std::vector<std::size_t> PlotGl::GetObjSortOrder() const
 }
 
 
+void PlotGl2::timerEvent(QTimerEvent *pEvt)
+{
+	QTimer::timerEvent(pEvt);
+
+	m_dTime += t_real(1)/t_real(RENDER_FPS);
+	tick(m_dTime);
+}
+
+
 /**
  * set absolute time to "dTime" seconds
  */
-void PlotGl::tickThread(t_real dTime)
+void PlotGl2::tick(t_real dTime)
 {
+	if(!m_bEnabled) return;
+
 	// cycle between dNum1 and dNum2
 	auto fktCycle = [](t_real dTime, t_real dNum1, t_real dNum2) -> t_real
 	{
@@ -335,7 +325,6 @@ void PlotGl::tickThread(t_real dTime)
 
 
 	{	// look for objects with animation
-		std::lock_guard<QMutex> _lck(m_mutex);
 		for(PlotObjGl& obj : m_vecObjs)
 		{
 			if(!obj.bAnimated) continue;
@@ -343,29 +332,30 @@ void PlotGl::tickThread(t_real dTime)
 			obj.dScaleMult = fktCycle(2.*dTime, 0.5, 2.);
 		}
 	}
+
+	if(isVisible())
+		updateGL();
 }
 
 
 /**
  * main render function
  */
-void PlotGl::paintGLThread()
+void PlotGl2::paintGL()
 {
-	//tl::log_debug("paintGLThread, thread ID: ", QThread::currentThreadId());
-	makeCurrent();
-	if(!isValid()) return;
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if(!m_bEnabled) return;
 
-	bool bEnabled = m_bEnabled.load();
-	if(!bEnabled) return;
+	// does the projection matrix have to be reset?
+	if(m_bResetPrespective)
+	{
+		SetPerspective(m_size.iW, m_size.iH);
+		m_bResetPrespective = 0;
+	}
 
 	glMatrixMode(GL_MODELVIEW);
 	t_real glmat[16];
-	{
-		std::lock_guard<QMutex> _lck(m_mutex);
-		tl::to_gl_array(m_matView, glmat);
-	}
+	tl::to_gl_array(m_matView, glmat);
 	tl::gl_traits<t_real>::LoadMatrix(glmat);
 
 
@@ -410,8 +400,6 @@ void PlotGl::paintGLThread()
 	glPopAttrib();
 	glPopMatrix();
 
-
-	std::unique_lock<QMutex> _lck(m_mutex);
 
 	// draw objects
 	for(std::size_t iObjIdx : GetObjSortOrder())
@@ -529,7 +517,6 @@ void PlotGl::paintGLThread()
 		}
 		glPopMatrix();
 	}
-	_lck.unlock();
 
 
 	// draw axis labels
@@ -559,139 +546,47 @@ void PlotGl::paintGLThread()
 	}
 
 	swapBuffers();
-	doneCurrent();
-}
-
-
-void PlotGl::run()
-{
-	//do sleep_nano(long(1e-6)); while(!isVisible());
-
-	QGLFormat form = format();
-	static std::atomic<std::size_t> iThread(0);
-	std::size_t iThisThread = ++iThread;
-	std::string strDB = form.doubleBuffer() ? "double-buffered" : "single-buffered";
-	tl::log_debug("Render thread ", iThisThread, " started using ", strDB, " GL version ",
-		form.majorVersion(), ".", form.minorVersion(), ".");
-
-#ifdef USING_FRAMEWORKS
-	if(::CGLEnable(::CGLGetCurrentContext(), ::kCGLCEMPEngine) != ::kCGLNoError)
-		tl::log_err("Cannot correctly enable threaded GL mode. This may result in errors or crash the program.");
-#endif
-
-	//tl::log_debug("run, thread ID: ", QThread::currentThreadId());
-	makeCurrent();
-	if(!isValid())
-	{
-		tl::log_err("GL context is invalid, cannot render.");
-		return;
-	}
-
-	initializeGLThread();
-
-	t_real dTime = 0.;
-	while(m_bRenderThreadActive)
-	{
-		if(m_size.bDoResize)
-		{
-			// mutex for protection of the matrix modes
-			std::lock_guard<QMutex> _lck(m_mutex_resize);
-			resizeGLThread(m_size.iW, m_size.iH);
-
-			m_size.bDoResize = false;
-		}
-
-		if(isVisible())
-		{
-			std::lock_guard<QMutex> _lck(m_mutex_resize);
-			tickThread(dTime);
-			paintGLThread();
-		}
-
-		long fps = isVisible() ? RENDER_FPS : (RENDER_FPS/10);
-		long lns = long(1e9) / fps;
-		sleep_nano(lns);
-		dTime += t_real(lns) * 1e-9;
-	}
-
-	freeGLThread();
-	doneCurrent();
-
-	tl::log_debug("GL thread ", iThisThread, " ended.");
 }
 
 
 // ----------------------------------------------------------------------------
 
 
-bool PlotGl::event(QEvent *pEvt)
+void PlotGl2::clear()
 {
-	return t_qglwidget::event(pEvt);
-}
-
-void PlotGl::paintEvent(QPaintEvent *)
-{}
-
-void PlotGl::resizeEvent(QResizeEvent *pEvt)
-{
-	//tl::log_debug("resizeEvent");
-	if(!pEvt) return;
-
-	std::lock_guard<QMutex> _lck(m_mutex_resize);
-	m_size.iW = pEvt->size().width();
-	m_size.iH = pEvt->size().height();
-	m_size.bDoResize = true;
-}
-
-
-// ----------------------------------------------------------------------------
-
-void PlotGl::clear()
-{
-	std::lock_guard<QMutex> _lck(m_mutex);
 	m_vecObjs.clear();
 }
 
-void PlotGl::SetObjectColor(std::size_t iObjIdx, const std::vector<t_real>& vecCol)
+void PlotGl2::SetObjectColor(std::size_t iObjIdx, const std::vector<t_real>& vecCol)
 {
-	std::lock_guard<QMutex> _lck(m_mutex);
-
 	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].vecColor = vecCol;
 }
 
-void PlotGl::SetObjectLabel(std::size_t iObjIdx, const std::string& strLab)
+void PlotGl2::SetObjectLabel(std::size_t iObjIdx, const std::string& strLab)
 {
-	std::lock_guard<QMutex> _lck(m_mutex);
-
 	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].strLabel = strLab;
 }
 
-void PlotGl::SetObjectUseLOD(std::size_t iObjIdx, bool bLOD)
+void PlotGl2::SetObjectUseLOD(std::size_t iObjIdx, bool bLOD)
 {
-	std::lock_guard<QMutex> _lck(m_mutex);
-
 	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].bUseLOD = bLOD;
 }
 
-void PlotGl::SetObjectCull(std::size_t iObjIdx, bool bCull)
+void PlotGl2::SetObjectCull(std::size_t iObjIdx, bool bCull)
 {
-	std::lock_guard<QMutex> _lck(m_mutex);
-
 	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].bCull = bCull;
 }
 
-void PlotGl::SetObjectAnimation(std::size_t iObjIdx, bool bAnim)
+void PlotGl2::SetObjectAnimation(std::size_t iObjIdx, bool bAnim)
 {
-	std::lock_guard<QMutex> _lck(m_mutex);
-
 	if(m_vecObjs.size() <= iObjIdx)
 		return;
 	m_vecObjs[iObjIdx].bAnimated = bAnim;
@@ -701,7 +596,7 @@ void PlotGl::SetObjectAnimation(std::size_t iObjIdx, bool bAnim)
 // ----------------------------------------------------------------------------
 
 
-void PlotGl::PlotSphere(const ublas::vector<t_real>& vecPos,
+void PlotGl2::PlotSphere(const ublas::vector<t_real>& vecPos,
 	t_real dRadius, int iObjIdx)
 {
 	if(iObjIdx < 0)
@@ -709,8 +604,6 @@ void PlotGl::PlotSphere(const ublas::vector<t_real>& vecPos,
 		clear();
 		iObjIdx = 0;
 	}
-
-	std::lock_guard<QMutex> _lck(m_mutex);
 
 	if(iObjIdx >= int(m_vecObjs.size()))
 		m_vecObjs.resize(iObjIdx+1);
@@ -722,7 +615,7 @@ void PlotGl::PlotSphere(const ublas::vector<t_real>& vecPos,
 }
 
 
-void PlotGl::PlotEllipsoid(const ublas::vector<t_real>& widths,
+void PlotGl2::PlotEllipsoid(const ublas::vector<t_real>& widths,
 	const ublas::vector<t_real>& offsets, const ublas::matrix<t_real>& rot,
 	int iObjIdx)
 {
@@ -731,8 +624,6 @@ void PlotGl::PlotEllipsoid(const ublas::vector<t_real>& widths,
 		clear();
 		iObjIdx = 0;
 	}
-
-	std::lock_guard<QMutex> _lck(m_mutex);
 
 	if(iObjIdx >= int(m_vecObjs.size()))
 		m_vecObjs.resize(iObjIdx+1);
@@ -752,7 +643,7 @@ void PlotGl::PlotEllipsoid(const ublas::vector<t_real>& widths,
 }
 
 
-void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices,
+void PlotGl2::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices,
 	const ublas::vector<t_real>& vecNorm, int iObjIdx)
 {
 	if(iObjIdx < 0)
@@ -760,8 +651,6 @@ void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices,
 		clear();
 		iObjIdx = 0;
 	}
-
-	std::lock_guard<QMutex> _lck(m_mutex);
 
 	if(iObjIdx >= int(m_vecObjs.size()))
 		m_vecObjs.resize(iObjIdx+1);
@@ -773,7 +662,7 @@ void PlotGl::PlotPoly(const std::vector<ublas::vector<t_real>>& vecVertices,
 }
 
 
-void PlotGl::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices,
+void PlotGl2::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices,
 	t_real_glob dLW, int iObjIdx)
 {
 	if(iObjIdx < 0)
@@ -781,8 +670,6 @@ void PlotGl::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices,
 		clear();
 		iObjIdx = 0;
 	}
-
-	std::lock_guard<QMutex> _lck(m_mutex);
 
 	if(iObjIdx >= int(m_vecObjs.size()))
 		m_vecObjs.resize(iObjIdx+1);
@@ -797,7 +684,7 @@ void PlotGl::PlotLines(const std::vector<ublas::vector<t_real>>& vecVertices,
 // ----------------------------------------------------------------------------
 
 
-void PlotGl::mousePressEvent(QMouseEvent *event)
+void PlotGl2::mousePressEvent(QMouseEvent *event)
 {
 	if(event->buttons() & Qt::LeftButton)
 	{
@@ -813,7 +700,7 @@ void PlotGl::mousePressEvent(QMouseEvent *event)
 	}
 }
 
-void PlotGl::mouseReleaseEvent(QMouseEvent *event)
+void PlotGl2::mouseReleaseEvent(QMouseEvent *event)
 {
 	if((event->buttons() & Qt::LeftButton) == 0)
 		m_bMouseRotateActive = 0;
@@ -822,7 +709,7 @@ void PlotGl::mouseReleaseEvent(QMouseEvent *event)
 		m_bMouseScaleActive = 0;
 }
 
-void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
+void PlotGl2::mouseMoveEvent(QMouseEvent *pEvt)
 {
 	bool bUpdateView = 0;
 	if(m_bMouseRotateActive)
@@ -857,7 +744,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	t_real dMouseY = -(2.*pEvt->POS_F().y()/t_real(m_size.iH) - 1.);
 
 	bool bHasSelected = 0;
-	if(m_bEnabled.load())
+	if(m_bEnabled)
 	{
 		mouseSelectObj(dMouseX, dMouseY);
 
@@ -876,7 +763,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 }
 
 
-void PlotGl::wheelEvent(QWheelEvent* pEvt)
+void PlotGl2::wheelEvent(QWheelEvent* pEvt)
 {
 #if QT_VER>=5
 	const t_real dDelta = pEvt->angleDelta().y()/8. / 150.;
@@ -891,19 +778,17 @@ void PlotGl::wheelEvent(QWheelEvent* pEvt)
 }
 
 
-void PlotGl::TogglePerspective()
+void PlotGl2::TogglePerspective()
 {
-	std::lock_guard<QMutex> _lck(m_mutex_resize);
-
 	m_bPerspective = !m_bPerspective;
-	m_size.bDoResize = 1;
+	m_bResetPrespective = 1;
 }
 
 
 // ----------------------------------------------------------------------------
 
 
-void PlotGl::updateViewMatrix()
+void PlotGl2::updateViewMatrix()
 {
 	t_mat4 matScale = tl::make_mat<t_mat4>(
 		{{m_dMouseScale,              0,             0, 0},
@@ -925,7 +810,6 @@ void PlotGl::updateViewMatrix()
 		{  0, 0, 0,  1}});
 
 	{
-		std::lock_guard<QMutex> _lck(m_mutex);
 		m_matView = ublas::prod(matTrans, matRot1);
 		m_matView = ublas::prod(m_matView, matRot0);
 		m_matView = ublas::prod(m_matView, matScale);
@@ -933,15 +817,14 @@ void PlotGl::updateViewMatrix()
 }
 
 
-void PlotGl::AddHoverSlot(const typename PlotGl_iface::t_sigHover::slot_type& conn)
+void PlotGl2::AddHoverSlot(const typename PlotGl_iface::t_sigHover::slot_type& conn)
 {
 	m_sigHover.connect(conn);
 }
 
 
-void PlotGl::mouseSelectObj(t_real dX, t_real dY)
+void PlotGl2::mouseSelectObj(t_real dX, t_real dY)
 {
-	std::lock_guard<QMutex> _lck(m_mutex);
 	tl::Line<t_real> ray = tl::screen_ray(dX, dY, m_matProj, m_matView);
 
 	for(PlotObjGl& obj : m_vecObjs)
@@ -992,17 +875,15 @@ void PlotGl::mouseSelectObj(t_real dX, t_real dY)
 }
 
 
-void PlotGl::SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ)
+void PlotGl2::SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ)
 {
-	std::lock_guard<QMutex> _lck(m_mutex);
-
 	m_strLabels[0] = pcLabX;
 	m_strLabels[1] = pcLabY;
 	m_strLabels[2] = pcLabZ;
 }
 
 
-void PlotGl::keyPressEvent(QKeyEvent* pEvt)
+void PlotGl2::keyPressEvent(QKeyEvent* pEvt)
 {
 	if(pEvt->key() == Qt::Key_Space)
 		TogglePerspective();
@@ -1016,4 +897,20 @@ void PlotGl::keyPressEvent(QKeyEvent* pEvt)
 		ToggleDrawSpheres();
 
 	t_qglwidget::keyPressEvent(pEvt);
+}
+
+
+// ----------------------------------------------------------------------------
+
+
+/**
+ * choose between threaded and non-threaded plotters
+ */
+PlotGl_iface*
+make_gl_plotter(bool bThreaded, QWidget* pParent, QSettings *pSettings, t_real_glob dMouseScale)
+{
+	if(bThreaded)
+		return new PlotGl(pParent, pSettings, dMouseScale);
+	else
+		return new PlotGl2(pParent, pSettings, dMouseScale);
 }

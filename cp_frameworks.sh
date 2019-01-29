@@ -6,7 +6,7 @@
 #
 # copy framework libs
 #
-# pack with: hdiutil create takin.dmg -srcfolder takin.app -fs UDF -format "UDBZ" -volname "takin"
+# pack with: hdiutil create takin.dmg -verbose -srcfolder takin.app -fs UDF -format "UDBZ" -volname "takin"
 #
 
 
@@ -38,10 +38,12 @@ declare -a SRC_LIBS=(
 	"/usr/local/opt/boost/lib/libboost_regex.dylib"
 	"/usr/local/opt/boost/lib/libboost_program_options.dylib"
 	"/usr/local/opt/boost-python/lib/libboost_python27.dylib"
+	"/usr/local/opt/boost-python3/lib/libboost_python37.dylib"
 	"/usr/local/opt/freetype/lib/libfreetype.6.dylib"
 	"/usr/local/opt/libpng/lib/libpng16.16.dylib"
 	"/usr/local/opt/libjpeg/lib/libjpeg.9.dylib"
 	"/usr/local/opt/libtiff/lib/libtiff.5.dylib"
+	"/usr/local/opt/python3/Frameworks/Python.framework/Versions/3.7/Python"
 )
 
 

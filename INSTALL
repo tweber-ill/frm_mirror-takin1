@@ -12,7 +12,7 @@ system's package manager or directly from the given URLs:
 
 For example, on *buntu systems, use the following commands:
 	* sudo su
-	* apt-get install cmake clang build-essential libboost-all-dev libclipper-dev libqt4-dev libqwt-dev python-dev libfreetype6-dev wget
+	* apt-get install cmake clang build-essential libboost-all-dev libclipper-dev libqt4-dev qt4-dev-tools libqwt-dev python-dev libfreetype6-dev wget
 	* wget http://www.cern.ch/mathlibs/sw/5_34_14/Minuit2/Minuit2-5.34.14.tar.gz
 	* tar -xzvf Minuit2-5.34.14.tar.gz
 	* cd Minuit2-5.34.14
@@ -26,19 +26,9 @@ For example, on *buntu systems, use the following commands:
 
 
 
-Getting Takin, tlibs, and dependencies
---------------------------------------
-
-
-Set up takin (if not already downloaded):
-	* wget http://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git/snapshot/tastools-master.tar.bz2
-	* tar -xjvf tastools-master.tar.bz2
-	* cd tastools-master
-
-Set up takin data files and tlibs library:
-	* ./setup_tlibs.sh
-
 Set up other external dependencies:
+------------------------------
+	* cd to Takin dir
 	* ./setup_externals.sh
 
 
@@ -55,17 +45,12 @@ Takin has to be compiled with a fully C++11 compliant compiler, e.g.:
 	* GCC version 4.8 or above
 	* Clang
 
-Optional: Select appropriate Make lists (standard: (2) native, with static tlibs):
-	* ./setup_makelists.sh
-	* If the non-static tlibs is selected, tlibs has to be installed separately.
-
 Make using CMake:
 	* mkdir build
 	* cd build
 	* cmake ..
 	* make
 	* optional: make install (as root)
-
 
 Run program with
 	* takin
