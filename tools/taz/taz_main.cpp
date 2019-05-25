@@ -233,21 +233,21 @@ int main(int argc, char** argv)
 		}
 
 
-		std::string strHome = QDir::homePath().toStdString() + "/.takin";
-		std::string strApp = app->applicationDirPath().toStdString();
-		tl::log_info("Program path: ", strApp);
-		tl::log_info("Home path: ", strHome);
+		g_strHome = QDir::homePath().toStdString() + "/.takin";
+		g_strApp = app->applicationDirPath().toStdString();
+		tl::log_info("Program path: ", g_strApp);
+		tl::log_info("Home path: ", g_strHome);
 
-		add_resource_path(strHome, 0);
-		add_resource_path(strApp);
-		add_resource_path(strApp + "/..");
-		add_resource_path(strApp + "/resources");
-		add_resource_path(strApp + "/Resources");
-		add_resource_path(strApp + "/../resources");
-		add_resource_path(strApp + "/../Resources");
+		add_resource_path(g_strHome, 0);
+		add_resource_path(g_strApp);
+		add_resource_path(g_strApp + "/..");
+		add_resource_path(g_strApp + "/resources");
+		add_resource_path(g_strApp + "/Resources");
+		add_resource_path(g_strApp + "/../resources");
+		add_resource_path(g_strApp + "/../Resources");
 
-		app->addLibraryPath((strApp + "/../lib/plugins").c_str());
-		app->addLibraryPath((strApp + "/lib/plugins").c_str());
+		app->addLibraryPath((g_strApp + "/../lib/plugins").c_str());
+		app->addLibraryPath((g_strApp + "/lib/plugins").c_str());
 
 
 		// ------------------------------------------------------------
@@ -369,7 +369,7 @@ int main(int argc, char** argv)
 			}
 #endif
 
-			// Warnings due to version changes
+		/*// Warnings due to version changes
 			if(settings.value("debug/last_warning_shown", 0).toInt() < 1)
 			{
 				QMessageBox::warning(0, "Takin", "Please beware that in this version "
@@ -377,7 +377,7 @@ int main(int argc, char** argv)
 					"Any global scaling factors will have changed.");
 				settings.setValue("debug/last_warning_shown", 1);
 			}
-		}
+		}*/
 
 
 		show_splash_msg(app.get(), pSplash.get(), strStarting + "\nLoading 1/2 ...");

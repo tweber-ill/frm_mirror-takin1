@@ -6,9 +6,11 @@
  * @license GPLv2
  *
  * @desc for algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014)
+ * @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984)
  */
 
 #include "eck.h"
+#include "r0.h"
 #include "helper.h"
 
 #include "tlibs/math/linalg.h"
@@ -186,7 +188,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 
 	// [eck14], equ. 54
-	t_real refl = dRefl * std::sqrt(pi/Av(1,1));
+	t_real refl = dRefl * std::sqrt(pi / (Av(1,1) /* * A(1,1) */));	// check: typo in paper?
 
 
 	return std::make_tuple(A, B, C, D, refl);
@@ -438,14 +440,24 @@ ResoResults calc_eck(const EckParams& eck)
 
 	// prefactor and volume
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
-	res.dR0 = Z * std::exp(-W) /*/ res.dResVol*/;
-	res.dR0 *= dxsec;
-	// missing prefactor, equ. 1 in [pop75] and equ. A.57 in [mit84]
-	/*if(eck.flags & CALC_RESVOL)
+
+	if(eck.flags & CALC_GENERAL_R0)
 	{
-		//res.dR0 *= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
-		res.dR0 /= res.dResVol * pi * t_real(3.);
-	}*/
+		// alternate R0 normalisation factor, see [mit84], equ. A.57
+		res.dR0 = mitch_R0<t_real>(dmono_refl, dana_effic,
+			tl::get_ellipsoid_volume(A), tl::get_ellipsoid_volume(E), res.dResVol, false);
+	}
+	else
+	{
+		res.dR0 = Z;
+		// missing volume prefactor to normalise gaussian,
+		// cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
+		//res.dR0 /= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
+		res.dR0 *= res.dResVol * pi * t_real(3.);
+	}
+
+	res.dR0 *= std::exp(-W);
+	res.dR0 *= dxsec;
 
 	// Bragg widths
 	const std::vector<t_real> vecFwhms = calc_bragg_fwhms(res.reso);

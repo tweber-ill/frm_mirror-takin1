@@ -39,6 +39,7 @@
 
 #define TRIANGLE_NODE_TYPE_KEY	0
 
+
 enum ScatteringTriangleNodeType
 {
 	NODE_Q,
@@ -50,6 +51,7 @@ enum ScatteringTriangleNodeType
 
 	NODE_OTHER
 };
+
 
 enum EwaldSphere : int
 {
@@ -77,12 +79,14 @@ class ScatteringTriangleNode : public QGraphicsItem
 		ScatteringTriangleNode(ScatteringTriangle* pSupItem);
 };
 
+
 class RecipPeak : public QGraphicsItem
 {
 	protected:
 		QColor m_color = Qt::red;
 		QString m_strLabel;
 		t_real_glob m_dRadius = 3.;
+		bool m_bPeakAllowed = 1;
 
 	protected:
 		virtual QRectF boundingRect() const override;
@@ -93,10 +97,12 @@ class RecipPeak : public QGraphicsItem
 
 		void SetLabel(const QString& str) { m_strLabel = str; }
 		void SetColor(const QColor& col) { m_color = col; }
+		void SetPeakAllowed(bool bAllowed) { m_bPeakAllowed = bAllowed; }
 
 		void SetRadius(t_real_glob dRad) { m_dRadius = dRad; }
 		t_real_glob GetRadius() const { return m_dRadius; }
 };
+
 
 class ScatteringTriangleScene;
 class ScatteringTriangle : public QGraphicsItem
@@ -136,6 +142,7 @@ class ScatteringTriangle : public QGraphicsItem
 		bool m_bCoordAxesVisible = 1;
 		bool m_bShowEwaldSphere = 1;
 		bool m_bEwaldAroundKi = 0;
+		bool m_bShowAllPeaks = 1;
 
 	protected:
 		virtual QRectF boundingRect() const override;
@@ -185,6 +192,7 @@ class ScatteringTriangle : public QGraphicsItem
 		void SetqVisible(bool bVisible);
 		void SetCoordAxesVisible(bool bVisible);
 		void SetBZVisible(bool bVisible);
+		void SetAllPeaksVisible(bool bVisible);
 		void SetEwaldSphereVisible(EwaldSphere iEw);
 
 		const std::vector<t_powderline>& GetPowder() const { return m_vecPowderLines; }

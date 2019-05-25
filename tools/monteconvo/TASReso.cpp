@@ -166,10 +166,15 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 		m_reso.flags |= CALC_R0;
 	else
 		m_reso.flags &= ~CALC_R0;
-	if(xml.Query<int>((strXmlRoot + "reso/use_resvol").c_str(), 1))
-		m_reso.flags |= CALC_RESVOL;
+	if(xml.Query<int>((strXmlRoot + "reso/use_general_R0").c_str(), 0))
+		m_reso.flags |= CALC_GENERAL_R0;
 	else
-		m_reso.flags &= ~CALC_RESVOL;
+		m_reso.flags &= ~CALC_GENERAL_R0;
+	//if(xml.Query<int>((strXmlRoot + "reso/use_resvol").c_str(), 0))
+	//	m_reso.flags |= CALC_RESVOL;
+	//else
+	//	m_reso.flags &= ~CALC_RESVOL;
+	m_reso.flags &= ~CALC_RESVOL;	// not used anymore
 
 	m_reso.dmono_sense = (xml.Query<int>((strXmlRoot+"reso/mono_scatter_sense").c_str(), 0) ? +1. : -1.);
 	m_reso.dana_sense = (xml.Query<int>((strXmlRoot+"reso/ana_scatter_sense").c_str(), 0) ? +1. : -1.);
@@ -386,23 +391,21 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	//m_reso.angle_kf_Q = units::abs(m_reso.angle_kf_Q);
 
 
-	if(m_foc == ResoFocus::FOC_NONE)
+	if(m_foc != ResoFocus::FOC_UNCHANGED)
 	{
-		m_reso.bMonoIsCurvedH = m_reso.bMonoIsCurvedV = 0;
-		m_reso.bAnaIsCurvedH = m_reso.bAnaIsCurvedV = 0;
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_FLAT)) != 0)		// flat mono
+			m_reso.bMonoIsCurvedH = m_reso.bMonoIsCurvedV = 0;
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_H)) != 0)		// optimally curved mono (h)
+			m_reso.bMonoIsCurvedH = m_reso.bMonoIsOptimallyCurvedH = 1;
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V)) != 0)		// optimally curved mono (v)
+			m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV = 1;
 
-		//tl::log_info("No focus.");
-	}
-	else
-	{
-		m_reso.bMonoIsCurvedH = m_reso.bMonoIsOptimallyCurvedH =
-			(unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_H));
-		m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV =
-			(unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V));
-		m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH =
-			(unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H));
-		m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV =
-			(unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V));
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_FLAT)) != 0)		// flat ana
+			m_reso.bAnaIsCurvedH = m_reso.bAnaIsCurvedV = 0;
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H)) != 0)			// optimally curved ana (h)
+			m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH = 1;
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V)) != 0)			// optimally curved ana (v)
+			m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV = 1;
 
 		//tl::log_info("Mono focus (h,v): ", m_reso.bMonoIsOptimallyCurvedH, ", ", m_reso.bMonoIsOptimallyCurvedV);
 		//tl::log_info("Ana focus (h,v): ", m_reso.bAnaIsOptimallyCurvedH, ", ", m_reso.bAnaIsOptimallyCurvedV);
@@ -455,6 +458,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		// if only one sample position is requested, don't randomise
 		if(m_res.size() > 1)
 		{
+			// TODO: use selected sample geometry
 			/*m_reso.pos_x = tl::rand_real(-t_real(m_reso.sample_w_q*0.5/cm),
 				t_real(m_reso.sample_w_q*0.5/cm)) * cm;
 			m_reso.pos_y = tl::rand_real(-t_real(m_reso.sample_w_perpq*0.5/cm),
@@ -507,6 +511,9 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 			tl::log_debug("R0: ", resores_cur.dR0);
 			tl::log_debug("res: ", resores_cur.reso);
 		}
+
+		// reset values
+		m_reso.pos_x = m_reso.pos_y = m_reso.pos_z = t_real(0)*cm;
 	}
 
 	return resores.bOk;
@@ -529,7 +536,7 @@ Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& ve
 		vecNeutrons.resize(iNum*iIter);
 
 	Ellipsoid4d<t_real> ell4dret;
-	for(std::size_t iCurIter = 0; iCurIter<iIter; ++iCurIter)
+	for(std::size_t iCurIter=0; iCurIter<iIter; ++iCurIter)
 	{
 		const ResoResults& resores = m_res[iCurIter];
 
